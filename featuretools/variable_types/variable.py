@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import pandas as pd
 
@@ -22,6 +24,8 @@ class Variable(object):
             it belongs to.
         entity (:class:`.Entity`) : Entity this variable belongs to.
         name (str, optional) : Variable name. Defaults to id.
+        description (str, optional) : Description of what the variable is.
+            Used when describing features with `ft.describe_feature`.
 
     See Also:
         :class:`.Entity`, :class:`.Relationship`, :class:`.BaseEntitySet`
@@ -29,11 +33,12 @@ class Variable(object):
     type_string = ClassNameDescriptor()
     _default_pandas_dtype = object
 
-    def __init__(self, id, entity, name=None):
+    def __init__(self, id, entity, name=None, description=None):
         assert isinstance(id, str), "Variable id must be a string"
         self.id = id
         self._name = name
         self.entity_id = entity.id
+        self._description = description
         assert entity.entityset is not None, "Entity must contain reference to EntitySet"
         self.entity = entity
         if self.id not in self.entity.df:
@@ -93,6 +98,16 @@ class Variable(object):
         self._name = name
 
     @property
+    def description(self):
+        return self._description if self._description is not None else 'the "{}"'.format(self.name)
+
+    @description.setter
+    def description(self, description):
+        if description != self._description:
+            self.entity.entityset.reset_data_description()
+        self._description = description
+
+    @property
     def interesting_values(self):
         return self._interesting_values
 
@@ -113,6 +128,7 @@ class Variable(object):
             },
             'properties': {
                 'name': self.name,
+                'description': self.description,
                 'entity': self.entity.id,
                 'interesting_values': self._interesting_values.to_json()
             },
@@ -314,9 +330,16 @@ class Timedelta(Variable):
         return description
 
 
-class Text(Variable):
+class NaturalLanguage(Variable):
     """Represents variables that are arbitary strings"""
     _default_pandas_dtype = str
+
+
+class Text(NaturalLanguage):
+    def __init__(self, id, entity, name=None):
+        msg = "Text has been deprecated. Please use NaturalLanguage instead."
+        warnings.warn(msg, category=FutureWarning)
+        super(Text, self).__init__(id, entity, name)
 
 
 class PandasTypes(object):

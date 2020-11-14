@@ -14,12 +14,15 @@ from featuretools.utils.entity_utils import (
     get_linked_vars,
     infer_variable_types
 )
+from featuretools.utils.gen_utils import import_or_none, is_instance
 from featuretools.utils.wrangle import (
     _check_time_type,
     _check_timedelta,
     _dataframes_equal
 )
-from featuretools.variable_types import find_variable_types
+from featuretools.variable_types import Text, find_variable_types
+
+ks = import_or_none('databricks.koalas')
 
 logger = logging.getLogger('featuretools.entityset')
 
@@ -249,8 +252,10 @@ class Entity(object):
             df = self.df.head(0)
 
         else:
-            if isinstance(instance_vals, dd.Series):
+            if is_instance(instance_vals, (dd, ks), 'Series'):
                 df = self.df.merge(instance_vals.to_frame(), how="inner", on=variable_id)
+            elif isinstance(instance_vals, pd.Series) and is_instance(self.df, ks, 'DataFrame'):
+                df = self.df.merge(ks.DataFrame({variable_id: instance_vals}), how="inner", on=variable_id)
             else:
                 df = self.df[self.df[variable_id].isin(instance_vals)]
 
@@ -289,6 +294,8 @@ class Entity(object):
         variables = []
         variable_types = variable_types.copy() or {}
         string_to_class_map = find_variable_types()
+        # TODO: Remove once Text has been removed from variable types
+        string_to_class_map[Text.type_string] = Text
         for vid in variable_types.copy():
             vtype = variable_types[vid]
             if isinstance(vtype, str):
@@ -413,7 +420,18 @@ class Entity(object):
         """
         Remove variables from entity's dataframe and from
         self.variables
+
+        Args:
+            variable_ids (list[str]): Variables to delete
+
+        Returns:
+            None
         """
+        # check if variable is not a list
+        if not isinstance(variable_ids, list):
+            raise TypeError('variable_ids must be a list of variable names')
+        if len(variable_ids) == 0:
+            return
         self.df = self.df.drop(variable_ids, axis=1)
 
         for v_id in variable_ids:
@@ -422,7 +440,7 @@ class Entity(object):
 
     def set_time_index(self, variable_id, already_sorted=False):
         # check time type
-        if isinstance(self.df, dd.DataFrame) or self.df.empty:
+        if not isinstance(self.df, pd.DataFrame) or self.df.empty:
             time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
         else:
             time_to_check = self.df[variable_id].iloc[0]
@@ -439,7 +457,7 @@ class Entity(object):
                             " other entityset time indexes" %
                             (self.id, time_type))
 
-        if isinstance(self.df, dd.DataFrame):
+        if is_instance(self.df, (dd, ks), 'DataFrame'):
             t = time_type  # skip checking values
             already_sorted = True  # skip sorting
         else:
@@ -474,7 +492,7 @@ class Entity(object):
 
     def set_secondary_time_index(self, secondary_time_index):
         for time_index, columns in secondary_time_index.items():
-            if len(self.df) == 0:
+            if is_instance(self.df, (dd, ks), 'DataFrame') or self.df.empty:
                 time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[time_index]._default_pandas_dtype]
             else:
                 time_to_check = self.df[time_index].head(1).iloc[0]
@@ -504,9 +522,9 @@ class Entity(object):
             instance_vals = [instance_vals]
 
         # convert iterable to pd.Series
-        if type(instance_vals) == pd.DataFrame:
+        if isinstance(instance_vals, pd.DataFrame):
             out_vals = instance_vals[variable_id]
-        elif type(instance_vals) == pd.Series or type(instance_vals) == dd.Series:
+        elif is_instance(instance_vals, (pd, dd, ks), 'Series'):
             out_vals = instance_vals.rename(variable_id)
         else:
             out_vals = pd.Series(instance_vals)
@@ -525,6 +543,8 @@ class Entity(object):
         If this entity does not have a time index, return the original
         dataframe.
         """
+        if is_instance(df, ks, 'DataFrame') and isinstance(time_last, np.datetime64):
+            time_last = pd.to_datetime(time_last)
         if self.time_index:
             df_empty = df.empty if isinstance(df, pd.DataFrame) else False
             if time_last is not None and not df_empty:
@@ -546,7 +566,7 @@ class Entity(object):
                             lti_mask = lti_slice >= time_last - training_window
                         mask = mask | lti_mask
                     else:
-                        logger.warning(
+                        warnings.warn(
                             "Using training_window but last_time_index is "
                             "not set on entity %s" % (self.id)
                         )
@@ -561,6 +581,8 @@ class Entity(object):
                 if isinstance(df, dd.DataFrame):
                     for col in columns:
                         df[col] = df[col].mask(mask, np.nan)
+                elif is_instance(df, ks, 'DataFrame'):
+                    df.loc[mask, columns] = None
                 else:
                     df.loc[mask, columns] = np.nan
 
@@ -575,8 +597,8 @@ def _create_index(index, make_index, df):
         # Case 1: user wanted to make index but did not specify column name
         assert not make_index, "Must specify an index name if make_index is True"
         # Case 2: make_index not specified but no index supplied, use first column
-        logger.warning(("Using first column as index. ",
-                        "To change this, specify the index parameter"))
+        warnings.warn(("Using first column as index. "
+                       "To change this, specify the index parameter"))
         index = df.columns[0]
     elif make_index and index in df.columns:
         # Case 3: user wanted to make index but column already exists
@@ -585,13 +607,15 @@ def _create_index(index, make_index, df):
         if not make_index:
             # Case 4: user names index, it is not in df. does not specify
             # make_index.  Make new index column and warn
-            logger.warning("index %s not found in dataframe, creating new "
-                           "integer column", index)
+            warnings.warn("index {} not found in dataframe, creating new "
+                          "integer column".format(index))
         # Case 5: make_index with no errors or warnings
         # (Case 4 also uses this code path)
         if isinstance(df, dd.DataFrame):
             df[index] = 1
             df[index] = df[index].cumsum() - 1
+        elif is_instance(df, ks, 'DataFrame'):
+            df = df.koalas.attach_id_column('distributed-sequence', index)
         else:
             df.insert(0, index, range(len(df)))
         created_index = index

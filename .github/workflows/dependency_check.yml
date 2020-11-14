@@ -1,0 +1,32 @@
+# This workflow will install dependenies and if any critical dependencies have changed a pull request
+# will be created which will trigger a CI run with the new dependencies.
+
+name: Dependency Check
+on:
+  schedule:
+    - cron: '0 * * * *'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Update dependencies
+      run: |
+        python -m pip install --upgrade pip
+        make installdeps
+        make checkdeps OUTPUT_PATH=featuretools/tests/latest_dependencies.txt
+    - name: Create Pull Request
+      uses: Featurelabs/create-pull-request@v2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: Update latest_dependencies.txt
+        title: Automated Update to latest_dependencies.txt
+        body: "This is an auto-generated PR with updates to latest_dependencies.txt."
+        branch: dep-update
+        branch-suffix: short-commit-hash
+        base: main
+        reviewers: rwedge, thehomebrewnerd, frances-h

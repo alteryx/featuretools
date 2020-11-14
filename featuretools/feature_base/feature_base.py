@@ -93,8 +93,8 @@ class FeatureBase(object):
                     self._names = [self.get_name() + '[{}]'.format(i) for i in range(len(self._names))]
         return self._names
 
-    def get_function(self):
-        return self.primitive.get_function()
+    def get_function(self, **kwargs):
+        return self.primitive.get_function(**kwargs)
 
     def get_dependencies(self, deep=False, ignored=None, copy=True):
         """Returns features that are used to calculate this feature
@@ -171,7 +171,6 @@ class FeatureBase(object):
         return hash(self.get_name() + self.entity.id)
 
     def __hash__(self):
-        # logger.warning("To hash a feature, use feature.hash()")
         return self.hash()
 
     @property
@@ -631,9 +630,6 @@ class AggregationFeature(FeatureBase):
             'use_previous': self.use_previous and self.use_previous.get_arguments(),
         }
 
-    def get_dask_aggregation(self):
-        return self.primitive.get_dask_aggregation()
-
     def relationship_path_name(self):
         if self._path_is_unique:
             return self.child_entity.id
@@ -747,7 +743,7 @@ class Feature(object):
 
     def __new__(self, base, entity=None, groupby=None, parent_entity=None,
                 primitive=None, use_previous=None, where=None):
-        # either direct or indentity
+        # either direct or identity
         if primitive is None and entity is None:
             return IdentityFeature(base)
         elif primitive is None and entity is not None:
@@ -808,13 +804,14 @@ class FeatureOutputSlice(FeatureBase):
     def get_arguments(self):
         return {
             'name': self._name,
-            'base_feature': self.base_feature,
+            'base_feature': self.base_feature.unique_name(),
             'n': self.n
         }
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
-        base_feature = arguments['base_feature']
+        base_feature_name = arguments['base_feature']
+        base_feature = dependencies[base_feature_name]
         n = arguments['n']
         name = arguments['name']
         return cls(base_feature=base_feature, n=n, name=name)

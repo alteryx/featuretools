@@ -1,10 +1,10 @@
 scipy>=0.13.3
 numpy>=1.13.3
-pandas>=0.24.1
+pandas>=0.24.1,<2.0.0,!=1.1.0,!=1.1.1
 tqdm>=4.32.0
 pyyaml>=3.12
 cloudpickle>=0.4.0
-distributed>=1.24.2
-dask[dataframe]>=1.1.0
+distributed>=2.12.0
+dask[dataframe]>=2.12.0
 psutil>=5.4.8
 click>=7.0.0

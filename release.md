@@ -23,7 +23,7 @@ We need to upload a featuretools package to test with the conda recipe
 #### Set up fork of our conda-forge repo
 Branches on the conda-forge featuretools repo are automatically built and the package uploaded to conda-forge, so to test a release without uploading to conda-forge we need to fork the repo and develop on the fork.
 1. Fork conda-forge/featuretools-feedstock: visit https://github.com/conda-forge/featuretools-feedstock and click fork
-2. Clone forked repo locally
+2. Clone forked repo locally, selecting your own github account as the base for the forked repo. 
 3. Add conda-forge repo as the 'upstream' repository
     ```bash
     git remote add upstream https://github.com/conda-forge/featuretools-feedstock.git
@@ -37,7 +37,7 @@ Branches on the conda-forge featuretools repo are automatically built and the pa
     ```
 5. Make a branch with the version you want to release
     ```bash
-    git checkout -b new-featuretools-version
+    git checkout -b v0.13.0.dev0
     ```
 
 #### Update conda recipe to use TestPyPI release of featuretools
@@ -97,34 +97,45 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
 
 ## Create featuretools release on github
 #### Create release branch
-1. Branch off of featuretools master and name the branch the release version number (e.g. v0.13.3)
+1. Branch off of featuretools main and name the branch the release version number (e.g. v0.13.3)
 
 #### Bump version number
 2. Bump version number in `setup.py`, `featuretools/version.py`, and `featuretools/tests/test_version.py`.
 
-#### Update changelog
-1. Replace "Future Release" in `docs/source/changelog.rst` with the current date
+#### Update release notes
+1. Replace "Future Release" in `docs/source/release_notes.rst` with the current date
     ```
-    **v0.13.3** Feb 28, 2020
+    **v0.13.3 Feb 28, 2020**
     ```
-2. Remove any unused changelog sections for this release (e.g. Fixes, Testing Changes)
+2. Remove any unused sections for this release (e.g. Fixes, Testing Changes)
 3. Add yourself to the list of contributors to this release and put the contributors in alphabetical order
 4. The release PR does not need to be mentioned in the list of changes
+5. Add a commented out "Future Release" section with all of the release notes sections above the current section
+    ```
+    .. **Future Release**
+        * Enhancements
+        * Fixes
+        * Changes
+        * Documentation Changes
+        * Testing Changes
+
+    .. Thanks to the following people for contributing to this release:
+    ```
 
 
 #### Create Release PR
-A [release pr](https://github.com/FeatureLabs/featuretools/pull/856) should have the version number as the title and the changelog updates as the PR body text. The contributors list is not necessary. The special sphinx docs syntax (:pr:\`547\`) needs to be changed to github link syntax (#547).
+A [release pr](https://github.com/FeatureLabs/featuretools/pull/856) should have the version number as the title and the release notes for that release as the PR body text. The contributors list is not necessary. The special sphinx docs syntax (:pr:\`547\`) needs to be changed to github link syntax (#547).
 
 #### Create Github Release
-After the release pull request has been merged into the master branch, it is time draft the github release. [Example release](https://github.com/FeatureLabs/featuretools/releases/tag/v0.13.3)
-* The target should be the master branch
+After the release pull request has been merged into the main branch, it is time draft the github release. [Example release](https://github.com/FeatureLabs/featuretools/releases/tag/v0.13.3)
+* The target should be the main branch
 * The tag should be the version number with a v prefix (e.g. v0.13.3)
 * Release title is the same as the tag
-* Release description should be the full changelog updates for the release, including the line thanking contributors.  Contributors should also have their links changed from the docs syntax (:user:\`rwedge\`) to github syntax (@rwedge)
+* Release description should be the full release notes for the release, including the line thanking contributors.  Contributors should also have their links changed from the docs syntax (:user:\`rwedge\`) to github syntax (@rwedge)
 * This is not a pre-release
 * Publishing the release will automatically upload the package to PyPI
 
 ## Release on conda-forge
-1. A bot should automatically create a new PR in conda-forge/featuretools-feedstock
+1. A bot should automatically create a new PR in conda-forge/featuretools-feedstock - note, the PR may take up to a few hours to be created
 2. Update requirements changes in `recipe/meta.yaml` (bot should have handled version and source links on its own)
 3. After tests pass, a maintainer will merge the PR in

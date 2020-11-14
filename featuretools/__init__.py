@@ -12,6 +12,7 @@ from .utils.cli_utils import show_info
 from .version import __version__
 import featuretools.demo
 from . import feature_base
+from . import selection
 from .feature_base import (
     AggregationFeature,
     DirectFeature,
@@ -21,6 +22,7 @@ from .feature_base import (
     IdentityFeature,
     TransformFeature,
     graph_feature,
+    describe_feature,
     save_features,
     load_features
 )

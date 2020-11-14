@@ -23,6 +23,7 @@ class CumSum(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     uses_full_entity = True
+    description_template = "the cumulative sum of {}"
 
     def get_function(self):
         def cum_sum(values):
@@ -49,6 +50,7 @@ class CumCount(TransformPrimitive):
     input_types = [[Id], [Discrete]]
     return_type = Numeric
     uses_full_entity = True
+    description_template = "the cumulative count of {}"
 
     def get_function(self):
         def cum_count(values):
@@ -76,6 +78,7 @@ class CumMean(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     uses_full_entity = True
+    description_template = "the cumulative mean of {}"
 
     def get_function(self):
         def cum_mean(values):
@@ -103,6 +106,7 @@ class CumMin(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     uses_full_entity = True
+    description_template = "the cumulative minimum of {}"
 
     def get_function(self):
         def cum_min(values):
@@ -130,6 +134,7 @@ class CumMax(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     uses_full_entity = True
+    description_template = "the cumulative maximum of {}"
 
     def get_function(self):
         def cum_max(values):

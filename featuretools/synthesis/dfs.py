@@ -1,5 +1,14 @@
+import warnings
+
 from featuretools.computational_backends import calculate_feature_matrix
 from featuretools.entityset import EntitySet
+from featuretools.exceptions import UnusedPrimitiveWarning
+from featuretools.feature_base import (
+    AggregationFeature,
+    FeatureOutputSlice,
+    GroupByTransformFeature,
+    TransformFeature
+)
 from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
 from featuretools.utils import entry_point
 
@@ -205,6 +214,11 @@ def dfs(entities=None,
 
         include_cutoff_time (bool): Include data at cutoff times in feature calculations. Defaults to ``True``.
 
+    Returns:
+        list[:class:`.FeatureBase`], pd.DataFrame:
+            The list of generated feature defintions, and the feature matrix.
+            If ``features_only`` is ``True``, the feature matrix will not be generated.
+
     Examples:
         .. code-block:: python
 
@@ -247,6 +261,17 @@ def dfs(entities=None,
     features = dfs_object.build_features(
         verbose=verbose, return_variable_types=return_variable_types)
 
+    trans, agg, groupby, where = _categorize_features(features)
+
+    trans_unused = get_unused_primitives(trans_primitives, trans)
+    agg_unused = get_unused_primitives(agg_primitives, agg)
+    groupby_unused = get_unused_primitives(groupby_trans_primitives, groupby)
+    where_unused = get_unused_primitives(where_primitives, where)
+
+    unused_primitives = [trans_unused, agg_unused, groupby_unused, where_unused]
+    if any(unused_primitives):
+        warn_unused_primitives(unused_primitives)
+
     if features_only:
         return features
 
@@ -265,3 +290,70 @@ def dfs(entities=None,
                                               progress_callback=progress_callback,
                                               include_cutoff_time=include_cutoff_time)
     return feature_matrix, features
+
+
+def get_unused_primitives(specified, used):
+    """Get a list of unused primitives based on a list of specified primitives and a list of output features"""
+    if not specified:
+        return []
+    specified = {primitive if isinstance(primitive, str) else primitive.name for primitive in specified}
+    return sorted(list(specified.difference(used)))
+
+
+def warn_unused_primitives(unused_primitives):
+    messages = ["  trans_primitives: {}\n",
+                "  agg_primitives: {}\n",
+                "  groupby_trans_primitives: {}\n",
+                "  where_primitives: {}\n"]
+    unused_string = ""
+    for primitives, message in zip(unused_primitives, messages):
+        if primitives:
+            unused_string += message.format(primitives)
+
+    warning_msg = "Some specified primitives were not used during DFS:\n{}".format(unused_string) + \
+        "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
+        "or it may indicate no compatible variable types for the primitive were found in the data."
+
+    warnings.warn(warning_msg, UnusedPrimitiveWarning)
+
+
+def _categorize_features(features):
+    """Categorize each feature by its primitive type in a set of primitives along with any dependencies"""
+    transform = set()
+    agg = set()
+    groupby = set()
+    where = set()
+    explored = set()
+
+    def get_feature_data(feature):
+        if feature.get_name() in explored:
+            return
+
+        dependencies = []
+
+        if isinstance(feature, FeatureOutputSlice):
+            feature = feature.base_feature
+
+        if isinstance(feature, AggregationFeature):
+            if feature.where:
+                where.add(feature.primitive.name)
+            else:
+                agg.add(feature.primitive.name)
+        elif isinstance(feature, GroupByTransformFeature):
+            groupby.add(feature.primitive.name)
+        elif isinstance(feature, TransformFeature):
+            transform.add(feature.primitive.name)
+
+        feature_deps = feature.get_dependencies()
+        if feature_deps:
+            dependencies.extend(feature_deps)
+
+        explored.add(feature.get_name())
+
+        for dep in dependencies:
+            get_feature_data(dep)
+
+    for feature in features:
+        get_feature_data(feature)
+
+    return transform, agg, groupby, where

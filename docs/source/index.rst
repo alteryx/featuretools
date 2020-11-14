@@ -1,4 +1,4 @@
-.. featuretools documentation master file, created by
+.. featuretools documentation main file, created by
    sphinx-quickstart on Thu May 19 20:40:30 2016.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
@@ -10,13 +10,15 @@ What is Featuretools?
 ---------------------
 
 
-.. image:: images/featuretools-logo.png
+.. image:: _static/images/featuretools_nav2.svg
    :width: 500 px
    :alt: Featuretools
    :align: center
 
 **Featuretools** is a framework to perform automated feature engineering. It excels at transforming temporal and relational datasets into feature matrices for machine learning.
 
+
+.. _quick-start:
 
 5 Minute Quick Start
 ====================
@@ -82,7 +84,7 @@ In this dataset we have two relationships
 
 .. note::
 
-    To manage setting up entities and relationships, we recommend using the :class:`EntitySet <featuretools.EntitySet>` class which offers convenient APIs for managing data like this. See :doc:`loading_data/using_entitysets` for more information.
+    To manage setting up entities and relationships, we recommend using the :class:`EntitySet <featuretools.EntitySet>` class which offers convenient APIs for managing data like this. See :doc:`getting_started/using_entitysets` for more information.
 
 
 Run Deep Feature Synthesis
@@ -115,6 +117,34 @@ One of the reasons DFS is so powerful is that it can create a feature matrix for
     feature_matrix_sessions.head(5)
 
 
+Understanding Feature Output
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In general, Featuretools references generated features through the feature name. In order to make features easier to understand, Featuretools offers two additional tools, :func:`featuretools.graph_feature` and :func:`featuretools.describe_feature`, to help explain what a feature is and the steps Featuretools took to generate it. [let's look at this example feature]
+
+.. ipython:: python
+
+    feature = features_defs[18]
+    feature
+
+Feature lineage graphs
+""""""""""""""""""""""
+Feature lineage graphs visually walk through feature generation. Starting from the base data, they show step by step the primitives applied and intermediate features generated to create the final feature.
+
+.. ipython:: python
+
+    ft.graph_feature(feature)
+
+.. graphviz:: getting_started/graphs/demo_feat.dot
+
+Feature descriptions
+""""""""""""""""""""
+Featuretools can also automatically generate English sentence descriptions of features. Feature descriptions help to explain what a feature is, and can be further improved by including manually defined custom definitions. See :doc:`/guides/feature_descriptions` for more details on how to customize automatically generated feature descriptions.
+
+.. ipython:: python
+
+    ft.describe_feature(feature)
+
+
 .. Technical problems it solves
 .. ----------------------------
 
@@ -135,10 +165,10 @@ One of the reasons DFS is so powerful is that it can create a feature matrix for
 What's next?
 ------------
 
-* Learn about :doc:`loading_data/using_entitysets`
-* Apply automated feature engineering with :doc:`automated_feature_engineering/afe`
+* Learn about :doc:`getting_started/using_entitysets`
+* Apply automated feature engineering with :doc:`getting_started/afe`
 * Explore `runnable demos <https://www.featuretools.com/demos>`__ based on real world use cases
-* Can't find what you're looking for? Ask for :doc:`help`
+* Can't find what you're looking for? Ask for :doc:`resources/help`
 
 
 
@@ -148,48 +178,23 @@ Table of contents
 
 .. toctree::
    :maxdepth: 1
-   :caption: Getting Started
 
-   self
-   getting_started/install
-   loading_data/using_entitysets
-   automated_feature_engineering/afe
-   automated_feature_engineering/primitives
-   variables
-   automated_feature_engineering/handling_time
+   install
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Guides
+   :maxdepth: 2
 
-   guides/tuning_dfs
-   guides/specifying_primitive_options
-   guides/performance
-   guides/using_dask_entitysets
-   guides/deployment
-   guides/advanced_custom_primitives
+   getting_started/getting_started_index
+   guides/guides_index
 
 .. toctree::
    :maxdepth: 1
    :caption: Resources and References
 
-   frequently_asked_questions
-   help
-   usage_tips/limitations
-   usage_tips/glossary
-   ecosystem
+   resources/resources_index
    api_reference
-   Primitive Reference <https://primitives.featurelabs.com/>
-   changelog
-
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Hide from Table of Contents
-   :hidden:
-
-   feature_engineering_language/feature-types
-   guides/save_progress_example
+   Primitives <https://primitives.featurelabs.com/>
+   release_notes
 
 Other links
 ------------

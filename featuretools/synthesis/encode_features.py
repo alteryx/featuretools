@@ -83,14 +83,13 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
     else:
         X = feature_matrix.copy()
 
-    encoded = []
-    feature_names = []
+    old_feature_names = set()
     for feature in features:
         for fname in feature.get_feature_names():
             assert fname in X.columns, ("Feature %s not found in feature matrix" % (fname))
-            feature_names.append(fname)
+            old_feature_names.add(fname)
 
-    extra_columns = [col for col in X.columns if col not in feature_names]
+    pass_through = [col for col in X.columns if col not in old_feature_names]
 
     if verbose:
         iterator = make_tqdm_iterator(iterable=features,
@@ -99,6 +98,10 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
                                       unit="feature")
     else:
         iterator = features
+
+    new_feature_list = []
+    new_columns = []
+    encoded_columns = set()
 
     for f in iterator:
         # TODO: features with multiple columns are not encoded by this method,
@@ -109,11 +112,13 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
                 logger.warning("Feature %s has multiple columns and will not "
                                "be encoded.  This may result in a matrix with"
                                " non-numeric values." % (f))
-            encoded.append(f)
+            new_feature_list.append(f)
+            new_columns.extend(f.get_feature_names())
             continue
 
         if to_encode is not None and f.get_name() not in to_encode:
-            encoded.append(f)
+            new_feature_list.append(f)
+            new_columns.extend(f.get_feature_names())
             continue
 
         val_counts = X[f.get_name()].value_counts().to_frame()
@@ -136,21 +141,23 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
         unique = val_counts.head(select_n).index.tolist()
         for label in unique:
             add = f == label
-            encoded.append(add)
-            X[add.get_name()] = (X[f.get_name()] == label).astype("uint8")
+            add_name = add.get_name()
+            new_feature_list.append(add)
+            new_columns.append(add_name)
+            encoded_columns.add(add_name)
+            X[add_name] = (X[f.get_name()] == label)
 
         if include_unknown:
             unknown = f.isin(unique).NOT().rename(f.get_name() + " is unknown")
-            encoded.append(unknown)
-            X[unknown.get_name()] = (~X[f.get_name()].isin(unique)).astype("uint8")
+            unknown_name = unknown.get_name()
+            new_feature_list.append(unknown)
+            new_columns.append(unknown_name)
+            encoded_columns.add(unknown_name)
+            X[unknown_name] = (~X[f.get_name()].isin(unique))
 
         X.drop(f.get_name(), axis=1, inplace=True)
 
-    new_columns = []
-    for e in encoded:
-        new_columns.extend(e.get_feature_names())
-
-    new_columns.extend(extra_columns)
+    new_columns.extend(pass_through)
     new_X = X[new_columns]
     iterator = new_X.columns
     if verbose:
@@ -159,11 +166,10 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
                                       desc="Encoding pass 2",
                                       unit="feature")
     for c in iterator:
-        if c in extra_columns:
-            continue
-        try:
-            new_X[c] = pd.to_numeric(new_X[c], errors='raise')
-        except (TypeError, ValueError):
-            pass
+        if c in encoded_columns:
+            try:
+                new_X[c] = pd.to_numeric(new_X[c], errors='raise')
+            except (TypeError, ValueError):
+                pass
 
-    return new_X, encoded
+    return new_X, new_feature_list

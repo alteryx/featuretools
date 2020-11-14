@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from featuretools.primitives import Age, TimeSince
+from featuretools.primitives import Age, TimeSince, Week
 
 
 def test_time_since():
@@ -83,3 +83,14 @@ def test_age_nan():
     ages = age(dates, time=datetime(2020, 2, 26))
     correct_ages = [10.159, np.nan, 8.159]
     np.testing.assert_array_almost_equal(ages, correct_ages, decimal=3)
+
+
+def test_week_no_deprecation_message():
+    dates = [datetime(2019, 1, 3),
+             datetime(2019, 6, 17, 11, 10, 50),
+             datetime(2019, 11, 30, 19, 45, 15)
+             ]
+    with pytest.warns(None) as record:
+        week = Week()
+        week(dates).tolist()
+    assert not record

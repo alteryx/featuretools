@@ -14,7 +14,7 @@ Deep Feature Synthesis requires structured datasets in order to perform feature 
 
 .. note ::
 
-  Before using DFS, it is recommended that you prepare your data as an :class:`EntitySet`.  See :doc:`/loading_data/using_entitysets` to learn how.
+  Before using DFS, it is recommended that you prepare your data as an :class:`EntitySet`.  See :doc:`using_entitysets` to learn how.
 
 
 .. ipython:: python
@@ -47,7 +47,7 @@ In the example above, ``"count"`` is an **aggregation primitive** because it com
 
 .. note ::
 
-  Feature primitives are a fundamental component to Featuretools. To learn more read :doc:`/automated_feature_engineering/primitives`.
+  Feature primitives are a fundamental component to Featuretools. To learn more read :doc:`primitives`.
 
 
 Creating "Deep Features"
@@ -92,8 +92,7 @@ For each customer this feature calculates
 Stacking results in features that are more expressive than individual primitives themselves. This enables the automatic creation of complex patterns for machine learning.
 
 .. note ::
-
-    You can graphically visualize the lineage of a feature by calling :func:`featuretools.graph_feature` on it.
+    You can graphically visualize the lineage of a feature by calling :func:`featuretools.graph_feature` on it. You can also generate an English description of the feature with :func:`featuretools.describe_feature`. See :doc:`/guides/feature_descriptions` for more details.
 
 
 Changing Target Entity

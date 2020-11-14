@@ -9,12 +9,11 @@
 
 
 [![Circle CI](https://circleci.com/gh/FeatureLabs/featuretools.svg?maxAge=2592000&style=shield)](https://circleci.com/gh/FeatureLabs/featuretools)
-[![Coverage Status](https://codecov.io/gh/FeatureLabs/featuretools/branch/master/graph/badge.svg)](https://codecov.io/gh/FeatureLabs/featuretools)
+[![Coverage Status](https://codecov.io/gh/FeatureLabs/featuretools/branch/main/graph/badge.svg)](https://codecov.io/gh/FeatureLabs/featuretools)
 [![PyPI version](https://badge.fury.io/py/featuretools.svg?maxAge=2592000)](https://badge.fury.io/py/featuretools)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/featuretools/badges/version.svg)](https://anaconda.org/conda-forge/featuretools)
 [![StackOverflow](http://img.shields.io/badge/questions-on_stackoverflow-blue.svg)](https://stackoverflow.com/questions/tagged/featuretools)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/featuretools.svg)](https://pypistats.org/packages/featuretools)
-
+[![Downloads](https://pepy.tech/badge/featuretools/month)](https://pepy.tech/project/featuretools)
 
 [Featuretools](https://www.featuretools.com) is a python library for automated feature engineering. See the [documentation](https://docs.featuretools.com) for more information.
 
@@ -62,7 +61,7 @@ Below is an example of using Deep Feature Synthesis (DFS) to perform automated f
 >> es.plot()
 ```
 
-<img src="https://github.com/FeatureLabs/featuretools/blob/master/docs/source/images/entity_set.png?raw=true" width="350">
+<img src="https://github.com/FeatureLabs/featuretools/blob/main/docs/source/_static/images/entity_set.png?raw=true" width="350">
 
 Featuretools can automatically create a single table of features for any "target entity"
 ```python
@@ -88,7 +87,7 @@ Featuretools contains many [different types of built-in primitives](https://prim
 ## Demos
 **Predict Next Purchase**
 
-[Repository](https://github.com/Featuretools/predict_next_purchase/) | [Notebook](https://github.com/Featuretools/predict_next_purchase/blob/master/Tutorial.ipynb)
+[Repository](https://github.com/Featuretools/predict_next_purchase/) | [Notebook](https://github.com/Featuretools/predict_next_purchase/blob/main/Tutorial.ipynb)
 
 In this demonstration, we use a multi-table dataset of 3 million online grocery orders from Instacart to predict what a customer will buy next. We show how to generate features with automated feature engineering and build an accurate machine learning pipeline using Featuretools, which can be reused for multiple prediction problems. For more advanced users, we show how to scale that pipeline to a large dataset using Dask.
 
@@ -125,10 +124,8 @@ BibTeX entry:
 }
 ```
 
+## Built at Alteryx Innovation Labs
 
-## Feature Labs
-<a href="https://www.featurelabs.com/">
-    <img src="http://www.featurelabs.com/wp-content/uploads/2017/12/logo.png" alt="Featuretools" />
+<a href="https://www.alteryx.com/innovation-labs">
+    <img src="https://evalml-web-images.s3.amazonaws.com/alteryx_innovation_labs.png" alt="Alteryx Innovation Labs" />
 </a>
-
-Featuretools is an open source project created by [Feature Labs](https://www.featurelabs.com/). To see the other open source projects we're working on visit Feature Labs [Open Source](https://www.featurelabs.com/open). If building impactful data science pipelines is important to you or your business, please [get in touch](https://www.featurelabs.com/contact/).

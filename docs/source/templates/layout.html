@@ -28,3 +28,29 @@
 
 {% endblock %}
 
+{%- block footer %}
+
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-cell-1">
+      <img class="footer-image-alteryx" src="{{ pathto('_static/images/alteryx_open_source.svg', 1) }}" alt="Alteryx Open Source">
+    </div>
+    <div class="footer-cell-2">
+      <a href="https://github.com/FeatureLabs/featuretools#readme" target="_blank">
+        <img class="footer-image-github" src="{{ pathto('_static/images/github.svg', 1) }}" alt="GitHub">
+      </a>
+      <a href="https://twitter.com/featuretools_py?lang=en" target="_blank">
+        <img class="footer-image-twitter" src="{{ pathto('_static/images/twitter.svg', 1) }}" alt="Twitter">
+      </a>
+    </div>
+    <div class="footer-cell-3">
+      <hr class="footer-line">
+    </div>
+    <div class="footer-cell-4">
+      <img class="footer-image-copyright" src="{{ pathto('_static/images/copyright.svg', 1) }}" alt="Copyright">
+    </div>
+  </div>
+</footer>
+
+{% endblock %}
+

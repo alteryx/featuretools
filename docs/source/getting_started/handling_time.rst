@@ -45,7 +45,7 @@ The **cutoff_time** specifies the last point in time that a row’s data can be 
 
 For example, let's consider a dataset of timestamped customer transactions, where we want to predict whether customers ``1``, ``2`` and ``3`` will spend $500 between ``04:00`` on January 1 and the end of the day. When building features for this prediction problem, we need to ensure that no data after ``04:00`` is used in our calculations.
 
-.. image:: ../images/retail_ct.png
+.. image:: ../_static/images/retail_ct.png
    :width: 400 px
    :alt: retail cutoff time diagram
    :align: center
@@ -260,7 +260,7 @@ For every trip log, the time index is ``date_scheduled``, which is when the airl
 
 Using a secondary time index, we can indicate to Featuretools which columns in our flight logs are known at the time the flight is scheduled, plus which are known at the time the flight lands.
 
-.. image:: ../images/flight_ti_2.png
+.. image:: ../_static/images/flight_ti_2.png
    :width: 400 px
    :alt: flight secondary time index diagram
    :align: center
@@ -295,7 +295,7 @@ Let's make some features at varying times using the flight example described abo
 
 We set two cutoff times for trip ``14`` at two different times: one which is more than a month before the flight and another which is only 5 days before. For trip ``92``, we'll only set one cutoff time, three days before it is scheduled to leave.
 
-.. image:: ../images/flight_ct.png
+.. image:: ../_static/images/flight_ct.png
    :width: 500 px
    :alt: flight cutoff time diagram
    :align: center

@@ -1,10 +1,14 @@
 import importlib
+import logging
 import re
 import sys
 import warnings
+from enum import Enum
 from itertools import zip_longest
 
 from tqdm import tqdm
+
+logger = logging.getLogger('featuretools.utils')
 
 
 def make_tqdm_iterator(**kwargs):
@@ -47,7 +51,9 @@ def check_schema_version(cls, cls_type):
             from featuretools.entityset.serialize import SCHEMA_VERSION
             version_string = cls.get('schema_version')
         elif cls_type == 'features':
-            from featuretools.feature_base.features_serializer import SCHEMA_VERSION
+            from featuretools.feature_base.features_serializer import (
+                SCHEMA_VERSION
+            )
             version_string = cls.features_dict['schema_version']
 
         current = SCHEMA_VERSION.split('.')
@@ -70,7 +76,7 @@ def check_schema_version(cls, cls_type):
                                  % (cls_type, version_string, cls_type))
         # Check if saved has older major version.
         if current[0] > saved[0]:
-            warnings.warn(warning_text_outdated)
+            logger.warning(warning_text_outdated)
 
 
 def import_or_raise(library, error_msg):
@@ -88,6 +94,51 @@ def import_or_raise(library, error_msg):
         raise ImportError(error_msg)
 
 
+def import_or_none(library):
+    '''
+    Attemps to import the requested library.
+
+    Args:
+        library (str): the name of the library
+    Returns: the library if it is installed, else None
+    '''
+    try:
+        return importlib.import_module(library)
+    except ImportError:
+        return None
+
+
 def camel_to_snake(s):
     s = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', s)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s).lower()
+
+
+def is_instance(obj, modules, classnames):
+    '''
+    Check if the given object is an instance of classname in module(s). Module
+    can be None (i.e. not installed)
+
+    Args:
+        obj (obj): object to test
+        modules (module or tuple[module]): module to check, can be also be None (will be ignored)
+        classnames (str or tuple[str]): classname from module to check. If multiple values are
+                                        provided, they should match with a single module in order.
+                                        If a single value is provided, will be used for all modules.
+    Returns:
+        bool: True if object is an instance of classname from corresponding module, otherwise False.
+              Also returns False if the module is None (i.e. module is not installed)
+    '''
+    if type(modules) is not tuple:
+        modules = (modules, )
+    if type(classnames) is not tuple:
+        classnames = (classnames, ) * len(modules)
+    if len(modules) != len(classnames):
+        raise ValueError('Number of modules does not match number of classnames')
+    to_check = tuple(getattr(mod, classname, mod) for mod, classname in zip(modules, classnames) if mod)
+    return isinstance(obj, to_check)
+
+
+class Library(Enum):
+    PANDAS = 'pandas'
+    DASK = 'Dask'
+    KOALAS = 'Koalas'

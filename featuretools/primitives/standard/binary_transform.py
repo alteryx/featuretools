@@ -4,6 +4,7 @@ import pandas as pd
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
 )
+from featuretools.utils.gen_utils import Library
 from featuretools.variable_types import (
     Boolean,
     Datetime,
@@ -29,7 +30,8 @@ class GreaterThan(TransformPrimitive):
     name = "greater_than"
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK]
+    description_template = "whether {} is greater than {}"
 
     def get_function(self):
         return np.greater
@@ -54,10 +56,11 @@ class GreaterThanScalar(TransformPrimitive):
     name = "greater_than_scalar"
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=0):
         self.value = value
+        self.description_template = "whether {{}} is greater than {}".format(self.value)
 
     def get_function(self):
         def greater_than_scalar(vals):
@@ -84,7 +87,8 @@ class GreaterThanEqualTo(TransformPrimitive):
     name = "greater_than_equal_to"
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "whether {} is greater than or equal to {}"
 
     def get_function(self):
         return np.greater_equal
@@ -109,10 +113,11 @@ class GreaterThanEqualToScalar(TransformPrimitive):
     name = "greater_than_equal_to_scalar"
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=0):
         self.value = value
+        self.description_template = "whether {{}} is greater than or equal to {}".format(self.value)
 
     def get_function(self):
         def greater_than_equal_to_scalar(vals):
@@ -139,7 +144,8 @@ class LessThan(TransformPrimitive):
     name = "less_than"
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "whether {} is less than {}"
 
     def get_function(self):
         return np.less
@@ -164,10 +170,11 @@ class LessThanScalar(TransformPrimitive):
     name = "less_than_scalar"
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=0):
         self.value = value
+        self.description_template = "whether {{}} is less than {}".format(self.value)
 
     def get_function(self):
         def less_than_scalar(vals):
@@ -194,7 +201,8 @@ class LessThanEqualTo(TransformPrimitive):
     name = "less_than_equal_to"
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "whether {} is less than or equal to {}"
 
     def get_function(self):
         return np.less_equal
@@ -219,10 +227,11 @@ class LessThanEqualToScalar(TransformPrimitive):
     name = "less_than_equal_to_scalar"
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=0):
         self.value = value
+        self.description_template = "whether {{}} is less than or equal to {}".format(self.value)
 
     def get_function(self):
         def less_than_equal_to_scalar(vals):
@@ -250,6 +259,8 @@ class Equal(TransformPrimitive):
     input_types = [Variable, Variable]
     return_type = Boolean
     commutative = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "whether {} equals {}"
 
     def get_function(self):
         def equal(x_vals, y_vals):
@@ -281,10 +292,11 @@ class EqualScalar(TransformPrimitive):
     name = "equal_scalar"
     input_types = [Variable]
     return_type = Boolean
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=None):
         self.value = value
+        self.description_template = "whether {{}} equals {}".format(self.value)
 
     def get_function(self):
         def equal_scalar(vals):
@@ -312,6 +324,8 @@ class NotEqual(TransformPrimitive):
     input_types = [Variable, Variable]
     return_type = Boolean
     commutative = True
+    compatibility = [Library.PANDAS, Library.DASK]
+    description_template = "whether {} does not equal {}"
 
     def get_function(self):
         def not_equal(x_vals, y_vals):
@@ -343,10 +357,11 @@ class NotEqualScalar(TransformPrimitive):
     name = "not_equal_scalar"
     input_types = [Variable]
     return_type = Boolean
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=None):
         self.value = value
+        self.description_template = "whether {{}} does not equal {}".format(self.value)
 
     def get_function(self):
         def not_equal_scalar(vals):
@@ -374,7 +389,8 @@ class AddNumeric(TransformPrimitive):
     input_types = [Numeric, Numeric]
     return_type = Numeric
     commutative = True
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the sum of {} and {}"
 
     def get_function(self):
         return np.add
@@ -398,10 +414,11 @@ class AddNumericScalar(TransformPrimitive):
     name = "add_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=0):
         self.value = value
+        self.description_template = "the sum of {{}} and {}".format(self.value)
 
     def get_function(self):
         def add_scalar(vals):
@@ -433,7 +450,8 @@ class SubtractNumeric(TransformPrimitive):
     name = "subtract_numeric"
     input_types = [Numeric, Numeric]
     return_type = Numeric
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK]
+    description_template = "the result of {} minus {}"
 
     def __init__(self, commutative=True):
         self.commutative = commutative
@@ -460,10 +478,11 @@ class SubtractNumericScalar(TransformPrimitive):
     name = "subtract_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=0):
         self.value = value
+        self.description_template = "the result of {{}} minus {}".format(self.value)
 
     def get_function(self):
         def subtract_scalar(vals):
@@ -490,10 +509,11 @@ class ScalarSubtractNumericFeature(TransformPrimitive):
     name = "scalar_subtract_numeric_feature"
     input_types = [Numeric]
     return_type = Numeric
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=0):
         self.value = value
+        self.description_template = "the result {} minus {{}}".format(self.value)
 
     def get_function(self):
         def scalar_subtract_numeric_feature(vals):
@@ -525,7 +545,8 @@ class MultiplyNumeric(TransformPrimitive):
     ]
     return_type = Numeric
     commutative = True
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the product of {} and {}"
 
     def get_function(self):
         return np.multiply
@@ -549,10 +570,11 @@ class MultiplyNumericScalar(TransformPrimitive):
     name = "multiply_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=1):
         self.value = value
+        self.description_template = "the product of {{}} and {}".format(self.value)
 
     def get_function(self):
         def multiply_scalar(vals):
@@ -581,7 +603,8 @@ class MultiplyBoolean(TransformPrimitive):
 
     return_type = Boolean
     commutative = True
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK]
+    description_template = "the product of {} and {}"
 
     def get_function(self):
         return np.bitwise_and
@@ -611,7 +634,8 @@ class DivideNumeric(TransformPrimitive):
     name = "divide_numeric"
     input_types = [Numeric, Numeric]
     return_type = Numeric
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the result of {} divided by {}"
 
     def __init__(self, commutative=False):
         self.commutative = commutative
@@ -638,10 +662,11 @@ class DivideNumericScalar(TransformPrimitive):
     name = "divide_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=1):
         self.value = value
+        self.description_template = "the result of {{}} divided by {}".format(self.value)
 
     def get_function(self):
         def divide_scalar(vals):
@@ -668,10 +693,11 @@ class DivideByFeature(TransformPrimitive):
     name = "divide_by_feature"
     input_types = [Numeric]
     return_type = Numeric
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=1):
         self.value = value
+        self.description_template = "the result of {} divided by {{}}".format(self.value)
 
     def get_function(self):
         def divide_by_feature(vals):
@@ -698,7 +724,8 @@ class ModuloNumeric(TransformPrimitive):
     name = "modulo_numeric"
     input_types = [Numeric, Numeric]
     return_type = Numeric
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the remainder after dividing {} by {}"
 
     def get_function(self):
         return np.mod
@@ -723,10 +750,11 @@ class ModuloNumericScalar(TransformPrimitive):
     name = "modulo_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=1):
         self.value = value
+        self.description_template = "the remainder after dividing {{}} by {}".format(self.value)
 
     def get_function(self):
         def modulo_scalar(vals):
@@ -753,10 +781,11 @@ class ModuloByFeature(TransformPrimitive):
     name = "modulo_by_feature"
     input_types = [Numeric]
     return_type = Numeric
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=1):
         self.value = value
+        self.description_template = "the remainder after dividing {} by {{}}".format(self.value)
 
     def get_function(self):
         def modulo_by_feature(vals):
@@ -784,7 +813,8 @@ class And(TransformPrimitive):
     input_types = [Boolean, Boolean]
     return_type = Boolean
     commutative = True
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "whether {} and {} are true"
 
     def get_function(self):
         return np.logical_and
@@ -810,7 +840,8 @@ class Or(TransformPrimitive):
     input_types = [Boolean, Boolean]
     return_type = Boolean
     commutative = True
-    dask_compatible = True
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "whether {} is true or {} is true"
 
     def get_function(self):
         return np.logical_or

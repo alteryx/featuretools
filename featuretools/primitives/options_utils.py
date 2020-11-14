@@ -1,5 +1,6 @@
 import logging
 import warnings
+from itertools import permutations
 
 from featuretools import primitives
 from featuretools.feature_base import IdentityFeature
@@ -60,7 +61,7 @@ def generate_all_primitive_options(all_primitives,
             msg = "Options present for primitive instance and generic " \
                   "primitive class (%s), primitive instance will not use generic " \
                   "options" % (primitive.name)
-            logger.warning(msg)
+            warnings.warn(msg)
         if primitive in primitive_options or primitive.name in primitive_options:
             options = primitive_options.get(primitive, primitive_options.get(primitive.name))
             # Reconcile global options with individually-specified options
@@ -212,7 +213,7 @@ def filter_groupby_matches_by_options(groupby_matches, options):
                                      groupby=True)
 
 
-def filter_matches_by_options(matches, options, groupby=False):
+def filter_matches_by_options(matches, options, groupby=False, commutative=False):
     # If more than one option, than need to handle each for each input
     if len(options) > 1:
         def is_valid_match(match):
@@ -231,4 +232,9 @@ def filter_matches_by_options(matches, options, groupby=False):
     for match in matches:
         if is_valid_match(match):
             valid_matches.add(match)
-    return valid_matches
+        elif commutative:
+            for order in permutations(match):
+                if is_valid_match(order):
+                    valid_matches.add(order)
+                    break
+    return sorted(list(valid_matches), key=lambda features: ([feature.unique_name() for feature in features]))

@@ -5,6 +5,8 @@ import pandas as pd
 
 from featuretools import config
 from featuretools.primitives.base.utils import signature
+from featuretools.utils.description_utils import convert_to_nth
+from featuretools.utils.gen_utils import Library
 
 
 class PrimitiveBase(object):
@@ -31,8 +33,14 @@ class PrimitiveBase(object):
     base_of_exclude = None
     # (bool) If True will only make one feature per unique set of base features
     commutative = False
-    # (bool) If True, is compatible with Dask EntitySets
-    dask_compatible = False
+    #: (list): Additional compatible libraries
+    compatibility = [Library.PANDAS]
+    #: (str, list[str]): description template of the primitive. Input column
+    # descriptions are passed as positional arguments to the template. Slice
+    # number (if present) in "nth" form is passed to the template via the
+    # `nth_slice` keyword argument. Multi-output primitives can use a list to
+    # differentiate between the base description and a slice description.
+    description_template = None
 
     def __init__(self):
         pass
@@ -44,6 +52,9 @@ class PrimitiveBase(object):
         except AttributeError:
             self._method = self.get_function()
             return self._method(*series_args, **kwargs)
+
+    def __lt__(self, other):
+        return (self.name + self.get_args_string()) < (other.name + other.get_args_string())
 
     def generate_name(self):
         raise NotImplementedError("Subclass must implement")
@@ -76,13 +87,13 @@ class PrimitiveBase(object):
 
         args = signature(self.__class__).parameters.items()
         for name, arg in args:
-            # assert that arg is attribute of primitive
-            error = '"{}" must be attribute of {}'
-            assert hasattr(self, name), error.format(name, self.__class__.__name__)
-
             # skip if not a standard argument (e.g. excluding *args and **kwargs)
             if arg.kind != arg.POSITIONAL_OR_KEYWORD:
                 continue
+
+            # assert that arg is attribute of primitive
+            error = '"{}" must be attribute of {}'
+            assert hasattr(self, name), error.format(name, self.__class__.__name__)
 
             value = getattr(self, name)
             # check if args are the same type
@@ -94,3 +105,33 @@ class PrimitiveBase(object):
             values.append((name, value))
 
         return values
+
+    def get_description(self, input_column_descriptions, slice_num=None, template_override=None):
+        template = template_override or self.description_template
+        if template:
+            if isinstance(template, list):
+                if slice_num is not None:
+                    slice_index = slice_num + 1
+                    if slice_index < len(template):
+                        return template[slice_index].format(*input_column_descriptions,
+                                                            nth_slice=convert_to_nth(slice_index))
+                    else:
+                        if len(template) > 2:
+                            raise IndexError('Slice out of range of template')
+                        return template[1].format(*input_column_descriptions,
+                                                  nth_slice=convert_to_nth(slice_index))
+                else:
+                    template = template[0]
+            return template.format(*input_column_descriptions)
+
+        # generic case:
+        name = self.name.upper() if self.name is not None else type(self).__name__
+        if slice_num is not None:
+            nth_slice = convert_to_nth(slice_num + 1)
+            description = "the {} output from applying {} to {}".format(nth_slice,
+                                                                        name,
+                                                                        ', '.join(input_column_descriptions))
+        else:
+            description = "the result of applying {} to {}".format(name,
+                                                                   ', '.join(input_column_descriptions))
+        return description

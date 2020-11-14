@@ -1,4 +1,3 @@
-import warnings
 from datetime import datetime
 from functools import partial
 
@@ -18,10 +17,14 @@ from featuretools.feature_base import (
     TransformFeature
 )
 from featuretools.utils import Trie
-from featuretools.utils.gen_utils import get_relationship_variable_id
+from featuretools.utils.gen_utils import (
+    Library,
+    get_relationship_variable_id,
+    import_or_none,
+    is_instance
+)
 
-warnings.simplefilter('ignore', np.RankWarning)
-warnings.simplefilter("ignore", category=RuntimeWarning)
+ks = import_or_none('databricks.koalas')
 
 
 class FeatureSetCalculator(object):
@@ -122,6 +125,7 @@ class FeatureSetCalculator(object):
         # Fill in empty rows with default values. This only works for pandas dataframes
         # and is not currently supported for Dask dataframes.
         if isinstance(df, pd.DataFrame):
+            index_dtype = df.index.dtype.name
             if df.empty:
                 return self.generate_default_df(instance_ids=instance_ids)
 
@@ -130,28 +134,28 @@ class FeatureSetCalculator(object):
             if missing_ids:
                 default_df = self.generate_default_df(instance_ids=missing_ids,
                                                       extra_columns=df.columns)
-                df = df.append(default_df, sort=True)
+
+                df = default_df.append(df, sort=True)
 
             df.index.name = self.entityset[self.feature_set.target_eid].index
 
-        column_list = []
-
-        # Order by instance_ids
-        unique_instance_ids = pd.unique(instance_ids)
-
-        if isinstance(df, dd.DataFrame):
-            unique_instance_ids = unique_instance_ids.astype(object)
-        else:
-            # pd.unique changes the dtype for Categorical, so reset it.
+            # Order by instance_ids
+            unique_instance_ids = pd.unique(instance_ids)
             unique_instance_ids = unique_instance_ids.astype(instance_ids.dtype)
             df = df.reindex(unique_instance_ids)
+
+            # Keep categorical index if original index was categorical
+            if index_dtype == 'category':
+                df.index = df.index.astype('category')
+
+        column_list = []
 
         for feat in self.feature_set.target_features:
             column_list.extend(feat.get_feature_names())
 
-        if isinstance(df, dd.DataFrame):
+        if is_instance(df, (dd, ks), 'DataFrame'):
             column_list.extend([target_entity.index])
-            df.index.name = target_entity.index
+
         return df[column_list]
 
     def _calculate_features_for_entity(self, entity_id, feature_trie, df_trie,
@@ -545,7 +549,7 @@ class FeatureSetCalculator(object):
 
         # merge the identity feature from the parent entity into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
-        if isinstance(merge_df, dd.DataFrame):
+        if is_instance(merge_df, (dd, ks), 'DataFrame'):
             new_df = child_df.merge(merge_df, left_on=merge_var, right_on=merge_var,
                                     how='left')
         else:
@@ -632,7 +636,9 @@ class FeatureSetCalculator(object):
                     if variable_id not in to_agg:
                         to_agg[variable_id] = []
                     if isinstance(base_frame, dd.DataFrame):
-                        func = f.get_dask_aggregation()
+                        func = f.get_function(agg_type=Library.DASK)
+                    elif is_instance(base_frame, ks, 'DataFrame'):
+                        func = f.get_function(agg_type=Library.KOALAS)
                     else:
                         func = f.get_function()
 
@@ -690,7 +696,7 @@ class FeatureSetCalculator(object):
                 # to silence pandas warning about ambiguity we explicitly pass
                 # the column (in actuality grouping by both index and group would
                 # work)
-                if isinstance(base_frame, dd.DataFrame):
+                if is_instance(base_frame, (dd, ks), 'DataFrame'):
                     to_merge = base_frame.groupby(groupby_var).agg(to_agg)
 
                 else:
@@ -706,7 +712,7 @@ class FeatureSetCalculator(object):
                     categories = pdtypes.CategoricalDtype(categories=frame.index.categories)
                     to_merge.index = to_merge.index.astype(object).astype(categories)
 
-                if isinstance(frame, dd.DataFrame):
+                if is_instance(frame, (dd, ks), 'DataFrame'):
                     frame = frame.merge(to_merge, left_on=parent_merge_var, right_index=True, how='left')
                 else:
                     frame = pd.merge(left=frame, right=to_merge,

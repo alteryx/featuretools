@@ -23,7 +23,10 @@ from featuretools.primitives.options_utils import (
     generate_all_primitive_options,
     ignore_entity_for_primitive
 )
+from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.variable_types import Boolean, Discrete, Id, Numeric
+
+ks = import_or_none('databricks.koalas')
 
 logger = logging.getLogger('featuretools')
 
@@ -178,10 +181,15 @@ class DeepFeatureSynthesis(object):
         self.target_entity_id = target_entity_id
         self.es = entityset
 
+        if any(isinstance(entity.df, dd.DataFrame) for entity in self.es.entities):
+            entityset_type = Library.DASK
+        elif any(is_instance(entity.df, ks, 'DataFrame') for entity in self.es.entities):
+            entityset_type = Library.KOALAS
+        else:
+            entityset_type = Library.PANDAS
+
         if agg_primitives is None:
-            agg_primitives = primitives.get_default_aggregation_primitives()
-            if any(isinstance(e.df, dd.DataFrame) for e in self.es.entities):
-                agg_primitives = [p for p in agg_primitives if p.dask_compatible]
+            agg_primitives = [p for p in primitives.get_default_aggregation_primitives() if entityset_type in p.compatibility]
         self.agg_primitives = []
         agg_prim_dict = primitives.get_aggregation_primitives()
         for a in agg_primitives:
@@ -196,15 +204,15 @@ class DeepFeatureSynthesis(object):
                 raise ValueError("Primitive {} in agg_primitives is not an "
                                  "aggregation primitive".format(type(a)))
             self.agg_primitives.append(a)
+        self.agg_primitives.sort()
 
         if trans_primitives is None:
-            trans_primitives = primitives.get_default_transform_primitives()
-            if any(isinstance(e.df, dd.DataFrame) for e in self.es.entities):
-                trans_primitives = [p for p in trans_primitives if p.dask_compatible]
+            trans_primitives = [p for p in primitives.get_default_transform_primitives() if entityset_type in p.compatibility]
         self.trans_primitives = []
         for t in trans_primitives:
             t = check_trans_primitive(t)
             self.trans_primitives.append(t)
+        self.trans_primitives.sort()
 
         if where_primitives is None:
             where_primitives = [primitives.Count]
@@ -219,6 +227,7 @@ class DeepFeatureSynthesis(object):
                 p = prim_obj
             p = handle_primitive(p)
             self.where_primitives.append(p)
+        self.where_primitives.sort()
 
         if groupby_trans_primitives is None:
             groupby_trans_primitives = []
@@ -226,15 +235,16 @@ class DeepFeatureSynthesis(object):
         for p in groupby_trans_primitives:
             p = check_trans_primitive(p)
             self.groupby_trans_primitives.append(p)
+        self.groupby_trans_primitives.sort()
 
         if primitive_options is None:
             primitive_options = {}
         all_primitives = self.trans_primitives + self.agg_primitives + \
             self.where_primitives + self.groupby_trans_primitives
-        if any(isinstance(entity.df, dd.DataFrame) for entity in self.es.entities):
-            if not all([primitive.dask_compatible for primitive in all_primitives]):
-                bad_primitives = ", ".join([prim.name for prim in all_primitives if not prim.dask_compatible])
-                raise ValueError('Selected primitives are incompatible with Dask EntitySets: {}'.format(bad_primitives))
+        bad_primitives = [prim.name for prim in all_primitives if entityset_type not in prim.compatibility]
+        if bad_primitives:
+            msg = 'Selected primitives are incompatible with {} EntitySets: {}'
+            raise ValueError(msg.format(entityset_type.value, ', '.join(bad_primitives)))
 
         self.primitive_options, self.ignore_entities, self.ignore_variables =\
             generate_all_primitive_options(all_primitives,
@@ -242,7 +252,7 @@ class DeepFeatureSynthesis(object):
                                            self.ignore_entities,
                                            self.ignore_variables,
                                            self.es)
-        self.seed_features = seed_features or []
+        self.seed_features = sorted(seed_features or [], key=lambda f: f.unique_name())
         self.drop_exact = drop_exact or []
         self.drop_contains = drop_contains or []
         self.where_stacking_limit = where_stacking_limit
@@ -550,6 +560,10 @@ class DeepFeatureSynthesis(object):
         if max_depth is not None:
             new_max_depth = max_depth - 1
 
+        # Keep track of features to add until the end to avoid applying
+        # transform primitives to features that were also built by transform primitives
+        features_to_add = []
+
         for trans_prim in self.trans_primitives:
             current_options = self.primitive_options.get(
                 trans_prim,
@@ -570,11 +584,11 @@ class DeepFeatureSynthesis(object):
                                                         require_direct_input=require_direct_input)
 
             for matching_input in matching_inputs:
-                if all(bf.number_output_features == 1 for bf in matching_input):
+                if (all(bf.number_output_features == 1 for bf in matching_input) and
+                        check_transform_stacking(matching_input)):
                     new_f = TransformFeature(matching_input,
                                              primitive=trans_prim)
-                    self._handle_new_feature(all_features=all_features,
-                                             new_feature=new_f)
+                    features_to_add.append(new_f)
 
         for groupby_prim in self.groupby_trans_primitives:
             current_options = self.primitive_options.get(
@@ -609,7 +623,8 @@ class DeepFeatureSynthesis(object):
             # groupby, and don't create features of inputs/groupbys which are
             # all direct features with the same relationship path
             for matching_input in matching_inputs:
-                if all(bf.number_output_features == 1 for bf in matching_input):
+                if (all(bf.number_output_features == 1 for bf in matching_input) and
+                        check_transform_stacking(matching_input)):
                     for groupby in groupby_matches:
                         if require_direct_input and (
                             _all_direct_and_same_path(matching_input + (groupby,)) or
@@ -620,8 +635,10 @@ class DeepFeatureSynthesis(object):
                         new_f = GroupByTransformFeature(list(matching_input),
                                                         groupby=groupby[0],
                                                         primitive=groupby_prim)
-                        self._handle_new_feature(all_features=all_features,
-                                                 new_feature=new_f)
+                        features_to_add.append(new_f)
+        for new_f in features_to_add:
+            self._handle_new_feature(all_features=all_features,
+                                     new_feature=new_f)
 
     def _build_forward_features(self, all_features, relationship_path, max_depth=0):
         _, relationship = relationship_path[0]
@@ -791,8 +808,20 @@ class DeepFeatureSynthesis(object):
             # features with the same relationship_path.
             matching_inputs = {inputs for inputs in matching_inputs
                                if not _all_direct_and_same_path(inputs)}
-        matching_inputs = filter_matches_by_options(matching_inputs, primitive_options)
+        matching_inputs = filter_matches_by_options(matching_inputs,
+                                                    primitive_options,
+                                                    commutative=primitive.commutative)
         return matching_inputs
+
+
+def check_transform_stacking(inputs):
+    # Avoid transform stacking when building from direct features
+    for f in inputs:
+        if isinstance(f.primitive, TransformPrimitive):
+            return False
+        if isinstance(f, DirectFeature) and isinstance(f.base_features[0].primitive, TransformPrimitive):
+            return False
+    return True
 
 
 def check_stacking(primitive, inputs):

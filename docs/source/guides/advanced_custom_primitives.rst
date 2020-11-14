@@ -8,9 +8,9 @@ Functions With Additional Arguments
 
     import featuretools as ft
     from featuretools.primitives import make_trans_primitive
-    from featuretools.variable_types import Text, Numeric, Categorical
+    from featuretools.variable_types import NaturalLanguage, Numeric, Categorical
 
-One caveat with the make\_primitive functions is that the required arguments of ``function`` must be input features.  Here we create a function for ``StringCount``, a primitive which counts the number of occurrences of a string in a ``Text`` input.  Since ``string`` is not a feature, it needs to be a keyword argument to ``string_count``.
+One caveat with the make\_primitive functions is that the required arguments of ``function`` must be input features.  Here we create a function for ``StringCount``, a primitive which counts the number of occurrences of a string in a ``NaturalLanguage`` input.  Since ``string`` is not a feature, it needs to be a keyword argument to ``string_count``.
 
 .. ipython:: python
 
@@ -34,7 +34,7 @@ Now that we have the function, we create the primitive using the ``make_trans_pr
 .. ipython:: python
 
     StringCount = make_trans_primitive(function=string_count,
-                                       input_types=[Text],
+                                       input_types=[NaturalLanguage],
                                        return_type=Numeric,
                                        cls_attributes={"generate_name": string_count_generate_name})
 
@@ -63,7 +63,7 @@ Features with Multiple Outputs
     import numpy as np
     import re
     from featuretools.primitives import make_trans_primitive
-    from featuretools.variable_types import Text, Numeric
+    from featuretools.variable_types import NaturalLanguage, Numeric
 
 With the ``make_primitive`` functions, it is possible to have multiple columns output from a single feature. In order to do that, the output must be formatted as a list of arrays/series where each item in the list corresponds to an output from the primitive. In each of these list items (either arrays or series), there must be one element for each input element.
 
@@ -84,7 +84,7 @@ We must use the ``num_output_features`` attribute to specify the number of outpu
 .. ipython:: python
 
     CaseCount = make_trans_primitive(function=case_count,
-                                       input_types=[Text],
+                                       input_types=[NaturalLanguage],
                                        return_type=Numeric,
                                        number_output_features=2)
 
@@ -110,9 +110,9 @@ When we call ``dfs`` on this entityset, there are 6 instances (one for each of t
 ..     from featuretools.primitives import TransformPrimitive
 
 ..     class Sentiment(TransformPrimitive):
-..         '''Reads in a text field and returns "negative", "neutral", or "positive"'''
+..         '''Reads in a NaturalLanguage field and returns "negative", "neutral", or "positive"'''
 ..         name = "sentiment"
-..         input_types = [Text]
+..         input_types = [NaturalLanguage]
 ..         return_type = Categorical
 ..         def get_function(self):
 ..             filepath = self.get_filepath('sentiment_model.pickle') # returns absolute path to the file

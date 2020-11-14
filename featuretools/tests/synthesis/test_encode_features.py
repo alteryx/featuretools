@@ -60,21 +60,27 @@ def test_inplace_encodes_features(pd_es):
 def test_to_encode_features(pd_es):
     f1 = IdentityFeature(pd_es["log"]["product_id"])
     f2 = IdentityFeature(pd_es["log"]["value"])
+    f3 = IdentityFeature(pd_es["log"]["datetime"])
 
-    features = [f1, f2]
+    features = [f1, f2, f3]
     feature_matrix = calculate_feature_matrix(features, pd_es, instance_ids=[0, 1, 2, 3, 4, 5])
 
     feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features)
     feature_matrix_encoded_shape = feature_matrix_encoded.shape
 
-    # to_encode should keep product_id as a string, and not create 3 additional columns
+    # to_encode should keep product_id as a string and datetime as a date,
+    # and not have the same shape as previous encoded matrix due to fewer encoded features
     to_encode = []
     feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, to_encode=to_encode)
     assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
+    assert feature_matrix_encoded['datetime'].dtype == "datetime64[ns]"
+    assert feature_matrix_encoded['product_id'].dtype == "object"
 
     to_encode = ['value']
     feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, to_encode=to_encode)
     assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
+    assert feature_matrix_encoded['datetime'].dtype == "datetime64[ns]"
+    assert feature_matrix_encoded['product_id'].dtype == "object"
 
 
 def test_encode_features_handles_pass_columns(pd_es):
@@ -208,3 +214,19 @@ def test_encode_features_handles_dictionary_input(pd_es):
     assert len(features_encoded) == 8
     for col in true_values:
         assert col in list(feature_matrix_encoded.columns)
+
+
+def test_encode_features_matches_calculate_feature_matrix():
+    df = pd.DataFrame({'category': ['b', 'c', 'd', 'e']})
+
+    pd_es = EntitySet('test')
+    pd_es.entity_from_dataframe(
+        entity_id='a', dataframe=df, index='index', make_index=True)
+    features, feature_defs = dfs(entityset=pd_es, target_entity='a')
+
+    features_enc, feature_defs_enc = encode_features(features, feature_defs, to_encode=['category'])
+
+    features_calc = calculate_feature_matrix(feature_defs_enc, entityset=pd_es)
+
+    assert features_enc['category = e'].dtypes == bool
+    assert features_enc['category = e'].dtypes == features_calc['category = e'].dtypes

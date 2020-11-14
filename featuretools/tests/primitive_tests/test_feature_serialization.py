@@ -38,7 +38,7 @@ from featuretools.variable_types import Numeric
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_feature_serialization_feature_schema_5.0.0_entityset_schema_4.0.0.json"
+TEST_FILE = "test_feature_serialization_feature_schema_6.0.0_entityset_schema_5.1.0.json"
 S3_URL = "s3://featuretools-static/" + TEST_FILE
 URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
 TEST_CONFIG = "CheckConfigPassesOn"
@@ -238,15 +238,12 @@ def test_deserialize_features_s3(pd_es, url, profile_name):
     trans_primitives = [Day, Year, Month, Weekday, Haversine, NumWords,
                         NumCharacters]
 
-    features_original = sorted(ft.dfs(target_entity='sessions',
-                                      entityset=pd_es,
-                                      features_only=True,
-                                      agg_primitives=agg_primitives,
-                                      trans_primitives=trans_primitives),
-                               key=lambda x: x.unique_name())
-    features_deserialized = sorted(ft.load_features(url,
-                                                    profile_name=profile_name),
-                                   key=lambda x: x.unique_name())
+    features_original = ft.dfs(target_entity='sessions',
+                               entityset=pd_es,
+                               features_only=True,
+                               agg_primitives=agg_primitives,
+                               trans_primitives=trans_primitives)
+    features_deserialized = ft.load_features(url, profile_name=profile_name)
     assert_features(features_original, features_deserialized)
 
 
