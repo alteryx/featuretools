@@ -11,10 +11,9 @@ Discussion
 Conversation happens in the following places:
 
 1.  **General usage questions** are directed to `StackOverflow`_ with the #featuretools tag.
-2.  **Feature requests** can be made on the `Feature Request Board <http://feedback.featurelabs.com>`__.
-3.  **Bug reports** are managed on the `GitHub issue
+2.  **Bug reports** are managed on the `GitHub issue
     tracker`_.
-4.  **Chat** and collaboration within the community occurs on `Slack`_. For general usage questions, please post on
+3.  **Chat** and collaboration within the community occurs on `Slack`_. For general usage questions, please post on
     Stack Overflow where answers are more searchable by other users.
 
 .. _`StackOverflow`: http://stackoverflow.com/questions/tagged/featuretools
