@@ -166,7 +166,7 @@ def read_entity_data(description, path):
     if entity_type == 'koalas':
         for col, dtype in dtypes.items():
             if dtype == 'object':
-                dtypes[col] = 'string'
+                dtypes[col] = 'str'
             if dtype == 'datetime64[ns]':
                 dtypes[col] = np.datetime64
     dataframe = dataframe.astype(dtypes)
