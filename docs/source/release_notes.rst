@@ -16,6 +16,7 @@ Release Notes
         * Update links to repo in documentation to use alteryx org url (:pr:`1224`)
     * Testing Changes
         * Update release notes check to use new repo url (:pr:`1222`)
+        * Use new version of pull request Github Action (:pr:`1234`)
 
     Thanks to the following people for contributing to this release:
     :user:`frances-h`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`, :user:`thehomebrewnerd`
