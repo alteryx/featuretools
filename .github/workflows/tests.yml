@@ -3,7 +3,7 @@ on:
   pull_request:
     types: [opened]
 
-name: Integration Tests
+name: Tests
 jobs:
   build_docs:
     name: ${{ matrix.python_version }} build docs
