@@ -199,7 +199,7 @@ jobs:
           pytest featuretools/ -n 2 --cov=featuretools --cov-config=../.coveragerc
           cd ../
           cp unpacked_sdist/.coverage .coverage
-          codecov --required --token ${{ secrets.CODECOV_TOKEN }}
+          codecov --required
 
   win_unit_tests:
     name: ${{ matrix.python_version }} windows unit tests
