@@ -31,7 +31,7 @@ installdeps:
 .PHONY: checkdeps
 checkdeps:
 	$(eval allow_list='scipy|numpy|pandas|tqdm|pyyaml|cloudpickle|distributed|dask|psutil|click|pyspark|koalas')
-	pip freeze | grep -v "FeatureLabs/featuretools.git" | grep -E $(allow_list) > $(OUTPUT_PATH)
+	pip freeze | grep -v "alteryx/featuretools.git" | grep -E $(allow_list) > $(OUTPUT_PATH)
 
 .PHONY: package_featuretools
 package_featuretools:
