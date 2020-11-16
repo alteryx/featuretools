@@ -13,6 +13,7 @@ Release Notes
     * Documentation Changes
         * Removed link to unused feedback board (:pr:`1220`)
         * Update footer with Alteryx Innovation Labs (:pr:`1221`)
+        * Update links to repo in documentation to use alteryx org url (:pr:`1224`)
     * Testing Changes
         * Update release notes check to use new repo url (:pr:`1222`)
 
