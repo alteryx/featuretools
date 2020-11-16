@@ -99,7 +99,7 @@ jobs:
         run: |
           from os.path import basename
           from re import compile
-          main = '^main?'
+          main = '^main$'
           release = '^v\d+\.\d+\.\d+$'
           dep_update = '^dep-update-[a-f0-9]{7}$'
           regex = main, release, dep_update
@@ -132,7 +132,7 @@ jobs:
         run: |
           from os.path import basename
           from re import compile
-          main = compile('^main?')
+          main = compile('^main$')
           release = compile('^v\d+\.\d+\.\d+$')
           ref = basename("${{ github.event.ref }}")
           is_main = str(bool(main.match(ref)))
