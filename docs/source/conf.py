@@ -151,7 +151,7 @@ html_theme = 'pydata_sphinx_theme'
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    "github_url": "https://github.com/FeatureLabs/featuretools",
+    "github_url": "https://github.com/alteryx/featuretools",
     "twitter_url": "https://twitter.com/featuretools_py"
 }
 
@@ -329,8 +329,8 @@ texinfo_documents = [
 nbsphinx_execute = 'auto'
 
 extlinks = {
-    'issue': ('https://github.com/FeatureLabs/featuretools/issues/%s', 'GH#'),
-    'pr': ('https://github.com/FeatureLabs/featuretools/pull/%s', 'GH#'),
+    'issue': ('https://github.com/alteryx/featuretools/issues/%s', 'GH#'),
+    'pr': ('https://github.com/alteryx/featuretools/pull/%s', 'GH#'),
     'user': ('https://github.com/%s', '@')
 }
 
