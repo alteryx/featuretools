@@ -9,7 +9,7 @@ Release Notes
         * Add ability to add feature description captions to feature lineage graphs (:pr:`1212`)
         * Add support for local tar file in read_entityset (:pr:`1228`)
     * Fixes
-        * Pin koalas requirement to avoid unit test errors from koalas 1.4 (:pr:`1230`)
+        * Updates to fix unit test errors from koalas 1.4 (:pr:`1230`, :pr:`1232`)
     * Changes
     * Documentation Changes
         * Removed link to unused feedback board (:pr:`1220`)
@@ -19,7 +19,7 @@ Release Notes
         * Update release notes check to use new repo url (:pr:`1222`)
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`
+    :user:`frances-h`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.21.0 Oct 30, 2020**
     * Enhancements
