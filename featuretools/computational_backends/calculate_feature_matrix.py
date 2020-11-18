@@ -433,7 +433,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                                                training_window=window,
                                                include_cutoff_time=include_cutoff_time)
 
-                if is_instance(_feature_matrix, (dd, ks), 'DataFrame'):
+                if is_instance(_feature_matrix, (dd, ks, cudf), 'DataFrame'):
                     id_name = _feature_matrix.columns[-1]
                 else:
                     id_name = _feature_matrix.index.name

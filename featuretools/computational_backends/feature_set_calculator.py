@@ -696,8 +696,15 @@ class FeatureSetCalculator(object):
             # Apply the aggregate functions to generate a new dataframe, and merge
             # it with the existing one
             if len(to_agg):
-                if is_instance(base_frame, (dd, ks, cudf), 'DataFrame'):
+                if is_instance(base_frame, (dd, ks), 'DataFrame'):
                     to_merge = base_frame.groupby(groupby_var).agg(to_agg)
+                
+                # TODO: added like this because of dropna=False
+                # ay be add back
+                elif is_instance(base_frame, (cudf), 'DataFrame'):
+                    to_merge = base_frame.groupby(groupby_var,sort=False,
+                                                  dropna=False).agg(to_agg)
+                    print(to_merge)
 
                 else:
                     to_merge = base_frame.groupby(base_frame[groupby_var],
@@ -714,9 +721,12 @@ class FeatureSetCalculator(object):
 
                 if is_instance(frame, (dd, ks, cudf), 'DataFrame'):
                     frame = frame.merge(to_merge, left_on=parent_merge_var, right_index=True, how='left')
+                    
                 else:
                     frame = pd.merge(left=frame, right=to_merge,
                                      left_index=True, right_index=True, how='left')
+                
+                print('null count burea',frame['COUNT(bureau)'].isna().sum())
 
                 # determine number of features that were just merged
                 progress_callback(len(to_merge.columns) / float(self.num_features))
@@ -729,10 +739,11 @@ class FeatureSetCalculator(object):
             fillna_dict.update(feature_defaults)
 
         # TODO: Clean way for this call
-        for c, v in fillna_dict.items():
-            if v is np.nan:
-                if frame[c].dtype in [np.int32, np.int64]:
-                    fillna_dict[c] = None
+        if isinstance(frame, cudf.DataFrame):
+            for c, v in fillna_dict.items():
+                if v is np.nan:
+                    if frame[c].dtype in [np.int32, np.int64]:
+                        fillna_dict[c] = None
 
         frame = frame.fillna(fillna_dict)
 
