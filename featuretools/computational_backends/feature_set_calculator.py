@@ -550,7 +550,7 @@ class FeatureSetCalculator(object):
 
         # merge the identity feature from the parent entity into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
-        if is_instance(merge_df, (dd, ks), 'DataFrame'):
+        if is_instance(merge_df, (dd, ks, cudf), 'DataFrame'):
             new_df = child_df.merge(merge_df, left_on=merge_var, right_on=merge_var,
                                     how='left')
         else:
