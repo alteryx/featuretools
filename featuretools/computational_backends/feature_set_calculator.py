@@ -696,6 +696,10 @@ class FeatureSetCalculator(object):
             # Apply the aggregate functions to generate a new dataframe, and merge
             # it with the existing one
             if len(to_agg):
+                # groupby_var can be both the name of the index and a column,
+                # to silence pandas warning about ambiguity we explicitly pass
+                # the column (in actuality grouping by both index and group would
+                # work)
                 if is_instance(base_frame, (dd, ks), 'DataFrame'):
                     to_merge = base_frame.groupby(groupby_var).agg(to_agg)
                 
