@@ -198,7 +198,7 @@ jobs:
           coverage erase
           pytest featuretools/ -n 2 --cov=featuretools --cov-config=../.coveragerc --cov-report=xml
       - if: ${{ matrix.python_version == 3.6 && matrix.optional_libraries == 'optional' }}
-      - name: Upload coverage to Codecov
+        name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
           file: ./unpacked_sdist/coverage.xml
