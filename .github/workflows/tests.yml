@@ -196,10 +196,14 @@ jobs:
           coverage erase
           cd unpacked_sdist/
           coverage erase
-          pytest featuretools/ -n 2 --cov=featuretools --cov-config=../.coveragerc
-          cd ../
-          cp unpacked_sdist/.coverage .coverage
-          codecov --required
+          pytest featuretools/ -n 2 --cov=featuretools --cov-config=../.coveragerc --cov-report=xml
+      - if: ${{ matrix.python_version == 3.6 && matrix.optional_libraries == 'optional' }}
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          file: ./unpacked_sdist/coverage.xml
+          fail_ci_if_error: true
+          verbose: true
 
   win_unit_tests:
     name: ${{ matrix.python_version }} windows unit tests
