@@ -706,9 +706,7 @@ class FeatureSetCalculator(object):
                 # TODO: added like this because of dropna=False
                 # ay be add back
                 elif is_instance(base_frame, (cudf), 'DataFrame'):
-                    to_merge = base_frame.groupby(groupby_var,sort=False,
-                                                  dropna=False).agg(to_agg)
-                    print(to_merge)
+                    to_merge = base_frame.groupby(groupby_var,sort=False).agg(to_agg)
 
                 else:
                     to_merge = base_frame.groupby(base_frame[groupby_var],
@@ -730,7 +728,6 @@ class FeatureSetCalculator(object):
                     frame = pd.merge(left=frame, right=to_merge,
                                      left_index=True, right_index=True, how='left')
                 
-                print('null count burea',frame['COUNT(bureau)'].isna().sum())
 
                 # determine number of features that were just merged
                 progress_callback(len(to_merge.columns) / float(self.num_features))
