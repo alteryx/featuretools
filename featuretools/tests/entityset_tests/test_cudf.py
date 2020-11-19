@@ -1,10 +1,10 @@
 import featuretools as ft
 import pandas as pd
 import dask.dataframe as dd
-import cudf
+from featuretools.utils.gen_utils import import_or_none
+cudf = import_or_none('cudf')
 
 #TODO:Add null count test for groupby agg and fillna
-
 def test_cudf_basic():
     id = [0, 1, 2, 3, 4]
     values = [12, -35, 14, 103, -51]
@@ -24,6 +24,3 @@ def test_cudf_basic():
                                     target_entity="cudf_entity",
                                     trans_primitives=["negate"])
 
-
-
-test_cudf_basic()
