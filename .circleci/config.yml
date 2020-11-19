@@ -72,7 +72,7 @@ jobs:
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate featuretools
-              python -m pip install --upgrade pip
+              python -m pip install pip==0.23.b1
               python -m pip install .
               python -m pip install -r test-requirements.txt
       - run:
@@ -100,7 +100,7 @@ jobs:
           virtualenv venv
           source venv/bin/activate
           python -m pip config --site set global.progress_bar off
-          python -m pip install --upgrade pip
+          python -m pip install pip==0.23.b1
       - when:
           condition:
             equal: [ "optional", << parameters.optional_libraries >> ]
@@ -249,6 +249,7 @@ jobs:
           virtualenv venv
           source venv/bin/activate
           python -m pip config --site set global.progress_bar off
+          python -m pip install pip==0.23.b1
           python -m pip install -e unpacked_sdist/[complete]
       - run:
           command: |
