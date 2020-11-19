@@ -17,6 +17,7 @@ Release Notes
     * Testing Changes
         * Update release notes check to use new repo url (:pr:`1222`)
         * Use new version of pull request Github Action (:pr:`1234`)
+        * Upgrade pip during featuretools[complete] test (:pr:`1236`)
 
     Thanks to the following people for contributing to this release:
     :user:`frances-h`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`, :user:`thehomebrewnerd`
