@@ -696,6 +696,7 @@ class FeatureSetCalculator(object):
             # Apply the aggregate functions to generate a new dataframe, and merge
             # it with the existing one
             if len(to_agg):
+
                 # groupby_var can be both the name of the index and a column,
                 # to silence pandas warning about ambiguity we explicitly pass
                 # the column (in actuality grouping by both index and group would
@@ -703,11 +704,10 @@ class FeatureSetCalculator(object):
                 if is_instance(base_frame, (dd, ks), 'DataFrame'):
                     to_merge = base_frame.groupby(groupby_var).agg(to_agg)
                 
-                # TODO: added like this because of dropna=False
-                # ay be add back
+                # TODO: Added because of
+                # https://github.com/rapidsai/cudf/issues/6810
                 elif is_instance(base_frame, (cudf), 'DataFrame'):
-                    to_merge = base_frame.groupby(groupby_var,sort=False).agg(to_agg)
-
+                    to_merge = base_frame.nans_to_nulls().groupby(groupby_var,sort=False).agg(to_agg)
                 else:
                     to_merge = base_frame.groupby(base_frame[groupby_var],
                                                   observed=True, sort=False).agg(to_agg)
@@ -723,11 +723,12 @@ class FeatureSetCalculator(object):
 
                 if is_instance(frame, (dd, ks, cudf), 'DataFrame'):
                     frame = frame.merge(to_merge, left_on=parent_merge_var, right_index=True, how='left')
+
+
                     
                 else:
                     frame = pd.merge(left=frame, right=to_merge,
                                      left_index=True, right_index=True, how='left')
-                
 
                 # determine number of features that were just merged
                 progress_callback(len(to_merge.columns) / float(self.num_features))
