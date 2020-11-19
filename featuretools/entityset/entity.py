@@ -4,7 +4,6 @@ import warnings
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
-import cudf
 import pandas.api.types as pdtypes
 
 from featuretools import variable_types as vtypes
@@ -24,7 +23,7 @@ from featuretools.utils.wrangle import (
 from featuretools.variable_types import Text, find_variable_types
 
 ks = import_or_none('databricks.koalas')
-
+cudf = import_or_none('cudf')
 logger = logging.getLogger('featuretools.entityset')
 
 _numeric_types = vtypes.PandasTypes._pandas_numerics

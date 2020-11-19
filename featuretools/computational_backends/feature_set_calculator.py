@@ -23,9 +23,8 @@ from featuretools.utils.gen_utils import (
     import_or_none,
     is_instance
 )
-import cudf
-
 ks = import_or_none('databricks.koalas')
+cudf = import_or_none('cudf')
 
 
 class FeatureSetCalculator(object):
@@ -723,8 +722,6 @@ class FeatureSetCalculator(object):
 
                 if is_instance(frame, (dd, ks, cudf), 'DataFrame'):
                     frame = frame.merge(to_merge, left_on=parent_merge_var, right_index=True, how='left')
-
-
                     
                 else:
                     frame = pd.merge(left=frame, right=to_merge,

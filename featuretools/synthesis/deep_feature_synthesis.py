@@ -2,7 +2,6 @@ import logging
 from collections import defaultdict
 
 from dask import dataframe as dd
-import cudf
 
 from featuretools import primitives, variable_types
 from featuretools.entityset.relationship import RelationshipPath
@@ -28,7 +27,7 @@ from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.variable_types import Boolean, Discrete, Id, Numeric
 
 ks = import_or_none('databricks.koalas')
-
+cudf = import_or_none('cudf')
 logger = logging.getLogger('featuretools')
 
 

@@ -34,9 +34,9 @@ from featuretools.utils.gen_utils import (
 )
 from featuretools.variable_types import NumericTimeIndex
 
-import cudf
-ks = import_or_none('databricks.koalas')
 
+ks = import_or_none('databricks.koalas')
+cudf = import_or_none('cudf')
 logger = logging.getLogger('featuretools.computational_backend')
 
 PBAR_FORMAT = "Elapsed: {elapsed} | Progress: {l_bar}{bar}"
