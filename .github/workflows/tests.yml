@@ -243,4 +243,6 @@ jobs:
           python -m pip install .
           python -m pip install -r test-requirements.txt
       - name: Run unit tests
-        run: pytest featuretools\ -n 2
+        run: |
+          conda activate featuretools
+          pytest featuretools\ -n 2
