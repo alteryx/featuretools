@@ -32,7 +32,7 @@ class IsNull(TransformPrimitive):
     name = "is_null"
     input_types = [Variable]
     return_type = Boolean
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "whether {} is null"
 
     def get_function(self):
@@ -52,7 +52,7 @@ class Absolute(TransformPrimitive):
     name = "absolute"
     input_types = [Numeric]
     return_type = Numeric
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "the absolute value of {}"
 
     def get_function(self):
@@ -112,7 +112,7 @@ class Day(TransformPrimitive):
     name = "day"
     input_types = [Datetime]
     return_type = Ordinal
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "the day of the month of {}"
 
     def get_function(self):
@@ -136,7 +136,7 @@ class Hour(TransformPrimitive):
     name = "hour"
     input_types = [Datetime]
     return_type = Ordinal
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = 'the hour value of {}'
 
     def get_function(self):
@@ -160,7 +160,7 @@ class Second(TransformPrimitive):
     name = "second"
     input_types = [Datetime]
     return_type = Numeric
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "the seconds value of {}"
 
     def get_function(self):
@@ -184,7 +184,7 @@ class Minute(TransformPrimitive):
     name = "minute"
     input_types = [Datetime]
     return_type = Numeric
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "the minutes value of {}"
 
     def get_function(self):
@@ -213,7 +213,7 @@ class Week(TransformPrimitive):
     name = "week"
     input_types = [Datetime]
     return_type = Ordinal
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "the week of the year of {}"
 
     def get_function(self):
@@ -242,7 +242,7 @@ class Month(TransformPrimitive):
     name = "month"
     input_types = [Datetime]
     return_type = Ordinal
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "the month of {}"
 
     def get_function(self):
@@ -266,7 +266,7 @@ class Year(TransformPrimitive):
     name = "year"
     input_types = [Datetime]
     return_type = Ordinal
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "the year of {}"
 
     def get_function(self):
@@ -290,7 +290,7 @@ class IsWeekend(TransformPrimitive):
     name = "is_weekend"
     input_types = [Datetime]
     return_type = Boolean
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "whether {} occurred on a weekend"
 
     def get_function(self):
@@ -318,7 +318,7 @@ class Weekday(TransformPrimitive):
     name = "weekday"
     input_types = [Datetime]
     return_type = Ordinal
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "the day of the week of {}"
 
     def get_function(self):
@@ -340,7 +340,7 @@ class NumCharacters(TransformPrimitive):
     name = 'num_characters'
     input_types = [NaturalLanguage]
     return_type = Numeric
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "the number of characters in {}"
 
     def get_function(self):
@@ -363,7 +363,7 @@ class NumWords(TransformPrimitive):
     name = 'num_words'
     input_types = [NaturalLanguage]
     return_type = Numeric
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "the number of words in {}"
 
     def get_function(self):
@@ -431,7 +431,7 @@ class IsIn(TransformPrimitive):
     name = "isin"
     input_types = [Variable]
     return_type = Boolean
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
 
     def __init__(self, list_of_outputs=None):
         self.list_of_outputs = list_of_outputs
@@ -513,7 +513,7 @@ class Not(TransformPrimitive):
     name = "not"
     input_types = [Boolean]
     return_type = Boolean
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "the negation of {}"
 
     def generate_name(self, base_feature_names):
@@ -686,7 +686,7 @@ class Age(TransformPrimitive):
     input_types = [DateOfBirth]
     return_type = Numeric
     uses_calc_time = True
-    compatibility = [Library.PANDAS, Library.DASK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.CUDF]
     description_template = "the age from {}"
 
     def get_function(self):

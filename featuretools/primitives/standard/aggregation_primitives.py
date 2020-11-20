@@ -481,7 +481,7 @@ class Std(AggregationPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     stack_on_self = False
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "the standard deviation of {}"
 
     def get_function(self, agg_type=Library.PANDAS):

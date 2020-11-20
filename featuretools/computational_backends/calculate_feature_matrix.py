@@ -186,12 +186,9 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
         if isinstance(instance_ids, dd.Series):
             instance_ids = instance_ids.compute()
-        elif is_instance(instance_ids, ks, 'Series'):
+        elif is_instance(instance_ids, (ks, cudf), 'Series'):
+            # TODO: Check if below has computational issues
             instance_ids = instance_ids.to_pandas()
-        elif isinstance(instance_ids, cudf.Series):
-            #TODO: Check if below has computational issues
-            instance_ids = instance_ids.to_pandas()
-
         # convert list or range object into series
         if not isinstance(instance_ids, pd.Series):
             instance_ids = pd.Series(instance_ids)
