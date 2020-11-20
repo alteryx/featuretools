@@ -2,7 +2,6 @@ import json
 import os
 import tarfile
 import tempfile
-from pathlib import Path
 
 import dask.dataframe as dd
 import numpy as np
@@ -12,7 +11,7 @@ from featuretools.entityset.relationship import Relationship
 from featuretools.entityset.serialize import FORMATS
 from featuretools.utils.gen_utils import check_schema_version, import_or_raise
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
-from featuretools.utils.wrangle import _is_s3, _is_url
+from featuretools.utils.wrangle import _is_local_tar, _is_s3, _is_url
 from featuretools.variable_types import LatLong, find_variable_types
 
 
@@ -225,27 +224,22 @@ def read_entityset(path, profile_name=None, **kwargs):
                 Set to False to use an anonymous profile.
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
     '''
-    if _is_url(path) or _is_s3(path):
+    if _is_url(path) or _is_s3(path) or _is_local_tar(str(path)):
         with tempfile.TemporaryDirectory() as tmpdir:
-            file_name = Path(path).name
-            file_path = os.path.join(tmpdir, file_name)
+            local_path = path
             transport_params = None
 
             if _is_s3(path):
                 transport_params = get_transport_params(profile_name)
 
-            use_smartopen_es(file_path, path, transport_params)
-            with tarfile.open(str(file_path)) as tar:
+            if _is_s3(path) or _is_url(path):
+                local_path = os.path.join(tmpdir, "temporary_es")
+                use_smartopen_es(local_path, path, transport_params)
+
+            with tarfile.open(str(local_path)) as tar:
                 tar.extractall(path=tmpdir)
 
             data_description = read_data_description(tmpdir)
-            return description_to_entityset(data_description, **kwargs)
-    elif str(path).endswith(".tar") and tarfile.is_tarfile(str(path)):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            file_path = os.path.join(tmpdir, "temporary_es")
-            with tarfile.open(str(path)) as tar:
-                tar.extractall(path=file_path)
-            data_description = read_data_description(file_path)
             return description_to_entityset(data_description, **kwargs)
     else:
         data_description = read_data_description(path)

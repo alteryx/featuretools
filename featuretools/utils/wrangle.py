@@ -1,4 +1,5 @@
 import re
+import tarfile
 from datetime import datetime
 
 import numpy as np
@@ -168,3 +169,11 @@ def _is_url(string):
     Returns a boolean.
     '''
     return 'http' in string
+
+
+def _is_local_tar(string):
+    '''
+    Checks if the given string is a local tarfile path.
+    Returns a boolean.
+    '''
+    return string.endswith(".tar") and tarfile.is_tarfile(string)
