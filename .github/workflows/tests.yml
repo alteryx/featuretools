@@ -111,13 +111,14 @@ jobs:
         id: pull_request
         shell: python
         run: |
+          from json import loads
           from os import environ
-          from requests import get
+          from urllib.request import Request, urlopen
           headers = {'Accept': 'application/vnd.github.groot-preview+json'}
-          response = get(url=environ['URL'], headers=headers)
-          info = "%s (%s)" % (response.reason, response.status_code)
-          assert response.status_code == 200, info
-          json = response.json()
+          response = urlopen(Request(environ['URL'], headers=headers))
+          info = "%s (%s)" % (response.reason, response.status)
+          assert response.status == 200, info
+          json = loads(response.read().decode('utf-8'))
           number = str(json[0]['number'] if json else None)
           print('::set-output name=number::' + number)
         env:
