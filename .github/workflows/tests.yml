@@ -211,16 +211,32 @@ jobs:
       matrix:
         python_version: ["3.6", "3.7", "3.8"]
     steps:
-      - name: Setup miniconda
-        uses: conda-incubator/setup-miniconda@v2.0.0
-        with:
-          auto-update-conda: true
-          python-version: ${{ matrix.python_version }}
+      - name: Download miniconda
+        shell: pwsh
+        run: |
+          $File = "Miniconda3-4.7.12.1-Windows-x86_64.exe"
+          $Uri = "https://repo.anaconda.com/miniconda/$File"
+          $ProgressPreference = "silentlyContinue"
+          Invoke-WebRequest -Uri $Uri -Outfile $env:USERPROFILE/$File
+          $hashFromFile = Get-FileHash "$file" -Algorithm SHA256
+          $hashFromUrl = "f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45"
+          if ($hashFromFile.Hash -ne "$hashFromUrl") {
+            Throw "File hashes did not match!"
+          }
+      - name: Install miniconda
+        shell: cmd
+        run: start /wait %UserProfile%\Miniconda3-4.7.12.1-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /S /D=%UserProfile%\Miniconda3
+      - name: Create python ${{ matrix.python_version }} environment
+        shell: pwsh
+        run: |
+          $env:USERPROFILE/Miniconda3/shell/condabin/conda-hook.ps1
+          conda create -n featuretools python=${{ matrix.python_version }}
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Install featuretools with test requirements
         shell: pwsh
         run: |
+          conda activate featuretools
           conda config --add channels conda-forge
           conda install python-graphviz -q -y
           python -m pip install --upgrade pip
