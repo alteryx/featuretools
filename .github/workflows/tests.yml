@@ -107,18 +107,25 @@ jobs:
           ref = basename("${{ github.event.ref }}")
           is_dev = not any(pattern.match(ref) for pattern in patterns)
           print('::set-output name=is_dev::' + str(is_dev))
-      - if: ${{ steps.branch.outputs.is_dev == 'True' }}
+      - name: Check for pull request number
+        id: pull_request
+        shell: python
+        run: |
+          from os import environ
+          from requests import get
+          headers = {'Accept': 'application/vnd.github.groot-preview+json'}
+          response = get(url=environ['URL'], headers=headers)
+          info = "%s (%s)" % (response.reason, response.status_code)
+          assert response.status_code == 200, info
+          json = response.json()
+          number = str(json[0]['number'] if json else None)
+          print('::set-output name=number::' + number)
+        env:
+          URL: https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/pulls
+      - if: ${{ steps.branch.outputs.is_dev == 'True' && steps.pull_request.outputs.number != 'None' }}
         name: Checkout repository
         uses: actions/checkout@v2
-      - if: ${{ steps.branch.outputs.is_dev == 'True' }}
-        name: Get number of pull request
-        id: pull_request
-        run: |
-          url=https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/pulls
-          json=$(curl -H "Accept: application/vnd.github.groot-preview+json" $url)
-          number=$(echo $json | jq '.[0].number')
-          echo "::set-output name=number::$number"
-      - if: ${{ steps.pull_request.outputs.number != 'null' }}
+      - if: ${{ steps.branch.outputs.is_dev == 'True' && steps.pull_request.outputs.number != 'None' }}
         name: Check if release notes were updated
         run: cat docs/source/release_notes.rst | grep ":pr:\`${{ steps.pull_request.outputs.number }}\`"
 
