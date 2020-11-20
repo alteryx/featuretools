@@ -229,7 +229,7 @@ jobs:
       - name: Create python ${{ matrix.python_version }} environment
         shell: pwsh
         run: |
-          $env:USERPROFILE\Miniconda3\Scripts\conda.exe init
+          & $env:USERPROFILE\Miniconda3\Scripts\conda.exe init
           conda create -n featuretools python=${{ matrix.python_version }}
       - name: Checkout repository
         uses: actions/checkout@v2
