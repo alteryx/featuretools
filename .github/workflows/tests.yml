@@ -236,6 +236,7 @@ jobs:
       - name: Install featuretools with test requirements
         shell: pwsh
         run: |
+          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate featuretools
           conda config --add channels conda-forge
           conda install python-graphviz -q -y
@@ -244,5 +245,6 @@ jobs:
           python -m pip install -r test-requirements.txt
       - name: Run unit tests
         run: |
+          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate featuretools
           pytest featuretools\ -n 2
