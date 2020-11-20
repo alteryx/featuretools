@@ -225,9 +225,7 @@ jobs:
           }
       - name: Install miniconda
         shell: cmd
-        run: |
-          IF EXIST "%UserProfile%\Miniconda3-4.7.12.1-Windows-x86_64.exe" echo file does exist
-          start /wait "%UserProfile%\Miniconda3-4.7.12.1-Windows-x86_64.exe" /InstallationType=JustMe /RegisterPython=0 /S /D="%UserProfile%\Miniconda3"
+        run: start /wait "" %UserProfile%\Miniconda3-4.7.12.1-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /S /D=%UserProfile%\Miniconda3
       - name: Create python ${{ matrix.python_version }} environment
         shell: pwsh
         run: |
