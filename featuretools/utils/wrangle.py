@@ -160,7 +160,7 @@ def _is_s3(string):
     Checks if the given string is a s3 path.
     Returns a boolean.
     '''
-    return "s3://" in string
+    return string.startswith("s3://")
 
 
 def _is_url(string):
@@ -168,7 +168,7 @@ def _is_url(string):
     Checks if the given string is an url path.
     Returns a boolean.
     '''
-    return 'http' in string
+    return string.startswith("http")
 
 
 def _is_local_tar(string):
