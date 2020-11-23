@@ -7,6 +7,7 @@ Release Notes
     * Enhancements
         * Allow variable descriptions to be set directly on variable (:pr:`1207`)
         * Add ability to add feature description captions to feature lineage graphs (:pr:`1212`)
+        * Add support for local tar file in read_entityset (:pr:`1228`)
     * Fixes
         * Updates to fix unit test errors from koalas 1.4 (:pr:`1230`, :pr:`1232`)
     * Changes
