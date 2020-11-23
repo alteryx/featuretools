@@ -32,3 +32,10 @@ installdeps:
 checkdeps:
 	$(eval allow_list='scipy|numpy|pandas|tqdm|pyyaml|cloudpickle|distributed|dask|psutil|click|pyspark|koalas')
 	pip freeze | grep -v "alteryx/featuretools.git" | grep -E $(allow_list) > $(OUTPUT_PATH)
+
+.PHONY: package_featuretools
+package_featuretools:
+	python setup.py sdist
+	$(eval FT_VERSION=$(shell python setup.py --version))
+	tar -zxvf "dist/featuretools-${FT_VERSION}.tar.gz"
+	mv "featuretools-${FT_VERSION}" unpacked_sdist
