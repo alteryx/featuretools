@@ -19,6 +19,7 @@ Release Notes
         * Use new version of pull request Github Action (:pr:`1234`)
         * Upgrade pip during featuretools[complete] test (:pr:`1236`)
         * Migrated CI tests to github actions (:pr:`1226`)
+        * Remove CI tests from CircleCI (:pr:`1237`)
 
     Thanks to the following people for contributing to this release:
     :user:`frances-h`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`thehomebrewnerd`
