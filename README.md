@@ -8,7 +8,7 @@
 
 
 
-[![Circle CI](https://circleci.com/gh/alteryx/featuretools.svg?maxAge=2592000&style=shield)](https://circleci.com/gh/alteryx/featuretools)
+![Tests](https://github.com/alteryx/featuretools/workflows/Tests/badge.svg)
 [![Coverage Status](https://codecov.io/gh/alteryx/featuretools/branch/main/graph/badge.svg)](https://codecov.io/gh/alteryx/featuretools)
 [![PyPI version](https://badge.fury.io/py/featuretools.svg?maxAge=2592000)](https://badge.fury.io/py/featuretools)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/featuretools/badges/version.svg)](https://anaconda.org/conda-forge/featuretools)
