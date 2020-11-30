@@ -22,7 +22,7 @@ jobs:
     - name: Create Pull Request
       uses: FeatureLabs/create-pull-request@v3
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
         commit-message: Update latest_dependencies.txt
         title: Automated Update to latest_dependencies.txt
         author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
