@@ -11,6 +11,17 @@ Release Notes
 
 .. Thanks to the following people for contributing to this release:
 
+**Future Release**
+    * Enhancements
+    * Fixes
+        * Use deploy keys for dependency check (:pr:`1245`:)
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+Thanks to the following people for contributing to this release:
+:user:`jeff-hernandez`
+
 **v0.22.0 Nov 30, 2020**
     * Enhancements
         * Allow variable descriptions to be set directly on variable (:pr:`1207`)
