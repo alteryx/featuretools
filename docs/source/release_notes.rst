@@ -5,8 +5,8 @@ Release Notes
 **Future Release**
     * Enhancements
     * Fixes
-        * Use deploy keys for dependency check (:pr:`1245`:)
     * Changes
+        * Use deploy keys for dependency check (:pr:`1245`:)
     * Documentation Changes
     * Testing Changes
 
