@@ -1,26 +1,527 @@
 import featuretools as ft
 import pandas as pd
 import dask.dataframe as dd
+import pandas as pd
+import pytest
+
+import featuretools as ft
+from featuretools.entityset import EntitySet, Relationship
 from featuretools.utils.gen_utils import import_or_none
+from featuretools.utils.koalas_utils import pd_to_cudf_clean
+
 cudf = import_or_none('cudf')
 
-#TODO:Add null count test for groupby agg and fillna
-def test_cudf_basic():
-    id = [0, 1, 2, 3, 4]
-    values = [12, -35, 14, 103, -51]
+# TODO: Fix vjawa
+@pytest.mark.skipif('not cudf')
+def test_create_entity_from_cudf_df(pd_es):
+    cleaned_df = pd_to_cudf_clean(pd_es["log"].df)
+    log_cudf = cudf.from_pandas(cleaned_df)
+    print(pd_es["log"].variable_types)
+
+    cudf_es = EntitySet(id="cudf_es")
+    cudf_es = cudf_es.entity_from_dataframe(
+        entity_id="log_cudf",
+        dataframe=log_cudf,
+        index="id",
+        time_index="datetime",
+        variable_types=pd_es["log"].variable_types
+    )
+    pd.testing.assert_frame_equal(pd_es["log"].df, cudf_es["log_cudf"].df.to_pandas(), check_like=True)
 
 
-    df = cudf.DataFrame({"id": id, "values": values})
-    es = ft.EntitySet(id="cudf_es")
+@pytest.mark.skipif('not cudf')
+def test_create_entity_with_non_numeric_index(pd_es, cudf_es):
+    df = pd.DataFrame({"id": ["A_1", "A_2", "C", "D"],
+                       "values": [1, 12, -34, 27]})
+    cudf_df = cudf.from_pandas(df)
 
-    es = es.entity_from_dataframe(entity_id="cudf_entity",
+    pd_es.entity_from_dataframe(
+        entity_id="new_entity",
+        dataframe=df,
+        index="id")
+
+    cudf_es.entity_from_dataframe(
+        entity_id="new_entity",
+        dataframe=cudf_df,
+        index="id",
+        variable_types={"id": ft.variable_types.Id, "values": ft.variable_types.Numeric})
+    pd.testing.assert_frame_equal(pd_es['new_entity'].df.reset_index(drop=True), cudf_es['new_entity'].df.to_pandas())
+
+
+@pytest.mark.skipif('not cudf')
+def test_create_entityset_with_mixed_dataframe_types(pd_es, cudf_es):
+    df = pd.DataFrame({"id": [0, 1, 2, 3],
+                       "values": [1, 12, -34, 27]})
+    cudf_df = cudf.from_pandas(df)
+
+    # Test error is raised when trying to add Koalas entity to entitset with existing pandas entities
+    err_msg = "All entity dataframes must be of the same type. " \
+              "Cannot add entity of type {} to an entityset with existing entities " \
+              "of type {}".format(type(cudf_df), type(pd_es.entities[0].df))
+
+    with pytest.raises(ValueError, match=err_msg):
+        pd_es.entity_from_dataframe(
+            entity_id="new_entity",
+            dataframe=cudf_df,
+            index="id")
+
+    # Test error is raised when trying to add pandas entity to entitset with existing cudf entities
+    err_msg = "All entity dataframes must be of the same type. " \
+              "Cannot add entity of type {} to an entityset with existing entities " \
+              "of type {}".format(type(df), type(cudf_es.entities[0].df))
+
+    with pytest.raises(ValueError, match=err_msg):
+        cudf_es.entity_from_dataframe(
+            entity_id="new_entity",
+            dataframe=df,
+            index="id")
+
+
+@pytest.mark.skipif('not cudf')
+def test_add_last_time_indexes():
+    pd_es = EntitySet(id="pd_es")
+    cudf_es = EntitySet(id="cudf_es")
+
+    sessions = pd.DataFrame({"id": [0, 1, 2, 3],
+                             "user": [1, 2, 1, 3],
+                             "time": [pd.to_datetime('2019-01-10'),
+                                      pd.to_datetime('2019-02-03'),
+                                      pd.to_datetime('2019-01-01'),
+                                      pd.to_datetime('2017-08-25')],
+                             "strings": ["I am a string",
+                                         "23",
+                                         "abcdef ghijk",
+                                         ""]})
+    sessions_cudf = cudf.from_pandas(sessions)
+    sessions_vtypes = {
+        "id": ft.variable_types.Id,
+        "user": ft.variable_types.Id,
+        "time": ft.variable_types.DatetimeTimeIndex,
+        "strings": ft.variable_types.NaturalLanguage
+    }
+
+    transactions = pd.DataFrame({"id": [0, 1, 2, 3, 4, 5],
+                                 "session_id": [0, 0, 1, 2, 2, 3],
+                                 "amount": [1.23, 5.24, 123.52, 67.93, 40.34, 50.13],
+                                 "time": [pd.to_datetime('2019-01-10 03:53'),
+                                          pd.to_datetime('2019-01-10 04:12'),
+                                          pd.to_datetime('2019-02-03 10:34'),
+                                          pd.to_datetime('2019-01-01 12:35'),
+                                          pd.to_datetime('2019-01-01 12:49'),
+                                          pd.to_datetime('2017-08-25 04:53')]})
+    transactions_cudf = cudf.from_pandas(transactions)
+    transactions_vtypes = {
+        "id": ft.variable_types.Id,
+        "session_id": ft.variable_types.Id,
+        "amount": ft.variable_types.Numeric,
+        "time": ft.variable_types.DatetimeTimeIndex,
+    }
+
+    pd_es.entity_from_dataframe(entity_id="sessions", dataframe=sessions, index="id", time_index="time")
+    cudf_es.entity_from_dataframe(entity_id="sessions", dataframe=sessions_cudf, index="id", time_index="time", variable_types=sessions_vtypes)
+
+    pd_es.entity_from_dataframe(entity_id="transactions", dataframe=transactions, index="id", time_index="time")
+    cudf_es.entity_from_dataframe(entity_id="transactions", dataframe=transactions_cudf, index="id", time_index="time", variable_types=transactions_vtypes)
+
+    new_rel = Relationship(pd_es["sessions"]["id"], pd_es["transactions"]["session_id"])
+    cudf_rel = Relationship(cudf_es["sessions"]["id"], cudf_es["transactions"]["session_id"])
+
+    pd_es = pd_es.add_relationship(new_rel)
+    cudf_es = cudf_es.add_relationship(cudf_rel)
+
+    assert pd_es['sessions'].last_time_index is None
+    assert cudf_es['sessions'].last_time_index is None
+
+    pd_es.add_last_time_indexes()
+    cudf_es.add_last_time_indexes()
+
+    pd.testing.assert_series_equal(pd_es['sessions'].last_time_index.sort_index(), cudf_es['sessions'].last_time_index.to_pandas().sort_index(),
+    check_names=False)
+
+
+@pytest.mark.skipif('not cudf')
+def test_create_entity_with_make_index():
+    values = [1, 12, -23, 27]
+    df = pd.DataFrame({"values": values})
+    cudf_df = cudf.from_pandas(df)
+    cudf_es = EntitySet(id="cudf_es")
+    vtypes = {"values": ft.variable_types.Numeric}
+    cudf_es.entity_from_dataframe(entity_id="new_entity", dataframe=cudf_df, make_index=True, index="new_index", variable_types=vtypes)
+
+    expected_df = pd.DataFrame({"new_index": range(len(values)), "values": values})
+    pd.testing.assert_frame_equal(expected_df, cudf_es['new_entity'].df.to_pandas().sort_index())
+
+
+@pytest.mark.skipif('not cudf')
+def test_single_table_cudf_entityset():
+    primitives_list = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
+
+    cudf_es = EntitySet(id="cudf_es")
+    df = pd.DataFrame({"id": [0, 1, 2, 3],
+                       "values": [1, 12, -34, 27],
+                       "dates": [pd.to_datetime('2019-01-10'),
+                                 pd.to_datetime('2019-02-03'),
+                                 pd.to_datetime('2019-01-01'),
+                                 pd.to_datetime('2017-08-25')],
+                       "strings": ["I am a string",
+                                   "23",
+                                   "abcdef ghijk",
+                                   ""]})
+    values_dd = cudf.from_pandas(df)
+    vtypes = {
+        "id": ft.variable_types.Id,
+        "values": ft.variable_types.Numeric,
+        "dates": ft.variable_types.Datetime,
+        "strings": ft.variable_types.NaturalLanguage
+    }
+    cudf_es.entity_from_dataframe(entity_id="data",
+                                dataframe=values_dd,
+                                index="id",
+                                variable_types=vtypes)
+
+    cudf_fm, _ = ft.dfs(entityset=cudf_es,
+                      target_entity="data",
+                      trans_primitives=primitives_list)
+
+    pd_es = ft.EntitySet(id="pd_es")
+    pd_es.entity_from_dataframe(entity_id="data",
                                 dataframe=df,
                                 index="id",
-                                variable_types={"id": ft.variable_types.Id,
-                                                "values": ft.variable_types.Numeric})
+                                variable_types={"strings": ft.variable_types.NaturalLanguage})
+
+    fm, _ = ft.dfs(entityset=pd_es,
+                   target_entity="data",
+                   trans_primitives=primitives_list)
+
+    cudf_computed_fm = cudf_fm.to_pandas().set_index('id').loc[fm.index][fm.columns]
+    # NUM_WORDS(strings) is int32 in koalas for some reason
+    pd.testing.assert_frame_equal(fm, cudf_computed_fm, check_dtype=False)
 
 
-    feature_matrix, features = ft.dfs(entityset=es,
-                                    target_entity="cudf_entity",
-                                    trans_primitives=["negate"])
+@pytest.mark.skipif('not cudf')
+def test_single_table_cudf_entityset_ids_not_sorted():
+    primitives_list = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
 
+    cudf_es = EntitySet(id="cudf_es")
+    df = pd.DataFrame({"id": [2, 0, 1, 3],
+                       "values": [1, 12, -34, 27],
+                       "dates": [pd.to_datetime('2019-01-10'),
+                                 pd.to_datetime('2019-02-03'),
+                                 pd.to_datetime('2019-01-01'),
+                                 pd.to_datetime('2017-08-25')],
+                       "strings": ["I am a string",
+                                   "23",
+                                   "abcdef ghijk",
+                                   ""]})
+    values_dd = cudf.from_pandas(df)
+    vtypes = {
+        "id": ft.variable_types.Id,
+        "values": ft.variable_types.Numeric,
+        "dates": ft.variable_types.Datetime,
+        "strings": ft.variable_types.NaturalLanguage
+    }
+    cudf_es.entity_from_dataframe(entity_id="data",
+                                dataframe=values_dd,
+                                index="id",
+                                variable_types=vtypes)
+
+    cudf_fm, _ = ft.dfs(entityset=cudf_es,
+                      target_entity="data",
+                      trans_primitives=primitives_list)
+
+    pd_es = ft.EntitySet(id="pd_es")
+    pd_es.entity_from_dataframe(entity_id="data",
+                                dataframe=df,
+                                index="id",
+                                variable_types={"strings": ft.variable_types.NaturalLanguage})
+
+    fm, _ = ft.dfs(entityset=pd_es,
+                   target_entity="data",
+                   trans_primitives=primitives_list)
+
+    # Make sure both indexes are sorted the same
+    pd.testing.assert_frame_equal(fm, cudf_fm.to_pandas().set_index('id').loc[fm.index], check_dtype=False)
+
+
+@pytest.mark.skipif('not cudf')
+def test_single_table_cudf_entityset_with_instance_ids():
+    primitives_list = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
+    instance_ids = [0, 1, 3]
+
+    cudf_es = EntitySet(id="cudf_es")
+    df = pd.DataFrame({"id": [0, 1, 2, 3],
+                       "values": [1, 12, -34, 27],
+                       "dates": [pd.to_datetime('2019-01-10'),
+                                 pd.to_datetime('2019-02-03'),
+                                 pd.to_datetime('2019-01-01'),
+                                 pd.to_datetime('2017-08-25')],
+                       "strings": ["I am a string",
+                                   "23",
+                                   "abcdef ghijk",
+                                   ""]})
+
+
+    values_dd = cudf.from_pandas(df)
+    vtypes = {
+        "id": ft.variable_types.Id,
+        "values": ft.variable_types.Numeric,
+        "dates": ft.variable_types.Datetime,
+        "strings": ft.variable_types.NaturalLanguage
+    }
+    cudf_es.entity_from_dataframe(entity_id="data",
+                                dataframe=values_dd,
+                                index="id",
+                                variable_types=vtypes)
+
+    cudf_fm, _ = ft.dfs(entityset=cudf_es,
+                      target_entity="data",
+                      trans_primitives=primitives_list,
+                      instance_ids=instance_ids)
+
+    pd_es = ft.EntitySet(id="pd_es")
+    pd_es.entity_from_dataframe(entity_id="data",
+                                dataframe=df,
+                                index="id",
+                                variable_types={"strings": ft.variable_types.NaturalLanguage})
+
+    fm, _ = ft.dfs(entityset=pd_es,
+                   target_entity="data",
+                   trans_primitives=primitives_list,
+                   instance_ids=instance_ids)
+    print(fm)
+
+    # # Make sure both indexes are sorted the same
+    pd.testing.assert_frame_equal(fm, cudf_fm.to_pandas().set_index('id').loc[fm.index], check_dtype=False)
+
+
+@pytest.mark.skipif('not cudf')
+def test_single_table_cudf_entityset_single_cutoff_time():
+    primitives_list = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
+
+    cudf_es = EntitySet(id="cudf_es")
+    df = pd.DataFrame({"id": [0, 1, 2, 3],
+                       "values": [1, 12, -34, 27],
+                       "dates": [pd.to_datetime('2019-01-10'),
+                                 pd.to_datetime('2019-02-03'),
+                                 pd.to_datetime('2019-01-01'),
+                                 pd.to_datetime('2017-08-25')],
+                       "strings": ["I am a string",
+                                   "23",
+                                   "abcdef ghijk",
+                                   ""]})
+    values_dd = cudf.from_pandas(df)
+    vtypes = {
+        "id": ft.variable_types.Id,
+        "values": ft.variable_types.Numeric,
+        "dates": ft.variable_types.Datetime,
+        "strings": ft.variable_types.NaturalLanguage
+    }
+    cudf_es.entity_from_dataframe(entity_id="data",
+                                dataframe=values_dd,
+                                index="id",
+                                variable_types=vtypes)
+
+    cudf_fm, _ = ft.dfs(entityset=cudf_es,
+                      target_entity="data",
+                      trans_primitives=primitives_list,
+                      cutoff_time=pd.Timestamp("2019-01-05 04:00"))
+
+    pd_es = ft.EntitySet(id="pd_es")
+    pd_es.entity_from_dataframe(entity_id="data",
+                                dataframe=df,
+                                index="id",
+                                variable_types={"strings": ft.variable_types.NaturalLanguage})
+
+    fm, _ = ft.dfs(entityset=pd_es,
+                   target_entity="data",
+                   trans_primitives=primitives_list,
+                   cutoff_time=pd.Timestamp("2019-01-05 04:00"))
+
+    # Make sure both indexes are sorted the same
+    pd.testing.assert_frame_equal(fm, cudf_fm.to_pandas().set_index('id').loc[fm.index], check_dtype=False)
+
+
+@pytest.mark.skipif('not cudf')
+def test_single_table_cudf_entityset_cutoff_time_df():
+    primitives_list = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
+
+    cudf_es = EntitySet(id="cudf_es")
+    df = pd.DataFrame({"id": [0, 1, 2],
+                       "values": [1, 12, -34],
+                       "dates": [pd.to_datetime('2019-01-10'),
+                                 pd.to_datetime('2019-02-03'),
+                                 pd.to_datetime('2019-01-01')],
+                       "strings": ["I am a string",
+                                   "23",
+                                   "abcdef ghijk"]})
+    values_dd = cudf.from_pandas(df)
+    vtypes = {
+        "id": ft.variable_types.Id,
+        "values": ft.variable_types.Numeric,
+        "dates": ft.variable_types.Datetime,
+        "strings": ft.variable_types.NaturalLanguage
+    }
+    cudf_es.entity_from_dataframe(entity_id="data",
+                                dataframe=values_dd,
+                                index="id",
+                                time_index="dates",
+                                variable_types=vtypes)
+    ids = [0, 1, 2, 0]
+    times = [pd.Timestamp("2019-01-05 04:00"),
+             pd.Timestamp("2019-01-05 04:00"),
+             pd.Timestamp("2019-01-05 04:00"),
+             pd.Timestamp("2019-01-15 04:00")]
+    labels = [True, False, True, False]
+    cutoff_times = pd.DataFrame({"id": ids, "time": times, "labels": labels}, columns=["id", "time", "labels"])
+
+    cudf_fm, _ = ft.dfs(entityset=cudf_es,
+                      target_entity="data",
+                      trans_primitives=primitives_list,
+                      cutoff_time=cutoff_times)
+
+    pd_es = ft.EntitySet(id="pd_es")
+    pd_es.entity_from_dataframe(entity_id="data",
+                                dataframe=df,
+                                index="id",
+                                time_index="dates",
+                                variable_types={"strings": ft.variable_types.NaturalLanguage})
+
+    fm, _ = ft.dfs(entityset=pd_es,
+                   target_entity="data",
+                   trans_primitives=primitives_list,
+                   cutoff_time=cutoff_times)
+    # Because row ordering with koalas is not guaranteed, `we need to sort on two columns to make sure that values
+    # for instance id 0 are compared correctly. Also, make sure the boolean column has the same dtype.
+    fm = fm.sort_values(['id', 'labels'])
+    print(cudf_fm.columns)
+    cudf_fm = cudf_fm.to_pandas().set_index('id').sort_values(['id', 'labels'])
+    cudf_fm['IS_WEEKEND(dates)'] = cudf_fm['IS_WEEKEND(dates)'].astype(fm['IS_WEEKEND(dates)'].dtype)
+    pd.testing.assert_frame_equal(fm, cudf_fm)
+
+
+@pytest.mark.skipif('not cudf')
+def test_single_table_cudf_entityset_dates_not_sorted():
+    cudf_es = EntitySet(id="cudf_es")
+    df = pd.DataFrame({"id": [0, 1, 2, 3],
+                       "values": [1, 12, -34, 27],
+                       "dates": [pd.to_datetime('2019-01-10'),
+                                 pd.to_datetime('2019-02-03'),
+                                 pd.to_datetime('2019-01-01'),
+                                 pd.to_datetime('2017-08-25')]})
+
+    primitives_list = ['absolute', 'is_weekend', 'year', 'day']
+    values_dd = cudf.from_pandas(df)
+    vtypes = {
+        "id": ft.variable_types.Id,
+        "values": ft.variable_types.Numeric,
+        "dates": ft.variable_types.Datetime,
+    }
+    cudf_es.entity_from_dataframe(entity_id="data",
+                                dataframe=values_dd,
+                                index="id",
+                                time_index="dates",
+                                variable_types=vtypes)
+
+    cudf_fm, _ = ft.dfs(entityset=cudf_es,
+                      target_entity="data",
+                      trans_primitives=primitives_list,
+                      max_depth=1)
+
+    pd_es = ft.EntitySet(id="pd_es")
+    pd_es.entity_from_dataframe(entity_id="data",
+                                dataframe=df,
+                                index="id",
+                                time_index="dates")
+
+    fm, _ = ft.dfs(entityset=pd_es,
+                   target_entity="data",
+                   trans_primitives=primitives_list,
+                   max_depth=1)
+    ### ignoring dtype
+    ### todo vjawa
+    pd.testing.assert_frame_equal(fm, cudf_fm.to_pandas().set_index('id').loc[fm.index],check_dtype=False)
+
+
+@pytest.mark.skipif('not cudf')
+def test_secondary_time_index():
+    log_df = pd.DataFrame()
+    log_df['id'] = [0, 1, 2, 3]
+    log_df['scheduled_time'] = pd.to_datetime([
+        "2019-01-01",
+        "2019-01-01",
+        "2019-01-01",
+        "2019-01-01"
+    ])
+    log_df['departure_time'] = pd.to_datetime([
+        "2019-02-01 09:00",
+        "2019-02-06 10:00",
+        "2019-02-12 10:00",
+        "2019-03-01 11:30"])
+    log_df['arrival_time'] = pd.to_datetime([
+        "2019-02-01 11:23",
+        "2019-02-06 12:45",
+        "2019-02-12 13:53",
+        "2019-03-01 14:07"
+    ])
+    log_df['delay'] = [-2, 10, 60, 0]
+    log_df['flight_id'] = [0, 1, 0, 1]
+    log_cudf = cudf.from_pandas(log_df)
+
+    flights_df = pd.DataFrame()
+    flights_df['id'] = [0, 1, 2, 3]
+    flights_df['origin'] = ["BOS", "LAX", "BOS", "LAX"]
+    flights_cudf = cudf.from_pandas(flights_df)
+
+    pd_es = ft.EntitySet("flights")
+    cudf_es = ft.EntitySet("flights_cudf")
+
+    pd_es.entity_from_dataframe(entity_id='logs',
+                                dataframe=log_df,
+                                index="id",
+                                time_index="scheduled_time",
+                                secondary_time_index={
+                                    'arrival_time': ['departure_time', 'delay']})
+
+    log_vtypes = {
+        "id": ft.variable_types.Id,
+        "scheduled_time": ft.variable_types.DatetimeTimeIndex,
+        "departure_time": ft.variable_types.DatetimeTimeIndex,
+        "arrival_time": ft.variable_types.DatetimeTimeIndex,
+        "delay": ft.variable_types.Numeric,
+        "flight_id": ft.variable_types.Id
+    }
+    cudf_es.entity_from_dataframe(entity_id='logs',
+                                dataframe=log_cudf,
+                                index="id",
+                                variable_types=log_vtypes,
+                                time_index="scheduled_time",
+                                secondary_time_index={
+                                      'arrival_time': ['departure_time', 'delay']})
+
+    pd_es.entity_from_dataframe('flights', flights_df, index="id")
+    flights_vtypes = pd_es['flights'].variable_types
+    cudf_es.entity_from_dataframe('flights', flights_cudf, index="id", variable_types=flights_vtypes)
+
+    new_rel = ft.Relationship(pd_es['flights']['id'], pd_es['logs']['flight_id'])
+    cudf_rel = ft.Relationship(cudf_es['flights']['id'], cudf_es['logs']['flight_id'])
+    pd_es.add_relationship(new_rel)
+    cudf_es.add_relationship(cudf_rel)
+
+    cutoff_df = pd.DataFrame()
+    cutoff_df['id'] = [0, 1, 1]
+    cutoff_df['time'] = pd.to_datetime(['2019-02-02', '2019-02-02', '2019-02-20'])
+
+    fm, _ = ft.dfs(entityset=pd_es,
+                   target_entity="logs",
+                   cutoff_time=cutoff_df,
+                   agg_primitives=["max"],
+                   trans_primitives=["month"])
+
+    cudf_fm, _ = ft.dfs(entityset=cudf_es,
+                      target_entity="logs",
+                      cutoff_time=cutoff_df,
+                      agg_primitives=["max"],
+                      trans_primitives=["month"])
+
+    # Make sure both matrixes are sorted the same
+    pd.testing.assert_frame_equal(fm.sort_values('delay'), cudf_fm.to_pandas().set_index('id').sort_values('delay'), check_dtype=False)

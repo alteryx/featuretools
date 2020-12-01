@@ -474,13 +474,20 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                             pass_df = ks.from_pandas(pass_through[[id_name, 'time', col]])
                             _feature_matrix = _feature_matrix.merge(pass_df, how="outer")
                         _feature_matrix = _feature_matrix.drop(columns=['time'])
+                    elif is_instance(_feature_matrix, cudf, 'DataFrame') and (len(pass_columns) > 0):
+                        _feature_matrix['time'] = time_last
+                        for col in pass_columns:
+                            pass_df = cudf.from_pandas(pass_through[[id_name, 'time', col]])
+                            _feature_matrix = _feature_matrix.merge(pass_df, how="outer")
+                        _feature_matrix = _feature_matrix.drop(columns=['time'])
+
                 feature_matrix.append(_feature_matrix)
 
     if any(isinstance(fm, dd.DataFrame) for fm in feature_matrix):
         feature_matrix = dd.concat(feature_matrix)
     elif any(is_instance(fm, ks, 'DataFrame') for fm in feature_matrix):
         feature_matrix = ks.concat(feature_matrix)
-    elif any(isinstance(fm, cudf.DataFrame) for fm in feature_matrix):
+    elif any(is_instance(fm, cudf , 'DataFrame') for fm in feature_matrix):
         feature_matrix = cudf.concat(feature_matrix)
     else:
         feature_matrix = pd.concat(feature_matrix)

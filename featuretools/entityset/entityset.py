@@ -20,6 +20,7 @@ from featuretools.utils.plot_utils import (
 )
 
 ks = import_or_none('databricks.koalas')
+cudf =  import_or_none('cudf')
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
@@ -682,7 +683,8 @@ class EntitySet(object):
             ti_cols = [c if c != old_ti_name else secondary_time_index for c in ti_cols]
             make_secondary_time_index = {secondary_time_index: ti_cols}
 
-        if is_instance(new_entity_df, ks, 'DataFrame'):
+        #TODO: Figure out reason for this
+        if is_instance(new_entity_df, (ks, cudf), 'DataFrame'):
             already_sorted = False
 
         self.entity_from_dataframe(
@@ -820,6 +822,9 @@ class EntitySet(object):
                         lti = lti.apply(lambda x: None)
                     elif is_instance(entity.df, ks, 'DataFrame'):
                         lti = ks.Series(pd.Series(index=lti.to_list(), name=lti.name))
+                    elif  is_instance(entity.df, cudf, 'DataFrame'):
+                        # TODO: check if to_list is actually needed
+                       lti = cudf.Series(lti.to_list(), name=lti.name)
                     else:
                         lti[:] = None
                 entity.last_time_index = lti
@@ -849,22 +854,28 @@ class EntitySet(object):
 
                     lti_is_dask = isinstance(child_e.last_time_index, dd.Series)
                     lti_is_koalas = is_instance(child_e.last_time_index, ks, 'Series')
-                    if lti_is_dask or lti_is_koalas:
+                    lti_is_cudf = is_instance(child_e.last_time_index, cudf, 'Series')
+                    if lti_is_dask or lti_is_koalas or lti_is_cudf:
                         to_join = child_e.df[link_var]
+
                         if lti_is_dask:
                             to_join.index = child_e.df[child_e.index]
+
 
                         lti_df = child_e.last_time_index.to_frame(name='last_time').join(
                             to_join.to_frame(name=entity.index)
                         )
+
 
                         if lti_is_dask:
                             new_index = lti_df.index.copy()
                             new_index.name = None
                             lti_df.index = new_index
                         lti_df = lti_df.groupby(lti_df[entity.index]).agg('max')
-
+                        #todo: fix vjawa
+                        #lti_df = lti_df.groupby(lti_df['id']).agg('max')
                         lti_df = entity.last_time_index.to_frame(name='last_time_old').join(lti_df)
+
 
                     else:
                         lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
@@ -881,14 +892,20 @@ class EntitySet(object):
                         lti_df.set_index(entity.index, inplace=True)
                         lti_df = lti_df.reindex(entity.last_time_index.index)
                         lti_df['last_time_old'] = entity.last_time_index
-                    if not (lti_is_dask or lti_is_koalas) and lti_df.empty:
+                    if not (lti_is_dask or lti_is_koalas or lti_is_cudf) and lti_df.empty:
                         # Pandas errors out if it tries to do fillna and then max on an empty dataframe
                         lti_df = pd.Series()
                     else:
+                        #path = "/nvme/0/vjawa/featuretools/featuretools/tests/entityset_tests/{}.parquet".format(type(lti_df))
+                        #print(lti_df.to_parquet(path))
                         if lti_is_koalas:
                             lti_df['last_time'] = ks.to_datetime(lti_df['last_time'])
                             lti_df['last_time_old'] = ks.to_datetime(lti_df['last_time_old'])
                             # TODO: Figure out a workaround for fillna and replace
+                            lti_df = lti_df.max(axis=1)
+                        elif lti_is_cudf:
+                            lti_df['last_time'] = cudf.to_datetime(lti_df['last_time'])
+                            lti_df['last_time_old'] = cudf.to_datetime(lti_df['last_time_old'])
                             lti_df = lti_df.max(axis=1)
                         else:
                             lti_df['last_time'] = lti_df['last_time'].astype('datetime64[ns]')

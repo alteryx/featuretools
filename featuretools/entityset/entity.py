@@ -581,7 +581,7 @@ class Entity(object):
                 if isinstance(df, dd.DataFrame):
                     for col in columns:
                         df[col] = df[col].mask(mask, np.nan)
-                elif is_instance(df, ks, 'DataFrame'):
+                elif is_instance(df, (ks, cudf), 'DataFrame'):
                     df.loc[mask, columns] = None
                 else:
                     df.loc[mask, columns] = np.nan

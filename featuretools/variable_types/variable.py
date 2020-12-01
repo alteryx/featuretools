@@ -49,6 +49,8 @@ class Variable(object):
                 default_dtype = 'timedelta64[ns]'
         else:
             default_dtype = self.entity.df[self.id].dtype
+            # vjawa fails with list type
+            #print(default_dtype)
         self._interesting_values = pd.Series(dtype=default_dtype)
 
     @property

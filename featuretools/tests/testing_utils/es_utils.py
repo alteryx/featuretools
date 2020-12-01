@@ -4,6 +4,7 @@ import pandas as pd
 from featuretools.utils.gen_utils import import_or_none, is_instance
 
 ks = import_or_none('databricks.koalas')
+cudf = import_or_none('cudf')
 
 
 def to_pandas(df, index=None, sort_index=False, int_index=False):
@@ -24,6 +25,8 @@ def to_pandas(df, index=None, sort_index=False, int_index=False):
     if isinstance(df, (dd.DataFrame, dd.Series)):
         pd_df = df.compute()
     if is_instance(df, (ks, ks), ('DataFrame', 'Series')):
+        pd_df = df.to_pandas()
+    if is_instance(df, (cudf, cudf), ('DataFrame', 'Series')):
         pd_df = df.to_pandas()
 
     if index:

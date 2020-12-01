@@ -15,7 +15,7 @@ from featuretools.utils.gen_utils import import_or_none
 from featuretools.variable_types import find_variable_types
 
 ks = import_or_none('databricks.koalas')
-
+cudf = import_or_none('cudf')
 
 def test_enforces_variable_id_is_str(es):
     assert variable_types.Categorical("1", es["customers"])

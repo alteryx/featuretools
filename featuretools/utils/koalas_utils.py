@@ -39,3 +39,12 @@ def pd_to_ks_clean(pdf):
     for f in steps:
         intermediate_df = f(intermediate_df)
     return intermediate_df
+
+#todo:vjawa
+#switch to cudf utils
+def pd_to_cudf_clean(pdf):
+    steps = [replace_tuple_columns]
+    intermediate_df = pdf
+    for f in steps:
+        intermediate_df = f(intermediate_df)
+    return intermediate_df
