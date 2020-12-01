@@ -872,11 +872,7 @@ class EntitySet(object):
                             new_index.name = None
                             lti_df.index = new_index
                         lti_df = lti_df.groupby(lti_df[entity.index]).agg('max')
-                        #todo: fix vjawa
-                        #lti_df = lti_df.groupby(lti_df['id']).agg('max')
                         lti_df = entity.last_time_index.to_frame(name='last_time_old').join(lti_df)
-
-
                     else:
                         lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
                                                entity.index: child_e.df[link_var]})
@@ -896,8 +892,6 @@ class EntitySet(object):
                         # Pandas errors out if it tries to do fillna and then max on an empty dataframe
                         lti_df = pd.Series()
                     else:
-                        #path = "/nvme/0/vjawa/featuretools/featuretools/tests/entityset_tests/{}.parquet".format(type(lti_df))
-                        #print(lti_df.to_parquet(path))
                         if lti_is_koalas:
                             lti_df['last_time'] = ks.to_datetime(lti_df['last_time'])
                             lti_df['last_time_old'] = ks.to_datetime(lti_df['last_time_old'])
@@ -906,6 +900,10 @@ class EntitySet(object):
                         elif lti_is_cudf:
                             lti_df['last_time'] = cudf.to_datetime(lti_df['last_time'])
                             lti_df['last_time_old'] = cudf.to_datetime(lti_df['last_time_old'])
+                            # we have the entity.index column from join
+                            # getting rid of it for results
+                            # TODO: figure out why we get it cudf and not in Koalas
+                            lti_df.drop(columns=entity.index,inplace=True)
                             lti_df = lti_df.max(axis=1)
                         else:
                             lti_df['last_time'] = lti_df['last_time'].astype('datetime64[ns]')

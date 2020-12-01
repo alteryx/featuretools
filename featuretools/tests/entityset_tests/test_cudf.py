@@ -1,6 +1,3 @@
-import featuretools as ft
-import pandas as pd
-import dask.dataframe as dd
 import pandas as pd
 import pytest
 

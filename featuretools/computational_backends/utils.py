@@ -260,7 +260,6 @@ def _check_cutoff_time_type(cutoff_time, es_time_type):
     # Check that cutoff_time time type matches entityset time type
     if isinstance(cutoff_time, tuple):
         cutoff_time_value = cutoff_time[0]
-        print(cutoff_time_value)
         time_type = _check_time_type(cutoff_time_value)
         is_numeric = time_type == NumericTimeIndex
         is_datetime = time_type == DatetimeTimeIndex
