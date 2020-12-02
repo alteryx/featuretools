@@ -8,7 +8,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Use deploy keys for dependency check (:pr:`1245`:)
+        * Use repository-scoped token for dependency check (:pr:`1245`:)
 
 Thanks to the following people for contributing to this release:
 :user:`jeff-hernandez`
