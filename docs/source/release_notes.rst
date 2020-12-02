@@ -2,14 +2,16 @@
 
 Release Notes
 -------------
-.. **Future Release**
+**Future Release**
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Use repository-scoped token for dependency check (:pr:`1245`:)
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`jeff-hernandez`
 
 **v0.22.0 Nov 30, 2020**
     * Enhancements
