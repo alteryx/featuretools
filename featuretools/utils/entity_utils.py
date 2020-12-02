@@ -10,6 +10,7 @@ from featuretools import variable_types as vtypes
 from featuretools.utils.gen_utils import import_or_none, is_instance
 
 ks = import_or_none('databricks.koalas')
+cudf = import_or_none('cudf')
 
 
 def infer_variable_types(df, link_vars, variable_types, time_index, secondary_time_index):
@@ -42,6 +43,11 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
             msg = 'Variable types cannot be inferred from Koalas DataFrames, ' \
                   'use variable_types to provide type metadata for entity'
             raise ValueError(msg)
+        elif is_instance(df, cudf, 'DataFrame'):
+            msg = 'Variable types cannot be inferred from cuDF DataFrames, ' \
+                  'use variable_types to provide type metadata for entity'
+            raise ValueError(msg)
+
         elif variable in vids_to_assume_datetime:
             if col_is_datetime(df[variable]):
                 inferred_type = vtypes.Datetime
@@ -153,6 +159,8 @@ def convert_variable_data(df, column_id, new_type, **kwargs):
             df[column_id] = dd.to_numeric(df[column_id], errors='coerce')
         elif is_instance(df, ks, 'DataFrame'):
             df[column_id] = ks.to_numeric(df[column_id])
+        elif is_instance(df, cudf, 'DataFrame'):
+             df[column_id] = cudf.to_numeric(df[column_id])
         else:
             orig_nonnull = df[column_id].dropna().shape[0]
             df[column_id] = pd.to_numeric(df[column_id], errors='coerce')
@@ -171,6 +179,9 @@ def convert_variable_data(df, column_id, new_type, **kwargs):
                                            infer_datetime_format=True)
         elif is_instance(df, ks, 'DataFrame'):
             df[column_id] = ks.to_datetime(df[column_id], format=format,
+                                           infer_datetime_format=True)
+        elif is_instance(df, cudf, 'DataFrame'):
+            df[column_id] = cudf.to_datetime(df[column_id], format=format,
                                            infer_datetime_format=True)
         else:
             df[column_id] = pd.to_datetime(df[column_id], format=format,
@@ -223,6 +234,15 @@ def col_is_datetime(col):
 
     return False
 
+
+def get_pandas_compatible_dtype(dtype):
+    if cudf:
+        if is_instance(dtype,(cudf.core.dtypes),('ListDtype')) or (dtype is 'list'):
+            dtype='object'    
+        elif is_instance(dtype,(cudf.core.dtypes),('CategoricalDtype') ):
+            dtype='category'
+    return dtype
+    
 
 def replace_latlong_nan(values):
     """replace a single `NaN` value with a tuple: `(np.nan, np.nan)`"""

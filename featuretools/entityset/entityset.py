@@ -824,7 +824,8 @@ class EntitySet(object):
                         lti = ks.Series(pd.Series(index=lti.to_list(), name=lti.name))
                     elif  is_instance(entity.df, cudf, 'DataFrame'):
                         # TODO: check if to_list is actually needed
-                       lti = cudf.Series(lti.to_list(), name=lti.name)
+                        if is_instance(lti,cudf,'Series'):
+                            lti = cudf.Series(index=lti, name=lti.name)
                     else:
                         lti[:] = None
                 entity.last_time_index = lti
@@ -903,7 +904,8 @@ class EntitySet(object):
                             # we have the entity.index column from join
                             # getting rid of it for results
                             # TODO: figure out why we get it cudf and not in Koalas
-                            lti_df.drop(columns=entity.index,inplace=True)
+                            if entity.index in lti_df.columns:
+                                lti_df.drop(columns=entity.index,inplace=True)
                             lti_df = lti_df.max(axis=1)
                         else:
                             lti_df['last_time'] = lti_df['last_time'].astype('datetime64[ns]')

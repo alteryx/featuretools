@@ -14,6 +14,7 @@ from featuretools.utils.gen_utils import check_schema_version, import_or_raise
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.variable_types import LatLong, find_variable_types
+from featuretools.utils.entity_utils import get_pandas_compatible_dtype
 
 
 def description_to_variable(description, entity=None):
@@ -119,6 +120,8 @@ def empty_dataframe(description):
     '''
     columns = [variable['id'] for variable in description['variables']]
     dtypes = description['loading_info']['properties']['dtypes']
+    #TODO: figure out cleaner way
+    dtypes = {col:get_pandas_compatible_dtype(dtype) for col,dtype in dtypes.items()}
     return pd.DataFrame(columns=columns).astype(dtypes)
 
 
