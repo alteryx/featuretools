@@ -160,7 +160,7 @@ def convert_variable_data(df, column_id, new_type, **kwargs):
         elif is_instance(df, ks, 'DataFrame'):
             df[column_id] = ks.to_numeric(df[column_id])
         elif is_instance(df, cudf, 'DataFrame'):
-             df[column_id] = cudf.to_numeric(df[column_id])
+            df[column_id] = cudf.to_numeric(df[column_id])
         else:
             orig_nonnull = df[column_id].dropna().shape[0]
             df[column_id] = pd.to_numeric(df[column_id], errors='coerce')
@@ -181,8 +181,7 @@ def convert_variable_data(df, column_id, new_type, **kwargs):
             df[column_id] = ks.to_datetime(df[column_id], format=format,
                                            infer_datetime_format=True)
         elif is_instance(df, cudf, 'DataFrame'):
-            df[column_id] = cudf.to_datetime(df[column_id], format=format,
-                                           infer_datetime_format=True)
+            df[column_id] = cudf.to_datetime(df[column_id], format=format, infer_datetime_format=True)
         else:
             df[column_id] = pd.to_datetime(df[column_id], format=format,
                                            infer_datetime_format=True)
@@ -237,12 +236,12 @@ def col_is_datetime(col):
 
 def get_pandas_compatible_dtype(dtype):
     if cudf:
-        if is_instance(dtype,(cudf.core.dtypes),('ListDtype')) or (dtype is 'list'):
-            dtype='object'    
-        elif is_instance(dtype,(cudf.core.dtypes),('CategoricalDtype') ):
-            dtype='category'
+        if is_instance(dtype, (cudf.core.dtypes), ('ListDtype')) or (dtype == 'list'):
+            dtype = 'object'
+        elif is_instance(dtype, (cudf.core.dtypes), ('CategoricalDtype')):
+            dtype = 'category'
     return dtype
-    
+
 
 def replace_latlong_nan(values):
     """replace a single `NaN` value with a tuple: `(np.nan, np.nan)`"""

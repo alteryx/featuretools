@@ -32,8 +32,7 @@ class GreaterThan(TransformPrimitive):
     return_type = Boolean
     compatibility = [Library.PANDAS, Library.DASK, Library.CUDF]
     description_template = "whether {} is greater than {}"
-    
-    #TODO: Fix later
+
     def get_function(self):
         return np.greater
 

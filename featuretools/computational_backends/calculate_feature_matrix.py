@@ -34,7 +34,6 @@ from featuretools.utils.gen_utils import (
 )
 from featuretools.variable_types import NumericTimeIndex
 
-
 ks = import_or_none('databricks.koalas')
 cudf = import_or_none('cudf')
 logger = logging.getLogger('featuretools.computational_backend')
@@ -189,6 +188,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         elif is_instance(instance_ids, (ks, cudf), 'Series'):
             # TODO: Check if below has computational issues
             instance_ids = instance_ids.to_pandas()
+
         # convert list or range object into series
         if not isinstance(instance_ids, pd.Series):
             instance_ids = pd.Series(instance_ids)
@@ -487,7 +487,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
         feature_matrix = dd.concat(feature_matrix)
     elif any(is_instance(fm, ks, 'DataFrame') for fm in feature_matrix):
         feature_matrix = ks.concat(feature_matrix)
-    elif any(is_instance(fm, cudf , 'DataFrame') for fm in feature_matrix):
+    elif any(is_instance(fm, cudf, 'DataFrame') for fm in feature_matrix):
         feature_matrix = cudf.concat(feature_matrix)
     else:
         feature_matrix = pd.concat(feature_matrix)

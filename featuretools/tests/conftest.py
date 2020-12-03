@@ -11,8 +11,9 @@ from featuretools.tests.testing_utils import (
     make_ecommerce_entityset,
     to_pandas
 )
+from featuretools.utils.cudf_utils import pd_to_cudf_clean
 from featuretools.utils.gen_utils import import_or_none
-from featuretools.utils.koalas_utils import pd_to_ks_clean,pd_to_cudf_clean
+from featuretools.utils.koalas_utils import pd_to_ks_clean
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -55,6 +56,7 @@ def dask_es(make_es):
         entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=2)
     return dask_es
 
+
 @pytest.fixture
 def cudf_es(make_es):
     cudf = pytest.importorskip('cudf', reason="Cudf not installed, skipping")
@@ -63,6 +65,7 @@ def cudf_es(make_es):
         cleaned_df = pd_to_cudf_clean(entity.df).reset_index(drop=True)
         entity.df = cudf.from_pandas(cleaned_df)
     return cudf_es
+
 
 @pytest.fixture
 def ks_es(make_es):
@@ -76,12 +79,12 @@ def ks_es(make_es):
     return ks_es
 
 
-@pytest.fixture(params=['pd_es', 'dask_es', 'ks_es','cudf_es'])
+@pytest.fixture(params=['pd_es', 'dask_es', 'ks_es', 'cudf_es'])
 def es(request):
     return request.getfixturevalue(request.param)
 
 
-@pytest.fixture(params=['pd_diamond_es', 'dask_diamond_es', 'ks_diamond_es','cudf_diamond_es'])
+@pytest.fixture(params=['pd_diamond_es', 'dask_diamond_es', 'ks_diamond_es', 'cudf_diamond_es'])
 def diamond_es(request):
     return request.getfixturevalue(request.param)
 
@@ -146,6 +149,7 @@ def dask_diamond_es(pd_diamond_es):
 
     return ft.EntitySet(id=pd_diamond_es.id, entities=entities, relationships=relationships)
 
+
 @pytest.fixture
 def cudf_diamond_es(pd_diamond_es):
     cudf = pytest.importorskip('cudf', reason="Cudf not installed, skipping")
@@ -159,6 +163,7 @@ def cudf_diamond_es(pd_diamond_es):
                       rel.child_variable.name) for rel in pd_diamond_es.relationships]
 
     return ft.EntitySet(id=pd_diamond_es.id, entities=entities, relationships=relationships)
+
 
 @pytest.fixture
 def ks_diamond_es(pd_diamond_es):
@@ -177,7 +182,7 @@ def ks_diamond_es(pd_diamond_es):
     return ft.EntitySet(id=pd_diamond_es.id, entities=entities, relationships=relationships)
 
 
-@pytest.fixture(params=['pd_home_games_es', 'dask_home_games_es', 'ks_home_games_es','cudf_home_games_es'])
+@pytest.fixture(params=['pd_home_games_es', 'dask_home_games_es', 'ks_home_games_es', 'cudf_home_games_es'])
 def home_games_es(request):
     return request.getfixturevalue(request.param)
 
@@ -214,6 +219,7 @@ def dask_home_games_es(pd_home_games_es):
 
     return ft.EntitySet(id=pd_home_games_es.id, entities=entities, relationships=relationships)
 
+
 @pytest.fixture
 def cudf_home_games_es(pd_home_games_es):
     cudf = pytest.importorskip('cudf', reason="Cudf not installed, skipping")
@@ -227,6 +233,7 @@ def cudf_home_games_es(pd_home_games_es):
                       rel.child_variable.name) for rel in pd_home_games_es.relationships]
 
     return ft.EntitySet(id=pd_home_games_es.id, entities=entities, relationships=relationships)
+
 
 @pytest.fixture
 def ks_home_games_es(pd_home_games_es):
@@ -264,6 +271,7 @@ def dd_mock_customer(pd_mock_customer):
         entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=4)
     return dd_mock_customer
 
+
 @pytest.fixture
 def cudf_mock_customer(pd_mock_customer):
     cudf = pytest.importorskip('cudf', reason="Cudf not installed, skipping")
@@ -285,7 +293,7 @@ def ks_mock_customer(pd_mock_customer):
     return ks_mock_customer
 
 
-@pytest.fixture(params=['pd_mock_customer', 'dd_mock_customer', 'ks_mock_customer','cudf_mock_customer'])
+@pytest.fixture(params=['pd_mock_customer', 'dd_mock_customer', 'ks_mock_customer', 'cudf_mock_customer'])
 def mock_customer(request):
     return request.getfixturevalue(request.param)
 

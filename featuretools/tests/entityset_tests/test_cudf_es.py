@@ -3,10 +3,11 @@ import pytest
 
 import featuretools as ft
 from featuretools.entityset import EntitySet, Relationship
+from featuretools.utils.cudf_utils import pd_to_cudf_clean
 from featuretools.utils.gen_utils import import_or_none
-from featuretools.utils.koalas_utils import pd_to_cudf_clean
 
 cudf = import_or_none('cudf')
+
 
 # TODO: Fix vjawa
 @pytest.mark.skipif('not cudf')
@@ -132,8 +133,8 @@ def test_add_last_time_indexes():
     pd_es.add_last_time_indexes()
     cudf_es.add_last_time_indexes()
 
-    pd.testing.assert_series_equal(pd_es['sessions'].last_time_index.sort_index(), cudf_es['sessions'].last_time_index.to_pandas().sort_index(),
-    check_names=False)
+    pd.testing.assert_series_equal(pd_es['sessions'].last_time_index.sort_index(),
+                                   cudf_es['sessions'].last_time_index.to_pandas().sort_index(), check_names=False)
 
 
 @pytest.mark.skipif('not cudf')
@@ -172,13 +173,13 @@ def test_single_table_cudf_entityset():
         "strings": ft.variable_types.NaturalLanguage
     }
     cudf_es.entity_from_dataframe(entity_id="data",
-                                dataframe=values_dd,
-                                index="id",
-                                variable_types=vtypes)
+                                  dataframe=values_dd,
+                                  index="id",
+                                  variable_types=vtypes)
 
     cudf_fm, _ = ft.dfs(entityset=cudf_es,
-                      target_entity="data",
-                      trans_primitives=primitives_list)
+                        target_entity="data",
+                        trans_primitives=primitives_list)
 
     pd_es = ft.EntitySet(id="pd_es")
     pd_es.entity_from_dataframe(entity_id="data",
@@ -218,13 +219,13 @@ def test_single_table_cudf_entityset_ids_not_sorted():
         "strings": ft.variable_types.NaturalLanguage
     }
     cudf_es.entity_from_dataframe(entity_id="data",
-                                dataframe=values_dd,
-                                index="id",
-                                variable_types=vtypes)
+                                  dataframe=values_dd,
+                                  index="id",
+                                  variable_types=vtypes)
 
     cudf_fm, _ = ft.dfs(entityset=cudf_es,
-                      target_entity="data",
-                      trans_primitives=primitives_list)
+                        target_entity="data",
+                        trans_primitives=primitives_list)
 
     pd_es = ft.EntitySet(id="pd_es")
     pd_es.entity_from_dataframe(entity_id="data",
@@ -257,7 +258,6 @@ def test_single_table_cudf_entityset_with_instance_ids():
                                    "abcdef ghijk",
                                    ""]})
 
-
     values_dd = cudf.from_pandas(df)
     vtypes = {
         "id": ft.variable_types.Id,
@@ -266,14 +266,14 @@ def test_single_table_cudf_entityset_with_instance_ids():
         "strings": ft.variable_types.NaturalLanguage
     }
     cudf_es.entity_from_dataframe(entity_id="data",
-                                dataframe=values_dd,
-                                index="id",
-                                variable_types=vtypes)
+                                  dataframe=values_dd,
+                                  index="id",
+                                  variable_types=vtypes)
 
     cudf_fm, _ = ft.dfs(entityset=cudf_es,
-                      target_entity="data",
-                      trans_primitives=primitives_list,
-                      instance_ids=instance_ids)
+                        target_entity="data",
+                        trans_primitives=primitives_list,
+                        instance_ids=instance_ids)
 
     pd_es = ft.EntitySet(id="pd_es")
     pd_es.entity_from_dataframe(entity_id="data",
@@ -314,14 +314,14 @@ def test_single_table_cudf_entityset_single_cutoff_time():
         "strings": ft.variable_types.NaturalLanguage
     }
     cudf_es.entity_from_dataframe(entity_id="data",
-                                dataframe=values_dd,
-                                index="id",
-                                variable_types=vtypes)
+                                  dataframe=values_dd,
+                                  index="id",
+                                  variable_types=vtypes)
 
     cudf_fm, _ = ft.dfs(entityset=cudf_es,
-                      target_entity="data",
-                      trans_primitives=primitives_list,
-                      cutoff_time=pd.Timestamp("2019-01-05 04:00"))
+                        target_entity="data",
+                        trans_primitives=primitives_list,
+                        cutoff_time=pd.Timestamp("2019-01-05 04:00"))
 
     pd_es = ft.EntitySet(id="pd_es")
     pd_es.entity_from_dataframe(entity_id="data",
@@ -359,10 +359,10 @@ def test_single_table_cudf_entityset_cutoff_time_df():
         "strings": ft.variable_types.NaturalLanguage
     }
     cudf_es.entity_from_dataframe(entity_id="data",
-                                dataframe=values_dd,
-                                index="id",
-                                time_index="dates",
-                                variable_types=vtypes)
+                                  dataframe=values_dd,
+                                  index="id",
+                                  time_index="dates",
+                                  variable_types=vtypes)
     ids = [0, 1, 2, 0]
     times = [pd.Timestamp("2019-01-05 04:00"),
              pd.Timestamp("2019-01-05 04:00"),
@@ -372,9 +372,9 @@ def test_single_table_cudf_entityset_cutoff_time_df():
     cutoff_times = pd.DataFrame({"id": ids, "time": times, "labels": labels}, columns=["id", "time", "labels"])
 
     cudf_fm, _ = ft.dfs(entityset=cudf_es,
-                      target_entity="data",
-                      trans_primitives=primitives_list,
-                      cutoff_time=cutoff_times)
+                        target_entity="data",
+                        trans_primitives=primitives_list,
+                        cutoff_time=cutoff_times)
 
     pd_es = ft.EntitySet(id="pd_es")
     pd_es.entity_from_dataframe(entity_id="data",
@@ -414,15 +414,15 @@ def test_single_table_cudf_entityset_dates_not_sorted():
         "dates": ft.variable_types.Datetime,
     }
     cudf_es.entity_from_dataframe(entity_id="data",
-                                dataframe=values_dd,
-                                index="id",
-                                time_index="dates",
-                                variable_types=vtypes)
+                                  dataframe=values_dd,
+                                  index="id",
+                                  time_index="dates",
+                                  variable_types=vtypes)
 
     cudf_fm, _ = ft.dfs(entityset=cudf_es,
-                      target_entity="data",
-                      trans_primitives=primitives_list,
-                      max_depth=1)
+                        target_entity="data",
+                        trans_primitives=primitives_list,
+                        max_depth=1)
 
     pd_es = ft.EntitySet(id="pd_es")
     pd_es.entity_from_dataframe(entity_id="data",
@@ -434,9 +434,9 @@ def test_single_table_cudf_entityset_dates_not_sorted():
                    target_entity="data",
                    trans_primitives=primitives_list,
                    max_depth=1)
-    ### ignoring dtype
-    ### todo vjawa
-    pd.testing.assert_frame_equal(fm, cudf_fm.to_pandas().set_index('id').loc[fm.index],check_dtype=False)
+    # ignoring dtype
+    # because of int in cuDF vs float in pandas
+    pd.testing.assert_frame_equal(fm, cudf_fm.to_pandas().set_index('id').loc[fm.index], check_dtype=False)
 
 
 @pytest.mark.skipif('not cudf')
@@ -488,11 +488,11 @@ def test_secondary_time_index():
         "flight_id": ft.variable_types.Id
     }
     cudf_es.entity_from_dataframe(entity_id='logs',
-                                dataframe=log_cudf,
-                                index="id",
-                                variable_types=log_vtypes,
-                                time_index="scheduled_time",
-                                secondary_time_index={
+                                  dataframe=log_cudf,
+                                  index="id",
+                                  variable_types=log_vtypes,
+                                  time_index="scheduled_time",
+                                  secondary_time_index={
                                       'arrival_time': ['departure_time', 'delay']})
 
     pd_es.entity_from_dataframe('flights', flights_df, index="id")
@@ -515,10 +515,10 @@ def test_secondary_time_index():
                    trans_primitives=["month"])
 
     cudf_fm, _ = ft.dfs(entityset=cudf_es,
-                      target_entity="logs",
-                      cutoff_time=cutoff_df,
-                      agg_primitives=["max"],
-                      trans_primitives=["month"])
+                        target_entity="logs",
+                        cutoff_time=cutoff_df,
+                        agg_primitives=["max"],
+                        trans_primitives=["month"])
 
     # Make sure both matrixes are sorted the same
     pd.testing.assert_frame_equal(fm.sort_values('delay'), cudf_fm.to_pandas().set_index('id').sort_values('delay'), check_dtype=False)

@@ -185,7 +185,7 @@ class DeepFeatureSynthesis(object):
             entityset_type = Library.DASK
         elif any(is_instance(entity.df, ks, 'DataFrame') for entity in self.es.entities):
             entityset_type = Library.KOALAS
-        elif  any(isinstance(entity.df, cudf.DataFrame) for entity in self.es.entities):
+        elif any(is_instance(entity.df, cudf, 'DataFrame') for entity in self.es.entities):
             entityset_type = Library.CUDF
         else:
             entityset_type = Library.PANDAS

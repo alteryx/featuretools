@@ -3,8 +3,10 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from featuretools.utils.gen_utils import camel_to_snake
 from featuretools.utils.entity_utils import get_pandas_compatible_dtype
+from featuretools.utils.gen_utils import camel_to_snake
+
+
 class ClassNameDescriptor(object):
     """Descriptor to convert a class's name from camelcase to snakecase
     """
@@ -48,7 +50,7 @@ class Variable(object):
                 default_dtype = 'timedelta64[ns]'
         else:
             default_dtype = self.entity.df[self.id].dtype
-            # todo: fix below for cudf 
+            # todo: fix below for cudf
             default_dtype = get_pandas_compatible_dtype(default_dtype)
         self._interesting_values = pd.Series(dtype=default_dtype)
 

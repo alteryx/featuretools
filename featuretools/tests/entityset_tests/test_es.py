@@ -18,10 +18,9 @@ from featuretools.entityset import (
 )
 from featuretools.entityset.serialize import SCHEMA_VERSION
 from featuretools.tests.testing_utils import to_pandas
+from featuretools.utils.cudf_utils import pd_to_cudf_clean
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
-from featuretools.utils.koalas_utils import pd_to_cudf_clean
-
 
 ks = import_or_none('databricks.koalas')
 cudf = import_or_none('cudf')
@@ -249,12 +248,14 @@ def ks_df(pd_df):
         pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_df)
 
+
 @pytest.fixture
 def cudf_df(pd_df):
     cudf = pytest.importorskip('cudf', reason="Cudf not installed, skipping")
     return cudf.from_pandas(pd_df)
 
-@pytest.fixture(params=['pd_df', 'dd_df', 'ks_df','cudf_df'])
+
+@pytest.fixture(params=['pd_df', 'dd_df', 'ks_df', 'cudf_df'])
 def df(request):
     return request.getfixturevalue(request.param)
 
@@ -362,6 +363,7 @@ def ks_df3(pd_df3):
         pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_df3)
 
+
 @pytest.fixture
 def cudf_df3(pd_df3):
     cudf = pytest.importorskip('cudf', reason="Cudf not installed, skipping")
@@ -429,12 +431,14 @@ def ks_df4(pd_df4):
         pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_to_ks_clean(pd_df4))
 
+
 @pytest.fixture
 def cudf_df4(pd_df4):
     cudf = pytest.importorskip('cudf', reason="Cudf not installed, skipping")
     return cudf.from_pandas(pd_to_cudf_clean(pd_df4))
 
-@pytest.fixture(params=['pd_df4', 'dd_df4', 'ks_df4','cudf_df4'])
+
+@pytest.fixture(params=['pd_df4', 'dd_df4', 'ks_df4', 'cudf_df4'])
 def df4(request):
     return request.getfixturevalue(request.param)
 
@@ -505,6 +509,7 @@ def test_errors_no_vtypes_cudf(cudf_df4):
         es.entity_from_dataframe(entity_id='test_entity', index='id',
                                  dataframe=cudf_df4)
 
+
 def test_errors_no_vtypes_dask(dd_df4):
     es = EntitySet(id='test')
     msg = 'Variable types cannot be inferred from Dask DataFrames, ' \
@@ -549,7 +554,7 @@ def cudf_datetime1(pd_datetime1):
     return cudf.from_pandas(pd_datetime1)
 
 
-@pytest.fixture(params=['pd_datetime1', 'dd_datetime1', 'ks_datetime1','cudf_datetime1'])
+@pytest.fixture(params=['pd_datetime1', 'dd_datetime1', 'ks_datetime1', 'cudf_datetime1'])
 def datetime1(request):
     return request.getfixturevalue(request.param)
 
@@ -594,12 +599,14 @@ def ks_datetime2(pd_datetime2):
         pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_datetime2)
 
+
 @pytest.fixture
 def cudf_datetime2(pd_datetime2):
     cudf = pytest.importorskip('cudf', reason="Cudf not installed, skipping")
     return cudf.from_pandas(pd_datetime2)
 
-@pytest.fixture(params=['pd_datetime2', 'dd_datetime2', 'ks_datetime2','cudf_datetime2'])
+
+@pytest.fixture(params=['pd_datetime2', 'dd_datetime2', 'ks_datetime2', 'cudf_datetime2'])
 def datetime2(request):
     return request.getfixturevalue(request.param)
 
@@ -700,12 +707,14 @@ def pd_bad_df():
 def dd_bad_df(pd_bad_df):
     return dd.from_pandas(pd_bad_df, npartitions=2)
 
+
 @pytest.fixture
 def cudf_bad_df(pd_bad_df):
     cudf = pytest.importorskip('cudf', reason="Cudf not installed, skipping")
     return cudf.from_pandas(pd_bad_df)
 
-@pytest.fixture(params=['pd_bad_df', 'dd_bad_df','cudf_bad_df'])
+
+@pytest.fixture(params=['pd_bad_df', 'dd_bad_df', 'cudf_bad_df'])
 def bad_df(request):
     return request.getfixturevalue(request.param)
 
@@ -762,7 +771,7 @@ def test_concat_entitysets(es):
 
     if ks and any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
         pytest.xfail("Koalas deepcopy fails")
-    
+
     if cudf and any(isinstance(entity.df, cudf.DataFrame) for entity in es.entities):
         pytest.xfail("Cudf Figure out failures")
 
@@ -869,12 +878,14 @@ def ks_transactions_df(pd_transactions_df):
         pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_transactions_df)
 
+
 @pytest.fixture
 def cudf_transactions_df(pd_transactions_df):
     cudf = pytest.importorskip('cudf', reason="Cudf not installed, skipping")
     return cudf.from_pandas(pd_transactions_df)
 
-@pytest.fixture(params=['pd_transactions_df', 'dd_transactions_df', 'ks_transactions_df','cudf_transactions_df'])
+
+@pytest.fixture(params=['pd_transactions_df', 'dd_transactions_df', 'ks_transactions_df', 'cudf_transactions_df'])
 def transactions_df(request):
     return request.getfixturevalue(request.param)
 
@@ -924,7 +935,7 @@ def test_sets_time_when_adding_entity(transactions_df):
     if ks and isinstance(transactions_df, ks.DataFrame):
         accounts_df = ks.from_pandas(accounts_df)
     if cudf and isinstance(transactions_df, cudf.DataFrame):
-            accounts_df = cudf.from_pandas(accounts_df)
+        accounts_df = cudf.from_pandas(accounts_df)
     if not isinstance(transactions_df, pd.DataFrame):
         accounts_vtypes = {'id': variable_types.Categorical, 'signup_date': variable_types.Datetime}
         transactions_vtypes = {
@@ -1304,6 +1315,7 @@ def pd_datetime3():
     return pd.DataFrame({'id': [0, 1, 2],
                          'ints': ['1', '2', '1']})
 
+
 @pytest.fixture
 def dd_datetime3(pd_datetime3):
     return dd.from_pandas(pd_datetime3, npartitions=2)
@@ -1316,13 +1328,14 @@ def ks_datetime3(pd_datetime3):
         pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_datetime3)
 
+
 @pytest.fixture
 def cudf_datetime3(pd_datetime3):
     cudf = pytest.importorskip('cudf', reason="Cudf not installed, skipping")
     return cudf.from_pandas(pd_datetime3)
 
 
-@pytest.fixture(params=['pd_datetime3', 'dd_datetime3', 'ks_datetime3','cudf_datetime3'])
+@pytest.fixture(params=['pd_datetime3', 'dd_datetime3', 'ks_datetime3', 'cudf_datetime3'])
 def datetime3(request):
     return request.getfixturevalue(request.param)
 
@@ -1333,8 +1346,8 @@ def test_datetime64_conversion(datetime3):
     if ks and isinstance(df, ks.DataFrame):
         df['time'] = df['time'].astype(np.datetime64)
     elif cudf and isinstance(df, cudf.DataFrame):
-        ## cudf does not support timezone yet 
-        ## check later
+        # cudf does not support timezone yet
+        # check later
         df['time'] = df['time'].astype('datetime64[ns]')
     else:
         df["time"] = df["time"].astype("datetime64[ns, UTC]")
@@ -1440,12 +1453,14 @@ def ks_index_df(pd_index_df):
         pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_index_df)
 
+
 @pytest.fixture
-def cudf_index_df(pd_index_df): 
+def cudf_index_df(pd_index_df):
     cudf = pytest.importorskip('cudf', reason="Cudf not installed, skipping")
     return cudf.from_pandas(pd_index_df)
 
-@pytest.fixture(params=['pd_index_df', 'dd_index_df', 'ks_index_df','cudf_index_df'])
+
+@pytest.fixture(params=['pd_index_df', 'dd_index_df', 'ks_index_df', 'cudf_index_df'])
 def index_df(request):
     return request.getfixturevalue(request.param)
 

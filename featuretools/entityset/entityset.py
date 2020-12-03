@@ -20,7 +20,7 @@ from featuretools.utils.plot_utils import (
 )
 
 ks = import_or_none('databricks.koalas')
-cudf =  import_or_none('cudf')
+cudf = import_or_none('cudf')
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
@@ -683,7 +683,7 @@ class EntitySet(object):
             ti_cols = [c if c != old_ti_name else secondary_time_index for c in ti_cols]
             make_secondary_time_index = {secondary_time_index: ti_cols}
 
-        #TODO: Figure out reason for this
+        # TODO: Figure out reason for this
         if is_instance(new_entity_df, (ks, cudf), 'DataFrame'):
             already_sorted = False
 
@@ -822,9 +822,9 @@ class EntitySet(object):
                         lti = lti.apply(lambda x: None)
                     elif is_instance(entity.df, ks, 'DataFrame'):
                         lti = ks.Series(pd.Series(index=lti.to_list(), name=lti.name))
-                    elif  is_instance(entity.df, cudf, 'DataFrame'):
-                        # TODO: check if to_list is actually needed
-                        if is_instance(lti,cudf,'Series'):
+                    elif is_instance(entity.df, cudf, 'DataFrame'):
+                        # TODO: check if to_list is needed
+                        if is_instance(lti, cudf, 'Series'):
                             lti = cudf.Series(index=lti, name=lti.name)
                     else:
                         lti[:] = None
@@ -858,15 +858,12 @@ class EntitySet(object):
                     lti_is_cudf = is_instance(child_e.last_time_index, cudf, 'Series')
                     if lti_is_dask or lti_is_koalas or lti_is_cudf:
                         to_join = child_e.df[link_var]
-
                         if lti_is_dask:
                             to_join.index = child_e.df[child_e.index]
-
 
                         lti_df = child_e.last_time_index.to_frame(name='last_time').join(
                             to_join.to_frame(name=entity.index)
                         )
-
 
                         if lti_is_dask:
                             new_index = lti_df.index.copy()
@@ -905,7 +902,7 @@ class EntitySet(object):
                             # getting rid of it for results
                             # TODO: figure out why we get it cudf and not in Koalas
                             if entity.index in lti_df.columns:
-                                lti_df.drop(columns=entity.index,inplace=True)
+                                lti_df.drop(columns=entity.index, inplace=True)
                             lti_df = lti_df.max(axis=1)
                         else:
                             lti_df['last_time'] = lti_df['last_time'].astype('datetime64[ns]')
