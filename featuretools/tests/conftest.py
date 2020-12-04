@@ -277,8 +277,8 @@ def cudf_mock_customer(pd_mock_customer):
     cudf = pytest.importorskip('cudf', reason="Cudf not installed, skipping")
     cudf_mock_customer = copy.deepcopy(pd_mock_customer)
     for entity in cudf_mock_customer.entities:
-        entity.df = cudf.from_pandas(entity.df.reset_index(drop=True), npartitions=4)
-    return dd_mock_customer
+        entity.df = cudf.from_pandas(entity.df.reset_index(drop=True))
+    return cudf_mock_customer
 
 
 @pytest.fixture

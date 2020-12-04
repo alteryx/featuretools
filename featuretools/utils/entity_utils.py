@@ -236,7 +236,8 @@ def col_is_datetime(col):
 
 def get_pandas_compatible_dtype(dtype):
     if cudf:
-        if is_instance(dtype, (cudf.core.dtypes), ('ListDtype')) or (dtype == 'list'):
+        # todo: find a cleaner way to do dtype is 'list'
+        if is_instance(dtype, (cudf.core.dtypes), ('ListDtype')) or (isinstance(dtype, str) and dtype == 'list'):
             dtype = 'object'
         elif is_instance(dtype, (cudf.core.dtypes), ('CategoricalDtype')):
             dtype = 'category'

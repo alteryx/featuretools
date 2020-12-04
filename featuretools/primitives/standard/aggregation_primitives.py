@@ -261,7 +261,6 @@ class NumTrue(AggregationPrimitive):
                 return s.agg(np.sum)
 
             return dd.Aggregation(self.name, chunk=chunk, agg=agg)
-
         return np.sum
 
 
@@ -485,7 +484,7 @@ class Std(AggregationPrimitive):
     description_template = "the standard deviation of {}"
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type in [Library.DASK, Library.KOALAS]:
+        if agg_type in [Library.DASK, Library.KOALAS, Library.CUDF]:
             return 'std'
 
         return np.std

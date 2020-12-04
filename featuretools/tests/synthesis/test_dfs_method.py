@@ -28,9 +28,10 @@ from featuretools.utils.gen_utils import import_or_none
 from featuretools.variable_types import Numeric
 
 ks = import_or_none('databricks.koalas')
+cudf = import_or_none('cudf')
 
 
-@pytest.fixture(params=['pd_entities', 'dask_entities', 'koalas_entities'])
+@pytest.fixture(params=['pd_entities', 'dask_entities', 'koalas_entities', 'cudf_entities'])
 def entities(request):
     return request.getfixturevalue(request.param)
 
@@ -86,6 +87,31 @@ def koalas_entities():
                                     "card_id": [1, 2, 1, 3, 4, 5],
                                     "transaction_time": [10, 12, 13, 20, 21, 20],
                                     "fraud": [True, False, False, False, True, True]})
+    cards_vtypes = {
+        'id': vtypes.Index
+    }
+    transactions_vtypes = {
+        'id': vtypes.Index,
+        'card_id': vtypes.Id,
+        'transaction_time': vtypes.NumericTimeIndex,
+        'fraud': vtypes.Boolean
+    }
+
+    entities = {
+        "cards": (cards_df, "id", None, cards_vtypes),
+        "transactions": (transactions_df, "id", "transaction_time", transactions_vtypes)
+    }
+    return entities
+
+
+@pytest.fixture
+def cudf_entities():
+    cudf = pytest.importorskip('cudf', reason="cuDF not installed, skipping")
+    cards_df = cudf.DataFrame({"id": [1, 2, 3, 4, 5]})
+    transactions_df = cudf.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                                      "card_id": [1, 2, 1, 3, 4, 5],
+                                      "transaction_time": [10, 12, 13, 20, 21, 20],
+                                      "fraud": [True, False, False, False, True, True]})
     cards_vtypes = {
         'id': vtypes.Index
     }

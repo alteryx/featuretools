@@ -49,6 +49,7 @@ from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.variable_types import Datetime, Numeric
 
 ks = import_or_none('databricks.koalas')
+cudf = import_or_none('cudf')
 
 
 @pytest.fixture(params=['pd_transform_es', 'dask_transform_es', 'koalas_transform_es'])
@@ -168,6 +169,8 @@ def test_errors_unsupported_primitives(es):
         library = 'Dask'
     elif any(is_instance(entity.df, ks, 'DataFrame') for entity in es.entities):
         library = 'Koalas'
+    elif any(is_instance(entity.df, cudf, 'DataFrame') for entity in es.entities):
+        library = 'cudf'
     else:
         library = 'pandas'
     error_text = "Selected primitives are incompatible with {} EntitySets: cum_sum, num_unique".format(library)
@@ -1404,7 +1407,7 @@ def test_primitive_options_commutative(es):
         input_types = [Numeric, Numeric, Numeric]
         return_type = Numeric
         commutative = True
-        compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+        compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
 
         def generate_name(self, base_feature_names):
             return "%s + %s + %s" % (base_feature_names[0], base_feature_names[1], base_feature_names[2])

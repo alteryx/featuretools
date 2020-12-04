@@ -870,7 +870,10 @@ class EntitySet(object):
                             new_index.name = None
                             lti_df.index = new_index
                         lti_df = lti_df.groupby(lti_df[entity.index]).agg('max')
+                        # merge b/w categorical and numerical column is failing
+
                         lti_df = entity.last_time_index.to_frame(name='last_time_old').join(lti_df)
+
                     else:
                         lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
                                                entity.index: child_e.df[link_var]})

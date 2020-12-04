@@ -27,6 +27,7 @@ from featuretools.computational_backends.utils import (
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, FeatureBase
 from featuretools.utils import Trie
+from featuretools.utils.entity_utils import get_pandas_compatible_dtype
 from featuretools.utils.gen_utils import (
     import_or_none,
     is_instance,
@@ -166,6 +167,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         # is same as column it references
         target_entity = features[0].entity
         dtype = entityset[target_entity.id].df[target_entity.index].dtype
+        dtype = get_pandas_compatible_dtype(dtype)
         cutoff_time["instance_id"] = cutoff_time["instance_id"].astype(dtype)
     else:
         pass_columns = []

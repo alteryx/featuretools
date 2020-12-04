@@ -105,19 +105,38 @@ def write_entity_data(entity, path, format='csv', **kwargs):
             df = df.copy()
             columns = list(df.select_dtypes('object').columns)
             df[columns] = df[columns].astype(str)
-        df.to_csv(
-            file,
-            index=kwargs['index'],
-            sep=kwargs['sep'],
-            encoding=kwargs['encoding'],
-            compression=kwargs['compression'],
-        )
+
+        if is_instance(df, cudf, 'DataFrame'):
+            if kwargs['encoding'] is None:
+                df.to_csv(file,
+                          index=kwargs['index'],
+                          sep=kwargs['sep'],
+                          compression=kwargs['compression'])
+            else:
+                # we dont support encoding with cudf writer yet
+                raise ValueError('Encoding  not supported with cuDF')
+
+        else:
+
+            df.to_csv(
+                file,
+                index=kwargs['index'],
+                sep=kwargs['sep'],
+                encoding=kwargs['encoding'],
+                compression=kwargs['compression'],
+            )
     elif format == 'parquet':
         # Serializing to parquet format raises an error when columns contain tuples.
         # Columns containing tuples are mapped as dtype object.
         # Issue is resolved by casting columns of dtype object to string.
         df = df.copy()
-        columns = list(df.select_dtypes('object').columns)
+        # For cudf we have a list dtype instead of tupple/object
+        if is_instance(df, cudf, 'DataFrame'):
+            # TODO: FIX in cudf
+            columns = list(df.select_dtypes([cudf.core.dtypes.ListDtype,
+                                             cudf.core.dtypes.StructDtype]).columns)
+        else:
+            columns = list(df.select_dtypes(['object']).columns)
         df[columns] = df[columns].astype(str)
         df.to_parquet(file, **kwargs)
     elif format == 'pickle':

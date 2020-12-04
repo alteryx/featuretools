@@ -49,6 +49,7 @@ from featuretools.variable_types import (
 )
 
 ks = import_or_none('databricks.koalas')
+cudf = import_or_none('cudf')
 
 
 @pytest.fixture
@@ -232,6 +233,8 @@ def test_init_and_name(es):
         agg_primitives = [prim for prim in agg_primitives if Library.DASK in prim.compatibility]
     if ks and isinstance(es['sessions'].df, ks.DataFrame):
         agg_primitives = [prim for prim in agg_primitives if Library.KOALAS in prim.compatibility]
+    if cudf and isinstance(es['sessions'].df, cudf.DataFrame):
+        agg_primitives = [prim for prim in agg_primitives if Library.CUDF in prim.compatibility]
 
     for agg_prim in agg_primitives:
         input_types = agg_prim.input_types
@@ -585,6 +588,9 @@ def test_custom_primitive_default_kwargs(es):
 def test_makes_numtrue(es):
     if ks and any(isinstance(e.df, ks.DataFrame) for e in es.entities):
         pytest.xfail('Koalas EntitySets do not support NumTrue primitive')
+
+    if cudf and any(isinstance(e.df, cudf.DataFrame) for e in es.entities):
+        pytest.xfail('cuDF EntitySets do not support NumTrue primitive')
     dfs = DeepFeatureSynthesis(target_entity_id='sessions',
                                entityset=es,
                                agg_primitives=[NumTrue],

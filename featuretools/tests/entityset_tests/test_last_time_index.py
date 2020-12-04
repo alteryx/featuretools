@@ -10,6 +10,7 @@ from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
 
 ks = import_or_none('databricks.koalas')
+cudf = import_or_none('cudf')
 
 
 @pytest.fixture
@@ -77,6 +78,8 @@ def extra_session_df(es):
         df = dd.from_pandas(df, npartitions=3)
     if ks and isinstance(es['sessions'].df, ks.DataFrame):
         df = ks.from_pandas(df)
+    if cudf and isinstance(es['sessions'].df, cudf.DataFrame):
+        df = cudf.from_pandas(df)
     return df
 
 
@@ -170,6 +173,9 @@ class TestLastTimeIndex(object):
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
         if ks and isinstance(es.entities[0].df, ks.DataFrame):
             wishlist_df = ks.from_pandas(wishlist_df)
+        if cudf and isinstance(es.entities[0].df, cudf.DataFrame):
+            wishlist_df = cudf.from_pandas(wishlist_df)
+
         variable_types = {'id': ft.variable_types.variable.Index,
                           'session_id': ft.variable_types.variable.Numeric,
                           'datetime': ft.variable_types.variable.DatetimeTimeIndex,
@@ -205,6 +211,9 @@ class TestLastTimeIndex(object):
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
         if ks and isinstance(es.entities[0].df, ks.DataFrame):
             wishlist_df = ks.from_pandas(wishlist_df)
+        if cudf and isinstance(es.entities[0].df, cudf.DataFrame):
+            wishlist_df = cudf.from_pandas(wishlist_df)
+
         variable_types = {'id': ft.variable_types.variable.Index,
                           'session_id': ft.variable_types.variable.Numeric,
                           'datetime': ft.variable_types.variable.DatetimeTimeIndex,
@@ -246,6 +255,8 @@ class TestLastTimeIndex(object):
             df = dd.from_pandas(df, npartitions=2)
         if ks and isinstance(es.entities[0].df, ks.DataFrame):
             df = ks.from_pandas(df)
+        if cudf and isinstance(es.entities[0].df, cudf.DataFrame):
+            df = cudf.from_pandas(df)
         variable_types = {'id': ft.variable_types.variable.Index,
                           'session_id': ft.variable_types.variable.Numeric,
                           'datetime': ft.variable_types.variable.DatetimeTimeIndex,
@@ -292,6 +303,8 @@ class TestLastTimeIndex(object):
             df = dd.from_pandas(df, npartitions=2)
         if ks and isinstance(es.entities[0].df, ks.DataFrame):
             df = ks.from_pandas(df)
+        if cudf and isinstance(es.entities[0].df, cudf.DataFrame):
+            df = cudf.from_pandas(df)
         variable_types = {'id': ft.variable_types.variable.Index,
                           'session_id': ft.variable_types.variable.Numeric,
                           'datetime': ft.variable_types.variable.DatetimeTimeIndex,
@@ -325,6 +338,8 @@ class TestLastTimeIndex(object):
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
         if ks and isinstance(es.entities[0].df, ks.DataFrame):
             wishlist_df = ks.from_pandas(wishlist_df)
+        if cudf and isinstance(es.entities[0].df, cudf.DataFrame):
+            wishlist_df = cudf.from_pandas(wishlist_df)
 
         variable_types = {'id': ft.variable_types.variable.Index,
                           'session_id': ft.variable_types.variable.Numeric,
@@ -372,6 +387,8 @@ class TestLastTimeIndex(object):
             df = dd.from_pandas(df, npartitions=2)
         if ks and isinstance(log.df, ks.DataFrame):
             df = ks.from_pandas(df)
+        if cudf and isinstance(log.df, cudf.DataFrame):
+            df = cudf.from_pandas(df)
         log.update_data(df)
         es.add_last_time_indexes()
 
