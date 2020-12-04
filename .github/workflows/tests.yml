@@ -1,0 +1,254 @@
+on: push
+
+name: Tests
+jobs:
+  build_docs:
+    name: ${{ matrix.python_version }} build docs
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python_version: ["3.6", "3.7", "3.8"]
+    steps:
+      - name: Set up python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Build featuretools package
+        run: make package_featuretools
+      - name: Install featuretools with doc requirements
+        run: |
+          sudo apt update
+          sudo apt install -y pandoc
+          sudo apt install -y graphviz
+          sudo apt install -y openjdk-11-jre-headless
+          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+          pip config --site set global.progress_bar off
+          python -m pip install --upgrade pip
+          python -m pip install -r unpacked_sdist/dev-requirements.txt
+      - name: Build docs
+        run: make -C docs/ -e "SPHINXOPTS=-W" clean html
+
+  install_ft_complete:
+    name: ${{ matrix.python_version }} install featuretools complete
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python_version: ["3.6", "3.7", "3.8"]        
+    steps:
+      - name: Set up python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Build featuretools package
+        run: make package_featuretools
+      - name: Install complete version of featuretools
+        run: |
+          pip config --site set global.progress_bar off
+          python -m pip install --upgrade pip
+          python -m pip install -e unpacked_sdist/[complete]
+      - name: Test by importing packages
+        run: |
+          python -c "import featuretools_tsfresh_primitives"
+          python -c "import featuretools_update_checker"
+          python -c "import categorical_encoding"
+          python -c "import nlp_primitives"
+          python -c "import autonormalize"
+          python -c "import featuretools_sklearn_transformer"
+        env:
+          FEATURETOOLS_UPDATE_CHECKER: False
+
+  lint_test:
+    name: ${{ matrix.python_version }} lint test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python_version: ["3.6", "3.7", "3.8"]        
+    steps:
+      - name: Set up python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Build featuretools package
+        run: make package_featuretools
+      - name: Install featuretools with optional, dev, and test requirements
+        run: |
+          pip config --site set global.progress_bar off
+          python -m pip install --upgrade pip
+          python -m pip install -e unpacked_sdist/[koalas]
+          python -m pip install -r unpacked_sdist/dev-requirements.txt
+          python -m pip install -r unpacked_sdist/test-requirements.txt
+      - name: Run lint test
+        run: make lint
+
+  release_notes_updated:
+    name: release notes updated
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for development branch
+        id: branch
+        shell: python
+        run: |
+          from os.path import basename
+          from re import compile
+          main = '^main$'
+          release = '^v\d+\.\d+\.\d+$'
+          dep_update = '^dep-update-[a-f0-9]{7}$'
+          regex = main, release, dep_update
+          patterns = list(map(compile, regex))
+          ref = basename("${{ github.event.ref }}")
+          is_dev = not any(pattern.match(ref) for pattern in patterns)
+          print('::set-output name=is_dev::' + str(is_dev))
+      - name: Install package for requests
+        run: python -m pip install requests
+      - name: Check for pull request number
+        id: pull_request
+        shell: python
+        run: |
+          from requests import get
+          url = "https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/pulls"
+          headers = {'Accept': 'application/vnd.github.groot-preview+json'}
+          response = get(url=url, headers=headers)
+          info = "%s (%s)" % (response.reason, response.status_code)
+          assert response.status_code == 200, info
+          json = response.json()
+          number = str(json[0]['number'] if json else None)
+          print('::set-output name=number::' + number)
+      - if: ${{ steps.branch.outputs.is_dev == 'True' }}
+        name: Checkout repository
+        uses: actions/checkout@v2
+      - if: ${{ steps.branch.outputs.is_dev == 'True' }}
+        name: Check if release notes were updated
+        run: cat docs/source/release_notes.rst | grep ":pr:\`${{ steps.pull_request.outputs.number }}\`"
+
+  run_premium_primitives_tests:
+    name: run premium primitives tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for main and release branch
+        id: branch
+        shell: python
+        run: |
+          from os.path import basename
+          from re import compile
+          main = compile('^main$')
+          release = compile('^v\d+\.\d+\.\d+$')
+          ref = basename("${{ github.event.ref }}")
+          is_main = str(bool(main.match(ref)))
+          is_release = str(bool(release.match(ref)))
+          print('::set-output name=is_main::' + is_main)
+          print('::set-output name=is_release::' + is_release)
+      - if: ${{ steps.branch.outputs.is_main == 'True' }}
+        name: "Trigger premium primitives tests for python 3.6 main"
+        run: |
+          url=https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/main
+          curl -u ${{ secrets.PP_K }}: -d 'build_parameters[CIRCLE_JOB]=python_36' $url
+      - if: ${{ steps.branch.outputs.is_release == 'True' }}
+        name: "Trigger premium primitives tests for python 3.6 release"
+        run: |
+          url=https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/main
+          curl -u ${{ secrets.PP_K }}: -d 'build_parameters[CIRCLE_JOB]=python_36_ft_release' $url
+
+  unit_tests:
+    name: ${{ matrix.python_version }} unit tests ${{ matrix.optional_libraries }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python_version: ["3.6", "3.7", "3.8"]
+        optional_libraries: ["minimal", "optional"]
+    steps:
+      - name: Set up python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Build featuretools package
+        run: make package_featuretools
+      - name: Set up pip and graphviz
+        run: |
+          pip config --site set global.progress_bar off
+          python -m pip install --upgrade pip
+          sudo apt update && sudo apt install -y graphviz
+      - if: ${{ matrix.optional_libraries != 'optional' }}
+        name: Install featuretools with test requirements (no optional requirements)
+        run: |
+          python -m pip install -e unpacked_sdist/
+          python -m pip install -r unpacked_sdist/test-requirements.txt
+      - if: ${{ matrix.optional_libraries == 'optional' }}
+        name: Install featuretools with test requirements and optional requirements
+        run: |
+          sudo apt install -y openjdk-11-jre-headless
+          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+          python -m pip install -e unpacked_sdist/[koalas]
+          python -m pip install -r unpacked_sdist/test-requirements.txt
+      - if: ${{ matrix.python_version != 3.6 || matrix.optional_libraries != 'optional' }}
+        name: Run unit tests (no code coverage)
+        run: |
+          cd unpacked_sdist
+          pytest featuretools/ -n 2
+      - if: ${{ matrix.python_version == 3.6 && matrix.optional_libraries == 'optional' }}
+        name: Run unit tests with code coverage
+        run: |
+          python -m pip install "$(cat dev-requirements.txt | grep codecov)"
+          coverage erase
+          cd unpacked_sdist/
+          coverage erase
+          pytest featuretools/ -n 2 --cov=featuretools --cov-config=../.coveragerc
+      - if: ${{ matrix.python_version == 3.6 && matrix.optional_libraries == 'optional' }}
+        name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: true
+
+  win_unit_tests:
+    name: ${{ matrix.python_version }} windows unit tests
+    runs-on: windows-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python_version: ["3.6", "3.7", "3.8"]
+    steps:
+      - name: Download miniconda
+        shell: pwsh
+        run: |
+          $File = "Miniconda3-4.7.12.1-Windows-x86_64.exe"
+          $Uri = "https://repo.anaconda.com/miniconda/$File"
+          $ProgressPreference = "silentlyContinue"
+          Invoke-WebRequest -Uri $Uri -Outfile "$env:USERPROFILE/$File"
+          $hashFromFile = Get-FileHash "$env:USERPROFILE/$File" -Algorithm SHA256
+          $hashFromUrl = "f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45"
+          if ($hashFromFile.Hash -ne "$hashFromUrl") {
+            Throw "File hashes did not match!"
+          }
+      - name: Install miniconda
+        shell: cmd
+        run: start /wait "" %UserProfile%\Miniconda3-4.7.12.1-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /S /D=%UserProfile%\Miniconda3
+      - name: Create python ${{ matrix.python_version }} environment
+        shell: pwsh
+        run: |
+          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
+          conda create -n featuretools python=${{ matrix.python_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Install featuretools with test requirements
+        shell: pwsh
+        run: |
+          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
+          conda activate featuretools
+          conda config --add channels conda-forge
+          conda install python-graphviz -q -y
+          python -m pip install --upgrade pip
+          python -m pip install .
+          python -m pip install -r test-requirements.txt
+      - name: Run unit tests
+        run: |
+          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
+          conda activate featuretools
+          pytest featuretools\ -n 2

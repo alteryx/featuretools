@@ -20,11 +20,13 @@ jobs:
         make installdeps
         make checkdeps OUTPUT_PATH=featuretools/tests/latest_dependencies.txt
     - name: Create Pull Request
-      uses: Featurelabs/create-pull-request@v2
+      uses: FeatureLabs/create-pull-request@v3
+      env:
+        GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: Update latest_dependencies.txt
         title: Automated Update to latest_dependencies.txt
+        author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
         body: "This is an auto-generated PR with updates to latest_dependencies.txt."
         branch: dep-update
         branch-suffix: short-commit-hash

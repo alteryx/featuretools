@@ -2,18 +2,36 @@
 
 Release Notes
 -------------
-
 **Future Release**
     * Enhancements
-        * Allow variable descriptions to be set directly on variable (:pr:`1207`)
-        * Add ability to add feature description captions to feature lineage graphs (:pr:`1212`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Use repository-scoped token for dependency check (:pr:`1245`:)
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`
+    :user:`jeff-hernandez`
+
+**v0.22.0 Nov 30, 2020**
+    * Enhancements
+        * Allow variable descriptions to be set directly on variable (:pr:`1207`)
+        * Add ability to add feature description captions to feature lineage graphs (:pr:`1212`)
+        * Add support for local tar file in read_entityset (:pr:`1228`)
+    * Fixes
+        * Updates to fix unit test errors from koalas 1.4 (:pr:`1230`, :pr:`1232`)
+    * Documentation Changes
+        * Removed link to unused feedback board (:pr:`1220`)
+        * Update footer with Alteryx Innovation Labs (:pr:`1221`)
+        * Update links to repo in documentation to use alteryx org url (:pr:`1224`)
+    * Testing Changes
+        * Update release notes check to use new repo url (:pr:`1222`)
+        * Use new version of pull request Github Action (:pr:`1234`)
+        * Upgrade pip during featuretools[complete] test (:pr:`1236`)
+        * Migrated CI tests to github actions (:pr:`1226`, :pr:`1237`, :pr:`1239`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`frances-h`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.21.0 Oct 30, 2020**
     * Enhancements

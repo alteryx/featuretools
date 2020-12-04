@@ -8,8 +8,8 @@
 
 
 
-[![Circle CI](https://circleci.com/gh/FeatureLabs/featuretools.svg?maxAge=2592000&style=shield)](https://circleci.com/gh/FeatureLabs/featuretools)
-[![Coverage Status](https://codecov.io/gh/FeatureLabs/featuretools/branch/main/graph/badge.svg)](https://codecov.io/gh/FeatureLabs/featuretools)
+![Tests](https://github.com/alteryx/featuretools/workflows/Tests/badge.svg)
+[![Coverage Status](https://codecov.io/gh/alteryx/featuretools/branch/main/graph/badge.svg)](https://codecov.io/gh/alteryx/featuretools)
 [![PyPI version](https://badge.fury.io/py/featuretools.svg?maxAge=2592000)](https://badge.fury.io/py/featuretools)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/featuretools/badges/version.svg)](https://anaconda.org/conda-forge/featuretools)
 [![StackOverflow](http://img.shields.io/badge/questions-on_stackoverflow-blue.svg)](https://stackoverflow.com/questions/tagged/featuretools)
@@ -61,7 +61,7 @@ Below is an example of using Deep Feature Synthesis (DFS) to perform automated f
 >> es.plot()
 ```
 
-<img src="https://github.com/FeatureLabs/featuretools/blob/main/docs/source/_static/images/entity_set.png?raw=true" width="350">
+<img src="https://github.com/alteryx/featuretools/blob/main/docs/source/_static/images/entity_set.png?raw=true" width="350">
 
 Featuretools can automatically create a single table of features for any "target entity"
 ```python
@@ -101,7 +101,7 @@ The Featuretools community welcomes pull requests. Instructions for testing and 
 The Featuretools community is happy to provide support to users of Featuretools. Project support can be found in four places depending on the type of question:
 
 1. For usage questions, use [Stack Overflow](https://stackoverflow.com/questions/tagged/featuretools) with the `featuretools` tag.
-2. For bugs, issues, or feature requests start a [Github issue](https://github.com/FeatureLabs/featuretools/issues).
+2. For bugs, issues, or feature requests start a [Github issue](https://github.com/alteryx/featuretools/issues).
 3. For discussion regarding development on the core library, use [Slack](https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTQ1MjZlOWFmZDk2YzAwMjEzNTkwZTZkN2NmOGFjOGI4YzE5OGMyMGM5NGIxNTE4NjkzYWI3OWEwZjkyZGExYmQ).
 4. For everything else, the core developers can be reached by email at help@featuretools.com.
 
@@ -124,10 +124,8 @@ BibTeX entry:
 }
 ```
 
+## Built at Alteryx Innovation Labs
 
-## Feature Labs
-<a href="https://www.featurelabs.com/">
-    <img src="http://www.featurelabs.com/wp-content/uploads/2017/12/logo.png" alt="Featuretools" />
+<a href="https://www.alteryx.com/innovation-labs">
+    <img src="https://evalml-web-images.s3.amazonaws.com/alteryx_innovation_labs.png" alt="Alteryx Innovation Labs" />
 </a>
-
-Featuretools is an open source project created by [Feature Labs](https://www.featurelabs.com/). To see the other open source projects we're working on visit Feature Labs [Open Source](https://www.featurelabs.com/open). If building impactful data science pipelines is important to you or your business, please [get in touch](https://www.featurelabs.com/contact/).

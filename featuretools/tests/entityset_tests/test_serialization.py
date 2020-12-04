@@ -1,5 +1,7 @@
 import json
 import os
+import tempfile
+from urllib.request import urlretrieve
 
 import boto3
 import pandas as pd
@@ -370,6 +372,14 @@ def test_serialize_subdirs_not_removed(es, tmpdir):
     assert os.path.exists(str(test_dir))
     with open(str(write_path.join('data_description.json')), 'r') as f:
         assert '__SAMPLE_TEXT__' not in json.load(f)
+
+
+def test_deserialize_local_tar(es):
+    with tempfile.TemporaryDirectory() as tmpdir:
+        temp_tar_filepath = os.path.join(tmpdir, TEST_FILE)
+        urlretrieve(URL, filename=temp_tar_filepath)
+        new_es = deserialize.read_entityset(temp_tar_filepath)
+        assert es.__eq__(new_es, deep=True)
 
 
 def test_deserialize_url_csv(es):
