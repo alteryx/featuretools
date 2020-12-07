@@ -21,8 +21,6 @@ jobs:
         make checkdeps OUTPUT_PATH=featuretools/tests/latest_dependencies.txt
     - name: Create Pull Request
       uses: FeatureLabs/create-pull-request@v3
-      env:
-        GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
       with:
         commit-message: Update latest_dependencies.txt
         title: Automated Update to latest_dependencies.txt
@@ -32,3 +30,4 @@ jobs:
         branch-suffix: short-commit-hash
         base: main
         reviewers: rwedge, thehomebrewnerd, frances-h
+        token: ${{ secrets.REPO_SCOPED_TOKEN }}
