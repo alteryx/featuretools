@@ -6,12 +6,13 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Move ``query_by_values`` method from ``Entity`` to ``EntitySet`` (:pr:`1251`)
     * Documentation Changes
     * Testing Changes
         * Use repository-scoped token for dependency check (:pr:`1245`:)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`
+    :user:`jeff-hernandez`, :user:`thehomebrewnerd`
 
 **v0.22.0 Nov 30, 2020**
     * Enhancements
