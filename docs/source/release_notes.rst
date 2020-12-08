@@ -9,9 +9,10 @@ Release Notes
     * Documentation Changes
     * Testing Changes
         * Use repository-scoped token for dependency check (:pr:`1245`:)
+        * Fix install error during docs CI test (:pr:`1250`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`
+    :user:`jeff-hernandez`, :user:`rwedge`
 
 **v0.22.0 Nov 30, 2020**
     * Enhancements
