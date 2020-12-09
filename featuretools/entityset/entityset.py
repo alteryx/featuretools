@@ -996,7 +996,7 @@ class EntitySet(object):
         if not variable_id:
             variable_id = entity.index
 
-        instance_vals = self._vals_to_series(instance_vals, variable_id)
+        instance_vals = _vals_to_series(instance_vals, variable_id)
 
         training_window = _check_timedelta(training_window)
 
@@ -1037,30 +1037,31 @@ class EntitySet(object):
 
         return df
 
-    def _vals_to_series(self, instance_vals, variable_id):
-        """
-        instance_vals may be a pd.Dataframe, a pd.Series, a list, a single
-        value, or None. This function always returns a Series or None.
-        """
-        if instance_vals is None:
-            return None
 
-        # If this is a single value, make it a list
-        if not hasattr(instance_vals, '__iter__'):
-            instance_vals = [instance_vals]
+def _vals_to_series(self, instance_vals, variable_id):
+    """
+    instance_vals may be a pd.Dataframe, a pd.Series, a list, a single
+    value, or None. This function always returns a Series or None.
+    """
+    if instance_vals is None:
+        return None
 
-        # convert iterable to pd.Series
-        if isinstance(instance_vals, pd.DataFrame):
-            out_vals = instance_vals[variable_id]
-        elif is_instance(instance_vals, (pd, dd, ks), 'Series'):
-            out_vals = instance_vals.rename(variable_id)
-        else:
-            out_vals = pd.Series(instance_vals)
+    # If this is a single value, make it a list
+    if not hasattr(instance_vals, '__iter__'):
+        instance_vals = [instance_vals]
 
-        # no duplicates or NaN values
-        out_vals = out_vals.drop_duplicates().dropna()
+    # convert iterable to pd.Series
+    if isinstance(instance_vals, pd.DataFrame):
+        out_vals = instance_vals[variable_id]
+    elif is_instance(instance_vals, (pd, dd, ks), 'Series'):
+        out_vals = instance_vals.rename(variable_id)
+    else:
+        out_vals = pd.Series(instance_vals)
 
-        # want index to have no name for the merge in query_by_values
-        out_vals.index.name = None
+    # no duplicates or NaN values
+    out_vals = out_vals.drop_duplicates().dropna()
 
-        return out_vals
+    # want index to have no name for the merge in query_by_values
+    out_vals.index.name = None
+
+    return out_vals
