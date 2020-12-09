@@ -1038,7 +1038,7 @@ class EntitySet(object):
         return df
 
 
-def _vals_to_series(self, instance_vals, variable_id):
+def _vals_to_series(instance_vals, variable_id):
     """
     instance_vals may be a pd.Dataframe, a pd.Series, a list, a single
     value, or None. This function always returns a Series or None.
