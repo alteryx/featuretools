@@ -325,7 +325,6 @@ Entity methods
     :toctree: generated/
 
     Entity.convert_variable_type
-    Entity.add_interesting_values
 
 Relationship attributes
 -----------------------
