@@ -6,13 +6,20 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Remove ``add_interesting_values`` from ``Entity`` (:pr:`1269`)
     * Documentation Changes
     * Testing Changes
         * Use repository-scoped token for dependency check (:pr:`1245`:, :pr:`1248`)
         * Fix install error during docs CI test (:pr:`1250`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`rwedge`
+    :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
+
+**Breaking Changes**
+
+* ``Entity.add_interesting_values`` has been removed. To add interesting values for a single
+    entity, call `EntitySet.add_interesting_values` and pass the id of the entity for
+    which to add interesting values in the ``entity_id`` parameter. 
 
 **v0.22.0 Nov 30, 2020**
     * Enhancements
