@@ -9,7 +9,7 @@ Release Notes
         * Move ``query_by_values`` method from ``Entity`` to ``EntitySet`` (:pr:`1251`)
     * Documentation Changes
     * Testing Changes
-        * Use repository-scoped token for dependency check (:pr:`1245`:)
+        * Use repository-scoped token for dependency check (:pr:`1245`:, :pr:`1248`)
         * Fix install error during docs CI test (:pr:`1250`)
 
     Thanks to the following people for contributing to this release:
