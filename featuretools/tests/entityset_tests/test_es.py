@@ -208,6 +208,18 @@ def test_query_by_id(es):
     assert df['id'].values[0] == 0
 
 
+def test_query_by_single_value(es):
+    df = to_pandas(es.query_by_values('log', instance_vals=0))
+    assert df['id'].values[0] == 0
+
+
+def test_query_by_df(es):
+    instance_df = pd.DataFrame({'id': [1, 3], 'vals': [0, 1]})
+    df = to_pandas(es.query_by_values('log', instance_vals=instance_df))
+
+    assert np.array_equal(df['id'], [1, 3])
+
+
 def test_query_by_id_with_time(es):
     df = es.query_by_values(
         entity_id='log',
