@@ -1,4 +1,3 @@
-import logging
 import warnings
 
 import dask.dataframe as dd
@@ -23,8 +22,6 @@ from featuretools.utils.wrangle import (
 from featuretools.variable_types import Text, find_variable_types
 
 ks = import_or_none('databricks.koalas')
-
-logger = logging.getLogger('featuretools.entityset')
 
 _numeric_types = vtypes.PandasTypes._pandas_numerics
 _categorical_types = [vtypes.PandasTypes._categorical]

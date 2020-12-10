@@ -1514,3 +1514,15 @@ def test_entityset_init():
     es_copy.add_relationship(relationship)
     assert es['cards'].__eq__(es_copy['cards'], deep=True)
     assert es['transactions'].__eq__(es_copy['transactions'], deep=True)
+
+
+def test_add_interesting_values_verbose_output(caplog, pd_es):
+    logger = logging.getLogger('featuretools')
+    logger.propagate = True
+    logger = logging.getLogger('featuretools.entityset')
+    logger.propagate = True
+    pd_es.add_interesting_values(verbose=True)
+    logger.propagate = False
+    logger = logging.getLogger('featuretools')
+    logger.propagate = False
+    assert 'Variable language: Marking en as an interesting value' in caplog.text
