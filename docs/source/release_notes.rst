@@ -17,7 +17,7 @@ Release Notes
 
 **Breaking Changes**
 
-* ``Entity.query_by_values`` has been removed and replaced with ``EntitySet.query_by_values``, with an
+* ``Entity.query_by_values`` has been removed and replaced by ``EntitySet.query_by_values`` with an
     added ``entity_id`` parameter to specify which entity in the entityset should be used for the query.
 
 **v0.22.0 Nov 30, 2020**
