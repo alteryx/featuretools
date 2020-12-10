@@ -87,7 +87,7 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
                 .sample(min(10000, df[variable].nunique(dropna=False)))
 
             unique = sample.unique()
-            percent_unique = sample.size / len(unique)
+            percent_unique = len(unique) / sample.size
 
             if percent_unique < .05:
                 inferred_type = vtypes.Categorical
