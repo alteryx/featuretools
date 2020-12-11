@@ -907,25 +907,25 @@ class EntitySet(object):
     #  Other ###############################################
     ###########################################################################
 
-    def add_interesting_values(self, max_values=5, verbose=False, entity_id=None):
+    def add_interesting_values(self, max_values=5, verbose=False, datatable_id=None):
         """Find interesting values for categorical variables, to be used to generate "where" clauses
 
         Args:
             max_values (int) : Maximum number of values per variable to add.
             verbose (bool) : If True, print summary of interesting values found.
-            entity_id (str) : The entity for which to add interesting values. If not specified
-                interesting values will be added for all entities.
+            datatable_id (str) : The DataTable for which to add interesting values. If not specified
+                interesting values will be added for all DataTables.
 
         Returns:
             None
 
         """
-        if entity_id:
-            entities = [self[entity_id]]
+        if datatable_id:
+            tables = [self[datatable_id]]
         else:
-            entities = self.entities
-        for entity in entities:
-            for variable in entity.variables:
+            tables = self.entities
+        for table in tables:
+            for variable in table.variables:
                 # some heuristics to find basic 'where'-able variables
                 if isinstance(variable, vtypes.Discrete):
                     variable.interesting_values = pd.Series(dtype=variable.entity.df[variable.id].dtype)
@@ -940,7 +940,7 @@ class EntitySet(object):
                     if skip:
                         continue
 
-                    counts = entity.df[variable.id].value_counts()
+                    counts = table.df[variable.id].value_counts()
 
                     # find how many of each unique value there are; sort by count,
                     # and add interesting values to each variable
