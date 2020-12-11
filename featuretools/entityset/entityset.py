@@ -949,8 +949,6 @@ class EntitySet(object):
                     for i in range(min(max_values, len(counts.index))):
                         idx = counts.index[i]
 
-                        # add the value to interesting_values if it represents more than
-                        # 25% of the values we have not seen so far
                         if len(counts.index) < 25:
                             if verbose:
                                 msg = "Variable {}: Marking {} as an "
@@ -965,7 +963,6 @@ class EntitySet(object):
                                     msg += "interesting value"
                                     logger.info(msg.format(variable.id, idx))
                                 variable.interesting_values = variable.interesting_values.append(pd.Series([idx]))
-                                # total_count -= counts[idx]
                             else:
                                 break
 
