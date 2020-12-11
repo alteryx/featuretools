@@ -12,7 +12,7 @@ from featuretools.utils.gen_utils import import_or_none, is_instance
 ks = import_or_none('databricks.koalas')
 
 
-def infer_variable_types(df, link_vars, variable_types, time_index, secondary_time_index):
+def infer_variable_types(df, link_vars, variable_types, time_index, secondary_time_index, random_state=0):
     '''Infer variable types from dataframe
 
     Args:
@@ -83,8 +83,8 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
             inferred_type = vtypes.Datetime
 
         elif len(df[variable]):
-            sample = df[variable] \
-                .sample(min(10000, df[variable].nunique(dropna=False)))
+            n = min(10000, df[variable].nunique(dropna=False))
+            sample = df[variable].sample(n=n, random_state=random_state)
 
             unique = sample.unique()
             percent_unique = len(unique) / sample.size
