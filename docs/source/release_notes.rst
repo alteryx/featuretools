@@ -6,13 +6,14 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Move ``_handle_time`` method from ``Entity`` to ``EntitySet`` (:pr:`1276`)
     * Documentation Changes
     * Testing Changes
         * Use repository-scoped token for dependency check (:pr:`1245`:, :pr:`1248`)
         * Fix install error during docs CI test (:pr:`1250`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`rwedge`
+    :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.22.0 Nov 30, 2020**
     * Enhancements
