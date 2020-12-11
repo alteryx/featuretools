@@ -177,10 +177,11 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
         if instance_ids is None:
             index_var = target_entity.index
-            df = target_entity._handle_time(target_entity.df,
-                                            time_last=cutoff_time,
-                                            training_window=training_window,
-                                            include_cutoff_time=include_cutoff_time)
+            df = entityset._handle_time(datatable_id=target_entity.id,
+                                        df=target_entity.df,
+                                        time_last=cutoff_time,
+                                        training_window=training_window,
+                                        include_cutoff_time=include_cutoff_time)
             instance_ids = df[index_var]
 
         if isinstance(instance_ids, dd.Series):
