@@ -5,6 +5,7 @@ Release Notes
 **Future Release**
     * Enhancements
     * Fixes
+        * Fix percent unique for inferred variable types (:pr:`1273`)
     * Changes
     * Documentation Changes
     * Testing Changes
