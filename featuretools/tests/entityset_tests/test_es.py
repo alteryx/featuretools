@@ -1516,13 +1516,16 @@ def test_entityset_init():
     assert es['transactions'].__eq__(es_copy['transactions'], deep=True)
 
 
-def test_add_interesting_values_verbose_output(caplog, pd_es):
+def test_add_interesting_values_verbose_output(caplog):
+    es = ft.demo.load_retail(nrows=200)
+    es['order_products'].convert_variable_type('quantity', ft.variable_types.Discrete)
     logger = logging.getLogger('featuretools')
     logger.propagate = True
     logger = logging.getLogger('featuretools.entityset')
     logger.propagate = True
-    pd_es.add_interesting_values(verbose=True)
+    es.add_interesting_values(verbose=True)
     logger.propagate = False
     logger = logging.getLogger('featuretools')
     logger.propagate = False
-    assert 'Variable language: Marking en as an interesting value' in caplog.text
+    assert 'Variable country: Marking United Kingdom as an interesting value' in caplog.text
+    assert 'Variable quantity: Marking 6 as an interesting value' in caplog.text
