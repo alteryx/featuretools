@@ -1523,7 +1523,7 @@ def test_add_interesting_values_verbose_output(caplog):
     logger.propagate = True
     logger = logging.getLogger('featuretools.entityset')
     logger.propagate = True
-    es.add_interesting_values(verbose=True)
+    es.add_interesting_values(verbose=True, max_values=10)
     logger.propagate = False
     logger = logging.getLogger('featuretools')
     logger.propagate = False
