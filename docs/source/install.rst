@@ -44,7 +44,7 @@ AutoNormalize:
         python -m pip install featuretools[autonormalize]
 
 Featuretools Sklearn Transformer:
-    Deep Feature Synthesis as a scikit-learn pipelines transformer
+    Deep Feature Synthesis as a scikit-learn pipelines transformer::
 
         python -m pip install featuretools[sklearn_transformer]
 
@@ -53,7 +53,7 @@ Featuretools Sklearn Transformer:
 Installing Graphviz
 -------------------
 
-In order to use :meth:`EntitySet.plot <featuretools.entityset.EntitySet.plot>` or :func:`featuretools.graph_feature` 
+In order to use :meth:`EntitySet.plot <featuretools.entityset.EntitySet.plot>` or :func:`featuretools.graph_feature`
 you will need to install the graphviz library.
 
 Conda users::
