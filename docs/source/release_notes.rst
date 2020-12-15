@@ -6,6 +6,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Move ``query_by_values`` method from ``Entity`` to ``EntitySet`` (:pr:`1251`)
         * Move ``_handle_time`` method from ``Entity`` to ``EntitySet`` (:pr:`1276`)
     * Documentation Changes
     * Testing Changes
@@ -14,6 +15,11 @@ Release Notes
 
     Thanks to the following people for contributing to this release:
     :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
+
+**Breaking Changes**
+
+* ``Entity.query_by_values`` has been removed and replaced by ``EntitySet.query_by_values`` with an
+    added ``entity_id`` parameter to specify which entity in the entityset should be used for the query.
 
 **v0.22.0 Nov 30, 2020**
     * Enhancements
