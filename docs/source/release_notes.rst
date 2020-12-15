@@ -5,6 +5,7 @@ Release Notes
 **Future Release**
     * Enhancements
     * Fixes
+        * Fix logic for inferring variable type from unusual dtype (:pr:`1273`)
     * Changes
         * Move ``query_by_values`` method from ``Entity`` to ``EntitySet`` (:pr:`1251`)
         * Move ``_handle_time`` method from ``Entity`` to ``EntitySet`` (:pr:`1276`)
