@@ -971,6 +971,58 @@ class EntitySet(object):
             save_graph(graph, to_file, format_)
         return graph
 
+    def _handle_time(self, entity_id, df, time_last=None, training_window=None, include_cutoff_time=True):
+        """
+        Filter a dataframe for all instances before time_last.
+        If the DataTable does not have a time index, return the original
+        dataframe.
+        """
+        dt = self[entity_id]
+        if is_instance(df, ks, 'DataFrame') and isinstance(time_last, np.datetime64):
+            time_last = pd.to_datetime(time_last)
+        if dt.time_index:
+            df_empty = df.empty if isinstance(df, pd.DataFrame) else False
+            if time_last is not None and not df_empty:
+                if include_cutoff_time:
+                    df = df[df[dt.time_index] <= time_last]
+                else:
+                    df = df[df[dt.time_index] < time_last]
+                if training_window is not None:
+                    training_window = _check_timedelta(training_window)
+                    if include_cutoff_time:
+                        mask = df[dt.time_index] > time_last - training_window
+                    else:
+                        mask = df[dt.time_index] >= time_last - training_window
+                    if dt.last_time_index is not None:
+                        lti_slice = dt.last_time_index.reindex(df.index)
+                        if include_cutoff_time:
+                            lti_mask = lti_slice > time_last - training_window
+                        else:
+                            lti_mask = lti_slice >= time_last - training_window
+                        mask = mask | lti_mask
+                    else:
+                        warnings.warn(
+                            "Using training_window but last_time_index is "
+                            "not set on entity %s" % (dt.id)
+                        )
+
+                    df = df[mask]
+
+        for secondary_time_index, columns in dt.secondary_time_index.items():
+            # should we use ignore time last here?
+            df_empty = df.empty if isinstance(df, pd.DataFrame) else False
+            if time_last is not None and not df_empty:
+                mask = df[secondary_time_index] >= time_last
+                if isinstance(df, dd.DataFrame):
+                    for col in columns:
+                        df[col] = df[col].mask(mask, np.nan)
+                elif is_instance(df, ks, 'DataFrame'):
+                    df.loc[mask, columns] = None
+                else:
+                    df.loc[mask, columns] = np.nan
+
+        return df
+
     def query_by_values(self, entity_id, instance_vals, variable_id=None, columns=None,
                         time_last=None, training_window=None, include_cutoff_time=True):
         """Query instances that have variable with given value
@@ -1027,10 +1079,11 @@ class EntitySet(object):
                 categories = pd.api.types.CategoricalDtype(categories=entity.df[variable_id].cat.categories)
                 df[variable_id] = df[variable_id].astype(categories)
 
-        df = entity._handle_time(df=df,
-                                 time_last=time_last,
-                                 training_window=training_window,
-                                 include_cutoff_time=include_cutoff_time)
+        df = self._handle_time(entity_id=entity_id,
+                               df=df,
+                               time_last=time_last,
+                               training_window=training_window,
+                               include_cutoff_time=include_cutoff_time)
 
         if columns is not None:
             df = df[columns]
