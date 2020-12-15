@@ -970,13 +970,13 @@ class EntitySet(object):
             save_graph(graph, to_file, format_)
         return graph
 
-    def _handle_time(self, datatable_id, df, time_last=None, training_window=None, include_cutoff_time=True):
+    def _handle_time(self, entity_id, df, time_last=None, training_window=None, include_cutoff_time=True):
         """
         Filter a dataframe for all instances before time_last.
         If the DataTable does not have a time index, return the original
         dataframe.
         """
-        dt = self[datatable_id]
+        dt = self[entity_id]
         if is_instance(df, ks, 'DataFrame') and isinstance(time_last, np.datetime64):
             time_last = pd.to_datetime(time_last)
         if dt.time_index:
