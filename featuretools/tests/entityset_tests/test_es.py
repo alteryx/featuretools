@@ -1521,11 +1521,10 @@ def test_add_interesting_values_verbose_output(caplog):
     es['order_products'].convert_variable_type('quantity', ft.variable_types.Discrete)
     logger = logging.getLogger('featuretools')
     logger.propagate = True
-    logger = logging.getLogger('featuretools.entityset')
-    logger.propagate = True
+    logger_es = logging.getLogger('featuretools.entityset')
+    logger_es.propagate = True
     es.add_interesting_values(verbose=True, max_values=10)
     logger.propagate = False
-    logger = logging.getLogger('featuretools')
-    logger.propagate = False
+    logger_es.propagate = False
     assert 'Variable country: Marking United Kingdom as an interesting value' in caplog.text
     assert 'Variable quantity: Marking 6 as an interesting value' in caplog.text
