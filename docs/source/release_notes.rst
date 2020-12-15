@@ -7,6 +7,7 @@ Release Notes
     * Fixes
     * Changes
         * Remove ``add_interesting_values`` from ``Entity`` (:pr:`1269`)
+        * Move ``query_by_values`` method from ``Entity`` to ``EntitySet`` (:pr:`1251`)
     * Documentation Changes
     * Testing Changes
         * Use repository-scoped token for dependency check (:pr:`1245`:, :pr:`1248`)
@@ -20,6 +21,8 @@ Release Notes
 * ``Entity.add_interesting_values`` has been removed. To add interesting values for a single
     entity, call ``EntitySet.add_interesting_values`` and pass the id of the entity for
     which to add interesting values in the ``entity_id`` parameter. 
+* ``Entity.query_by_values`` has been removed and replaced by ``EntitySet.query_by_values`` with an
+    added ``entity_id`` parameter to specify which entity in the entityset should be used for the query.
 
 **v0.22.0 Nov 30, 2020**
     * Enhancements

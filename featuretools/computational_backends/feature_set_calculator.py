@@ -209,8 +209,7 @@ class FeatureSetCalculator(object):
         need_full_entity, full_entity_features, not_full_entity_features = feature_trie.value
 
         all_features = full_entity_features | not_full_entity_features
-        entity = self.entityset[entity_id]
-        columns = self._necessary_columns(entity, all_features)
+        columns = self._necessary_columns(entity_id, all_features)
 
         # If we need the full entity then don't filter by filter_values.
         if need_full_entity:
@@ -220,12 +219,13 @@ class FeatureSetCalculator(object):
             query_variable = filter_variable
             query_values = filter_values
 
-        df = entity.query_by_values(query_values,
-                                    variable_id=query_variable,
-                                    columns=columns,
-                                    time_last=self.time_last,
-                                    training_window=self.training_window,
-                                    include_cutoff_time=include_cutoff_time)
+        df = self.entityset.query_by_values(entity_id=entity_id,
+                                            instance_vals=query_values,
+                                            variable_id=query_variable,
+                                            columns=columns,
+                                            time_last=self.time_last,
+                                            training_window=self.training_window,
+                                            include_cutoff_time=include_cutoff_time)
 
         # call to update timer
         progress_callback(0)
@@ -740,9 +740,10 @@ class FeatureSetCalculator(object):
 
         return frame
 
-    def _necessary_columns(self, entity, feature_names):
+    def _necessary_columns(self, entity_id, feature_names):
         # We have to keep all Id columns because we don't know what forward
         # relationships will come from this node.
+        entity = self.entityset[entity_id]
         index_columns = {v.id for v in entity.variables
                          if isinstance(v, (variable_types.Index,
                                            variable_types.Id,
