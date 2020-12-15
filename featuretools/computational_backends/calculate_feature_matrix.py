@@ -177,7 +177,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
         if instance_ids is None:
             index_var = target_entity.index
-            df = entityset._handle_time(datatable_id=target_entity.id,
+            df = entityset._handle_time(entity_id=target_entity.id,
                                         df=target_entity.df,
                                         time_last=cutoff_time,
                                         training_window=training_window,

@@ -269,7 +269,7 @@ class Entity(object):
                 categories = pd.api.types.CategoricalDtype(categories=self.df[variable_id].cat.categories)
                 df[variable_id] = df[variable_id].astype(categories)
 
-        df = self.entityset._handle_time(datatable_id=self.id,
+        df = self.entityset._handle_time(entity_id=self.id,
                                          df=df,
                                          time_last=time_last,
                                          training_window=training_window,
