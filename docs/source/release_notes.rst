@@ -18,7 +18,7 @@ Release Notes
 **Breaking Changes**
 
 * ``Entity.add_interesting_values`` has been removed. To add interesting values for a single
-    entity, call `EntitySet.add_interesting_values` and pass the id of the entity for
+    entity, call ``EntitySet.add_interesting_values`` and pass the id of the entity for
     which to add interesting values in the ``entity_id`` parameter. 
 
 **v0.22.0 Nov 30, 2020**
