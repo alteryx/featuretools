@@ -178,8 +178,8 @@ def test_replace_latlong_nan():
 
 
 def test_inference_by_sample():
-    period = pd.period_range(start=1970, periods=25, freq='T')
-    duplicate = pd.PeriodIndex([period[0]] * 75)
+    period = pd.period_range(start=1970, periods=2, freq='T')
+    duplicate = pd.PeriodIndex([period[0]] * 48)
     period = period.append(duplicate)
     df = pd.DataFrame({'id': range(period.size), 'period': period})
 
@@ -189,12 +189,15 @@ def test_inference_by_sample():
         variable_types={},
         time_index=None,
         secondary_time_index={},
-        random_state=2531,
     )
 
     vtype = inferred_variable_types['period']
     info = 'inference by sample must return categorical'
     assert vtype == vtypes.Categorical, info
+
+
+    period = pd.period_range(start=1970, periods=5, freq='T')
+    df = pd.DataFrame({'id': range(period.size), 'period': period})
 
     inferred_variable_types = infer_variable_types(
         df=df,
@@ -202,7 +205,6 @@ def test_inference_by_sample():
         variable_types={},
         time_index=None,
         secondary_time_index={},
-        random_state=0,
     )
 
     vtype = inferred_variable_types['period']
