@@ -195,7 +195,6 @@ def test_inference_by_sample():
     info = 'inference by sample must return categorical'
     assert vtype == vtypes.Categorical, info
 
-
     period = pd.period_range(start=1970, periods=5, freq='T')
     df = pd.DataFrame({'id': range(period.size), 'period': period})
 
