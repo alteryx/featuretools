@@ -67,7 +67,7 @@ def test_eq(es):
     assert es['log'].__eq__(other_es['log'], deep=True)
     assert all(to_pandas(es['log'].df['latlong']).eq(to_pandas(latlong)))
 
-    other_es.add_interesting_values(datatable_id='log')
+    other_es.add_interesting_values(entity_id='log')
     assert not es['log'].__eq__(other_es['log'], deep=True)
 
     es['log'].id = 'customers'
