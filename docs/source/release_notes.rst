@@ -7,6 +7,7 @@ Release Notes
     * Fixes
     * Changes
         * Move ``query_by_values`` method from ``Entity`` to ``EntitySet`` (:pr:`1251`)
+        * Move ``_handle_time`` method from ``Entity`` to ``EntitySet`` (:pr:`1276`)
     * Documentation Changes
     * Testing Changes
         * Use repository-scoped token for dependency check (:pr:`1245`:, :pr:`1248`)
