@@ -5,7 +5,7 @@ Release Notes
 **Future Release**
     * Enhancements
     * Fixes
-        * Fix percent unique for inferred variable types (:pr:`1273`)
+        * Fix logic for inferring variable type from unusual dtype (:pr:`1273`)
     * Changes
         * Move ``query_by_values`` method from ``Entity`` to ``EntitySet`` (:pr:`1251`)
     * Documentation Changes
