@@ -176,13 +176,53 @@ def test_add_relationship_empty_child_convert_dtype(es):
     assert es['log'].df['session_id'].dtype == 'int64'
 
 
+def test_query_by_values_returns_rows_in_given_order():
+    data = pd.DataFrame({
+        "id": [1, 2, 3, 4, 5],
+        "value": ["a", "c", "b", "a", "a"],
+        "time": [1000, 2000, 3000, 4000, 5000]
+    })
+
+    es = ft.EntitySet()
+    es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
+                                  time_index="time", variable_types={
+                                            "value": ft.variable_types.Categorical
+                                  })
+    query = es.query_by_values('test', ['b', 'a'], variable_id='value')
+    assert np.array_equal(query['id'], [1, 3, 4, 5])
+
+
+def test_query_by_values_secondary_time_index(es):
+    end = np.datetime64(datetime(2011, 10, 1))
+    all_instances = [0, 1, 2]
+    result = es.query_by_values('customers', all_instances, time_last=end)
+    result = to_pandas(result, index='id')
+
+    for col in ["cancel_date", "cancel_reason"]:
+        nulls = result.loc[all_instances][col].isnull() == [False, True, True]
+        assert nulls.all(), "Some instance has data it shouldn't for column %s" % col
+
+
 def test_query_by_id(es):
-    df = to_pandas(es['log'].query_by_values(instance_vals=[0]))
+    df = to_pandas(es.query_by_values('log', instance_vals=[0]))
     assert df['id'].values[0] == 0
 
 
+def test_query_by_single_value(es):
+    df = to_pandas(es.query_by_values('log', instance_vals=0))
+    assert df['id'].values[0] == 0
+
+
+def test_query_by_df(es):
+    instance_df = pd.DataFrame({'id': [1, 3], 'vals': [0, 1]})
+    df = to_pandas(es.query_by_values('log', instance_vals=instance_df))
+
+    assert np.array_equal(df['id'], [1, 3])
+
+
 def test_query_by_id_with_time(es):
-    df = es['log'].query_by_values(
+    df = es.query_by_values(
+        entity_id='log',
         instance_vals=[0, 1, 2, 3, 4],
         time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
     df = to_pandas(df)
@@ -194,7 +234,8 @@ def test_query_by_id_with_time(es):
 
 
 def test_query_by_variable_with_time(es):
-    df = es['log'].query_by_values(
+    df = es.query_by_values(
+        entity_id='log',
         instance_vals=[0, 1, 2], variable_id='session_id',
         time_last=datetime(2011, 4, 9, 10, 50, 0))
     df = to_pandas(df)
@@ -210,7 +251,8 @@ def test_query_by_variable_with_time(es):
 
 
 def test_query_by_variable_with_training_window(es):
-    df = es['log'].query_by_values(
+    df = es.query_by_values(
+        entity_id='log',
         instance_vals=[0, 1, 2], variable_id='session_id',
         time_last=datetime(2011, 4, 9, 10, 50, 0),
         training_window='15m')
@@ -221,7 +263,8 @@ def test_query_by_variable_with_training_window(es):
 
 
 def test_query_by_indexed_variable(es):
-    df = es['log'].query_by_values(
+    df = es.query_by_values(
+        entity_id='log',
         instance_vals=['taco clock'],
         variable_id='product_id')
     df = to_pandas(df)
@@ -748,7 +791,7 @@ def test_concat_entitysets(es):
     assert not es.__eq__(es_2, deep=True)
 
     # make sure internal indexes work before concat
-    regions = es_1['customers'].query_by_values(['United States'], variable_id=u'région_id')
+    regions = es_1.query_by_values('customers', ['United States'], variable_id=u'région_id')
     assert regions.index.isin(es_1['customers'].df.index).all()
 
     assert es_1.__eq__(es_2)
