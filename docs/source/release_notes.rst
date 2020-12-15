@@ -7,13 +7,19 @@ Release Notes
     * Fixes
         * Fix percent unique for inferred variable types (:pr:`1273`)
     * Changes
+        * Move ``query_by_values`` method from ``Entity`` to ``EntitySet`` (:pr:`1251`)
     * Documentation Changes
     * Testing Changes
         * Use repository-scoped token for dependency check (:pr:`1245`:, :pr:`1248`)
         * Fix install error during docs CI test (:pr:`1250`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`rwedge`
+    :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
+
+**Breaking Changes**
+
+* ``Entity.query_by_values`` has been removed and replaced by ``EntitySet.query_by_values`` with an
+    added ``entity_id`` parameter to specify which entity in the entityset should be used for the query.
 
 **v0.22.0 Nov 30, 2020**
     * Enhancements
