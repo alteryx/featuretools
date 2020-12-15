@@ -16,37 +16,37 @@ Add-ons
 --------
 You can install add-ons individually or all at once by running::
 
-    python -m pip install featuretools[complete]
+    python -m pip install "featuretools[complete]"
 
 Update checker:
     Receive automatic notifications of new Featuretools releases::
 
-        python -m pip install featuretools[update_checker]
+        python -m pip install "featuretools[update_checker]"
 
 TSFresh Primitives:
     Use 60+ primitives from `tsfresh <https://tsfresh.readthedocs.io/en/latest/>`__ in Featuretools::
 
-        python -m pip install featuretools[tsfresh]
+        python -m pip install "featuretools[tsfresh]"
 
 Categorical Encoding:
     Encode categorical data for integration into Featuretools/machine learning workflows::
 
-        python -m pip install featuretools[categorical_encoding]
+        python -m pip install "featuretools[categorical_encoding]"
 
 NLP Primitives:
     Use Natural Language Processing Primitives for data with text in Featuretools::
 
-        python -m pip install featuretools[nlp_primitives]
+        python -m pip install "featuretools[nlp_primitives]"
 
 AutoNormalize:
     Automated creation of normalized ``EntitySet`` from denormalized data::
 
-        python -m pip install featuretools[autonormalize]
+        python -m pip install "featuretools[autonormalize]"
 
 Featuretools Sklearn Transformer:
     Deep Feature Synthesis as a scikit-learn pipelines transformer::
 
-        python -m pip install featuretools[sklearn_transformer]
+        python -m pip install "featuretools[sklearn_transformer]"
 
 .. _graphviz:
 
