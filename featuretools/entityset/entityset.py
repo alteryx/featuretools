@@ -19,7 +19,7 @@ from featuretools.utils.plot_utils import (
     get_graphviz_format,
     save_graph
 )
-from featuretools.utils.wrangle import _check_timedelta
+from featuretools.utils.wrangle import _check_time_type, _check_timedelta
 
 ks = import_or_none('databricks.koalas')
 
@@ -290,6 +290,25 @@ class EntitySet(object):
         self.relationships.append(relationship)
         self.reset_data_description()
         return self
+
+    def set_secondary_time_index(self, entity, secondary_time_index):
+        for time_index, columns in secondary_time_index.items():
+            if is_instance(entity.df, (dd, ks), 'DataFrame') or entity.df.empty:
+                time_to_check = vtypes.DEFAULT_DTYPE_VALUES[entity[time_index]._default_pandas_dtype]
+            else:
+                time_to_check = entity.df[time_index].head(1).iloc[0]
+            time_type = _check_time_type(time_to_check)
+            if time_type is None:
+                raise TypeError("%s time index not recognized as numeric or"
+                                " datetime" % (entity.id))
+            if self.time_type != time_type:
+                raise TypeError("%s time index is %s type which differs from"
+                                " other entityset time indexes" %
+                                (entity.id, time_type))
+            if time_index not in columns:
+                columns.append(time_index)
+
+        entity.secondary_time_index = secondary_time_index
 
     ###########################################################################
     #   Relationship access/helper methods  ###################################
