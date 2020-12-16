@@ -4,6 +4,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Add support for creating EntitySets from Woodwork DataTables (:pr:`1277`)
     * Fixes
         * Fix logic for inferring variable type from unusual dtype (:pr:`1273`)
     * Changes
