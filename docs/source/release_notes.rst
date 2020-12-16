@@ -11,12 +11,13 @@ Release Notes
         * Remove ``add_interesting_values`` from ``Entity`` (:pr:`1269`)
         * Move ``_handle_time`` method from ``Entity`` to ``EntitySet`` (:pr:`1276`)
     * Documentation Changes
+        * Fix installation command for Add-ons (:pr:`1279`)
     * Testing Changes
         * Use repository-scoped token for dependency check (:pr:`1245`:, :pr:`1248`)
         * Fix install error during docs CI test (:pr:`1250`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
 
