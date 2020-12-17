@@ -52,7 +52,7 @@ def int_es(make_int_es):
 def dask_es(make_es):
     dask_es = copy.deepcopy(make_es)
     for entity in dask_es.entities:
-        entity.update_dataframe(dd.from_pandas(entity.to_dataframe().reset_index(drop=True), npartitions=2))
+        entity.update_dataframe(dd.from_pandas(entity.df.reset_index(drop=True), npartitions=2))
     return dask_es
 
 
@@ -63,7 +63,7 @@ def ks_es(make_es):
         pytest.skip('skipping Koalas tests for Windows')
     ks_es = copy.deepcopy(make_es)
     for entity in ks_es.entities:
-        cleaned_df = pd_to_ks_clean(entity.to_dataframe()).reset_index(drop=True)
+        cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
         # Set everything to object to prevent error on unsupported dtypes like Int64
         for column in cleaned_df.columns:
             cleaned_df[column] = cleaned_df.astype('object')

@@ -197,7 +197,7 @@ class EntitySet(object):
                 compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         '''
-        if is_instance(self.entities[0].to_dataframe(), ks, 'DataFrame'):
+        if is_instance(self.entities[0].df, ks, 'DataFrame'):
             compression = str(compression)
         serialize.write_data_description(self, path, format='csv', index=False, sep=sep, encoding=encoding, engine=engine, compression=compression, profile_name=profile_name)
         return self
@@ -280,12 +280,12 @@ class EntitySet(object):
         # indexes/ids default to ints. In this case, we convert
         # the empty column's type to int
         if isinstance(child_e.to_dataframe, pd.DataFrame) and \
-                (child_e.to_dataframe.empty and child_e.to_dataframe()[child_v].dtype == object and
-                 is_numeric_dtype(parent_e.to_dataframe()[parent_v])):
-            child_e.to_dataframe()[child_v] = pd.Series(name=child_v, dtype=np.int64)
+                (child_e.to_dataframe.empty and child_e.df[child_v].dtype == object and
+                 is_numeric_dtype(parent_e.df[parent_v])):
+            child_e.df[child_v] = pd.Series(name=child_v, dtype=np.int64)
 
-        parent_dtype = parent_e.to_dataframe()[parent_v].dtype
-        child_dtype = child_e.to_dataframe()[child_v].dtype
+        parent_dtype = parent_e.df[parent_v].dtype
+        child_dtype = child_e.df[child_v].dtype
         msg = u"Unable to add relationship because {} in {} is Pandas dtype {}"\
             u" and {} in {} is Pandas dtype {}."
         # if not is_dtype_equal(parent_dtype, child_dtype):
@@ -516,7 +516,7 @@ class EntitySet(object):
                                          dataframe=transactions_df)
 
                 es["transactions"]
-                es["transactions"].to_dataframe()
+                es["transactions"].df
 
         """
         variable_types = variable_types or {}
@@ -530,7 +530,7 @@ class EntitySet(object):
                     raise ValueError("DatetimeTimeIndex variable %s must be set using time_index parameter" % (variable))
 
         if len(self.entities) > 0:
-            base_df = self.entities[0].to_dataframe()
+            base_df = self.entities[0].df
             if not isinstance(dataframe, type(base_df)):
                 raise ValueError("All entity dataframes must be of the same type. "
                                  "Cannot add entity of type {} to an entityset with existing entities "
@@ -636,7 +636,7 @@ class EntitySet(object):
                 raise ValueError("Not moving {} as it is the base time index variable. Perhaps, move the variable to the copy_variables.".format(v))
 
         if isinstance(make_time_index, str):
-            if make_time_index not in base_entity.to_dataframe().columns:
+            if make_time_index not in base_entity.df.columns:
                 raise ValueError("'make_time_index' must be a variable in the base entity")
             elif make_time_index not in additional_variables + copy_variables:
                 raise ValueError("'make_time_index' must be specified in 'additional_variables' or 'copy_variables'")
@@ -654,7 +654,7 @@ class EntitySet(object):
                 transfer_types[v] = type(base_entity[v])
 
         # create and add new entity
-        new_entity_df = self[base_entity_id].to_dataframe().copy()
+        new_entity_df = self[base_entity_id].df.copy()
 
         if make_time_index is None and base_entity.time_index is not None:
             make_time_index = True
@@ -769,8 +769,8 @@ class EntitySet(object):
 
         has_last_time_index = []
         for entity in self.entities:
-            self_df = entity.to_dataframe()
-            other_df = other[entity.id].to_dataframe()
+            self_df = entity.df
+            other_df = other[entity.id].df
             combined_df = pd.concat([self_df, other_df])
             if entity.created_index == entity.index:
                 columns = [col for col in combined_df.columns if
@@ -846,17 +846,17 @@ class EntitySet(object):
 
             if entity.metadata.get('last_time_index') is None:
                 if entity.time_index is not None:
-                    lti = entity.to_dataframe()[entity.time_index].copy()
-                    if isinstance(entity.to_dataframe(), dd.DataFrame):
+                    lti = entity.df[entity.time_index].copy()
+                    if isinstance(entity.df, dd.DataFrame):
                         # The current Dask implementation doesn't set the index of the dataframe
                         # to the entity's index, so we have to do it manually here
-                        lti.index = entity.to_dataframe()[entity.index].copy()
+                        lti.index = entity.df[entity.index].copy()
                 else:
-                    lti = entity.to_dataframe()[entity.index].copy()
-                    if isinstance(entity.to_dataframe(), dd.DataFrame):
-                        lti.index = entity.to_dataframe()[entity.index].copy()
+                    lti = entity.df[entity.index].copy()
+                    if isinstance(entity.df, dd.DataFrame):
+                        lti.index = entity.df[entity.index].copy()
                         lti = lti.apply(lambda x: None)
-                    elif is_instance(entity.to_dataframe(), ks, 'DataFrame'):
+                    elif is_instance(entity.df, ks, 'DataFrame'):
                         lti = ks.Series(pd.Series(index=lti.to_list(), name=lti.name))
                     else:
                         lti[:] = None
@@ -888,9 +888,9 @@ class EntitySet(object):
                     lti_is_dask = isinstance(child_e.metadata.get('last_time_index'), dd.Series)
                     lti_is_koalas = is_instance(child_e.metadata.get('last_time_index'), ks, 'Series')
                     if lti_is_dask or lti_is_koalas:
-                        to_join = child_e.to_dataframe()[link_var]
+                        to_join = child_e.df[link_var]
                         if lti_is_dask:
-                            to_join.index = child_e.to_dataframe()[child_e.index]
+                            to_join.index = child_e.df[child_e.index]
 
                         lti_df = child_e.metadata.get('last_time_index').to_frame(name='last_time').join(
                             to_join.to_frame(name=entity.index)
@@ -906,7 +906,7 @@ class EntitySet(object):
 
                     else:
                         lti_df = pd.DataFrame({'last_time': child_e.metadata.get('last_time_index'),
-                                               entity.index: child_e.to_dataframe()[link_var]})
+                                               entity.index: child_e.df[link_var]})
 
                         # sort by time and keep only the most recent
                         lti_df.sort_values(['last_time', entity.index],
@@ -966,7 +966,7 @@ class EntitySet(object):
             for variable in entity.variables:
                 # some heuristics to find basic 'where'-able variables
                 if isinstance(variable, vtypes.Discrete):
-                    variable.interesting_values = pd.Series(dtype=variable.entity.to_dataframe()[variable.id].dtype)
+                    variable.interesting_values = pd.Series(dtype=variable.entity.df[variable.id].dtype)
 
                     # TODO - consider removing this constraints
                     # don't add interesting values for entities in relationships
@@ -978,7 +978,7 @@ class EntitySet(object):
                     if skip:
                         continue
 
-                    counts = entity.to_dataframe()[variable.id].value_counts()
+                    counts = entity.df[variable.id].value_counts()
 
                     # find how many of each unique value there are; sort by count,
                     # and add interesting values to each variable
@@ -1031,7 +1031,7 @@ class EntitySet(object):
         for entity in self.entities:
             variables_string = '\l'.join([var.id + ' : ' + var.type_string  # noqa: W605
                                           for var in entity.variables])
-            if isinstance(entity.to_dataframe(), dd.DataFrame):  # entity is a dask entity
+            if isinstance(entity.df, dd.DataFrame):  # entity is a dask entity
                 label = '{%s |%s\l}' % (entity.id, variables_string)  # noqa: W605
             else:
                 nrows = entity.shape[0]
@@ -1138,27 +1138,27 @@ class EntitySet(object):
             assert training_window.has_no_observations(), "Training window cannot be in observations"
 
         if instance_vals is None:
-            df = entity.to_dataframe().copy()
+            df = entity.df.copy()
 
         elif isinstance(instance_vals, pd.Series) and instance_vals.empty:
             df = entity.head(0)
 
         else:
             if is_instance(instance_vals, (dd, ks), 'Series'):
-                df = entity.to_dataframe().merge(instance_vals.to_frame(), how="inner", on=variable_id)
-            elif isinstance(instance_vals, pd.Series) and is_instance(entity.to_dataframe(), ks, 'DataFrame'):
-                df = entity.to_dataframe().merge(ks.DataFrame({variable_id: instance_vals}), how="inner", on=variable_id)
+                df = entity.df.merge(instance_vals.to_frame(), how="inner", on=variable_id)
+            elif isinstance(instance_vals, pd.Series) and is_instance(entity.df, ks, 'DataFrame'):
+                df = entity.df.merge(ks.DataFrame({variable_id: instance_vals}), how="inner", on=variable_id)
             else:
-                df = entity.to_dataframe()[entity.to_dataframe()[variable_id].isin(instance_vals)]
+                df = entity.df[entity.df[variable_id].isin(instance_vals)]
 
-            if isinstance(entity.to_dataframe(), pd.DataFrame):
+            if isinstance(entity.df, pd.DataFrame):
                 df = df.set_index(entity.index, drop=False)
 
             # ensure filtered df has same categories as original
             # workaround for issue below
             # github.com/pandas-dev/pandas/issues/22501#issuecomment-415982538
-            if pdtypes.is_categorical_dtype(entity.to_dataframe()[variable_id]):
-                categories = pd.api.types.CategoricalDtype(categories=entity.to_dataframe()[variable_id].cat.categories)
+            if pdtypes.is_categorical_dtype(entity.df[variable_id]):
+                categories = pd.api.types.CategoricalDtype(categories=entity.df[variable_id].cat.categories)
                 df[variable_id] = df[variable_id].astype(categories)
 
         df = self._handle_time(entity_id=entity_id,
