@@ -294,7 +294,8 @@ class EntitySet(object):
     def set_secondary_time_index(self, entity, secondary_time_index):
         for time_index, columns in secondary_time_index.items():
             if is_instance(entity.df, (dd, ks), 'DataFrame') or entity.df.empty:
-                time_to_check = vtypes.DEFAULT_DTYPE_VALUES[entity[time_index]._default_pandas_dtype]
+                variable_dtype = entity[time_index]._default_pandas_dtype
+                time_to_check = vtypes.DEFAULT_DTYPE_VALUES[variable_dtype]
             else:
                 time_to_check = entity.df[time_index].head(1).iloc[0]
             time_type = _check_time_type(time_to_check)
