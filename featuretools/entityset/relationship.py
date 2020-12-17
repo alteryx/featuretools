@@ -16,15 +16,15 @@ class Relationship(object):
 
         """
 
-        self.entityset = child_variable.entityset
-        self._parent_entity_id = parent_variable.entity.id
-        self._child_entity_id = child_variable.entity.id
-        self._parent_variable_id = parent_variable.id
-        self._child_variable_id = child_variable.id
+        self.entityset = child_variable.metadata['datatable'].metadata['entityset']
+        self._parent_entity_id = parent_variable.metadata['datatable'].name
+        self._child_entity_id = child_variable.metadata['datatable'].name
+        self._parent_variable_id = parent_variable.name
+        self._child_variable_id = child_variable.name
 
-        if (parent_variable.entity.index is not None and
-                parent_variable.id != parent_variable.entity.index):
-            raise AttributeError("Parent variable '%s' is not the index of entity %s" % (parent_variable, parent_variable.entity))
+        if (parent_variable.metadata['datatable'].index is not None and
+                parent_variable.name != parent_variable.metadata['datatable'].index):
+            raise AttributeError("Parent variable '%s' is not the index of entity %s" % (parent_variable, parent_variable.metadata['datatable'].name))
 
     @classmethod
     def from_dictionary(cls, arguments, es):

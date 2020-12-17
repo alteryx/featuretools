@@ -27,7 +27,7 @@ ks = import_or_none('databricks.koalas')
 def test_normalize_time_index_as_additional_variable(es):
     error_text = "Not moving signup_date as it is the base time index variable."
     with pytest.raises(ValueError, match=error_text):
-        assert "signup_date" in es["customers"].df.columns
+        assert "signup_date" in es["customers"].to_dataframe().columns
         es.normalize_entity(base_entity_id='customers',
                             new_entity_id='cancellations',
                             index='cancel_reason',
@@ -42,21 +42,21 @@ def test_operations_invalidate_metadata(es):
     assert new_es._data_description is None
     assert new_es.metadata is not None  # generated after access
     assert new_es._data_description is not None
-    if not isinstance(es['customers'].df, pd.DataFrame):
+    if not isinstance(es['customers'].to_dataframe(), pd.DataFrame):
         customers_vtypes = es["customers"].variable_types
         customers_vtypes['signup_date'] = variable_types.Datetime
     else:
         customers_vtypes = None
     new_es.entity_from_dataframe("customers",
-                                 es["customers"].df,
+                                 es["customers"].to_dataframe(),
                                  index=es["customers"].index,
                                  variable_types=customers_vtypes)
-    if not isinstance(es['sessions'].df, pd.DataFrame):
+    if not isinstance(es['sessions'].to_dataframe(), pd.DataFrame):
         sessions_vtypes = es["sessions"].variable_types
     else:
         sessions_vtypes = None
     new_es.entity_from_dataframe("sessions",
-                                 es["sessions"].df,
+                                 es["sessions"].to_dataframe(),
                                  index=es["sessions"].index,
                                  variable_types=sessions_vtypes)
     assert new_es._data_description is None
@@ -81,7 +81,7 @@ def test_operations_invalidate_metadata(es):
     assert new_es._data_description is not None
 
     # automatically adding interesting values not supported in Dask or Koalas
-    if any(isinstance(entity.df, pd.DataFrame) for entity in new_es.entities):
+    if any(isinstance(entity.to_dataframe, pd.DataFrame) for entity in new_es.entities):
         new_es.add_interesting_values()
         assert new_es._data_description is None
         assert new_es.metadata is not None
@@ -149,7 +149,7 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
 
 
 def test_add_relationship_errors_child_v_index(es):
-    log_df = es['log'].df.copy()
+    log_df = es['log'].to_dataframe().copy()
     log_vtypes = es['log'].variable_types
     es.entity_from_dataframe(entity_id='log2',
                              dataframe=log_df,
