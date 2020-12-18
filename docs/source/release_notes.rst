@@ -11,6 +11,7 @@ Release Notes
         * Move ``query_by_values`` method from ``Entity`` to ``EntitySet`` (:pr:`1251`)
         * Remove ``add_interesting_values`` from ``Entity`` (:pr:`1269`)
         * Move ``_handle_time`` method from ``Entity`` to ``EntitySet`` (:pr:`1276`)
+        * Move ``set_secondary_time_index`` method from ``Entity`` to ``EntitySet`` (:pr:`1280`)
     * Documentation Changes
         * Fix installation command for Add-ons (:pr:`1279`)
     * Testing Changes
@@ -27,6 +28,8 @@ Release Notes
 * ``Entity.add_interesting_values`` has been removed. To add interesting values for a single
     entity, call ``EntitySet.add_interesting_values`` and pass the id of the entity for
     which to add interesting values in the ``entity_id`` parameter. 
+* ``Entity.set_secondary_time_index`` has been removed and replaced by ``EntitySet.set_secondary_time_index``
+    with an added ``entity`` parameter to specify the entity on which to set the secondary time index.
 
 **v0.22.0 Nov 30, 2020**
     * Enhancements
