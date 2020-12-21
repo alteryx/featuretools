@@ -426,7 +426,7 @@ class EntitySet(object):
         Returns:
             list[:class:`.Relationship`]: List of forward relationships.
         """
-        return [r for r in self.relationships if r.child_entity.id == entity_id]
+        return [r for r in self.relationships if r.child_entity.name == entity_id]
 
     def get_backward_relationships(self, entity_id):
         """
@@ -811,7 +811,7 @@ class EntitySet(object):
         for r in self.relationships:
             children[r.parent_entity.name].append(r.child_entity)
             child_vars[r.parent_entity.name][r.child_entity.name] = r.child_variable
-
+        breakpoint()
         updated_entities = updated_entities or []
         if updated_entities:
             # find parents of updated_entities
@@ -843,7 +843,6 @@ class EntitySet(object):
         # explored, rather than just comparing length
         while not to_explore.issubset(explored):
             entity = queue.pop(0)
-
             if entity.metadata.get('last_time_index') is None:
                 if entity.time_index is not None:
                     lti = entity.df[entity.time_index].copy()
@@ -877,7 +876,7 @@ class EntitySet(object):
                             queue.append(e)
                     queue.append(entity)
                     continue
-
+            
                 # updated last time from all children
                 for child_e in child_entities:
                     # TODO: Figure out if Dask code related to indexes is important for Koalas
@@ -887,6 +886,7 @@ class EntitySet(object):
 
                     lti_is_dask = isinstance(child_e.metadata.get('last_time_index'), dd.Series)
                     lti_is_koalas = is_instance(child_e.metadata.get('last_time_index'), ks, 'Series')
+
                     if lti_is_dask or lti_is_koalas:
                         to_join = child_e.df[link_var]
                         if lti_is_dask:
@@ -923,17 +923,18 @@ class EntitySet(object):
                         # Pandas errors out if it tries to do fillna and then max on an empty dataframe
                         lti_df = pd.Series()
                     else:
+                        lti_df['last_time'] = lti_df['last_time'].astype('datetime64[ns]')
                         if lti_is_koalas:
-                            lti_df['last_time'] = ks.to_datetime(lti_df['last_time'])
-                            lti_df['last_time_old'] = ks.to_datetime(lti_df['last_time_old'])
-                            # TODO: Figure out a workaround for fillna and replace
+                            lti_df['last_time_old'] = lti_df['last_time_old'].astype('datetime64[ns]')
                             lti_df = lti_df.max(axis=1)
                         else:
-                            lti_df['last_time'] = lti_df['last_time'].astype('datetime64[ns]')
-                            lti_df['last_time_old'] = lti_df['last_time_old'].astype('datetime64[ns]')
-                            lti_df = lti_df.fillna(pd.to_datetime('1800-01-01 00:00')).max(axis=1)
-                            lti_df = lti_df.replace(pd.to_datetime('1800-01-01 00:00'), pd.NaT)
-                    # lti_df = lti_df.apply(lambda x: x.dropna().max(), axis=1)
+                            # TODO: Figure out a workaround for fillna and replace
+                            if lti_is_dask:
+                                lti_df['last_time_old'] = dd.to_datetime(lti_df['last_time_old'])
+                            else:
+                                lti_df['last_time_old'] = pd.to_datetime(lti_df['last_time_old'])
+                                lti_df = lti_df.fillna(pd.to_datetime('1800-01-01 00:00')).max(axis=1)
+                                lti_df = lti_df.replace(pd.to_datetime('1800-01-01 00:00'), pd.NaT)
 
                     entity.metadata['last_time_index'] = lti_df
                     entity.metadata['last_time_index'].name = 'last_time'

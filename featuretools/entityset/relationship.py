@@ -102,7 +102,7 @@ class Relationship(object):
 
     def _is_unique(self):
         """Is there any other relationship with same parent and child entities?"""
-        es = self.child_entity.entityset
+        es = self.child_entity.metadata['entityset']
         relationships = es.get_forward_relationships(self._child_entity_id)
         n = len([r for r in relationships
                  if r._parent_entity_id == self._parent_entity_id])
@@ -128,16 +128,16 @@ class RelationshipPath(object):
             # Yield first entity.
             is_forward, relationship = self[0]
             if is_forward:
-                yield relationship.child_entity.id
+                yield relationship.child_entity.name
             else:
-                yield relationship.parent_entity.id
+                yield relationship.parent_entity.name
 
         # Yield the entity pointed to by each relationship.
         for is_forward, relationship in self:
             if is_forward:
-                yield relationship.parent_entity.id
+                yield relationship.parent_entity.name
             else:
-                yield relationship.child_entity.id
+                yield relationship.child_entity.name
 
     def __add__(self, other):
         return RelationshipPath(self._relationships_with_direction +
