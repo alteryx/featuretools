@@ -66,7 +66,7 @@ def ks_es(make_es):
         cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
         # Set everything to object to prevent error on unsupported dtypes like Int64
         for column in cleaned_df.columns:
-            cleaned_df[column] = cleaned_df.astype('object')
+            cleaned_df[column] = cleaned_df[column].astype('object')
         entity.update_dataframe(ks.from_pandas(cleaned_df))
     return ks_es
 
@@ -132,11 +132,11 @@ def pd_diamond_es():
 def dask_diamond_es(pd_diamond_es):
     entities = {}
     for entity in pd_diamond_es.entities:
-        entities[entity.id] = (dd.from_pandas(entity.df, npartitions=2), entity.index, None, entity.variable_types)
+        entities[entity.name] = (dd.from_pandas(entity.df, npartitions=2), entity.index, None, entity.metadata['variable_types'])
 
-    relationships = [(rel.parent_entity.id,
+    relationships = [(rel.parent_entity.name,
                       rel.parent_variable.name,
-                      rel.child_entity.id,
+                      rel.child_entity.name,
                       rel.child_variable.name) for rel in pd_diamond_es.relationships]
 
     return ft.EntitySet(id=pd_diamond_es.id, entities=entities, relationships=relationships)
@@ -149,11 +149,11 @@ def ks_diamond_es(pd_diamond_es):
         pytest.skip('skipping Koalas tests for Windows')
     entities = {}
     for entity in pd_diamond_es.entities:
-        entities[entity.id] = (ks.from_pandas(pd_to_ks_clean(entity.df)), entity.index, None, entity.variable_types)
+        entities[entity.name] = (ks.from_pandas(pd_to_ks_clean(entity.df)), entity.index, None, entity.metadata['variable_types'])
 
-    relationships = [(rel.parent_entity.id,
+    relationships = [(rel.parent_entity.name,
                       rel.parent_variable.name,
-                      rel.child_entity.id,
+                      rel.child_entity.name,
                       rel.child_variable.name) for rel in pd_diamond_es.relationships]
 
     return ft.EntitySet(id=pd_diamond_es.id, entities=entities, relationships=relationships)
@@ -187,11 +187,11 @@ def pd_home_games_es():
 def dask_home_games_es(pd_home_games_es):
     entities = {}
     for entity in pd_home_games_es.entities:
-        entities[entity.id] = (dd.from_pandas(entity.df, npartitions=2), entity.index, None, entity.variable_types)
+        entities[entity.name] = (dd.from_pandas(entity.df, npartitions=2), entity.index, None, entity.metadata['variable_types'])
 
-    relationships = [(rel.parent_entity.id,
+    relationships = [(rel.parent_entity.name,
                       rel.parent_variable.name,
-                      rel.child_entity.id,
+                      rel.child_entity.name,
                       rel.child_variable.name) for rel in pd_home_games_es.relationships]
 
     return ft.EntitySet(id=pd_home_games_es.id, entities=entities, relationships=relationships)
@@ -204,11 +204,11 @@ def ks_home_games_es(pd_home_games_es):
         pytest.skip('skipping Koalas tests for Windows')
     entities = {}
     for entity in pd_home_games_es.entities:
-        entities[entity.id] = (ks.from_pandas(pd_to_ks_clean(entity.df)), entity.index, None, entity.variable_types)
+        entities[entity.name] = (ks.from_pandas(pd_to_ks_clean(entity.df)), entity.index, None, entity.metadata['variable_types'])
 
-    relationships = [(rel.parent_entity.id,
+    relationships = [(rel.parent_entity.name,
                       rel.parent_variable.name,
-                      rel.child_entity.id,
+                      rel.child_entity.name,
                       rel.child_variable.name) for rel in pd_home_games_es.relationships]
 
     return ft.EntitySet(id=pd_home_games_es.id, entities=entities, relationships=relationships)

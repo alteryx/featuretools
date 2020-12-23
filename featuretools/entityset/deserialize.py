@@ -55,6 +55,7 @@ def description_to_entity(description, entityset, path=None):
         dataframe = empty_dataframe(description)
     variable_types = {variable['id']: (description_to_variable(variable), variable)
                       for variable in description['variables']}
+
     es = entityset.entity_from_dataframe(
         description['id'],
         dataframe,
@@ -62,7 +63,7 @@ def description_to_entity(description, entityset, path=None):
         time_index=description.get('time_index'),
         secondary_time_index=description['properties'].get('secondary_time_index'),
         variable_types={variable: variable_types[variable][0] for variable in variable_types})
-    for variable in es[description['id']].variables:
+    for variable in es[description['id']].metadata['variables'].values():
         interesting_values = variable_types[variable.id][1]['properties']['interesting_values']
         interesting_values = pd.read_json(interesting_values, typ="series")
         variable.interesting_values = interesting_values

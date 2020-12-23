@@ -18,8 +18,8 @@ def test_cannot_re_add_relationships_that_already_exists(es):
 
 def test_add_relationships_convert_type(es):
     for r in es.relationships:
-        assert type(r.parent_variable) == variable_types.Index
-        assert type(r.child_variable) == variable_types.Id
+        assert type(r.parent_variable.metadata['variable']) == variable_types.Index
+        assert type(r.child_variable.metadata['variable']) == variable_types.Id
 
 
 def test_get_forward_entities(es):
@@ -61,27 +61,27 @@ def test_get_backward_entities_deep(es):
 def test_get_forward_relationships(es):
     relationships = es.get_forward_relationships('log')
     assert len(relationships) == 2
-    assert relationships[0].parent_entity.id == 'sessions'
-    assert relationships[0].child_entity.id == 'log'
-    assert relationships[1].parent_entity.id == 'products'
-    assert relationships[1].child_entity.id == 'log'
+    assert relationships[0].parent_entity.name == 'sessions'
+    assert relationships[0].child_entity.name == 'log'
+    assert relationships[1].parent_entity.name == 'products'
+    assert relationships[1].child_entity.name == 'log'
 
     relationships = es.get_forward_relationships('sessions')
     assert len(relationships) == 1
-    assert relationships[0].parent_entity.id == 'customers'
-    assert relationships[0].child_entity.id == 'sessions'
+    assert relationships[0].parent_entity.name == 'customers'
+    assert relationships[0].child_entity.name == 'sessions'
 
 
 def test_get_backward_relationships(es):
     relationships = es.get_backward_relationships('sessions')
     assert len(relationships) == 1
-    assert relationships[0].parent_entity.id == 'sessions'
-    assert relationships[0].child_entity.id == 'log'
+    assert relationships[0].parent_entity.name == 'sessions'
+    assert relationships[0].child_entity.name == 'log'
 
     relationships = es.get_backward_relationships('customers')
     assert len(relationships) == 1
-    assert relationships[0].parent_entity.id == 'customers'
-    assert relationships[0].child_entity.id == 'sessions'
+    assert relationships[0].parent_entity.name == 'customers'
+    assert relationships[0].child_entity.name == 'sessions'
 
 
 def test_find_forward_paths(es):
@@ -91,10 +91,10 @@ def test_find_forward_paths(es):
     path = paths[0]
 
     assert len(path) == 2
-    assert path[0].child_entity.id == 'log'
-    assert path[0].parent_entity.id == 'sessions'
-    assert path[1].child_entity.id == 'sessions'
-    assert path[1].parent_entity.id == 'customers'
+    assert path[0].child_entity.name == 'log'
+    assert path[0].parent_entity.name == 'sessions'
+    assert path[1].child_entity.name == 'sessions'
+    assert path[1].parent_entity.name == 'customers'
 
 
 def test_find_forward_paths_multiple_paths(diamond_es):
@@ -104,16 +104,16 @@ def test_find_forward_paths_multiple_paths(diamond_es):
     path1, path2 = paths
 
     r1, r2 = path1
-    assert r1.child_entity.id == 'transactions'
-    assert r1.parent_entity.id == 'stores'
-    assert r2.child_entity.id == 'stores'
-    assert r2.parent_entity.id == 'regions'
+    assert r1.child_entity.name == 'transactions'
+    assert r1.parent_entity.name == 'stores'
+    assert r2.child_entity.name == 'stores'
+    assert r2.parent_entity.name == 'regions'
 
     r1, r2 = path2
-    assert r1.child_entity.id == 'transactions'
-    assert r1.parent_entity.id == 'customers'
-    assert r2.child_entity.id == 'customers'
-    assert r2.parent_entity.id == 'regions'
+    assert r1.child_entity.name == 'transactions'
+    assert r1.parent_entity.name == 'customers'
+    assert r2.child_entity.name == 'customers'
+    assert r2.parent_entity.name == 'regions'
 
 
 def test_find_forward_paths_multiple_relationships(games_es):
@@ -126,15 +126,15 @@ def test_find_forward_paths_multiple_relationships(games_es):
     r1 = path1[0]
     r2 = path2[0]
 
-    assert r1.child_entity.id == 'games'
-    assert r2.child_entity.id == 'games'
-    assert r1.parent_entity.id == 'teams'
-    assert r2.parent_entity.id == 'teams'
+    assert r1.child_entity.name == 'games'
+    assert r2.child_entity.name == 'games'
+    assert r1.parent_entity.name == 'teams'
+    assert r2.parent_entity.name == 'teams'
 
-    assert r1.child_variable.id == 'home_team_id'
-    assert r2.child_variable.id == 'away_team_id'
-    assert r1.parent_variable.id == 'id'
-    assert r2.parent_variable.id == 'id'
+    assert r1.child_variable.name == 'home_team_id'
+    assert r2.child_variable.name == 'away_team_id'
+    assert r1.parent_variable.name == 'id'
+    assert r2.parent_variable.name == 'id'
 
 
 @pytest.fixture
@@ -178,10 +178,10 @@ def test_find_backward_paths(es):
     path = paths[0]
 
     assert len(path) == 2
-    assert path[0].child_entity.id == 'sessions'
-    assert path[0].parent_entity.id == 'customers'
-    assert path[1].child_entity.id == 'log'
-    assert path[1].parent_entity.id == 'sessions'
+    assert path[0].child_entity.name == 'sessions'
+    assert path[0].parent_entity.name == 'customers'
+    assert path[1].child_entity.name == 'log'
+    assert path[1].parent_entity.name == 'sessions'
 
 
 def test_find_backward_paths_multiple_paths(diamond_es):
@@ -191,16 +191,16 @@ def test_find_backward_paths_multiple_paths(diamond_es):
     path1, path2 = paths
 
     r1, r2 = path1
-    assert r1.child_entity.id == 'stores'
-    assert r1.parent_entity.id == 'regions'
-    assert r2.child_entity.id == 'transactions'
-    assert r2.parent_entity.id == 'stores'
+    assert r1.child_entity.name == 'stores'
+    assert r1.parent_entity.name == 'regions'
+    assert r2.child_entity.name == 'transactions'
+    assert r2.parent_entity.name == 'stores'
 
     r1, r2 = path2
-    assert r1.child_entity.id == 'customers'
-    assert r1.parent_entity.id == 'regions'
-    assert r2.child_entity.id == 'transactions'
-    assert r2.parent_entity.id == 'customers'
+    assert r1.child_entity.name == 'customers'
+    assert r1.parent_entity.name == 'regions'
+    assert r2.child_entity.name == 'transactions'
+    assert r2.parent_entity.name == 'customers'
 
 
 def test_find_backward_paths_multiple_relationships(games_es):
@@ -213,15 +213,15 @@ def test_find_backward_paths_multiple_relationships(games_es):
     r1 = path1[0]
     r2 = path2[0]
 
-    assert r1.child_entity.id == 'games'
-    assert r2.child_entity.id == 'games'
-    assert r1.parent_entity.id == 'teams'
-    assert r2.parent_entity.id == 'teams'
+    assert r1.child_entity.name == 'games'
+    assert r2.child_entity.name == 'games'
+    assert r1.parent_entity.name == 'teams'
+    assert r2.parent_entity.name == 'teams'
 
-    assert r1.child_variable.id == 'home_team_id'
-    assert r2.child_variable.id == 'away_team_id'
-    assert r1.parent_variable.id == 'id'
-    assert r2.parent_variable.id == 'id'
+    assert r1.child_variable.name == 'home_team_id'
+    assert r2.child_variable.name == 'away_team_id'
+    assert r1.parent_variable.name == 'id'
+    assert r2.parent_variable.name == 'id'
 
 
 def test_has_unique_path(diamond_es):
@@ -241,7 +241,7 @@ def test_raise_key_error_missing_entity(es):
 
 
 def test_add_parent_not_index_variable(es):
-    error_text = "Parent variable.*is not the index of entity Entity.*"
+    error_text = "Parent variable 'language' is not the index of entity régions"
     with pytest.raises(AttributeError, match=error_text):
         es.add_relationship(Relationship(es[u'régions']['language'],
                                          es['customers'][u'région_id']))

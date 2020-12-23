@@ -37,9 +37,9 @@ class Variable(object):
         assert isinstance(id, str), "Variable id must be a string"
         self.id = id
         self._name = name
-        self.entity_id = entity.id
+        self.entity_id = entity.name
         self._description = description
-        assert entity.entityset is not None, "Entity must contain reference to EntitySet"
+        assert entity.metadata['entityset'] is not None, "Entity must contain reference to EntitySet"
         self.entity = entity
         if self.id not in self.entity.df:
             default_dtype = self._default_pandas_dtype
@@ -53,7 +53,7 @@ class Variable(object):
 
     @property
     def entityset(self):
-        return self.entity.entityset
+        return self.entity.metadata['entityset']
 
     def __eq__(self, other, deep=False):
         shallow_eq = isinstance(other, self.__class__) and \
@@ -129,7 +129,7 @@ class Variable(object):
             'properties': {
                 'name': self.name,
                 'description': self.description,
-                'entity': self.entity.id,
+                'entity': self.entity.name,
                 'interesting_values': self._interesting_values.to_json()
             },
         }

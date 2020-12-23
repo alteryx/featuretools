@@ -7,13 +7,16 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
-from pandas.api.types import is_dtype_equal, is_numeric_dtype
 import woodwork as ww
+from pandas.api.types import is_numeric_dtype
 
 import featuretools.variable_types.variable as vtypes
 from featuretools.entityset import deserialize, serialize
-from featuretools.entityset.entity import Entity
 from featuretools.entityset.relationship import Relationship, RelationshipPath
+from featuretools.utils.entity_utils import (
+    get_linked_vars,
+    infer_variable_types
+)
 from featuretools.utils.gen_utils import import_or_none, is_instance
 from featuretools.utils.plot_utils import (
     check_graphviz,
@@ -21,6 +24,7 @@ from featuretools.utils.plot_utils import (
     save_graph
 )
 from featuretools.utils.wrangle import _check_time_type, _check_timedelta
+from featuretools.variable_types import Text, find_variable_types
 
 ks = import_or_none('databricks.koalas')
 
@@ -260,20 +264,19 @@ class EntitySet(object):
         child_v = relationship.child_variable.name
         if child_e.index == child_v:
             msg = "Unable to add relationship because child variable '{}' in '{}' is also its index"
-            raise ValueError(msg.format(child_v, child_e.id))
+            raise ValueError(msg.format(child_v, child_e.name))
         parent_e = relationship.parent_entity
         parent_v = relationship.parent_variable.name
 
-        # TODO: WOODWORK: Delete after switching to Woodwork variable types
-        # if not isinstance(child_e[child_v], vtypes.Id):
-        #     child_e.convert_variable_type(variable_id=child_v,
-        #                                   new_type=vtypes.Id,
-        #                                   convert_data=False)
+        if not isinstance(child_e.metadata['variables'][child_v], vtypes.Id):
+            convert_variable_type(child_e, variable_id=child_v,
+                                  new_type=vtypes.Id,
+                                  convert_data=False)
 
-        # if not isinstance(parent_e[parent_v], vtypes.Index):
-        #     parent_e.convert_variable_type(variable_id=parent_v,
-        #                                    new_type=vtypes.Index,
-        #                                    convert_data=False)
+        if not isinstance(parent_e.metadata['variables'][parent_v], vtypes.Index):
+            convert_variable_type(parent_e, variable_id=parent_v,
+                                  new_type=vtypes.Index,
+                                  convert_data=False)
 
         # Empty dataframes (as a result of accessing Entity.metadata)
         # default to object dtypes for discrete variables, but
@@ -284,10 +287,10 @@ class EntitySet(object):
                  is_numeric_dtype(parent_e.df[parent_v])):
             child_e.df[child_v] = pd.Series(name=child_v, dtype=np.int64)
 
-        parent_dtype = parent_e.df[parent_v].dtype
-        child_dtype = child_e.df[child_v].dtype
-        msg = u"Unable to add relationship because {} in {} is Pandas dtype {}"\
-            u" and {} in {} is Pandas dtype {}."
+        # parent_dtype = parent_e.df[parent_v].dtype
+        # child_dtype = child_e.df[child_v].dtype
+        # msg = u"Unable to add relationship because {} in {} is Pandas dtype {}"\
+        #     u" and {} in {} is Pandas dtype {}."
         # if not is_dtype_equal(parent_dtype, child_dtype):
         #     raise ValueError(msg.format(parent_v, parent_e.name, parent_dtype,
         #                                 child_v, child_e.name, child_dtype))
@@ -297,13 +300,14 @@ class EntitySet(object):
         return self
 
     def set_secondary_time_index(self, entity, secondary_time_index):
-        if not secondary_time_index:
-            entity.metadata['secondary_time_index'] = {}
-            return
-
         for time_index, columns in secondary_time_index.items():
-            time_type = entity[time_index].logical_type
-            if time_type not in [ww.logical_types.Integer, ww.logical_types.Double, ww.logical_types.Datetime]:
+            if is_instance(entity.df, (dd, ks), 'DataFrame') or entity.df.empty:
+                variable_dtype = entity.metadata['variables'][time_index]._default_pandas_dtype
+                time_to_check = vtypes.DEFAULT_DTYPE_VALUES[variable_dtype]
+            else:
+                time_to_check = entity.df[time_index].head(1).iloc[0]
+            time_type = _check_time_type(time_to_check)
+            if time_type is None:
                 raise TypeError("%s time index not recognized as numeric or"
                                 " datetime" % (entity.name))
             if self.time_type != time_type:
@@ -370,7 +374,7 @@ class EntitySet(object):
         yield start_entity_id, []
 
         for relationship in self.get_forward_relationships(start_entity_id):
-            next_entity = relationship.parent_entity.id
+            next_entity = relationship.parent_entity.name
             # Copy seen entities for each next node to allow multiple paths (but
             # not cycles).
             descendants = self._forward_entity_paths(next_entity, seen_entities.copy())
@@ -388,7 +392,7 @@ class EntitySet(object):
         Yields a tuple of (descendent_id, path from entity_id to descendant).
         """
         for relationship in self.get_forward_relationships(entity_id):
-            parent_eid = relationship.parent_entity.id
+            parent_eid = relationship.parent_entity.name
             direct_path = RelationshipPath([(True, relationship)])
             yield parent_eid, direct_path
 
@@ -408,7 +412,7 @@ class EntitySet(object):
         Yields a tuple of (descendent_id, path from entity_id to descendant).
         """
         for relationship in self.get_backward_relationships(entity_id):
-            child_eid = relationship.child_entity.id
+            child_eid = relationship.child_entity.name
             direct_path = RelationshipPath([(False, relationship)])
             yield child_eid, direct_path
 
@@ -438,7 +442,7 @@ class EntitySet(object):
         Returns:
             list[:class:`.Relationship`]: list of backward relationships
         """
-        return [r for r in self.relationships if r.parent_entity.id == entity_id]
+        return [r for r in self.relationships if r.parent_entity.name == entity_id]
 
     def has_unique_forward_path(self, start_entity_id, end_entity_id):
         """
@@ -520,6 +524,11 @@ class EntitySet(object):
 
         """
         variable_types = variable_types or {}
+        _validate_entity_params(entity_id, dataframe)
+        if index is None:
+            warnings.warn(("Using first column as index. "
+                           "To change this, specify the index parameter"))
+            index = dataframe.columns[0]
 
         if time_index is not None and time_index == index:
             raise ValueError("time_index and index cannot be the same value, %s" % (time_index))
@@ -536,7 +545,6 @@ class EntitySet(object):
                                  "Cannot add entity of type {} to an entityset with existing entities "
                                  "of type {}".format(type(dataframe), type(base_df)))
 
-
         table_metadata = {
             'entityset': self,
         }
@@ -549,14 +557,34 @@ class EntitySet(object):
             already_sorted=already_sorted,
             make_index=make_index
         )
-        column_metadata = {'datatable': datatable}
+        secondary_time_index = secondary_time_index or {}
+
+        # TODO: WOODWORK: Remove after switching from Variables to DataColumns
+        variables = _create_variables(datatable, variable_types, index, time_index, secondary_time_index)
+        datatable.metadata['variables'] = {v.id: v for v in variables}
+        datatable.metadata['variable_types'] = {v.id: type(v) for v in variables}
+        convert_variable_type(datatable, index, vtypes.Index, convert_data=False)
+
         for column in datatable.columns.keys():
             datatable[column].metadata['datatable'] = datatable
+            datatable[column].metadata['variable'] = datatable.metadata['variables'][column]
 
-        if time_index and not self.time_type:
-            self.time_type = datatable[time_index].logical_type
+        if time_index:
+            # check time type
+            if not isinstance(dataframe, pd.DataFrame) or dataframe.empty:
+                time_to_check = vtypes.DEFAULT_DTYPE_VALUES[datatable.metadata['variables'][time_index]._default_pandas_dtype]
+            else:
+                time_to_check = dataframe[time_index].iloc[0]
+            time_type = _check_time_type(time_to_check)
+            if not self.time_type:
+                self.time_type = datatable.metadata['variable_types'][time_index]
+            elif self.time_type != time_type:
+                raise TypeError("%s time index is %s type which differs from"
+                                " other entityset time indexes" %
+                                (datatable.name, time_type))
+
         self.set_secondary_time_index(datatable, secondary_time_index)
-        
+
         self.entity_dict[datatable.name] = datatable
         self.reset_data_description()
         return self
@@ -644,14 +672,14 @@ class EntitySet(object):
             raise ValueError("'index' must be different from the index column of the base entity")
 
         transfer_types = {}
-        transfer_types[index] = type(base_entity[index])
+        transfer_types[index] = type(base_entity.metadata['variables'][index])
         for v in additional_variables + copy_variables:
-            if type(base_entity[v]) == vtypes.DatetimeTimeIndex:
+            if type(base_entity.metadata['variables'][v]) == vtypes.DatetimeTimeIndex:
                 transfer_types[v] = vtypes.Datetime
-            elif type(base_entity[v]) == vtypes.NumericTimeIndex:
+            elif type(base_entity.metadata['variables'][v]) == vtypes.NumericTimeIndex:
                 transfer_types[v] = vtypes.Numeric
             else:
-                transfer_types[v] = type(base_entity[v])
+                transfer_types[v] = type(base_entity.metadata['variables'][v])
 
         # create and add new entity
         new_entity_df = self[base_entity_id].df.copy()
@@ -678,7 +706,7 @@ class EntitySet(object):
             if base_time_index not in [v for v in additional_variables]:
                 copy_variables.append(base_time_index)
 
-            transfer_types[new_entity_time_index] = type(base_entity[base_entity.time_index])
+            transfer_types[new_entity_time_index] = type(base_entity.metadata['variables'][base_entity.time_index])
         else:
             new_entity_time_index = None
             already_sorted = False
@@ -734,6 +762,9 @@ class EntitySet(object):
             variable_types=transfer_types)
 
         self.entity_dict[base_entity_id] = self.entity_dict[base_entity_id].drop(additional_variables).add_semantic_tags({base_entity_index: 'foreign_key'})
+        for var in additional_variables:
+            self.entity_dict[base_entity_id].metadata['variables'].pop(var)
+            self.entity_dict[base_entity_id].metadata['variable_types'].pop(var)
 
         new_entity = self.entity_dict[new_entity_id]
         self.add_relationship(Relationship(new_entity[index], base_entity[base_entity_index]))
@@ -754,13 +785,13 @@ class EntitySet(object):
                 self.relationships == other.relationships), assert_string
 
         for entity in self.entities:
-            assert entity.id in other.entity_dict, assert_string
-            assert (len(self[entity.id].variables) ==
-                    len(other[entity.id].variables)), assert_string
+            assert entity.name in other.entity_dict, assert_string
+            assert (len(self[entity.name].variables) ==
+                    len(other[entity.name].variables)), assert_string
             other_variable_ids = [o_variable.id for o_variable in
-                                  other[entity.id].variables]
+                                  other[entity.name].variables]
             assert (all([variable.id in other_variable_ids
-                         for variable in self[entity.id].variables])), assert_string
+                         for variable in self[entity.name].variables])), assert_string
 
         if inplace:
             combined_es = self
@@ -770,7 +801,7 @@ class EntitySet(object):
         has_last_time_index = []
         for entity in self.entities:
             self_df = entity.df
-            other_df = other[entity.id].df
+            other_df = other[entity.name].df
             combined_df = pd.concat([self_df, other_df])
             if entity.created_index == entity.index:
                 columns = [col for col in combined_df.columns if
@@ -784,10 +815,10 @@ class EntitySet(object):
             else:
                 combined_df.sort_index(inplace=True)
             if (entity.metadata.get('last_time_index') is not None or
-                    other[entity.id].metadata.get('last_time_index') is not None):
-                has_last_time_index.append(entity.id)
-            combined_es[entity.id].update_data(df=combined_df,
-                                               recalculate_last_time_indexes=False)
+                    other[entity.name].metadata.get('last_time_index') is not None):
+                has_last_time_index.append(entity.name)
+            combined_es[entity.name].update_data(df=combined_df,
+                                                 recalculate_last_time_indexes=False)
 
         combined_es.add_last_time_indexes(updated_entities=has_last_time_index)
         self.reset_data_description()
@@ -811,7 +842,7 @@ class EntitySet(object):
         for r in self.relationships:
             children[r.parent_entity.name].append(r.child_entity)
             child_vars[r.parent_entity.name][r.child_entity.name] = r.child_variable
-        breakpoint()
+
         updated_entities = updated_entities or []
         if updated_entities:
             # find parents of updated_entities
@@ -843,6 +874,7 @@ class EntitySet(object):
         # explored, rather than just comparing length
         while not to_explore.issubset(explored):
             entity = queue.pop(0)
+
             if entity.metadata.get('last_time_index') is None:
                 if entity.time_index is not None:
                     lti = entity.df[entity.time_index].copy()
@@ -876,25 +908,29 @@ class EntitySet(object):
                             queue.append(e)
                     queue.append(entity)
                     continue
-            
+
                 # updated last time from all children
                 for child_e in child_entities:
                     # TODO: Figure out if Dask code related to indexes is important for Koalas
                     if child_e.metadata.get('last_time_index') is None:
                         continue
-                    link_var = child_vars[entity.name][child_e.name].name
+                    link_var = child_vars[entity.name][child_e.name].metadata['variable'].id
 
                     lti_is_dask = isinstance(child_e.metadata.get('last_time_index'), dd.Series)
                     lti_is_koalas = is_instance(child_e.metadata.get('last_time_index'), ks, 'Series')
 
                     if lti_is_dask or lti_is_koalas:
+                        child_df = child_e.metadata.get('last_time_index').to_frame(name='last_time')
                         to_join = child_e.df[link_var]
-                        if lti_is_dask:
-                            to_join.index = child_e.df[child_e.index]
+                        to_join_df = to_join.to_frame(name=entity.index)
 
-                        lti_df = child_e.metadata.get('last_time_index').to_frame(name='last_time').join(
-                            to_join.to_frame(name=entity.index)
-                        )
+                        if lti_is_dask:
+                            to_join_df.index = child_e.df[child_e.index]
+                            # TODO: WOODWORK: Figure out why this type conversion is necessary
+                            child_df.index = child_df.index.astype('int')
+                            to_join_df.index = to_join_df.index.astype('int')
+
+                        lti_df = child_df.join(to_join_df)
 
                         if lti_is_dask:
                             new_index = lti_df.index.copy()
@@ -928,13 +964,10 @@ class EntitySet(object):
                             lti_df['last_time_old'] = lti_df['last_time_old'].astype('datetime64[ns]')
                             lti_df = lti_df.max(axis=1)
                         else:
+                            lti_df['last_time_old'] = lti_df['last_time_old'].astype('object').astype('datetime64[ns]')
                             # TODO: Figure out a workaround for fillna and replace
-                            if lti_is_dask:
-                                lti_df['last_time_old'] = dd.to_datetime(lti_df['last_time_old'])
-                            else:
-                                lti_df['last_time_old'] = pd.to_datetime(lti_df['last_time_old'])
-                                lti_df = lti_df.fillna(pd.to_datetime('1800-01-01 00:00')).max(axis=1)
-                                lti_df = lti_df.replace(pd.to_datetime('1800-01-01 00:00'), pd.NaT)
+                            lti_df = lti_df.fillna(pd.to_datetime('1800-01-01 00:00')).max(axis=1)
+                            lti_df = lti_df.replace(pd.to_datetime('1800-01-01 00:00'), pd.NaT)
 
                     entity.metadata['last_time_index'] = lti_df
                     entity.metadata['last_time_index'].name = 'last_time'
@@ -964,7 +997,7 @@ class EntitySet(object):
         else:
             entities = self.entities
         for entity in entities:
-            for variable in entity.variables:
+            for variable in entity.metadata['variables'].values():
                 # some heuristics to find basic 'where'-able variables
                 if isinstance(variable, vtypes.Discrete):
                     variable.interesting_values = pd.Series(dtype=variable.entity.df[variable.id].dtype)
@@ -1031,13 +1064,13 @@ class EntitySet(object):
         # Draw entities
         for entity in self.entities:
             variables_string = '\l'.join([var.id + ' : ' + var.type_string  # noqa: W605
-                                          for var in entity.variables])
+                                          for var in entity.metadata['variables'].values()])
             if isinstance(entity.df, dd.DataFrame):  # entity is a dask entity
-                label = '{%s |%s\l}' % (entity.id, variables_string)  # noqa: W605
+                label = '{%s |%s\l}' % (entity.name, variables_string)  # noqa: W605
             else:
                 nrows = entity.shape[0]
-                label = '{%s (%d row%s)|%s\l}' % (entity.id, nrows, 's' * (nrows > 1), variables_string)  # noqa: W605
-            graph.node(entity.id, shape='record', label=label)
+                label = '{%s (%d row%s)|%s\l}' % (entity.name, nrows, 's' * (nrows > 1), variables_string)  # noqa: W605
+            graph.node(entity.name, shape='record', label=label)
 
         # Draw relationships
         for rel in self.relationships:
@@ -1201,3 +1234,120 @@ def _vals_to_series(instance_vals, variable_id):
     out_vals.index.name = None
 
     return out_vals
+
+
+def _create_variables(entity, variable_types, index, time_index, secondary_time_index):
+    """Extracts the variables from a dataframe
+
+    Args:
+        variable_types (dict[str -> types/str/dict[str -> type]]) : An entity's
+            variable_types dict maps string variable ids to types (:class:`.Variable`)
+            or type_strings (str) or (type, kwargs) to pass keyword arguments to the Variable.
+        index (str): Name of index column
+        time_index (str or None): Name of time_index column
+        secondary_time_index (dict[str: [str]]): Dictionary of secondary time columns
+            that each map to a list of columns that depend on that secondary time
+    """
+
+    variables = []
+    variable_types = variable_types.copy() or {}
+    string_to_class_map = find_variable_types()
+    # TODO: Remove once Text has been removed from variable types
+    string_to_class_map[Text.type_string] = Text
+    for vid in variable_types.copy():
+        vtype = variable_types[vid]
+        if isinstance(vtype, str):
+            if vtype in string_to_class_map:
+                variable_types[vid] = string_to_class_map[vtype]
+            else:
+                variable_types[vid] = string_to_class_map['unknown']
+                warnings.warn("Variable type {} was unrecognized, Unknown variable type was used instead".format(vtype))
+
+    if index not in variable_types:
+        variable_types[index] = vtypes.Index
+
+    link_vars = get_linked_vars(entity)
+    inferred_variable_types = infer_variable_types(entity.df,
+                                                   link_vars,
+                                                   variable_types,
+                                                   time_index,
+                                                   secondary_time_index)
+    inferred_variable_types.update(variable_types)
+
+    for v in inferred_variable_types:
+        # TODO document how vtype can be tuple
+        vtype = inferred_variable_types[v]
+        if isinstance(vtype, tuple):
+            # vtype is (ft.Variable, dict_of_kwargs)
+            _v = vtype[0](v, entity, **vtype[1])
+        else:
+            _v = inferred_variable_types[v](v, entity)
+        variables += [_v]
+    # convert data once we've inferred
+    # df = convert_all_variable_data(df=entity.df,
+    #                                variable_types=inferred_variable_types)
+    # make sure index is at the beginning
+    index_variable = [v for v in variables if v.id == index][0]
+    return [index_variable] + [v for v in variables if v.id != index]
+
+
+def convert_variable_type(entity, variable_id, new_type,
+                          convert_data=True,
+                          **kwargs):
+    """Convert variable in dataframe to different type
+
+    Args:
+        variable_id (str) : Id of variable to convert.
+        new_type (subclass of `Variable`) : Type of variable to convert to.
+        entityset (:class:`.BaseEntitySet`) : EntitySet associated with this entity.
+        convert_data (bool) : If True, convert underlying data in the EntitySet.
+
+    Raises:
+        RuntimeError : Raises if it cannot convert the underlying data
+
+    Examples:
+        >>> from featuretools.tests.testing_utils import make_ecommerce_entityset
+        >>> es = make_ecommerce_entityset()
+        >>> es["customers"].convert_variable_type("engagement_level", vtypes.Categorical)
+    """
+    if convert_data:
+        pass
+        # first, convert the underlying data (or at least try to)
+        # self.df = convert_variable_data(df=self.df,
+        #                                 column_id=variable_id,
+        #                                 new_type=new_type,
+        #                                 **kwargs)
+
+    # replace the old variable with the new one, maintaining order
+    variable = entity.metadata['variables'][variable_id]
+    new_variable = new_type.create_from(variable)
+    entity.metadata['variables'][variable_id] = new_variable
+    entity.metadata['variable_types'] = {v.id: type(v) for v in entity.metadata['variables'].values()}
+    entity[variable_id].metadata['variable'] = new_variable
+
+
+def _get_variable(entity, variable_id):
+    """Get variable instance
+
+    Args:
+        variable_id (str) : Id of variable to get.
+
+    Returns:
+        :class:`.Variable` : Instance of variable.
+
+    Raises:
+        RuntimeError : if no variable exist with provided id
+    """
+    for v in entity.variables:
+        if v.id == variable_id:
+            return v
+
+
+def _validate_entity_params(id, df):
+    '''Validation checks for Entity inputs'''
+    assert isinstance(id, str), "Entity id must be a string"
+    assert len(df.columns) == len(set(df.columns)), "Duplicate column names"
+    for c in df.columns:
+        if not isinstance(c, str):
+            raise ValueError("All column names must be strings (Column {} "
+                             "is not a string)".format(c))

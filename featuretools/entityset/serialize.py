@@ -25,7 +25,7 @@ def entity_to_description(entity):
     Returns:
         dictionary (dict) : Description of :class:`.Entity`.
     '''
-    index = entity.df.columns.isin([variable.id for variable in entity.variables])
+    index = entity.df.columns.isin([variable.id for variable in entity.metadata['variables'].values()])
     indexer = entity.df.columns[index].to_list() if is_instance(entity.df, ks, 'DataFrame') else entity.df.columns[index]
     dtypes = entity.df[indexer].dtypes.astype(str).to_dict()
     if isinstance(entity.df, dd.DataFrame):
@@ -35,14 +35,14 @@ def entity_to_description(entity):
     else:
         entity_type = 'pandas'
     description = {
-        "id": entity.id,
+        "id": entity.name,
         "index": entity.index,
         "time_index": entity.time_index,
         "properties": {
-            'secondary_time_index': entity.secondary_time_index,
-            'last_time_index': entity.last_time_index is not None,
+            'secondary_time_index': entity.metadata.get('secondary_time_index'),
+            'last_time_index': entity.metadata.get('last_time_index') is not None,
         },
-        "variables": [variable.to_data_description() for variable in entity.variables],
+        "variables": [variable.to_data_description() for variable in entity.metadata['variables'].values()],
         "loading_info": {
             'entity_type': entity_type,
             'params': {},
@@ -64,8 +64,8 @@ def entityset_to_description(entityset):
     Returns:
         description (dict) : Description of :class:`.EntitySet`.
     '''
-    entities = {entity.id: entity_to_description(entity) for entity in
-                sorted(entityset.entities, key=lambda entity: entity.id)}
+    entities = {entity.name: entity_to_description(entity) for entity in
+                sorted(entityset.entities, key=lambda entity: entity.name)}
     relationships = [relationship.to_dictionary() for relationship in entityset.relationships]
     data_description = {
         'schema_version': SCHEMA_VERSION,
@@ -90,9 +90,9 @@ def write_entity_data(entity, path, format='csv', **kwargs):
     '''
     format = format.lower()
     if isinstance(entity.df, dd.DataFrame) and format == 'csv':
-        basename = "{}-*.{}".format(entity.id, format)
+        basename = "{}-*.{}".format(entity.name, format)
     else:
-        basename = '.'.join([entity.id, format])
+        basename = '.'.join([entity.name, format])
     location = os.path.join('data', basename)
     file = os.path.join(path, location)
     df = entity.df
@@ -160,7 +160,7 @@ def dump_data_description(entityset, path, **kwargs):
     description = entityset_to_description(entityset)
     for entity in entityset.entities:
         loading_info = write_entity_data(entity, path, **kwargs)
-        description['entities'][entity.id]['loading_info'].update(loading_info)
+        description['entities'][entity.name]['loading_info'].update(loading_info)
     file = os.path.join(path, 'data_description.json')
     with open(file, 'w') as file:
         json.dump(description, file)

@@ -474,7 +474,7 @@ def pd_boolean_mult_es():
 def dask_boolean_mult_es(pd_boolean_mult_es):
     entities = {}
     for entity in pd_boolean_mult_es.entities:
-        entities[entity.id] = (dd.from_pandas(entity.df, npartitions=2), entity.index, None, entity.variable_types)
+        entities[entity.name] = (dd.from_pandas(entity.df, npartitions=2), entity.index, None, entity.metadata['variable_types'])
 
     return ft.EntitySet(id=pd_boolean_mult_es.id, entities=entities)
 

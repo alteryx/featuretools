@@ -1,6 +1,8 @@
+import logging
 import warnings
 
 import dask.dataframe as dd
+import numpy as np
 import pandas as pd
 
 from featuretools import variable_types as vtypes
@@ -17,6 +19,8 @@ from featuretools.variable_types import Text, find_variable_types
 
 ks = import_or_none('databricks.koalas')
 
+logger = logging.getLogger('featuretools.entityset')
+
 _numeric_types = vtypes.PandasTypes._pandas_numerics
 _categorical_types = [vtypes.PandasTypes._categorical]
 _datetime_types = vtypes.PandasTypes._pandas_datetimes
@@ -24,12 +28,9 @@ _datetime_types = vtypes.PandasTypes._pandas_datetimes
 
 class Entity(object):
     """Represents an entity in a Entityset, and stores relevant metadata and data
-
     An Entity is analogous to a table in a relational database
-
     See Also:
         :class:`.Relationship`, :class:`.Variable`, :class:`.EntitySet`
-
     """
 
     def __init__(self, id, df, entityset, variable_types=None,
@@ -37,7 +38,6 @@ class Entity(object):
                  last_time_index=None, already_sorted=False, make_index=False,
                  verbose=False):
         """ Create Entity
-
         Args:
             id (str): Id of Entity.
             df (pd.DataFrame): Dataframe providing the data for the
@@ -75,7 +75,7 @@ class Entity(object):
         if time_index:
             self.set_time_index(time_index, already_sorted=already_sorted)
 
-        entityset.set_secondary_time_index(self, secondary_time_index)
+        self.set_secondary_time_index(secondary_time_index)
 
     def __repr__(self):
         repr_out = u"Entity: {}\n".format(self.id)
@@ -154,13 +154,10 @@ class Entity(object):
 
     def _get_variable(self, variable_id):
         """Get variable instance
-
         Args:
             variable_id (str) : Id of variable to get.
-
         Returns:
             :class:`.Variable` : Instance of variable.
-
         Raises:
             RuntimeError : if no variable exist with provided id
         """
@@ -179,16 +176,13 @@ class Entity(object):
                               convert_data=True,
                               **kwargs):
         """Convert variable in dataframe to different type
-
         Args:
             variable_id (str) : Id of variable to convert.
             new_type (subclass of `Variable`) : Type of variable to convert to.
             entityset (:class:`.BaseEntitySet`) : EntitySet associated with this entity.
             convert_data (bool) : If True, convert underlying data in the EntitySet.
-
         Raises:
             RuntimeError : Raises if it cannot convert the underlying data
-
         Examples:
             >>> from featuretools.tests.testing_utils import make_ecommerce_entityset
             >>> es = make_ecommerce_entityset()
@@ -208,7 +202,6 @@ class Entity(object):
 
     def _create_variables(self, variable_types, index, time_index, secondary_time_index):
         """Extracts the variables from a dataframe
-
         Args:
             variable_types (dict[str -> types/str/dict[str -> type]]) : An entity's
                 variable_types dict maps string variable ids to types (:class:`.Variable`)
@@ -280,19 +273,73 @@ class Entity(object):
         if self.time_index is not None:
             self.set_time_index(self.time_index, already_sorted=already_sorted)
 
-        self.entityset.set_secondary_time_index(self, self.secondary_time_index)
+        self.set_secondary_time_index(self.secondary_time_index)
         if recalculate_last_time_indexes and self.last_time_index is not None:
             self.entityset.add_last_time_indexes(updated_entities=[self.id])
+        self.entityset.reset_data_description()
+
+    def add_interesting_values(self, max_values=5, verbose=False):
+        """
+        Find interesting values for categorical variables, to be used to
+            generate "where" clauses
+        Args:
+            max_values (int) : Maximum number of values per variable to add.
+            verbose (bool) : If True, print summary of interesting values found.
+        Returns:
+            None
+        """
+        for variable in self.variables:
+            # some heuristics to find basic 'where'-able variables
+            if isinstance(variable, vtypes.Discrete):
+                variable.interesting_values = pd.Series(dtype=variable.entity.df[variable.id].dtype)
+
+                # TODO - consider removing this constraints
+                # don't add interesting values for entities in relationships
+                skip = False
+                for r in self.entityset.relationships:
+                    if variable in [r.child_variable, r.parent_variable]:
+                        skip = True
+                        break
+                if skip:
+                    continue
+
+                counts = self.df[variable.id].value_counts()
+
+                # find how many of each unique value there are; sort by count,
+                # and add interesting values to each variable
+                total_count = np.sum(counts)
+                counts[:] = counts.sort_values()[::-1]
+                for i in range(min(max_values, len(counts.index))):
+                    idx = counts.index[i]
+
+                    # add the value to interesting_values if it represents more than
+                    # 25% of the values we have not seen so far
+                    if len(counts.index) < 25:
+                        if verbose:
+                            msg = "Variable {}: Marking {} as an "
+                            msg += "interesting value"
+                            logger.info(msg.format(variable.id, idx))
+                        variable.interesting_values = variable.interesting_values.append(pd.Series([idx]))
+                    else:
+                        fraction = counts[idx] / total_count
+                        if fraction > 0.05 and fraction < 0.95:
+                            if verbose:
+                                msg = "Variable {}: Marking {} as an "
+                                msg += "interesting value"
+                                logger.info(msg.format(variable.id, idx))
+                            variable.interesting_values = variable.interesting_values.append(pd.Series([idx]))
+                            # total_count -= counts[idx]
+                        else:
+                            break
+
         self.entityset.reset_data_description()
 
     def delete_variables(self, variable_ids):
         """
         Remove variables from entity's dataframe and from
         self.variables
-
         Args:
             variable_ids (list[str]): Variables to delete
-
         Returns:
             None
         """
@@ -358,6 +405,25 @@ class Entity(object):
 
         self.convert_variable_type(variable_id, vtypes.Index, convert_data=False)
         self.index = variable_id
+
+    def set_secondary_time_index(self, secondary_time_index):
+        for time_index, columns in secondary_time_index.items():
+            if is_instance(self.df, (dd, ks), 'DataFrame') or self.df.empty:
+                time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[time_index]._default_pandas_dtype]
+            else:
+                time_to_check = self.df[time_index].head(1).iloc[0]
+            time_type = _check_time_type(time_to_check)
+            if time_type is None:
+                raise TypeError("%s time index not recognized as numeric or"
+                                " datetime" % (self.id))
+            if self.entityset.time_type != time_type:
+                raise TypeError("%s time index is %s type which differs from"
+                                " other entityset time indexes" %
+                                (self.id, time_type))
+            if time_index not in columns:
+                columns.append(time_index)
+
+        self.secondary_time_index = secondary_time_index
 
 
 def _create_index(index, make_index, df):

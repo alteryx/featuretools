@@ -190,12 +190,12 @@ def convert_variable_data(df, column_id, new_type, **kwargs):
 def get_linked_vars(entity):
     """Return a list with the entity linked variables.
     """
-    link_relationships = [r for r in entity.entityset.relationships
-                          if r.parent_entity.id == entity.id or
-                          r.child_entity.id == entity.id]
+    link_relationships = [r for r in entity.metadata['entityset'].relationships
+                          if r.parent_entity.name == entity.name or
+                          r.child_entity.name == entity.name]
     link_vars = [v.id for rel in link_relationships
                  for v in [rel.parent_variable, rel.child_variable]
-                 if v.entity.id == entity.id]
+                 if v.entity.name == entity.name]
     return link_vars
 
 

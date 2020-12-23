@@ -8,6 +8,7 @@ import featuretools as ft
 from featuretools import Relationship
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
+from featuretools.utils.koalas_utils import pd_to_ks_clean
 
 ks = import_or_none('databricks.koalas')
 
@@ -76,6 +77,7 @@ def extra_session_df(es):
     if isinstance(es['sessions'].df, dd.DataFrame):
         df = dd.from_pandas(df, npartitions=3)
     if ks and isinstance(es['sessions'].df, ks.DataFrame):
+        df['customer_id'] = df['customer_id'].astype('int')
         df = ks.from_pandas(df)
     return df
 

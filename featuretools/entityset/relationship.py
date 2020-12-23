@@ -24,7 +24,7 @@ class Relationship(object):
 
         if (parent_variable.metadata['datatable'].index is not None and
                 parent_variable.name != parent_variable.metadata['datatable'].index):
-            raise AttributeError("Parent variable '%s' is not the index of entity %s" % (parent_variable, parent_variable.metadata['datatable'].name))
+            raise AttributeError("Parent variable '%s' is not the index of entity %s" % (parent_variable.name, parent_variable.metadata['datatable'].name))
 
     @classmethod
     def from_dictionary(cls, arguments, es):

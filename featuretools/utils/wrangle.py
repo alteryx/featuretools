@@ -106,9 +106,9 @@ def _check_time_type(time):
     '''
     time_type = None
     if isinstance(time, (datetime, np.datetime64)):
-        time_type = variable_types.DatetimeTimeIndex
+        time_type = variable_types.Datetime
     elif isinstance(time, (int, float)) or np.issubdtype(time, np.integer) or np.issubdtype(time, np.floating):
-        time_type = variable_types.NumericTimeIndex
+        time_type = variable_types.Numeric
     return time_type
 
 
