@@ -9,7 +9,7 @@ Release Notes
     * Changes
         * Move ``query_by_values`` method from ``Entity`` to ``EntitySet`` (:pr:`1251`)
         * Move ``_handle_time`` method from ``Entity`` to ``EntitySet`` (:pr:`1276`)
-        * Restrict pandas to <1.2.0 (:pr:`1286`)
+        * Remove usage of ``ravel`` to resolve unexpected warning with pandas 1.2.0 (:pr:`1286`)
     * Documentation Changes
         * Fix installation command for Add-ons (:pr:`1279`)
     * Testing Changes
