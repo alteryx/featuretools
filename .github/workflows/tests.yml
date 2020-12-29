@@ -245,7 +245,7 @@ jobs:
           conda activate featuretools
           conda config --add channels conda-forge
           conda install python-graphviz -q -y
-          python -c "import graphviz; graphviz.Digraph.pipe();"
+          python -c "import graphviz; graphviz.Digraph().pipe();"
           python -m pip install --upgrade pip
           python -m pip install .
           python -m pip install -r test-requirements.txt
