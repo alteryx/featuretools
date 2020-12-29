@@ -244,7 +244,7 @@ jobs:
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate featuretools
           conda config --add channels conda-forge
-          conda install graphviz -q -y
+          conda install 'python-graphviz<0.16' -q -y
           python -m pip install --upgrade pip
           python -m pip install .
           python -m pip install -r test-requirements.txt
