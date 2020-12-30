@@ -1857,13 +1857,13 @@ def test_no_entities(entities, relationships):
                                  relationships=None)
 
 
-def test_single_entity(entities):
-    fm_1, features = ft.dfs(entities={'transactions': entities['transactions']},
+def test_no_relationships(entities):
+    fm_1, features = ft.dfs(entities=entities,
                             relationships=None,
                             target_entity="transactions")
 
     fm_2 = calculate_feature_matrix(features=features,
-                                    entities={'transactions': entities['transactions']},
+                                    entities=entities,
                                     relationships=None)
 
     fm_1 = to_pandas(fm_1, index='id')
