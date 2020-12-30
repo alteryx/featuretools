@@ -1850,8 +1850,8 @@ def test_no_entities(entities, relationships):
                       target_entity="transactions",
                       features_only=True)
 
-    msg = "Entity transactions does not exist in entityset"
-    with pytest.raises(KeyError, match=msg):
+    msg = "No entities or valid EntitySet provided"
+    with pytest.raises(TypeError, match=msg):
         calculate_feature_matrix(features=features,
                                  entities=None,
                                  relationships=None)
