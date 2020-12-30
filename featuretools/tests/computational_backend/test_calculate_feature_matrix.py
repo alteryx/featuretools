@@ -1828,3 +1828,44 @@ def test_calc_feature_matrix_with_cutoff_df_and_instance_ids(es):
 
     feature_matrix = to_pandas(feature_matrix)
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
+
+
+def test_entities_relationships(entities, relationships):
+    fm_1, features = ft.dfs(entities=entities,
+                            relationships=relationships,
+                            target_entity="transactions")
+
+    fm_2 = calculate_feature_matrix(features=features,
+                                    entities=entities,
+                                    relationships=relationships)
+
+    fm_1 = to_pandas(fm_1, index='id')
+    fm_2 = to_pandas(fm_2, index='id')
+    assert fm_1.equals(fm_2)
+
+
+def test_no_entities(entities, relationships):
+    features = ft.dfs(entities=entities,
+                      relationships=relationships,
+                      target_entity="transactions",
+                      features_only=True)
+
+    msg = "Entity transactions does not exist in entityset"
+    with pytest.raises(KeyError, match=msg):
+        calculate_feature_matrix(features=features,
+                                 entities=None,
+                                 relationships=None)
+
+
+def test_single_entity(entities):
+    fm_1, features = ft.dfs(entities={'transactions': entities['transactions']},
+                            relationships=None,
+                            target_entity="transactions")
+
+    fm_2 = calculate_feature_matrix(features=features,
+                                    entities={'transactions': entities['transactions']},
+                                    relationships=None)
+
+    fm_1 = to_pandas(fm_1, index='id')
+    fm_2 = to_pandas(fm_2, index='id')
+    assert fm_1.equals(fm_2)
