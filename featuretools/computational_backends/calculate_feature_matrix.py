@@ -142,8 +142,10 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     # handle loading entityset
     from featuretools.entityset.entityset import EntitySet
     if not isinstance(entityset, EntitySet):
-        if entities is not None and relationships is not None:
+        if entities is not None:
             entityset = EntitySet("entityset", entities, relationships)
+        else:
+            raise TypeError("No entities or valid EntitySet provided")
 
     if any(isinstance(es.df, dd.DataFrame) for es in entityset.entities):
         if approximate:
