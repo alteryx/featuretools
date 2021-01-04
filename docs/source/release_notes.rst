@@ -8,7 +8,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Fix non-deterministic Dask test ``test_calculate_feature_matrix::test_entities_relationships`` (:pr:`1294`)
+        * Fix non-deterministic Dask test (:pr:`1294`)
 
     Thanks to the following people for contributing to this release:
     :user:`thehomebrewnerd`
