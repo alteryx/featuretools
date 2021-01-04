@@ -1839,8 +1839,8 @@ def test_entities_relationships(entities, relationships):
                                     entities=entities,
                                     relationships=relationships)
 
-    fm_1 = to_pandas(fm_1, index='id')
-    fm_2 = to_pandas(fm_2, index='id')
+    fm_1 = to_pandas(fm_1, index='id', sort_index=True)
+    fm_2 = to_pandas(fm_2, index='id', sort_index=True)
     assert fm_1.equals(fm_2)
 
 
