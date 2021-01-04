@@ -4,8 +4,8 @@ dask==2020.12.0
 distributed==2020.12.0
 koalas==1.5.0
 numpy==1.19.4
-pandas==1.1.5
+pandas==1.2.0
 psutil==5.8.0
 pyspark==3.0.1
-scipy==1.5.4
-tqdm==4.54.1
+scipy==1.6.0
+tqdm==4.55.0

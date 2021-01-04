@@ -703,7 +703,7 @@ class FeatureSetCalculator(object):
                     to_merge = base_frame.groupby(base_frame[groupby_var],
                                                   observed=True, sort=False).agg(to_agg)
                 # rename columns to the correct feature names
-                to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns.ravel()]
+                to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns]
                 to_merge = to_merge[list(agg_rename.values())]
 
                 # workaround for pandas bug where categories are in the wrong order
