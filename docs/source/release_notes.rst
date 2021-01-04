@@ -2,19 +2,21 @@
 
 Release Notes
 -------------
-.. **Future Release**
+**Future Release**
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Fix non-deterministic Dask test ``test_calculate_feature_matrix::test_entities_relationships`` (:pr:`1294`)
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
 
 **v0.23.0 Dec 31, 2020**
     * Fixes
         * Fix logic for inferring variable type from unusual dtype (:pr:`1273`)
-        * Allow passing entities without relationships to `calculate_feature_matrix` (:pr:`1290`)
+        * Allow passing entities without relationships to ``calculate_feature_matrix`` (:pr:`1290`)
     * Changes
         * Move ``query_by_values`` method from ``Entity`` to ``EntitySet`` (:pr:`1251`)
         * Move ``_handle_time`` method from ``Entity`` to ``EntitySet`` (:pr:`1276`)
