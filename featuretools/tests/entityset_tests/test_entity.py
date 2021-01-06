@@ -66,6 +66,8 @@ def test_eq(es):
 
     assert es['log'].__eq__(es['log'], deep=True)
     assert es['log'].__eq__(other_es['log'], deep=True)
+    # print(to_pandas(es['log'].df['latlong']))
+    # print(to_pandas(latlong))
     assert all(to_pandas(es['log'].df['latlong']).eq(to_pandas(latlong)))
 
     other_es['log'].add_interesting_values()
@@ -137,33 +139,6 @@ def test_update_data(es):
     if isinstance(df, pd.DataFrame):
         es["customers"].update_data(df.copy())
         assert es['customers'].df["id"].iloc[0] == 0
-
-
-def test_query_by_values_returns_rows_in_given_order():
-    data = pd.DataFrame({
-        "id": [1, 2, 3, 4, 5],
-        "value": ["a", "c", "b", "a", "a"],
-        "time": [1000, 2000, 3000, 4000, 5000]
-    })
-
-    es = ft.EntitySet()
-    es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
-                                  time_index="time", variable_types={
-                                            "value": ft.variable_types.Categorical
-                                  })
-    query = es['test'].query_by_values(['b', 'a'], variable_id='value')
-    assert np.array_equal(query['id'], [1, 3, 4, 5])
-
-
-def test_query_by_values_secondary_time_index(es):
-    end = np.datetime64(datetime(2011, 10, 1))
-    all_instances = [0, 1, 2]
-    result = es['customers'].query_by_values(all_instances, time_last=end)
-    result = to_pandas(result, index='id')
-
-    for col in ["cancel_date", "cancel_reason"]:
-        nulls = result.loc[all_instances][col].isnull() == [False, True, True]
-        assert nulls.all(), "Some instance has data it shouldn't for column %s" % col
 
 
 def test_delete_variables(es):

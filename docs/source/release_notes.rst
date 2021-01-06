@@ -8,10 +8,32 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Use repository-scoped token for dependency check (:pr:`1245`:)
+        * Fix non-deterministic Dask test (:pr:`1294`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`
+    :user:`thehomebrewnerd`
+
+**v0.23.0 Dec 31, 2020**
+    * Fixes
+        * Fix logic for inferring variable type from unusual dtype (:pr:`1273`)
+        * Allow passing entities without relationships to ``calculate_feature_matrix`` (:pr:`1290`)
+    * Changes
+        * Move ``query_by_values`` method from ``Entity`` to ``EntitySet`` (:pr:`1251`)
+        * Move ``_handle_time`` method from ``Entity`` to ``EntitySet`` (:pr:`1276`)
+        * Remove usage of ``ravel`` to resolve unexpected warning with pandas 1.2.0 (:pr:`1286`)
+    * Documentation Changes
+        * Fix installation command for Add-ons (:pr:`1279`)
+    * Testing Changes
+        * Use repository-scoped token for dependency check (:pr:`1245`:, :pr:`1248`)
+        * Fix install error during docs CI test (:pr:`1250`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
+
+**Breaking Changes**
+
+* ``Entity.query_by_values`` has been removed and replaced by ``EntitySet.query_by_values`` with an
+  added ``entity_id`` parameter to specify which entity in the entityset should be used for the query.
 
 **v0.22.0 Nov 30, 2020**
     * Enhancements

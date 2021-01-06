@@ -1,5 +1,3 @@
-import sys
-
 import composeml as cp
 import numpy as np
 import pandas as pd
@@ -7,7 +5,6 @@ import pytest
 from dask import dataframe as dd
 from distributed.utils_test import cluster
 
-from featuretools import variable_types as vtypes
 from featuretools.computational_backends.calculate_feature_matrix import (
     FEATURE_CALCULATION_PERCENTAGE
 )
@@ -29,109 +26,6 @@ from featuretools.variable_types import Numeric
 
 ks = import_or_none('databricks.koalas')
 cudf = import_or_none('cudf')
-
-
-@pytest.fixture(params=['pd_entities', 'dask_entities', 'koalas_entities', 'cudf_entities'])
-def entities(request):
-    return request.getfixturevalue(request.param)
-
-
-@pytest.fixture
-def pd_entities():
-    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
-    transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
-                                    "card_id": [1, 2, 1, 3, 4, 5],
-                                    "transaction_time": [10, 12, 13, 20, 21, 20],
-                                    "fraud": [True, False, False, False, True, True]})
-    entities = {
-        "cards": (cards_df, "id"),
-        "transactions": (transactions_df, "id", "transaction_time")
-    }
-    return entities
-
-
-@pytest.fixture
-def dask_entities():
-    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
-    transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
-                                    "card_id": [1, 2, 1, 3, 4, 5],
-                                    "transaction_time": [10, 12, 13, 20, 21, 20],
-                                    "fraud": [True, False, False, False, True, True]})
-    cards_df = dd.from_pandas(cards_df, npartitions=2)
-    transactions_df = dd.from_pandas(transactions_df, npartitions=2)
-
-    cards_vtypes = {
-        'id': vtypes.Index
-    }
-    transactions_vtypes = {
-        'id': vtypes.Index,
-        'card_id': vtypes.Id,
-        'transaction_time': vtypes.NumericTimeIndex,
-        'fraud': vtypes.Boolean
-    }
-
-    entities = {
-        "cards": (cards_df, "id", None, cards_vtypes),
-        "transactions": (transactions_df, "id", "transaction_time", transactions_vtypes)
-    }
-    return entities
-
-
-@pytest.fixture
-def koalas_entities():
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    if sys.platform.startswith('win'):
-        pytest.skip('skipping Koalas tests for Windows')
-    cards_df = ks.DataFrame({"id": [1, 2, 3, 4, 5]})
-    transactions_df = ks.DataFrame({"id": [1, 2, 3, 4, 5, 6],
-                                    "card_id": [1, 2, 1, 3, 4, 5],
-                                    "transaction_time": [10, 12, 13, 20, 21, 20],
-                                    "fraud": [True, False, False, False, True, True]})
-    cards_vtypes = {
-        'id': vtypes.Index
-    }
-    transactions_vtypes = {
-        'id': vtypes.Index,
-        'card_id': vtypes.Id,
-        'transaction_time': vtypes.NumericTimeIndex,
-        'fraud': vtypes.Boolean
-    }
-
-    entities = {
-        "cards": (cards_df, "id", None, cards_vtypes),
-        "transactions": (transactions_df, "id", "transaction_time", transactions_vtypes)
-    }
-    return entities
-
-
-@pytest.fixture
-def cudf_entities():
-    cudf = pytest.importorskip('cudf', reason="cuDF not installed, skipping")
-    cards_df = cudf.DataFrame({"id": [1, 2, 3, 4, 5]})
-    transactions_df = cudf.DataFrame({"id": [1, 2, 3, 4, 5, 6],
-                                      "card_id": [1, 2, 1, 3, 4, 5],
-                                      "transaction_time": [10, 12, 13, 20, 21, 20],
-                                      "fraud": [True, False, False, False, True, True]})
-    cards_vtypes = {
-        'id': vtypes.Index
-    }
-    transactions_vtypes = {
-        'id': vtypes.Index,
-        'card_id': vtypes.Id,
-        'transaction_time': vtypes.NumericTimeIndex,
-        'fraud': vtypes.Boolean
-    }
-
-    entities = {
-        "cards": (cards_df, "id", None, cards_vtypes),
-        "transactions": (transactions_df, "id", "transaction_time", transactions_vtypes)
-    }
-    return entities
-
-
-@pytest.fixture
-def relationships():
-    return [("cards", "id", "transactions", "card_id")]
 
 
 @pytest.fixture
