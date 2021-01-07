@@ -10,9 +10,10 @@ Release Notes
     * Documentation Changes
     * Testing Changes
         * Fix non-deterministic Dask test (:pr:`1294`)
+        * Unpin python-graphviz package on Windows (:pr:`1296`)
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.23.0 Dec 31, 2020**
     * Fixes
