@@ -2,8 +2,7 @@ import urllib.request
 
 import pytest
 
-from featuretools.demo import load_flight, load_retail, load_mock_customer
-from featuretools.synthesis import dfs
+from featuretools.demo import load_flight, load_mock_customer, load_retail
 
 
 @pytest.fixture(autouse=True)
