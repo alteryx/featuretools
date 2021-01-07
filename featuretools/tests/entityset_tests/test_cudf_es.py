@@ -24,7 +24,7 @@ def test_create_entity_from_cudf_df(pd_es):
         time_index="datetime",
         variable_types=pd_es["log"].variable_types
     )
-    pd.testing.assert_frame_equal(pd_es["log"].df, cudf_es["log_cudf"].df.to_pandas(), check_like=True)
+    pd.testing.assert_frame_equal(cleaned_df, cudf_es["log_cudf"].df.to_pandas(), check_like=True)
 
 
 @pytest.mark.skipif('not cudf')
