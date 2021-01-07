@@ -25,7 +25,6 @@ from featuretools.utils.gen_utils import import_or_none
 from featuretools.variable_types import Numeric
 
 ks = import_or_none('databricks.koalas')
-cudf = import_or_none('cudf')
 
 
 @pytest.fixture
