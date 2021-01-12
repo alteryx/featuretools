@@ -1,4 +1,6 @@
-on: push
+on:
+  pull_request_target:
+    types: [synchronize]
 
 name: Tests
 jobs:
@@ -15,6 +17,9 @@ jobs:
           python-version: ${{ matrix.python_version }}
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          ref: ${{github.event.pull_request.head.ref}}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
       - name: Build featuretools package
         run: make package_featuretools
       - name: Install featuretools with doc requirements
