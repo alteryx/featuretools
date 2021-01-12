@@ -285,7 +285,7 @@ def test_single_table_dask_entityset_dates_not_sorted():
     pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id').loc[fm.index])
 
 
-def test_secondary_time_index():
+def test_dask_entityset_secondary_time_index():
     log_df = pd.DataFrame()
     log_df['id'] = [0, 1, 2, 3]
     log_df['scheduled_time'] = pd.to_datetime([

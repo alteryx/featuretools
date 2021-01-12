@@ -295,7 +295,7 @@ def test_single_table_ks_entityset_dates_not_sorted():
 
 
 @pytest.mark.skipif('not ks')
-def test_secondary_time_index():
+def test_ks_entityset_secondary_time_index():
     log_df = pd.DataFrame()
     log_df['id'] = [0, 1, 2, 3]
     log_df['scheduled_time'] = pd.to_datetime([
