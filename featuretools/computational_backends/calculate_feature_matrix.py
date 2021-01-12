@@ -460,7 +460,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                     _feature_matrix.set_index(['instance_id', target_time], inplace=True)
                     _feature_matrix.index.set_names([id_name, 'time'], inplace=True)
 
-                    #kind argumment is not suported for cudf
+                    # kind argumment is not suported for cudf
                     if is_instance(_feature_matrix, cudf, 'DataFrame'):
                         _feature_matrix.sort_index(level=1, inplace=True)
                     else:
