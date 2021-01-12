@@ -445,13 +445,26 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                 if approximate:
                     cols = [c for c in _feature_matrix.columns if c not in pass_columns]
                     indexer = group[['instance_id', target_time] + pass_columns]
-                    _feature_matrix = _feature_matrix[cols].merge(indexer,
-                                                                  right_on=['instance_id'],
-                                                                  left_index=True,
-                                                                  how='right')
+                    if is_instance(_feature_matrix, cudf, 'DataFrame'):
+                        if is_instance(indexer, pd, 'DataFrame'):
+                            indexer = cudf.from_pandas(indexer)
+                        _feature_matrix = _feature_matrix[cols].merge(indexer,
+                                                                      right_on=['instance_id'],
+                                                                      left_on=[id_name],
+                                                                      how='right')
+                    else:
+                        _feature_matrix = _feature_matrix[cols].merge(indexer,
+                                                                      right_on=['instance_id'],
+                                                                      left_index=True,
+                                                                      how='right')
                     _feature_matrix.set_index(['instance_id', target_time], inplace=True)
                     _feature_matrix.index.set_names([id_name, 'time'], inplace=True)
-                    _feature_matrix.sort_index(level=1, kind='mergesort', inplace=True)
+
+                    #kind argumment is not suported for cudf
+                    if is_instance(_feature_matrix, cudf, 'DataFrame'):
+                        _feature_matrix.sort_index(level=1, inplace=True)
+                    else:
+                        _feature_matrix.sort_index(level=1, kind='mergesort', inplace=True)
                 else:
                     # all rows have same cutoff time. set time and add passed columns
                     num_rows = len(ids)
@@ -576,6 +589,7 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
             cutoff_time_to_pass = cutoff_time_to_pass[[cutoff_df_instance_var, cutoff_df_time_var]]
 
             cutoff_time_to_pass.drop_duplicates(inplace=True)
+
             approx_fm = calculate_feature_matrix(approx_features,
                                                  entityset,
                                                  cutoff_time=cutoff_time_to_pass,
@@ -722,6 +736,8 @@ def _add_approx_entity_index_var(es, target_entity_id, cutoffs, path):
         new_var_name = '%s.%s' % (last_child_var, relationship.child_variable.id)
         to_rename = {relationship.child_variable.id: new_var_name}
         child_df = child_df.rename(columns=to_rename)
+        if is_instance(child_df, cudf, 'DataFrame') and is_instance(cutoffs, pd, 'DataFrame'):
+            cutoffs = cudf.from_pandas(cutoffs)
         cutoffs = cutoffs.merge(child_df,
                                 left_on=last_child_var,
                                 right_on=last_parent_var)
@@ -729,7 +745,8 @@ def _add_approx_entity_index_var(es, target_entity_id, cutoffs, path):
         # These will be used in the next iteration.
         last_child_var = new_var_name
         last_parent_var = relationship.parent_variable.id
-
+    if is_instance(cutoffs, cudf, 'DataFrame'):
+        cutoffs = cutoffs.to_pandas()
     return cutoffs, new_var_name
 
 
