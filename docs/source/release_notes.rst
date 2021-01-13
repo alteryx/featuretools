@@ -8,10 +8,8 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Fix non-deterministic Dask test (:pr:`1294`)
         * Unpin python-graphviz package on Windows (:pr:`1296`)
-        * Reorganize tests into proper files/directories (:pr:`1303`)
-        * Clean up synthesis tests to remove unnecessary calls to ``ft.dfs`` (:pr:`1306`)
+        * Reorganize and clean up tests (:pr:`1294`, :pr:`1303`, :pr:`1306`)
 
     Thanks to the following people for contributing to this release:
     :user:`rwedge`, :user:`thehomebrewnerd`
