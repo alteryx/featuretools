@@ -1,5 +1,5 @@
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize]
 
 name: Tests
@@ -114,14 +114,6 @@ jobs:
           is_dev = not any(pattern.match(ref) for pattern in patterns)
           print('::set-output name=is_dev::' + str(is_dev))
       - if: ${{ steps.branch.outputs.is_dev == 'True' }}
-        name: Get pull request number
-        id: pull_request
-        shell: python
-        run: |
-          from os.path import basename, dirname
-          number = basename(dirname('${{ github.ref }}'))
-          print('::set-output name=number::' + number)
-      - if: ${{ steps.branch.outputs.is_dev == 'True' }}
         name: Checkout repository
         uses: actions/checkout@v2
         with:
@@ -129,7 +121,7 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - if: ${{ steps.branch.outputs.is_dev == 'True' }}
         name: Check if release notes were updated
-        run: cat docs/source/release_notes.rst | grep ":pr:\`${{ steps.pull_request.outputs.number }}\`"
+        run: cat docs/source/release_notes.rst | grep ":pr:\`${{ github.event.number }}\`"
 
   run_premium_primitives_tests:
     name: run premium primitives tests
