@@ -116,7 +116,7 @@ jobs:
         id: pull_request
         shell: python
         run: |
-          from os.path import basename
+          from os.path import basename, dirname
           number = basename(dirname('${{ github.ref }}'))
           print('::set-output name=number::' + number)
       # - name: Check for pull request number
