@@ -195,7 +195,7 @@ def test_cfm_dask_compose(dask_es, lt):
     assert (feature_matrix[property_feature.get_name()] == feature_matrix['label_func']).values.all()
 
 
-# tests approximate, skip for dask
+# tests approximate, skip for dask/koalas
 def test_cfm_approximate_correct_ordering():
     trips = {
         'trip_id': [i for i in range(1000)],
@@ -219,9 +219,7 @@ def test_cfm_approximate_correct_ordering():
                        isinstance(feature.base_features[0],
                                   AggregationFeature)]
     property_feature = IdentityFeature(es['trips']['trip_id'])
-    # direct_agg_feat = DirectFeature(Sum(es['trips']['trip_duration'],
-    #                                     es['flights']),
-    #                                 es['trips'])
+
     cutoff_time = pd.DataFrame.from_dict({'instance_id': df['trip_id'],
                                           'time': df['flight_time']})
     time_feature = IdentityFeature(es['trips']['flight_time'])
@@ -243,7 +241,7 @@ def test_cfm_approximate_correct_ordering():
             assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
 
 
-# uses approximate, skip for dask entitysets
+# uses approximate, skip for dask/koalas entitysets
 def test_cfm_no_cutoff_time_index(pd_es):
     agg_feat = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['sessions'], primitive=Count)
     agg_feat4 = ft.Feature(agg_feat, parent_entity=pd_es['customers'], primitive=Sum)
@@ -316,7 +314,7 @@ def test_saveprogress(es, tmpdir):
                                        save_progress=save_progress)
     _, _, files = next(os.walk(save_progress))
     files = [os.path.join(save_progress, file) for file in files]
-    # there is 17 datetime files created above
+    # there are 17 datetime files created above
     assert len(files) == 17
     list_df = []
     for file_ in files:
@@ -523,7 +521,7 @@ def test_training_window_overlap(pd_es):
     }).astype({'time': 'datetime64[ns]'})
 
     # Case1. include_cutoff_time = True
-    actual = ft.calculate_feature_matrix(
+    actual = calculate_feature_matrix(
         features=[count_log],
         entityset=pd_es,
         cutoff_time=cutoff_time,
@@ -534,7 +532,7 @@ def test_training_window_overlap(pd_es):
     np.testing.assert_array_equal(actual.values, [1, 9])
 
     # Case2. include_cutoff_time = False
-    actual = ft.calculate_feature_matrix(
+    actual = calculate_feature_matrix(
         features=[count_log],
         entityset=pd_es,
         cutoff_time=cutoff_time,
@@ -560,7 +558,7 @@ def test_include_cutoff_time_without_training_window(es):
     }).astype({'time': 'datetime64[ns]'})
 
     # Case1. include_cutoff_time = True
-    actual = ft.calculate_feature_matrix(
+    actual = calculate_feature_matrix(
         features=[count_log],
         entityset=es,
         cutoff_time=cutoff_time,
@@ -570,7 +568,7 @@ def test_include_cutoff_time_without_training_window(es):
     np.testing.assert_array_equal(actual.values, [1, 6])
 
     # Case2. include_cutoff_time = False
-    actual = ft.calculate_feature_matrix(
+    actual = calculate_feature_matrix(
         features=[count_log],
         entityset=es,
         cutoff_time=cutoff_time,
@@ -580,7 +578,7 @@ def test_include_cutoff_time_without_training_window(es):
     np.testing.assert_array_equal(actual.values, [0, 5])
 
     # Case3. include_cutoff_time = True with single cutoff time value
-    actual = ft.calculate_feature_matrix(
+    actual = calculate_feature_matrix(
         features=[count_log],
         entityset=es,
         cutoff_time=pd.to_datetime("2011-04-09 10:31:00"),
@@ -591,7 +589,7 @@ def test_include_cutoff_time_without_training_window(es):
     np.testing.assert_array_equal(actual.values, [6])
 
     # Case4. include_cutoff_time = False with single cutoff time value
-    actual = ft.calculate_feature_matrix(
+    actual = calculate_feature_matrix(
         features=[count_log],
         entityset=es,
         cutoff_time=pd.to_datetime("2011-04-09 10:31:00"),
@@ -1544,7 +1542,7 @@ def test_no_data_for_cutoff_time(mock_customer):
     trans_per_customer = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["customers"], primitive=Count)
     features = [trans_per_customer, ft.Feature(trans_per_session, parent_entity=es["customers"], primitive=Max)]
 
-    fm = ft.calculate_feature_matrix(features, entityset=es, cutoff_time=cutoff_times)
+    fm = calculate_feature_matrix(features, entityset=es, cutoff_time=cutoff_times)
 
     # due to default values for each primitive
     # count will be 0, but max will nan
@@ -1619,9 +1617,9 @@ def test_some_instances_not_in_data(pd_es):
 def test_missing_instances_with_categorical_index(pd_es):
     instance_ids = [0, 1, 3, 2]
     features = ft.dfs(entityset=pd_es, target_entity='customers', features_only=True)
-    fm = ft.calculate_feature_matrix(entityset=pd_es,
-                                     features=features,
-                                     instance_ids=instance_ids)
+    fm = calculate_feature_matrix(entityset=pd_es,
+                                  features=features,
+                                  instance_ids=instance_ids)
     assert all(fm.index.values == instance_ids)
     assert isinstance(fm.index, pd.CategoricalIndex)
 
@@ -1691,7 +1689,7 @@ def test_calls_progress_callback(mock_customer):
     trans_per_session = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["sessions"], primitive=Count)
     trans_per_customer = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["customers"], primitive=Count)
     features = [trans_per_session, ft.Feature(trans_per_customer, entity=es["sessions"])]
-    ft.calculate_feature_matrix(features, entityset=es, progress_callback=mock_progress_callback)
+    calculate_feature_matrix(features, entityset=es, progress_callback=mock_progress_callback)
 
     # second to last entry is the last update from feature calculation
     assert np.isclose(mock_progress_callback.progress_history[-2], FEATURE_CALCULATION_PERCENTAGE * 100)
@@ -1705,7 +1703,7 @@ def test_calls_progress_callback(mock_customer):
                                          pd.to_datetime("2014-01-01 02:00:00"),
                                          pd.to_datetime("2014-01-01 03:00:00")]})
 
-    ft.calculate_feature_matrix(features, entityset=es, cutoff_time=cutoff_time, progress_callback=mock_progress_callback)
+    calculate_feature_matrix(features, entityset=es, cutoff_time=cutoff_time, progress_callback=mock_progress_callback)
     assert np.isclose(mock_progress_callback.progress_history[-2], FEATURE_CALCULATION_PERCENTAGE * 100)
     assert np.isclose(mock_progress_callback.total_update, 100.0)
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
@@ -1731,10 +1729,10 @@ def test_calls_progress_callback_cluster(pd_mock_customer):
 
     with cluster() as (scheduler, [a, b]):
         dkwargs = {'cluster': scheduler['address']}
-        ft.calculate_feature_matrix(features,
-                                    entityset=pd_mock_customer,
-                                    progress_callback=mock_progress_callback,
-                                    dask_kwargs=dkwargs)
+        calculate_feature_matrix(features,
+                                 entityset=pd_mock_customer,
+                                 progress_callback=mock_progress_callback,
+                                 dask_kwargs=dkwargs)
 
     assert np.isclose(mock_progress_callback.total_update, 100.0)
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)

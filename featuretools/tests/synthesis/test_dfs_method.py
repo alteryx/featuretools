@@ -22,7 +22,7 @@ from featuretools.primitives import (
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
-from featuretools.variable_types import Numeric
+from featuretools.variable_types import Numeric, find_variable_types
 
 ks = import_or_none('databricks.koalas')
 
@@ -51,6 +51,27 @@ def datetime_es():
     datetime_es = datetime_es.add_relationship(relationship)
     datetime_es.add_last_time_indexes()
     return datetime_es
+
+
+def test_passing_strings_to_variable_types_dfs():
+    variable_types = find_variable_types()
+    teams = pd.DataFrame({
+        'id': range(3),
+        'name': ['Breakers', 'Spirit', 'Thorns']
+    })
+    games = pd.DataFrame({
+        'id': range(5),
+        'home_team_id': [2, 2, 1, 0, 1],
+        'away_team_id': [1, 0, 2, 1, 0],
+        'home_team_score': [3, 0, 1, 0, 4],
+        'away_team_score': [2, 1, 2, 0, 0]
+    })
+    entities = {'teams': (teams, 'id', None, {'name': 'natural_language'}), 'games': (games, 'id')}
+    relationships = [('teams', 'id', 'games', 'home_team_id')]
+
+    features = dfs(entities, relationships, target_entity="teams", features_only=True)
+    name_class = features[0].entity['name'].__class__
+    assert name_class == variable_types['natural_language']
 
 
 def test_accepts_cutoff_time_df(entities, relationships):

@@ -8,12 +8,12 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Fix non-deterministic Dask test (:pr:`1294`)
         * Unpin python-graphviz package on Windows (:pr:`1296`)
+        * Reorganize and clean up tests (:pr:`1294`, :pr:`1303`, :pr:`1306`)
         * Trigger tests on pull reqest events (:pr:`1304`)
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.23.0 Dec 31, 2020**
     * Fixes
