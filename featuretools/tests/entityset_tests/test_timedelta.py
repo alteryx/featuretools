@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta
 
 import featuretools as ft
 from featuretools.entityset import Timedelta
-from featuretools.primitives import Count  # , SlidingMean
+from featuretools.primitives import Count
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.wrangle import _check_timedelta
 
@@ -105,14 +105,6 @@ def test_feature_takes_timedelta_string(es):
     feature = ft.Feature(es['log']['id'], parent_entity=es['customers'],
                          use_previous="1 day", primitive=Count)
     assert feature.use_previous == Timedelta(1, 'd')
-
-
-# def test_sliding_feature_takes_timedelta_string(es):
-#     feature = SlidingMean(es['log']['id'], es['customers'],
-#                           use_previous="1 day",
-#                           window_size="1 second")
-#     assert feature.use_previous == Timedelta(1, 'd')
-#     assert feature.window_size == Timedelta(1, 's')
 
 
 def test_deltas_week(es):

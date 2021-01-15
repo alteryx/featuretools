@@ -1,5 +1,4 @@
 import copy
-import logging
 import sys
 from datetime import datetime
 
@@ -10,13 +9,7 @@ import pytest
 
 import featuretools as ft
 from featuretools import variable_types
-from featuretools.entityset import (
-    EntitySet,
-    Relationship,
-    deserialize,
-    serialize
-)
-from featuretools.entityset.serialize import SCHEMA_VERSION
+from featuretools.entityset import EntitySet, Relationship
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
@@ -34,65 +27,6 @@ def test_normalize_time_index_as_additional_variable(es):
                             make_time_index='signup_date',
                             additional_variables=['signup_date'],
                             copy_variables=[])
-
-
-def test_operations_invalidate_metadata(es):
-    new_es = ft.EntitySet(id="test")
-    # test metadata gets created on access
-    assert new_es._data_description is None
-    assert new_es.metadata is not None  # generated after access
-    assert new_es._data_description is not None
-    if not isinstance(es['customers'].df, pd.DataFrame):
-        customers_vtypes = es["customers"].variable_types
-        customers_vtypes['signup_date'] = variable_types.Datetime
-    else:
-        customers_vtypes = None
-    new_es.entity_from_dataframe("customers",
-                                 es["customers"].df,
-                                 index=es["customers"].index,
-                                 variable_types=customers_vtypes)
-    if not isinstance(es['sessions'].df, pd.DataFrame):
-        sessions_vtypes = es["sessions"].variable_types
-    else:
-        sessions_vtypes = None
-    new_es.entity_from_dataframe("sessions",
-                                 es["sessions"].df,
-                                 index=es["sessions"].index,
-                                 variable_types=sessions_vtypes)
-    assert new_es._data_description is None
-    assert new_es.metadata is not None
-    assert new_es._data_description is not None
-
-    r = ft.Relationship(new_es["customers"]["id"],
-                        new_es["sessions"]["customer_id"])
-    new_es = new_es.add_relationship(r)
-    assert new_es._data_description is None
-    assert new_es.metadata is not None
-    assert new_es._data_description is not None
-
-    new_es = new_es.normalize_entity("customers", "cohort", "cohort")
-    assert new_es._data_description is None
-    assert new_es.metadata is not None
-    assert new_es._data_description is not None
-
-    new_es.add_last_time_indexes()
-    assert new_es._data_description is None
-    assert new_es.metadata is not None
-    assert new_es._data_description is not None
-
-    # automatically adding interesting values not supported in Dask or Koalas
-    if any(isinstance(entity.df, pd.DataFrame) for entity in new_es.entities):
-        new_es.add_interesting_values()
-        assert new_es._data_description is None
-        assert new_es.metadata is not None
-        assert new_es._data_description is not None
-
-
-def test_reset_metadata(es):
-    assert es.metadata is not None
-    assert es._data_description is not None
-    es.reset_data_description()
-    assert es._data_description is None
 
 
 def test_cannot_re_add_relationships_that_already_exists(es):
@@ -1326,71 +1260,6 @@ def test_datetime64_conversion(datetime3):
                              variable_types=vtypes)
     vtype_time_index = variable_types.variable.DatetimeTimeIndex
     es['test_entity'].convert_variable_type('time', vtype_time_index)
-
-
-def test_later_schema_version(es, caplog):
-    def test_version(major, minor, patch, raises=True):
-        version = '.'.join([str(v) for v in [major, minor, patch]])
-        if raises:
-            warning_text = ('The schema version of the saved entityset'
-                            '(%s) is greater than the latest supported (%s). '
-                            'You may need to upgrade featuretools. Attempting to load entityset ...'
-                            % (version, SCHEMA_VERSION))
-        else:
-            warning_text = None
-
-        _check_schema_version(version, es, warning_text, caplog, 'warn')
-
-    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
-
-    test_version(major + 1, minor, patch)
-    test_version(major, minor + 1, patch)
-    test_version(major, minor, patch + 1)
-    test_version(major, minor - 1, patch + 1, raises=False)
-
-
-def test_earlier_schema_version(es, caplog):
-    def test_version(major, minor, patch, raises=True):
-        version = '.'.join([str(v) for v in [major, minor, patch]])
-        if raises:
-            warning_text = ('The schema version of the saved entityset'
-                            '(%s) is no longer supported by this version '
-                            'of featuretools. Attempting to load entityset ...'
-                            % (version))
-        else:
-            warning_text = None
-
-        _check_schema_version(version, es, warning_text, caplog, 'log')
-
-    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
-
-    test_version(major - 1, minor, patch)
-    test_version(major, minor - 1, patch, raises=False)
-    test_version(major, minor, patch - 1, raises=False)
-
-
-def _check_schema_version(version, es, warning_text, caplog, warning_type=None):
-    entities = {entity.id: serialize.entity_to_description(entity) for entity in es.entities}
-    relationships = [relationship.to_dictionary() for relationship in es.relationships]
-    dictionary = {
-        'schema_version': version,
-        'id': es.id,
-        'entities': entities,
-        'relationships': relationships,
-    }
-
-    if warning_type == 'log' and warning_text:
-        logger = logging.getLogger('featuretools')
-        logger.propagate = True
-        deserialize.description_to_entityset(dictionary)
-        assert warning_text in caplog.text
-        logger.propagate = False
-    elif warning_type == 'warn' and warning_text:
-        with pytest.warns(UserWarning) as record:
-            deserialize.description_to_entityset(dictionary)
-        assert record[0].message.args[0] == warning_text
-    else:
-        deserialize.description_to_entityset(dictionary)
 
 
 @pytest.fixture
