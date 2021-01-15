@@ -10,7 +10,7 @@ Release Notes
     * Testing Changes
         * Fix non-deterministic Dask test (:pr:`1294`)
         * Unpin python-graphviz package on Windows (:pr:`1296`)
-        * Trigger tests on pull reqest events (:pr:`1304`)
+        * Trigger tests on pull reqest events (:pr:`1307`)
 
     Thanks to the following people for contributing to this release:
     :user:`rwedge`, :user:`thehomebrewnerd`
