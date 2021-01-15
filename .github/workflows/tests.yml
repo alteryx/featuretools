@@ -122,7 +122,6 @@ jobs:
       - if: ${{ steps.branch.outputs.is_dev == 'True' }}
         name: Check if release notes were updated
         run: cat docs/source/release_notes.rst | grep ":pr:\`${{ github.event.number }}\`"
-      - run: echo "A = ${{ github.event.number }}, B = ${{ github.event.pull_request.number }}"
 
   run_premium_primitives_tests:
     name: run premium primitives tests
