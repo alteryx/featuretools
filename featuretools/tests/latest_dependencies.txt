@@ -1,7 +1,7 @@
 click==7.1.2
 cloudpickle==1.6.0
-dask==2020.12.0
-distributed==2020.12.0
+dask==2021.1.0
+distributed==2021.1.0
 koalas==1.5.0
 numpy==1.19.5
 pandas==1.2.0
