@@ -1,4 +1,6 @@
-on: push
+on:
+  pull_request:
+    types: [opened, synchronize]
 
 name: Tests
 jobs:
@@ -15,6 +17,9 @@ jobs:
           python-version: ${{ matrix.python_version }}
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Build featuretools package
         run: make package_featuretools
       - name: Install featuretools with doc requirements
@@ -75,6 +80,9 @@ jobs:
           python-version: ${{ matrix.python_version }}
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Build featuretools package
         run: make package_featuretools
       - name: Install featuretools with optional, dev, and test requirements
@@ -105,55 +113,15 @@ jobs:
           ref = basename("${{ github.event.ref }}")
           is_dev = not any(pattern.match(ref) for pattern in patterns)
           print('::set-output name=is_dev::' + str(is_dev))
-      - name: Install package for requests
-        run: python -m pip install requests
-      - name: Check for pull request number
-        id: pull_request
-        shell: python
-        run: |
-          from requests import get
-          url = "https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/pulls"
-          headers = {'Accept': 'application/vnd.github.groot-preview+json'}
-          response = get(url=url, headers=headers)
-          info = "%s (%s)" % (response.reason, response.status_code)
-          assert response.status_code == 200, info
-          json = response.json()
-          number = str(json[0]['number'] if json else None)
-          print('::set-output name=number::' + number)
       - if: ${{ steps.branch.outputs.is_dev == 'True' }}
         name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
       - if: ${{ steps.branch.outputs.is_dev == 'True' }}
         name: Check if release notes were updated
-        run: cat docs/source/release_notes.rst | grep ":pr:\`${{ steps.pull_request.outputs.number }}\`"
-
-  run_premium_primitives_tests:
-    name: run premium primitives tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check for main and release branch
-        id: branch
-        shell: python
-        run: |
-          from os.path import basename
-          from re import compile
-          main = compile('^main$')
-          release = compile('^v\d+\.\d+\.\d+$')
-          ref = basename("${{ github.event.ref }}")
-          is_main = str(bool(main.match(ref)))
-          is_release = str(bool(release.match(ref)))
-          print('::set-output name=is_main::' + is_main)
-          print('::set-output name=is_release::' + is_release)
-      - if: ${{ steps.branch.outputs.is_main == 'True' }}
-        name: "Trigger premium primitives tests for python 3.6 main"
-        run: |
-          url=https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/main
-          curl -u ${{ secrets.PP_K }}: -d 'build_parameters[CIRCLE_JOB]=python_36' $url
-      - if: ${{ steps.branch.outputs.is_release == 'True' }}
-        name: "Trigger premium primitives tests for python 3.6 release"
-        run: |
-          url=https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/main
-          curl -u ${{ secrets.PP_K }}: -d 'build_parameters[CIRCLE_JOB]=python_36_ft_release' $url
+        run: cat docs/source/release_notes.rst | grep ":pr:\`${{ github.event.number }}\`"
 
   unit_tests:
     name: ${{ matrix.python_version }} unit tests ${{ matrix.optional_libraries }}
@@ -170,6 +138,9 @@ jobs:
           python-version: ${{ matrix.python_version }}
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Build featuretools package
         run: make package_featuretools
       - name: Set up pip and graphviz
@@ -238,6 +209,9 @@ jobs:
           conda create -n featuretools python=${{ matrix.python_version }}
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Install featuretools with test requirements
         shell: pwsh
         run: |
