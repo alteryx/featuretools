@@ -123,34 +123,6 @@ jobs:
         name: Check if release notes were updated
         run: cat docs/source/release_notes.rst | grep ":pr:\`${{ github.event.number }}\`"
 
-  run_premium_primitives_tests:
-    name: run premium primitives tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check for main and release branch
-        id: branch
-        shell: python
-        run: |
-          from os.path import basename
-          from re import compile
-          main = compile('^main$')
-          release = compile('^v\d+\.\d+\.\d+$')
-          ref = basename("${{ github.event.ref }}")
-          is_main = str(bool(main.match(ref)))
-          is_release = str(bool(release.match(ref)))
-          print('::set-output name=is_main::' + is_main)
-          print('::set-output name=is_release::' + is_release)
-      - if: ${{ steps.branch.outputs.is_main == 'True' }}
-        name: "Trigger premium primitives tests for python 3.6 main"
-        run: |
-          url=https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/main
-          curl -u ${{ secrets.PP_K }}: -d 'build_parameters[CIRCLE_JOB]=python_36' $url
-      - if: ${{ steps.branch.outputs.is_release == 'True' }}
-        name: "Trigger premium primitives tests for python 3.6 release"
-        run: |
-          url=https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/main
-          curl -u ${{ secrets.PP_K }}: -d 'build_parameters[CIRCLE_JOB]=python_36_ft_release' $url
-
   unit_tests:
     name: ${{ matrix.python_version }} unit tests ${{ matrix.optional_libraries }}
     runs-on: ubuntu-latest
