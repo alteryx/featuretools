@@ -11,6 +11,7 @@ Release Notes
         * Unpin python-graphviz package on Windows (:pr:`1296`)
         * Reorganize and clean up tests (:pr:`1294`, :pr:`1303`, :pr:`1306`)
         * Trigger tests on pull request events (:pr:`1304`)
+        * Test fork PR
 
     Thanks to the following people for contributing to this release:
     :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
