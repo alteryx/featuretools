@@ -2,8 +2,7 @@ import urllib.request
 
 import pytest
 
-from featuretools.demo import load_flight, load_retail
-from featuretools.synthesis import dfs
+from featuretools.demo import load_flight, load_mock_customer, load_retail
 
 
 @pytest.fixture(autouse=True)
@@ -22,11 +21,20 @@ def test_load_retail_diff():
     assert es_second['order_products'].df.shape[0] == nrows_second
 
 
-def test_mock_customer(mock_customer):
-    es = mock_customer
-    fm, fl = dfs(entityset=es, target_entity="customers", max_depth=3)
-    for feature in fl:
-        assert feature.get_name() in fm.columns
+def test_mock_customer():
+    n_customers = 4
+    n_products = 3
+    n_sessions = 30
+    n_transactions = 400
+    es = load_mock_customer(n_customers=n_customers, n_products=n_products, n_sessions=n_sessions,
+                            n_transactions=n_transactions, random_seed=0, return_entityset=True)
+    entity_names = [entity.id for entity in es.entities]
+    expected_names = ['transactions', 'products', 'sessions', 'customers']
+    assert set(expected_names) == set(entity_names)
+    assert len(es['customers'].df) == 4
+    assert len(es['products'].df) == 3
+    assert len(es['sessions'].df) == 30
+    assert len(es['transactions'].df) == 400
 
 
 def test_load_flight():

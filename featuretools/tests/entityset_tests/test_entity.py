@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 
 import featuretools as ft
-from featuretools import variable_types
 from featuretools.entityset import Entity, EntitySet
 from featuretools.tests.testing_utils import (
     make_ecommerce_entityset,
@@ -16,22 +15,6 @@ from featuretools.variable_types import find_variable_types
 
 ks = import_or_none('databricks.koalas')
 cudf = import_or_none('cudf')
-
-
-def test_enforces_variable_id_is_str(es):
-    assert variable_types.Categorical("1", es["customers"])
-
-    error_text = 'Variable id must be a string'
-    with pytest.raises(AssertionError, match=error_text):
-        variable_types.Categorical(1, es["customers"])
-
-
-def test_no_column_default_datetime(es):
-    variable = variable_types.Datetime("new_time", es["customers"])
-    assert variable.interesting_values.dtype == "datetime64[ns]"
-
-    variable = variable_types.Timedelta("timedelta", es["customers"])
-    assert variable.interesting_values.dtype == "timedelta64[ns]"
 
 
 def test_is_index_column(es):
@@ -229,27 +212,6 @@ def test_passing_strings_to_variable_types_from_dataframe():
     for variable in entity.variables:
         variable_class = variable.__class__
         assert variable_class.type_string == reversed_variable_types[variable.id]
-
-
-def test_passing_strings_to_variable_types_dfs():
-    variable_types = find_variable_types()
-    teams = pd.DataFrame({
-        'id': range(3),
-        'name': ['Breakers', 'Spirit', 'Thorns']
-    })
-    games = pd.DataFrame({
-        'id': range(5),
-        'home_team_id': [2, 2, 1, 0, 1],
-        'away_team_id': [1, 0, 2, 1, 0],
-        'home_team_score': [3, 0, 1, 0, 4],
-        'away_team_score': [2, 1, 2, 0, 0]
-    })
-    entities = {'teams': (teams, 'id', None, {'name': 'natural_language'}), 'games': (games, 'id')}
-    relationships = [('teams', 'id', 'games', 'home_team_id')]
-
-    features = ft.dfs(entities, relationships, target_entity="teams", features_only=True)
-    name_class = features[0].entity['name'].__class__
-    assert name_class == variable_types['natural_language']
 
 
 def test_replace_latlong_nan_during_entity_creation(pd_es):
