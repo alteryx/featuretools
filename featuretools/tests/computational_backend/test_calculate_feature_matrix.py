@@ -1842,6 +1842,7 @@ def test_calculate_feature_matrix_returns_default_values(transactions_defaultval
     sum_features = ft.Feature(transactions_defaultvalue_es["transactions"]["value"],
                               parent_entity=transactions_defaultvalue_es["sessions"], primitive=Sum)
     sessions_sum = ft.Feature(sum_features,
+                              entity=transactions_defaultvalue_es["transactions"])
 
     feature_matrix = ft.calculate_feature_matrix(features=[sessions_sum],
                                                  entityset=transactions_defaultvalue_es)
