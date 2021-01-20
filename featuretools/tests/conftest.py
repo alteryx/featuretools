@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 
 import featuretools as ft
+from featuretools import variable_types as vtypes
 from featuretools.tests.testing_utils import (
     make_ecommerce_entityset,
     to_pandas
@@ -328,3 +329,81 @@ def lt(es):
     )
     labels = labels.rename(columns={'cutoff_time': 'time'})
     return labels
+
+
+@pytest.fixture(params=['pd_entities', 'dask_entities', 'koalas_entities'])
+def entities(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def pd_entities():
+    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
+    transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                                    "card_id": [1, 2, 1, 3, 4, 5],
+                                    "transaction_time": [10, 12, 13, 20, 21, 20],
+                                    "fraud": [True, False, False, False, True, True]})
+    entities = {
+        "cards": (cards_df, "id"),
+        "transactions": (transactions_df, "id", "transaction_time")
+    }
+    return entities
+
+
+@pytest.fixture
+def dask_entities():
+    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
+    transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                                    "card_id": [1, 2, 1, 3, 4, 5],
+                                    "transaction_time": [10, 12, 13, 20, 21, 20],
+                                    "fraud": [True, False, False, False, True, True]})
+    cards_df = dd.from_pandas(cards_df, npartitions=2)
+    transactions_df = dd.from_pandas(transactions_df, npartitions=2)
+
+    cards_vtypes = {
+        'id': vtypes.Index
+    }
+    transactions_vtypes = {
+        'id': vtypes.Index,
+        'card_id': vtypes.Id,
+        'transaction_time': vtypes.NumericTimeIndex,
+        'fraud': vtypes.Boolean
+    }
+
+    entities = {
+        "cards": (cards_df, "id", None, cards_vtypes),
+        "transactions": (transactions_df, "id", "transaction_time", transactions_vtypes)
+    }
+    return entities
+
+
+@pytest.fixture
+def koalas_entities():
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+    if sys.platform.startswith('win'):
+        pytest.skip('skipping Koalas tests for Windows')
+    cards_df = ks.DataFrame({"id": [1, 2, 3, 4, 5]})
+    transactions_df = ks.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                                    "card_id": [1, 2, 1, 3, 4, 5],
+                                    "transaction_time": [10, 12, 13, 20, 21, 20],
+                                    "fraud": [True, False, False, False, True, True]})
+    cards_vtypes = {
+        'id': vtypes.Index
+    }
+    transactions_vtypes = {
+        'id': vtypes.Index,
+        'card_id': vtypes.Id,
+        'transaction_time': vtypes.NumericTimeIndex,
+        'fraud': vtypes.Boolean
+    }
+
+    entities = {
+        "cards": (cards_df, "id", None, cards_vtypes),
+        "transactions": (transactions_df, "id", "transaction_time", transactions_vtypes)
+    }
+    return entities
+
+
+@pytest.fixture
+def relationships():
+    return [("cards", "id", "transactions", "card_id")]

@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 
 import featuretools as ft
-from featuretools import variable_types
 from featuretools.entityset import Entity, EntitySet
 from featuretools.tests.testing_utils import (
     make_ecommerce_entityset,
@@ -15,22 +14,6 @@ from featuretools.utils.gen_utils import import_or_none
 from featuretools.variable_types import find_variable_types
 
 ks = import_or_none('databricks.koalas')
-
-
-def test_enforces_variable_id_is_str(es):
-    assert variable_types.Categorical("1", es["customers"])
-
-    error_text = 'Variable id must be a string'
-    with pytest.raises(AssertionError, match=error_text):
-        variable_types.Categorical(1, es["customers"])
-
-
-def test_no_column_default_datetime(es):
-    variable = variable_types.Datetime("new_time", es["customers"])
-    assert variable.interesting_values.dtype == "datetime64[ns]"
-
-    variable = variable_types.Timedelta("timedelta", es["customers"])
-    assert variable.interesting_values.dtype == "timedelta64[ns]"
 
 
 def test_is_index_column(es):
@@ -138,33 +121,6 @@ def test_update_data(es):
         assert es['customers'].df["id"].iloc[0] == 0
 
 
-def test_query_by_values_returns_rows_in_given_order():
-    data = pd.DataFrame({
-        "id": [1, 2, 3, 4, 5],
-        "value": ["a", "c", "b", "a", "a"],
-        "time": [1000, 2000, 3000, 4000, 5000]
-    })
-
-    es = ft.EntitySet()
-    es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
-                                  time_index="time", variable_types={
-                                            "value": ft.variable_types.Categorical
-                                  })
-    query = es['test'].query_by_values(['b', 'a'], variable_id='value')
-    assert np.array_equal(query['id'], [1, 3, 4, 5])
-
-
-def test_query_by_values_secondary_time_index(es):
-    end = np.datetime64(datetime(2011, 10, 1))
-    all_instances = [0, 1, 2]
-    result = es['customers'].query_by_values(all_instances, time_last=end)
-    result = to_pandas(result, index='id')
-
-    for col in ["cancel_date", "cancel_reason"]:
-        nulls = result.loc[all_instances][col].isnull() == [False, True, True]
-        assert nulls.all(), "Some instance has data it shouldn't for column %s" % col
-
-
 def test_delete_variables(es):
     entity = es['customers']
     to_delete = ['age', 'cohort', 'email']
@@ -244,27 +200,6 @@ def test_passing_strings_to_variable_types_from_dataframe():
     for variable in entity.variables:
         variable_class = variable.__class__
         assert variable_class.type_string == reversed_variable_types[variable.id]
-
-
-def test_passing_strings_to_variable_types_dfs():
-    variable_types = find_variable_types()
-    teams = pd.DataFrame({
-        'id': range(3),
-        'name': ['Breakers', 'Spirit', 'Thorns']
-    })
-    games = pd.DataFrame({
-        'id': range(5),
-        'home_team_id': [2, 2, 1, 0, 1],
-        'away_team_id': [1, 0, 2, 1, 0],
-        'home_team_score': [3, 0, 1, 0, 4],
-        'away_team_score': [2, 1, 2, 0, 0]
-    })
-    entities = {'teams': (teams, 'id', None, {'name': 'natural_language'}), 'games': (games, 'id')}
-    relationships = [('teams', 'id', 'games', 'home_team_id')]
-
-    features = ft.dfs(entities, relationships, target_entity="teams", features_only=True)
-    name_class = features[0].entity['name'].__class__
-    assert name_class == variable_types['natural_language']
 
 
 def test_replace_latlong_nan_during_entity_creation(pd_es):

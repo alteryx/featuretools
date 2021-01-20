@@ -1,5 +1,3 @@
-import sys
-
 import composeml as cp
 import numpy as np
 import pandas as pd
@@ -7,7 +5,6 @@ import pytest
 from dask import dataframe as dd
 from distributed.utils_test import cluster
 
-from featuretools import variable_types as vtypes
 from featuretools.computational_backends.calculate_feature_matrix import (
     FEATURE_CALCULATION_PERCENTAGE
 )
@@ -25,87 +22,9 @@ from featuretools.primitives import (
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
-from featuretools.variable_types import Numeric
+from featuretools.variable_types import Numeric, find_variable_types
 
 ks = import_or_none('databricks.koalas')
-
-
-@pytest.fixture(params=['pd_entities', 'dask_entities', 'koalas_entities'])
-def entities(request):
-    return request.getfixturevalue(request.param)
-
-
-@pytest.fixture
-def pd_entities():
-    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
-    transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
-                                    "card_id": [1, 2, 1, 3, 4, 5],
-                                    "transaction_time": [10, 12, 13, 20, 21, 20],
-                                    "fraud": [True, False, False, False, True, True]})
-    entities = {
-        "cards": (cards_df, "id"),
-        "transactions": (transactions_df, "id", "transaction_time")
-    }
-    return entities
-
-
-@pytest.fixture
-def dask_entities():
-    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
-    transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
-                                    "card_id": [1, 2, 1, 3, 4, 5],
-                                    "transaction_time": [10, 12, 13, 20, 21, 20],
-                                    "fraud": [True, False, False, False, True, True]})
-    cards_df = dd.from_pandas(cards_df, npartitions=2)
-    transactions_df = dd.from_pandas(transactions_df, npartitions=2)
-
-    cards_vtypes = {
-        'id': vtypes.Index
-    }
-    transactions_vtypes = {
-        'id': vtypes.Index,
-        'card_id': vtypes.Id,
-        'transaction_time': vtypes.NumericTimeIndex,
-        'fraud': vtypes.Boolean
-    }
-
-    entities = {
-        "cards": (cards_df, "id", None, cards_vtypes),
-        "transactions": (transactions_df, "id", "transaction_time", transactions_vtypes)
-    }
-    return entities
-
-
-@pytest.fixture
-def koalas_entities():
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    if sys.platform.startswith('win'):
-        pytest.skip('skipping Koalas tests for Windows')
-    cards_df = ks.DataFrame({"id": [1, 2, 3, 4, 5]})
-    transactions_df = ks.DataFrame({"id": [1, 2, 3, 4, 5, 6],
-                                    "card_id": [1, 2, 1, 3, 4, 5],
-                                    "transaction_time": [10, 12, 13, 20, 21, 20],
-                                    "fraud": [True, False, False, False, True, True]})
-    cards_vtypes = {
-        'id': vtypes.Index
-    }
-    transactions_vtypes = {
-        'id': vtypes.Index,
-        'card_id': vtypes.Id,
-        'transaction_time': vtypes.NumericTimeIndex,
-        'fraud': vtypes.Boolean
-    }
-
-    entities = {
-        "cards": (cards_df, "id", None, cards_vtypes),
-        "transactions": (transactions_df, "id", "transaction_time", transactions_vtypes)
-    }
-    return entities
-
-
-@pytest.fixture
-def relationships():
-    return [("cards", "id", "transactions", "card_id")]
 
 
 @pytest.fixture
@@ -132,6 +51,27 @@ def datetime_es():
     datetime_es = datetime_es.add_relationship(relationship)
     datetime_es.add_last_time_indexes()
     return datetime_es
+
+
+def test_passing_strings_to_variable_types_dfs():
+    variable_types = find_variable_types()
+    teams = pd.DataFrame({
+        'id': range(3),
+        'name': ['Breakers', 'Spirit', 'Thorns']
+    })
+    games = pd.DataFrame({
+        'id': range(5),
+        'home_team_id': [2, 2, 1, 0, 1],
+        'away_team_id': [1, 0, 2, 1, 0],
+        'home_team_score': [3, 0, 1, 0, 4],
+        'away_team_score': [2, 1, 2, 0, 0]
+    })
+    entities = {'teams': (teams, 'id', None, {'name': 'natural_language'}), 'games': (games, 'id')}
+    relationships = [('teams', 'id', 'games', 'home_team_id')]
+
+    features = dfs(entities, relationships, target_entity="teams", features_only=True)
+    name_class = features[0].entity['name'].__class__
+    assert name_class == variable_types['natural_language']
 
 
 def test_accepts_cutoff_time_df(entities, relationships):

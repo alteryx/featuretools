@@ -2,22 +2,61 @@
 
 Release Notes
 -------------
-
 **Future Release**
     * Enhancements
-        * Allow variable descriptions to be set directly on variable (:pr:`1207`)
-        * Add ability to add feature description captions to feature lineage graphs (:pr:`1212`)
     * Fixes
         * Calculate direct features use default value if parent missing (:pr:`1225`)
     * Changes
     * Documentation Changes
-        * Removed link to unused feedback board (:pr:`1220`)
-        * Update footer with Alteryx Innovation Labs (:pr:`1221`)
     * Testing Changes
-        * Update release notes check to use new repo url (:pr:`1222`)
+        * Unpin python-graphviz package on Windows (:pr:`1296`)
+        * Reorganize and clean up tests (:pr:`1294`, :pr:`1303`, :pr:`1306`)
+        * Trigger tests on pull request events (:pr:`1304`)
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`, :user:`seriallazer`
+    :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`seriallazer`
+
+**v0.23.0 Dec 31, 2020**
+    * Fixes
+        * Fix logic for inferring variable type from unusual dtype (:pr:`1273`)
+        * Allow passing entities without relationships to ``calculate_feature_matrix`` (:pr:`1290`)
+    * Changes
+        * Move ``query_by_values`` method from ``Entity`` to ``EntitySet`` (:pr:`1251`)
+        * Move ``_handle_time`` method from ``Entity`` to ``EntitySet`` (:pr:`1276`)
+        * Remove usage of ``ravel`` to resolve unexpected warning with pandas 1.2.0 (:pr:`1286`)
+    * Documentation Changes
+        * Fix installation command for Add-ons (:pr:`1279`)
+    * Testing Changes
+        * Use repository-scoped token for dependency check (:pr:`1245`:, :pr:`1248`)
+        * Fix install error during docs CI test (:pr:`1250`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
+
+**Breaking Changes**
+
+* ``Entity.query_by_values`` has been removed and replaced by ``EntitySet.query_by_values`` with an
+  added ``entity_id`` parameter to specify which entity in the entityset should be used for the query.
+
+**v0.22.0 Nov 30, 2020**
+    * Enhancements
+        * Allow variable descriptions to be set directly on variable (:pr:`1207`)
+        * Add ability to add feature description captions to feature lineage graphs (:pr:`1212`)
+        * Add support for local tar file in read_entityset (:pr:`1228`)
+    * Fixes
+        * Updates to fix unit test errors from koalas 1.4 (:pr:`1230`, :pr:`1232`)
+    * Documentation Changes
+        * Removed link to unused feedback board (:pr:`1220`)
+        * Update footer with Alteryx Innovation Labs (:pr:`1221`)
+        * Update links to repo in documentation to use alteryx org url (:pr:`1224`)
+    * Testing Changes
+        * Update release notes check to use new repo url (:pr:`1222`)
+        * Use new version of pull request Github Action (:pr:`1234`)
+        * Upgrade pip during featuretools[complete] test (:pr:`1236`)
+        * Migrated CI tests to github actions (:pr:`1226`, :pr:`1237`, :pr:`1239`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`frances-h`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.21.0 Oct 30, 2020**
     * Enhancements

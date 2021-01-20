@@ -16,44 +16,44 @@ Add-ons
 --------
 You can install add-ons individually or all at once by running::
 
-    python -m pip install featuretools[complete]
+    python -m pip install "featuretools[complete]"
 
 Update checker:
     Receive automatic notifications of new Featuretools releases::
 
-        python -m pip install featuretools[update_checker]
+        python -m pip install "featuretools[update_checker]"
 
 TSFresh Primitives:
     Use 60+ primitives from `tsfresh <https://tsfresh.readthedocs.io/en/latest/>`__ in Featuretools::
 
-        python -m pip install featuretools[tsfresh]
+        python -m pip install "featuretools[tsfresh]"
 
 Categorical Encoding:
     Encode categorical data for integration into Featuretools/machine learning workflows::
 
-        python -m pip install featuretools[categorical_encoding]
+        python -m pip install "featuretools[categorical_encoding]"
 
 NLP Primitives:
     Use Natural Language Processing Primitives for data with text in Featuretools::
 
-        python -m pip install featuretools[nlp_primitives]
+        python -m pip install "featuretools[nlp_primitives]"
 
 AutoNormalize:
     Automated creation of normalized ``EntitySet`` from denormalized data::
 
-        python -m pip install featuretools[autonormalize]
+        python -m pip install "featuretools[autonormalize]"
 
 Featuretools Sklearn Transformer:
-    Deep Feature Synthesis as a scikit-learn pipelines transformer
+    Deep Feature Synthesis as a scikit-learn pipelines transformer::
 
-        python -m pip install featuretools[sklearn_transformer]
+        python -m pip install "featuretools[sklearn_transformer]"
 
 .. _graphviz:
 
 Installing Graphviz
 -------------------
 
-In order to use :meth:`EntitySet.plot <featuretools.entityset.EntitySet.plot>` or :func:`featuretools.graph_feature` 
+In order to use :meth:`EntitySet.plot <featuretools.entityset.EntitySet.plot>` or :func:`featuretools.graph_feature`
 you will need to install the graphviz library.
 
 Conda users::
@@ -79,9 +79,9 @@ Install from Source
 -------------------
 
 To install featuretools from source, clone the repository from `github
-<https://github.com/FeatureLabs/featuretools>`_::
+<https://github.com/alteryx/featuretools>`_::
 
-    git clone https://github.com/FeatureLabs/featuretools.git
+    git clone https://github.com/alteryx/featuretools.git
     cd featuretools
     python setup.py install
 
@@ -96,7 +96,7 @@ of ``setup.py``.
 
 Development
 -----------
-Before making contributing to the codebase, please follow the guidelines `here <https://github.com/FeatureLabs/featuretools/blob/main/contributing.md>`_
+Before making contributing to the codebase, please follow the guidelines `here <https://github.com/alteryx/featuretools/blob/main/contributing.md>`_
 
 Virtualenv
 ~~~~~~~~~~

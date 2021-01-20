@@ -175,3 +175,37 @@ def test_replace_latlong_nan():
     assert result[0] == values[0]
     assert result[1] == (np.nan, np.nan)
     assert result[2] == values[2]
+
+
+def test_inference_by_sample():
+    period = pd.period_range(start=1970, periods=2, freq='T')
+    duplicate = pd.PeriodIndex([period[0]] * 48)
+    period = period.append(duplicate)
+    df = pd.DataFrame({'id': range(period.size), 'period': period})
+
+    inferred_variable_types = infer_variable_types(
+        df=df,
+        link_vars=["link_var"],
+        variable_types={},
+        time_index=None,
+        secondary_time_index={},
+    )
+
+    vtype = inferred_variable_types['period']
+    info = 'inference by sample must return categorical'
+    assert vtype == vtypes.Categorical, info
+
+    period = pd.period_range(start=1970, periods=5, freq='T')
+    df = pd.DataFrame({'id': range(period.size), 'period': period})
+
+    inferred_variable_types = infer_variable_types(
+        df=df,
+        link_vars=["link_var"],
+        variable_types={},
+        time_index=None,
+        secondary_time_index={},
+    )
+
+    vtype = inferred_variable_types['period']
+    info = 'inference by sample must return numeric'
+    assert vtype == vtypes.Numeric, info
