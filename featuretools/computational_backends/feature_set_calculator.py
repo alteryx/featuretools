@@ -542,7 +542,7 @@ class FeatureSetCalculator(object):
         fillna_dict = {}
         for f in features:
             feature_defaults = {name: f.default_value
-                                for name in f.get_feature_names()}
+                                for name in f.get_feature_names() if not pd.isna(f.default_value)}
             fillna_dict.update(feature_defaults)
             if f.base_features[0].get_name() == relationship.parent_variable.id:
                 index_as_feature = f

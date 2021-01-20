@@ -1047,7 +1047,8 @@ def test_feature_names_inherit_from_make_trans_primitive():
     pass
 
 
-def test_get_filepath(es):
+def test_get_filepath(ks_es):
+    es = ks_es
     class Mod4(TransformPrimitive):
         '''Return base feature modulo 4'''
         name = "mod4"
