@@ -25,6 +25,7 @@ Release Notes
         * Remove usage of ``ravel`` to resolve unexpected warning with pandas 1.2.0 (:pr:`1286`)
     * Documentation Changes
         * Fix installation command for Add-ons (:pr:`1279`)
+        * Fix various broken links in documentation (:pr:`1313`)
     * Testing Changes
         * Use repository-scoped token for dependency check (:pr:`1245`:, :pr:`1248`)
         * Fix install error during docs CI test (:pr:`1250`)
