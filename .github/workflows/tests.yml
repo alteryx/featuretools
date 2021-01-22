@@ -110,7 +110,7 @@ jobs:
           dep_update = '^dep-update-[a-f0-9]{7}$'
           regex = main, release, dep_update
           patterns = list(map(compile, regex))
-          ref = basename("${{ github.event.ref }}")
+          ref = basename("${{ github.event.pull_request.head.ref }}")
           is_dev = not any(pattern.match(ref) for pattern in patterns)
           print('::set-output name=is_dev::' + str(is_dev))
       - if: ${{ steps.branch.outputs.is_dev == 'True' }}
