@@ -4,10 +4,12 @@ codecov==2.1.8
 flake8==3.7.8
 autopep8==1.4.4
 ipython==7.16.0; python_version=='3.6'
-ipython==7.18.1; python_version>'3.6'
+ipython==7.18.1; python_version<'3.9'
+ipython==7.19.0; python_version=='3.9'
 isort==4.3.21
 jupyter==1.0.0
-matplotlib==3.2.2  # koalas and composeml pinned below 3.3.0
+matplotlib==3.2.2; python_version<"3.9.0"  # koalas and composeml pinned below 3.3.0
+matplotlib==3.3.0; python_version=="3.9.0"
 nbconvert==6.0.6
 nbsphinx==0.7.1
 Sphinx==3.2.1
