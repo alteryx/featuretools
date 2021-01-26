@@ -76,6 +76,9 @@ jobs:
     strategy:
       matrix:
         python_version: ["3.6", "3.7", "3.8", "3.9"]
+        exclude:
+          # excludes python 3.9 until Koalas support released
+          - python_version: "3.9"
     steps:
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
