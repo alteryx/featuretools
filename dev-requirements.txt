@@ -9,8 +9,8 @@ ipython==7.18.1; python_version=='3.8'
 ipython==7.19.0; python_version=='3.9'
 isort==4.3.21
 jupyter==1.0.0
-matplotlib==3.2.2; python_version<"3.9.0"  # koalas and composeml pinned below 3.3.0
-matplotlib==3.3.0; python_version=="3.9.0"
+matplotlib==3.2.2; python_version<'3.9'  # koalas and composeml pinned below 3.3.0
+matplotlib==3.3.0; python_version=='3.9'
 nbconvert==6.0.6
 nbsphinx==0.7.1
 Sphinx==3.2.1
