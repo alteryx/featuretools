@@ -4,6 +4,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+       * Add Python 3.9 support without Koalas testing (:pr:`1318`)
     * Fixes
     * Changes
     * Documentation Changes
@@ -13,7 +14,7 @@ Release Notes
         * Trigger tests on pull request events (:pr:`1304`, :pr:`1315`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.23.0 Dec 31, 2020**
     * Fixes
