@@ -1,2 +1,2 @@
-pyspark>=3.0.0
-koalas>=1.1.0
+pyspark>=3.0.0 ; python_version!='3.9' # remove once koalas adds python 3.9 support
+koalas>=1.1.0 ; python_version!='3.9' # remove once koalas adds python 3.9 support
