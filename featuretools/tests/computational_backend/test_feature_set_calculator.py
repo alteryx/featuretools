@@ -1,4 +1,3 @@
-import sys
 from datetime import datetime
 
 import numpy as np
@@ -439,8 +438,6 @@ def dd_df(pd_df):
 @pytest.fixture
 def ks_df(pd_df):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    if sys.platform.startswith('win'):
-        pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_df)
 
 
@@ -749,8 +746,6 @@ def dd_parent_child(pd_parent_child):
 @pytest.fixture
 def ks_parent_child(pd_parent_child):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    if sys.platform.startswith('win'):
-        pytest.skip('skipping Koalas tests for Windows')
     parent_df, child_df = pd_parent_child
     parent_df = ks.from_pandas(parent_df)
     child_df = ks.from_pandas(child_df)
