@@ -228,14 +228,14 @@ def test_cfm_approximate_correct_ordering():
                                               cutoff_time_in_index=True,
                                               cutoff_time=cutoff_time)
     feature_matrix.index.names = ['instance', 'time']
-    assert (np.all(feature_matrix.reset_index('time').reset_index()[['instance', 'time']].values == feature_matrix[['trip_id', 'flight_time']].values))
+    assert(np.all(feature_matrix.reset_index('time').reset_index()[['instance', 'time']].values == feature_matrix[['trip_id', 'flight_time']].values))
     feature_matrix_2 = calculate_feature_matrix(flight_features + [property_feature, time_feature],
                                                 es,
                                                 cutoff_time=cutoff_time,
                                                 cutoff_time_in_index=True,
                                                 approximate=Timedelta(2, 'd'))
     feature_matrix_2.index.names = ['instance', 'time']
-    assert (np.all(feature_matrix_2.reset_index('time').reset_index()[['instance', 'time']].values == feature_matrix_2[['trip_id', 'flight_time']].values))
+    assert(np.all(feature_matrix_2.reset_index('time').reset_index()[['instance', 'time']].values == feature_matrix_2[['trip_id', 'flight_time']].values))
     for column in feature_matrix:
         for x, y in zip(feature_matrix[column], feature_matrix_2[column]):
             assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
@@ -1689,8 +1689,7 @@ def test_calls_progress_callback(mock_customer):
 
     # make sure to calculate features that have different paths to same base feature
     trans_per_session = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["sessions"], primitive=Count)
-    trans_per_customer = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["customers"],
-                                    primitive=Count)
+    trans_per_customer = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["customers"], primitive=Count)
     features = [trans_per_session, ft.Feature(trans_per_customer, entity=es["sessions"])]
     calculate_feature_matrix(features, entityset=es, progress_callback=mock_progress_callback)
 
