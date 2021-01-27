@@ -11,7 +11,7 @@ Release Notes
     * Testing Changes
         * Unpin python-graphviz package on Windows (:pr:`1296`)
         * Reorganize and clean up tests (:pr:`1294`, :pr:`1303`, :pr:`1306`)
-        * Trigger tests on pull request events (:pr:`1304`)
+        * Trigger tests on pull request events (:pr:`1304`, :pr:`1315`)
 
     Thanks to the following people for contributing to this release:
     :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`seriallazer`
@@ -26,6 +26,7 @@ Release Notes
         * Remove usage of ``ravel`` to resolve unexpected warning with pandas 1.2.0 (:pr:`1286`)
     * Documentation Changes
         * Fix installation command for Add-ons (:pr:`1279`)
+        * Fix various broken links in documentation (:pr:`1313`)
     * Testing Changes
         * Use repository-scoped token for dependency check (:pr:`1245`:, :pr:`1248`)
         * Fix install error during docs CI test (:pr:`1250`)
