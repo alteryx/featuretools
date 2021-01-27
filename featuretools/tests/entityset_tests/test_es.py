@@ -516,7 +516,6 @@ def dd_datetime2(pd_datetime2):
 @pytest.fixture
 def ks_datetime2(pd_datetime2):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-
     return ks.from_pandas(pd_datetime2)
 
 
