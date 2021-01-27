@@ -94,8 +94,8 @@ def test_calc_feature_matrix(es):
     with pytest.raises(AssertionError, match=error_text):
         feature_matrix = calculate_feature_matrix([1, 2, 3], es, cutoff_time=cutoff_time)
 
-    error_text = "cutoff_time times must be datetime type: try casting via " \
-                 "pd\\.to_datetime\\(\\)"
+    error_text = "cutoff_time times must be datetime type: try casting via "\
+        "pd\\.to_datetime\\(\\)"
     with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  es,
@@ -176,7 +176,7 @@ def test_cfm_compose_approximate(es, lt):
                                               cutoff_time=lt,
                                               approximate='1s',
                                               verbose=True)
-    assert (type(feature_matrix) == pd.core.frame.DataFrame)
+    assert(type(feature_matrix) == pd.core.frame.DataFrame)
     feature_matrix = to_pandas(feature_matrix, index='id', sort_index=True)
 
     assert (feature_matrix[property_feature.get_name()] ==
@@ -228,16 +228,14 @@ def test_cfm_approximate_correct_ordering():
                                               cutoff_time_in_index=True,
                                               cutoff_time=cutoff_time)
     feature_matrix.index.names = ['instance', 'time']
-    assert (np.all(feature_matrix.reset_index('time').reset_index()[['instance', 'time']].values == feature_matrix[
-        ['trip_id', 'flight_time']].values))
+    assert (np.all(feature_matrix.reset_index('time').reset_index()[['instance', 'time']].values == feature_matrix[['trip_id', 'flight_time']].values))
     feature_matrix_2 = calculate_feature_matrix(flight_features + [property_feature, time_feature],
                                                 es,
                                                 cutoff_time=cutoff_time,
                                                 cutoff_time_in_index=True,
                                                 approximate=Timedelta(2, 'd'))
     feature_matrix_2.index.names = ['instance', 'time']
-    assert (np.all(feature_matrix_2.reset_index('time').reset_index()[['instance', 'time']].values == feature_matrix_2[
-        ['trip_id', 'flight_time']].values))
+    assert (np.all(feature_matrix_2.reset_index('time').reset_index()[['instance', 'time']].values == feature_matrix_2[['trip_id', 'flight_time']].values))
     for column in feature_matrix:
         for x, y in zip(feature_matrix[column], feature_matrix_2[column]):
             assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
@@ -789,8 +787,7 @@ def test_approximate_dfeat_of_need_all_values(pd_es):
 
         log_data_approx = log_df[log_df['datetime'] < approx]
         log_data_approx['percentile'] = log_data_approx['value'].rank(pct=True)
-        true_agg_approx = log_data_approx.loc[log_data_approx['session_id'].isin([0, 1, 2]), 'percentile'].fillna(
-            0).sum()
+        true_agg_approx = log_data_approx.loc[log_data_approx['session_id'].isin([0, 1, 2]), 'percentile'].fillna(0).sum()
         true_vals_approx.append(round(true_agg_approx, 3))
     lapprox = [round(x, 3) for x in feature_matrix[dfeat.get_name()].tolist()]
     test_list = [round(x, 3) for x in feature_matrix[agg_feat.get_name()].tolist()]
@@ -964,23 +961,23 @@ def test_approximate_returns_correct_empty_default_values(pd_es):
 
 
 # def test_approximate_deep_recurse(pd_es):
-# pd_es = pd_es
-# agg_feat = ft.Feature(pd_es['customers']['id'], parent_entity=pd_es[u'régions'], primitive=Count)
-# dfeat1 = DirectFeature(agg_feat, pd_es['sessions'])
-# agg_feat2 = Sum(dfeat1, pd_es['customers'])
-# dfeat2 = DirectFeature(agg_feat2, pd_es['sessions'])
+    # pd_es = pd_es
+    # agg_feat = ft.Feature(pd_es['customers']['id'], parent_entity=pd_es[u'régions'], primitive=Count)
+    # dfeat1 = DirectFeature(agg_feat, pd_es['sessions'])
+    # agg_feat2 = Sum(dfeat1, pd_es['customers'])
+    # dfeat2 = DirectFeature(agg_feat2, pd_es['sessions'])
 
-# agg_feat3 = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['products'], primitive=Count)
-# dfeat3 = DirectFeature(agg_feat3, pd_es['log'])
-# agg_feat4 = Sum(dfeat3, pd_es['sessions'])
+    # agg_feat3 = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['products'], primitive=Count)
+    # dfeat3 = DirectFeature(agg_feat3, pd_es['log'])
+    # agg_feat4 = Sum(dfeat3, pd_es['sessions'])
 
-# feature_matrix = calculate_feature_matrix([dfeat2, agg_feat4],
-#   pd_es,
-#                                          instance_ids=[0, 2],
-#                                          approximate=Timedelta(10, 's'),
-#                                          cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
-#                                                       datetime(2011, 4, 9, 11, 0, 0)])
-# # dfeat2 and agg_feat4 should both be approximated
+    # feature_matrix = calculate_feature_matrix([dfeat2, agg_feat4],
+    #   pd_es,
+    #                                          instance_ids=[0, 2],
+    #                                          approximate=Timedelta(10, 's'),
+    #                                          cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
+    #                                                       datetime(2011, 4, 9, 11, 0, 0)])
+    # # dfeat2 and agg_feat4 should both be approximated
 
 
 def test_approximate_child_aggs_handled_correctly(pd_es):
@@ -1544,8 +1541,7 @@ def test_no_data_for_cutoff_time(mock_customer):
                                  "time": pd.Timestamp('2011-04-08 20:08:13')})
 
     trans_per_session = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["sessions"], primitive=Count)
-    trans_per_customer = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["customers"],
-                                    primitive=Count)
+    trans_per_customer = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["customers"], primitive=Count)
     features = [trans_per_customer, ft.Feature(trans_per_session, parent_entity=es["customers"], primitive=Max)]
 
     fm = calculate_feature_matrix(features, entityset=es, cutoff_time=cutoff_times)
@@ -1730,10 +1726,8 @@ def test_calls_progress_callback_cluster(pd_mock_customer):
 
     mock_progress_callback = MockProgressCallback()
 
-    trans_per_session = ft.Feature(pd_mock_customer["transactions"]["transaction_id"],
-                                   parent_entity=pd_mock_customer["sessions"], primitive=Count)
-    trans_per_customer = ft.Feature(pd_mock_customer["transactions"]["transaction_id"],
-                                    parent_entity=pd_mock_customer["customers"], primitive=Count)
+    trans_per_session = ft.Feature(pd_mock_customer["transactions"]["transaction_id"], parent_entity=pd_mock_customer["sessions"], primitive=Count)
+    trans_per_customer = ft.Feature(pd_mock_customer["transactions"]["transaction_id"], parent_entity=pd_mock_customer["customers"], primitive=Count)
     features = [trans_per_session, ft.Feature(trans_per_customer, entity=pd_mock_customer["sessions"])]
 
     with cluster() as (scheduler, [a, b]):
@@ -1758,7 +1752,6 @@ def test_closes_tqdm(es):
         def get_function(self):
             def error(s):
                 raise RuntimeError("This primitive has errored")
-
             return error
 
     value = ft.Feature(es['log']['value'])
@@ -1790,7 +1783,7 @@ def test_approximate_with_single_cutoff_warns(pd_es):
                    agg_primitives=['sum'])
 
     match = "Using approximate with a single cutoff_time value or no cutoff_time " \
-            "provides no computational efficiency benefit"
+        "provides no computational efficiency benefit"
     # test warning with single cutoff time
     with pytest.warns(UserWarning, match=match):
         calculate_feature_matrix(features,
@@ -1857,6 +1850,7 @@ def test_entities_relationships(entities, relationships):
     fm_1, features = ft.dfs(entities=entities,
                             relationships=relationships,
                             target_entity="transactions")
+
     fm_2 = calculate_feature_matrix(features=features,
                                     entities=entities,
                                     relationships=relationships)
