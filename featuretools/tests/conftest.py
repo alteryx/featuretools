@@ -1,5 +1,4 @@
 import copy
-import sys
 
 import composeml as cp
 import dask.dataframe as dd
@@ -60,8 +59,6 @@ def dask_es(make_es):
 @pytest.fixture
 def ks_es(make_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    if sys.platform.startswith('win'):
-        pytest.skip('skipping Koalas tests for Windows')
     ks_es = copy.deepcopy(make_es)
     for entity in ks_es.entities:
         cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
@@ -143,8 +140,6 @@ def dask_diamond_es(pd_diamond_es):
 @pytest.fixture
 def ks_diamond_es(pd_diamond_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    if sys.platform.startswith('win'):
-        pytest.skip('skipping Koalas tests for Windows')
     entities = {}
     for entity in pd_diamond_es.entities:
         entities[entity.id] = (ks.from_pandas(pd_to_ks_clean(entity.df)), entity.index, None, entity.variable_types)
@@ -198,8 +193,6 @@ def dask_home_games_es(pd_home_games_es):
 @pytest.fixture
 def ks_home_games_es(pd_home_games_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    if sys.platform.startswith('win'):
-        pytest.skip('skipping Koalas tests for Windows')
     entities = {}
     for entity in pd_home_games_es.entities:
         entities[entity.id] = (ks.from_pandas(pd_to_ks_clean(entity.df)), entity.index, None, entity.variable_types)
@@ -235,8 +228,6 @@ def dd_mock_customer(pd_mock_customer):
 @pytest.fixture
 def ks_mock_customer(pd_mock_customer):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    if sys.platform.startswith('win'):
-        pytest.skip('skipping Koalas tests for Windows')
     ks_mock_customer = copy.deepcopy(pd_mock_customer)
     for entity in ks_mock_customer.entities:
         cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
@@ -320,8 +311,6 @@ def dask_entities():
 @pytest.fixture
 def koalas_entities():
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    if sys.platform.startswith('win'):
-        pytest.skip('skipping Koalas tests for Windows')
     cards_df = ks.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = ks.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                                     "card_id": [1, 2, 1, 3, 4, 5],
