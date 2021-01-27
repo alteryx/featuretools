@@ -7,6 +7,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Update Twitter link to documentation toolbar (:pr:`1322`)
     * Testing Changes
         * Unpin python-graphviz package on Windows (:pr:`1296`)
         * Reorganize and clean up tests (:pr:`1294`, :pr:`1303`, :pr:`1306`)
