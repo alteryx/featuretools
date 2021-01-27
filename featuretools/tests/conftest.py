@@ -203,8 +203,6 @@ def dask_transactions_defaultvalue_es(pd_transactions_defaultvalue_es):
 @pytest.fixture
 def ks_transactions_defaultvalue_es(pd_transactions_defaultvalue_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    if sys.platform.startswith('win'):
-        pytest.skip('skipping Koalas tests for Windows')
     entities = {}
     for entity in pd_transactions_defaultvalue_es.entities:
         entities[entity.id] = (ks.from_pandas(pd_to_ks_clean(entity.df)), entity.index, None, entity.variable_types)
