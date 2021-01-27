@@ -5,7 +5,7 @@ Release Notes
 **Future Release**
     * Enhancements
     * Fixes
-        * Calculate direct features use default value if parent missing (:pr:`1225`)
+        * Calculate direct features uses default value if parent missing (:pr:`1312`)
     * Changes
     * Documentation Changes
     * Testing Changes
