@@ -7,6 +7,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Update Twitter link to documentation toolbar (:pr:`1322`)
     * Testing Changes
         * Unpin python-graphviz package on Windows (:pr:`1296`)
         * Reorganize and clean up tests (:pr:`1294`, :pr:`1303`, :pr:`1306`)
@@ -14,7 +15,7 @@ Release Notes
         * Remove unnecessary test skips on Windows (:pr:`1320`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.23.0 Dec 31, 2020**
     * Fixes
