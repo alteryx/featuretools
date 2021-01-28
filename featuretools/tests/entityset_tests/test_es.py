@@ -1407,3 +1407,41 @@ def test_entityset_init():
     es_copy.add_relationship(relationship)
     assert es['cards'].__eq__(es_copy['cards'], deep=True)
     assert es['transactions'].__eq__(es_copy['transactions'], deep=True)
+
+
+def test_entityset_equality(es):
+    first_es = EntitySet()
+    second_es = EntitySet()
+    assert first_es == second_es
+    
+    first_es.entity_from_dataframe(entity_id='customers',
+                                   dataframe=es['customers'].df,
+                                   index='id',
+                                   time_index='signup_date',
+                                   variable_types=es['customers'].variable_types)
+    assert first_es != second_es
+
+    second_es.entity_from_dataframe(entity_id='sessions',
+                                    dataframe=es['sessions'].df,
+                                    index='id',
+                                    variable_types=es['sessions'].variable_types)
+    assert first_es != second_es
+
+    first_es.entity_from_dataframe(entity_id='sessions',
+                                   dataframe=es['sessions'].df,
+                                   index='id',
+                                   variable_types=es['sessions'].variable_types)
+    second_es.entity_from_dataframe(entity_id='customers',
+                                    dataframe=es['customers'].df,
+                                    index='id',
+                                    time_index='signup_date',
+                                    variable_types=es['customers'].variable_types)
+    assert first_es == second_es
+
+    first_es.add_relationship(ft.Relationship(es['customers']['id'], es['sessions']['customer_id']))
+    assert first_es != second_es
+
+    second_es.add_relationship(ft.Relationship(es['customers']['id'], es['sessions']['customer_id']))
+    assert first_es == second_es
+
+
