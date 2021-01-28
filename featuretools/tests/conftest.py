@@ -152,13 +152,13 @@ def ks_diamond_es(pd_diamond_es):
     return ft.EntitySet(id=pd_diamond_es.id, entities=entities, relationships=relationships)
 
 
-@pytest.fixture(params=['pd_transactions_defaultvalue_es', 'dask_transactions_defaultvalue_es', 'ks_transactions_defaultvalue_es'])
-def transactions_defaultvalue_es(request):
+@pytest.fixture(params=['pd_default_value_es', 'dask_default_value_es', 'ks_default_value_es'])
+def default_value_es(request):
     return request.getfixturevalue(request.param)
 
 
 @pytest.fixture
-def pd_transactions_defaultvalue_es():
+def pd_default_value_es():
     transactions = pd.DataFrame({
         "id": [1, 2, 3, 4],
         "session_id": ["a", "a", "b", "c"],
@@ -182,32 +182,32 @@ def pd_transactions_defaultvalue_es():
 
 
 @pytest.fixture
-def dask_transactions_defaultvalue_es(pd_transactions_defaultvalue_es):
+def dask_default_value_es(pd_default_value_es):
     entities = {}
-    for entity in pd_transactions_defaultvalue_es.entities:
+    for entity in pd_default_value_es.entities:
         entities[entity.id] = (dd.from_pandas(entity.df, npartitions=4), entity.index, None, entity.variable_types)
 
     relationships = [(rel.parent_entity.id,
                       rel.parent_variable.name,
                       rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_transactions_defaultvalue_es.relationships]
+                      rel.child_variable.name) for rel in pd_default_value_es.relationships]
 
-    return ft.EntitySet(id=pd_transactions_defaultvalue_es.id, entities=entities, relationships=relationships)
+    return ft.EntitySet(id=pd_default_value_es.id, entities=entities, relationships=relationships)
 
 
 @pytest.fixture
-def ks_transactions_defaultvalue_es(pd_transactions_defaultvalue_es):
+def ks_default_value_es(pd_default_value_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     entities = {}
-    for entity in pd_transactions_defaultvalue_es.entities:
+    for entity in pd_default_value_es.entities:
         entities[entity.id] = (ks.from_pandas(pd_to_ks_clean(entity.df)), entity.index, None, entity.variable_types)
 
     relationships = [(rel.parent_entity.id,
                       rel.parent_variable.name,
                       rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_transactions_defaultvalue_es.relationships]
+                      rel.child_variable.name) for rel in pd_default_value_es.relationships]
 
-    return ft.EntitySet(id=pd_transactions_defaultvalue_es.id, entities=entities, relationships=relationships)
+    return ft.EntitySet(id=pd_default_value_es.id, entities=entities, relationships=relationships)
 
 
 @pytest.fixture(params=['pd_home_games_es', 'dask_home_games_es', 'ks_home_games_es'])
