@@ -5,6 +5,7 @@ Release Notes
 **Future Release**
     * Enhancements
     * Fixes
+        * Fix bug in ``EntitySet.__eq__`` (:pr:`1323`)
     * Changes
     * Documentation Changes
     * Testing Changes
