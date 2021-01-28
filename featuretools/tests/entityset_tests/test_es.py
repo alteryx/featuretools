@@ -1413,7 +1413,7 @@ def test_entityset_equality(es):
     first_es = EntitySet()
     second_es = EntitySet()
     assert first_es == second_es
-    
+
     first_es.entity_from_dataframe(entity_id='customers',
                                    dataframe=es['customers'].df,
                                    index='id',
@@ -1443,5 +1443,3 @@ def test_entityset_equality(es):
 
     second_es.add_relationship(ft.Relationship(es['customers']['id'], es['sessions']['customer_id']))
     assert first_es == second_es
-
-
