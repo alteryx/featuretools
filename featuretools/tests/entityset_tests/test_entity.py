@@ -49,13 +49,13 @@ def test_eq(es):
     assert es['log'].__eq__(es['log'], deep=True)
     assert es['log'].__eq__(other_es['log'], deep=True)
     assert all(to_pandas(es['log'].df['latlong']).eq(to_pandas(latlong)))
-    
+
     # Test different index
     other_es['log'].index = None
     assert not es['log'].__eq__(other_es['log'])
     other_es['log'].index = 'id'
     assert es['log'].__eq__(other_es['log'])
-    
+
     # Test different time index
     other_es['log'].time_index = None
     assert not es['log'].__eq__(other_es['log'])
