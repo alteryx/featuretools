@@ -2,12 +2,19 @@
 
 Release Notes
 -------------
-**Future Release**
+.. **Future Release**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+**v0.23.1 Jan 29, 2021**
     * Fixes
         * Calculate direct features uses default value if parent missing (:pr:`1312`)
         * Fix bug and improve tests for ``EntitySet.__eq__`` and ``Entity.__eq__`` (:pr:`1323`)
-    * Changes
     * Documentation Changes
         * Update Twitter link to documentation toolbar (:pr:`1322`)
     * Testing Changes
@@ -17,7 +24,7 @@ Release Notes
         * Remove unnecessary test skips on Windows (:pr:`1320`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`seriallazer`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`seriallazer`, :user:`thehomebrewnerd`
 
 **v0.23.0 Dec 31, 2020**
     * Fixes
