@@ -1,6 +1,5 @@
 from __future__ import division
 
-import gc
 import logging
 import os
 import shutil
@@ -497,9 +496,7 @@ def linear_calculate_chunks(chunks, feature_set, approximate, training_window,
                                           cutoff_df_time_var,
                                           target_time, pass_columns)
         feature_matrix.append(_feature_matrix)
-        # Do a manual garbage collection in case objects from calculate_chunk
-        # weren't collected automatically
-        gc.collect()
+
     if verbose:
         chunks.close()
     return feature_matrix
