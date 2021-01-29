@@ -6,15 +6,18 @@ Release Notes
     * Enhancements
        * Add Python 3.9 support without Koalas testing (:pr:`1318`)
     * Fixes
+        * Calculate direct features uses default value if parent missing (:pr:`1312`)
     * Changes
     * Documentation Changes
+        * Update Twitter link to documentation toolbar (:pr:`1322`)
     * Testing Changes
         * Unpin python-graphviz package on Windows (:pr:`1296`)
         * Reorganize and clean up tests (:pr:`1294`, :pr:`1303`, :pr:`1306`)
         * Trigger tests on pull request events (:pr:`1304`, :pr:`1315`)
+        * Remove unnecessary test skips on Windows (:pr:`1320`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`seriallazer`
 
 **v0.23.0 Dec 31, 2020**
     * Fixes
