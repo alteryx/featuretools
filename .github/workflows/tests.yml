@@ -89,6 +89,11 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Build featuretools package
         run: make package_featuretools
+      - if: ${{ matrix.python_version == '3.9' }}
+        name: Install numba python 3.9 package
+        run: |
+          sudo apt install llvm-8-dev
+          sudo ln -s /usr/bin/llvm-config-8 /usr/bin/llvm-config
       - name: Install featuretools with optional, dev, and test requirements
         run: |
           pip config --site set global.progress_bar off
