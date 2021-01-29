@@ -6,6 +6,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Calculate direct features uses default value if parent missing (:pr:`1312`)
+        * Fix bug and improve tests for ``EntitySet.__eq__`` and ``Entity.__eq__`` (:pr:`1323`)
     * Changes
     * Documentation Changes
         * Update Twitter link to documentation toolbar (:pr:`1322`)
