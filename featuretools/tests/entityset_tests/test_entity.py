@@ -49,23 +49,50 @@ def test_eq(es):
     assert es['log'].__eq__(es['log'], deep=True)
     assert es['log'].__eq__(other_es['log'], deep=True)
     assert all(to_pandas(es['log'].df['latlong']).eq(to_pandas(latlong)))
+    
+    # Test different index
+    other_es['log'].index = None
+    assert not es['log'].__eq__(other_es['log'])
+    other_es['log'].index = 'id'
+    assert es['log'].__eq__(other_es['log'])
+    
+    # Test different time index
+    other_es['log'].time_index = None
+    assert not es['log'].__eq__(other_es['log'])
+    other_es['log'].time_index = 'datetime'
+    assert es['log'].__eq__(other_es['log'])
 
+    # Test different secondary time index
+    other_es['customers'].secondary_time_index = {}
+    assert not es['customers'].__eq__(other_es['customers'])
+    other_es['customers'].secondary_time_index = {
+        'cancel_date': ['cancel_reason', 'cancel_date']}
+    assert es['customers'].__eq__(other_es['customers'])
+
+    original_variables = es['sessions'].variables
+    # Test different variable list length
+    other_es['sessions'].variables = original_variables[:-1]
+    assert not es['sessions'].__eq__(other_es['sessions'])
+    # Test different variable list contents
+    other_es['sessions'].variables = original_variables[:-1] + [original_variables[0]]
+    assert not es['sessions'].__eq__(other_es['sessions'])
+
+    # Test different interesting values
+    assert es['log'].__eq__(other_es['log'], deep=True)
     other_es['log'].add_interesting_values()
     assert not es['log'].__eq__(other_es['log'], deep=True)
 
-    es['log'].id = 'customers'
-    es['log'].index = 'notid'
-    assert not es['customers'].__eq__(es['log'], deep=True)
+    # Check one with last time index, one without
+    other_es['log'].last_time_index = other_es['log'].df['datetime']
+    assert not other_es['log'].__eq__(es['log'], deep=True)
+    assert not es['log'].__eq__(other_es['log'], deep=True)
+    # Both set with different values
+    es['log'].last_time_index = other_es['log'].last_time_index + pd.Timedelta('1h')
+    assert not other_es['log'].__eq__(es['log'], deep=True)
 
-    es['log'].index = 'id'
-    assert not es['customers'].__eq__(es['log'], deep=True)
-
-    es['log'].time_index = 'signup_date'
-    assert not es['customers'].__eq__(es['log'], deep=True)
-
-    es['log'].secondary_time_index = {
-        'cancel_date': ['cancel_reason', 'cancel_date']}
-    assert not es['customers'].__eq__(es['log'], deep=True)
+    # Check different dataframes
+    other_es['stores'].df = other_es['stores'].df.head(0)
+    assert not other_es['stores'].__eq__(es['stores'], deep=True)
 
 
 def test_update_data(es):
