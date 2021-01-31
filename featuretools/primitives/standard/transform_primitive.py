@@ -1,6 +1,8 @@
 import warnings
 
 import numpy as np
+import pandas as pd
+from pandas.api.types import is_datetime64_any_dtype
 
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
@@ -117,7 +119,7 @@ class Day(TransformPrimitive):
 
     def get_function(self):
         def day(vals):
-            return vals.dt.day
+            return vals.dt.day if is_datetime64_any_dtype(vals) else pd.to_datetime(vals).dt.day
         return day
 
 
@@ -141,7 +143,7 @@ class Hour(TransformPrimitive):
 
     def get_function(self):
         def hour(vals):
-            return vals.dt.hour
+            return vals.dt.hour if is_datetime64_any_dtype(vals) else pd.to_datetime(vals).dt.hour
         return hour
 
 
@@ -165,7 +167,7 @@ class Second(TransformPrimitive):
 
     def get_function(self):
         def second(vals):
-            return vals.dt.second
+            return vals.dt.second if is_datetime64_any_dtype(vals) else pd.to_datetime(vals).dt.second
         return second
 
 
@@ -189,7 +191,7 @@ class Minute(TransformPrimitive):
 
     def get_function(self):
         def minute(vals):
-            return vals.dt.minute
+            return vals.dt.minute if is_datetime64_any_dtype(vals) else pd.to_datetime(vals).dt.minute
         return minute
 
 
@@ -223,7 +225,7 @@ class Week(TransformPrimitive):
                                              "have been deprecated."),
                                     module="featuretools"
                                     )
-            return vals.dt.week
+            return vals.dt.week if is_datetime64_any_dtype(vals) else pd.to_datetime(vals).dt.week
         return week
 
 
@@ -247,7 +249,7 @@ class Month(TransformPrimitive):
 
     def get_function(self):
         def month(vals):
-            return vals.dt.month
+            return vals.dt.month if is_datetime64_any_dtype(vals) else pd.to_datetime(vals).dt.month
         return month
 
 
@@ -271,7 +273,7 @@ class Year(TransformPrimitive):
 
     def get_function(self):
         def year(vals):
-            return vals.dt.year
+            return vals.dt.year if is_datetime64_any_dtype(vals) else pd.to_datetime(vals).dt.year
         return year
 
 
@@ -295,7 +297,7 @@ class IsWeekend(TransformPrimitive):
 
     def get_function(self):
         def is_weekend(vals):
-            return vals.dt.weekday > 4
+            return vals.dt.weekday > 4 if is_datetime64_any_dtype(vals) else pd.to_datetime(vals).dt.weekday > 4
         return is_weekend
 
 
@@ -323,7 +325,7 @@ class Weekday(TransformPrimitive):
 
     def get_function(self):
         def weekday(vals):
-            return vals.dt.weekday
+            return vals.dt.weekday if is_datetime64_any_dtype(vals) else pd.to_datetime(vals).dt.weekday
         return weekday
 
 
