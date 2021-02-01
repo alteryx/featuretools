@@ -6,7 +6,6 @@
 
 </p>
 
-Roee here I'm touchy touching
 
 ![Tests](https://github.com/alteryx/featuretools/workflows/Tests/badge.svg)
 [![Coverage Status](https://codecov.io/gh/alteryx/featuretools/branch/main/graph/badge.svg)](https://codecov.io/gh/alteryx/featuretools)
