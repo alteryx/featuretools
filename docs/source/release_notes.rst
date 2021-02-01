@@ -2,14 +2,16 @@
 
 Release Notes
 -------------
-.. **Future Release**
+**Future Release**
     * Enhancements
     * Fixes
+        * Restrict numpy version when installing koalas (:pr:`1329`)
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`rwedge`
 
 **v0.23.1 Jan 29, 2021**
     * Fixes
