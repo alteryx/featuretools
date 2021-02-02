@@ -706,7 +706,7 @@ class IsZero(TransformPrimitive):
     >>> is_zero([10, 15, 0, 20, 1.1, 0.001]).tolist()
     [False, False, True, False, False, False]
     """
-    name = "is_nonzero"
+    name = "is_zero"
     input_types = [Numeric]
     return_type = Boolean
     uses_calc_time = False
