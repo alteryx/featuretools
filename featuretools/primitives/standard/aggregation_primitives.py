@@ -815,3 +815,35 @@ class Entropy(AggregationPrimitive):
             return stats.entropy(distribution, base=self.base)
 
         return pd_entropy
+
+
+class TimeUntilNotNan(AggregationPrimitive):
+    """Calculates the time until a value became not `NaN`. If all values are `NaN`, returns `NaN`.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> time_until_not_nan = TimeUntilNotNan(unit='minutes')
+        >>> times = [datetime(2010, 1, 1, 11, 45, 0),
+        ...          datetime(2010, 1, 1, 11, 55, 15),
+        ...          datetime(2010, 1, 1, 11, 57, 30),
+        ...          datetime(2010, 1, 1, 11, 12),
+        ...          datetime(2010, 1, 1, 11, 12, 15)]
+        >>> time_until_not_nan([np.nan, np.nan, 42, 42, 42], times)
+        12.5
+    """
+    name = "time_until_not_na"
+    input_types = [Discrete, DatetimeTimeIndex]
+    return_type = Numeric
+    description_template = "the time until {} became not NaN"
+
+    def __init__(self, unit='seconds'):
+        self.unit = unit.lower()
+
+    def get_function(self):
+        def time_until_not_na(vals: pd.Series, times: pd.Series):
+            time_idx = pd.isna(vals).argmin()
+            if pd.isna(vals.iloc[time_idx]):
+                return np.nan
+            diff = times.iloc[time_idx] - times.iloc[0]
+            return convert_time_units(diff.total_seconds(), self.unit)
+        return time_until_not_na

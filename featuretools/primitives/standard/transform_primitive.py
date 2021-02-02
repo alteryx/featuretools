@@ -695,3 +695,25 @@ class Age(TransformPrimitive):
         def age(x, time=None):
             return (time - x).dt.days / 365
         return age
+
+
+class IsZero(TransformPrimitive):
+    """Transforms numeric values to boolean, by setting `0` to `True`, and all other
+    values (including None, NaN) to `False`.
+
+    Examples:
+    >>> is_zero = IsZero()
+    >>> is_zero([10, 15, 0, 20, 1.1, 0.001]).tolist()
+    [False, False, True, False, False, False]
+    """
+    name = "is_nonzero"
+    input_types = [Numeric]
+    return_type = Boolean
+    uses_calc_time = False
+    compatibility = [Library.PANDAS, Library.DASK]
+    description_template = "whether {} is zero"
+
+    def get_function(self):
+        def is_zero(x):
+            return x == 0
+        return is_zero
