@@ -6,15 +6,28 @@ Release Notes
     * Enhancements
         * Add cudf computational backend for featuretools (:pr:`1246`)
     * Fixes
+        * Restrict numpy version when installing koalas (:pr:`1329`)
     * Changes
     * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`rwedge`
+
+**v0.23.1 Jan 29, 2021**
+    * Fixes
+        * Calculate direct features uses default value if parent missing (:pr:`1312`)
+        * Fix bug and improve tests for ``EntitySet.__eq__`` and ``Entity.__eq__`` (:pr:`1323`)
+    * Documentation Changes
+        * Update Twitter link to documentation toolbar (:pr:`1322`)
     * Testing Changes
         * Unpin python-graphviz package on Windows (:pr:`1296`)
         * Reorganize and clean up tests (:pr:`1294`, :pr:`1303`, :pr:`1306`)
         * Trigger tests on pull request events (:pr:`1304`, :pr:`1315`)
+        * Remove unnecessary test skips on Windows (:pr:`1320`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`seriallazer`, :user:`thehomebrewnerd`
 
 **v0.23.0 Dec 31, 2020**
     * Fixes

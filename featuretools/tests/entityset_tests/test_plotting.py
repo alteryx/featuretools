@@ -1,6 +1,5 @@
 import os
 import re
-import sys
 
 import graphviz
 import pandas as pd
@@ -30,8 +29,6 @@ def dd_simple():
 @pytest.fixture
 def ks_simple():
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    if sys.platform.startswith('win'):
-        pytest.skip('skipping Koalas tests for Windows')
     es = ft.EntitySet("test")
     df = ks.DataFrame({'foo': [1]})
     es.entity_from_dataframe('test', df)

@@ -874,9 +874,11 @@ def test_empty_path_approximate_full(pd_es):
                                               approximate=Timedelta(10, 's'),
                                               cutoff_time=cutoff_time)
     vals1 = feature_matrix[dfeat.get_name()].tolist()
-    assert np.isnan(vals1[0])
-    assert np.isnan(vals1[1])
+
+    assert (vals1[0] == 0)
+    assert (vals1[1] == 0)
     assert feature_matrix[agg_feat.get_name()].tolist() == [5, 1]
+
 
 # todo: do we need to test this situation?
 # def test_empty_path_approximate_partial(pd_es):
@@ -1833,6 +1835,21 @@ def test_calc_feature_matrix_with_cutoff_df_and_instance_ids(es):
 
     feature_matrix = to_pandas(feature_matrix)
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
+
+
+def test_calculate_feature_matrix_returns_default_values(default_value_es):
+    sum_features = ft.Feature(default_value_es["transactions"]["value"],
+                              parent_entity=default_value_es["sessions"], primitive=Sum)
+    sessions_sum = ft.Feature(sum_features,
+                              entity=default_value_es["transactions"])
+
+    feature_matrix = ft.calculate_feature_matrix(features=[sessions_sum],
+                                                 entityset=default_value_es)
+
+    feature_matrix = to_pandas(feature_matrix, index='id', sort_index=True)
+    expected_values = [2.0, 2.0, 1.0, 0.0]
+
+    assert (feature_matrix[sessions_sum.get_name()] == expected_values).values.all()
 
 
 def test_entities_relationships(entities, relationships):
