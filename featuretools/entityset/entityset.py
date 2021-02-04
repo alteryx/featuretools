@@ -872,8 +872,6 @@ class EntitySet(object):
                             new_index.name = None
                             lti_df.index = new_index
                         lti_df = lti_df.groupby(lti_df[entity.index]).agg('max')
-                        # merge b/w categorical and numerical column is failing
-
                         lti_df = entity.last_time_index.to_frame(name='last_time_old').join(lti_df)
 
                     else:
@@ -905,10 +903,15 @@ class EntitySet(object):
                             lti_df['last_time_old'] = cudf.to_datetime(lti_df['last_time_old'])
                             # we have the entity.index column from join
                             # getting rid of it for results
-                            # TODO: figure out why we get it cudf and not in Koalas
                             if entity.index in lti_df.columns:
                                 lti_df.drop(columns=entity.index, inplace=True)
-                            lti_df = lti_df.max(axis=1)
+
+                            # fill na with zero_date to handle null effectively
+                            zero_date = pd.Timestamp("19700101")
+                            lti_df = lti_df.fillna(zero_date).max(axis=1)
+                            # convert filled nulls with None
+                            flag = lti_df == pd.Timestamp(zero_date)
+                            lti_df[flag] = None
                         else:
                             lti_df['last_time'] = lti_df['last_time'].astype('datetime64[ns]')
                             lti_df['last_time_old'] = lti_df['last_time_old'].astype('datetime64[ns]')
