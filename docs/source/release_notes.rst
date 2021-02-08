@@ -8,10 +8,11 @@ Release Notes
         * Restrict numpy version when installing koalas (:pr:`1329`)
     * Changes
     * Documentation Changes
+        * Update docs for defining custom primitives (:pr:`1332`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`
+    :user:`jeff-hernandez`, :user:`rwedge`
 
 **v0.23.1 Jan 29, 2021**
     * Fixes
