@@ -8,4 +8,4 @@ pandas==1.1.5
 psutil==5.8.0
 pyspark==3.0.1
 scipy==1.6.0
-tqdm==4.56.0
+tqdm==4.56.1
