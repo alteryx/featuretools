@@ -120,8 +120,10 @@ def _get_names_input_types(types):
     names = []
     for t in types:
         iterable = isinstance(t, list)
-        if iterable: name = f'[{_get_names_input_types(t)}]'
-        else: name = t.__name__
+        if iterable:
+            name = f'[{_get_names_input_types(t)}]'
+        else:
+            name = t.__name__
         names.append(name)
     return ', '.join(names)
 
