@@ -116,16 +116,16 @@ def _get_names_primitives(primitive_func):
     return names, primitives, input_types, return_type
 
 
-def _get_names_input_types(types):
+def _get_names_input_types(input_types):
     names = []
-    for t in types:
-        iterable = isinstance(t, list)
+    for input_type in input_types:
+        iterable = isinstance(input_type, list)
         if iterable:
-            name = f'[{_get_names_input_types(t)}]'
+            name = _get_names_input_types(input_type)
         else:
-            name = t.__name__
+            name = input_type.__name__
         names.append(name)
-    return ', '.join(names)
+    return f"[{', '.join(names)}]"
 
 
 def list_primitive_files(directory):
