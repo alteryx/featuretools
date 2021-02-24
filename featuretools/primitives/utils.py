@@ -40,25 +40,30 @@ def get_transform_primitives():
 
 
 def list_primitives():
-    trans_names, trans_primitives = _get_names_primitives(get_transform_primitives)
+    trans_names, trans_primitives, input_types, return_type = _get_names_primitives(get_transform_primitives)
     trans_dask = [Library.DASK in primitive.compatibility for primitive in trans_primitives]
     trans_koalas = [Library.KOALAS in primitive.compatibility for primitive in trans_primitives]
     transform_df = pd.DataFrame({'name': trans_names,
                                  'description': _get_descriptions(trans_primitives),
                                  'dask_compatible': trans_dask,
-                                 'koalas_compatible': trans_koalas})
+                                 'koalas_compatible': trans_koalas,
+                                 'input_types': input_types,
+                                 'return_type': return_type})
     transform_df['type'] = 'transform'
 
-    agg_names, agg_primitives = _get_names_primitives(get_aggregation_primitives)
+    agg_names, agg_primitives, input_types, return_type = _get_names_primitives(get_aggregation_primitives)
     agg_dask = [Library.DASK in primitive.compatibility for primitive in agg_primitives]
     agg_koalas = [Library.KOALAS in primitive.compatibility for primitive in agg_primitives]
     agg_df = pd.DataFrame({'name': agg_names,
                            'description': _get_descriptions(agg_primitives),
                            'dask_compatible': agg_dask,
-                           'koalas_compatible': agg_koalas})
+                           'koalas_compatible': agg_koalas,
+                           'input_types': input_types,
+                           'return_type': return_type})
     agg_df['type'] = 'aggregation'
 
-    return pd.concat([agg_df, transform_df], ignore_index=True)[['name', 'type', 'dask_compatible', 'koalas_compatible', 'description']]
+    columns = ['name', 'type', 'dask_compatible', 'koalas_compatible', 'description', 'input_types', 'return_type']
+    return pd.concat([agg_df, transform_df], ignore_index=True)[columns]
 
 
 def get_default_aggregation_primitives():
@@ -101,10 +106,24 @@ def _get_descriptions(primitives):
 def _get_names_primitives(primitive_func):
     names = []
     primitives = []
+    input_types = []
+    return_type = []
     for name, primitive in primitive_func().items():
         names.append(name)
         primitives.append(primitive)
-    return names, primitives
+        input_types.append(_get_names_input_types(primitive.input_types))
+        return_type.append(getattr(primitive.return_type, '__name__', None))
+    return names, primitives, input_types, return_type
+
+
+def _get_names_input_types(types):
+    names = []
+    for t in types:
+        iterable = isinstance(t, list)
+        if iterable: name = f'[{_get_names_input_types(t)}]'
+        else: name = t.__name__
+        names.append(name)
+    return ', '.join(names)
 
 
 def list_primitive_files(directory):
