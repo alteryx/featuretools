@@ -4,6 +4,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * List primitive input types and return type (:pr:`1341`)
     * Fixes
         * Restrict numpy version when installing koalas (:pr:`1329`)
     * Changes
