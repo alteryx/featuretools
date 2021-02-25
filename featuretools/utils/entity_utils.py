@@ -107,37 +107,39 @@ def convert_all_variable_data(df, variable_types):
             # grab args before assigning type
             type_args = desired_type[1]
             desired_type = desired_type[0]
+        try:
+            if var_id not in df.columns:
+                raise LookupError("Variable ID %s not in DataFrame" % (var_id))
+            current_type = df[var_id].dtype.name
 
-        if var_id not in df.columns:
-            raise LookupError("Variable ID %s not in DataFrame" % (var_id))
-        current_type = df[var_id].dtype.name
+            if issubclass(desired_type, vtypes.Numeric) and \
+                    current_type not in vtypes.PandasTypes._pandas_numerics:
+                df = convert_variable_data(df=df,
+                                           column_id=var_id,
+                                           new_type=desired_type,
+                                           **type_args)
 
-        if issubclass(desired_type, vtypes.Numeric) and \
-                current_type not in vtypes.PandasTypes._pandas_numerics:
-            df = convert_variable_data(df=df,
-                                       column_id=var_id,
-                                       new_type=desired_type,
-                                       **type_args)
+            if issubclass(desired_type, vtypes.Discrete) and \
+                    current_type not in [vtypes.PandasTypes._categorical]:
+                df = convert_variable_data(df=df,
+                                           column_id=var_id,
+                                           new_type=desired_type,
+                                           **type_args)
 
-        if issubclass(desired_type, vtypes.Discrete) and \
-                current_type not in [vtypes.PandasTypes._categorical]:
-            df = convert_variable_data(df=df,
-                                       column_id=var_id,
-                                       new_type=desired_type,
-                                       **type_args)
+            if issubclass(desired_type, vtypes.Datetime) and \
+                    current_type not in vtypes.PandasTypes._pandas_datetimes:
+                df = convert_variable_data(df=df,
+                                           column_id=var_id,
+                                           new_type=desired_type,
+                                           **type_args)
 
-        if issubclass(desired_type, vtypes.Datetime) and \
-                current_type not in vtypes.PandasTypes._pandas_datetimes:
-            df = convert_variable_data(df=df,
-                                       column_id=var_id,
-                                       new_type=desired_type,
-                                       **type_args)
-
-        # Fill in any single `NaN` values in LatLong variables with a tuple
-        if issubclass(desired_type, vtypes.LatLong) and isinstance(df[var_id], pd.Series) and df[var_id].hasnans:
-            df[var_id] = replace_latlong_nan(df[var_id])
-            warnings.warn("LatLong columns should contain only tuples. All single 'NaN' values in column '{}' have been replaced with '(NaN, NaN)'.".format(var_id))
-
+            # Fill in any single `NaN` values in LatLong variables with a tuple
+            if issubclass(desired_type, vtypes.LatLong) and isinstance(df[var_id], pd.Series) and df[var_id].hasnans:
+                df[var_id] = replace_latlong_nan(df[var_id])
+                warnings.warn("LatLong columns should contain only tuples. All single 'NaN' values in column '{}' have been replaced with '(NaN, NaN)'.".format(var_id))
+        except Exception as e:
+            warnings.warn("Failed handling variable {}".format(var_id))
+            raise e
     return df
 
 
