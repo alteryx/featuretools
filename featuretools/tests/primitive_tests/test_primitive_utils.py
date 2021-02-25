@@ -51,7 +51,7 @@ def test_list_primitives_order():
         if actual_desc:
             assert actual_desc == row['description']
         assert row['dask_compatible'] == (Library.DASK in primitive.compatibility)
-        assert row['valid_inputs'] == _get_names_valid_inputs(primitive.input_types)
+        assert row['valid_inputs'] == ', '.join(_get_names_valid_inputs(primitive.input_types))
         assert row['return_type'] == getattr(primitive.return_type, '__name__', None)
 
     types = df['type'].values
