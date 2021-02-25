@@ -847,3 +847,38 @@ class TimeUntilNotNan(AggregationPrimitive):
             diff = times.iloc[time_idx] - times.iloc[0]
             return convert_time_units(diff.total_seconds(), self.unit)
         return time_until_not_na
+
+
+class TimeOfDayBucketsFrequency(AggregationPrimitive):
+    """Calculates the frequency of values in time of day buckets, as determined by `interval_hours`.
+
+        Examples:
+            >>> from datetime import datetime
+            >>> time_until_not_nan = TimeUntilNotNan(unit='minutes')
+            >>> times = [datetime(2010, 1, 1, 11, 45, 0),
+            ...          datetime(2010, 1, 1, 11, 55, 15),
+            ...          datetime(2010, 1, 1, 11, 57, 30),
+            ...          datetime(2010, 1, 1, 11, 12),
+            ...          datetime(2010, 1, 1, 11, 12, 15)]
+            >>> time_until_not_nan([np.nan, np.nan, 42, 42, 42], times)
+            12.5
+        """
+    name = "time_of_day_buckets_freq"
+    input_types = [Discrete]
+    return_type = Numeric
+    description_template = "the frequency of every value of {} for every instance"
+
+    def __init__(self, interval_hours=4):
+        assert interval_hours % 24 == 0, 'interval_hours must be a divider of 24'
+        self.number_output_features = 24 // interval_hours
+        self.baseline_vals = pd.Series(0, index=[f'{i}-{i + interval_hours}' for i in range(0, 24, interval_hours)])
+
+    def get_function(self):
+        err_msg = f'Values must be from the set {list(self.baseline_vals)}'
+
+        def frequency_counter(column_vals):
+            counts = (self.baseline_vals + column_vals.value_counts()).fillna(0)
+            freq = counts.sort_index() / counts.sum()
+            assert len(freq) == len(self.baseline_vals), err_msg
+            return freq
+        return frequency_counter
