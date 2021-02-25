@@ -32,6 +32,7 @@ from featuretools.primitives import (
 from featuretools.primitives.base import PrimitiveBase
 from featuretools.primitives.utils import (
     _get_descriptions,
+    _get_names_valid_inputs,
     list_primitive_files,
     load_primitive_from_file
 )
@@ -50,6 +51,8 @@ def test_list_primitives_order():
         if actual_desc:
             assert actual_desc == row['description']
         assert row['dask_compatible'] == (Library.DASK in primitive.compatibility)
+        assert row['valid_inputs'] == _get_names_valid_inputs(primitive.input_types)
+        assert row['return_type'] == getattr(primitive.return_type, '__name__', None)
 
     types = df['type'].values
     assert 'aggregation' in types
