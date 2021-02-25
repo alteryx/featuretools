@@ -111,17 +111,17 @@ def _get_names_primitives(primitive_func):
     for name, primitive in primitive_func().items():
         names.append(name)
         primitives.append(primitive)
-        input_types = _get_names_valid_types(primitive.input_types)
+        input_types = _get_names_valid_inputs(primitive.input_types)
         valid_inputs.append(', '.join(input_types))
         return_type.append(getattr(primitive.return_type, '__name__', None))
     return names, primitives, valid_inputs, return_type
 
 
-def _get_names_valid_types(input_types):
+def _get_names_valid_inputs(input_types):
     names = set()
     for input_type in input_types:
         if isinstance(input_type, list):
-            names |= _get_names_valid_types(input_type)
+            names |= _get_names_valid_inputs(input_type)
         else:
             names.add(input_type.__name__)
     return names
