@@ -2,7 +2,16 @@
 
 Release Notes
 -------------
-**Future Release**
+.. **Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+**v0.23.2 Feb 26, 2021**
     .. warning::
         The next non-bugfix release of Featuretools will not support Python 3.6
 
@@ -11,14 +20,13 @@ Release Notes
     * Fixes
         * Restrict numpy version when installing koalas (:pr:`1329`)
     * Changes
-        * Warn python 3.6 users suppport will be dropped in future release (:pr:`1344`)
+        * Warn python 3.6 users support will be dropped in future release (:pr:`1344`)
     * Documentation Changes
         * Update docs for defining custom primitives (:pr:`1332`)
         * Update featuretools release instructions (:pr:`1345`)
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`rwedge`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`
 
 **v0.23.1 Jan 29, 2021**
     * Fixes
