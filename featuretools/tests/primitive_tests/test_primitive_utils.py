@@ -59,6 +59,15 @@ def test_list_primitives_order():
     assert 'transform' in types
 
 
+def test_valid_input_types():
+    actual = _get_names_valid_inputs(Haversine.input_types)
+    assert actual == {'LatLong'}
+    actual = _get_names_valid_inputs(GreaterThan.input_types)
+    assert actual == {'Datetime', 'Numeric', 'Ordinal'}
+    actual = _get_names_valid_inputs(Sum.input_types)
+    assert actual == {'Numeric'}
+
+
 def test_descriptions():
     primitives = {NumCharacters: 'Calculates the number of characters in a string.',
                   Day: 'Determines the day of the month from a datetime.',
