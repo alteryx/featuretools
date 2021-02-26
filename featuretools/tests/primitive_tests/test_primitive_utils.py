@@ -32,6 +32,7 @@ from featuretools.primitives import (
 from featuretools.primitives.base import PrimitiveBase
 from featuretools.primitives.utils import (
     _get_descriptions,
+    _get_names_valid_inputs,
     list_primitive_files,
     load_primitive_from_file
 )
@@ -50,10 +51,21 @@ def test_list_primitives_order():
         if actual_desc:
             assert actual_desc == row['description']
         assert row['dask_compatible'] == (Library.DASK in primitive.compatibility)
+        assert row['valid_inputs'] == ', '.join(_get_names_valid_inputs(primitive.input_types))
+        assert row['return_type'] == getattr(primitive.return_type, '__name__', None)
 
     types = df['type'].values
     assert 'aggregation' in types
     assert 'transform' in types
+
+
+def test_valid_input_types():
+    actual = _get_names_valid_inputs(Haversine.input_types)
+    assert actual == {'LatLong'}
+    actual = _get_names_valid_inputs(GreaterThan.input_types)
+    assert actual == {'Datetime', 'Numeric', 'Ordinal'}
+    actual = _get_names_valid_inputs(Sum.input_types)
+    assert actual == {'Numeric'}
 
 
 def test_descriptions():

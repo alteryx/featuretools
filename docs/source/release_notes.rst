@@ -7,6 +7,7 @@ Release Notes
         The next non-bugfix release of Featuretools will not support Python 3.6
 
     * Enhancements
+        * The ``list_primitives`` function returns valid input types and the return type (:pr:`1341`)
     * Fixes
         * Restrict numpy version when installing koalas (:pr:`1329`)
     * Changes
