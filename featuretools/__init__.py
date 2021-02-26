@@ -31,6 +31,7 @@ import logging
 import pkg_resources
 import sys
 import traceback
+import warnings
 
 logger = logging.getLogger('featuretools')
 
@@ -52,3 +53,9 @@ for entry_point in pkg_resources.iter_entry_points('featuretools_plugin'):
         message += "For a full stack trace, set logging to debug."
         logger.warning(message.format(entry_point.name, entry_point.module_name))
         logger.debug(traceback.format_exc())
+
+if sys.version_info.major == 3 and sys.version_info.minor == 6:
+    warnings.warn(
+        "The next non-bugfix release of Featuretools will not support Python 3.6",
+        FutureWarning
+    )
