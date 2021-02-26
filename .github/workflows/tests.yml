@@ -105,7 +105,7 @@ jobs:
         run: |
           from re import compile
           main = '^main$'
-          release = '^v\d+\.\d+\.\d+$'
+          release = '^release_v\d+\.\d+\.\d+$'
           dep_update = '^dep-update-[a-f0-9]{7}$'
           regex = main, release, dep_update
           patterns = list(map(compile, regex))
