@@ -6,13 +6,13 @@ Conda releases of featuretools rely on PyPI's hosted featuretools packages. Once
 We need to upload a featuretools package to test with the conda recipe
 1. Make a new development release branch on featuretools (in this example we'll be testing the 0.13.3 release)
     ```bash
-    git checkout -b v0.13.3.dev
+    git checkout -b dev_v0.13.3
     ```
 2. Update version number in `setup.py`, `featuretools/version.py`, `featuretools/tests/test_version.py` to v0.13.3.dev0 and push branch to repo
 3. Publish a new release of featuretools on Github.
     1. Go to the [releases page](https://github.com/alteryx/featuretools/releases/) on Github
     2. Click "Draft a new release"
-    3. For the target, choose the new branch (v0.13.3.dev)
+    3. For the target, choose the new branch (dev_v0.13.3)
     4. For the tag, use the new version number (v0.13.3.dev0)
     5. For the release title, use the new version number (v0.13.3.dev0)
     6. For the release description, write "Development release for testing purposes"
@@ -35,7 +35,7 @@ Branches on the conda-forge featuretools repo are automatically built and the pa
     git merge upstream/master
     git push origin master
     ```
-5. Make a branch with the version you want to release
+5. Make a branch with the version number you want to release
     ```bash
     git checkout -b v0.13.0.dev0
     ```
@@ -97,7 +97,7 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
 
 ## Create featuretools release on github
 #### Create release branch
-1. Branch off of featuretools main and name the branch the release version number (e.g. v0.13.3)
+1. Branch off of featuretools main. For the branch name, please use "release_vX.Y.Z" as the naming scheme (e.g. "release_v0.13.3"). Doing so will bypass our release notes checkin test which requires all other PRs to add a release note entry.
 
 #### Bump version number
 2. Bump version number in `setup.py`, `featuretools/version.py`, and `featuretools/tests/test_version.py`.
