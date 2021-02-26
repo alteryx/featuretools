@@ -3,10 +3,14 @@
 Release Notes
 -------------
 **Future Release**
+    .. warning::
+        The next non-bugfix release of Featuretools will not support Python 3.6
+
     * Enhancements
     * Fixes
         * Restrict numpy version when installing koalas (:pr:`1329`)
     * Changes
+        * Warn python 3.6 users suppport will be dropped in future release (:pr:`1344`)
     * Documentation Changes
         * Update docs for defining custom primitives (:pr:`1332`)
     * Testing Changes
