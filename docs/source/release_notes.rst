@@ -20,7 +20,7 @@ Release Notes
     * Fixes
         * Restrict numpy version when installing koalas (:pr:`1329`)
     * Changes
-        * Warn python 3.6 users suppport will be dropped in future release (:pr:`1344`)
+        * Warn python 3.6 users support will be dropped in future release (:pr:`1344`)
     * Documentation Changes
         * Update docs for defining custom primitives (:pr:`1332`)
         * Update featuretools release instructions (:pr:`1345`)
