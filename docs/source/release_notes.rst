@@ -10,6 +10,7 @@ Release Notes
     * Changes
     * Documentation Changes
         * Update docs for defining custom primitives (:pr:`1332`)
+        * Update featuretools release instructions (:pr:`1345`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
