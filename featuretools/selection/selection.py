@@ -1,4 +1,7 @@
+from typing import List
+
 from sklearn.preprocessing import LabelEncoder
+import pandas as pd
 
 from featuretools import variable_types as vtypes
 
@@ -133,17 +136,7 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
         include=numeric_and_boolean_dtypes)
 
     if include_categorical:
-        all_values = []
-        for feature in features_to_check:
-            col = feature_matrix[feature]
-            if col.dtype.name == 'category':
-                all_values.extend(list(col.unique()))
-        le = LabelEncoder()
-        le.fit(all_values)
-        for feature in list(features_to_check):
-            col = feature_matrix[feature]
-            if col.dtype.name == 'category':
-                fm_to_check[feature] = le.transform(col)
+        _add_label_encoded_categorical_features_to_check(feature_matrix, features_to_check, fm_to_check)
 
     dropped = set()
     columns_to_check = fm_to_check.columns
@@ -165,6 +158,22 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
     keep = [f_name for f_name in feature_matrix.columns
             if (f_name in features_to_keep or f_name not in dropped)]
     return _apply_feature_selection(keep, feature_matrix, features)
+
+
+def _add_label_encoded_categorical_features_to_check(feature_matrix: pd.DataFrame, features_to_check: List[str],
+                                                     fm_to_check: pd.DataFrame):
+    """
+    Add an encoded version of categorical columns to the fm that will be checked for correlated features
+    """
+    all_values = list(
+        pd.concat(
+            [x.unique() for x in feature_matrix[features_to_check].select_dtypes(include='category')]).unique())
+    le = LabelEncoder()
+    le.fit(all_values)
+    for feature in list(features_to_check):
+        col = feature_matrix[feature]
+        if col.dtype.name == 'category':
+            fm_to_check[feature] = le.transform(col)
 
 
 def _apply_feature_selection(keep, feature_matrix, features=None):
