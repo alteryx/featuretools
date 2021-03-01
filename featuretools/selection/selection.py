@@ -1,3 +1,8 @@
+from typing import List
+
+from sklearn.preprocessing import LabelEncoder
+import pandas as pd
+
 from featuretools import variable_types as vtypes
 
 
@@ -78,7 +83,7 @@ def remove_single_value_features(feature_matrix, features=None, count_nan_as_val
 
 
 def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_threshold=0.95,
-                                      features_to_check=None, features_to_keep=None):
+                                      features_to_check=None, features_to_keep=None, include_categorical=False):
     """Removes columns in feature matrix that are highly correlated with another column.
 
         Note:
@@ -101,6 +106,9 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
             features_to_keep (list[str], optional): List of colum names to keep even
                         if correlated to another column. If null, all columns will be
                         candidates for removal.
+            include_categorical (bool): Whether to check categorical features for correlation.
+                        This will encode the values from all categorical features with a
+                        single encoder and check correlation as a numerical column.
 
         Returns:
             pd.DataFrame, list[:class:`.FeatureBase`]:
@@ -127,6 +135,9 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
     fm_to_check = (feature_matrix[features_to_check]).select_dtypes(
         include=numeric_and_boolean_dtypes)
 
+    if include_categorical:
+        _add_label_encoded_categorical_features_to_check(feature_matrix, features_to_check, fm_to_check)
+
     dropped = set()
     columns_to_check = fm_to_check.columns
     # When two features are found to be highly correlated,
@@ -147,6 +158,22 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
     keep = [f_name for f_name in feature_matrix.columns
             if (f_name in features_to_keep or f_name not in dropped)]
     return _apply_feature_selection(keep, feature_matrix, features)
+
+
+def _add_label_encoded_categorical_features_to_check(feature_matrix: pd.DataFrame, features_to_check: List[str],
+                                                     fm_to_check: pd.DataFrame):
+    """
+    Add an encoded version of categorical columns to the fm that will be checked for correlated features
+    """
+    all_values = list(
+        pd.concat(
+            [x.unique() for x in feature_matrix[features_to_check].select_dtypes(include='category')]).unique())
+    le = LabelEncoder()
+    le.fit(all_values)
+    for feature in list(features_to_check):
+        col = feature_matrix[feature]
+        if col.dtype.name == 'category':
+            fm_to_check[feature] = le.transform(col)
 
 
 def _apply_feature_selection(keep, feature_matrix, features=None):
