@@ -165,10 +165,11 @@ def _add_label_encoded_categorical_features_to_check(feature_matrix: pd.DataFram
     """
     Add an encoded version of categorical columns to the fm that will be checked for correlated features
     """
-    all_values = list(
-        pd.concat(
-            [feature_matrix[x].unique() for x in
-             feature_matrix[features_to_check].select_dtypes(include='category')]).unique())
+    all_values = []
+    for feature in features_to_check:
+        col = feature_matrix[feature]
+        if col.dtype.name == 'category':
+            all_values.extend(list(col.unique()))
     le = LabelEncoder()
     le.fit(all_values)
     for feature in list(features_to_check):
