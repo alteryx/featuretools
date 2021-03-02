@@ -167,7 +167,8 @@ def _add_label_encoded_categorical_features_to_check(feature_matrix: pd.DataFram
     """
     all_values = list(
         pd.concat(
-            [x.unique() for x in feature_matrix[features_to_check].select_dtypes(include='category')]).unique())
+            [feature_matrix[x].unique() for x in
+             feature_matrix[features_to_check].select_dtypes(include='category')]).unique())
     le = LabelEncoder()
     le.fit(all_values)
     for feature in list(features_to_check):
