@@ -27,6 +27,7 @@ from featuretools.computational_backends.utils import (
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, FeatureBase
 from featuretools.utils import Trie
+from featuretools.utils.entity_utils import get_pandas_compatible_dtype
 from featuretools.utils.gen_utils import (
     import_or_none,
     is_instance,
@@ -35,7 +36,7 @@ from featuretools.utils.gen_utils import (
 from featuretools.variable_types import NumericTimeIndex
 
 ks = import_or_none('databricks.koalas')
-
+cudf = import_or_none('cudf')
 logger = logging.getLogger('featuretools.computational_backend')
 
 PBAR_FORMAT = "Elapsed: {elapsed} | Progress: {l_bar}{bar}"
@@ -168,6 +169,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         # is same as column it references
         target_entity = features[0].entity
         dtype = entityset[target_entity.id].df[target_entity.index].dtype
+        dtype = get_pandas_compatible_dtype(dtype)
         cutoff_time["instance_id"] = cutoff_time["instance_id"].astype(dtype)
     else:
         pass_columns = []
@@ -188,7 +190,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
         if isinstance(instance_ids, dd.Series):
             instance_ids = instance_ids.compute()
-        elif is_instance(instance_ids, ks, 'Series'):
+        elif is_instance(instance_ids, (ks, cudf), 'Series'):
+            # TODO: Check if below has computational issues
             instance_ids = instance_ids.to_pandas()
 
         # convert list or range object into series
@@ -432,7 +435,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                                                training_window=window,
                                                include_cutoff_time=include_cutoff_time)
 
-                if is_instance(_feature_matrix, (dd, ks), 'DataFrame'):
+                if is_instance(_feature_matrix, (dd, ks, cudf), 'DataFrame'):
                     id_name = _feature_matrix.columns[-1]
                 else:
                     id_name = _feature_matrix.index.name
@@ -442,13 +445,26 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                 if approximate:
                     cols = [c for c in _feature_matrix.columns if c not in pass_columns]
                     indexer = group[['instance_id', target_time] + pass_columns]
-                    _feature_matrix = _feature_matrix[cols].merge(indexer,
-                                                                  right_on=['instance_id'],
-                                                                  left_index=True,
-                                                                  how='right')
+                    if is_instance(_feature_matrix, cudf, 'DataFrame'):
+                        if is_instance(indexer, pd, 'DataFrame'):
+                            indexer = cudf.from_pandas(indexer)
+                        _feature_matrix = _feature_matrix[cols].merge(indexer,
+                                                                      right_on=['instance_id'],
+                                                                      left_on=[id_name],
+                                                                      how='right')
+                    else:
+                        _feature_matrix = _feature_matrix[cols].merge(indexer,
+                                                                      right_on=['instance_id'],
+                                                                      left_index=True,
+                                                                      how='right')
                     _feature_matrix.set_index(['instance_id', target_time], inplace=True)
                     _feature_matrix.index.set_names([id_name, 'time'], inplace=True)
-                    _feature_matrix.sort_index(level=1, kind='mergesort', inplace=True)
+
+                    # kind argumment is not suported for cudf
+                    if is_instance(_feature_matrix, cudf, 'DataFrame'):
+                        _feature_matrix.sort_index(level=1, inplace=True)
+                    else:
+                        _feature_matrix.sort_index(level=1, kind='mergesort', inplace=True)
                 else:
                     # all rows have same cutoff time. set time and add passed columns
                     num_rows = len(ids)
@@ -476,12 +492,21 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                             pass_df = ks.from_pandas(pass_through[[id_name, 'time', col]])
                             _feature_matrix = _feature_matrix.merge(pass_df, how="outer")
                         _feature_matrix = _feature_matrix.drop(columns=['time'])
+                    elif is_instance(_feature_matrix, cudf, 'DataFrame') and (len(pass_columns) > 0):
+                        _feature_matrix['time'] = time_last
+                        for col in pass_columns:
+                            pass_df = cudf.from_pandas(pass_through[[id_name, 'time', col]])
+                            _feature_matrix = _feature_matrix.merge(pass_df, how="outer")
+                        _feature_matrix = _feature_matrix.drop(columns=['time'])
+
                 feature_matrix.append(_feature_matrix)
 
     if any(isinstance(fm, dd.DataFrame) for fm in feature_matrix):
         feature_matrix = dd.concat(feature_matrix)
     elif any(is_instance(fm, ks, 'DataFrame') for fm in feature_matrix):
         feature_matrix = ks.concat(feature_matrix)
+    elif any(is_instance(fm, cudf, 'DataFrame') for fm in feature_matrix):
+        feature_matrix = cudf.concat(feature_matrix)
     else:
         feature_matrix = pd.concat(feature_matrix)
 
@@ -564,6 +589,7 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
             cutoff_time_to_pass = cutoff_time_to_pass[[cutoff_df_instance_var, cutoff_df_time_var]]
 
             cutoff_time_to_pass.drop_duplicates(inplace=True)
+
             approx_fm = calculate_feature_matrix(approx_features,
                                                  entityset,
                                                  cutoff_time=cutoff_time_to_pass,
@@ -710,6 +736,8 @@ def _add_approx_entity_index_var(es, target_entity_id, cutoffs, path):
         new_var_name = '%s.%s' % (last_child_var, relationship.child_variable.id)
         to_rename = {relationship.child_variable.id: new_var_name}
         child_df = child_df.rename(columns=to_rename)
+        if is_instance(child_df, cudf, 'DataFrame') and is_instance(cutoffs, pd, 'DataFrame'):
+            cutoffs = cudf.from_pandas(cutoffs)
         cutoffs = cutoffs.merge(child_df,
                                 left_on=last_child_var,
                                 right_on=last_parent_var)
@@ -717,7 +745,8 @@ def _add_approx_entity_index_var(es, target_entity_id, cutoffs, path):
         # These will be used in the next iteration.
         last_child_var = new_var_name
         last_parent_var = relationship.parent_variable.id
-
+    if is_instance(cutoffs, cudf, 'DataFrame'):
+        cutoffs = cutoffs.to_pandas()
     return cutoffs, new_var_name
 
 

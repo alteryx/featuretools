@@ -63,6 +63,7 @@ from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 ks = import_or_none('databricks.koalas')
+cudf = import_or_none('cudf')
 
 
 def test_init_and_name(es):
@@ -79,6 +80,8 @@ def test_init_and_name(es):
         trans_primitives = [prim for prim in trans_primitives if Library.DASK in prim.compatibility]
     if ks and isinstance(es['log'].df, ks.DataFrame):
         trans_primitives = [prim for prim in trans_primitives if Library.KOALAS in prim.compatibility]
+    if cudf and isinstance(es['log'].df, cudf.DataFrame):
+        trans_primitives = [prim for prim in trans_primitives if Library.CUDF in prim.compatibility]
     for transform_prim in trans_primitives:
         # skip automated testing if a few special cases
         features_to_use = log_features
@@ -98,7 +101,6 @@ def test_init_and_name(es):
                 "Transform Primitive %s not tested" % transform_prim.name)
         for prim in matching_inputs:
             instance = ft.Feature(prim, primitive=transform_prim)
-
             # try to get name and calculate
             instance.get_name()
             ft.calculate_feature_matrix([instance], entityset=es)
@@ -1067,6 +1069,9 @@ def test_get_filepath(es):
                 return x.apply(_map)
             return map_to_word
 
+    if cudf and any(isinstance(e.df, cudf.DataFrame) for e in es.entities):
+        pytest.xfail('custom primitive is not supported with cuDF')
+
     feat = ft.Feature(es['log']['value'], primitive=Mod4)
     df = ft.calculate_feature_matrix(features=[feat],
                                      entityset=es,
@@ -1117,6 +1122,8 @@ def test_override_multi_feature_names(pd_es):
 def test_time_since_primitive_matches_all_datetime_types(es):
     if ks and any(isinstance(e.df, ks.DataFrame) for e in es.entities):
         pytest.xfail('TimeSince transform primitive is incompatible with Koalas')
+    if cudf and any(isinstance(e.df, cudf.DataFrame) for e in es.entities):
+        pytest.xfail('TimeSince transform primitive is incompatible with cuDF')
     fm, fl = ft.dfs(
         target_entity="customers",
         entityset=es,

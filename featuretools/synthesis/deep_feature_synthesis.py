@@ -27,7 +27,7 @@ from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.variable_types import Boolean, Discrete, Id, Numeric
 
 ks = import_or_none('databricks.koalas')
-
+cudf = import_or_none('cudf')
 logger = logging.getLogger('featuretools')
 
 
@@ -185,6 +185,8 @@ class DeepFeatureSynthesis(object):
             entityset_type = Library.DASK
         elif any(is_instance(entity.df, ks, 'DataFrame') for entity in self.es.entities):
             entityset_type = Library.KOALAS
+        elif any(is_instance(entity.df, cudf, 'DataFrame') for entity in self.es.entities):
+            entityset_type = Library.CUDF
         else:
             entityset_type = Library.PANDAS
 

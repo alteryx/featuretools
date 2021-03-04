@@ -4,6 +4,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Add cudf computational backend for featuretools (:pr:`1246`)
     * Fixes
     * Changes
     * Documentation Changes

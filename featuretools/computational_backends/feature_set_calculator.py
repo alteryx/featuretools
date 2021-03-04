@@ -25,6 +25,7 @@ from featuretools.utils.gen_utils import (
 )
 
 ks = import_or_none('databricks.koalas')
+cudf = import_or_none('cudf')
 
 
 class FeatureSetCalculator(object):
@@ -153,7 +154,7 @@ class FeatureSetCalculator(object):
         for feat in self.feature_set.target_features:
             column_list.extend(feat.get_feature_names())
 
-        if is_instance(df, (dd, ks), 'DataFrame'):
+        if is_instance(df, (dd, ks, cudf), 'DataFrame'):
             column_list.extend([target_entity.index])
 
         return df[column_list]
@@ -554,7 +555,7 @@ class FeatureSetCalculator(object):
 
         # merge the identity feature from the parent entity into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
-        if is_instance(merge_df, (dd, ks), 'DataFrame'):
+        if is_instance(merge_df, (dd, ks, cudf), 'DataFrame'):
             new_df = child_df.merge(merge_df, left_on=merge_var, right_on=merge_var,
                                     how='left')
         else:
@@ -644,6 +645,8 @@ class FeatureSetCalculator(object):
                         func = f.get_function(agg_type=Library.DASK)
                     elif is_instance(base_frame, ks, 'DataFrame'):
                         func = f.get_function(agg_type=Library.KOALAS)
+                    elif is_instance(base_frame, cudf, 'DataFrame'):
+                        func = f.get_function(agg_type=Library.CUDF)
                     else:
                         func = f.get_function()
 
@@ -703,7 +706,10 @@ class FeatureSetCalculator(object):
                 # work)
                 if is_instance(base_frame, (dd, ks), 'DataFrame'):
                     to_merge = base_frame.groupby(groupby_var).agg(to_agg)
-
+                # Added because of
+                # https://github.com/rapidsai/cudf/issues/6810
+                elif is_instance(base_frame, (cudf), 'DataFrame'):
+                    to_merge = base_frame.nans_to_nulls().groupby(groupby_var, sort=False).agg(to_agg)
                 else:
                     to_merge = base_frame.groupby(base_frame[groupby_var],
                                                   observed=True, sort=False).agg(to_agg)
@@ -717,12 +723,11 @@ class FeatureSetCalculator(object):
                     categories = pdtypes.CategoricalDtype(categories=frame.index.categories)
                     to_merge.index = to_merge.index.astype(object).astype(categories)
 
-                if is_instance(frame, (dd, ks), 'DataFrame'):
+                if is_instance(frame, (dd, ks, cudf), 'DataFrame'):
                     frame = frame.merge(to_merge, left_on=parent_merge_var, right_index=True, how='left')
                 else:
                     frame = pd.merge(left=frame, right=to_merge,
                                      left_index=True, right_index=True, how='left')
-
                 # determine number of features that were just merged
                 progress_callback(len(to_merge.columns) / float(self.num_features))
 
@@ -732,6 +737,13 @@ class FeatureSetCalculator(object):
             feature_defaults = {name: f.default_value
                                 for name in f.get_feature_names()}
             fillna_dict.update(feature_defaults)
+
+        # We support Nullable dtypes for int32 and int64 with cudf
+        if is_instance(frame, cudf, 'DataFrame'):
+            for c, v in fillna_dict.items():
+                if v is np.nan:
+                    if frame[c].dtype in [np.int32, np.int64]:
+                        fillna_dict[c] = None
 
         frame = frame.fillna(fillna_dict)
 

@@ -10,10 +10,11 @@ from featuretools.tests.testing_utils import (
     make_ecommerce_entityset,
     to_pandas
 )
-from featuretools.utils.gen_utils import import_or_none
+from featuretools.utils.gen_utils import import_or_none, is_instance
 from featuretools.variable_types import find_variable_types
 
 ks = import_or_none('databricks.koalas')
+cudf = import_or_none('cudf')
 
 
 def test_is_index_column(es):
@@ -48,7 +49,18 @@ def test_eq(es):
 
     assert es['log'].__eq__(es['log'], deep=True)
     assert es['log'].__eq__(other_es['log'], deep=True)
-    assert all(to_pandas(es['log'].df['latlong']).eq(to_pandas(latlong)))
+
+    # cudf currently does not support tuples
+    # so we treat latlong as a list dtype
+    if is_instance(latlong, cudf, 'Series'):
+        latlong_pd = to_pandas(latlong).map(lambda x: list(x))
+        es_latlong_pd = to_pandas(es['log'].df['latlong']).map(lambda x: list(x))
+
+    else:
+        latlong_pd = to_pandas(latlong)
+        es_latlong_pd = to_pandas(es['log'].df['latlong'])
+
+    assert all(latlong_pd.eq(es_latlong_pd))
 
     # Test different index
     other_es['log'].index = None

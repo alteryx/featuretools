@@ -22,6 +22,7 @@ from featuretools.utils.plot_utils import (
 from featuretools.utils.wrangle import _check_timedelta
 
 ks = import_or_none('databricks.koalas')
+cudf = import_or_none('cudf')
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
@@ -684,7 +685,8 @@ class EntitySet(object):
             ti_cols = [c if c != old_ti_name else secondary_time_index for c in ti_cols]
             make_secondary_time_index = {secondary_time_index: ti_cols}
 
-        if is_instance(new_entity_df, ks, 'DataFrame'):
+        # TODO: Figure out reason for this
+        if is_instance(new_entity_df, (ks, cudf), 'DataFrame'):
             already_sorted = False
 
         self.entity_from_dataframe(
@@ -822,6 +824,10 @@ class EntitySet(object):
                         lti = lti.apply(lambda x: None)
                     elif is_instance(entity.df, ks, 'DataFrame'):
                         lti = ks.Series(pd.Series(index=lti.to_list(), name=lti.name))
+                    elif is_instance(entity.df, cudf, 'DataFrame'):
+                        # TODO: check if to_list is needed
+                        if is_instance(lti, cudf, 'Series'):
+                            lti = cudf.Series(index=lti, name=lti.name)
                     else:
                         lti[:] = None
                 entity.last_time_index = lti
@@ -851,7 +857,8 @@ class EntitySet(object):
 
                     lti_is_dask = isinstance(child_e.last_time_index, dd.Series)
                     lti_is_koalas = is_instance(child_e.last_time_index, ks, 'Series')
-                    if lti_is_dask or lti_is_koalas:
+                    lti_is_cudf = is_instance(child_e.last_time_index, cudf, 'Series')
+                    if lti_is_dask or lti_is_koalas or lti_is_cudf:
                         to_join = child_e.df[link_var]
                         if lti_is_dask:
                             to_join.index = child_e.df[child_e.index]
@@ -865,7 +872,6 @@ class EntitySet(object):
                             new_index.name = None
                             lti_df.index = new_index
                         lti_df = lti_df.groupby(lti_df[entity.index]).agg('max')
-
                         lti_df = entity.last_time_index.to_frame(name='last_time_old').join(lti_df)
 
                     else:
@@ -883,7 +889,7 @@ class EntitySet(object):
                         lti_df.set_index(entity.index, inplace=True)
                         lti_df = lti_df.reindex(entity.last_time_index.index)
                         lti_df['last_time_old'] = entity.last_time_index
-                    if not (lti_is_dask or lti_is_koalas) and lti_df.empty:
+                    if not (lti_is_dask or lti_is_koalas or lti_is_cudf) and lti_df.empty:
                         # Pandas errors out if it tries to do fillna and then max on an empty dataframe
                         lti_df = pd.Series()
                     else:
@@ -892,6 +898,20 @@ class EntitySet(object):
                             lti_df['last_time_old'] = ks.to_datetime(lti_df['last_time_old'])
                             # TODO: Figure out a workaround for fillna and replace
                             lti_df = lti_df.max(axis=1)
+                        elif lti_is_cudf:
+                            lti_df['last_time'] = cudf.to_datetime(lti_df['last_time'])
+                            lti_df['last_time_old'] = cudf.to_datetime(lti_df['last_time_old'])
+                            # we have the entity.index column from join
+                            # getting rid of it for results
+                            if entity.index in lti_df.columns:
+                                lti_df.drop(columns=entity.index, inplace=True)
+
+                            # fill na with zero_date to handle null effectively
+                            zero_date = pd.Timestamp("19700101")
+                            lti_df = lti_df.fillna(zero_date).max(axis=1)
+                            # convert filled nulls with None
+                            flag = lti_df == pd.Timestamp(zero_date)
+                            lti_df[flag] = None
                         else:
                             lti_df['last_time'] = lti_df['last_time'].astype('datetime64[ns]')
                             lti_df['last_time_old'] = lti_df['last_time_old'].astype('datetime64[ns]')
@@ -1016,7 +1036,7 @@ class EntitySet(object):
                 if isinstance(df, dd.DataFrame):
                     for col in columns:
                         df[col] = df[col].mask(mask, np.nan)
-                elif is_instance(df, ks, 'DataFrame'):
+                elif is_instance(df, (ks, cudf), 'DataFrame'):
                     df.loc[mask, columns] = None
                 else:
                     df.loc[mask, columns] = np.nan
@@ -1106,7 +1126,7 @@ def _vals_to_series(instance_vals, variable_id):
     # convert iterable to pd.Series
     if isinstance(instance_vals, pd.DataFrame):
         out_vals = instance_vals[variable_id]
-    elif is_instance(instance_vals, (pd, dd, ks), 'Series'):
+    elif is_instance(instance_vals, (pd, dd, ks, cudf), 'Series'):
         out_vals = instance_vals.rename(variable_id)
     else:
         out_vals = pd.Series(instance_vals)

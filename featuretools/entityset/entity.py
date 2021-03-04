@@ -18,7 +18,7 @@ from featuretools.utils.wrangle import _check_time_type, _dataframes_equal
 from featuretools.variable_types import Text, find_variable_types
 
 ks = import_or_none('databricks.koalas')
-
+cudf = import_or_none('cudf')
 logger = logging.getLogger('featuretools.entityset')
 
 _numeric_types = vtypes.PandasTypes._pandas_numerics
