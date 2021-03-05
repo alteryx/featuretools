@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - update-performance-check
 jobs:
   run-performance-analysis:
     runs-on: ubuntu-latest
