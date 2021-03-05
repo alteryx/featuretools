@@ -16,4 +16,5 @@ jobs:
       - name: Run Lambda
         env:
           lambda_function: ${{ secrets.LAMBDA_FUNC }}
-        run: aws lambda invoke --function-name $lambda_function --invocation-type Event /dev/stdout 1>/dev/null
+          payload: ${{ secrets.LAMBDA_PAYLOAD}}
+        run: aws lambda invoke --function-name $lambda_function --payload "{\"TestCommit\": \"$GITHUB_SHA\", $payload}" --invocation-type Event /dev/stdout 1>/dev/null
