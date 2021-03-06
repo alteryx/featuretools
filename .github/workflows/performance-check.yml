@@ -18,9 +18,6 @@ jobs:
         env:
           lambda_function: ${{ secrets.LAMBDA_FUNC }}
           flags: ${{ secrets.LAMBDA_FLAGS}}
-        run: >-
-          aws lambda invoke
-          --function-name $lambda_function
-          --payload "{\"TestCommit\": \"$GITHUB_SHA\", \"Flags\": \"$flags\"}"
-          --invocation-type Event
-          /dev/stdout 1>/dev/null
+        run: |
+          echo "{\"TestCommit\": \"$GITHUB_SHA\", \"Flags\": \"$flags\"}" > payload.json
+          aws lambda invoke --function-name $lambda_function --payload file://payload.json --invocation-type Event /dev/stdout 1>/dev/null
