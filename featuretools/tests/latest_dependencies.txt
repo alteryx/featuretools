@@ -1,11 +1,11 @@
 click==7.1.2
 cloudpickle==1.6.0
-dask==2021.2.0
-distributed==2021.2.0
-koalas==1.6.0
+dask==2021.3.0
+distributed==2021.3.0
+koalas==1.7.0
 numpy==1.19.5
 pandas==1.1.5
 psutil==5.8.0
 pyspark==3.1.1
 scipy==1.6.1
-tqdm==4.58.0
+tqdm==4.59.0
