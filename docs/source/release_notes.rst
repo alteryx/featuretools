@@ -10,9 +10,10 @@ Release Notes
     * Documentation Changes
     * Testing Changes
          * Make release notes updated check separate from unit tests (:pr:`1347`)
+         * Performance tests now specify which commit to check (:pr:`1354`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.23.2 Feb 26, 2021**
     .. warning::
