@@ -20,6 +20,6 @@ jobs:
         run: >-
           aws lambda invoke
           --function-name $lambda_function
-          --payload "{\"TestCommit\": \"$GITHUB_SHA\", \"Flags\": \"--upload-slack\"}"
-          --invocation-type Event
+          --payload $(echo "{\"TestCommit\": \"$GITHUB_SHA\", \"Flags\": \"--upload-slack\"}" | base64)
+          --invocation-type DryRun
           /dev/stdout 1>/dev/null
