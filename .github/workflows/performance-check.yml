@@ -19,4 +19,4 @@ jobs:
           lambda_function: ${{ secrets.LAMBDA_FUNC }}
         run: |
           echo "{\"TestCommit\": \"$GITHUB_SHA\", \"Flags\": \"--upload-slack\"}" | base64 > payload.b64
-          aws lambda invoke --function-name $lambda_function --payload fileb://payload.b64 --invocation-type Event /dev/stdout 1>/dev/null
+          aws lambda invoke --function-name $lambda_function --payload file://payload.b64 --invocation-type Event /dev/stdout 1>/dev/null
