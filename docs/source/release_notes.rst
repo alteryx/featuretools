@@ -6,12 +6,13 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Minor updates to work with Koalas version 1.7.0 (:pr:`1351`)
     * Documentation Changes
     * Testing Changes
          * Make release notes updated check separate from unit tests (:pr:`1347`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`thehomebrewnerd`
 
 **v0.23.2 Feb 26, 2021**
     .. warning::
