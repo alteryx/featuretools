@@ -321,6 +321,8 @@ def test_does_not_warn_with_stacking_feature(pd_es):
 
 
 def test_warns_with_unused_where_primitives(es):
+    if ks and any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+        pytest.skip('Koalas throws extra warnings')
     warning_text = "Some specified primitives were not used during DFS:\n" + \
         "  where_primitives: ['count', 'sum']\n" + \
         "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
