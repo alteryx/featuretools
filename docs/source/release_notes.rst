@@ -6,13 +6,67 @@ Release Notes
     * Enhancements
         * Add support for creating EntitySets from Woodwork DataTables (:pr:`1277`)
     * Fixes
+    * Changes
+        * Minor updates to work with Koalas version 1.7.0 (:pr:`1351`)
+        * Remove ``add_interesting_values`` from ``Entity`` (:pr:`1269`)
+    * Documentation Changes
+    * Testing Changes
+         * Make release notes updated check separate from unit tests (:pr:`1347`)
+         * Performance tests now specify which commit to check (:pr:`1354`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
+
+**Breaking Changes**
+
+* ``Entity.add_interesting_values`` has been removed. To add interesting values for a single
+    entity, call ``EntitySet.add_interesting_values`` and pass the id of the entity for
+    which to add interesting values in the ``entity_id`` parameter. 
+
+
+**v0.23.2 Feb 26, 2021**
+    .. warning::
+        The next non-bugfix release of Featuretools will not support Python 3.6
+
+    * Enhancements
+        * The ``list_primitives`` function returns valid input types and the return type (:pr:`1341`)
+    * Fixes
+        * Restrict numpy version when installing koalas (:pr:`1329`)
+    * Changes
+        * Warn python 3.6 users support will be dropped in future release (:pr:`1344`)
+    * Documentation Changes
+        * Update docs for defining custom primitives (:pr:`1332`)
+        * Update featuretools release instructions (:pr:`1345`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`
+
+**v0.23.1 Jan 29, 2021**
+    * Fixes
+        * Calculate direct features uses default value if parent missing (:pr:`1312`)
+        * Fix bug and improve tests for ``EntitySet.__eq__`` and ``Entity.__eq__`` (:pr:`1323`)
+    * Documentation Changes
+        * Update Twitter link to documentation toolbar (:pr:`1322`)
+    * Testing Changes
+        * Unpin python-graphviz package on Windows (:pr:`1296`)
+        * Reorganize and clean up tests (:pr:`1294`, :pr:`1303`, :pr:`1306`)
+        * Trigger tests on pull request events (:pr:`1304`, :pr:`1315`)
+        * Remove unnecessary test skips on Windows (:pr:`1320`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`seriallazer`, :user:`thehomebrewnerd`
+
+**v0.23.0 Dec 31, 2020**
+    * Fixes
         * Fix logic for inferring variable type from unusual dtype (:pr:`1273`)
+        * Allow passing entities without relationships to ``calculate_feature_matrix`` (:pr:`1290`)
     * Changes
         * Move ``query_by_values`` method from ``Entity`` to ``EntitySet`` (:pr:`1251`)
-        * Remove ``add_interesting_values`` from ``Entity`` (:pr:`1269`)
         * Move ``_handle_time`` method from ``Entity`` to ``EntitySet`` (:pr:`1276`)
+        * Remove usage of ``ravel`` to resolve unexpected warning with pandas 1.2.0 (:pr:`1286`)
     * Documentation Changes
         * Fix installation command for Add-ons (:pr:`1279`)
+        * Fix various broken links in documentation (:pr:`1313`)
     * Testing Changes
         * Use repository-scoped token for dependency check (:pr:`1245`:, :pr:`1248`)
         * Fix install error during docs CI test (:pr:`1250`)
@@ -23,10 +77,8 @@ Release Notes
 **Breaking Changes**
 
 * ``Entity.query_by_values`` has been removed and replaced by ``EntitySet.query_by_values`` with an
-    added ``entity_id`` parameter to specify which entity in the entityset should be used for the query.
-* ``Entity.add_interesting_values`` has been removed. To add interesting values for a single
-    entity, call ``EntitySet.add_interesting_values`` and pass the id of the entity for
-    which to add interesting values in the ``entity_id`` parameter. 
+  added ``entity_id`` parameter to specify which entity in the entityset should be used for the query.
+
 
 **v0.22.0 Nov 30, 2020**
     * Enhancements

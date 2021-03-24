@@ -117,7 +117,7 @@ class EntitySet(object):
                 return False
             if not e.__eq__(other[eid], deep=deep):
                 return False
-        for r in other.relationships:
+        for r in self.relationships:
             if r not in other.relationships:
                 return False
         return True

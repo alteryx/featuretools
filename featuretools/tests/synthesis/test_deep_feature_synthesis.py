@@ -1,5 +1,4 @@
 import copy
-import sys
 
 import dask.dataframe as dd
 import pandas as pd
@@ -85,8 +84,6 @@ def dask_transform_es(pd_transform_es):
 @pytest.fixture
 def koalas_transform_es(pd_transform_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    if sys.platform.startswith('win'):
-        pytest.skip('skipping Koalas tests for Windows')
     es = ft.EntitySet(id=pd_transform_es.id)
     for entity in pd_transform_es.entities:
         es.entity_from_dataframe(entity_id=entity.id,
@@ -780,9 +777,10 @@ def test_commutative(es):
 
 def test_transform_consistency(transform_es):
     # Generate features
-    feature_defs = ft.dfs(entityset=transform_es, target_entity='first',
-                          trans_primitives=['and', 'add_numeric', 'or'],
-                          features_only=True)
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='first',
+                                   entityset=transform_es,
+                                   trans_primitives=['and', 'add_numeric', 'or'])
+    feature_defs = dfs_obj.build_features()
 
     # Check for correct ordering of features
     assert feature_with_name(feature_defs, 'a')
@@ -802,12 +800,13 @@ def test_transform_no_stack_agg(es):
     # TODO: Update to work with Dask and Koalas supported primitives
     if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
         pytest.xfail("Dask EntitySets do not support the NMostCommon primitive")
-    feature_defs = ft.dfs(entityset=es,
-                          target_entity="customers",
-                          agg_primitives=[NMostCommon],
-                          trans_primitives=[NotEqual],
-                          max_depth=3,
-                          features_only=True)
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   agg_primitives=[NMostCommon],
+                                   trans_primitives=[NotEqual],
+                                   max_depth=3)
+    feature_defs = dfs_obj.build_features()
+
     assert not feature_with_name(feature_defs, 'id != N_MOST_COMMON(sessions.device_type)')
 
 
@@ -941,13 +940,12 @@ def test_stacks_multioutput_features(es):
                 return [times.apply(lambda x: getattr(x, unit)) for unit in units]
             return test_f
 
-    feat = ft.dfs(entityset=es,
-                  target_entity="customers",
-                  agg_primitives=[NumUnique, NMostCommon(n=3)],
-                  trans_primitives=[TestTime, Diff],
-                  max_depth=4,
-                  features_only=True
-                  )
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   agg_primitives=[NumUnique, NMostCommon(n=3)],
+                                   trans_primitives=[TestTime, Diff],
+                                   max_depth=4)
+    feat = dfs_obj.build_features()
 
     for i in range(3):
         f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.countrycode)[%d])' % i
@@ -961,13 +959,13 @@ def test_seed_multi_output_feature_stacking(es):
     threecommon = NMostCommon(3)
     tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
 
-    fm, feat = ft.dfs(entityset=es,
-                      target_entity="customers",
-                      seed_features=[tc],
-                      agg_primitives=[NumUnique],
-                      trans_primitives=[],
-                      max_depth=4
-                      )
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   seed_features=[tc],
+                                   agg_primitives=[NumUnique],
+                                   trans_primitives=[],
+                                   max_depth=4)
+    feat = dfs_obj.build_features()
 
     for i in range(3):
         f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.product_id)[%d])' % i
@@ -1452,16 +1450,16 @@ def test_primitive_ordering():
     seed_is_null = ft.Feature(es['customers']['age'], primitive=IsNull)
     seed_features = [seed_num_chars, seed_is_null]
 
-    features1 = ft.dfs(entityset=es,
-                       target_entity="customers",
-                       trans_primitives=trans_prims,
-                       groupby_trans_primitives=groupby_trans_prim,
-                       agg_primitives=agg_prims,
-                       where_primitives=where_prims,
-                       seed_features=seed_features,
-                       max_features=-1,
-                       max_depth=2,
-                       features_only=2)
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   trans_primitives=trans_prims,
+                                   groupby_trans_primitives=groupby_trans_prim,
+                                   agg_primitives=agg_prims,
+                                   where_primitives=where_prims,
+                                   seed_features=seed_features,
+                                   max_features=-1,
+                                   max_depth=2)
+    features1 = dfs_obj.build_features()
 
     trans_prims.reverse()
     groupby_trans_prim.reverse()
@@ -1469,16 +1467,16 @@ def test_primitive_ordering():
     where_prims.reverse()
     seed_features.reverse()
 
-    features2 = ft.dfs(entityset=es,
-                       target_entity="customers",
-                       trans_primitives=trans_prims,
-                       groupby_trans_primitives=groupby_trans_prim,
-                       agg_primitives=agg_prims,
-                       where_primitives=where_prims,
-                       seed_features=seed_features,
-                       max_features=-1,
-                       max_depth=2,
-                       features_only=2)
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   trans_primitives=trans_prims,
+                                   groupby_trans_primitives=groupby_trans_prim,
+                                   agg_primitives=agg_prims,
+                                   where_primitives=where_prims,
+                                   seed_features=seed_features,
+                                   max_features=-1,
+                                   max_depth=2)
+    features2 = dfs_obj.build_features()
 
     assert len(features1) == len(features2)
 
@@ -1496,11 +1494,13 @@ def test_no_transform_stacking():
     relationships = [("first", 'id', 'second', 'first_id')]
     es = ft.EntitySet("data", entities, relationships)
 
-    feature_defs = ft.dfs(entityset=es, target_entity='second',
-                          trans_primitives=['negate', 'add_numeric'],
-                          agg_primitives=['sum'],
-                          max_depth=4,
-                          features_only=2)
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='second',
+                                   entityset=es,
+                                   trans_primitives=['negate', 'add_numeric'],
+                                   agg_primitives=['sum'],
+                                   max_depth=4)
+    feature_defs = dfs_obj.build_features()
+
     expected = [
         'first_id',
         'B',

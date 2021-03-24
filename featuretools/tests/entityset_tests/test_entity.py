@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 
 import featuretools as ft
-from featuretools import variable_types
 from featuretools.entityset import Entity, EntitySet
 from featuretools.tests.testing_utils import (
     make_ecommerce_entityset,
@@ -15,22 +14,6 @@ from featuretools.utils.gen_utils import import_or_none
 from featuretools.variable_types import find_variable_types
 
 ks = import_or_none('databricks.koalas')
-
-
-def test_enforces_variable_id_is_str(es):
-    assert variable_types.Categorical("1", es["customers"])
-
-    error_text = 'Variable id must be a string'
-    with pytest.raises(AssertionError, match=error_text):
-        variable_types.Categorical(1, es["customers"])
-
-
-def test_no_column_default_datetime(es):
-    variable = variable_types.Datetime("new_time", es["customers"])
-    assert variable.interesting_values.dtype == "datetime64[ns]"
-
-    variable = variable_types.Timedelta("timedelta", es["customers"])
-    assert variable.interesting_values.dtype == "timedelta64[ns]"
 
 
 def test_is_index_column(es):
@@ -67,22 +50,49 @@ def test_eq(es):
     assert es['log'].__eq__(other_es['log'], deep=True)
     assert all(to_pandas(es['log'].df['latlong']).eq(to_pandas(latlong)))
 
+    # Test different index
+    other_es['log'].index = None
+    assert not es['log'].__eq__(other_es['log'])
+    other_es['log'].index = 'id'
+    assert es['log'].__eq__(other_es['log'])
+
+    # Test different time index
+    other_es['log'].time_index = None
+    assert not es['log'].__eq__(other_es['log'])
+    other_es['log'].time_index = 'datetime'
+    assert es['log'].__eq__(other_es['log'])
+
+    # Test different secondary time index
+    other_es['customers'].secondary_time_index = {}
+    assert not es['customers'].__eq__(other_es['customers'])
+    other_es['customers'].secondary_time_index = {
+        'cancel_date': ['cancel_reason', 'cancel_date']}
+    assert es['customers'].__eq__(other_es['customers'])
+
+    original_variables = es['sessions'].variables
+    # Test different variable list length
+    other_es['sessions'].variables = original_variables[:-1]
+    assert not es['sessions'].__eq__(other_es['sessions'])
+    # Test different variable list contents
+    other_es['sessions'].variables = original_variables[:-1] + [original_variables[0]]
+    assert not es['sessions'].__eq__(other_es['sessions'])
+
+    # Test different interesting values
+    assert es['log'].__eq__(other_es['log'], deep=True)
     other_es.add_interesting_values(entity_id='log')
     assert not es['log'].__eq__(other_es['log'], deep=True)
 
-    es['log'].id = 'customers'
-    es['log'].index = 'notid'
-    assert not es['customers'].__eq__(es['log'], deep=True)
+    # Check one with last time index, one without
+    other_es['log'].last_time_index = other_es['log'].df['datetime']
+    assert not other_es['log'].__eq__(es['log'], deep=True)
+    assert not es['log'].__eq__(other_es['log'], deep=True)
+    # Both set with different values
+    es['log'].last_time_index = other_es['log'].last_time_index + pd.Timedelta('1h')
+    assert not other_es['log'].__eq__(es['log'], deep=True)
 
-    es['log'].index = 'id'
-    assert not es['customers'].__eq__(es['log'], deep=True)
-
-    es['log'].time_index = 'signup_date'
-    assert not es['customers'].__eq__(es['log'], deep=True)
-
-    es['log'].secondary_time_index = {
-        'cancel_date': ['cancel_reason', 'cancel_date']}
-    assert not es['customers'].__eq__(es['log'], deep=True)
+    # Check different dataframes
+    other_es['stores'].df = other_es['stores'].df.head(0)
+    assert not other_es['stores'].__eq__(es['stores'], deep=True)
 
 
 def test_update_data(es):
@@ -217,27 +227,6 @@ def test_passing_strings_to_variable_types_from_dataframe():
     for variable in entity.variables:
         variable_class = variable.__class__
         assert variable_class.type_string == reversed_variable_types[variable.id]
-
-
-def test_passing_strings_to_variable_types_dfs():
-    variable_types = find_variable_types()
-    teams = pd.DataFrame({
-        'id': range(3),
-        'name': ['Breakers', 'Spirit', 'Thorns']
-    })
-    games = pd.DataFrame({
-        'id': range(5),
-        'home_team_id': [2, 2, 1, 0, 1],
-        'away_team_id': [1, 0, 2, 1, 0],
-        'home_team_score': [3, 0, 1, 0, 4],
-        'away_team_score': [2, 1, 2, 0, 0]
-    })
-    entities = {'teams': (teams, 'id', None, {'name': 'natural_language'}), 'games': (games, 'id')}
-    relationships = [('teams', 'id', 'games', 'home_team_id')]
-
-    features = ft.dfs(entities, relationships, target_entity="teams", features_only=True)
-    name_class = features[0].entity['name'].__class__
-    assert name_class == variable_types['natural_language']
 
 
 def test_replace_latlong_nan_during_entity_creation(pd_es):
