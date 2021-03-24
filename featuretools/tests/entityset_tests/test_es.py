@@ -891,27 +891,27 @@ def test_checks_time_type_setting_secondary_time_index(es):
     # add secondary index that is timestamp type
     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
                   'cancel_date': ['cancel_date', 'cancel_reason']}
-    es["customers"].set_secondary_time_index(new_2nd_ti)
+    es.set_secondary_time_index(es["customers"], new_2nd_ti)
     assert es.time_type == variable_types.DatetimeTimeIndex
     # add secondary index that is numeric type
     new_2nd_ti = {'age': ['age', 'loves_ice_cream']}
 
     error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
-        es["customers"].set_secondary_time_index(new_2nd_ti)
+        es.set_secondary_time_index(es["customers"], new_2nd_ti)
     # add secondary index that is non-time type
     new_2nd_ti = {'favorite_quote': ['favorite_quote', 'loves_ice_cream']}
 
     error_text = r"data type (\"|')(All members of the working classes must seize the means of production.|test)(\"|') not understood"
     with pytest.raises(TypeError, match=error_text):
-        es["customers"].set_secondary_time_index(new_2nd_ti)
+        es.set_secondary_time_index(es["customers"], new_2nd_ti)
     # add mismatched pair of secondary time indexes
     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
                   'age': ['age', 'loves_ice_cream']}
 
     error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
-        es["customers"].set_secondary_time_index(new_2nd_ti)
+        es.set_secondary_time_index(es["customers"], new_2nd_ti)
 
     # create entityset with numeric time type
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
@@ -933,30 +933,30 @@ def test_checks_time_type_setting_secondary_time_index(es):
     assert card_es.time_type == variable_types.NumericTimeIndex
     # add secondary index that is numeric time type
     new_2nd_ti = {'fraud_decision_time': ['fraud_decision_time', 'fraud']}
-    card_es['transactions'].set_secondary_time_index(new_2nd_ti)
+    card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
     assert card_es.time_type == variable_types.NumericTimeIndex
     # add secondary index that is timestamp type
     new_2nd_ti = {'transaction_date': ['transaction_date', 'fraud']}
 
     error_text = "transactions time index is <class 'featuretools.variable_types.variable.DatetimeTimeIndex'> type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
-        card_es['transactions'].set_secondary_time_index(new_2nd_ti)
+        card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
     # add secondary index that is non-time type
     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud']}
 
     error_text = r"data type ('|\")City A('|\") not understood"
     with pytest.raises(TypeError, match=error_text):
-        card_es['transactions'].set_secondary_time_index(new_2nd_ti)
+        card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
     # add mixed secondary time indexes
     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud'],
                   'fraud_decision_time': ['fraud_decision_time', 'fraud']}
     with pytest.raises(TypeError, match=error_text):
-        card_es['transactions'].set_secondary_time_index(new_2nd_ti)
+        card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
 
     # add bool secondary time index
     error_text = 'transactions time index not recognized as numeric or datetime'
     with pytest.raises(TypeError, match=error_text):
-        card_es['transactions'].set_secondary_time_index({'fraud': ['fraud']})
+        card_es.set_secondary_time_index(card_es['transactions'], {'fraud': ['fraud']})
 
 
 def test_normalize_entity(es):

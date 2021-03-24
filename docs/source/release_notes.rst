@@ -9,6 +9,7 @@ Release Notes
     * Changes
         * Minor updates to work with Koalas version 1.7.0 (:pr:`1351`)
         * Remove ``add_interesting_values`` from ``Entity`` (:pr:`1269`)
+        * Move ``set_secondary_time_index`` method from ``Entity`` to ``EntitySet`` (:pr:`1280`)
     * Documentation Changes
     * Testing Changes
          * Make release notes updated check separate from unit tests (:pr:`1347`)
@@ -21,7 +22,9 @@ Release Notes
 
 * ``Entity.add_interesting_values`` has been removed. To add interesting values for a single
     entity, call ``EntitySet.add_interesting_values`` and pass the id of the entity for
-    which to add interesting values in the ``entity_id`` parameter. 
+    which to add interesting values in the ``entity_id`` parameter.
+* ``Entity.set_secondary_time_index`` has been removed and replaced by ``EntitySet.set_secondary_time_index``
+    with an added ``entity`` parameter to specify the entity on which to set the secondary time index.
 
 
 **v0.23.2 Feb 26, 2021**
@@ -78,7 +81,6 @@ Release Notes
 
 * ``Entity.query_by_values`` has been removed and replaced by ``EntitySet.query_by_values`` with an
   added ``entity_id`` parameter to specify which entity in the entityset should be used for the query.
-
 
 **v0.22.0 Nov 30, 2020**
     * Enhancements
