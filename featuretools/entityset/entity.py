@@ -1,7 +1,6 @@
 import warnings
 
 import dask.dataframe as dd
-import numpy as np
 import pandas as pd
 
 from featuretools import variable_types as vtypes
