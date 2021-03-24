@@ -26,7 +26,6 @@ Release Notes
 * ``Entity.set_secondary_time_index`` has been removed and replaced by ``EntitySet.set_secondary_time_index``
     with an added ``entity`` parameter to specify the entity on which to set the secondary time index.
 
-
 **v0.23.2 Feb 26, 2021**
     .. warning::
         The next non-bugfix release of Featuretools will not support Python 3.6

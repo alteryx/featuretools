@@ -283,6 +283,7 @@ EntitySet load and prepare data
     EntitySet.add_relationship
     EntitySet.normalize_entity
     EntitySet.add_interesting_values
+    EntitySet.set_secondary_time_index
 
 EntitySet serialization
 -------------------------------
