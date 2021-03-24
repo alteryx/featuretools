@@ -21,10 +21,10 @@ Release Notes
 **Breaking Changes**
 
 * ``Entity.add_interesting_values`` has been removed. To add interesting values for a single
-    entity, call ``EntitySet.add_interesting_values`` and pass the id of the entity for
-    which to add interesting values in the ``entity_id`` parameter.
+  entity, call ``EntitySet.add_interesting_values`` and pass the id of the entity for
+  which to add interesting values in the ``entity_id`` parameter.
 * ``Entity.set_secondary_time_index`` has been removed and replaced by ``EntitySet.set_secondary_time_index``
-    with an added ``entity`` parameter to specify the entity on which to set the secondary time index.
+  with an added ``entity`` parameter to specify the entity on which to set the secondary time index.
 
 **v0.23.2 Feb 26, 2021**
     .. warning::
