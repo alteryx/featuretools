@@ -98,8 +98,9 @@ def description_to_entityset(description, **kwargs):
             last_time_index.append(entity['id'])
 
     for relationship in description['relationships']:
-        relationship = Relationship.from_dictionary(relationship, entityset)
-        entityset.add_relationship(relationship)
+        rel = Relationship.from_dictionary(relationship, entityset)
+        entityset.add_relationship(rel._parent_entity_id, rel._parent_variable_id,
+                                   rel._child_entity_id, rel._child_variable_id)
 
     if len(last_time_index):
         entityset.add_last_time_indexes(updated_entities=last_time_index)

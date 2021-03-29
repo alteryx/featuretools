@@ -1,5 +1,5 @@
 digraph "MODE(transactions.WEEKDAY(transaction_time))" {
-	graph [bb="0,0,1212.7,152",
+	graph [bb="0,0,1209,156",
 		rankdir=LR
 	];
 	node [label="\N",
@@ -13,11 +13,11 @@ digraph "MODE(transactions.WEEKDAY(transaction_time))" {
 		graph [rank=min];
 		"1_WEEKDAY(transaction_time)_weekday"	[height=0.94444,
 			label=<<FONT POINT-SIZE="12"><B>Step 1:</B>   Transform<BR></BR></FONT>WEEKDAY>,
-			pos="108.69,58",
+			pos="110,41",
 			shape=diamond,
-			width=3.0192];
+			width=3.0556];
 	}
-	sessions	[height=1.1806,
+	sessions	[height=1.1389,
 		label=<
 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
     <TR>
@@ -27,45 +27,45 @@ digraph "MODE(transactions.WEEKDAY(transaction_time))" {
         <TD ALIGN="LEFT" port="MODE(transactions.WEEKDAY(transaction_time))" BGCOLOR="#D9EAD3">MODE(transactions.WEEKDAY(transaction_time))</TD>
     </TR>
 </TABLE>>,
-		pos="1047.2,61",
+		pos="1046.5,79",
 		shape=plaintext,
-		width=4.5972];
-	transactions	[height=2.1111,
+		width=4.5139];
+	transactions	[height=2.1667,
 		label=<
 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
     <TR>
         <TD colspan="1" bgcolor="#A9A9A9"><B>transactions</B></TD>
-    </TR><TR><TD ALIGN="LEFT" port="transaction_time">transaction_time</TD></TR>
-<TR><TD ALIGN="LEFT" port="session_id">session_id</TD></TR>
+    </TR><TR><TD ALIGN="LEFT" port="session_id">session_id</TD></TR>
+<TR><TD ALIGN="LEFT" port="transaction_time">transaction_time</TD></TR>
 <TR><TD ALIGN="LEFT" port="WEEKDAY(transaction_time)">WEEKDAY(transaction_time)</TD></TR>
 </TABLE>>,
-		pos="358.38,76",
+		pos="359.5,78",
 		shape=plaintext,
-		width=2.9167];
+		width=2.875];
 	transactions:transaction_time -> "1_WEEKDAY(transaction_time)_weekday"	[arrowhead="",
-		pos="e,159.9,76.211 260.38,94 229.96,94 197,86.972 169.69,79.127",
+		pos="e,181.79,52.856 263.5,59 240.16,59 214.95,56.895 191.88,54.125",
 		style=solid];
-	"MODE(transactions.WEEKDAY(transaction_time))_groupby_transactions--session_id"	[height=0.5,
+	"MODE(transactions.WEEKDAY(transaction_time))_groupby_transactions--session_id"	[height=0.52778,
 		label="group by
 session_id",
-		pos="536.55,40",
-		width=1.0325];
+		pos="535.5,60",
+		width=1.0139];
 	transactions:"WEEKDAY(transaction_time)" -> "MODE(transactions.WEEKDAY(transaction_time))_groupby_transactions--session_id"	[arrowhead="",
-		pos="e,499.28,28.195 456.38,22 467.17,22 478.58,23.609 489.28,25.865",
+		pos="e,509.62,40.777 456.5,22 472.04,22 487.73,28.174 500.92,35.545",
 		style=solid];
-	transactions:session_id -> "MODE(transactions.WEEKDAY(transaction_time))_groupby_transactions--session_id"	[pos="456.38,58 470.62,58 485.94,55.198 499.28,51.805"];
+	transactions:session_id -> "MODE(transactions.WEEKDAY(transaction_time))_groupby_transactions--session_id"	[pos="456.5,97 475.23,97 494.27,88.179 508.85,79.15"];
 	"0_MODE(transactions.WEEKDAY(transaction_time))_mode"	[height=0.94444,
 		label=<<FONT POINT-SIZE="12"><B>Step 2:</B>   Aggregation<BR></BR></FONT>MODE>,
-		pos="727.71,40",
+		pos="728,60",
 		shape=diamond,
-		width=3.2776];
+		width=3.3333];
 	"0_MODE(transactions.WEEKDAY(transaction_time))_mode" -> sessions:"MODE(transactions.WEEKDAY(transaction_time))"	[arrowhead="",
-		pos="e,889.21,40 845.73,40 856.82,40 867.99,40 878.87,40",
+		pos="e,891.5,60 848.36,60 859.38,60 870.45,60 881.25,60",
 		style=solid];
 	"1_WEEKDAY(transaction_time)_weekday" -> transactions:"WEEKDAY(transaction_time)"	[arrowhead="",
-		pos="e,260.38,22 159.9,39.789 186.04,31.732 219,23.731 250.29,22.245",
+		pos="e,263.5,22 180.24,28.699 203.11,25.488 228.97,22.747 253.46,22.13",
 		style=solid];
 	"MODE(transactions.WEEKDAY(transaction_time))_groupby_transactions--session_id" -> "0_MODE(transactions.WEEKDAY(transaction_time))_mode"	[arrowhead="",
-		pos="e,609.69,40 574.02,40 581.83,40 590.49,40 599.62,40",
+		pos="e,607.88,60 572.33,60 580.09,60 588.72,60 597.83,60",
 		style=solid];
 }

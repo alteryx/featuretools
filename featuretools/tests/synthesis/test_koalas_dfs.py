@@ -354,10 +354,8 @@ def test_ks_entityset_secondary_time_index():
     flights_vtypes = pd_es['flights'].variable_types
     ks_es.entity_from_dataframe('flights', flights_ks, index="id", variable_types=flights_vtypes)
 
-    new_rel = ft.Relationship(pd_es, 'flights', 'id', 'logs', 'flight_id')
-    ks_rel = ft.Relationship(ks_es, 'flights', 'id', 'logs', 'flight_id')
-    pd_es.add_relationship(new_rel)
-    ks_es.add_relationship(ks_rel)
+    pd_es.add_relationship('flights', 'id', 'logs', 'flight_id')
+    ks_es.add_relationship('flights', 'id', 'logs', 'flight_id')
 
     cutoff_df = pd.DataFrame()
     cutoff_df['id'] = [0, 1, 1]

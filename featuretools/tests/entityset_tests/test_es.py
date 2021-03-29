@@ -9,7 +9,7 @@ import pytest
 
 import featuretools as ft
 from featuretools import variable_types
-from featuretools.entityset import EntitySet, Relationship
+from featuretools.entityset import EntitySet
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
@@ -32,8 +32,10 @@ def test_normalize_time_index_as_additional_variable(es):
 def test_cannot_re_add_relationships_that_already_exists(es):
     warn_text = "Not adding duplicate relationship: " + str(es.relationships[0])
     before_len = len(es.relationships)
+    rel = es.relationships[0]
     with pytest.warns(UserWarning, match=warn_text):
-        es.add_relationship(es.relationships[0])
+        es.add_relationship(rel._parent_entity_id, rel._parent_variable_id,
+                            rel._child_entity_id, rel._child_variable_id)
     after_len = len(es.relationships)
     assert before_len == after_len
 
@@ -78,8 +80,7 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
 
     error_text = u'Unable to add relationship because id in customers is Pandas dtype category and session_id in log2 is Pandas dtype int64.'
     with pytest.raises(ValueError, match=error_text):
-        mismatch = Relationship(es, u'customers', 'id', 'log2', 'session_id')
-        es.add_relationship(mismatch)
+        es.add_relationship(u'customers', 'id', 'log2', 'session_id')
 
 
 def test_add_relationship_errors_child_v_index(es):
@@ -91,10 +92,9 @@ def test_add_relationship_errors_child_v_index(es):
                              variable_types=log_vtypes,
                              time_index='datetime')
 
-    bad_relationship = ft.Relationship(es, 'log', 'id', 'log2', 'id')
     to_match = "Unable to add relationship because child variable 'id' in 'log2' is also its index"
     with pytest.raises(ValueError, match=to_match):
-        es.add_relationship(bad_relationship)
+        es.add_relationship('log', 'id', 'log2', 'id')
 
 
 def test_add_relationship_empty_child_convert_dtype(es):
@@ -106,7 +106,8 @@ def test_add_relationship_empty_child_convert_dtype(es):
     es.relationships.remove(relationship)
     assert(relationship not in es.relationships)
 
-    es.add_relationship(relationship)
+    es.add_relationship(relationship._parent_entity_id, relationship._parent_variable_id,
+                        relationship._child_entity_id, relationship._child_variable_id)
     assert es['log'].df['session_id'].dtype == 'int64'
 
 
@@ -267,7 +268,7 @@ def test_extra_variable_type(df):
 def test_add_parent_not_index_varible(es):
     error_text = "Parent variable.*is not the index of entity Entity.*"
     with pytest.raises(AttributeError, match=error_text):
-        es.add_relationship(Relationship(es, u'régions', 'language', 'customers', u'région_id'))
+        es.add_relationship(u'régions', 'language', 'customers', u'région_id')
 
 
 @pytest.fixture
@@ -1402,8 +1403,7 @@ def test_entityset_init():
                                   variable_types=variable_types,
                                   make_index=False,
                                   time_index='transaction_time')
-    relationship = ft.Relationship(es_copy, 'cards', 'id', 'transactions', 'card_id')
-    es_copy.add_relationship(relationship)
+    es_copy.add_relationship('cards', 'id', 'transactions', 'card_id')
     assert es['cards'].__eq__(es_copy['cards'], deep=True)
     assert es['transactions'].__eq__(es_copy['transactions'], deep=True)
 
@@ -1451,8 +1451,8 @@ def test_entityset_equality(es):
                                     variable_types=es['customers'].variable_types)
     assert first_es == second_es
 
-    first_es.add_relationship(ft.Relationship(es, 'customers', 'id', 'sessions', 'customer_id'))
+    first_es.add_relationship('customers', 'id', 'sessions', 'customer_id')
     assert first_es != second_es
 
-    second_es.add_relationship(ft.Relationship(es, 'customers', 'id', 'sessions', 'customer_id'))
+    second_es.add_relationship('customers', 'id', 'sessions', 'customer_id')
     assert first_es == second_es

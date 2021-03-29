@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 import featuretools as ft
-from featuretools.entityset import EntitySet, Relationship
+from featuretools.entityset import EntitySet
 
 
 def test_create_entity_from_dask_df(pd_es):
@@ -111,11 +111,8 @@ def test_add_last_time_indexes():
     pd_es.entity_from_dataframe(entity_id="transactions", dataframe=transactions, index="id", time_index="time")
     dask_es.entity_from_dataframe(entity_id="transactions", dataframe=transactions_dask, index="id", time_index="time", variable_types=transactions_vtypes)
 
-    new_rel = Relationship(pd_es, "sessions", "id", "transactions", "session_id")
-    dask_rel = Relationship(dask_es, "sessions", "id", "transactions", "session_id")
-
-    pd_es = pd_es.add_relationship(new_rel)
-    dask_es = dask_es.add_relationship(dask_rel)
+    pd_es = pd_es.add_relationship("sessions", "id", "transactions", "session_id")
+    dask_es = dask_es.add_relationship("sessions", "id", "transactions", "session_id")
 
     assert pd_es['sessions'].last_time_index is None
     assert dask_es['sessions'].last_time_index is None

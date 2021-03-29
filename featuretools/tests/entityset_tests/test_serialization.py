@@ -9,12 +9,7 @@ import pandas as pd
 import pytest
 
 from featuretools import variable_types
-from featuretools.entityset import (
-    EntitySet,
-    Relationship,
-    deserialize,
-    serialize
-)
+from featuretools.entityset import EntitySet, deserialize, serialize
 from featuretools.entityset.serialize import SCHEMA_VERSION
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
@@ -432,8 +427,7 @@ def test_operations_invalidate_metadata(es):
     assert new_es.metadata is not None
     assert new_es._data_description is not None
 
-    r = Relationship(new_es, "customers", "id", "sessions", "customer_id")
-    new_es = new_es.add_relationship(r)
+    new_es = new_es.add_relationship("customers", "id", "sessions", "customer_id")
     assert new_es._data_description is None
     assert new_es.metadata is not None
     assert new_es._data_description is not None

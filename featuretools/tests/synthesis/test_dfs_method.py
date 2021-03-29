@@ -8,7 +8,7 @@ from distributed.utils_test import cluster
 from featuretools.computational_backends.calculate_feature_matrix import (
     FEATURE_CALCULATION_PERCENTAGE
 )
-from featuretools.entityset import EntitySet, Relationship, Timedelta
+from featuretools.entityset import EntitySet, Timedelta
 from featuretools.exceptions import UnusedPrimitiveWarning
 from featuretools.primitives import (
     GreaterThanScalar,
@@ -47,8 +47,7 @@ def datetime_es():
     datetime_es = datetime_es.entity_from_dataframe(entity_id="cards",
                                                     dataframe=cards_df,
                                                     index="id")
-    relationship = Relationship(datetime_es, "cards", "id", "transactions", "card_id")
-    datetime_es = datetime_es.add_relationship(relationship)
+    datetime_es = datetime_es.add_relationship("cards", "id", "transactions", "card_id")
     datetime_es.add_last_time_indexes()
     return datetime_es
 

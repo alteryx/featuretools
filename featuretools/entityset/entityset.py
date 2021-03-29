@@ -227,8 +227,8 @@ class EntitySet(object):
 
         for r in self.relationships:
             repr_out += u"\n    %s.%s -> %s.%s" % \
-                (r._child_df_id, r._child_column_id,
-                 r._parent_df_id, r._parent_column_id)
+                (r._child_entity_id, r._child_variable_id,
+                 r._parent_entity_id, r._parent_variable_id)
 
         return repr_out
 
@@ -239,15 +239,18 @@ class EntitySet(object):
             relationships (list[Relationship]) : List of new
                 relationships.
         """
-        return [self.add_relationship(r) for r in relationships][-1]
+        return [self.add_relationship(*r) for r in relationships][-1]
 
-    def add_relationship(self, relationship):
+    def add_relationship(self, parent_entity_id, parent_variable_id, child_entity_id, child_variable_id):
         """Add a new relationship between entities in the entityset
 
         Args:
-            relationship (Relationship) : Instance of new
-                relationship to be added.
+            parent_entity_id (str): Name of the parent dataframe in the EntitySet
+            parent_variable_id (str): Name of the parent column
+            child_entity_id (str): Name of the child dataframe in the EntitySet
+            child_variable_id (str): Name of the child column
         """
+        relationship = Relationship(self, parent_entity_id, parent_variable_id, child_entity_id, child_variable_id)
         if relationship in self.relationships:
             warnings.warn(
                 "Not adding duplicate relationship: " + str(relationship))

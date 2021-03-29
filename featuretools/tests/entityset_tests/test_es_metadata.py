@@ -3,13 +3,14 @@ import pytest
 from dask import dataframe as dd
 
 import featuretools as ft
-from featuretools import EntitySet, Relationship, variable_types
+from featuretools import EntitySet, variable_types
 from featuretools.tests.testing_utils import backward_path, forward_path
 
 
 def test_cannot_re_add_relationships_that_already_exists(es):
     before_len = len(es.relationships)
-    es.add_relationship(es.relationships[0])
+    rel = es.relationships[0]
+    es.add_relationship(rel._parent_entity_id, rel._parent_variable_id, rel._child_entity_id, rel._child_variable_id)
     after_len = len(es.relationships)
     assert before_len == after_len
 
@@ -239,4 +240,4 @@ def test_raise_key_error_missing_entity(es):
 def test_add_parent_not_index_variable(es):
     error_text = "Parent variable.*is not the index of entity Entity.*"
     with pytest.raises(AttributeError, match=error_text):
-        es.add_relationship(Relationship(es, u'régions', 'language', 'customers', u'région_id'))
+        es.add_relationship(u'régions', 'language', 'customers', u'région_id')
