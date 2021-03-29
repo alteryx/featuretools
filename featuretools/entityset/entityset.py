@@ -236,8 +236,9 @@ class EntitySet(object):
         """Add multiple new relationships to a entityset
 
         Args:
-            relationships (list[Relationship]) : List of new
-                relationships.
+            relationships (list[tuple(str, str, str, str)]) : List of new relationships to
+            add. Relationships are specified as a four element tuple identifying the parent and
+            child columns: (parent_entity_id, parent_variable_id, child_entity_id, child_variable_id)
         """
         return [self.add_relationship(*r) for r in relationships][-1]
 
