@@ -10,6 +10,7 @@ Release Notes
         * Minor updates to work with Koalas version 1.7.0 (:pr:`1351`)
         * Remove ``add_interesting_values`` from ``Entity`` (:pr:`1269`)
         * Move ``set_secondary_time_index`` method from ``Entity`` to ``EntitySet`` (:pr:`1280`)
+        * Refactor Relationship creation process (:pr:`1370`)
     * Documentation Changes
     * Testing Changes
          * Make release notes updated check separate from unit tests (:pr:`1347`)
