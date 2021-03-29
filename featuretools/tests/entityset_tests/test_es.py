@@ -78,7 +78,7 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
 
     error_text = u'Unable to add relationship because id in customers is Pandas dtype category and session_id in log2 is Pandas dtype int64.'
     with pytest.raises(ValueError, match=error_text):
-        mismatch = Relationship(es[u'customers']['id'], es['log2']['session_id'])
+        mismatch = Relationship(es, u'customers', 'id', 'log2', 'session_id')
         es.add_relationship(mismatch)
 
 
@@ -91,14 +91,14 @@ def test_add_relationship_errors_child_v_index(es):
                              variable_types=log_vtypes,
                              time_index='datetime')
 
-    bad_relationship = ft.Relationship(es['log']['id'], es['log2']['id'])
+    bad_relationship = ft.Relationship(es, 'log', 'id', 'log2', 'id')
     to_match = "Unable to add relationship because child variable 'id' in 'log2' is also its index"
     with pytest.raises(ValueError, match=to_match):
         es.add_relationship(bad_relationship)
 
 
 def test_add_relationship_empty_child_convert_dtype(es):
-    relationship = ft.Relationship(es["sessions"]["id"], es["log"]["session_id"])
+    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
     es['log'].df = pd.DataFrame(columns=es['log'].df.columns)
     assert len(es['log'].df) == 0
     assert es['log'].df['session_id'].dtype == 'object'
@@ -267,8 +267,7 @@ def test_extra_variable_type(df):
 def test_add_parent_not_index_varible(es):
     error_text = "Parent variable.*is not the index of entity Entity.*"
     with pytest.raises(AttributeError, match=error_text):
-        es.add_relationship(Relationship(es[u'régions']['language'],
-                                         es['customers'][u'région_id']))
+        es.add_relationship(Relationship(es, u'régions', 'language', 'customers', u'région_id'))
 
 
 @pytest.fixture
@@ -1403,8 +1402,7 @@ def test_entityset_init():
                                   variable_types=variable_types,
                                   make_index=False,
                                   time_index='transaction_time')
-    relationship = ft.Relationship(es_copy["cards"]["id"],
-                                   es_copy["transactions"]["card_id"])
+    relationship = ft.Relationship(es_copy, 'cards', 'id', 'transactions', 'card_id')
     es_copy.add_relationship(relationship)
     assert es['cards'].__eq__(es_copy['cards'], deep=True)
     assert es['transactions'].__eq__(es_copy['transactions'], deep=True)
@@ -1453,8 +1451,8 @@ def test_entityset_equality(es):
                                     variable_types=es['customers'].variable_types)
     assert first_es == second_es
 
-    first_es.add_relationship(ft.Relationship(es['customers']['id'], es['sessions']['customer_id']))
+    first_es.add_relationship(ft.Relationship(es, 'customers', 'id', 'sessions', 'customer_id'))
     assert first_es != second_es
 
-    second_es.add_relationship(ft.Relationship(es['customers']['id'], es['sessions']['customer_id']))
+    second_es.add_relationship(ft.Relationship(es, 'customers', 'id', 'sessions', 'customer_id'))
     assert first_es == second_es

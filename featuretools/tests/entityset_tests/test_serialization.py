@@ -432,8 +432,7 @@ def test_operations_invalidate_metadata(es):
     assert new_es.metadata is not None
     assert new_es._data_description is not None
 
-    r = Relationship(new_es["customers"]["id"],
-                     new_es["sessions"]["customer_id"])
+    r = Relationship(new_es, "customers", "id", "sessions", "customer_id")
     new_es = new_es.add_relationship(r)
     assert new_es._data_description is None
     assert new_es.metadata is not None

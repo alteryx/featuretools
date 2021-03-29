@@ -97,10 +97,12 @@ class EntitySet(object):
                                        make_index=make_index)
 
         for relationship in relationships:
-            parent_variable = self[relationship[0]][relationship[1]]
-            child_variable = self[relationship[2]][relationship[3]]
-            self.add_relationship(Relationship(parent_variable,
-                                               child_variable))
+            parent_df = relationship[0]
+            parent_column = relationship[1]
+            child_df = relationship[2]
+            child_column = relationship[3]
+            self.add_relationship(parent_df, parent_column, child_df, child_column)
+
         self.reset_data_description()
 
     def __sizeof__(self):
@@ -225,8 +227,8 @@ class EntitySet(object):
 
         for r in self.relationships:
             repr_out += u"\n    %s.%s -> %s.%s" % \
-                (r._child_entity_id, r._child_variable_id,
-                 r._parent_entity_id, r._parent_variable_id)
+                (r._child_df_id, r._child_column_id,
+                 r._parent_df_id, r._parent_column_id)
 
         return repr_out
 
@@ -720,7 +722,7 @@ class EntitySet(object):
 
         new_entity = self.entity_dict[new_entity_id]
         base_entity.convert_variable_type(base_entity_index, vtypes.Id, convert_data=False)
-        self.add_relationship(Relationship(new_entity[index], base_entity[base_entity_index]))
+        self.add_relationship(new_entity.id, index, base_entity.id, base_entity_index)
         self.reset_data_description()
         return self
 
@@ -1031,7 +1033,7 @@ class EntitySet(object):
                 label = '%s -> %s' % (rel._parent_variable_id,
                                       rel._child_variable_id)
 
-            graph.edge(rel._child_entity_id, rel._parent_entity_id, xlabel=label)
+            graph.edge(rel._child_entity_id, rel._parent_variable_id, xlabel=label)
 
         if to_file:
             save_graph(graph, to_file, format_)

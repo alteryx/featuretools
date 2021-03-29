@@ -2,10 +2,8 @@ from featuretools.entityset.relationship import Relationship, RelationshipPath
 
 
 def test_relationship_path(es):
-    log_to_sessions = Relationship(es['sessions']['id'],
-                                   es['log']['session_id'])
-    sessions_to_customers = Relationship(es['customers']['id'],
-                                         es['sessions']['customer_id'])
+    log_to_sessions = Relationship(es, 'sessions', 'id', 'log', 'session_id')
+    sessions_to_customers = Relationship(es, 'customers', 'id', 'sessions', 'customer_id')
     path_list = [(True, log_to_sessions),
                  (True, sessions_to_customers),
                  (False, sessions_to_customers)]
@@ -20,10 +18,8 @@ def test_relationship_path(es):
 def test_relationship_path_name(es):
     assert RelationshipPath([]).name == ''
 
-    log_to_sessions = Relationship(es['sessions']['id'],
-                                   es['log']['session_id'])
-    sessions_to_customers = Relationship(es['customers']['id'],
-                                         es['sessions']['customer_id'])
+    log_to_sessions = Relationship(es, 'sessions', 'id', 'log', 'session_id')
+    sessions_to_customers = Relationship(es, 'customers', 'id', 'sessions', 'customer_id')
 
     forward_path = [(True, log_to_sessions), (True, sessions_to_customers)]
     assert RelationshipPath(forward_path).name == 'sessions.customers'
@@ -38,10 +34,8 @@ def test_relationship_path_name(es):
 def test_relationship_path_entities(es):
     assert list(RelationshipPath([]).entities()) == []
 
-    log_to_sessions = Relationship(es['sessions']['id'],
-                                   es['log']['session_id'])
-    sessions_to_customers = Relationship(es['customers']['id'],
-                                         es['sessions']['customer_id'])
+    log_to_sessions = Relationship(es, 'sessions', 'id', 'log', 'session_id')
+    sessions_to_customers = Relationship(es, 'customers', 'id', 'sessions', 'customer_id')
 
     forward_path = [(True, log_to_sessions), (True, sessions_to_customers)]
     assert list(RelationshipPath(forward_path).entities()) == ['log', 'sessions', 'customers']
@@ -54,21 +48,19 @@ def test_relationship_path_entities(es):
 
 
 def test_names_when_multiple_relationships_between_entities(games_es):
-    relationship = Relationship(games_es['teams']['id'],
-                                games_es['games']['home_team_id'])
+    relationship = Relationship(games_es, 'teams', 'id', 'games', 'home_team_id')
     assert relationship.child_name == 'games[home_team_id]'
     assert relationship.parent_name == 'teams[home_team_id]'
 
 
 def test_names_when_no_other_relationship_between_entities(home_games_es):
-    relationship = Relationship(home_games_es['teams']['id'],
-                                home_games_es['games']['home_team_id'])
+    relationship = Relationship(home_games_es, 'teams', 'id', 'games', 'home_team_id')
     assert relationship.child_name == 'games'
     assert relationship.parent_name == 'teams'
 
 
 def test_relationship_serialization(es):
-    relationship = Relationship(es['sessions']['id'], es['log']['session_id'])
+    relationship = Relationship(es, 'sessions', 'id', 'log', 'session_id')
 
     dictionary = {
         'parent_entity_id': 'sessions',

@@ -177,7 +177,7 @@ def pd_default_value_es():
                              dataframe=sessions,
                              index="id")
 
-    es.add_relationship(ft.Relationship(es["sessions"]["id"], es["transactions"]["session_id"]))
+    es.add_relationship(ft.Relationship(es, "sessions", "id", "transactions", "session_id"))
     return es
 
 
@@ -265,8 +265,7 @@ def ks_home_games_es(pd_home_games_es):
 
 @pytest.fixture
 def games_es(home_games_es):
-    away_team = ft.Relationship(home_games_es['teams']['id'],
-                                home_games_es['games']['away_team_id'])
+    away_team = ft.Relationship(home_games_es, 'teams', 'id', 'games', 'away_team_id')
     return home_games_es.add_relationship(away_team)
 
 

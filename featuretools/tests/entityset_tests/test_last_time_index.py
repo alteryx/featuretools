@@ -180,8 +180,7 @@ class TestLastTimeIndex(object):
                                  make_index=True,
                                  time_index='datetime',
                                  variable_types=variable_types)
-        relationship = Relationship(es['sessions']['id'],
-                                    es['wishlist_log']['session_id'])
+        relationship = Relationship(es, 'sessions', 'id', 'wishlist_log', 'session_id')
         es.add_relationship(relationship)
         es.add_last_time_indexes()
         sessions = es['sessions']
@@ -215,8 +214,7 @@ class TestLastTimeIndex(object):
                                  make_index=True,
                                  time_index='datetime',
                                  variable_types=variable_types)
-        relationship = Relationship(es['sessions']['id'],
-                                    es['wishlist_log']['session_id'])
+        relationship = Relationship(es, 'sessions', 'id', 'wishlist_log', 'session_id')
         es.add_relationship(relationship)
         es.add_last_time_indexes()
 
@@ -256,8 +254,7 @@ class TestLastTimeIndex(object):
                                  make_index=True,
                                  time_index='datetime',
                                  variable_types=variable_types)
-        relationship = Relationship(es['sessions']['id'],
-                                    es['wishlist_log']['session_id'])
+        relationship = Relationship(es, 'sessions', 'id', 'wishlist_log', 'session_id')
         es.add_relationship(relationship)
         es.add_last_time_indexes()
 
@@ -302,8 +299,7 @@ class TestLastTimeIndex(object):
                                  make_index=True,
                                  time_index='datetime',
                                  variable_types=variable_types)
-        relationship = Relationship(es['sessions']['id'],
-                                    es['wishlist_log']['session_id'])
+        relationship = Relationship(es, 'sessions', 'id', 'wishlist_log', 'session_id')
         es.add_relationship(relationship)
         es.add_last_time_indexes()
 
@@ -339,8 +335,7 @@ class TestLastTimeIndex(object):
                                  make_index=True,
                                  time_index='datetime',
                                  variable_types=variable_types)
-        relationship = Relationship(es['sessions']['id'],
-                                    es['wishlist_log']['session_id'])
+        relationship = Relationship(es, 'sessions', 'id', 'wishlist_log', 'session_id')
         es.add_relationship(relationship)
         es.add_last_time_indexes()
         sessions = es['sessions']

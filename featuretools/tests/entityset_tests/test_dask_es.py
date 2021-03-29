@@ -111,10 +111,8 @@ def test_add_last_time_indexes():
     pd_es.entity_from_dataframe(entity_id="transactions", dataframe=transactions, index="id", time_index="time")
     dask_es.entity_from_dataframe(entity_id="transactions", dataframe=transactions_dask, index="id", time_index="time", variable_types=transactions_vtypes)
 
-    new_rel = Relationship(pd_es["sessions"]["id"],
-                           pd_es["transactions"]["session_id"])
-    dask_rel = Relationship(dask_es["sessions"]["id"],
-                            dask_es["transactions"]["session_id"])
+    new_rel = Relationship(pd_es, "sessions", "id", "transactions", "session_id")
+    dask_rel = Relationship(dask_es, "sessions", "id", "transactions", "session_id")
 
     pd_es = pd_es.add_relationship(new_rel)
     dask_es = dask_es.add_relationship(dask_rel)

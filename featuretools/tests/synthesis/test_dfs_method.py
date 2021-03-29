@@ -47,7 +47,7 @@ def datetime_es():
     datetime_es = datetime_es.entity_from_dataframe(entity_id="cards",
                                                     dataframe=cards_df,
                                                     index="id")
-    relationship = Relationship(datetime_es["cards"]["id"], datetime_es["transactions"]["card_id"])
+    relationship = Relationship(datetime_es, "cards", "id", "transactions", "card_id")
     datetime_es = datetime_es.add_relationship(relationship)
     datetime_es.add_last_time_indexes()
     return datetime_es

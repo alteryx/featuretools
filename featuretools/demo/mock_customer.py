@@ -69,12 +69,9 @@ def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transaction
                                       time_index="join_date",
                                       variable_types={"zip_code": ZIPCode})
 
-        rels = [ft.Relationship(es["products"]["product_id"],
-                                es["transactions"]["product_id"]),
-                ft.Relationship(es["sessions"]["session_id"],
-                                es["transactions"]["session_id"]),
-                ft.Relationship(es["customers"]["customer_id"],
-                                es["sessions"]["customer_id"])]
+        rels = [ft.Relationship(es, "products", "product_id", "transactions", "product_id"),
+                ft.Relationship(es, "sessions", "session_id", "transactions", "session_id"),
+                ft.Relationship(es, "customers", "customer_id", "sessions", "customer_id")]
         es = es.add_relationships(rels)
         es.add_last_time_indexes()
         return es

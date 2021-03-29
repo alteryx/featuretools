@@ -2,37 +2,39 @@ class Relationship(object):
     """Class to represent an relationship between entities
 
     See Also:
-        :class:`.EntitySet`, :class:`.Entity`, :class:`.Variable`
+        :class:`.EntitySet`, :class:`.Entity`
     """
 
-    def __init__(self, parent_variable, child_variable):
+    def __init__(self, entityset, parent_entity_id, parent_variable_id,
+                 child_entity_id, child_variable_id):
         """ Create a relationship
 
         Args:
-            parent_variable (:class:`.Discrete`): Instance of variable
-                in parent entity.  Must be a Discrete Variable
-            child_variable (:class:`.Discrete`): Instance of variable in
-                child entity.  Must be a Discrete Variable
-
+            entityset (:class:`.EntitySet`): EntitySet to which the relationship belongs
+            parent_entity_id (str): Name of the parent dataframe in the EntitySet
+            parent_variable_id (str): Name of the parent column
+            child_entity_id (str): Name of the child dataframe in the EntitySet
+            child_variable_id (str): Name of the child column
         """
 
-        self.entityset = child_variable.entityset
-        self._parent_entity_id = parent_variable.entity.id
-        self._child_entity_id = child_variable.entity.id
-        self._parent_variable_id = parent_variable.id
-        self._child_variable_id = child_variable.id
+        self.entityset = entityset
+        self._parent_entity_id = parent_entity_id
+        self._child_entity_id = child_entity_id
+        self._parent_variable_id = parent_variable_id
+        self._child_variable_id = child_variable_id
 
-        if (parent_variable.entity.index is not None and
-                parent_variable.id != parent_variable.entity.index):
-            raise AttributeError("Parent variable '%s' is not the index of entity %s" % (parent_variable, parent_variable.entity))
+        if (self.entityset[self._parent_entity_id].index is not None and
+                self._parent_variable_id != self.entityset[self._parent_entity_id].index):
+            raise AttributeError(f"Parent variable '{self._parent_variable_id}' is not the index of "
+                                 f"entity {self.entityset[self._parent_entity_id]}")
 
     @classmethod
     def from_dictionary(cls, arguments, es):
-        parent_entity = es[arguments['parent_entity_id']]
-        child_entity = es[arguments['child_entity_id']]
-        parent_variable = parent_entity[arguments['parent_variable_id']]
-        child_variable = child_entity[arguments['child_variable_id']]
-        return cls(parent_variable, child_variable)
+        parent_entity = arguments['parent_entity_id']
+        child_entity = arguments['child_entity_id']
+        parent_variable = arguments['parent_variable_id']
+        child_variable = arguments['child_variable_id']
+        return cls(es, parent_entity, parent_variable, child_entity, child_variable)
 
     def __repr__(self):
         ret = u"<Relationship: %s.%s -> %s.%s>" % \

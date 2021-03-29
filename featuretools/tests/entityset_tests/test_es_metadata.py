@@ -239,5 +239,4 @@ def test_raise_key_error_missing_entity(es):
 def test_add_parent_not_index_variable(es):
     error_text = "Parent variable.*is not the index of entity Entity.*"
     with pytest.raises(AttributeError, match=error_text):
-        es.add_relationship(Relationship(es[u'régions']['language'],
-                                         es['customers'][u'région_id']))
+        es.add_relationship(Relationship(es, u'régions', 'language', 'customers', u'région_id'))
