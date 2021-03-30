@@ -23,10 +23,10 @@ class Relationship(object):
         self._parent_variable_id = parent_variable_id
         self._child_variable_id = child_variable_id
 
-        if (self.entityset[self._parent_entity_id].index is not None and
-                self._parent_variable_id != self.entityset[self._parent_entity_id].index):
-            raise AttributeError(f"Parent variable '{self._parent_variable_id}' is not the index of "
-                                 f"entity {self.entityset[self._parent_entity_id]}")
+        if (self.parent_entity.index is not None and
+                self._parent_variable_id != self.parent_entity.index):
+            raise AttributeError(f"Parent variable '{self.parent_variable}' is not the index of "
+                                 f"entity {self.parent_entity}")
 
     @classmethod
     def from_dictionary(cls, arguments, es):
