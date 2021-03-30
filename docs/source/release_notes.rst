@@ -7,6 +7,7 @@ Release Notes
     * Fixes
     * Changes
         * Minor updates to work with Koalas version 1.7.0 (:pr:`1351`)
+        * Restrict smart-open version to <5.0.0 (:pr:`1372`)
     * Documentation Changes
     * Testing Changes
          * Make release notes updated check separate from unit tests (:pr:`1347`)
