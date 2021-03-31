@@ -33,11 +33,12 @@ def get_transport_params(profile_name):
     Config = import_or_raise("botocore.config", BOTOCORE_ERR_MSG).Config
 
     if isinstance(profile_name, str):
-        transport_params = {'session': boto3.Session(profile_name=profile_name)}
+        session = boto3.Session(profile_name=profile_name)
+        transport_params = {'client': session.client('s3')}
     elif profile_name is False or boto3.Session().get_credentials() is None:
-        transport_params = {
-            'resource_kwargs': {'config': Config(signature_version=UNSIGNED)}
-        }
+        session = boto3.Session()
+        client = session.client('s3', config=Config(signature_version=UNSIGNED))
+        transport_params = {'client': client}
     else:
         transport_params = None
     return transport_params
@@ -60,7 +61,7 @@ BOTOCORE_ERR_MSG = (
 SMART_OPEN_ERR_MSG = (
     "The smart_open library is required to read and write from URLs and S3.\n"
     "Install via pip:\n"
-    "    pip install smart-open\n"
+    "    pip install 'smart-open>=5.0.0'\n"
     "Install via conda:\n"
-    "    conda install smart_open"
+    "    conda install 'smart-open>=5.0.0'"
 )
