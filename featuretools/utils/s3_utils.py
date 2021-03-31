@@ -33,11 +33,12 @@ def get_transport_params(profile_name):
     Config = import_or_raise("botocore.config", BOTOCORE_ERR_MSG).Config
 
     if isinstance(profile_name, str):
-        transport_params = {'session': boto3.Session(profile_name=profile_name)}
+        session = boto3.Session(profile_name=profile_name)
+        transport_params = {'client': session.client('s3')}
     elif profile_name is False or boto3.Session().get_credentials() is None:
-        transport_params = {
-            'resource_kwargs': {'config': Config(signature_version=UNSIGNED)}
-        }
+        session = boto3.Session()
+        client = session.client('s3', config=Config(signature_version=UNSIGNED))
+        transport_params = {'client': client}
     else:
         transport_params = None
     return transport_params
