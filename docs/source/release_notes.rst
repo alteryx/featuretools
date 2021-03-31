@@ -20,8 +20,8 @@ Release Notes
         * Explicitly mention Python 3.8 support in setup.py classifiers (:pr:`1371`)
         * Fix issue with smart-open version 5.0.0 (:pr:`1372`, :pr:`1376`)
     * Testing Changes
-         * Make release notes updated check separate from unit tests (:pr:`1347`)
-         * Performance tests now specify which commit to check (:pr:`1354`)
+        * Make release notes updated check separate from unit tests (:pr:`1347`)
+        * Performance tests now specify which commit to check (:pr:`1354`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
