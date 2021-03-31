@@ -8,7 +8,7 @@ Release Notes
     * Changes
         * Minor updates to work with Koalas version 1.7.0 (:pr:`1351`)
         * Explicitly mention Python 3.8 support in setup.py classifiers (:pr:`1371`)
-        * Restrict smart-open version to <5.0.0 (:pr:`1372`)
+        * Fix issue with smart-open version 5.0.0 (:pr:`1372`, :pr:`1376`)
     * Documentation Changes
     * Testing Changes
          * Make release notes updated check separate from unit tests (:pr:`1347`)
