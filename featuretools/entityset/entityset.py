@@ -227,8 +227,8 @@ class EntitySet(object):
 
         for r in self.relationships:
             repr_out += u"\n    %s.%s -> %s.%s" % \
-                (r._child_entity_id, r._child_variable_id,
-                 r._parent_entity_id, r._parent_variable_id)
+                (r._child_dataframe_id, r._child_column_id,
+                 r._parent_dataframe_id, r._parent_column_id)
 
         return repr_out
 
@@ -238,20 +238,20 @@ class EntitySet(object):
         Args:
             relationships (list[tuple(str, str, str, str)]) : List of new relationships to
             add. Relationships are specified as a four element tuple identifying the parent and
-            child columns: (parent_entity_id, parent_variable_id, child_entity_id, child_variable_id)
+            child columns: (parent_dataframe_id, parent_column_id, child_dataframe_id, child_column_id)
         """
         return [self.add_relationship(*r) for r in relationships][-1]
 
-    def add_relationship(self, parent_entity_id, parent_variable_id, child_entity_id, child_variable_id):
+    def add_relationship(self, parent_dataframe_id, parent_column_id, child_dataframe_id, child_column_id):
         """Add a new relationship between entities in the entityset
 
         Args:
-            parent_entity_id (str): Name of the parent dataframe in the EntitySet
-            parent_variable_id (str): Name of the parent column
-            child_entity_id (str): Name of the child dataframe in the EntitySet
-            child_variable_id (str): Name of the child column
+            parent_dataframe_id (str): Name of the parent dataframe in the EntitySet
+            parent_column_id (str): Name of the parent column
+            child_dataframe_id (str): Name of the child dataframe in the EntitySet
+            child_column_id (str): Name of the child column
         """
-        relationship = Relationship(self, parent_entity_id, parent_variable_id, child_entity_id, child_variable_id)
+        relationship = Relationship(self, parent_dataframe_id, parent_column_id, child_dataframe_id, child_column_id)
         if relationship in self.relationships:
             warnings.warn(
                 "Not adding duplicate relationship: " + str(relationship))
@@ -1031,13 +1031,13 @@ class EntitySet(object):
         # Draw relationships
         for rel in self.relationships:
             # Display the key only once if is the same for both related entities
-            if rel._parent_variable_id == rel._child_variable_id:
-                label = rel._parent_variable_id
+            if rel._parent_column_id == rel._child_column_id:
+                label = rel._parent_column_id
             else:
-                label = '%s -> %s' % (rel._parent_variable_id,
-                                      rel._child_variable_id)
+                label = '%s -> %s' % (rel._parent_column_id,
+                                      rel._child_column_id)
 
-            graph.edge(rel._child_entity_id, rel._parent_variable_id, xlabel=label)
+            graph.edge(rel._child_dataframe_id, rel._parent_column_id, xlabel=label)
 
         if to_file:
             save_graph(graph, to_file, format_)

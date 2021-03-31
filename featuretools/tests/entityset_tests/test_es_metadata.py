@@ -10,7 +10,7 @@ from featuretools.tests.testing_utils import backward_path, forward_path
 def test_cannot_re_add_relationships_that_already_exists(es):
     before_len = len(es.relationships)
     rel = es.relationships[0]
-    es.add_relationship(rel._parent_entity_id, rel._parent_variable_id, rel._child_entity_id, rel._child_variable_id)
+    es.add_relationship(rel._parent_dataframe_id, rel._parent_column_id, rel._child_dataframe_id, rel._child_column_id)
     after_len = len(es.relationships)
     assert before_len == after_len
 

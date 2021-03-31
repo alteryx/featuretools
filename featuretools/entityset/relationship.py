@@ -5,41 +5,41 @@ class Relationship(object):
         :class:`.EntitySet`, :class:`.Entity`
     """
 
-    def __init__(self, entityset, parent_entity_id, parent_variable_id,
-                 child_entity_id, child_variable_id):
+    def __init__(self, entityset, parent_dataframe_id, parent_column_id,
+                 child_dataframe_id, child_column_id):
         """ Create a relationship
 
         Args:
             entityset (:class:`.EntitySet`): EntitySet to which the relationship belongs
-            parent_entity_id (str): Name of the parent dataframe in the EntitySet
-            parent_variable_id (str): Name of the parent column
-            child_entity_id (str): Name of the child dataframe in the EntitySet
-            child_variable_id (str): Name of the child column
+            parent_dataframe_id (str): Name of the parent dataframe in the EntitySet
+            parent_column_id (str): Name of the parent column
+            child_dataframe_id (str): Name of the child dataframe in the EntitySet
+            child_column_id (str): Name of the child column
         """
 
         self.entityset = entityset
-        self._parent_entity_id = parent_entity_id
-        self._child_entity_id = child_entity_id
-        self._parent_variable_id = parent_variable_id
-        self._child_variable_id = child_variable_id
+        self._parent_dataframe_id = parent_dataframe_id
+        self._child_dataframe_id = child_dataframe_id
+        self._parent_column_id = parent_column_id
+        self._child_column_id = child_column_id
 
         if (self.parent_entity.index is not None and
-                self._parent_variable_id != self.parent_entity.index):
+                self._parent_column_id != self.parent_entity.index):
             raise AttributeError(f"Parent variable '{self.parent_variable}' is not the index of "
                                  f"entity {self.parent_entity}")
 
     @classmethod
     def from_dictionary(cls, arguments, es):
-        parent_entity = arguments['parent_entity_id']
-        child_entity = arguments['child_entity_id']
-        parent_variable = arguments['parent_variable_id']
-        child_variable = arguments['child_variable_id']
+        parent_entity = arguments['parent_dataframe_id']
+        child_entity = arguments['child_dataframe_id']
+        parent_variable = arguments['parent_column_id']
+        child_variable = arguments['child_column_id']
         return cls(es, parent_entity, parent_variable, child_entity, child_variable)
 
     def __repr__(self):
         ret = u"<Relationship: %s.%s -> %s.%s>" % \
-            (self._child_entity_id, self._child_variable_id,
-             self._parent_entity_id, self._parent_variable_id)
+            (self._child_dataframe_id, self._child_column_id,
+             self._parent_dataframe_id, self._parent_column_id)
 
         return ret
 
@@ -47,67 +47,67 @@ class Relationship(object):
         if not isinstance(other, self.__class__):
             return False
 
-        return self._parent_entity_id == other._parent_entity_id and \
-            self._child_entity_id == other._child_entity_id and \
-            self._parent_variable_id == other._parent_variable_id and \
-            self._child_variable_id == other._child_variable_id
+        return self._parent_dataframe_id == other._parent_dataframe_id and \
+            self._child_dataframe_id == other._child_dataframe_id and \
+            self._parent_column_id == other._parent_column_id and \
+            self._child_column_id == other._child_column_id
 
     def __hash__(self):
-        return hash((self._parent_entity_id,
-                     self._child_entity_id,
-                     self._parent_variable_id,
-                     self._child_variable_id))
+        return hash((self._parent_dataframe_id,
+                     self._child_dataframe_id,
+                     self._parent_column_id,
+                     self._child_column_id))
 
     @property
     def parent_entity(self):
         """Parent entity object"""
-        return self.entityset[self._parent_entity_id]
+        return self.entityset[self._parent_dataframe_id]
 
     @property
     def child_entity(self):
         """Child entity object"""
-        return self.entityset[self._child_entity_id]
+        return self.entityset[self._child_dataframe_id]
 
     @property
     def parent_variable(self):
         """Instance of variable in parent entity"""
-        return self.parent_entity[self._parent_variable_id]
+        return self.parent_entity[self._parent_column_id]
 
     @property
     def child_variable(self):
         """Instance of variable in child entity"""
-        return self.child_entity[self._child_variable_id]
+        return self.child_entity[self._child_column_id]
 
     @property
     def parent_name(self):
         """The name of the parent, relative to the child."""
         if self._is_unique():
-            return self._parent_entity_id
+            return self._parent_dataframe_id
         else:
-            return '%s[%s]' % (self._parent_entity_id, self._child_variable_id)
+            return '%s[%s]' % (self._parent_dataframe_id, self._child_column_id)
 
     @property
     def child_name(self):
         """The name of the child, relative to the parent."""
         if self._is_unique():
-            return self._child_entity_id
+            return self._child_dataframe_id
         else:
-            return '%s[%s]' % (self._child_entity_id, self._child_variable_id)
+            return '%s[%s]' % (self._child_dataframe_id, self._child_column_id)
 
     def to_dictionary(self):
         return {
-            'parent_entity_id': self._parent_entity_id,
-            'child_entity_id': self._child_entity_id,
-            'parent_variable_id': self._parent_variable_id,
-            'child_variable_id': self._child_variable_id,
+            'parent_dataframe_id': self._parent_dataframe_id,
+            'child_dataframe_id': self._child_dataframe_id,
+            'parent_column_id': self._parent_column_id,
+            'child_column_id': self._child_column_id,
         }
 
     def _is_unique(self):
         """Is there any other relationship with same parent and child entities?"""
         es = self.child_entity.entityset
-        relationships = es.get_forward_relationships(self._child_entity_id)
+        relationships = es.get_forward_relationships(self._child_dataframe_id)
         n = len([r for r in relationships
-                 if r._parent_entity_id == self._parent_entity_id])
+                 if r._parent_dataframe_id == self._parent_dataframe_id])
 
         assert n > 0, 'This relationship is missing from the entityset'
 
