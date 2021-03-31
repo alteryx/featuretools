@@ -111,6 +111,18 @@ def test_add_relationship_empty_child_convert_dtype(es):
     assert es['log'].df['session_id'].dtype == 'int64'
 
 
+def test_add_relationship_with_relationship_object(es):
+    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
+    es.add_relationship(relationship=relationship)
+    assert relationship in es.relationships
+
+
+def test_add_relationships_with_relationship_object(es):
+    relationships = [ft.Relationship(es, "sessions", "id", "log", "session_id")]
+    es.add_relationships(relationships)
+    assert relationships[0] in es.relationships
+
+
 def test_query_by_values_returns_rows_in_given_order():
     data = pd.DataFrame({
         "id": [1, 2, 3, 4, 5],

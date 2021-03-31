@@ -236,22 +236,46 @@ class EntitySet(object):
         """Add multiple new relationships to a entityset
 
         Args:
-            relationships (list[tuple(str, str, str, str)]) : List of new relationships to
-            add. Relationships are specified as a four element tuple identifying the parent and
-            child columns: (parent_dataframe_id, parent_column_id, child_dataframe_id, child_column_id)
+            relationships (list[tuple(str, str, str, str)] or list[Relationship]) : List of
+                new relationships to add. Relationships are specified either as a :class:`.Relationship`
+                object or a four element tuple identifying the parent and child columns:
+                (parent_dataframe_id, parent_column_id, child_dataframe_id, child_column_id)
         """
-        return [self.add_relationship(*r) for r in relationships][-1]
+        for rel in relationships:
+            if isinstance(rel, Relationship):
+                self.add_relationship(relationship=rel)
+            else:
+                self.add_relationship(*rel)
+        return self
 
-    def add_relationship(self, parent_dataframe_id, parent_column_id, child_dataframe_id, child_column_id):
-        """Add a new relationship between entities in the entityset
+    def add_relationship(self,
+                         parent_dataframe_id=None,
+                         parent_column_id=None,
+                         child_dataframe_id=None,
+                         child_column_id=None,
+                         relationship=None):
+        """Add a new relationship between entities in the entityset. Relationships can be specified
+        by passing dataframe and columns ids or by passing a :class:`.Relationship` object.
 
         Args:
-            parent_dataframe_id (str): Name of the parent dataframe in the EntitySet
-            parent_column_id (str): Name of the parent column
-            child_dataframe_id (str): Name of the child dataframe in the EntitySet
-            child_column_id (str): Name of the child column
+            parent_dataframe_id (str): Name of the parent dataframe in the EntitySet. Must be specified
+                if relationship is not.
+            parent_column_id (str): Name of the parent column. Must be specified if relationship is not.
+            child_dataframe_id (str): Name of the child dataframe in the EntitySet. Must be specified
+                if relationship is not.
+            child_column_id (str): Name of the child column. Must be specified if relationship is not.
+            relationship (Relationship): Instance of new relationship to be added. Must be specified
+                if dataframe and column ids are not supplied.
         """
-        relationship = Relationship(self, parent_dataframe_id, parent_column_id, child_dataframe_id, child_column_id)
+        if relationship and (parent_dataframe_id or parent_column_id or child_dataframe_id or child_column_id):
+            raise ValueError("Cannot specify dataframe and column id values and also supply a Relationship")
+
+        if not relationship:
+            relationship = Relationship(self,
+                                        parent_dataframe_id,
+                                        parent_column_id,
+                                        child_dataframe_id,
+                                        child_column_id)
         if relationship in self.relationships:
             warnings.warn(
                 "Not adding duplicate relationship: " + str(relationship))
