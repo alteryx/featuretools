@@ -61,7 +61,7 @@ BOTOCORE_ERR_MSG = (
 SMART_OPEN_ERR_MSG = (
     "The smart_open library is required to read and write from URLs and S3.\n"
     "Install via pip:\n"
-    "    pip install smart-open\n"
+    "    pip install 'smart-open>=5.0.0'\n"
     "Install via conda:\n"
-    "    conda install smart_open"
+    "    conda install 'smart-open>=5.0.0'"
 )
