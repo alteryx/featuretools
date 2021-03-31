@@ -2,17 +2,26 @@
 
 Release Notes
 -------------
-**Future Release**
+.. **Future Release**
     * Enhancements
     * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+**v0.23.3 Mar 31, 2021**
+    .. warning::
+        The next non-bugfix release of Featuretools will not support Python 3.6
+
     * Changes
         * Minor updates to work with Koalas version 1.7.0 (:pr:`1351`)
         * Explicitly mention Python 3.8 support in setup.py classifiers (:pr:`1371`)
         * Fix issue with smart-open version 5.0.0 (:pr:`1372`, :pr:`1376`)
-    * Documentation Changes
     * Testing Changes
-         * Make release notes updated check separate from unit tests (:pr:`1347`)
-         * Performance tests now specify which commit to check (:pr:`1354`)
+        * Make release notes updated check separate from unit tests (:pr:`1347`)
+        * Performance tests now specify which commit to check (:pr:`1354`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
