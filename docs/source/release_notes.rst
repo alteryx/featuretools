@@ -26,6 +26,11 @@ Release Notes
   which to add interesting values in the ``entity_id`` parameter.
 * ``Entity.set_secondary_time_index`` has been removed and replaced by ``EntitySet.set_secondary_time_index``
   with an added ``entity`` parameter to specify the entity on which to set the secondary time index.
+* ``Relationship`` initialization has been updated to accept four id values for the parent dataframe,
+  parent column, child dataframe and child column instead of accepting two ``Variable`` objects.
+* ``EntitySet.add_relationship`` has been updated to accept dataframe and column id values or a
+  ``Relationship`` object. Adding a relationship from a ``Relationship`` object now requires passing
+  the relationship as a keyword argument.
 
 **v0.23.2 Feb 26, 2021**
     .. warning::
