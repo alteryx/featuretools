@@ -123,6 +123,13 @@ def test_add_relationships_with_relationship_object(es):
     assert relationships[0] in es.relationships
 
 
+def test_add_relationship_error(es):
+    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
+    error_message = "Cannot specify dataframe and column id values and also supply a Relationship"
+    with pytest.raises(ValueError, match=error_message):
+        es.add_relationship(parent_dataframe_id="sessions", relationship=relationship)
+
+
 def test_query_by_values_returns_rows_in_given_order():
     data = pd.DataFrame({
         "id": [1, 2, 3, 4, 5],
