@@ -144,6 +144,7 @@ class TestLastTimeIndex(object):
         sessions = es['sessions']
         assert len(sessions.last_time_index) == 6
         sorted_lti = to_pandas(sessions.last_time_index).sort_index()
+
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 

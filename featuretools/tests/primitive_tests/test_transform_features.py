@@ -60,6 +60,7 @@ from featuretools.primitives.utils import (
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.tests.testing_utils import feature_with_name, to_pandas
 from featuretools.utils.gen_utils import Library, import_or_none
+from featuretools.utils.koalas_utils import pd_to_ks_clean
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 ks = import_or_none('databricks.koalas')
@@ -139,7 +140,7 @@ def test_make_trans_feat(es):
 
 
 @pytest.fixture
-def simple_es():
+def pd_simple_es():
     df = pd.DataFrame({
         'id': range(4),
         'value': pd.Categorical(['a', 'c', 'b', 'd']),
@@ -157,15 +158,58 @@ def simple_es():
     return es
 
 
+@pytest.fixture
+def dd_simple_es(pd_simple_es):
+    entities = {}
+    for entity in pd_simple_es.entities:
+        entities[entity.id] = (dd.from_pandas(entity.df.reset_index(drop=True), npartitions=4),
+                               entity.index,
+                               None,
+                               entity.variable_types)
+
+    relationships = [(rel.parent_entity.id,
+                      rel.parent_variable.name,
+                      rel.child_entity.id,
+                      rel.child_variable.name) for rel in pd_simple_es.relationships]
+
+    return ft.EntitySet(id=pd_simple_es.id, entities=entities, relationships=relationships)
+
+
+@pytest.fixture
+def ks_simple_es(pd_simple_es):
+    entities = {}
+    for entity in pd_simple_es.entities:
+        cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
+        entities[entity.id] = (ks.from_pandas(cleaned_df),
+                               entity.index,
+                               None,
+                               entity.variable_types)
+
+    relationships = [(rel.parent_entity.id,
+                      rel.parent_variable.name,
+                      rel.child_entity.id,
+                      rel.child_variable.name) for rel in pd_simple_es.relationships]
+
+    return ft.EntitySet(id=pd_simple_es.id, entities=entities, relationships=relationships)
+
+
+@pytest.fixture(params=['pd_simple_es', 'dd_simple_es', 'ks_simple_es'])
+def simple_es(request):
+    return request.getfixturevalue(request.param)
+
+
 def test_equal_categorical(simple_es):
+    # if ks and any(isinstance(e.df, ks.DataFrame) for e in simple_es.entities):
+    #     pytest.xfail("Koalas does not support categorical dtype")
     f1 = ft.Feature([simple_es['values']['value'], simple_es['values']['value2']],
                     primitive=Equal)
 
     df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1])
-
-    assert set(simple_es['values'].df['value'].cat.categories) != \
-        set(simple_es['values'].df['value2'].cat.categories)
-    assert df['value = value2'].to_list() == [True, False, False, True]
+    if all(isinstance(e.df, (pd.DataFrame, dd.DataFrame)) for e in simple_es.entities):
+        # Koalas does not support categorical dtype
+        assert set(simple_es['values'].df['value'].cat.categories) != \
+            set(simple_es['values'].df['value2'].cat.categories)
+    assert to_pandas(df, index='id', sort_index=True)['value = value2'].to_list() == [True, False, False, True]
 
 
 def test_equal_different_dtypes(simple_es):
@@ -177,8 +221,8 @@ def test_equal_different_dtypes(simple_es):
     # verify that equals works for different dtypes regardless of order
     df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1, f2])
 
-    assert df['object = datetime'].to_list() == [False, False, False, False]
-    assert df['datetime = object'].to_list() == [False, False, False, False]
+    assert to_pandas(df, index='id', sort_index=True)['object = datetime'].to_list() == [False, False, False, False]
+    assert to_pandas(df, index='id', sort_index=True)['datetime = object'].to_list() == [False, False, False, False]
 
 
 def test_not_equal_categorical(simple_es):
@@ -187,9 +231,11 @@ def test_not_equal_categorical(simple_es):
 
     df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1])
 
-    assert set(simple_es['values'].df['value'].cat.categories) != \
-        set(simple_es['values'].df['value2'].cat.categories)
-    assert df['value != value2'].to_list() == [False, True, True, False]
+    if all(isinstance(e.df, (pd.DataFrame, dd.DataFrame)) for e in simple_es.entities):
+        # Koalas does not support categorical dtype
+        assert set(simple_es['values'].df['value'].cat.categories) != \
+            set(simple_es['values'].df['value2'].cat.categories)
+    assert to_pandas(df, index='id', sort_index=True)['value != value2'].to_list() == [False, True, True, False]
 
 
 def test_not_equal_different_dtypes(simple_es):
@@ -201,8 +247,8 @@ def test_not_equal_different_dtypes(simple_es):
     # verify that equals works for different dtypes regardless of order
     df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1, f2])
 
-    assert df['object != datetime'].to_list() == [True, True, True, True]
-    assert df['datetime != object'].to_list() == [True, True, True, True]
+    assert to_pandas(df, index='id', sort_index=True)['object != datetime'].to_list() == [True, True, True, True]
+    assert to_pandas(df, index='id', sort_index=True)['datetime != object'].to_list() == [True, True, True, True]
 
 
 def test_diff(pd_es):
