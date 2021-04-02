@@ -177,6 +177,7 @@ def dd_simple_es(pd_simple_es):
 
 @pytest.fixture
 def ks_simple_es(pd_simple_es):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     entities = {}
     for entity in pd_simple_es.entities:
         cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
