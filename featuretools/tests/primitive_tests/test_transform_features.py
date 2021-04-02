@@ -200,8 +200,6 @@ def simple_es(request):
 
 
 def test_equal_categorical(simple_es):
-    # if ks and any(isinstance(e.df, ks.DataFrame) for e in simple_es.entities):
-    #     pytest.xfail("Koalas does not support categorical dtype")
     f1 = ft.Feature([simple_es['values']['value'], simple_es['values']['value2']],
                     primitive=Equal)
 
