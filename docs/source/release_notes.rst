@@ -9,9 +9,10 @@ Release Notes
         * Add auto assign bot on GitHub (:pr:`1380`)
     * Documentation Changes
     * Testing Changes
+        * Don't cancel other CI jobs if one fails (:pr:`1386`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`rwedge`
 
 **v0.23.3 Mar 31, 2021**
     .. warning::
