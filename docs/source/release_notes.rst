@@ -11,9 +11,10 @@ Release Notes
     * Testing Changes
         * Update Dask/Koalas test fixtures (:pr:`1382`)
         * Update Spark config in test fixtures and docs (:pr:`1387`, :pr:`1389`)
+        * Don't cancel other CI jobs if one fails (:pr:`1386`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.23.3 Mar 31, 2021**
     .. warning::
