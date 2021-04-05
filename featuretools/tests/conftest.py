@@ -23,6 +23,7 @@ def spark_session():
             .master('local[2]') \
             .config("spark.driver.extraJavaOptions", "-Dio.netty.tryReflectionSetAccessible=True") \
             .config("spark.sql.shuffle.partitions", "2") \
+            .config("spark.driver.bindAddress", "127.0.0.1") \
             .getOrCreate()
 
         return spark
