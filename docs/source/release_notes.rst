@@ -13,6 +13,7 @@ Release Notes
         * Add auto assign bot on GitHub (:pr:`1380`)
     * Documentation Changes
     * Testing Changes
+        * Update Dask/Koalas test fixtures (:pr:`1382`)
         * Update Spark config in test fixtures and docs (:pr:`1387`, :pr:`1389`)
 
     Thanks to the following people for contributing to this release:
