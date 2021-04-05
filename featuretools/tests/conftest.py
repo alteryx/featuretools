@@ -61,8 +61,8 @@ def dask_es(make_es):
                                  secondary_time_index=entity.secondary_time_index)
 
     for rel in make_es.relationships:
-        es.add_relationship(ft.Relationship(es[rel.parent_entity.id][rel.parent_variable.id],
-                                            es[rel.child_entity.id][rel.child_variable.id]))
+        es.add_relationship(rel.parent_entity.id, rel.parent_variable.name,
+                            rel.child_entity.id, rel.child_variable.name)
     return es
 
 
@@ -80,8 +80,8 @@ def ks_es(make_es):
                                  secondary_time_index=entity.secondary_time_index)
 
     for rel in make_es.relationships:
-        es.add_relationship(ft.Relationship(es[rel.parent_entity.id][rel.parent_variable.id],
-                                            es[rel.child_entity.id][rel.child_variable.id]))
+        es.add_relationship(rel.parent_entity.id, rel.parent_variable.name,
+                            rel.child_entity.id, rel.child_variable.name)
     return es
 
 
