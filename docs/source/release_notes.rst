@@ -10,6 +10,7 @@ Release Notes
     * Documentation Changes
     * Testing Changes
         * Update Dask/Koalas test fixtures (:pr:`1382`)
+        * Update Spark config in test fixtures (:pr:`1387`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`thehomebrewnerd`
