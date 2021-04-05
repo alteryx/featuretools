@@ -9,9 +9,10 @@ Release Notes
         * Add auto assign bot on GitHub (:pr:`1380`)
     * Documentation Changes
     * Testing Changes
+        * Update Spark config in test fixtures (:pr:`1387`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`thehomebrewnerd`
 
 **v0.23.3 Mar 31, 2021**
     .. warning::
