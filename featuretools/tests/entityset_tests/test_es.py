@@ -1062,7 +1062,19 @@ def dd_normalize_es(pd_normalize_es):
     return es
 
 
-@pytest.fixture(params=['dd_normalize_es', 'pd_normalize_es'])
+@pytest.fixture
+def ks_normalize_es(pd_normalize_es):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+    es = ft.EntitySet(id=pd_normalize_es.id)
+    entity = pd_normalize_es['data']
+    es.entity_from_dataframe(entity_id=entity.id,
+                             dataframe=ks.from_pandas(entity.df),
+                             index=entity.index,
+                             variable_types=entity.variable_types)
+    return es
+
+
+@pytest.fixture(params=['pd_normalize_es', 'dd_normalize_es', 'ks_normalize_es'])
 def normalize_es(request):
     return request.getfixturevalue(request.param)
 

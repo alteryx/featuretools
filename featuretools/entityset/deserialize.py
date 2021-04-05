@@ -136,9 +136,11 @@ def read_entity_data(description, path):
     kwargs = description['loading_info'].get('params', {})
     load_format = description['loading_info']['type']
     entity_type = description['loading_info'].get('entity_type', 'pandas')
+    dtypes = description['loading_info'].get('properties', {}).get('dtypes')
     read_kwargs = {}
     if entity_type == 'dask':
         lib = dd
+        read_kwargs['dtype'] = dtypes
     elif entity_type == 'koalas':
         import_error = 'Cannot load Koalas entityset - unable to import Koalas. ' \
                        'Consider doing a pip install with featuretools[koalas] to install Koalas with pip'
@@ -162,7 +164,6 @@ def read_entity_data(description, path):
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))
-    dtypes = description['loading_info']['properties']['dtypes']
     if entity_type == 'koalas':
         for col, dtype in dtypes.items():
             if dtype == 'object':

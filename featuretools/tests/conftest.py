@@ -51,20 +51,38 @@ def int_es(make_int_es):
 
 @pytest.fixture
 def dask_es(make_es):
-    dask_es = copy.deepcopy(make_es)
-    for entity in dask_es.entities:
-        entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=2)
-    return dask_es
+    es = ft.EntitySet(id=make_es.id)
+    for entity in make_es.entities:
+        es.entity_from_dataframe(entity.id,
+                                 dd.from_pandas(entity.df.reset_index(drop=True), npartitions=4),
+                                 index=entity.index,
+                                 time_index=entity.time_index,
+                                 variable_types=entity.variable_types,
+                                 secondary_time_index=entity.secondary_time_index)
+
+    for rel in make_es.relationships:
+        es.add_relationship(ft.Relationship(es[rel.parent_entity.id][rel.parent_variable.id],
+                                            es[rel.child_entity.id][rel.child_variable.id]))
+    return es
 
 
 @pytest.fixture
 def ks_es(make_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    ks_es = copy.deepcopy(make_es)
-    for entity in ks_es.entities:
+    es = ft.EntitySet(id=make_es.id)
+    for entity in make_es.entities:
         cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
-        entity.df = ks.from_pandas(cleaned_df)
-    return ks_es
+        es.entity_from_dataframe(entity.id,
+                                 ks.from_pandas(cleaned_df),
+                                 index=entity.index,
+                                 time_index=entity.time_index,
+                                 variable_types=entity.variable_types,
+                                 secondary_time_index=entity.secondary_time_index)
+
+    for rel in make_es.relationships:
+        es.add_relationship(ft.Relationship(es[rel.parent_entity.id][rel.parent_variable.id],
+                                            es[rel.child_entity.id][rel.child_variable.id]))
+    return es
 
 
 @pytest.fixture(params=['pd_es', 'dask_es', 'ks_es'])
@@ -276,20 +294,38 @@ def pd_mock_customer():
 
 @pytest.fixture
 def dd_mock_customer(pd_mock_customer):
-    dd_mock_customer = copy.deepcopy(pd_mock_customer)
-    for entity in dd_mock_customer.entities:
-        entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=4)
-    return dd_mock_customer
+    entities = {}
+    for entity in pd_mock_customer.entities:
+        entities[entity.id] = (dd.from_pandas(entity.df.reset_index(drop=True), npartitions=4),
+                               entity.index,
+                               entity.time_index,
+                               entity.variable_types)
+
+    relationships = [(rel.parent_entity.id,
+                      rel.parent_variable.name,
+                      rel.child_entity.id,
+                      rel.child_variable.name) for rel in pd_mock_customer.relationships]
+
+    return ft.EntitySet(id=pd_mock_customer.id, entities=entities, relationships=relationships)
 
 
 @pytest.fixture
 def ks_mock_customer(pd_mock_customer):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    ks_mock_customer = copy.deepcopy(pd_mock_customer)
-    for entity in ks_mock_customer.entities:
+    entities = {}
+    for entity in pd_mock_customer.entities:
         cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
-        entity.df = ks.from_pandas(cleaned_df)
-    return ks_mock_customer
+        entities[entity.id] = (ks.from_pandas(cleaned_df),
+                               entity.index,
+                               entity.time_index,
+                               entity.variable_types)
+
+    relationships = [(rel.parent_entity.id,
+                      rel.parent_variable.name,
+                      rel.child_entity.id,
+                      rel.child_variable.name) for rel in pd_mock_customer.relationships]
+
+    return ft.EntitySet(id=pd_mock_customer.id, entities=entities, relationships=relationships)
 
 
 @pytest.fixture(params=['pd_mock_customer', 'dd_mock_customer', 'ks_mock_customer'])
