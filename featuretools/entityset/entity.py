@@ -265,30 +265,6 @@ class Entity(object):
         self.variables = [index_variable] + [v for v in variables
                                              if v.id != index]
 
-    def update_data(self, df, already_sorted=False,
-                    recalculate_last_time_indexes=True):
-        '''Update entity's internal dataframe, optionaly making sure data is sorted,
-        reference indexes to other entities are consistent, and last_time_indexes
-        are consistent.
-        '''
-        if len(df.columns) != len(self.variables):
-            raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(df.columns),
-                                                                                          len(self.variables)))
-        for v in self.variables:
-            if v.id not in df.columns:
-                raise ValueError("Updated dataframe is missing new {} column".format(v.id))
-
-        # Make sure column ordering matches variable ordering
-        self.df = df[[v.id for v in self.variables]]
-        self.set_index(self.index)
-        if self.time_index is not None:
-            self.set_time_index(self.time_index, already_sorted=already_sorted)
-
-        self.set_secondary_time_index(self.secondary_time_index)
-        if recalculate_last_time_indexes and self.last_time_index is not None:
-            self.entityset.add_last_time_indexes(updated_entities=[self.id])
-        self.entityset.reset_data_description()
-
     def add_interesting_values(self, max_values=5, verbose=False):
         """
         Find interesting values for categorical variables, to be used to
