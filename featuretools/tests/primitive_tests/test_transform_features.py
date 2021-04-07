@@ -642,7 +642,7 @@ def test_latlong_with_nan(pd_es):
     df['latlong'][1] = (10, np.nan)
     df['latlong'][2] = (np.nan, 4)
     df['latlong'][3] = (np.nan, np.nan)
-    pd_es['log'].update_data(df)
+    pd_es.update_data(entity_id='log', df=df)
     log_latlong_feat = pd_es['log']['latlong']
     latitude = ft.Feature(log_latlong_feat, primitive=Latitude)
     longitude = ft.Feature(log_latlong_feat, primitive=Longitude)
@@ -695,7 +695,7 @@ def test_haversine_with_nan(pd_es):
     df = pd_es['log'].df
     df['latlong'][0] = np.nan
     df['latlong'][1] = (10, np.nan)
-    pd_es['log'].update_data(df)
+    pd_es.update_data(entity_id='log', df=df)
     log_latlong_feat = pd_es['log']['latlong']
     log_latlong_feat2 = pd_es['log']['latlong2']
     haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
@@ -713,7 +713,7 @@ def test_haversine_with_nan(pd_es):
     # Check all `nan` values
     df = pd_es['log'].df
     df['latlong2'] = np.nan
-    pd_es['log'].update_data(df)
+    pd_es.update_data(entity_id='log', df=df)
     log_latlong_feat = pd_es['log']['latlong']
     log_latlong_feat2 = pd_es['log']['latlong2']
     haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],

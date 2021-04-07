@@ -104,11 +104,11 @@ def test_update_data(es):
 
     error_text = 'Updated dataframe is missing new cohort column'
     with pytest.raises(ValueError, match=error_text):
-        es['customers'].update_data(df.drop(columns=['cohort']))
+        es.update_data(entity_id='customers', df=df.drop(columns=['cohort']))
 
     error_text = 'Updated dataframe contains 16 columns, expecting 15'
     with pytest.raises(ValueError, match=error_text):
-        es['customers'].update_data(df)
+        es.update_data(entity_id='customers', df=df)
 
     # test already_sorted on entity without time index
     df = es["sessions"].df.copy()
@@ -121,10 +121,10 @@ def test_update_data(es):
         df = df.sort_index()
     else:
         df["id"] = updated_id
-    es["sessions"].update_data(df.copy())
+    es.update_data(entity_id='sessions', df=df.copy())
     sessions_df = to_pandas(es['sessions'].df)
     assert sessions_df["id"].iloc[1] == 2  # no sorting since time index not defined
-    es["sessions"].update_data(df.copy(), already_sorted=True)
+    es.update_data(entity_id='sessions', df=df.copy(), already_sorted=True)
     sessions_df = to_pandas(es['sessions'].df)
     assert sessions_df["id"].iloc[1] == 2
 
@@ -138,13 +138,13 @@ def test_update_data(es):
         df = df.sort_index()
     else:
         df['signup_date'] = updated_signup
-    es["customers"].update_data(df.copy(), already_sorted=True)
+    es.update_data(entity_id='customers', df=df.copy(), already_sorted=True)
     customers_df = to_pandas(es['customers'].df)
     assert customers_df["id"].iloc[0] == 2
 
     # only pandas allows for sorting:
     if isinstance(df, pd.DataFrame):
-        es["customers"].update_data(df.copy())
+        es.update_data(entity_id='customers', df=df.copy())
         assert es['customers'].df["id"].iloc[0] == 0
 
 

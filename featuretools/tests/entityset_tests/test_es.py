@@ -702,7 +702,7 @@ def test_concat_entitysets(es):
     for i, _es in enumerate([es_1, es_2]):
         for entity, rows in emap.items():
             df = _es[entity].df
-            _es[entity].update_data(df=df.loc[rows[i]])
+            _es.update_data(entity_id=entity, df=df.loc[rows[i]])
 
     assert 10 not in es_1['log'].last_time_index.index
     assert 10 in es_2['log'].last_time_index.index
