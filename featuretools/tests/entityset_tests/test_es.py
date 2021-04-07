@@ -34,6 +34,8 @@ def test_cannot_re_add_relationships_that_already_exists(es):
     before_len = len(es.relationships)
     rel = es.relationships[0]
     with pytest.warns(UserWarning, match=warn_text):
+        es.add_relationship(relationship=rel)
+    with pytest.warns(UserWarning, match=warn_text):
         es.add_relationship(rel._parent_dataframe_id, rel._parent_column_id,
                             rel._child_dataframe_id, rel._child_column_id)
     after_len = len(es.relationships)
@@ -106,8 +108,7 @@ def test_add_relationship_empty_child_convert_dtype(es):
     es.relationships.remove(relationship)
     assert(relationship not in es.relationships)
 
-    es.add_relationship(relationship._parent_dataframe_id, relationship._parent_column_id,
-                        relationship._child_dataframe_id, relationship._child_column_id)
+    es.add_relationship(relationship=relationship)
     assert es['log'].df['session_id'].dtype == 'int64'
 
 

@@ -97,10 +97,7 @@ class EntitySet(object):
                                        make_index=make_index)
 
         for relationship in relationships:
-            parent_df = relationship[0]
-            parent_column = relationship[1]
-            child_df = relationship[2]
-            child_column = relationship[3]
+            parent_df, parent_column, child_df, child_column = relationship
             self.add_relationship(parent_df, parent_column, child_df, child_column)
 
         self.reset_data_description()
