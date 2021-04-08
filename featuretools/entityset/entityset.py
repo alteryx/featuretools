@@ -1187,8 +1187,7 @@ class EntitySet(object):
 
         return df
 
-    def update_dataframe(self, entity_id, df, already_sorted=False,
-                    recalculate_last_time_indexes=True):
+    def update_dataframe(self, entity_id, df, already_sorted=False, recalculate_last_time_indexes=True):
         '''Update entity's internal dataframe, optionaly making sure data is sorted,
         reference indexes to other entities are consistent, and last_time_indexes
         are consistent.
