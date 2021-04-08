@@ -2,7 +2,8 @@
 
 Release Notes
 -------------
-**Future Release**
+Future Release
+==============
     * Enhancements
         * Add support for creating EntitySets from Woodwork DataTables (:pr:`1277`)
     * Fixes
@@ -20,6 +21,77 @@ Release Notes
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`thehomebrewnerd`
 
+Breaking Changes
+++++++++++++++++
+
+* ``Entity.add_interesting_values`` has been removed. To add interesting values for a single
+  entity, call ``EntitySet.add_interesting_values`` and pass the id of the entity for
+  which to add interesting values in the ``entity_id`` parameter.
+* ``Entity.set_secondary_time_index`` has been removed and replaced by ``EntitySet.set_secondary_time_index``
+  with an added ``entity`` parameter to specify the entity on which to set the secondary time index.
+* ``Relationship`` initialization has been updated to accept four id values for the parent dataframe,
+  parent column, child dataframe and child column instead of accepting two ``Variable`` objects.
+* ``EntitySet.add_relationship`` has been updated to accept dataframe and column id values or a
+  ``Relationship`` object. Adding a relationship from a ``Relationship`` object now requires passing
+  the relationship as a keyword argument.
+
+What's New in this Release
+++++++++++++++++++++++++++
+
+**Adding Interesting Values**
+
+To add interesting values for a single entity, call ``EntitySet.add_interesting_values`` passing the
+id of the entity for which interesting values should be added.
+
+.. code-block:: python
+
+    >>> es.add_interesting_values(entity_id='log')
+
+**Setting a Secondary Time Index**
+
+To set a secondary time index for a specific entity, call ``EntitySet.set_secondary_time_index`` passing
+Entity for which to set the secondary time index along with the dictionary mapping the secondary time
+index column to the for which the secondary time index applies.
+
+.. code-block:: python
+
+    >>> customers_secondary_time_index = {'cancel_date': ['cancel_reason']}
+    >>> es.set_secondary_time_index(es['customers'], customers_secondary_time_index)
+
+**Creating a Relationship and Adding to an EntitySet**
+
+Relationships are now created by passing four string values identifying the parent dataframe, parent
+column, child dataframe and child column. Specifying parameter names is optional.
+
+.. code-block:: python
+
+    >>> new_relationship = Relationship(
+    ...     parent_dataframe_id='customers',
+    ...     parent_column_id='id',
+    ...     child_dataframe_id='sessions',
+    ...     child_column_id='customer_id'
+    ... )
+
+Relationships can now be added to EntitySets in one of two ways. The first approach is to pass in
+id values for the parent dataframe, parent column, child dataframe and child column. Specifying
+parameter names is optional with this approach.
+
+.. code-block:: python
+
+    >>> es.add_relationship(
+    ...     parent_dataframe_id='customers',
+    ...     parent_column_id='id',
+    ...     child_dataframe_id='sessions',
+    ...     child_column_id='customer_id'
+    ... )
+
+Relationships can also be added by passing in a previously created ``Relationship`` object. When using
+this approach the ``relationship`` parameter name must be included.
+
+.. code-block:: python
+
+    >>> es.add_relationship(relationship=new_relationship)
+
 **v0.23.3 Mar 31, 2021**
     .. warning::
         The next non-bugfix release of Featuretools will not support Python 3.6
@@ -34,19 +106,6 @@ Release Notes
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
-
-**Breaking Changes**
-
-* ``Entity.add_interesting_values`` has been removed. To add interesting values for a single
-  entity, call ``EntitySet.add_interesting_values`` and pass the id of the entity for
-  which to add interesting values in the ``entity_id`` parameter.
-* ``Entity.set_secondary_time_index`` has been removed and replaced by ``EntitySet.set_secondary_time_index``
-  with an added ``entity`` parameter to specify the entity on which to set the secondary time index.
-* ``Relationship`` initialization has been updated to accept four id values for the parent dataframe,
-  parent column, child dataframe and child column instead of accepting two ``Variable`` objects.
-* ``EntitySet.add_relationship`` has been updated to accept dataframe and column id values or a
-  ``Relationship`` object. Adding a relationship from a ``Relationship`` object now requires passing
-  the relationship as a keyword argument.
 
 **v0.23.2 Feb 26, 2021**
     .. warning::
