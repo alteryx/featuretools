@@ -261,62 +261,6 @@ class Entity(object):
         self.variables = [index_variable] + [v for v in variables
                                              if v.id != index]
 
-    def add_interesting_values(self, max_values=5, verbose=False):
-        """
-        Find interesting values for categorical variables, to be used to
-            generate "where" clauses
-
-        Args:
-            max_values (int) : Maximum number of values per variable to add.
-            verbose (bool) : If True, print summary of interesting values found.
-
-        Returns:
-            None
-        """
-        for variable in self.variables:
-            # some heuristics to find basic 'where'-able variables
-            if isinstance(variable, vtypes.Discrete):
-                variable.interesting_values = pd.Series(dtype=variable.entity.df[variable.id].dtype)
-
-                # TODO - consider removing this constraints
-                # don't add interesting values for entities in relationships
-                skip = False
-                for r in self.entityset.relationships:
-                    if variable in [r.child_variable, r.parent_variable]:
-                        skip = True
-                        break
-                if skip:
-                    continue
-
-                counts = self.df[variable.id].value_counts()
-
-                # find how many of each unique value there are; sort by count,
-                # and add interesting values to each variable
-                total_count = np.sum(counts)
-                counts[:] = counts.sort_values()[::-1]
-                for i in range(min(max_values, len(counts.index))):
-                    idx = counts.index[i]
-
-                    # add the value to interesting_values if it represents more than
-                    # 25% of the values we have not seen so far
-                    if len(counts.index) < 25:
-                        if verbose:
-                            msg = "Variable {}: Marking {} as an "
-                            msg += "interesting value"
-                            logger.info(msg.format(variable.id, idx))
-                        variable.interesting_values = variable.interesting_values.append(pd.Series([idx]))
-                    else:
-                        fraction = counts[idx] / total_count
-                        if fraction > 0.05 and fraction < 0.95:
-                            if verbose:
-                                msg = "Variable {}: Marking {} as an "
-                                msg += "interesting value"
-                                logger.info(msg.format(variable.id, idx))
-                            variable.interesting_values = variable.interesting_values.append(pd.Series([idx]))
-                            # total_count -= counts[idx]
-                        else:
-                            break
-
     def delete_variables(self, variable_ids):
         """
         Remove variables from entity's dataframe and from
