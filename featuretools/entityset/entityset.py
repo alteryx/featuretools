@@ -268,17 +268,20 @@ class EntitySet(object):
             raise ValueError("Cannot specify dataframe and column id values and also supply a Relationship")
 
         if not relationship:
-            relationship = Relationship(self,
-                                        parent_dataframe_id,
+            relationship = Relationship(parent_dataframe_id,
                                         parent_column_id,
                                         child_dataframe_id,
                                         child_column_id)
+        relationship.entityset = self
         if relationship in self.relationships:
             warnings.warn(
                 "Not adding duplicate relationship: " + str(relationship))
             return self
 
-        # _operations?
+        if (relationship.parent_entity.index is not None and
+                relationship._parent_column_id != relationship.parent_entity.index):
+            raise AttributeError(f"Parent variable '{relationship.parent_variable}' is not the index of "
+                                 f"entity {relationship.parent_entity}")
 
         # this is a new pair of entities
         child_e = relationship.child_entity

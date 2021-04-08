@@ -100,7 +100,8 @@ def test_add_relationship_errors_child_v_index(es):
 
 
 def test_add_relationship_empty_child_convert_dtype(es):
-    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
+    relationship = ft.Relationship("sessions", "id", "log", "session_id")
+    es.add_relationship(relationship=relationship)
     es['log'].df = pd.DataFrame(columns=es['log'].df.columns)
     assert len(es['log'].df) == 0
     assert es['log'].df['session_id'].dtype == 'object'
@@ -113,19 +114,19 @@ def test_add_relationship_empty_child_convert_dtype(es):
 
 
 def test_add_relationship_with_relationship_object(es):
-    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
+    relationship = ft.Relationship("sessions", "id", "log", "session_id")
     es.add_relationship(relationship=relationship)
     assert relationship in es.relationships
 
 
 def test_add_relationships_with_relationship_object(es):
-    relationships = [ft.Relationship(es, "sessions", "id", "log", "session_id")]
+    relationships = [ft.Relationship("sessions", "id", "log", "session_id")]
     es.add_relationships(relationships)
     assert relationships[0] in es.relationships
 
 
 def test_add_relationship_error(es):
-    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
+    relationship = ft.Relationship("sessions", "id", "log", "session_id")
     error_message = "Cannot specify dataframe and column id values and also supply a Relationship"
     with pytest.raises(ValueError, match=error_message):
         es.add_relationship(parent_dataframe_id="sessions", relationship=relationship)

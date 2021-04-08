@@ -429,7 +429,8 @@ class DirectFeature(FeatureBase):
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         base_feature = dependencies[arguments['base_feature']]
-        relationship = Relationship.from_dictionary(arguments['relationship'], entityset)
+        relationship = Relationship.from_dictionary(arguments['relationship'])
+        relationship.entityset = entityset
         child_entity = relationship.child_entity
         return cls(base_feature=base_feature,
                    child_entity=child_entity,
@@ -568,8 +569,10 @@ class AggregationFeature(FeatureBase):
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         base_features = [dependencies[name] for name in arguments['base_features']]
-        relationship_path = [Relationship.from_dictionary(r, entityset)
+        relationship_path = [Relationship.from_dictionary(r)
                              for r in arguments['relationship_path']]
+        for rel in relationship_path:
+            rel.entityset = entityset
         parent_entity = relationship_path[0].parent_entity
         relationship_path = RelationshipPath([(False, r) for r in relationship_path])
 

@@ -5,36 +5,30 @@ class Relationship(object):
         :class:`.EntitySet`, :class:`.Entity`
     """
 
-    def __init__(self, entityset, parent_dataframe_id, parent_column_id,
+    def __init__(self, parent_dataframe_id, parent_column_id,
                  child_dataframe_id, child_column_id):
         """ Create a relationship
 
         Args:
-            entityset (:class:`.EntitySet`): EntitySet to which the relationship belongs
             parent_dataframe_id (str): Name of the parent dataframe in the EntitySet
             parent_column_id (str): Name of the parent column
             child_dataframe_id (str): Name of the child dataframe in the EntitySet
             child_column_id (str): Name of the child column
         """
 
-        self.entityset = entityset
+        self.entityset = None
         self._parent_dataframe_id = parent_dataframe_id
         self._child_dataframe_id = child_dataframe_id
         self._parent_column_id = parent_column_id
         self._child_column_id = child_column_id
 
-        if (self.parent_entity.index is not None and
-                self._parent_column_id != self.parent_entity.index):
-            raise AttributeError(f"Parent variable '{self.parent_variable}' is not the index of "
-                                 f"entity {self.parent_entity}")
-
     @classmethod
-    def from_dictionary(cls, arguments, es):
+    def from_dictionary(cls, arguments):
         parent_entity = arguments['parent_dataframe_id']
         child_entity = arguments['child_dataframe_id']
         parent_variable = arguments['parent_column_id']
         child_variable = arguments['child_column_id']
-        return cls(es, parent_entity, parent_variable, child_entity, child_variable)
+        return cls(parent_entity, parent_variable, child_entity, child_variable)
 
     def __repr__(self):
         ret = u"<Relationship: %s.%s -> %s.%s>" % \
@@ -127,19 +121,19 @@ class RelationshipPath(object):
 
     def entities(self):
         if self:
-            # Yield first entity.
+            # Yield first dataframe.
             is_forward, relationship = self[0]
             if is_forward:
-                yield relationship.child_entity.id
+                yield relationship._child_dataframe_id
             else:
-                yield relationship.parent_entity.id
+                yield relationship._parent_dataframe_id
 
-        # Yield the entity pointed to by each relationship.
+        # Yield the dataframe pointed to by each relationship.
         for is_forward, relationship in self:
             if is_forward:
-                yield relationship.parent_entity.id
+                yield relationship._parent_dataframe_id
             else:
-                yield relationship.child_entity.id
+                yield relationship._child_dataframe_id
 
     def __add__(self, other):
         return RelationshipPath(self._relationships_with_direction +
