@@ -7,6 +7,7 @@ Release Notes
     * Fixes
     * Changes
         * Add auto assign bot on GitHub (:pr:`1380`)
+        * Move ``update_data`` method from Entity to EntitySet (:pr:`1398`)
     * Documentation Changes
     * Testing Changes
         * Update Dask/Koalas test fixtures (:pr:`1382`)
@@ -15,7 +16,7 @@ Release Notes
         * Update boto3 and urllib3 version requirements (:pr:`1394`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.23.3 Mar 31, 2021**
     .. warning::
