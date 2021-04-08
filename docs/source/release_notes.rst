@@ -60,12 +60,14 @@ index column to the for which the secondary time index applies.
 
 **Creating a Relationship and Adding to an EntitySet**
 
-Relationships are now created by passing four string values identifying the parent dataframe, parent
-column, child dataframe and child column. Specifying parameter names is optional.
+Relationships are now created by passing parameters identifying the entityset along with four string values
+specifying the parent dataframe, parent column, child dataframe and child column. Specifying parameter names
+is optional.
 
 .. code-block:: python
 
     >>> new_relationship = Relationship(
+    ...     entityset=es,
     ...     parent_dataframe_id='customers',
     ...     parent_column_id='id',
     ...     child_dataframe_id='sessions',

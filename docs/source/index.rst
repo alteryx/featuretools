@@ -72,7 +72,7 @@ Second, we specify how the entities are related. When two entities have a one-to
 
 .. code-block:: python
 
-    (parent_entity, parent_variable, child_entity, child_variable)
+    (parent_dataframe, parent_column, child_dataframe, child_column)
 
 In this dataset we have two relationships
 
