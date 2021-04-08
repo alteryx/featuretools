@@ -103,7 +103,7 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
 2. Bump version number in `setup.py`, `featuretools/version.py`, and `featuretools/tests/test_version.py`.
 
 #### Update release notes
-1. Replace "Future Release" in `docs/source/release_notes.rst` with the current date
+1. Replace "Future Release" in `docs/source/release_notes.rst` with the current date, making sure the heading is fully underlined with `=` characters.
     ```
     v0.13.3 Feb 28, 2020
     ====================
