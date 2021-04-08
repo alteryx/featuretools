@@ -1,8 +1,6 @@
-import logging
 import warnings
 
 import dask.dataframe as dd
-import numpy as np
 import pandas as pd
 
 from featuretools import variable_types as vtypes
@@ -18,8 +16,6 @@ from featuretools.utils.wrangle import _check_time_type, _dataframes_equal
 from featuretools.variable_types import Text, find_variable_types
 
 ks = import_or_none('databricks.koalas')
-
-logger = logging.getLogger('featuretools.entityset')
 
 _numeric_types = vtypes.PandasTypes._pandas_numerics
 _categorical_types = [vtypes.PandasTypes._categorical]
@@ -79,7 +75,7 @@ class Entity(object):
         if time_index:
             self.set_time_index(time_index, already_sorted=already_sorted)
 
-        self.set_secondary_time_index(secondary_time_index)
+        entityset.set_secondary_time_index(self, secondary_time_index)
 
     def __repr__(self):
         repr_out = u"Entity: {}\n".format(self.id)
@@ -321,6 +317,28 @@ class Entity(object):
                         else:
                             break
 
+    def update_data(self, df, already_sorted=False,
+                    recalculate_last_time_indexes=True):
+        '''Update entity's internal dataframe, optionaly making sure data is sorted,
+        reference indexes to other entities are consistent, and last_time_indexes
+        are consistent.
+        '''
+        if len(df.columns) != len(self.variables):
+            raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(df.columns),
+                                                                                          len(self.variables)))
+        for v in self.variables:
+            if v.id not in df.columns:
+                raise ValueError("Updated dataframe is missing new {} column".format(v.id))
+
+        # Make sure column ordering matches variable ordering
+        self.df = df[[v.id for v in self.variables]]
+        self.set_index(self.index)
+        if self.time_index is not None:
+            self.set_time_index(self.time_index, already_sorted=already_sorted)
+
+        self.entityset.set_secondary_time_index(self, self.secondary_time_index)
+        if recalculate_last_time_indexes and self.last_time_index is not None:
+            self.entityset.add_last_time_indexes(updated_entities=[self.id])
         self.entityset.reset_data_description()
 
     def delete_variables(self, variable_ids):
@@ -396,25 +414,6 @@ class Entity(object):
 
         self.convert_variable_type(variable_id, vtypes.Index, convert_data=False)
         self.index = variable_id
-
-    def set_secondary_time_index(self, secondary_time_index):
-        for time_index, columns in secondary_time_index.items():
-            if is_instance(self.df, (dd, ks), 'DataFrame') or self.df.empty:
-                time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[time_index]._default_pandas_dtype]
-            else:
-                time_to_check = self.df[time_index].head(1).iloc[0]
-            time_type = _check_time_type(time_to_check)
-            if time_type is None:
-                raise TypeError("%s time index not recognized as numeric or"
-                                " datetime" % (self.id))
-            if self.entityset.time_type != time_type:
-                raise TypeError("%s time index is %s type which differs from"
-                                " other entityset time indexes" %
-                                (self.id, time_type))
-            if time_index not in columns:
-                columns.append(time_index)
-
-        self.secondary_time_index = secondary_time_index
 
 
 def _create_index(index, make_index, df):

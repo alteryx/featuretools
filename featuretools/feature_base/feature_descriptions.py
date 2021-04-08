@@ -95,7 +95,7 @@ def generate_description(feature, feature_descriptions, primitive_templates):
                 feature.use_previous.get_name().lower())
         else:
             entity_description = "of all instances of "
-        entity_description += '"{}"'.format(feature.relationship_path[-1][1].child_entity.id)
+        entity_description += '"{}"'.format(feature.relationship_path[-1][1].child_dataframe.id)
 
     # Generate where phrase
     where = ''
@@ -114,14 +114,14 @@ def generate_description(feature, feature_descriptions, primitive_templates):
 
 def get_direct_description(feature):
     direct_description = ' the instance of "{}" associated with this ' \
-        'instance of "{}"'.format(feature.relationship_path[-1][1].parent_entity.id,
+        'instance of "{}"'.format(feature.relationship_path[-1][1].parent_dataframe.id,
                                   feature.entity_id)
     base_features = feature.base_features
     # shortens stacked direct features to make it easier to understand
     while isinstance(base_features[0], ft.DirectFeature):
         base_feat = base_features[0]
         base_feat_description = ' the instance of "{}" associated ' \
-            'with'.format(base_feat.relationship_path[-1][1].parent_entity.id)
+            'with'.format(base_feat.relationship_path[-1][1].parent_dataframe.id)
         direct_description = base_feat_description + direct_description
         base_features = base_feat.base_features
     direct_description = ' for' + direct_description

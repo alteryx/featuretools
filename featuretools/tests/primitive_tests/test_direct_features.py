@@ -76,7 +76,7 @@ def test_direct_rename(es):
 
 def test_direct_copy(games_es):
     home_team = next(r for r in games_es.relationships
-                     if r.child_variable.id == 'home_team_id')
+                     if r.child_column.id == 'home_team_id')
     feat = DirectFeature(games_es['teams']['name'], games_es['games'],
                          relationship=home_team)
     copied = feat.copy()
@@ -190,7 +190,7 @@ def test_direct_with_invalid_init_args(diamond_es):
 
     transaction_relationships = diamond_es.get_forward_relationships('transactions')
     transaction_to_store = next(r for r in transaction_relationships
-                                if r.parent_entity.id == 'stores')
+                                if r.parent_dataframe.id == 'stores')
     error_text = 'Base feature must be defined on the relationship parent entity'
     with pytest.raises(AssertionError, match=error_text):
         ft.DirectFeature(diamond_es['regions']['name'], diamond_es['transactions'],
@@ -205,7 +205,7 @@ def test_direct_with_multiple_possible_paths(games_es):
 
     # Does not raise if path specified.
     relationship = next(r for r in games_es.get_forward_relationships('games')
-                        if r.child_variable.id == 'home_team_id')
+                        if r.child_column.id == 'home_team_id')
     feat = ft.DirectFeature(games_es['teams']['name'], games_es['games'],
                             relationship=relationship)
     assert feat.relationship_path_name() == 'teams[home_team_id]'
@@ -233,7 +233,7 @@ def test_serialization(es):
     direct = ft.DirectFeature(value, es['log'])
 
     log_to_products = next(r for r in es.get_forward_relationships('log')
-                           if r.parent_entity.id == 'products')
+                           if r.parent_dataframe.id == 'products')
     dictionary = {
         'name': None,
         'base_feature': value.unique_name(),

@@ -283,6 +283,7 @@ EntitySet load and prepare data
     EntitySet.add_relationship
     EntitySet.normalize_entity
     EntitySet.add_interesting_values
+    EntitySet.set_secondary_time_index
 
 EntitySet serialization
 -------------------------------
@@ -325,17 +326,16 @@ Entity methods
     :toctree: generated/
 
     Entity.convert_variable_type
-    Entity.add_interesting_values
 
 Relationship attributes
 -----------------------
 .. autosummary::
     :toctree: generated/
 
-    Relationship.parent_variable
-    Relationship.child_variable
-    Relationship.parent_entity
-    Relationship.child_entity
+    Relationship.parent_column
+    Relationship.child_column
+    Relationship.parent_dataframe
+    Relationship.child_dataframe
 
 Variable types
 ----------------

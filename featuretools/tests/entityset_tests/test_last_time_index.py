@@ -5,7 +5,6 @@ import pytest
 from dask import dataframe as dd
 
 import featuretools as ft
-from featuretools import Relationship
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
 
@@ -180,9 +179,7 @@ class TestLastTimeIndex(object):
                                  make_index=True,
                                  time_index='datetime',
                                  variable_types=variable_types)
-        relationship = Relationship(es['sessions']['id'],
-                                    es['wishlist_log']['session_id'])
-        es.add_relationship(relationship)
+        es.add_relationship('sessions', 'id', 'wishlist_log', 'session_id')
         es.add_last_time_indexes()
         sessions = es['sessions']
         # wishlist df has more recent events for two session ids
@@ -215,9 +212,7 @@ class TestLastTimeIndex(object):
                                  make_index=True,
                                  time_index='datetime',
                                  variable_types=variable_types)
-        relationship = Relationship(es['sessions']['id'],
-                                    es['wishlist_log']['session_id'])
-        es.add_relationship(relationship)
+        es.add_relationship('sessions', 'id', 'wishlist_log', 'session_id')
         es.add_last_time_indexes()
 
         # now only session id 1 has newer event in wishlist_log
@@ -256,9 +251,7 @@ class TestLastTimeIndex(object):
                                  make_index=True,
                                  time_index='datetime',
                                  variable_types=variable_types)
-        relationship = Relationship(es['sessions']['id'],
-                                    es['wishlist_log']['session_id'])
-        es.add_relationship(relationship)
+        es.add_relationship('sessions', 'id', 'wishlist_log', 'session_id')
         es.add_last_time_indexes()
 
         # now wishlist_log has newer events for 3 session ids
@@ -302,9 +295,7 @@ class TestLastTimeIndex(object):
                                  make_index=True,
                                  time_index='datetime',
                                  variable_types=variable_types)
-        relationship = Relationship(es['sessions']['id'],
-                                    es['wishlist_log']['session_id'])
-        es.add_relationship(relationship)
+        es.add_relationship('sessions', 'id', 'wishlist_log', 'session_id')
         es.add_last_time_indexes()
 
         # wishlist has newer events for 2 sessions
@@ -339,9 +330,7 @@ class TestLastTimeIndex(object):
                                  make_index=True,
                                  time_index='datetime',
                                  variable_types=variable_types)
-        relationship = Relationship(es['sessions']['id'],
-                                    es['wishlist_log']['session_id'])
-        es.add_relationship(relationship)
+        es.add_relationship('sessions', 'id', 'wishlist_log', 'session_id')
         es.add_last_time_indexes()
         sessions = es['sessions']
 

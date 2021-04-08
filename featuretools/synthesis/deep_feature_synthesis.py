@@ -642,8 +642,8 @@ class DeepFeatureSynthesis(object):
 
     def _build_forward_features(self, all_features, relationship_path, max_depth=0):
         _, relationship = relationship_path[0]
-        child_entity = relationship.child_entity
-        parent_entity = relationship.parent_entity
+        child_entity = relationship.child_dataframe
+        parent_entity = relationship.parent_dataframe
 
         features = self._features_by_type(
             all_features=all_features,
@@ -779,12 +779,12 @@ class DeepFeatureSynthesis(object):
             return False
 
         for _, relationship in relationship_path:
-            if relationship.child_entity.id == feature.entity.id and \
-               relationship.child_variable.id == feature.variable.id:
+            if relationship.child_dataframe.id == feature.entity.id and \
+               relationship.child_column.id == feature.variable.id:
                 return True
 
-            if relationship.parent_entity.id == feature.entity.id and \
-               relationship.parent_variable.id == feature.variable.id:
+            if relationship.parent_dataframe.id == feature.entity.id and \
+               relationship.parent_column.id == feature.variable.id:
                 return True
 
         return False

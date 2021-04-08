@@ -79,7 +79,7 @@ def test_eq(es):
 
     # Test different interesting values
     assert es['log'].__eq__(other_es['log'], deep=True)
-    other_es['log'].add_interesting_values()
+    other_es.add_interesting_values(entity_id='log')
     assert not es['log'].__eq__(other_es['log'], deep=True)
 
     # Check one with last time index, one without

@@ -1,4 +1,5 @@
 import copy
+import logging
 from datetime import datetime
 
 import dask.dataframe as dd
@@ -8,7 +9,7 @@ import pytest
 
 import featuretools as ft
 from featuretools import variable_types
-from featuretools.entityset import EntitySet, Relationship
+from featuretools.entityset import EntitySet
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
@@ -31,19 +32,23 @@ def test_normalize_time_index_as_additional_variable(es):
 def test_cannot_re_add_relationships_that_already_exists(es):
     warn_text = "Not adding duplicate relationship: " + str(es.relationships[0])
     before_len = len(es.relationships)
+    rel = es.relationships[0]
     with pytest.warns(UserWarning, match=warn_text):
-        es.add_relationship(es.relationships[0])
+        es.add_relationship(relationship=rel)
+    with pytest.warns(UserWarning, match=warn_text):
+        es.add_relationship(rel._parent_dataframe_id, rel._parent_column_id,
+                            rel._child_dataframe_id, rel._child_column_id)
     after_len = len(es.relationships)
     assert before_len == after_len
 
 
 def test_add_relationships_convert_type(es):
     for r in es.relationships:
-        parent_e = es[r.parent_entity.id]
-        child_e = es[r.child_entity.id]
-        assert type(r.parent_variable) == variable_types.Index
-        assert type(r.child_variable) == variable_types.Id
-        assert parent_e.df[r.parent_variable.id].dtype == child_e.df[r.child_variable.id].dtype
+        parent_e = es[r.parent_dataframe.id]
+        child_e = es[r.child_dataframe.id]
+        assert type(r.parent_column) == variable_types.Index
+        assert type(r.child_column) == variable_types.Id
+        assert parent_e.df[r.parent_column.id].dtype == child_e.df[r.child_column.id].dtype
 
 
 # TODO: Koalas does not support categorical types
@@ -77,8 +82,7 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
 
     error_text = u'Unable to add relationship because id in customers is Pandas dtype category and session_id in log2 is Pandas dtype int64.'
     with pytest.raises(ValueError, match=error_text):
-        mismatch = Relationship(es[u'customers']['id'], es['log2']['session_id'])
-        es.add_relationship(mismatch)
+        es.add_relationship(u'customers', 'id', 'log2', 'session_id')
 
 
 def test_add_relationship_errors_child_v_index(es):
@@ -90,14 +94,13 @@ def test_add_relationship_errors_child_v_index(es):
                              variable_types=log_vtypes,
                              time_index='datetime')
 
-    bad_relationship = ft.Relationship(es['log']['id'], es['log2']['id'])
-    to_match = "Unable to add relationship because child variable 'id' in 'log2' is also its index"
+    to_match = "Unable to add relationship because child column 'id' in 'log2' is also its index"
     with pytest.raises(ValueError, match=to_match):
-        es.add_relationship(bad_relationship)
+        es.add_relationship('log', 'id', 'log2', 'id')
 
 
 def test_add_relationship_empty_child_convert_dtype(es):
-    relationship = ft.Relationship(es["sessions"]["id"], es["log"]["session_id"])
+    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
     es['log'].df = pd.DataFrame(columns=es['log'].df.columns)
     assert len(es['log'].df) == 0
     assert es['log'].df['session_id'].dtype == 'object'
@@ -105,8 +108,27 @@ def test_add_relationship_empty_child_convert_dtype(es):
     es.relationships.remove(relationship)
     assert(relationship not in es.relationships)
 
-    es.add_relationship(relationship)
+    es.add_relationship(relationship=relationship)
     assert es['log'].df['session_id'].dtype == 'int64'
+
+
+def test_add_relationship_with_relationship_object(es):
+    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
+    es.add_relationship(relationship=relationship)
+    assert relationship in es.relationships
+
+
+def test_add_relationships_with_relationship_object(es):
+    relationships = [ft.Relationship(es, "sessions", "id", "log", "session_id")]
+    es.add_relationships(relationships)
+    assert relationships[0] in es.relationships
+
+
+def test_add_relationship_error(es):
+    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
+    error_message = "Cannot specify dataframe and column id values and also supply a Relationship"
+    with pytest.raises(ValueError, match=error_message):
+        es.add_relationship(parent_dataframe_id="sessions", relationship=relationship)
 
 
 def test_query_by_values_returns_rows_in_given_order():
@@ -264,10 +286,9 @@ def test_extra_variable_type(df):
 
 
 def test_add_parent_not_index_varible(es):
-    error_text = "Parent variable.*is not the index of entity Entity.*"
+    error_text = "Parent column.*is not the index of dataframe Entity.*"
     with pytest.raises(AttributeError, match=error_text):
-        es.add_relationship(Relationship(es[u'régions']['language'],
-                                         es['customers'][u'région_id']))
+        es.add_relationship(u'régions', 'language', 'customers', u'région_id')
 
 
 @pytest.fixture
@@ -890,27 +911,27 @@ def test_checks_time_type_setting_secondary_time_index(es):
     # add secondary index that is timestamp type
     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
                   'cancel_date': ['cancel_date', 'cancel_reason']}
-    es["customers"].set_secondary_time_index(new_2nd_ti)
+    es.set_secondary_time_index(es["customers"], new_2nd_ti)
     assert es.time_type == variable_types.DatetimeTimeIndex
     # add secondary index that is numeric type
     new_2nd_ti = {'age': ['age', 'loves_ice_cream']}
 
     error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
-        es["customers"].set_secondary_time_index(new_2nd_ti)
+        es.set_secondary_time_index(es["customers"], new_2nd_ti)
     # add secondary index that is non-time type
     new_2nd_ti = {'favorite_quote': ['favorite_quote', 'loves_ice_cream']}
 
     error_text = r"data type (\"|')(All members of the working classes must seize the means of production.|test)(\"|') not understood"
     with pytest.raises(TypeError, match=error_text):
-        es["customers"].set_secondary_time_index(new_2nd_ti)
+        es.set_secondary_time_index(es["customers"], new_2nd_ti)
     # add mismatched pair of secondary time indexes
     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
                   'age': ['age', 'loves_ice_cream']}
 
     error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
-        es["customers"].set_secondary_time_index(new_2nd_ti)
+        es.set_secondary_time_index(es["customers"], new_2nd_ti)
 
     # create entityset with numeric time type
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
@@ -932,30 +953,30 @@ def test_checks_time_type_setting_secondary_time_index(es):
     assert card_es.time_type == variable_types.NumericTimeIndex
     # add secondary index that is numeric time type
     new_2nd_ti = {'fraud_decision_time': ['fraud_decision_time', 'fraud']}
-    card_es['transactions'].set_secondary_time_index(new_2nd_ti)
+    card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
     assert card_es.time_type == variable_types.NumericTimeIndex
     # add secondary index that is timestamp type
     new_2nd_ti = {'transaction_date': ['transaction_date', 'fraud']}
 
     error_text = "transactions time index is <class 'featuretools.variable_types.variable.DatetimeTimeIndex'> type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
-        card_es['transactions'].set_secondary_time_index(new_2nd_ti)
+        card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
     # add secondary index that is non-time type
     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud']}
 
     error_text = r"data type ('|\")City A('|\") not understood"
     with pytest.raises(TypeError, match=error_text):
-        card_es['transactions'].set_secondary_time_index(new_2nd_ti)
+        card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
     # add mixed secondary time indexes
     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud'],
                   'fraud_decision_time': ['fraud_decision_time', 'fraud']}
     with pytest.raises(TypeError, match=error_text):
-        card_es['transactions'].set_secondary_time_index(new_2nd_ti)
+        card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
 
     # add bool secondary time index
     error_text = 'transactions time index not recognized as numeric or datetime'
     with pytest.raises(TypeError, match=error_text):
-        card_es['transactions'].set_secondary_time_index({'fraud': ['fraud']})
+        card_es.set_secondary_time_index(card_es['transactions'], {'fraud': ['fraud']})
 
 
 def test_normalize_entity(es):
@@ -975,7 +996,7 @@ def test_normalize_entity(es):
 
     assert len(es.get_forward_relationships('sessions')) == 2
     assert es.get_forward_relationships(
-        'sessions')[1].parent_entity.id == 'device_types'
+        'sessions')[1].parent_dataframe.id == 'device_types'
     assert 'device_name' in es['device_types'].df.columns
     assert 'device_name' not in es['sessions'].df.columns
     assert 'device_type' in es['device_types'].df.columns
@@ -1101,7 +1122,7 @@ def test_normalize_entity_copies_variable_types(es):
 
     assert len(es.get_forward_relationships('log')) == 3
     assert es.get_forward_relationships(
-        'log')[2].parent_entity.id == 'values_2'
+        'log')[2].parent_dataframe.id == 'values_2'
     assert 'priority_level' in es['values_2'].df.columns
     assert 'value' in es['values_2'].df.columns
     assert 'priority_level' not in es['log'].df.columns
@@ -1414,11 +1435,23 @@ def test_entityset_init():
                                   variable_types=variable_types,
                                   make_index=False,
                                   time_index='transaction_time')
-    relationship = ft.Relationship(es_copy["cards"]["id"],
-                                   es_copy["transactions"]["card_id"])
-    es_copy.add_relationship(relationship)
+    es_copy.add_relationship('cards', 'id', 'transactions', 'card_id')
     assert es['cards'].__eq__(es_copy['cards'], deep=True)
     assert es['transactions'].__eq__(es_copy['transactions'], deep=True)
+
+
+def test_add_interesting_values_verbose_output(caplog):
+    es = ft.demo.load_retail(nrows=200)
+    es['order_products'].convert_variable_type('quantity', ft.variable_types.Discrete)
+    logger = logging.getLogger('featuretools')
+    logger.propagate = True
+    logger_es = logging.getLogger('featuretools.entityset')
+    logger_es.propagate = True
+    es.add_interesting_values(verbose=True, max_values=10)
+    logger.propagate = False
+    logger_es.propagate = False
+    assert 'Variable country: Marking United Kingdom as an interesting value' in caplog.text
+    assert 'Variable quantity: Marking 6 as an interesting value' in caplog.text
 
 
 def test_entityset_equality(es):
@@ -1450,8 +1483,8 @@ def test_entityset_equality(es):
                                     variable_types=es['customers'].variable_types)
     assert first_es == second_es
 
-    first_es.add_relationship(ft.Relationship(es['customers']['id'], es['sessions']['customer_id']))
+    first_es.add_relationship('customers', 'id', 'sessions', 'customer_id')
     assert first_es != second_es
 
-    second_es.add_relationship(ft.Relationship(es['customers']['id'], es['sessions']['customer_id']))
+    second_es.add_relationship('customers', 'id', 'sessions', 'customer_id')
     assert first_es == second_es
