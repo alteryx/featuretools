@@ -61,8 +61,8 @@ def dask_es(make_es):
                                  secondary_time_index=entity.secondary_time_index)
 
     for rel in make_es.relationships:
-        es.add_relationship(rel.parent_entity.id, rel.parent_variable.name,
-                            rel.child_entity.id, rel.child_variable.name)
+        es.add_relationship(rel.parent_dataframe.id, rel.parent_column.name,
+                            rel.child_dataframe.id, rel.child_column.name)
     return es
 
 
@@ -80,8 +80,8 @@ def ks_es(make_es):
                                  secondary_time_index=entity.secondary_time_index)
 
     for rel in make_es.relationships:
-        es.add_relationship(rel.parent_entity.id, rel.parent_variable.name,
-                            rel.child_entity.id, rel.child_variable.name)
+        es.add_relationship(rel.parent_dataframe.id, rel.parent_column.name,
+                            rel.child_dataframe.id, rel.child_column.name)
     return es
 
 
@@ -148,10 +148,10 @@ def dask_diamond_es(pd_diamond_es):
     for entity in pd_diamond_es.entities:
         entities[entity.id] = (dd.from_pandas(entity.df, npartitions=2), entity.index, None, entity.variable_types)
 
-    relationships = [(rel.parent_entity.id,
-                      rel.parent_variable.name,
-                      rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_diamond_es.relationships]
+    relationships = [(rel.parent_dataframe.id,
+                      rel.parent_column.name,
+                      rel.child_dataframe.id,
+                      rel.child_column.name) for rel in pd_diamond_es.relationships]
 
     return ft.EntitySet(id=pd_diamond_es.id, entities=entities, relationships=relationships)
 
@@ -163,10 +163,10 @@ def ks_diamond_es(pd_diamond_es):
     for entity in pd_diamond_es.entities:
         entities[entity.id] = (ks.from_pandas(pd_to_ks_clean(entity.df)), entity.index, None, entity.variable_types)
 
-    relationships = [(rel.parent_entity.id,
-                      rel.parent_variable.name,
-                      rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_diamond_es.relationships]
+    relationships = [(rel.parent_dataframe.id,
+                      rel.parent_column.name,
+                      rel.child_dataframe.id,
+                      rel.child_column.name) for rel in pd_diamond_es.relationships]
 
     return ft.EntitySet(id=pd_diamond_es.id, entities=entities, relationships=relationships)
 
@@ -206,10 +206,10 @@ def dask_default_value_es(pd_default_value_es):
     for entity in pd_default_value_es.entities:
         entities[entity.id] = (dd.from_pandas(entity.df, npartitions=4), entity.index, None, entity.variable_types)
 
-    relationships = [(rel.parent_entity.id,
-                      rel.parent_variable.name,
-                      rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_default_value_es.relationships]
+    relationships = [(rel.parent_dataframe.id,
+                      rel.parent_column.name,
+                      rel.child_dataframe.id,
+                      rel.child_column.name) for rel in pd_default_value_es.relationships]
 
     return ft.EntitySet(id=pd_default_value_es.id, entities=entities, relationships=relationships)
 
@@ -221,10 +221,10 @@ def ks_default_value_es(pd_default_value_es):
     for entity in pd_default_value_es.entities:
         entities[entity.id] = (ks.from_pandas(pd_to_ks_clean(entity.df)), entity.index, None, entity.variable_types)
 
-    relationships = [(rel.parent_entity.id,
-                      rel.parent_variable.name,
-                      rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_default_value_es.relationships]
+    relationships = [(rel.parent_dataframe.id,
+                      rel.parent_column.name,
+                      rel.child_dataframe.id,
+                      rel.child_column.name) for rel in pd_default_value_es.relationships]
 
     return ft.EntitySet(id=pd_default_value_es.id, entities=entities, relationships=relationships)
 
@@ -259,10 +259,10 @@ def dask_home_games_es(pd_home_games_es):
     for entity in pd_home_games_es.entities:
         entities[entity.id] = (dd.from_pandas(entity.df, npartitions=2), entity.index, None, entity.variable_types)
 
-    relationships = [(rel.parent_entity.id,
-                      rel.parent_variable.name,
-                      rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_home_games_es.relationships]
+    relationships = [(rel.parent_dataframe.id,
+                      rel.parent_column.name,
+                      rel.child_dataframe.id,
+                      rel.child_column.name) for rel in pd_home_games_es.relationships]
 
     return ft.EntitySet(id=pd_home_games_es.id, entities=entities, relationships=relationships)
 
@@ -274,10 +274,10 @@ def ks_home_games_es(pd_home_games_es):
     for entity in pd_home_games_es.entities:
         entities[entity.id] = (ks.from_pandas(pd_to_ks_clean(entity.df)), entity.index, None, entity.variable_types)
 
-    relationships = [(rel.parent_entity.id,
-                      rel.parent_variable.name,
-                      rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_home_games_es.relationships]
+    relationships = [(rel.parent_dataframe.id,
+                      rel.parent_column.name,
+                      rel.child_dataframe.id,
+                      rel.child_column.name) for rel in pd_home_games_es.relationships]
 
     return ft.EntitySet(id=pd_home_games_es.id, entities=entities, relationships=relationships)
 
@@ -301,10 +301,10 @@ def dd_mock_customer(pd_mock_customer):
                                entity.time_index,
                                entity.variable_types)
 
-    relationships = [(rel.parent_entity.id,
-                      rel.parent_variable.name,
-                      rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_mock_customer.relationships]
+    relationships = [(rel.parent_dataframe.id,
+                      rel.parent_column.name,
+                      rel.child_dataframe.id,
+                      rel.child_column.name) for rel in pd_mock_customer.relationships]
 
     return ft.EntitySet(id=pd_mock_customer.id, entities=entities, relationships=relationships)
 
@@ -320,10 +320,10 @@ def ks_mock_customer(pd_mock_customer):
                                entity.time_index,
                                entity.variable_types)
 
-    relationships = [(rel.parent_entity.id,
-                      rel.parent_variable.name,
-                      rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_mock_customer.relationships]
+    relationships = [(rel.parent_dataframe.id,
+                      rel.parent_column.name,
+                      rel.child_dataframe.id,
+                      rel.child_column.name) for rel in pd_mock_customer.relationships]
 
     return ft.EntitySet(id=pd_mock_customer.id, entities=entities, relationships=relationships)
 

@@ -44,11 +44,11 @@ def test_cannot_re_add_relationships_that_already_exists(es):
 
 def test_add_relationships_convert_type(es):
     for r in es.relationships:
-        parent_e = es[r.parent_entity.id]
-        child_e = es[r.child_entity.id]
-        assert type(r.parent_variable) == variable_types.Index
-        assert type(r.child_variable) == variable_types.Id
-        assert parent_e.df[r.parent_variable.id].dtype == child_e.df[r.child_variable.id].dtype
+        parent_e = es[r.parent_dataframe.id]
+        child_e = es[r.child_dataframe.id]
+        assert type(r.parent_column) == variable_types.Index
+        assert type(r.child_column) == variable_types.Id
+        assert parent_e.df[r.parent_column.id].dtype == child_e.df[r.child_column.id].dtype
 
 
 # TODO: Koalas does not support categorical types
@@ -94,7 +94,7 @@ def test_add_relationship_errors_child_v_index(es):
                              variable_types=log_vtypes,
                              time_index='datetime')
 
-    to_match = "Unable to add relationship because child variable 'id' in 'log2' is also its index"
+    to_match = "Unable to add relationship because child column 'id' in 'log2' is also its index"
     with pytest.raises(ValueError, match=to_match):
         es.add_relationship('log', 'id', 'log2', 'id')
 
@@ -286,7 +286,7 @@ def test_extra_variable_type(df):
 
 
 def test_add_parent_not_index_varible(es):
-    error_text = "Parent variable.*is not the index of entity Entity.*"
+    error_text = "Parent column.*is not the index of dataframe Entity.*"
     with pytest.raises(AttributeError, match=error_text):
         es.add_relationship(u'régions', 'language', 'customers', u'région_id')
 
@@ -996,7 +996,7 @@ def test_normalize_entity(es):
 
     assert len(es.get_forward_relationships('sessions')) == 2
     assert es.get_forward_relationships(
-        'sessions')[1].parent_entity.id == 'device_types'
+        'sessions')[1].parent_dataframe.id == 'device_types'
     assert 'device_name' in es['device_types'].df.columns
     assert 'device_name' not in es['sessions'].df.columns
     assert 'device_type' in es['device_types'].df.columns
@@ -1122,7 +1122,7 @@ def test_normalize_entity_copies_variable_types(es):
 
     assert len(es.get_forward_relationships('log')) == 3
     assert es.get_forward_relationships(
-        'log')[2].parent_entity.id == 'values_2'
+        'log')[2].parent_dataframe.id == 'values_2'
     assert 'priority_level' in es['values_2'].df.columns
     assert 'value' in es['values_2'].df.columns
     assert 'priority_level' not in es['log'].df.columns

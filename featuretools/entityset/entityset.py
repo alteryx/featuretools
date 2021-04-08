@@ -281,13 +281,13 @@ class EntitySet(object):
         # _operations?
 
         # this is a new pair of entities
-        child_e = relationship.child_entity
-        child_v = relationship.child_variable.id
+        child_e = relationship.child_dataframe
+        child_v = relationship.child_column.id
         if child_e.index == child_v:
-            msg = "Unable to add relationship because child variable '{}' in '{}' is also its index"
+            msg = "Unable to add relationship because child column '{}' in '{}' is also its index"
             raise ValueError(msg.format(child_v, child_e.id))
-        parent_e = relationship.parent_entity
-        parent_v = relationship.parent_variable.id
+        parent_e = relationship.parent_dataframe
+        parent_v = relationship.parent_column.id
         if not isinstance(child_e[child_v], vtypes.Id):
             child_e.convert_variable_type(variable_id=child_v,
                                           new_type=vtypes.Id,
@@ -393,7 +393,7 @@ class EntitySet(object):
         yield start_entity_id, []
 
         for relationship in self.get_forward_relationships(start_entity_id):
-            next_entity = relationship.parent_entity.id
+            next_entity = relationship.parent_dataframe.id
             # Copy seen entities for each next node to allow multiple paths (but
             # not cycles).
             descendants = self._forward_entity_paths(next_entity, seen_entities.copy())
@@ -411,7 +411,7 @@ class EntitySet(object):
         Yields a tuple of (descendent_id, path from entity_id to descendant).
         """
         for relationship in self.get_forward_relationships(entity_id):
-            parent_eid = relationship.parent_entity.id
+            parent_eid = relationship.parent_dataframe.id
             direct_path = RelationshipPath([(True, relationship)])
             yield parent_eid, direct_path
 
@@ -431,7 +431,7 @@ class EntitySet(object):
         Yields a tuple of (descendent_id, path from entity_id to descendant).
         """
         for relationship in self.get_backward_relationships(entity_id):
-            child_eid = relationship.child_entity.id
+            child_eid = relationship.child_dataframe.id
             direct_path = RelationshipPath([(False, relationship)])
             yield child_eid, direct_path
 
@@ -449,7 +449,7 @@ class EntitySet(object):
         Returns:
             list[:class:`.Relationship`]: List of forward relationships.
         """
-        return [r for r in self.relationships if r.child_entity.id == entity_id]
+        return [r for r in self.relationships if r.child_dataframe.id == entity_id]
 
     def get_backward_relationships(self, entity_id):
         """
@@ -461,7 +461,7 @@ class EntitySet(object):
         Returns:
             list[:class:`.Relationship`]: list of backward relationships
         """
-        return [r for r in self.relationships if r.parent_entity.id == entity_id]
+        return [r for r in self.relationships if r.parent_dataframe.id == entity_id]
 
     def has_unique_forward_path(self, start_entity_id, end_entity_id):
         """
@@ -820,8 +820,8 @@ class EntitySet(object):
         children = defaultdict(list)  # parent --> child mapping
         child_vars = defaultdict(dict)
         for r in self.relationships:
-            children[r.parent_entity.id].append(r.child_entity)
-            child_vars[r.parent_entity.id][r.child_entity.id] = r.child_variable
+            children[r.parent_dataframe.id].append(r.child_dataframe)
+            child_vars[r.parent_dataframe.id][r.child_dataframe.id] = r.child_column
 
         updated_entities = updated_entities or []
         if updated_entities:
@@ -983,7 +983,7 @@ class EntitySet(object):
                     # don't add interesting values for entities in relationships
                     skip = False
                     for r in self.relationships:
-                        if variable in [r.child_variable, r.parent_variable]:
+                        if variable in [r.child_column, r.parent_column]:
                             skip = True
                             break
                     if skip:

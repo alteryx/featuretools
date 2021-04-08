@@ -23,18 +23,18 @@ class Relationship(object):
         self._parent_column_id = parent_column_id
         self._child_column_id = child_column_id
 
-        if (self.parent_entity.index is not None and
-                self._parent_column_id != self.parent_entity.index):
-            raise AttributeError(f"Parent variable '{self.parent_variable}' is not the index of "
-                                 f"entity {self.parent_entity}")
+        if (self.parent_dataframe.index is not None and
+                self._parent_column_id != self.parent_dataframe.index):
+            raise AttributeError(f"Parent column '{self.parent_column}' is not the index of "
+                                 f"dataframe {self.parent_dataframe}")
 
     @classmethod
     def from_dictionary(cls, arguments, es):
-        parent_entity = arguments['parent_dataframe_id']
-        child_entity = arguments['child_dataframe_id']
-        parent_variable = arguments['parent_column_id']
-        child_variable = arguments['child_column_id']
-        return cls(es, parent_entity, parent_variable, child_entity, child_variable)
+        parent_dataframe = arguments['parent_dataframe_id']
+        child_dataframe = arguments['child_dataframe_id']
+        parent_column = arguments['parent_column_id']
+        child_column = arguments['child_column_id']
+        return cls(es, parent_dataframe, parent_column, child_dataframe, child_column)
 
     def __repr__(self):
         ret = u"<Relationship: %s.%s -> %s.%s>" % \
@@ -59,24 +59,24 @@ class Relationship(object):
                      self._child_column_id))
 
     @property
-    def parent_entity(self):
-        """Parent entity object"""
+    def parent_dataframe(self):
+        """Parent dataframe object"""
         return self.entityset[self._parent_dataframe_id]
 
     @property
-    def child_entity(self):
-        """Child entity object"""
+    def child_dataframe(self):
+        """Child dataframe object"""
         return self.entityset[self._child_dataframe_id]
 
     @property
-    def parent_variable(self):
-        """Instance of variable in parent entity"""
-        return self.parent_entity[self._parent_column_id]
+    def parent_column(self):
+        """Column in parent dataframe"""
+        return self.parent_dataframe[self._parent_column_id]
 
     @property
-    def child_variable(self):
-        """Instance of variable in child entity"""
-        return self.child_entity[self._child_column_id]
+    def child_column(self):
+        """Column in child dataframe"""
+        return self.child_dataframe[self._child_column_id]
 
     @property
     def parent_name(self):
@@ -104,7 +104,7 @@ class Relationship(object):
 
     def _is_unique(self):
         """Is there any other relationship with same parent and child entities?"""
-        es = self.child_entity.entityset
+        es = self.child_dataframe.entityset
         relationships = es.get_forward_relationships(self._child_dataframe_id)
         n = len([r for r in relationships
                  if r._parent_dataframe_id == self._parent_dataframe_id])
@@ -127,19 +127,19 @@ class RelationshipPath(object):
 
     def entities(self):
         if self:
-            # Yield first entity.
+            # Yield first dataframe.
             is_forward, relationship = self[0]
             if is_forward:
-                yield relationship.child_entity.id
+                yield relationship.child_dataframe.id
             else:
-                yield relationship.parent_entity.id
+                yield relationship.parent_dataframe.id
 
-        # Yield the entity pointed to by each relationship.
+        # Yield the dataframe pointed to by each relationship.
         for is_forward, relationship in self:
             if is_forward:
-                yield relationship.parent_entity.id
+                yield relationship.parent_dataframe.id
             else:
-                yield relationship.child_entity.id
+                yield relationship.child_dataframe.id
 
     def __add__(self, other):
         return RelationshipPath(self._relationships_with_direction +
