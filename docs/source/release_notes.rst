@@ -9,6 +9,7 @@ Future Release
     * Changes
         * Add auto assign bot on GitHub (:pr:`1380`)
     * Documentation Changes
+        * Improve formatting of release notes (:pr:`1396`)
     * Testing Changes
         * Update Dask/Koalas test fixtures (:pr:`1382`)
         * Update Spark config in test fixtures and docs (:pr:`1387`, :pr:`1389`)
