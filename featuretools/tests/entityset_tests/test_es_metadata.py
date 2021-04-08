@@ -3,21 +3,21 @@ import pytest
 from dask import dataframe as dd
 
 import featuretools as ft
-from featuretools import EntitySet, Relationship, variable_types
+from featuretools import EntitySet, variable_types
 from featuretools.tests.testing_utils import backward_path, forward_path
 
 
 def test_cannot_re_add_relationships_that_already_exists(es):
     before_len = len(es.relationships)
-    es.add_relationship(es.relationships[0])
+    es.add_relationship(relationship=es.relationships[0])
     after_len = len(es.relationships)
     assert before_len == after_len
 
 
 def test_add_relationships_convert_type(es):
     for r in es.relationships:
-        assert type(r.parent_variable) == variable_types.Index
-        assert type(r.child_variable) == variable_types.Id
+        assert type(r.parent_column) == variable_types.Index
+        assert type(r.child_column) == variable_types.Id
 
 
 def test_get_forward_entities(es):
@@ -59,27 +59,27 @@ def test_get_backward_entities_deep(es):
 def test_get_forward_relationships(es):
     relationships = es.get_forward_relationships('log')
     assert len(relationships) == 2
-    assert relationships[0].parent_entity.id == 'sessions'
-    assert relationships[0].child_entity.id == 'log'
-    assert relationships[1].parent_entity.id == 'products'
-    assert relationships[1].child_entity.id == 'log'
+    assert relationships[0].parent_dataframe.id == 'sessions'
+    assert relationships[0].child_dataframe.id == 'log'
+    assert relationships[1].parent_dataframe.id == 'products'
+    assert relationships[1].child_dataframe.id == 'log'
 
     relationships = es.get_forward_relationships('sessions')
     assert len(relationships) == 1
-    assert relationships[0].parent_entity.id == 'customers'
-    assert relationships[0].child_entity.id == 'sessions'
+    assert relationships[0].parent_dataframe.id == 'customers'
+    assert relationships[0].child_dataframe.id == 'sessions'
 
 
 def test_get_backward_relationships(es):
     relationships = es.get_backward_relationships('sessions')
     assert len(relationships) == 1
-    assert relationships[0].parent_entity.id == 'sessions'
-    assert relationships[0].child_entity.id == 'log'
+    assert relationships[0].parent_dataframe.id == 'sessions'
+    assert relationships[0].child_dataframe.id == 'log'
 
     relationships = es.get_backward_relationships('customers')
     assert len(relationships) == 1
-    assert relationships[0].parent_entity.id == 'customers'
-    assert relationships[0].child_entity.id == 'sessions'
+    assert relationships[0].parent_dataframe.id == 'customers'
+    assert relationships[0].child_dataframe.id == 'sessions'
 
 
 def test_find_forward_paths(es):
@@ -89,10 +89,10 @@ def test_find_forward_paths(es):
     path = paths[0]
 
     assert len(path) == 2
-    assert path[0].child_entity.id == 'log'
-    assert path[0].parent_entity.id == 'sessions'
-    assert path[1].child_entity.id == 'sessions'
-    assert path[1].parent_entity.id == 'customers'
+    assert path[0].child_dataframe.id == 'log'
+    assert path[0].parent_dataframe.id == 'sessions'
+    assert path[1].child_dataframe.id == 'sessions'
+    assert path[1].parent_dataframe.id == 'customers'
 
 
 def test_find_forward_paths_multiple_paths(diamond_es):
@@ -102,16 +102,16 @@ def test_find_forward_paths_multiple_paths(diamond_es):
     path1, path2 = paths
 
     r1, r2 = path1
-    assert r1.child_entity.id == 'transactions'
-    assert r1.parent_entity.id == 'stores'
-    assert r2.child_entity.id == 'stores'
-    assert r2.parent_entity.id == 'regions'
+    assert r1.child_dataframe.id == 'transactions'
+    assert r1.parent_dataframe.id == 'stores'
+    assert r2.child_dataframe.id == 'stores'
+    assert r2.parent_dataframe.id == 'regions'
 
     r1, r2 = path2
-    assert r1.child_entity.id == 'transactions'
-    assert r1.parent_entity.id == 'customers'
-    assert r2.child_entity.id == 'customers'
-    assert r2.parent_entity.id == 'regions'
+    assert r1.child_dataframe.id == 'transactions'
+    assert r1.parent_dataframe.id == 'customers'
+    assert r2.child_dataframe.id == 'customers'
+    assert r2.parent_dataframe.id == 'regions'
 
 
 def test_find_forward_paths_multiple_relationships(games_es):
@@ -124,15 +124,15 @@ def test_find_forward_paths_multiple_relationships(games_es):
     r1 = path1[0]
     r2 = path2[0]
 
-    assert r1.child_entity.id == 'games'
-    assert r2.child_entity.id == 'games'
-    assert r1.parent_entity.id == 'teams'
-    assert r2.parent_entity.id == 'teams'
+    assert r1.child_dataframe.id == 'games'
+    assert r2.child_dataframe.id == 'games'
+    assert r1.parent_dataframe.id == 'teams'
+    assert r2.parent_dataframe.id == 'teams'
 
-    assert r1.child_variable.id == 'home_team_id'
-    assert r2.child_variable.id == 'away_team_id'
-    assert r1.parent_variable.id == 'id'
-    assert r2.parent_variable.id == 'id'
+    assert r1.child_column.id == 'home_team_id'
+    assert r2.child_column.id == 'away_team_id'
+    assert r1.parent_column.id == 'id'
+    assert r2.parent_column.id == 'id'
 
 
 @pytest.fixture
@@ -174,10 +174,10 @@ def test_find_backward_paths(es):
     path = paths[0]
 
     assert len(path) == 2
-    assert path[0].child_entity.id == 'sessions'
-    assert path[0].parent_entity.id == 'customers'
-    assert path[1].child_entity.id == 'log'
-    assert path[1].parent_entity.id == 'sessions'
+    assert path[0].child_dataframe.id == 'sessions'
+    assert path[0].parent_dataframe.id == 'customers'
+    assert path[1].child_dataframe.id == 'log'
+    assert path[1].parent_dataframe.id == 'sessions'
 
 
 def test_find_backward_paths_multiple_paths(diamond_es):
@@ -187,16 +187,16 @@ def test_find_backward_paths_multiple_paths(diamond_es):
     path1, path2 = paths
 
     r1, r2 = path1
-    assert r1.child_entity.id == 'stores'
-    assert r1.parent_entity.id == 'regions'
-    assert r2.child_entity.id == 'transactions'
-    assert r2.parent_entity.id == 'stores'
+    assert r1.child_dataframe.id == 'stores'
+    assert r1.parent_dataframe.id == 'regions'
+    assert r2.child_dataframe.id == 'transactions'
+    assert r2.parent_dataframe.id == 'stores'
 
     r1, r2 = path2
-    assert r1.child_entity.id == 'customers'
-    assert r1.parent_entity.id == 'regions'
-    assert r2.child_entity.id == 'transactions'
-    assert r2.parent_entity.id == 'customers'
+    assert r1.child_dataframe.id == 'customers'
+    assert r1.parent_dataframe.id == 'regions'
+    assert r2.child_dataframe.id == 'transactions'
+    assert r2.parent_dataframe.id == 'customers'
 
 
 def test_find_backward_paths_multiple_relationships(games_es):
@@ -209,15 +209,15 @@ def test_find_backward_paths_multiple_relationships(games_es):
     r1 = path1[0]
     r2 = path2[0]
 
-    assert r1.child_entity.id == 'games'
-    assert r2.child_entity.id == 'games'
-    assert r1.parent_entity.id == 'teams'
-    assert r2.parent_entity.id == 'teams'
+    assert r1.child_dataframe.id == 'games'
+    assert r2.child_dataframe.id == 'games'
+    assert r1.parent_dataframe.id == 'teams'
+    assert r2.parent_dataframe.id == 'teams'
 
-    assert r1.child_variable.id == 'home_team_id'
-    assert r2.child_variable.id == 'away_team_id'
-    assert r1.parent_variable.id == 'id'
-    assert r2.parent_variable.id == 'id'
+    assert r1.child_column.id == 'home_team_id'
+    assert r2.child_column.id == 'away_team_id'
+    assert r1.parent_column.id == 'id'
+    assert r2.parent_column.id == 'id'
 
 
 def test_has_unique_path(diamond_es):
@@ -237,7 +237,6 @@ def test_raise_key_error_missing_entity(es):
 
 
 def test_add_parent_not_index_variable(es):
-    error_text = "Parent variable.*is not the index of entity Entity.*"
+    error_text = "Parent column.*is not the index of dataframe Entity.*"
     with pytest.raises(AttributeError, match=error_text):
-        es.add_relationship(Relationship(es[u'régions']['language'],
-                                         es['customers'][u'région_id']))
+        es.add_relationship(u'régions', 'language', 'customers', u'région_id')

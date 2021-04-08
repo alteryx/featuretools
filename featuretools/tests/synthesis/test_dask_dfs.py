@@ -344,10 +344,8 @@ def test_dask_entityset_secondary_time_index():
     flights_vtypes = pd_es['flights'].variable_types
     dask_es.entity_from_dataframe('flights', flights_dask, index="id", variable_types=flights_vtypes)
 
-    new_rel = ft.Relationship(pd_es['flights']['id'], pd_es['logs']['flight_id'])
-    dask_rel = ft.Relationship(dask_es['flights']['id'], dask_es['logs']['flight_id'])
-    pd_es.add_relationship(new_rel)
-    dask_es.add_relationship(dask_rel)
+    pd_es.add_relationship('flights', 'id', 'logs', 'flight_id')
+    dask_es.add_relationship('flights', 'id', 'logs', 'flight_id')
 
     cutoff_df = pd.DataFrame()
     cutoff_df['id'] = [0, 1, 1]

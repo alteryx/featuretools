@@ -191,10 +191,10 @@ def get_linked_vars(entity):
     """Return a list with the entity linked variables.
     """
     link_relationships = [r for r in entity.entityset.relationships
-                          if r.parent_entity.id == entity.id or
-                          r.child_entity.id == entity.id]
+                          if r.parent_dataframe.id == entity.id or
+                          r.child_dataframe.id == entity.id]
     link_vars = [v.id for rel in link_relationships
-                 for v in [rel.parent_variable, rel.child_variable]
+                 for v in [rel.parent_column, rel.child_column]
                  if v.entity.id == entity.id]
     return link_vars
 

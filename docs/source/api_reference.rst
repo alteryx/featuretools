@@ -332,10 +332,10 @@ Relationship attributes
 .. autosummary::
     :toctree: generated/
 
-    Relationship.parent_variable
-    Relationship.child_variable
-    Relationship.parent_entity
-    Relationship.child_entity
+    Relationship.parent_column
+    Relationship.child_column
+    Relationship.parent_dataframe
+    Relationship.child_dataframe
 
 Variable types
 ----------------

@@ -167,10 +167,10 @@ def dd_simple_es(pd_simple_es):
                                None,
                                entity.variable_types)
 
-    relationships = [(rel.parent_entity.id,
-                      rel.parent_variable.name,
-                      rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_simple_es.relationships]
+    relationships = [(rel.parent_dataframe.id,
+                      rel.parent_column.name,
+                      rel.child_dataframe.id,
+                      rel.child_column.name) for rel in pd_simple_es.relationships]
 
     return ft.EntitySet(id=pd_simple_es.id, entities=entities, relationships=relationships)
 
@@ -186,10 +186,10 @@ def ks_simple_es(pd_simple_es):
                                None,
                                entity.variable_types)
 
-    relationships = [(rel.parent_entity.id,
-                      rel.parent_variable.name,
-                      rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_simple_es.relationships]
+    relationships = [(rel.parent_dataframe.id,
+                      rel.parent_column.name,
+                      rel.child_dataframe.id,
+                      rel.child_column.name) for rel in pd_simple_es.relationships]
 
     return ft.EntitySet(id=pd_simple_es.id, entities=entities, relationships=relationships)
 
