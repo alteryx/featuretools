@@ -12,7 +12,7 @@ Future Release
         * Move ``set_secondary_time_index`` method from ``Entity`` to ``EntitySet`` (:pr:`1280`)
         * Refactor Relationship creation process (:pr:`1370`)
         * Add auto assign bot on GitHub (:pr:`1380`)
-        * Move ``update_dataframe`` method from Entity to EntitySet (:pr:`1398`)
+        * Replace ``Entity.update_data`` with ``EntitySet.update_dataframe`` (:pr:`1398`)
     * Documentation Changes
         * Improve formatting of release notes (:pr:`1396`)
     * Testing Changes
@@ -37,7 +37,7 @@ Breaking Changes
 * ``EntitySet.add_relationship`` has been updated to accept dataframe and column id values or a
   ``Relationship`` object. Adding a relationship from a ``Relationship`` object now requires passing
   the relationship as a keyword argument.
-* ``Entity.update_dataframe`` has been removed. To update the dataframe, call ``EntitySet.update_dataframe`` and use the ``entity_id`` paramter.
+* ``Entity.update_data`` has been removed. To update the dataframe, call ``EntitySet.update_dataframe`` and use the ``entity_id`` paramter.
 
 What's New in this Release
 ++++++++++++++++++++++++++
