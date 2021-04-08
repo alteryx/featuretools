@@ -114,7 +114,7 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
 5. Add a commented out "Future Release" section with all of the release notes sections above the current section
     ```
     .. Future Release
-    ==============
+      ==============
         * Enhancements
         * Fixes
         * Changes
