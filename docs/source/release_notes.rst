@@ -19,7 +19,7 @@ Future Release
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
 
-0.23.3 Mar 31, 2021
+v0.23.3 Mar 31, 2021
 ===================
     .. warning::
         The next non-bugfix release of Featuretools will not support Python 3.6
@@ -116,7 +116,7 @@ v0.22.0 Nov 30, 2020
     :user:`frances-h`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 v0.21.0 Oct 30, 2020
-====================
+=====================
     * Enhancements
         * Add ``describe_feature`` to generate an English language feature description for a given feature (:pr:`1201`)
     * Fixes
