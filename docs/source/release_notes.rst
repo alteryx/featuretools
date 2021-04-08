@@ -37,6 +37,7 @@ Breaking Changes
 * ``EntitySet.add_relationship`` has been updated to accept dataframe and column id values or a
   ``Relationship`` object. Adding a relationship from a ``Relationship`` object now requires passing
   the relationship as a keyword argument.
+* ``Entity.update_data`` has been removed. To update the dataframe, call ``EntitySet.update_data`` and use the ``entity_id`` paramter.
 
 What's New in this Release
 ++++++++++++++++++++++++++
@@ -96,6 +97,14 @@ this approach the ``relationship`` parameter name must be included.
 .. code-block:: python
 
     >>> es.add_relationship(relationship=new_relationship)
+
+**Update DataFrame**
+
+To update the dataframe for a single entity, call ``EntitySet.update_data`` and pass in the id of the entity for which dataframe should be updated.
+
+.. code-block:: python
+
+    >>> es.update_data(entity_id='log', df=df)
 
 v0.23.3 Mar 31, 2021
 ====================
