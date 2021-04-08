@@ -1207,7 +1207,7 @@ class EntitySet(object):
         if self[entity_id].time_index is not None:
             self[entity_id].set_time_index(self[entity_id].time_index, already_sorted=already_sorted)
 
-        self[entity_id].set_secondary_time_index(self[entity_id].secondary_time_index)
+        self.set_secondary_time_index(self[entity_id], self[entity_id].secondary_time_index)
         if recalculate_last_time_indexes and self[entity_id].last_time_index is not None:
             self.add_last_time_indexes(updated_entities=[self[entity_id].id])
         self.reset_data_description()
