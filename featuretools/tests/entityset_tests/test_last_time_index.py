@@ -126,7 +126,7 @@ class TestLastTimeIndex(object):
         df = values.df.append(row, sort=True)
         df = df[['value', 'value_time']].sort_values(by='value')
         df.index.name = 'values_id'
-        values_es.update_data(entity_id='values', df=df)
+        values_es.update_dataframe(entity_id='values', df=df)
         values_es.add_last_time_indexes()
         # lti value should default to instance's time index
         true_values_lti[10] = pd.Timestamp("2011-04-10 11:10:02")
@@ -152,7 +152,7 @@ class TestLastTimeIndex(object):
         sessions = es['sessions']
 
         # add session instance with no associated log instances
-        es.update_data(entity_id='sessions', df=extra_session_df)
+        es.update_dataframe(entity_id='sessions', df=extra_session_df)
         es.add_last_time_indexes()
         # since sessions has no time index, default value is NaT
         true_sessions_lti[6] = pd.NaT
@@ -229,7 +229,7 @@ class TestLastTimeIndex(object):
         sessions = es['sessions']
 
         # add row to sessions so not all session instances are in log
-        es.update_data(entity_id='sessions', df=extra_session_df)
+        es.update_dataframe(entity_id='sessions', df=extra_session_df)
 
         # add row to wishlist df so new session instance in in wishlist_log
         row_values = {'session_id': 6,
@@ -270,7 +270,7 @@ class TestLastTimeIndex(object):
         sessions = es['sessions']
 
         # add row to sessions so not all session instances are in log
-        es.update_data(entity_id='sessions', df=extra_session_df)
+        es.update_dataframe(entity_id='sessions', df=extra_session_df)
 
         # add row to wishlist_log so extra session has child instance
         row_values = {'session_id': 6,
@@ -322,7 +322,7 @@ class TestLastTimeIndex(object):
                           'datetime': ft.variable_types.variable.DatetimeTimeIndex,
                           'product_id': ft.variable_types.variable.Categorical}
         # add row to sessions to create session with no events
-        es.update_data(entity_id='sessions', df=extra_session_df)
+        es.update_dataframe(entity_id='sessions', df=extra_session_df)
 
         es.entity_from_dataframe(entity_id="wishlist_log",
                                  dataframe=wishlist_df,
@@ -361,7 +361,7 @@ class TestLastTimeIndex(object):
             df = dd.from_pandas(df, npartitions=2)
         if ks and isinstance(log.df, ks.DataFrame):
             df = ks.from_pandas(df)
-        es.update_data(entity_id='log', df=df)
+        es.update_dataframe(entity_id='log', df=df)
         es.add_last_time_indexes()
 
         true_customers_lti = pd.Series([datetime(2011, 4, 9, 10, 40, 1),

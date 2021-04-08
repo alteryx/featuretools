@@ -798,7 +798,7 @@ class EntitySet(object):
                     other[entity.id].last_time_index is not None):
                 has_last_time_index.append(entity.id)
 
-            combined_es.update_data(
+            combined_es.update_dataframe(
                 entity_id=entity.id,
                 df=combined_df,
                 recalculate_last_time_indexes=False,
@@ -1187,7 +1187,7 @@ class EntitySet(object):
 
         return df
 
-    def update_data(self, entity_id, df, already_sorted=False,
+    def update_dataframe(self, entity_id, df, already_sorted=False,
                     recalculate_last_time_indexes=True):
         '''Update entity's internal dataframe, optionaly making sure data is sorted,
         reference indexes to other entities are consistent, and last_time_indexes

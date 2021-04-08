@@ -95,7 +95,7 @@ def test_eq(es):
     assert not other_es['stores'].__eq__(es['stores'], deep=True)
 
 
-def test_update_data(es):
+def test_update_dataframe(es):
     df = es['customers'].df.copy()
     if ks and isinstance(df, ks.DataFrame):
         df['new'] = [1, 2, 3]
@@ -104,11 +104,11 @@ def test_update_data(es):
 
     error_text = 'Updated dataframe is missing new cohort column'
     with pytest.raises(ValueError, match=error_text):
-        es.update_data(entity_id='customers', df=df.drop(columns=['cohort']))
+        es.update_dataframe(entity_id='customers', df=df.drop(columns=['cohort']))
 
     error_text = 'Updated dataframe contains 16 columns, expecting 15'
     with pytest.raises(ValueError, match=error_text):
-        es.update_data(entity_id='customers', df=df)
+        es.update_dataframe(entity_id='customers', df=df)
 
     # test already_sorted on entity without time index
     df = es["sessions"].df.copy()
@@ -121,10 +121,10 @@ def test_update_data(es):
         df = df.sort_index()
     else:
         df["id"] = updated_id
-    es.update_data(entity_id='sessions', df=df.copy())
+    es.update_dataframe(entity_id='sessions', df=df.copy())
     sessions_df = to_pandas(es['sessions'].df)
     assert sessions_df["id"].iloc[1] == 2  # no sorting since time index not defined
-    es.update_data(entity_id='sessions', df=df.copy(), already_sorted=True)
+    es.update_dataframe(entity_id='sessions', df=df.copy(), already_sorted=True)
     sessions_df = to_pandas(es['sessions'].df)
     assert sessions_df["id"].iloc[1] == 2
 
@@ -138,13 +138,13 @@ def test_update_data(es):
         df = df.sort_index()
     else:
         df['signup_date'] = updated_signup
-    es.update_data(entity_id='customers', df=df.copy(), already_sorted=True)
+    es.update_dataframe(entity_id='customers', df=df.copy(), already_sorted=True)
     customers_df = to_pandas(es['customers'].df)
     assert customers_df["id"].iloc[0] == 2
 
     # only pandas allows for sorting:
     if isinstance(df, pd.DataFrame):
-        es.update_data(entity_id='customers', df=df.copy())
+        es.update_dataframe(entity_id='customers', df=df.copy())
         assert es['customers'].df["id"].iloc[0] == 0
 
 
