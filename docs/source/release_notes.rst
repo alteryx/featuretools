@@ -12,7 +12,7 @@ Future Release
         * Move ``set_secondary_time_index`` method from ``Entity`` to ``EntitySet`` (:pr:`1280`)
         * Refactor Relationship creation process (:pr:`1370`)
         * Add auto assign bot on GitHub (:pr:`1380`)
-        * Remove ``Entity.update_data`` and add ``EntitySet.update_dataframe`` (:pr:`1398`)
+        * Replaced ``Entity.update_data`` with ``EntitySet.update_dataframe`` (:pr:`1398`)
     * Documentation Changes
         * Improve formatting of release notes (:pr:`1396`)
     * Testing Changes
