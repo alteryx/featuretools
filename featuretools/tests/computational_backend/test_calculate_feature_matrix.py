@@ -661,7 +661,7 @@ def test_training_window_recent_time_index(pd_es):
     df.index = df.index.astype("category")
     df["id"] = df["id"].astype("category")
 
-    pd_es['customers'].update_data(df=df, recalculate_last_time_indexes=False)
+    pd_es.update_dataframe(entity_id='customers', df=df, recalculate_last_time_indexes=False)
     pd_es.add_last_time_indexes()
 
     property_feature = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['customers'], primitive=Count)

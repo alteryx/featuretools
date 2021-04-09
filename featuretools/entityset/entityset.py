@@ -797,8 +797,12 @@ class EntitySet(object):
             if (entity.last_time_index is not None or
                     other[entity.id].last_time_index is not None):
                 has_last_time_index.append(entity.id)
-            combined_es[entity.id].update_data(df=combined_df,
-                                               recalculate_last_time_indexes=False)
+
+            combined_es.update_dataframe(
+                entity_id=entity.id,
+                df=combined_df,
+                recalculate_last_time_indexes=False,
+            )
 
         combined_es.add_last_time_indexes(updated_entities=has_last_time_index)
         self.reset_data_description()
@@ -1182,6 +1186,30 @@ class EntitySet(object):
             df = df[columns]
 
         return df
+
+    def update_dataframe(self, entity_id, df, already_sorted=False, recalculate_last_time_indexes=True):
+        '''Update entity's internal dataframe, optionaly making sure data is sorted,
+        reference indexes to other entities are consistent, and last_time_indexes
+        are consistent.
+        '''
+        variables = self[entity_id].variables
+        if len(df.columns) != len(variables):
+            raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(df.columns),
+                                                                                          len(variables)))
+        for v in variables:
+            if v.id not in df.columns:
+                raise ValueError("Updated dataframe is missing new {} column".format(v.id))
+
+        # Make sure column ordering matches variable ordering
+        self[entity_id].df = df[[v.id for v in variables]]
+        self[entity_id].set_index(self[entity_id].index)
+        if self[entity_id].time_index is not None:
+            self[entity_id].set_time_index(self[entity_id].time_index, already_sorted=already_sorted)
+
+        self.set_secondary_time_index(self[entity_id], self[entity_id].secondary_time_index)
+        if recalculate_last_time_indexes and self[entity_id].last_time_index is not None:
+            self.add_last_time_indexes(updated_entities=[self[entity_id].id])
+        self.reset_data_description()
 
 
 def _vals_to_series(instance_vals, variable_id):

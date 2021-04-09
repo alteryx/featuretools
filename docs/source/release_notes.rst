@@ -12,6 +12,7 @@ Future Release
         * Move ``set_secondary_time_index`` method from ``Entity`` to ``EntitySet`` (:pr:`1280`)
         * Refactor Relationship creation process (:pr:`1370`)
         * Add auto assign bot on GitHub (:pr:`1380`)
+        * Replaced ``Entity.update_data`` with ``EntitySet.update_dataframe`` (:pr:`1398`)
     * Documentation Changes
         * Improve formatting of release notes (:pr:`1396`)
     * Testing Changes
@@ -21,7 +22,7 @@ Future Release
         * Update boto3 and urllib3 version requirements (:pr:`1394`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 Breaking Changes
 ++++++++++++++++
@@ -36,6 +37,7 @@ Breaking Changes
 * ``EntitySet.add_relationship`` has been updated to accept dataframe and column id values or a
   ``Relationship`` object. Adding a relationship from a ``Relationship`` object now requires passing
   the relationship as a keyword argument.
+* ``Entity.update_data`` has been removed. To update the dataframe, call ``EntitySet.update_dataframe`` and use the ``entity_id`` paramter.
 
 What's New in this Release
 ++++++++++++++++++++++++++
@@ -95,6 +97,14 @@ this approach the ``relationship`` parameter name must be included.
 .. code-block:: python
 
     >>> es.add_relationship(relationship=new_relationship)
+
+**Update DataFrame**
+
+To update the dataframe for a single entity, call ``EntitySet.update_dataframe`` and pass in the id of the entity for which dataframe should be updated.
+
+.. code-block:: python
+
+    >>> es.update_dataframe(entity_id='log', df=df)
 
 v0.23.3 Mar 31, 2021
 ====================
