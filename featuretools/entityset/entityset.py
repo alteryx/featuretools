@@ -13,6 +13,7 @@ import featuretools.variable_types.variable as vtypes
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.entity import Entity
 from featuretools.entityset.relationship import Relationship, RelationshipPath
+from featuretools.utils.entity_utils import col_is_datetime
 from featuretools.utils.gen_utils import import_or_none, is_instance
 from featuretools.utils.plot_utils import (
     check_graphviz,
@@ -558,7 +559,7 @@ class EntitySet(object):
                                  "Cannot add entity of type {} to an entityset with existing entities "
                                  "of type {}".format(type(dataframe), type(self.entities[0].df)))
 
-        entity = Entity(
+        Entity(
             entity_id,
             dataframe,
             self,
@@ -568,7 +569,7 @@ class EntitySet(object):
             secondary_time_index=secondary_time_index,
             already_sorted=already_sorted,
             make_index=make_index)
-        self.entity_dict[entity.id] = entity
+
         self.reset_data_description()
         return self
 
@@ -620,7 +621,7 @@ class EntitySet(object):
         if base_entity.time_index is not None:
             t_index = base_entity[base_entity.time_index]
             if not isinstance(t_index, (vtypes.NumericTimeIndex, vtypes.DatetimeTimeIndex)):
-                base_error = "Time index '{0}' is not a NumericTimeIndex or DatetimeTimeIndex, but type {1}. Use set_time_index on entity '{2}' to set the time_index."
+                base_error = "Time index '{0}' is not a NumericTimeIndex or DatetimeTimeIndex, but type {1}. Use set_time_index on entityset to set the time_index for entity '{2}'."
                 raise TypeError(base_error.format(base_entity.time_index, type(t_index), str(base_entity.id)))
 
         if not isinstance(additional_variables, list):
@@ -1204,12 +1205,49 @@ class EntitySet(object):
         self[entity_id].df = df[[v.id for v in variables]]
         self[entity_id].set_index(self[entity_id].index)
         if self[entity_id].time_index is not None:
-            self[entity_id].set_time_index(self[entity_id].time_index, already_sorted=already_sorted)
+            self.set_time_index(entity_id, self[entity_id].time_index, already_sorted=already_sorted)
 
         self.set_secondary_time_index(self[entity_id], self[entity_id].secondary_time_index)
         if recalculate_last_time_indexes and self[entity_id].last_time_index is not None:
             self.add_last_time_indexes(updated_entities=[self[entity_id].id])
         self.reset_data_description()
+
+    def set_time_index(self, entity_id, variable_id, already_sorted=False):
+        # check time type
+        entity = self[entity_id]
+        if not isinstance(entity.df, pd.DataFrame) or entity.df.empty:
+            time_to_check = vtypes.DEFAULT_DTYPE_VALUES[entity[variable_id]._default_pandas_dtype]
+        else:
+            time_to_check = entity.df[variable_id].iloc[0]
+        time_type = _check_time_type(time_to_check)
+
+        if time_type is None:
+            raise TypeError("%s time index not recognized as numeric or"
+                            " datetime" % (entity.id))
+
+        if self.time_type is None:
+            self.time_type = time_type
+        elif self.time_type != time_type:
+            raise TypeError("%s time index is %s type which differs from"
+                            " other entityset time indexes" %
+                            (entity.id, time_type))
+
+        if is_instance(entity.df, (dd, ks), 'DataFrame'):
+            t = time_type  # skip checking values
+            already_sorted = True  # skip sorting
+        else:
+            t = vtypes.NumericTimeIndex
+            if col_is_datetime(entity.df[variable_id]):
+                t = vtypes.DatetimeTimeIndex
+
+        # use stable sort
+        if not already_sorted:
+            # sort by time variable, then by index
+            entity.df = entity.df.sort_values([variable_id, entity.index])
+
+        entity.convert_variable_type(variable_id, t, convert_data=False)
+
+        entity.time_index = variable_id
 
 
 def _vals_to_series(instance_vals, variable_id):
