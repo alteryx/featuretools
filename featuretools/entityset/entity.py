@@ -5,14 +5,13 @@ import pandas as pd
 
 from featuretools import variable_types as vtypes
 from featuretools.utils.entity_utils import (
-    col_is_datetime,
     convert_all_variable_data,
     convert_variable_data,
     get_linked_vars,
     infer_variable_types
 )
 from featuretools.utils.gen_utils import import_or_none, is_instance
-from featuretools.utils.wrangle import _check_time_type, _dataframes_equal
+from featuretools.utils.wrangle import _dataframes_equal
 from featuretools.variable_types import Text, find_variable_types
 
 ks = import_or_none('databricks.koalas')
@@ -72,8 +71,10 @@ class Entity(object):
         self.set_index(index)
 
         self.time_index = None
+        entityset.entity_dict[self.id] = self
+
         if time_index:
-            self.set_time_index(time_index, already_sorted=already_sorted)
+            entityset.set_time_index(id, time_index, already_sorted=already_sorted)
 
         entityset.set_secondary_time_index(self, secondary_time_index)
 
@@ -282,42 +283,6 @@ class Entity(object):
         for v_id in variable_ids:
             v = self._get_variable(v_id)
             self.variables.remove(v)
-
-    def set_time_index(self, variable_id, already_sorted=False):
-        # check time type
-        if not isinstance(self.df, pd.DataFrame) or self.df.empty:
-            time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
-        else:
-            time_to_check = self.df[variable_id].iloc[0]
-        time_type = _check_time_type(time_to_check)
-
-        if time_type is None:
-            raise TypeError("%s time index not recognized as numeric or"
-                            " datetime" % (self.id))
-
-        if self.entityset.time_type is None:
-            self.entityset.time_type = time_type
-        elif self.entityset.time_type != time_type:
-            raise TypeError("%s time index is %s type which differs from"
-                            " other entityset time indexes" %
-                            (self.id, time_type))
-
-        if is_instance(self.df, (dd, ks), 'DataFrame'):
-            t = time_type  # skip checking values
-            already_sorted = True  # skip sorting
-        else:
-            t = vtypes.NumericTimeIndex
-            if col_is_datetime(self.df[variable_id]):
-                t = vtypes.DatetimeTimeIndex
-
-        # use stable sort
-        if not already_sorted:
-            # sort by time variable, then by index
-            self.df = self.df.sort_values([variable_id, self.index])
-
-        self.convert_variable_type(variable_id, t, convert_data=False)
-
-        self.time_index = variable_id
 
     def set_index(self, variable_id, unique=True):
         """
