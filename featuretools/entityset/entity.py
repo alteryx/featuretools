@@ -71,12 +71,6 @@ class Entity(object):
         self.set_index(index)
 
         self.time_index = None
-        entityset.entity_dict[self.id] = self
-
-        if time_index:
-            entityset.set_time_index(id, time_index, already_sorted=already_sorted)
-
-        entityset.set_secondary_time_index(self, secondary_time_index)
 
     def __repr__(self):
         repr_out = u"Entity: {}\n".format(self.id)

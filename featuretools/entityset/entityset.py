@@ -559,7 +559,7 @@ class EntitySet(object):
                                  "Cannot add entity of type {} to an entityset with existing entities "
                                  "of type {}".format(type(dataframe), type(self.entities[0].df)))
 
-        Entity(
+        entity = Entity(
             entity_id,
             dataframe,
             self,
@@ -569,8 +569,13 @@ class EntitySet(object):
             secondary_time_index=secondary_time_index,
             already_sorted=already_sorted,
             make_index=make_index)
-
+        self.entity_dict[entity.id] = entity
         self.reset_data_description()
+
+        if time_index:
+            self.set_time_index(entity.id, time_index, already_sorted=already_sorted)
+
+        self.set_secondary_time_index(entity, secondary_time_index or {})
         return self
 
     def normalize_entity(self, base_entity_id, new_entity_id, index,
