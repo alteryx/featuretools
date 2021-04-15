@@ -1218,7 +1218,9 @@ class EntitySet(object):
 
     def _check_time_index(self):
         for entity in self.entity_dict.values():
-            if entity.time_index is None: continue
+            if entity.time_index is None:
+                continue
+
             time_type = self._get_time_type(entity, entity.time_index)
 
             if self.time_type is None:
