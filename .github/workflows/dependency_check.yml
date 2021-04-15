@@ -30,4 +30,4 @@ jobs:
         branch-suffix: short-commit-hash
         base: main
         reviewers: rwedge, thehomebrewnerd, frances-h
-        token: ${{ secrets.REPO_SCOPED_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}
