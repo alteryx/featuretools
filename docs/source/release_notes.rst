@@ -13,6 +13,7 @@ Future Release
         * Refactor Relationship creation process (:pr:`1370`)
         * Add auto assign bot on GitHub (:pr:`1380`)
         * Replaced ``Entity.update_data`` with ``EntitySet.update_dataframe`` (:pr:`1398`)
+        * Move time index check to ``EntitySet`` (:pr:`1400`)
     * Documentation Changes
         * Improve formatting of release notes (:pr:`1396`)
     * Testing Changes
