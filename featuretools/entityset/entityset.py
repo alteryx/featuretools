@@ -1064,7 +1064,6 @@ class EntitySet(object):
         If the DataTable does not have a time index, return the original
         dataframe.
         """
-        self._check_time_index()
         dt = self[entity_id]
 
         if is_instance(df, ks, 'DataFrame') and isinstance(time_last, np.datetime64):
@@ -1168,6 +1167,7 @@ class EntitySet(object):
                 categories = pd.api.types.CategoricalDtype(categories=entity.df[variable_id].cat.categories)
                 df[variable_id] = df[variable_id].astype(categories)
 
+        self._check_time_index()
         df = self._handle_time(entity_id=entity_id,
                                df=df,
                                time_last=time_last,
