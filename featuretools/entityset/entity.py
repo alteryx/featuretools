@@ -70,7 +70,9 @@ class Entity(object):
         self.df = df[[v.id for v in self.variables]]
         self.set_index(index)
 
-        self.time_index = None
+        self.time_index = time_index
+        self.secondary_time_index = secondary_time_index
+        self._already_sorted = already_sorted
 
     def __repr__(self):
         repr_out = u"Entity: {}\n".format(self.id)

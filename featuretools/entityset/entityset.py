@@ -320,23 +320,6 @@ class EntitySet(object):
         return self
 
     def set_secondary_time_index(self, entity, secondary_time_index):
-        for time_index, columns in secondary_time_index.items():
-            if is_instance(entity.df, (dd, ks), 'DataFrame') or entity.df.empty:
-                variable_dtype = entity[time_index]._default_pandas_dtype
-                time_to_check = vtypes.DEFAULT_DTYPE_VALUES[variable_dtype]
-            else:
-                time_to_check = entity.df[time_index].head(1).iloc[0]
-            time_type = _check_time_type(time_to_check)
-            if time_type is None:
-                raise TypeError("%s time index not recognized as numeric or"
-                                " datetime" % (entity.id))
-            if self.time_type != time_type:
-                raise TypeError("%s time index is %s type which differs from"
-                                " other entityset time indexes" %
-                                (entity.id, time_type))
-            if time_index not in columns:
-                columns.append(time_index)
-
         entity.secondary_time_index = secondary_time_index
 
     ###########################################################################
@@ -618,6 +601,7 @@ class EntitySet(object):
             new_entity_secondary_time_index (str, optional): Rename new entity secondary time index.
 
         """
+        self._check_time_index()
         base_entity = self.entity_dict[base_entity_id]
         additional_variables = additional_variables or []
         copy_variables = copy_variables or []
@@ -1080,7 +1064,9 @@ class EntitySet(object):
         If the DataTable does not have a time index, return the original
         dataframe.
         """
+        self._check_time_index()
         dt = self[entity_id]
+
         if is_instance(df, ks, 'DataFrame') and isinstance(time_last, np.datetime64):
             time_last = pd.to_datetime(time_last)
         if dt.time_index:
@@ -1217,42 +1203,60 @@ class EntitySet(object):
             self.add_last_time_indexes(updated_entities=[self[entity_id].id])
         self.reset_data_description()
 
-    def set_time_index(self, entity_id, variable_id, already_sorted=False):
-        # check time type
-        entity = self[entity_id]
+    def _get_time_type(self, entity, variable_id):
         if not isinstance(entity.df, pd.DataFrame) or entity.df.empty:
-            time_to_check = vtypes.DEFAULT_DTYPE_VALUES[entity[variable_id]._default_pandas_dtype]
+            dtype = entity[variable_id]._default_pandas_dtype
+            time_to_check = vtypes.DEFAULT_DTYPE_VALUES[dtype]
         else:
             time_to_check = entity.df[variable_id].iloc[0]
+
         time_type = _check_time_type(time_to_check)
-
         if time_type is None:
-            raise TypeError("%s time index not recognized as numeric or"
-                            " datetime" % (entity.id))
+            info = "%s time index not recognized as numeric or datetime"
+            raise TypeError(info % entity.id)
+        return time_type
 
-        if self.time_type is None:
-            self.time_type = time_type
-        elif self.time_type != time_type:
-            raise TypeError("%s time index is %s type which differs from"
-                            " other entityset time indexes" %
-                            (entity.id, time_type))
+    def _check_time_index(self):
+        for entity in self.entity_dict.values():
+            if entity.time_index is None: continue
+            time_type = self._get_time_type(entity, entity.time_index)
 
-        if is_instance(entity.df, (dd, ks), 'DataFrame'):
-            t = time_type  # skip checking values
-            already_sorted = True  # skip sorting
-        else:
-            t = vtypes.NumericTimeIndex
-            if col_is_datetime(entity.df[variable_id]):
-                t = vtypes.DatetimeTimeIndex
+            if self.time_type is None:
+                self.time_type = time_type
+            elif self.time_type != time_type:
+                info = "%s time index is %s type which differs from other entityset time indexes"
+                raise TypeError(info % (entity.id, time_type))
 
-        # use stable sort
-        if not already_sorted:
-            # sort by time variable, then by index
-            entity.df = entity.df.sort_values([variable_id, entity.index])
+            if is_instance(entity.df, (dd, ks), 'DataFrame'):
+                t = time_type  # skip checking values
+                entity._already_sorted = True  # skip sorting
+            else:
+                t = vtypes.NumericTimeIndex
+                if col_is_datetime(entity.df[entity.time_index]):
+                    t = vtypes.DatetimeTimeIndex
 
-        entity.convert_variable_type(variable_id, t, convert_data=False)
+            # use stable sort
+            if not entity._already_sorted:
+                # sort by time variable, then by index
+                entity.df = entity.df.sort_values([entity.time_index, entity.index])
 
-        entity.time_index = variable_id
+            entity.convert_variable_type(entity.time_index, t, convert_data=False)
+            self._check_secondary_time_index(entity)
+
+    def _check_secondary_time_index(self, entity):
+        for time_index, columns in entity.secondary_time_index.items():
+            time_type = self._get_time_type(entity, time_index)
+
+            if self.time_type != time_type:
+                info = "%s time index is %s type which differs from other entityset time indexes"
+                raise TypeError(info % (entity.id, time_type))
+
+            if time_index not in columns:
+                columns.append(time_index)
+
+    def set_time_index(self, entity_id, variable_id, already_sorted=False):
+        self[entity_id].time_index = variable_id
+        self[entity_id]._already_sorted = already_sorted
 
 
 def _vals_to_series(instance_vals, variable_id):
