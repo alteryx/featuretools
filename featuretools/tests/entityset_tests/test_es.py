@@ -908,7 +908,7 @@ def test_checks_time_type_setting_time_index(es):
         error_text = "log time index is %s type which differs from" \
                      " other entityset time indexes" % (variable_types.NumericTimeIndex)
     with pytest.raises(TypeError, match=error_text):
-        es.set_time_index('log', 'purchased')
+        es['log'].time_index = 'purchased'
         es._check_time_index()
 
 

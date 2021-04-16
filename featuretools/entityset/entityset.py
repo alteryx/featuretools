@@ -555,9 +555,6 @@ class EntitySet(object):
         self.entity_dict[entity.id] = entity
         self.reset_data_description()
 
-        if time_index:
-            self.set_time_index(entity.id, time_index, already_sorted=already_sorted)
-
         self.set_secondary_time_index(entity, secondary_time_index or {})
         return self
 
@@ -610,8 +607,8 @@ class EntitySet(object):
         if base_entity.time_index is not None:
             t_index = base_entity[base_entity.time_index]
             if not isinstance(t_index, (vtypes.NumericTimeIndex, vtypes.DatetimeTimeIndex)):
-                base_error = "Time index '{0}' is not a NumericTimeIndex or DatetimeTimeIndex, but type {1}. Use set_time_index on entityset to set the time_index for entity '{2}'."
-                raise TypeError(base_error.format(base_entity.time_index, type(t_index), str(base_entity.id)))
+                base_error = "Time index '{0}' is not a NumericTimeIndex or DatetimeTimeIndex, but type {1}."
+                raise TypeError(base_error.format(base_entity.time_index, type(t_index)))
 
         if not isinstance(additional_variables, list):
             raise TypeError("'additional_variables' must be a list, but received type {}"
@@ -1195,9 +1192,7 @@ class EntitySet(object):
         # Make sure column ordering matches variable ordering
         self[entity_id].df = df[[v.id for v in variables]]
         self[entity_id].set_index(self[entity_id].index)
-        if self[entity_id].time_index is not None:
-            self.set_time_index(entity_id, self[entity_id].time_index, already_sorted=already_sorted)
-
+        self[entity_id]._already_sorted = already_sorted
         self.set_secondary_time_index(self[entity_id], self[entity_id].secondary_time_index)
         self._check_time_index()
 
@@ -1257,10 +1252,6 @@ class EntitySet(object):
 
             if time_index not in columns:
                 columns.append(time_index)
-
-    def set_time_index(self, entity_id, variable_id, already_sorted=False):
-        self[entity_id].time_index = variable_id
-        self[entity_id]._already_sorted = already_sorted
 
 
 def _vals_to_series(instance_vals, variable_id):
