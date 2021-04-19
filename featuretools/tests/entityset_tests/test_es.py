@@ -897,7 +897,6 @@ def test_sets_time_when_adding_entity(transactions_df):
                                      accounts_df_string,
                                      index="id",
                                      time_index="signup_date")
-            es._check_time_index()
 
 
 def test_checks_time_type_setting_time_index(es):

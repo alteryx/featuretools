@@ -598,17 +598,17 @@ class EntitySet(object):
             new_entity_secondary_time_index (str, optional): Rename new entity secondary time index.
 
         """
-        self._check_time_index()
         base_entity = self.entity_dict[base_entity_id]
         additional_variables = additional_variables or []
         copy_variables = copy_variables or []
+        self._check_time_index()
 
         # Check base entity to make sure time index is valid
         if base_entity.time_index is not None:
             t_index = base_entity[base_entity.time_index]
-            if not isinstance(t_index, (vtypes.NumericTimeIndex, vtypes.DatetimeTimeIndex)):
-                base_error = "Time index '{0}' is not a NumericTimeIndex or DatetimeTimeIndex, but type {1}."
-                raise TypeError(base_error.format(base_entity.time_index, type(t_index)))
+            time_index_vtypes = vtypes.NumericTimeIndex, vtypes.DatetimeTimeIndex
+            info = "Time index %s is not a NumericTimeIndex or DatetimeTimeIndex, but type %s."
+            assert isinstance(t_index, time_index_vtypes), info % (base_entity.time_index, type(t_index))
 
         if not isinstance(additional_variables, list):
             raise TypeError("'additional_variables' must be a list, but received type {}"
