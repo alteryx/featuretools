@@ -100,7 +100,7 @@ class Variable(object):
 
     @property
     def description(self):
-        return self._description if self._description is not None else 'the "{}"'.format(self.name)
+        return self._description
 
     @description.setter
     def description(self, description):
