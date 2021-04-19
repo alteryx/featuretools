@@ -39,7 +39,10 @@ def generate_description(feature, feature_descriptions, primitive_templates):
 
     # Check if identity feature:
     if isinstance(feature, ft.IdentityFeature):
-        return feature.variable.description
+        description = feature.variable.description
+        if description is None:
+            description = 'the "{}"'.format(feature.variable.name)
+        return description
 
     # Handle direct features
     if isinstance(feature, ft.DirectFeature):
