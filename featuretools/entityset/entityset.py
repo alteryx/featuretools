@@ -1220,15 +1220,14 @@ class EntitySet(object):
                 continue
 
             self._check_time_index(entity)
-            self._check_uniform_time_index(entity)
             self._check_secondary_time_index(entity)
 
     def _check_time_index(self, entity):
         if entity.time_index is None:
             return
 
+        self._check_uniform_time_index(entity)
         time_type = self._get_time_type(entity, entity.time_index)
-
         if is_instance(entity.df, (dd, ks), 'DataFrame'):
             t = time_type  # skip checking values
             entity._already_sorted = True  # skip sorting
@@ -1241,22 +1240,18 @@ class EntitySet(object):
         if not entity._already_sorted:
             # sort by time variable, then by index
             entity.df = entity.df.sort_values([entity.time_index, entity.index])
-
         entity.convert_variable_type(entity.time_index, t, convert_data=False)
 
     def _check_secondary_time_index(self, entity):
         for time_index, columns in entity.secondary_time_index.items():
             self._check_uniform_time_index(entity)
-
             if time_index not in columns:
                 columns.append(time_index)
 
     def _check_uniform_time_index(self, entity):
         time_type = self._get_time_type(entity, entity.time_index)
-
         if self.time_type is None:
             self.time_type = time_type
-
         elif self.time_type != time_type:
             info = "%s time index is %s type which differs from other entityset time indexes"
             raise TypeError(info % (entity.id, time_type))
