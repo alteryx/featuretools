@@ -20,7 +20,7 @@ from featuretools.utils.plot_utils import (
     get_graphviz_format,
     save_graph
 )
-from featuretools.utils.wrangle import _check_time_type, _check_timedelta
+from featuretools.utils.wrangle import _check_timedelta
 
 ks = import_or_none('databricks.koalas')
 
@@ -1204,32 +1204,17 @@ class EntitySet(object):
             self.add_last_time_indexes(updated_entities=[self[entity_id].id])
         self.reset_data_description()
 
-    def _get_time_type(self, entity, variable_id):
-        if not isinstance(entity.df, pd.DataFrame) or entity.df.empty:
-            dtype = entity[variable_id]._default_pandas_dtype
-            time_to_check = vtypes.DEFAULT_DTYPE_VALUES[dtype]
-        else:
-            time_to_check = entity.df[variable_id].iloc[0]
-
-        time_type = _check_time_type(time_to_check)
-        if time_type is None:
-            info = "%s time index not recognized as numeric or datetime"
-            raise TypeError(info % entity.id)
-        return time_type
-
     def _check_time_indexes(self):
         for entity in self.entity_dict.values():
             if entity.time_index is None:
                 continue
-
             self._check_time_index(entity)
             self._check_secondary_time_index(entity)
 
     def _check_time_index(self, entity):
         if entity.time_index is None:
             return
-
-        time_type = self._get_time_type(entity, entity.time_index)
+        time_type = entity._get_time_type(entity.time_index)
         self._check_uniform_time_index(entity.id, time_type)
 
         if is_instance(entity.df, (dd, ks), 'DataFrame'):
@@ -1248,7 +1233,7 @@ class EntitySet(object):
 
     def _check_secondary_time_index(self, entity):
         for time_index, columns in entity.secondary_time_index.items():
-            time_type = self._get_time_type(entity, time_index)
+            time_type = entity._get_time_type(time_index)
             self._check_uniform_time_index(entity.id, time_type)
             if time_index not in columns:
                 columns.append(time_index)

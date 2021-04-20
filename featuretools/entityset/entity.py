@@ -11,7 +11,7 @@ from featuretools.utils.entity_utils import (
     infer_variable_types
 )
 from featuretools.utils.gen_utils import import_or_none, is_instance
-from featuretools.utils.wrangle import _dataframes_equal
+from featuretools.utils.wrangle import _check_time_type, _dataframes_equal
 from featuretools.variable_types import Text, find_variable_types
 
 ks = import_or_none('databricks.koalas')
@@ -279,6 +279,23 @@ class Entity(object):
         for v_id in variable_ids:
             v = self._get_variable(v_id)
             self.variables.remove(v)
+
+    def _get_time_type(self, variable_id):
+        if not isinstance(self.df, pd.DataFrame) or self.df.empty:
+            dtype = self[variable_id]._default_pandas_dtype
+            time_to_check = vtypes.DEFAULT_DTYPE_VALUES[dtype]
+        else:
+            time_to_check = self.df[variable_id].iloc[0]
+
+        time_type = _check_time_type(time_to_check)
+        if time_type is None:
+            info = "%s time index not recognized as numeric or datetime"
+            raise TypeError(info % self.id)
+        return time_type
+
+    def set_time_index(self, variable_id, already_sorted=False):
+        self.time_index = variable_id
+        self._already_sorted = already_sorted
 
     def set_index(self, variable_id, unique=True):
         """
