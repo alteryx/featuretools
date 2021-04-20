@@ -658,7 +658,6 @@ def test_sort_time_id():
                                     "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s")[::-1]})
 
     es = EntitySet("test", entities={"t": (transactions_df, "id", "transaction_time")})
-    es._check_time_index()
     times = list(es["t"].df.transaction_time)
     assert times == sorted(list(transactions_df.transaction_time))
 
@@ -829,7 +828,6 @@ def test_set_time_type_on_init(transactions_df):
     }
     relationships = [("cards", "id", "transactions", "card_id")]
     es = EntitySet("fraud", entities, relationships)
-    es._check_time_index()
     # assert time_type is set
     assert es.time_type == variable_types.NumericTimeIndex
 
@@ -870,7 +868,6 @@ def test_sets_time_when_adding_entity(transactions_df):
                              time_index="transaction_time",
                              variable_types=transactions_vtypes)
     # assert time_type is set
-    es._check_time_index()
     assert es.time_type == variable_types.NumericTimeIndex
     # add another entity
     es.normalize_entity("transactions",
@@ -887,7 +884,6 @@ def test_sets_time_when_adding_entity(transactions_df):
                                  index="id",
                                  time_index="signup_date",
                                  variable_types=accounts_vtypes)
-        es._check_time_index()
 
     # add non time type as time index, only valid for pandas
     if isinstance(transactions_df, pd.DataFrame):
@@ -908,12 +904,10 @@ def test_checks_time_type_setting_time_index(es):
                      " other entityset time indexes" % (variable_types.NumericTimeIndex)
     with pytest.raises(TypeError, match=error_text):
         es['log'].time_index = 'purchased'
-        es._check_time_index()
 
 
 def test_checks_time_type_setting_secondary_time_index(es):
     # entityset is timestamp time type
-    es._check_time_index()
     assert es.time_type == variable_types.DatetimeTimeIndex
     # add secondary index that is timestamp type
     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
@@ -926,7 +920,6 @@ def test_checks_time_type_setting_secondary_time_index(es):
     error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
         es.set_secondary_time_index(es["customers"], new_2nd_ti)
-        es._check_time_index()
 
     # add secondary index that is non-time type
     new_2nd_ti = {'favorite_quote': ['favorite_quote', 'loves_ice_cream']}
@@ -934,7 +927,6 @@ def test_checks_time_type_setting_secondary_time_index(es):
     error_text = r"data type (\"|')(All members of the working classes must seize the means of production.|test)(\"|') not understood"
     with pytest.raises(TypeError, match=error_text):
         es.set_secondary_time_index(es["customers"], new_2nd_ti)
-        es._check_time_index()
 
     # add mismatched pair of secondary time indexes
     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
@@ -943,7 +935,6 @@ def test_checks_time_type_setting_secondary_time_index(es):
     error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
         es.set_secondary_time_index(es["customers"], new_2nd_ti)
-        es._check_time_index()
 
     # create entityset with numeric time type
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
@@ -962,12 +953,10 @@ def test_checks_time_type_setting_secondary_time_index(es):
     }
     relationships = [("cards", "id", "transactions", "card_id")]
     card_es = EntitySet("fraud", entities, relationships)
-    card_es._check_time_index()
     assert card_es.time_type == variable_types.NumericTimeIndex
     # add secondary index that is numeric time type
     new_2nd_ti = {'fraud_decision_time': ['fraud_decision_time', 'fraud']}
     card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
-    card_es._check_time_index()
     assert card_es.time_type == variable_types.NumericTimeIndex
     # add secondary index that is timestamp type
     new_2nd_ti = {'transaction_date': ['transaction_date', 'fraud']}
@@ -975,7 +964,6 @@ def test_checks_time_type_setting_secondary_time_index(es):
     error_text = "transactions time index is <class 'featuretools.variable_types.variable.DatetimeTimeIndex'> type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
         card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
-        card_es._check_time_index()
 
     # add secondary index that is non-time type
     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud']}
@@ -983,20 +971,17 @@ def test_checks_time_type_setting_secondary_time_index(es):
     error_text = r"data type ('|\")City A('|\") not understood"
     with pytest.raises(TypeError, match=error_text):
         card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
-        card_es._check_time_index()
 
     # add mixed secondary time indexes
     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud'],
                   'fraud_decision_time': ['fraud_decision_time', 'fraud']}
     with pytest.raises(TypeError, match=error_text):
         card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
-        card_es._check_time_index()
 
     # add bool secondary time index
     error_text = 'transactions time index not recognized as numeric or datetime'
     with pytest.raises(TypeError, match=error_text):
         card_es.set_secondary_time_index(card_es['transactions'], {'fraud': ['fraud']})
-        card_es._check_time_index()
 
 
 def test_normalize_entity(es):
@@ -1109,7 +1094,6 @@ def test_normalize_time_index_from_none(normalize_es):
                                   make_time_index='time',
                                   copy_variables=['time'])
     assert normalize_es['normalized'].time_index == 'time'
-    normalize_es._check_time_index()
     df = normalize_es['normalized'].df
 
     # only pandas sorts by time index
@@ -1167,13 +1151,11 @@ def test_make_time_index_keeps_original_sorting():
                              dataframe=df,
                              index="trip_id",
                              time_index='flight_time')
-    es._check_time_index()
     assert (es['trips'].df['trip_id'] == order).all()
     es.normalize_entity(base_entity_id="trips",
                         new_entity_id="flights",
                         index="flight_id",
                         make_time_index=True)
-    es._check_time_index()
     assert (es['trips'].df['trip_id'] == order).all()
 
 
@@ -1218,7 +1200,6 @@ def test_secondary_time_index(es):
                                'datetime': ['comments']},
                         new_entity_time_index="value_time",
                         new_entity_secondary_time_index='second_ti')
-    es._check_time_index()
     assert (isinstance(es['values'].df['second_ti'], pd.Series))
     assert (es['values']['second_ti'].type_string == 'datetime')
     assert (es['values'].secondary_time_index == {

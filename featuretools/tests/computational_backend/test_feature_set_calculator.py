@@ -784,7 +784,6 @@ def test_empty_child_dataframe(parent_child):
                              time_index="time_index",
                              variable_types=child_vtypes)
     es.add_relationship("parent", "id", "child", "parent_id")
-    es._check_time_index()
 
     # create regular agg
     count = ft.Feature(es["child"]['id'], parent_entity=es["parent"], primitive=Count)
