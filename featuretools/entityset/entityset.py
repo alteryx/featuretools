@@ -602,6 +602,7 @@ class EntitySet(object):
         additional_variables = additional_variables or []
         copy_variables = copy_variables or []
         self._check_time_index(base_entity)
+        self._check_secondary_time_index(base_entity)
 
         # Check base entity to make sure time index is valid
         if base_entity.time_index is not None:
@@ -736,6 +737,8 @@ class EntitySet(object):
         base_entity.convert_variable_type(base_entity_index, vtypes.Id, convert_data=False)
         self.add_relationship(new_entity.id, index, base_entity.id, base_entity_index)
         self.reset_data_description()
+        self._check_time_index(new_entity)
+        self._check_secondary_time_index(new_entity)
         return self
 
     ###########################################################################
@@ -1226,8 +1229,9 @@ class EntitySet(object):
         if entity.time_index is None:
             return
 
-        self._check_uniform_time_index(entity)
         time_type = self._get_time_type(entity, entity.time_index)
+        self._check_uniform_time_index(entity.id, time_type)
+
         if is_instance(entity.df, (dd, ks), 'DataFrame'):
             t = time_type  # skip checking values
             entity._already_sorted = True  # skip sorting
@@ -1244,17 +1248,17 @@ class EntitySet(object):
 
     def _check_secondary_time_index(self, entity):
         for time_index, columns in entity.secondary_time_index.items():
-            self._check_uniform_time_index(entity)
+            time_type = self._get_time_type(entity, time_index)
+            self._check_uniform_time_index(entity.id, time_type)
             if time_index not in columns:
                 columns.append(time_index)
 
-    def _check_uniform_time_index(self, entity):
-        time_type = self._get_time_type(entity, entity.time_index)
+    def _check_uniform_time_index(self, entity_id, time_type):
         if self.time_type is None:
             self.time_type = time_type
         elif self.time_type != time_type:
             info = "%s time index is %s type which differs from other entityset time indexes"
-            raise TypeError(info % (entity.id, time_type))
+            raise TypeError(info % (entity_id, time_type))
 
 
 def _vals_to_series(instance_vals, variable_id):
