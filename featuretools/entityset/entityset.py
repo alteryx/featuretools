@@ -602,7 +602,6 @@ class EntitySet(object):
         additional_variables = additional_variables or []
         copy_variables = copy_variables or []
         self._check_time_index(base_entity)
-        self._check_secondary_time_index(base_entity)
 
         # Check base entity to make sure time index is valid
         if base_entity.time_index is not None:
@@ -738,7 +737,6 @@ class EntitySet(object):
         self.add_relationship(new_entity.id, index, base_entity.id, base_entity_index)
         self.reset_data_description()
         self._check_time_index(new_entity)
-        self._check_secondary_time_index(new_entity)
         return self
 
     ###########################################################################
@@ -1065,7 +1063,6 @@ class EntitySet(object):
         dataframe.
         """
         dt = self[entity_id]
-
         if is_instance(df, ks, 'DataFrame') and isinstance(time_last, np.datetime64):
             time_last = pd.to_datetime(time_last)
         if dt.time_index:
@@ -1134,12 +1131,12 @@ class EntitySet(object):
         """
         entity = self[entity_id]
         self._check_time_index(entity)
-        self._check_secondary_time_index(entity)
 
         if not variable_id:
             variable_id = entity.index
 
         instance_vals = _vals_to_series(instance_vals, variable_id)
+
         training_window = _check_timedelta(training_window)
 
         if training_window is not None:
@@ -1209,7 +1206,6 @@ class EntitySet(object):
             if entity.time_index is None:
                 continue
             self._check_time_index(entity)
-            self._check_secondary_time_index(entity)
 
     def _check_time_index(self, entity):
         if entity.time_index is None:
@@ -1230,6 +1226,7 @@ class EntitySet(object):
             # sort by time variable, then by index
             entity.df = entity.df.sort_values([entity.time_index, entity.index])
         entity.convert_variable_type(entity.time_index, t, convert_data=False)
+        self._check_secondary_time_index(entity)
 
     def _check_secondary_time_index(self, entity):
         for time_index, columns in entity.secondary_time_index.items():
