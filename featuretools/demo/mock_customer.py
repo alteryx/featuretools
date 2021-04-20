@@ -73,7 +73,6 @@ def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transaction
                 ("sessions", "session_id", "transactions", "session_id"),
                 ("customers", "customer_id", "sessions", "customer_id")]
         es = es.add_relationships(rels)
-        es._check_time_index()
         es.add_last_time_indexes()
         return es
 
