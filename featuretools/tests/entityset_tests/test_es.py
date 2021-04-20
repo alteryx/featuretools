@@ -920,14 +920,12 @@ def test_checks_time_type_setting_secondary_time_index(es):
     error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
         es.set_secondary_time_index(es["customers"], new_2nd_ti)
-
     # add secondary index that is non-time type
     new_2nd_ti = {'favorite_quote': ['favorite_quote', 'loves_ice_cream']}
 
     error_text = r"data type (\"|')(All members of the working classes must seize the means of production.|test)(\"|') not understood"
     with pytest.raises(TypeError, match=error_text):
         es.set_secondary_time_index(es["customers"], new_2nd_ti)
-
     # add mismatched pair of secondary time indexes
     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
                   'age': ['age', 'loves_ice_cream']}
@@ -964,14 +962,12 @@ def test_checks_time_type_setting_secondary_time_index(es):
     error_text = "transactions time index is <class 'featuretools.variable_types.variable.DatetimeTimeIndex'> type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
         card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
-
     # add secondary index that is non-time type
     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud']}
 
     error_text = r"data type ('|\")City A('|\") not understood"
     with pytest.raises(TypeError, match=error_text):
         card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
-
     # add mixed secondary time indexes
     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud'],
                   'fraud_decision_time': ['fraud_decision_time', 'fraud']}
@@ -1200,6 +1196,7 @@ def test_secondary_time_index(es):
                                'datetime': ['comments']},
                         new_entity_time_index="value_time",
                         new_entity_secondary_time_index='second_ti')
+
     assert (isinstance(es['values'].df['second_ti'], pd.Series))
     assert (es['values']['second_ti'].type_string == 'datetime')
     assert (es['values'].secondary_time_index == {
