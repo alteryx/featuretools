@@ -321,6 +321,7 @@ class EntitySet(object):
 
     def set_secondary_time_index(self, entity, secondary_time_index):
         entity.secondary_time_index = secondary_time_index
+        self._check_secondary_time_index(entity)
 
     ###########################################################################
     #   Relationship access/helper methods  ###################################
