@@ -2,7 +2,7 @@ import copy
 import logging
 from datetime import datetime
 
-from woodwork.logical_types import Categorical, Integer
+from woodwork.logical_types import Categorical, Integer, NaturalLanguage
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
@@ -53,9 +53,9 @@ def test_init_es_with_dataframe(df):
     assert len(es.dataframe_dict) == 1
     assert es.dataframe_dict['table'] is df
 
-    assert df.ww.schema is not None
-    assert df.ww.logical_types['id'] == Integer
-    assert df.ww.logical_types['category'] == Categorical
+    assert es.dataframe_dict['table'].ww.schema is not None
+    assert es.dataframe_dict['table'].ww.logical_types['id'] == Integer
+    assert es.dataframe_dict['table'].ww.logical_types['category'] == Categorical
 
 
 def test_init_es_with_woodwork_table(df):
@@ -66,13 +66,34 @@ def test_init_es_with_woodwork_table(df):
     assert len(es.dataframe_dict) == 1
     assert es.dataframe_dict['table'] is df
 
-    assert df.ww.schema is not None
-    assert df.ww.logical_types['id'] == Integer
-    assert df.ww.logical_types['category'] == Categorical
+    assert es.dataframe_dict['table'].ww.schema is not None
+
+    assert es.dataframe_dict['table'].ww.index is None
+    assert es.dataframe_dict['table'].ww.time_index is None
+
+    assert es.dataframe_dict['table'].ww.logical_types['id'] == Integer
+    assert es.dataframe_dict['table'].ww.logical_types['category'] == Categorical
 
 
 def test_init_es_with_dataframe_and_params(df):
-    pass
+    logical_types = {'id': 'NaturalLanguage', 'category': NaturalLanguage}
+    semantic_tags = {'category': 'new_tag'}
+    es = EntitySet('es', dataframes={'table': (df, 'id', None, logical_types, semantic_tags)})
+
+    assert es.id == 'es'
+    assert len(es.dataframe_dict) == 1
+    assert es.dataframe_dict['table'] is df
+
+    assert es.dataframe_dict['table'].ww.schema is not None
+
+    assert es.dataframe_dict['table'].ww.index == 'id'
+    assert es.dataframe_dict['table'].ww.time_index is None
+
+    assert es.dataframe_dict['table'].ww.logical_types['id'] == NaturalLanguage
+    assert es.dataframe_dict['table'].ww.logical_types['category'] == NaturalLanguage
+
+    assert es.dataframe_dict['table'].ww.semantic_tags['id'] == {'index'}
+    assert es.dataframe_dict['table'].ww.semantic_tags['category'] == {'new_tag'}
 
 
 def test_init_es_with_multiple_dataframes(df):

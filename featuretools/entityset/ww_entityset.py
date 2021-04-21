@@ -579,7 +579,10 @@ class EntitySet(object):
 
         if dataframe.ww.schema is None:
             # init woodwork with params
-            dataframe.ww.init()
+            # --> need to handle secondary time index!!!!!!!
+            dataframe.ww.init(name=dataframe_id, index=index, time_index=time_index,
+                              logical_types=logical_types, semantic_tags=semantic_tags,
+                              make_index=make_index, already_sorted=already_sorted)
 
         # --> need to confirm that the names match or deal with different names
 
