@@ -904,7 +904,7 @@ def test_checks_time_type_setting_time_index(es):
                      " other entityset time indexes" % (variable_types.NumericTimeIndex)
     with pytest.raises(TypeError, match=error_text):
         es['log'].set_time_index('purchased')
-        es._check_time_index(es['log'])
+        es._check_uniform_time_index(es['log'])
 
 
 def test_checks_time_type_setting_secondary_time_index(es):
@@ -1395,12 +1395,15 @@ def test_normalize_with_numeric_time_index(int_es):
 
 def test_normalize_with_invalid_time_index(es):
     es['customers'].convert_variable_type('signup_date', variable_types.Datetime)
-    es.normalize_entity(base_entity_id="customers",
-                        new_entity_id="cancel_reason",
-                        index="cancel_reason",
-                        copy_variables=['upgrade_date'])
-
-    assert isinstance(es['customers']['signup_date'], variable_types.DatetimeTimeIndex)
+    error_text = "Time index 'signup_date' is not a NumericTimeIndex or DatetimeTimeIndex," \
+        + " but type <class 'featuretools.variable_types.variable.Datetime'>."\
+        + " Use set_time_index on entity 'customers' to set the time_index."
+    with pytest.raises(TypeError, match=error_text):
+        es.normalize_entity(base_entity_id="customers",
+                            new_entity_id="cancel_reason",
+                            index="cancel_reason",
+                            copy_variables=['upgrade_date'])
+    es['customers'].convert_variable_type('signup_date', variable_types.DatetimeTimeIndex)
 
 
 def test_entityset_init():

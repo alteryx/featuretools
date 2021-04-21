@@ -5,6 +5,7 @@ import pandas as pd
 
 from featuretools import variable_types as vtypes
 from featuretools.utils.entity_utils import (
+    col_is_datetime,
     convert_all_variable_data,
     convert_variable_data,
     get_linked_vars,
@@ -70,9 +71,8 @@ class Entity(object):
         self.df = df[[v.id for v in self.variables]]
         self.set_index(index)
 
-        self.time_index = time_index
+        self.set_time_index(time_index, already_sorted=already_sorted)
         self.secondary_time_index = secondary_time_index
-        self._already_sorted = already_sorted
 
     def __repr__(self):
         repr_out = u"Entity: {}\n".format(self.id)
@@ -280,7 +280,32 @@ class Entity(object):
             v = self._get_variable(v_id)
             self.variables.remove(v)
 
-    def _get_time_type(self, variable_id):
+    def set_time_index(self, variable_id, already_sorted=False):
+        self.time_index = variable_id
+        self._already_sorted = already_sorted
+        self._check_time_index()
+
+    def _check_time_index(self):
+        if self.time_index is None:
+            return
+
+        time_type = self._get_time_type()
+        if is_instance(self.df, (dd, ks), 'DataFrame'):
+            t = time_type  # skip checking values
+            self._already_sorted = True  # skip sorting
+        else:
+            t = vtypes.NumericTimeIndex
+            if col_is_datetime(self.df[self.time_index]):
+                t = vtypes.DatetimeTimeIndex
+
+        # use stable sort
+        if not self._already_sorted:
+            # sort by time variable, then by index
+            self.df = self.df.sort_values([self.time_index, self.index])
+        self.convert_variable_type(self.time_index, t, convert_data=False)
+
+    def _get_time_type(self, variable_id=None):
+        variable_id = variable_id or self.time_index
         if not isinstance(self.df, pd.DataFrame) or self.df.empty:
             dtype = self[variable_id]._default_pandas_dtype
             time_to_check = vtypes.DEFAULT_DTYPE_VALUES[dtype]
@@ -292,10 +317,6 @@ class Entity(object):
             info = "%s time index not recognized as numeric or datetime"
             raise TypeError(info % self.id)
         return time_type
-
-    def set_time_index(self, variable_id, already_sorted=False):
-        self.time_index = variable_id
-        self._already_sorted = already_sorted
 
     def set_index(self, variable_id, unique=True):
         """
