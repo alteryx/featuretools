@@ -58,7 +58,6 @@ def make_ecommerce_entityset(with_integer_time_index=False):
          ('sessions', 'id', 'log', 'session_id'),
          ('products', 'id', 'log', 'product_id')])
 
-    es._check_time_indexes()
     return es
 
 
