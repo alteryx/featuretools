@@ -1201,9 +1201,6 @@ class EntitySet(object):
 
     def _check_time_indexes(self):
         for entity in self.entity_dict.values():
-            if entity.time_index is None:
-                continue
-
             entity._check_time_index()
             self._check_uniform_time_index(entity)
             self._check_secondary_time_index(entity)
