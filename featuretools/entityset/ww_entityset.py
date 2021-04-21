@@ -48,7 +48,7 @@ class EntitySet(object):
             Args:
                 id (str) : Unique identifier to associate with this instance
 
-                entities (dict[str -> tuple(pd.DataFrame, str, str, dict[str -> Variable])]): dictionary of
+                dataframes (dict[str -> tuple(pd.DataFrame, str, str, dict[str -> Variable])]): dictionary of
                     entities. Entries take the format
                     {entity id -> (dataframe, id column, (time_index), (variable_types), (make_index))}.
                     Note that time_index, variable_types and make_index are optional.
@@ -77,24 +77,33 @@ class EntitySet(object):
 
         dataframes = dataframes or {}
         relationships = relationships or []
-        for entity in dataframes:
-            df = dataframes[entity][0]
-            index_column = dataframes[entity][1]
+        for df_name in dataframes:
+            df = dataframes[df_name][0]
+
+            index_column = None
             time_index = None
             variable_types = None
             make_index = None
-            if len(dataframes[entity]) > 2:
-                time_index = dataframes[entity][2]
-            if len(dataframes[entity]) > 3:
-                variable_types = dataframes[entity][3]
-            if len(dataframes[entity]) > 4:
-                make_index = dataframes[entity][4]
-            self.entity_from_dataframe(entity_id=entity,
-                                       dataframe=df,
-                                       index=index_column,
-                                       time_index=time_index,
-                                       variable_types=variable_types,
-                                       make_index=make_index)
+            semantic_tags = None
+            logical_types = None
+            if len(dataframes[df_name]) > 1:
+                index_column = dataframes[df_name][1]
+            if len(dataframes[df_name]) > 2:
+                time_index = dataframes[df_name][2]
+            if len(dataframes[df_name]) > 3:
+                logical_types = dataframes[df_name][3]
+            if len(dataframes[df_name]) > 4:
+                semantic_tags = dataframes[df_name][4]
+            if len(dataframes[df_name]) > 5:
+                make_index = dataframes[df_name][5]
+            # --> need to finda better way to pass ww params and if we want to allow other formats like ColumnSchema or TableSchema??
+            self.add_dataframe(dataframe_id=df_name,
+                               dataframe=df,
+                               index=index_column,
+                               time_index=time_index,
+                               logical_types=logical_types,
+                               semantic_tags=semantic_tags,
+                               make_index=make_index)
 
         # --> allow relationship creation
         # for relationship in relationships:
@@ -486,16 +495,17 @@ class EntitySet(object):
     #  Entity creation methods  ##############################################
     ###########################################################################
 
-    def entity_from_dataframe(self,
-                              entity_id,
-                              dataframe,
-                              index=None,
-                              variable_types=None,
-                              make_index=False,
-                              time_index=None,
-                              secondary_time_index=None,
-                              already_sorted=False):
-        # --> 1. necessary for replacing - rename to add_dataframe
+    def add_dataframe(self,
+                      dataframe_id,
+                      dataframe,
+                      index=None,
+                      logical_types=None,
+                      semantic_tags=None,
+                      make_index=False,
+                      time_index=None,
+                      secondary_time_index=None,
+                      already_sorted=False):
+        # --> 1. necessary for replacing - rename to add_dataframe - maybe allow other kwargs for Woodwork Table???
         """
         Load the data for a specified entity from a Pandas DataFrame.
 
@@ -549,15 +559,17 @@ class EntitySet(object):
                 es["transactions"].df
 
         """
-        variable_types = variable_types or {}
+        logical_types = logical_types or {}
+        semantic_tags = semantic_tags or {}
 
-        if time_index is not None and time_index == index:
-            raise ValueError("time_index and index cannot be the same value, %s" % (time_index))
+# --> not necessary bc handled by woodwork
+        # if time_index is not None and time_index == index:
+        #     raise ValueError("time_index and index cannot be the same value, %s" % (time_index))
 
-        if time_index is None:
-            for variable, variable_type in variable_types.items():
-                if variable_type == vtypes.DatetimeTimeIndex:
-                    raise ValueError("DatetimeTimeIndex variable %s must be set using time_index parameter" % (variable))
+        # if time_index is None:
+        #     for variable, variable_type in variable_types.items():
+        #         if variable_type == vtypes.DatetimeTimeIndex:
+        #             raise ValueError("DatetimeTimeIndex variable %s must be set using time_index parameter" % (variable))
 
         if len(self.dataframes) > 0:
             if not isinstance(dataframe, type(self.dataframes[0].df)):
@@ -565,17 +577,13 @@ class EntitySet(object):
                                  "Cannot add entity of type {} to an entityset with existing entities "
                                  "of type {}".format(type(dataframe), type(self.dataframes[0].df)))
 
-        entity = Entity(
-            entity_id,
-            dataframe,
-            self,
-            variable_types=variable_types,
-            index=index,
-            time_index=time_index,
-            secondary_time_index=secondary_time_index,
-            already_sorted=already_sorted,
-            make_index=make_index)
-        self.dataframe_dict[entity.id] = entity
+        if dataframe.ww.schema is None:
+            # init woodwork with params
+            dataframe.ww.init()
+
+        # --> need to confirm that the names match or deal with different names
+
+        self.dataframe_dict[dataframe_id] = dataframe
         self.reset_data_description()
         return self
 
