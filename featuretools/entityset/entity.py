@@ -307,22 +307,10 @@ class Entity(object):
         if not already_sorted:
             # sort by time variable, then by index
             self.df = self.df.sort_values([variable_id, self.index])
+
         self.convert_variable_type(variable_id, t, convert_data=False)
+
         self.time_index = variable_id
-
-    def _get_time_type(self, variable_id=None):
-        variable_id = variable_id or self.time_index
-        if not isinstance(self.df, pd.DataFrame) or self.df.empty:
-            dtype = self[variable_id]._default_pandas_dtype
-            time_to_check = vtypes.DEFAULT_DTYPE_VALUES[dtype]
-        else:
-            time_to_check = self.df[variable_id].iloc[0]
-
-        time_type = _check_time_type(time_to_check)
-        if time_type is None:
-            info = "%s time index not recognized as numeric or datetime"
-            raise TypeError(info % self.id)
-        return time_type
 
     def set_index(self, variable_id, unique=True):
         """
