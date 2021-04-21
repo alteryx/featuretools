@@ -51,11 +51,11 @@ def test_init_es_with_dataframe(df):
 
     assert es.id == 'es'
     assert len(es.dataframe_dict) == 1
-    assert es.dataframe_dict['table'] is df
+    assert es['table'] is df
 
-    assert es.dataframe_dict['table'].ww.schema is not None
-    assert es.dataframe_dict['table'].ww.logical_types['id'] == Integer
-    assert es.dataframe_dict['table'].ww.logical_types['category'] == Categorical
+    assert es['table'].ww.schema is not None
+    assert es['table'].ww.logical_types['id'] == Integer
+    assert es['table'].ww.logical_types['category'] == Categorical
 
 
 def test_init_es_with_woodwork_table(df):
@@ -64,15 +64,15 @@ def test_init_es_with_woodwork_table(df):
 
     assert es.id == 'es'
     assert len(es.dataframe_dict) == 1
-    assert es.dataframe_dict['table'] is df
+    assert es['table'] is df
 
-    assert es.dataframe_dict['table'].ww.schema is not None
+    assert es['table'].ww.schema is not None
 
-    assert es.dataframe_dict['table'].ww.index is None
-    assert es.dataframe_dict['table'].ww.time_index is None
+    assert es['table'].ww.index is None
+    assert es['table'].ww.time_index is None
 
-    assert es.dataframe_dict['table'].ww.logical_types['id'] == Integer
-    assert es.dataframe_dict['table'].ww.logical_types['category'] == Categorical
+    assert es['table'].ww.logical_types['id'] == Integer
+    assert es['table'].ww.logical_types['category'] == Categorical
 
 
 def test_init_es_with_dataframe_and_params(df):
@@ -82,22 +82,22 @@ def test_init_es_with_dataframe_and_params(df):
 
     assert es.id == 'es'
     assert len(es.dataframe_dict) == 1
-    assert es.dataframe_dict['table'] is df
+    assert es['table'] is df
 
-    assert es.dataframe_dict['table'].ww.schema is not None
+    assert es['table'].ww.schema is not None
 
-    assert es.dataframe_dict['table'].ww.index == 'id'
-    assert es.dataframe_dict['table'].ww.time_index is None
+    assert es['table'].ww.index == 'id'
+    assert es['table'].ww.time_index is None
 
-    assert es.dataframe_dict['table'].ww.logical_types['id'] == NaturalLanguage
-    assert es.dataframe_dict['table'].ww.logical_types['category'] == NaturalLanguage
+    assert es['table'].ww.logical_types['id'] == NaturalLanguage
+    assert es['table'].ww.logical_types['category'] == NaturalLanguage
 
-    assert es.dataframe_dict['table'].ww.semantic_tags['id'] == {'index'}
-    assert es.dataframe_dict['table'].ww.semantic_tags['category'] == {'new_tag'}
+    assert es['table'].ww.semantic_tags['id'] == {'index'}
+    assert es['table'].ww.semantic_tags['category'] == {'new_tag'}
 
 
-def test_init_es_with_multiple_dataframes(df):
-    pass
+def test_init_es_with_multiple_dataframes(pd_df):
+    second_df = pd.DataFrame({'id': [0, 1, 2, 3], 'foreign_key': [1, 2, 2, 1]})
 
 
 def test_add_dataframe_to_es(df):

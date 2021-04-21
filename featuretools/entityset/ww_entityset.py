@@ -134,7 +134,7 @@ class EntitySet(object):
     def __ne__(self, other, deep=False):
         return not self.__eq__(other, deep=deep)
 
-    def __getitem__(self, entity_id):
+    def __getitem__(self, dataframe_id):
         """Get entity instance from entityset
 
         Args:
@@ -144,10 +144,10 @@ class EntitySet(object):
             :class:`.Entity` : Instance of entity. None if entity doesn't
                 exist.
         """
-        if entity_id in self.dataframe_dict:
-            return self.dataframe_dict[entity_id]
+        if dataframe_id in self.dataframe_dict:
+            return self.dataframe_dict[dataframe_id]
         name = self.id or "entity set"
-        raise KeyError('Entity %s does not exist in %s' % (entity_id, name))
+        raise KeyError('DataFrame %s does not exist in %s' % (dataframe_id, name))
 
     @property
     def dataframes(self):
