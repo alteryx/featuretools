@@ -110,7 +110,6 @@ def test_init_es_with_multiple_dataframes(pd_df):
 
 
 def test_add_dataframe_to_es(df):
-
     es1 = EntitySet('es')
     assert es1.dataframe_dict == {}
     es1.add_dataframe('table', df, index='id', semantic_tags={'category': 'new_tag'})
@@ -124,6 +123,16 @@ def test_add_dataframe_to_es(df):
     assert len(es2.dataframe_dict) == 1
 
     assert es1['table'].ww == es2['table'].ww
+
+
+def test_change_es_dataframe_schema(df):
+    df.ww.init()
+    es = EntitySet('es', dataframes={'table': (df,)})
+
+    assert es['table'].ww.index is None
+
+    es.dataframe_dict['table'].ww.set_index('id')
+    assert es['table'].ww.index == 'id'
 
 
 def test_init_es_with_relationships(df):

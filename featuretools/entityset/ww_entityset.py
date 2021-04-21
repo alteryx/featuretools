@@ -145,6 +145,7 @@ class EntitySet(object):
                 exist.
         """
         if dataframe_id in self.dataframe_dict:
+            # --> might want to consider returning the accessor or maybe just the schema instead of the DataFrame???
             return self.dataframe_dict[dataframe_id]
         name = self.id or "entity set"
         raise KeyError('DataFrame %s does not exist in %s' % (dataframe_id, name))
@@ -219,16 +220,15 @@ class EntitySet(object):
     ###########################################################################
 
     def __repr__(self):
-        # --> necessary for replacing
         repr_out = u"Entityset: {}\n".format(self.id)
         repr_out += u"  Entities:"
-        for e in self.dataframes:
-            if e.shape:
+        for df in self.dataframes:
+            if df.shape:
                 repr_out += u"\n    {} [Rows: {}, Columns: {}]".format(
-                    e.id, e.shape[0], e.shape[1])
+                    df.ww.name, df.shape[0], df.shape[1])
             else:
                 repr_out += u"\n    {} [Rows: None, Columns: None]".format(
-                    e.id)
+                    df.ww.name)
         repr_out += "\n  Relationships:"
 
         if len(self.relationships) == 0:
