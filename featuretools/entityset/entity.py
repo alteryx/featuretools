@@ -71,7 +71,10 @@ class Entity(object):
         self.df = df[[v.id for v in self.variables]]
         self.set_index(index)
 
-        self.set_time_index(time_index, already_sorted=already_sorted)
+        self.time_index = None
+        if time_index:
+            self.set_time_index(time_index, already_sorted=already_sorted)
+
         self.secondary_time_index = secondary_time_index
 
     def __repr__(self):
@@ -281,28 +284,31 @@ class Entity(object):
             self.variables.remove(v)
 
     def set_time_index(self, variable_id, already_sorted=False):
-        self.time_index = variable_id
-        self._already_sorted = already_sorted
-        self._check_time_index()
+        # check time type
+        if not isinstance(self.df, pd.DataFrame) or self.df.empty:
+            time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
+        else:
+            time_to_check = self.df[variable_id].iloc[0]
+        time_type = _check_time_type(time_to_check)
 
-    def _check_time_index(self):
-        if self.time_index is None:
-            return
+        if time_type is None:
+            raise TypeError("%s time index not recognized as numeric or"
+                            " datetime" % (self.id))
 
-        time_type = self._get_time_type()
         if is_instance(self.df, (dd, ks), 'DataFrame'):
             t = time_type  # skip checking values
-            self._already_sorted = True  # skip sorting
+            already_sorted = True  # skip sorting
         else:
             t = vtypes.NumericTimeIndex
-            if col_is_datetime(self.df[self.time_index]):
+            if col_is_datetime(self.df[variable_id]):
                 t = vtypes.DatetimeTimeIndex
 
         # use stable sort
-        if not self._already_sorted:
+        if not already_sorted:
             # sort by time variable, then by index
-            self.df = self.df.sort_values([self.time_index, self.index])
-        self.convert_variable_type(self.time_index, t, convert_data=False)
+            self.df = self.df.sort_values([variable_id, self.index])
+        self.convert_variable_type(variable_id, t, convert_data=False)
+        self.time_index = variable_id
 
     def _get_time_type(self, variable_id=None):
         variable_id = variable_id or self.time_index

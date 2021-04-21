@@ -553,8 +553,10 @@ class EntitySet(object):
             already_sorted=already_sorted,
             make_index=make_index)
 
-        self._check_uniform_time_index(entity)
-        self._check_secondary_time_index(entity)
+        if entity.time_index is not None:
+            self._check_uniform_time_index(entity)
+            self._check_secondary_time_index(entity)
+
         self.entity_dict[entity.id] = entity
         self.reset_data_description()
         return self
@@ -1190,10 +1192,10 @@ class EntitySet(object):
         # Make sure column ordering matches variable ordering
         self[entity_id].df = df[[v.id for v in variables]]
         self[entity_id].set_index(self[entity_id].index)
-        self[entity_id]._already_sorted = already_sorted
+        if self[entity_id].time_index is not None:
+            self[entity_id].set_time_index(self[entity_id].time_index, already_sorted=already_sorted)
+            self._check_uniform_time_index(self[entity_id])
 
-        self[entity_id]._check_time_index()
-        self._check_uniform_time_index(self[entity_id])
         self.set_secondary_time_index(self[entity_id], self[entity_id].secondary_time_index)
 
         if recalculate_last_time_indexes and self[entity_id].last_time_index is not None:
