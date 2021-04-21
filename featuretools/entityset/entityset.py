@@ -19,7 +19,7 @@ from featuretools.utils.plot_utils import (
     get_graphviz_format,
     save_graph
 )
-from featuretools.utils.wrangle import _check_timedelta
+from featuretools.utils.wrangle import _check_time_type, _check_timedelta
 
 ks = import_or_none('databricks.koalas')
 
@@ -1217,12 +1217,26 @@ class EntitySet(object):
         if variable_id is None:
             return
 
-        time_type = entity._get_time_type(variable_id)
+        time_type = self._get_time_type(entity, variable_id)
         if self.time_type is None:
             self.time_type = time_type
         elif self.time_type != time_type:
             info = "%s time index is %s type which differs from other entityset time indexes"
             raise TypeError(info % (entity.id, time_type))
+
+    def _get_time_type(self, entity, variable_id=None):
+        variable_id = variable_id or entity.time_index
+        if not isinstance(entity.df, pd.DataFrame) or entity.df.empty:
+            dtype = entity[variable_id]._default_pandas_dtype
+            time_to_check = vtypes.DEFAULT_DTYPE_VALUES[dtype]
+        else:
+            time_to_check = entity.df[variable_id].iloc[0]
+
+        time_type = _check_time_type(time_to_check)
+        if time_type is None:
+            info = "%s time index not recognized as numeric or datetime"
+            raise TypeError(info % entity.id)
+        return time_type
 
 
 def _vals_to_series(instance_vals, variable_id):
