@@ -319,8 +319,8 @@ class EntitySet(object):
         return self
 
     def set_secondary_time_index(self, entity, secondary_time_index):
+        self._check_secondary_time_index(entity, secondary_time_index)
         entity.secondary_time_index = secondary_time_index
-        self._check_secondary_time_index(entity)
 
     ###########################################################################
     #   Relationship access/helper methods  ###################################
@@ -1205,8 +1205,9 @@ class EntitySet(object):
             self._check_uniform_time_index(entity)
             self._check_secondary_time_index(entity)
 
-    def _check_secondary_time_index(self, entity):
-        for time_index, columns in entity.secondary_time_index.items():
+    def _check_secondary_time_index(self, entity, secondary_time_index=None):
+        secondary_time_index = secondary_time_index or entity.secondary_time_index
+        for time_index, columns in secondary_time_index.items():
             self._check_uniform_time_index(entity, variable_id=time_index)
             if time_index not in columns:
                 columns.append(time_index)
