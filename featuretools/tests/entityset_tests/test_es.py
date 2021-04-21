@@ -884,7 +884,6 @@ def test_sets_time_when_adding_entity(transactions_df):
                                  index="id",
                                  time_index="signup_date",
                                  variable_types=accounts_vtypes)
-
     # add non time type as time index, only valid for pandas
     if isinstance(transactions_df, pd.DataFrame):
         error_text = "Attempted to convert all string column signup_date to numeric"
@@ -963,7 +962,6 @@ def test_checks_time_type_setting_secondary_time_index(es):
     error_text = "transactions time index is <class 'featuretools.variable_types.variable.DatetimeTimeIndex'> type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
         card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
-
     # add secondary index that is non-time type
     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud']}
 

@@ -1129,7 +1129,6 @@ class EntitySet(object):
             pd.DataFrame : instances that match constraints with ids in order of underlying dataframe
         """
         entity = self[entity_id]
-
         if not variable_id:
             variable_id = entity.index
 
@@ -1193,11 +1192,13 @@ class EntitySet(object):
         self[entity_id].set_index(self[entity_id].index)
         self[entity_id]._already_sorted = already_sorted
         self.set_secondary_time_index(self[entity_id], self[entity_id].secondary_time_index)
+        self[entity_id]._check_time_index()
         self._check_uniform_time_index(self[entity_id])
 
         if recalculate_last_time_indexes and self[entity_id].last_time_index is not None:
             self.add_last_time_indexes(updated_entities=[self[entity_id].id])
         self.reset_data_description()
+
 
     def _check_time_indexes(self):
         for entity in self.entity_dict.values():
