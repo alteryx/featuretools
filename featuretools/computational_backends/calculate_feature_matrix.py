@@ -156,6 +156,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             raise ValueError(msg)
 
     target_entity = entityset[features[0].entity.id]
+
     cutoff_time = _validate_cutoff_time(cutoff_time, target_entity)
     entityset._check_time_indexes()
 
