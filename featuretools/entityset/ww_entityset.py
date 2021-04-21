@@ -351,143 +351,143 @@ class EntitySet(object):
 
         entity.secondary_time_index = secondary_time_index
 
-    # ###########################################################################
-    # #   Relationship access/helper methods  ###################################
-    # ###########################################################################
+    ###########################################################################
+    #   Relationship access/helper methods  ###################################
+    ###########################################################################
 
-    # def find_forward_paths(self, start_entity_id, goal_entity_id):
-    #     """
-    #     Generator which yields all forward paths between a start and goal
-    #     entity. Does not include paths which contain cycles.
+    def find_forward_paths(self, start_dataframe_id, goal_dataframe_id):
+        """
+        Generator which yields all forward paths between a start and goal
+        entity. Does not include paths which contain cycles.
 
-    #     Args:
-    #         start_entity_id (str) : id of entity to start the search from
-    #         goal_entity_id  (str) : if of entity to find forward path to
+        Args:
+            start_entity_id (str) : id of entity to start the search from
+            goal_entity_id  (str) : if of entity to find forward path to
 
-    #     See Also:
-    #         :func:`BaseEntitySet.find_backward_paths`
-    #     """
-    #     for sub_entity_id, path in self._forward_entity_paths(start_entity_id):
-    #         if sub_entity_id == goal_entity_id:
-    #             yield path
+        See Also:
+            :func:`BaseEntitySet.find_backward_paths`
+        """
+        for sub_dataframe_id, path in self._forward_entity_paths(start_dataframe_id):
+            if sub_dataframe_id == goal_dataframe_id:
+                yield path
 
-    # def find_backward_paths(self, start_entity_id, goal_entity_id):
-    #     """
-    #     Generator which yields all backward paths between a start and goal
-    #     entity. Does not include paths which contain cycles.
+    def find_backward_paths(self, start_dataframe_id, goal_dataframe_id):
+        """
+        Generator which yields all backward paths between a start and goal
+        entity. Does not include paths which contain cycles.
 
-    #     Args:
-    #         start_entity_id (str) : Id of entity to start the search from.
-    #         goal_entity_id  (str) : Id of entity to find backward path to.
+        Args:
+            start_entity_id (str) : Id of entity to start the search from.
+            goal_entity_id  (str) : Id of entity to find backward path to.
 
-    #     See Also:
-    #         :func:`BaseEntitySet.find_forward_paths`
-    #     """
-    #     for path in self.find_forward_paths(goal_entity_id, start_entity_id):
-    #         # Reverse path
-    #         yield path[::-1]
+        See Also:
+            :func:`BaseEntitySet.find_forward_paths`
+        """
+        for path in self.find_forward_paths(goal_dataframe_id, start_dataframe_id):
+            # Reverse path
+            yield path[::-1]
 
-    # def _forward_entity_paths(self, start_entity_id, seen_entities=None):
-    #     """
-    #     Generator which yields the ids of all entities connected through forward
-    #     relationships, and the path taken to each. An entity will be yielded
-    #     multiple times if there are multiple paths to it.
+    def _forward_entity_paths(self, start_dataframe_id, seen_dataframes=None):
+        """
+        Generator which yields the ids of all entities connected through forward
+        relationships, and the path taken to each. An entity will be yielded
+        multiple times if there are multiple paths to it.
 
-    #     Implemented using depth first search.
-    #     """
-    #     if seen_entities is None:
-    #         seen_entities = set()
+        Implemented using depth first search.
+        """
+        if seen_dataframes is None:
+            seen_dataframes = set()
 
-    #     if start_entity_id in seen_entities:
-    #         return
+        if start_dataframe_id in seen_dataframes:
+            return
 
-    #     seen_entities.add(start_entity_id)
+        seen_dataframes.add(start_dataframe_id)
 
-    #     yield start_entity_id, []
+        yield start_dataframe_id, []
 
-    #     for relationship in self.get_forward_relationships(start_entity_id):
-    #         next_entity = relationship.parent_dataframe.id
-    #         # Copy seen entities for each next node to allow multiple paths (but
-    #         # not cycles).
-    #         descendants = self._forward_entity_paths(next_entity, seen_entities.copy())
-    #         for sub_entity_id, sub_path in descendants:
-    #             yield sub_entity_id, [relationship] + sub_path
+        for relationship in self.get_forward_relationships(start_dataframe_id):
+            next_dataframe = relationship.parent_dataframe.ww.id
+            # Copy seen entities for each next node to allow multiple paths (but
+            # not cycles).
+            descendants = self._forward_entity_paths(next_dataframe, seen_dataframes.copy())
+            for sub_dataframe_id, sub_path in descendants:
+                yield sub_dataframe_id, [relationship] + sub_path
 
-    # def get_forward_entities(self, entity_id, deep=False):
-    #     """
-    #     Get entities that are in a forward relationship with entity
+    def get_forward_entities(self, entity_id, deep=False):
+        """
+        Get entities that are in a forward relationship with entity
 
-    #     Args:
-    #         entity_id (str): Id entity of entity to search from.
-    #         deep (bool): if True, recursively find forward entities.
+        Args:
+            entity_id (str): Id entity of entity to search from.
+            deep (bool): if True, recursively find forward entities.
 
-    #     Yields a tuple of (descendent_id, path from entity_id to descendant).
-    #     """
-    #     for relationship in self.get_forward_relationships(entity_id):
-    #         parent_eid = relationship.parent_dataframe.id
-    #         direct_path = RelationshipPath([(True, relationship)])
-    #         yield parent_eid, direct_path
+        Yields a tuple of (descendent_id, path from entity_id to descendant).
+        """
+        for relationship in self.get_forward_relationships(entity_id):
+            parent_dataframe_id = relationship.parent_dataframe.ww.name
+            direct_path = RelationshipPath([(True, relationship)])
+            yield parent_dataframe_id, direct_path
 
-    #         if deep:
-    #             sub_entities = self.get_forward_entities(parent_eid, deep=True)
-    #             for sub_eid, path in sub_entities:
-    #                 yield sub_eid, direct_path + path
+            if deep:
+                sub_dataframes = self.get_forward_entities(parent_dataframe_id, deep=True)
+                for sub_dataframe_id, path in sub_dataframes:
+                    yield sub_dataframe_id, direct_path + path
 
-    # def get_backward_entities(self, entity_id, deep=False):
-    #     """
-    #     Get entities that are in a backward relationship with entity
+    def get_backward_entities(self, entity_id, deep=False):
+        """
+        Get entities that are in a backward relationship with entity
 
-    #     Args:
-    #         entity_id (str): Id entity of entity to search from.
-    #         deep (bool): if True, recursively find backward entities.
+        Args:
+            entity_id (str): Id entity of entity to search from.
+            deep (bool): if True, recursively find backward entities.
 
-    #     Yields a tuple of (descendent_id, path from entity_id to descendant).
-    #     """
-    #     for relationship in self.get_backward_relationships(entity_id):
-    #         child_eid = relationship.child_dataframe.id
-    #         direct_path = RelationshipPath([(False, relationship)])
-    #         yield child_eid, direct_path
+        Yields a tuple of (descendent_id, path from entity_id to descendant).
+        """
+        for relationship in self.get_backward_relationships(entity_id):
+            child_dataframe_id = relationship.child_dataframe.ww.id
+            direct_path = RelationshipPath([(False, relationship)])
+            yield child_dataframe_id, direct_path
 
-    #         if deep:
-    #             sub_entities = self.get_backward_entities(child_eid, deep=True)
-    #             for sub_eid, path in sub_entities:
-    #                 yield sub_eid, direct_path + path
+            if deep:
+                sub_entities = self.get_backward_entities(child_dataframe_id, deep=True)
+                for sub_dataframe_id, path in sub_entities:
+                    yield sub_dataframe_id, direct_path + path
 
-    # def get_forward_relationships(self, entity_id):
-    #     """Get relationships where entity "entity_id" is the child
+    def get_forward_relationships(self, entity_id):
+        """Get relationships where entity "entity_id" is the child
 
-    #     Args:
-    #         entity_id (str): Id of entity to get relationships for.
+        Args:
+            entity_id (str): Id of entity to get relationships for.
 
-    #     Returns:
-    #         list[:class:`.Relationship`]: List of forward relationships.
-    #     """
-    #     return [r for r in self.relationships if r.child_dataframe.id == entity_id]
+        Returns:
+            list[:class:`.Relationship`]: List of forward relationships.
+        """
+        return [r for r in self.relationships if r.child_dataframe.ww.name == entity_id]
 
-    # def get_backward_relationships(self, entity_id):
-    #     """
-    #     get relationships where entity "entity_id" is the parent.
+    def get_backward_relationships(self, entity_id):
+        """
+        get relationships where entity "entity_id" is the parent.
 
-    #     Args:
-    #         entity_id (str): Id of entity to get relationships for.
+        Args:
+            entity_id (str): Id of entity to get relationships for.
 
-    #     Returns:
-    #         list[:class:`.Relationship`]: list of backward relationships
-    #     """
-    #     return [r for r in self.relationships if r.parent_dataframe.id == entity_id]
+        Returns:
+            list[:class:`.Relationship`]: list of backward relationships
+        """
+        return [r for r in self.relationships if r.parent_dataframe.ww.name == entity_id]
 
-    # def has_unique_forward_path(self, start_entity_id, end_entity_id):
-    #     """
-    #     Is the forward path from start to end unique?
+    def has_unique_forward_path(self, start_dataframe_id, end_dataframe_id):
+        """
+        Is the forward path from start to end unique?
 
-    #     This will raise if there is no such path.
-    #     """
-    #     paths = self.find_forward_paths(start_entity_id, end_entity_id)
+        This will raise if there is no such path.
+        """
+        paths = self.find_forward_paths(start_dataframe_id, end_dataframe_id)
 
-    #     next(paths)
-    #     second_path = next(paths, None)
+        next(paths)
+        second_path = next(paths, None)
 
-    #     return not second_path
+        return not second_path
 
     ###########################################################################
     #  Entity creation methods  ##############################################

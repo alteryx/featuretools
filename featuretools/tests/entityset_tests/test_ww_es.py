@@ -146,6 +146,9 @@ def test_init_es_with_relationships(pd_df):
 
     assert len(es.relationships) == 1
 
+    forward_entities = [name for name, _ in es.get_forward_entities('second_table')]
+    assert forward_entities[0] == 'first_table'
+
 
 def test_add_relationships_to_es(df):
     pass
