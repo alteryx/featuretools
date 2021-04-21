@@ -1199,7 +1199,6 @@ class EntitySet(object):
             self.add_last_time_indexes(updated_entities=[self[entity_id].id])
         self.reset_data_description()
 
-
     def _check_time_indexes(self):
         for entity in self.entity_dict.values():
             if entity.time_index is None:
