@@ -223,9 +223,9 @@ class EntitySet(object):
         repr_out = u"Entityset: {}\n".format(self.id)
         repr_out += u"  Entities:"
         for e in self.dataframes:
-            if e.df.shape:
+            if e.shape:
                 repr_out += u"\n    {} [Rows: {}, Columns: {}]".format(
-                    e.id, e.df.shape[0], e.df.shape[1])
+                    e.id, e.shape[0], e.shape[1])
             else:
                 repr_out += u"\n    {} [Rows: None, Columns: None]".format(
                     e.id)
@@ -572,7 +572,7 @@ class EntitySet(object):
         #             raise ValueError("DatetimeTimeIndex variable %s must be set using time_index parameter" % (variable))
 
         if len(self.dataframes) > 0:
-            if not isinstance(dataframe, type(self.dataframes[0].df)):
+            if not isinstance(dataframe, type(self.dataframes[0])):
                 raise ValueError("All entity dataframes must be of the same type. "
                                  "Cannot add entity of type {} to an entityset with existing entities "
                                  "of type {}".format(type(dataframe), type(self.dataframes[0].df)))
@@ -580,9 +580,13 @@ class EntitySet(object):
         if dataframe.ww.schema is None:
             # init woodwork with params
             # --> need to handle secondary time index!!!!!!!
-            dataframe.ww.init(name=dataframe_id, index=index, time_index=time_index,
-                              logical_types=logical_types, semantic_tags=semantic_tags,
-                              make_index=make_index, already_sorted=already_sorted)
+            dataframe.ww.init(name=dataframe_id,
+                              index=index,
+                              time_index=time_index,
+                              logical_types=logical_types,
+                              semantic_tags=semantic_tags,
+                              make_index=make_index,
+                              already_sorted=already_sorted)
 
         # --> need to confirm that the names match or deal with different names
 

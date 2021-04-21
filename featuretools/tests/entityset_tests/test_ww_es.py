@@ -41,7 +41,7 @@ def ks_df(pd_df):
 
 
 # --> add other fixtures back in
-@pytest.fixture(params=['pd_df'])
+@pytest.fixture(params=['pd_df', 'dd_df'])
 def df(request):
     return request.getfixturevalue(request.param)
 
@@ -97,11 +97,33 @@ def test_init_es_with_dataframe_and_params(df):
 
 
 def test_init_es_with_multiple_dataframes(pd_df):
-    second_df = pd.DataFrame({'id': [0, 1, 2, 3], 'foreign_key': [1, 2, 2, 1]})
+    second_df = pd.DataFrame({'id': [0, 1, 2, 3], 'first_table_id': [1, 2, 2, 1]})
+
+    pd_df.ww.init(name='first_table', index='id')
+    second_df.ww.init(name='second_table', index='id', semantic_tags={'first_table_id': 'foreign_key'})
+
+    es = EntitySet('es', dataframes={'first_table': (pd_df,), 'second_table': (second_df, 'id', None, None, {'first_table_id': 'foreign_key'})})
+
+    assert len(es.dataframe_dict) == 2
+    assert es['first_table'].ww.schema is not None
+    assert es['second_table'].ww.schema is not None
 
 
 def test_add_dataframe_to_es(df):
-    pass
+
+    es1 = EntitySet('es')
+    assert es1.dataframe_dict == {}
+    es1.add_dataframe('table', df, index='id', semantic_tags={'category': 'new_tag'})
+    assert len(es1.dataframe_dict) == 1
+
+    copy_df = df.ww.copy()
+
+    es2 = EntitySet('es')
+    assert es2.dataframe_dict == {}
+    es2.add_dataframe('table', copy_df)
+    assert len(es2.dataframe_dict) == 1
+
+    assert es1['table'].ww == es2['table'].ww
 
 
 def test_init_es_with_relationships(df):
