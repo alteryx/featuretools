@@ -96,7 +96,7 @@ class EntitySet(object):
                 semantic_tags = dataframes[df_name][4]
             if len(dataframes[df_name]) > 5:
                 make_index = dataframes[df_name][5]
-            # --> need to finda better way to pass ww params and if we want to allow other formats like ColumnSchema or TableSchema??
+            # --> need to find a better way to pass ww params and if we want to allow other formats like ColumnSchema or TableSchema??
             self.add_dataframe(dataframe_id=df_name,
                                dataframe=df,
                                index=index_column,
@@ -105,10 +105,9 @@ class EntitySet(object):
                                semantic_tags=semantic_tags,
                                make_index=make_index)
 
-        # --> allow relationship creation
-        # for relationship in relationships:
-        #     parent_df, parent_column, child_df, child_column = relationship
-        #     self.add_relationship(parent_df, parent_column, child_df, child_column)
+        for relationship in relationships:
+            parent_df, parent_column, child_df, child_column = relationship
+            self.add_relationship(parent_df, parent_column, child_df, child_column)
 
         self.reset_data_description()
 
@@ -241,96 +240,95 @@ class EntitySet(object):
 
         return repr_out
 
-    # def add_relationships(self, relationships):
-    #     # --> necessary for replacing
-    #     """Add multiple new relationships to a entityset
+    def add_relationships(self, relationships):
+        """Add multiple new relationships to a entityset
 
-    #     Args:
-    #         relationships (list[tuple(str, str, str, str)] or list[Relationship]) : List of
-    #             new relationships to add. Relationships are specified either as a :class:`.Relationship`
-    #             object or a four element tuple identifying the parent and child columns:
-    #             (parent_dataframe_id, parent_column_id, child_dataframe_id, child_column_id)
-    #     """
-    #     for rel in relationships:
-    #         if isinstance(rel, Relationship):
-    #             self.add_relationship(relationship=rel)
-    #         else:
-    #             self.add_relationship(*rel)
-    #     return self
+        Args:
+            relationships (list[tuple(str, str, str, str)] or list[Relationship]) : List of
+                new relationships to add. Relationships are specified either as a :class:`.Relationship`
+                object or a four element tuple identifying the parent and child columns:
+                (parent_dataframe_id, parent_column_id, child_dataframe_id, child_column_id)
+        """
+        for rel in relationships:
+            if isinstance(rel, Relationship):
+                self.add_relationship(relationship=rel)
+            else:
+                self.add_relationship(*rel)
+        return self
 
-    # def add_relationship(self,
-    #                      parent_dataframe_id=None,
-    #                      parent_column_id=None,
-    #                      child_dataframe_id=None,
-    #                      child_column_id=None,
-    #                      relationship=None):
-    #     # --> 2. necessary for replacing
-    #     """Add a new relationship between entities in the entityset. Relationships can be specified
-    #     by passing dataframe and columns ids or by passing a :class:`.Relationship` object.
+    def add_relationship(self,
+                         parent_dataframe_id=None,
+                         parent_column_id=None,
+                         child_dataframe_id=None,
+                         child_column_id=None,
+                         relationship=None):
+        """Add a new relationship between entities in the entityset. Relationships can be specified
+        by passing dataframe and columns ids or by passing a :class:`.Relationship` object.
 
-    #     Args:
-    #         parent_dataframe_id (str): Name of the parent dataframe in the EntitySet. Must be specified
-    #             if relationship is not.
-    #         parent_column_id (str): Name of the parent column. Must be specified if relationship is not.
-    #         child_dataframe_id (str): Name of the child dataframe in the EntitySet. Must be specified
-    #             if relationship is not.
-    #         child_column_id (str): Name of the child column. Must be specified if relationship is not.
-    #         relationship (Relationship): Instance of new relationship to be added. Must be specified
-    #             if dataframe and column ids are not supplied.
-    #     """
-    #     if relationship and (parent_dataframe_id or parent_column_id or child_dataframe_id or child_column_id):
-    #         raise ValueError("Cannot specify dataframe and column id values and also supply a Relationship")
+        Args:
+            parent_dataframe_id (str): Name of the parent dataframe in the EntitySet. Must be specified
+                if relationship is not.
+            parent_column_id (str): Name of the parent column. Must be specified if relationship is not.
+            child_dataframe_id (str): Name of the child dataframe in the EntitySet. Must be specified
+                if relationship is not.
+            child_column_id (str): Name of the child column. Must be specified if relationship is not.
+            relationship (Relationship): Instance of new relationship to be added. Must be specified
+                if dataframe and column ids are not supplied.
+        """
+        if relationship and (parent_dataframe_id or parent_column_id or child_dataframe_id or child_column_id):
+            raise ValueError("Cannot specify dataframe and column id values and also supply a Relationship")
 
-    #     if not relationship:
-    #         relationship = Relationship(self,
-    #                                     parent_dataframe_id,
-    #                                     parent_column_id,
-    #                                     child_dataframe_id,
-    #                                     child_column_id)
-    #     if relationship in self.relationships:
-    #         warnings.warn(
-    #             "Not adding duplicate relationship: " + str(relationship))
-    #         return self
+        if not relationship:
+            relationship = Relationship(self,
+                                        parent_dataframe_id,
+                                        parent_column_id,
+                                        child_dataframe_id,
+                                        child_column_id)
+        if relationship in self.relationships:
+            warnings.warn(
+                "Not adding duplicate relationship: " + str(relationship))
+            return self
 
-    #     # _operations?
+        # _operations?
 
-    #     # this is a new pair of entities
-    #     child_e = relationship.child_dataframe
-    #     child_v = relationship.child_column.id
-    #     if child_e.index == child_v:
-    #         msg = "Unable to add relationship because child column '{}' in '{}' is also its index"
-    #         raise ValueError(msg.format(child_v, child_e.id))
-    #     parent_e = relationship.parent_dataframe
-    #     parent_v = relationship.parent_column.id
-    #     if not isinstance(child_e[child_v], vtypes.Id):
-    #         child_e.convert_variable_type(variable_id=child_v,
-    #                                       new_type=vtypes.Id,
-    #                                       convert_data=False)
+        # this is a new pair of entities
+        child_df = relationship.child_dataframe
+        # --> is this a variable??? how do you have id?
+        child_column = relationship.child_column.name
+        if child_df.ww.index == child_column:
+            msg = "Unable to add relationship because child column '{}' in '{}' is also its index"
+            raise ValueError(msg.format(child_column, child_df.ww.name))
+        parent_df = relationship.parent_dataframe
+        parent_column = relationship.parent_column.name
+        # --> foreign key tag corresponds to a Id variable?
+        if 'foreign_key' not in child_df.ww.semantic_tags[child_column]:
+            child_df.ww.add_semantic_tags({child_column: 'foreign_key'})
 
-    #     if not isinstance(parent_e[parent_v], vtypes.Index):
-    #         parent_e.convert_variable_type(variable_id=parent_v,
-    #                                        new_type=vtypes.Index,
-    #                                        convert_data=False)
-    #     # Empty dataframes (as a result of accessing Entity.metadata)
-    #     # default to object dtypes for discrete variables, but
-    #     # indexes/ids default to ints. In this case, we convert
-    #     # the empty column's type to int
-    #     if isinstance(child_e.df, pd.DataFrame) and \
-    #             (child_e.df.empty and child_e.df[child_v].dtype == object and
-    #              is_numeric_dtype(parent_e.df[parent_v])):
-    #         child_e.df[child_v] = pd.Series(name=child_v, dtype=np.int64)
+        # --> what happens if there's another index set?????
+        if parent_df.ww.index != parent_column:
+            # --> previously had 'convert_data=False` does this means we shouldn't set the underlying index?????
+            parent_df.ww.set_index(parent_column)
+        # Empty dataframes (as a result of accessing Entity.metadata)
+        # default to object dtypes for discrete variables, but
+        # indexes/ids default to ints. In this case, we convert
+        # the empty column's type to int
+        if isinstance(child_df, pd.DataFrame) and \
+                (child_df.empty and child_df[child_column].dtype == object and
+                 parent_df.ww[parent_column].is_numeric):
+            # --> should this match Integer or IntegerNullable????
+            child_df[child_column] = pd.Series(name=child_column, dtype=np.int64)
 
-    #     parent_dtype = parent_e.df[parent_v].dtype
-    #     child_dtype = child_e.df[child_v].dtype
-    #     msg = u"Unable to add relationship because {} in {} is Pandas dtype {}"\
-    #         u" and {} in {} is Pandas dtype {}."
-    #     if not is_dtype_equal(parent_dtype, child_dtype):
-    #         raise ValueError(msg.format(parent_v, parent_e.id, parent_dtype,
-    #                                     child_v, child_e.id, child_dtype))
+        parent_dtype = parent_df[parent_column].dtype
+        child_dtype = child_df[child_column].dtype
+        msg = u"Unable to add relationship because {} in {} is Pandas dtype {}"\
+            u" and {} in {} is Pandas dtype {}."
+        if not is_dtype_equal(parent_dtype, child_dtype):
+            raise ValueError(msg.format(parent_column, parent_df.ww.name, parent_dtype,
+                                        child_column, child_df.ww.name, child_dtype))
 
-    #     self.relationships.append(relationship)
-    #     self.reset_data_description()
-    #     return self
+        self.relationships.append(relationship)
+        self.reset_data_description()
+        return self
 
     def set_secondary_time_index(self, entity, secondary_time_index):
         # --> necessary for replacing
@@ -580,6 +578,7 @@ class EntitySet(object):
         if dataframe.ww.schema is None:
             # init woodwork with params
             # --> need to handle secondary time index!!!!!!!
+            # --> all these arams will be ignored if schema is not none - do we want to either raise warning or handle differenctly?
             dataframe.ww.init(name=dataframe_id,
                               index=index,
                               time_index=time_index,

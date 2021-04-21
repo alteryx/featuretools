@@ -23,8 +23,8 @@ class Relationship(object):
         self._parent_column_id = parent_column_id
         self._child_column_id = child_column_id
 
-        if (self.parent_dataframe.index is not None and
-                self._parent_column_id != self.parent_dataframe.index):
+        if (self.parent_dataframe.ww.index is not None and
+                self._parent_column_id != self.parent_dataframe.ww.index):
             raise AttributeError(f"Parent column '{self.parent_column}' is not the index of "
                                  f"dataframe {self.parent_dataframe}")
 
@@ -71,6 +71,7 @@ class Relationship(object):
     @property
     def parent_column(self):
         """Column in parent dataframe"""
+        # --> consider returning a woodwork column here!!!!!! and in child column
         return self.parent_dataframe[self._parent_column_id]
 
     @property

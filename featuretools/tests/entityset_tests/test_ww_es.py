@@ -100,7 +100,6 @@ def test_init_es_with_multiple_dataframes(pd_df):
     second_df = pd.DataFrame({'id': [0, 1, 2, 3], 'first_table_id': [1, 2, 2, 1]})
 
     pd_df.ww.init(name='first_table', index='id')
-    second_df.ww.init(name='second_table', index='id', semantic_tags={'first_table_id': 'foreign_key'})
 
     es = EntitySet('es', dataframes={'first_table': (pd_df,), 'second_table': (second_df, 'id', None, None, {'first_table_id': 'foreign_key'})})
 
@@ -135,8 +134,17 @@ def test_change_es_dataframe_schema(df):
     assert es['table'].ww.index == 'id'
 
 
-def test_init_es_with_relationships(df):
-    pass
+def test_init_es_with_relationships(pd_df):
+    second_df = pd.DataFrame({'id': [0, 1, 2, 3], 'first_table_id': [1, 2, 2, 1]})
+
+    pd_df.ww.init(name='first_table', index='id')
+    second_df.ww.init(name='second_table', index='id', semantic_tags={'first_table_id': 'foreign_key'})
+
+    es = EntitySet('es',
+                   dataframes={'first_table': (pd_df,), 'second_table': (second_df,)},
+                   relationships=[('first_table', 'id', 'second_table', 'first_table_id')])
+
+    assert len(es.relationships) == 1
 
 
 def test_add_relationships_to_es(df):
