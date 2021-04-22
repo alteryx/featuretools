@@ -1207,7 +1207,7 @@ class EntitySet(object):
             self._check_secondary_time_index(entity)
 
     def _check_secondary_time_index(self, entity, secondary_time_index=None):
-        secondary_time_index = secondary_time_index or entity.secondary_time_index
+        secondary_time_index = secondary_time_index or getattr(entity, 'secondary_time_index', {})
         for time_index, columns in secondary_time_index.items():
             self._check_uniform_time_index(entity, variable_id=time_index)
             if time_index not in columns:

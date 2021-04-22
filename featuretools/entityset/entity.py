@@ -75,7 +75,7 @@ class Entity(object):
         if time_index:
             self.set_time_index(time_index, already_sorted=already_sorted)
 
-        self.secondary_time_index = secondary_time_index
+        entityset.set_secondary_time_index(self, secondary_time_index)
 
     def __repr__(self):
         repr_out = u"Entity: {}\n".format(self.id)
