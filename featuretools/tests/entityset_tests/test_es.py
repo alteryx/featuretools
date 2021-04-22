@@ -903,6 +903,7 @@ def test_checks_time_type_setting_time_index(es):
                      " other entityset time indexes" % (variable_types.NumericTimeIndex)
     with pytest.raises(TypeError, match=error_text):
         es['log'].set_time_index('purchased')
+        es._check_uniform_time_index(es['log'])
 
 
 def test_checks_time_type_setting_secondary_time_index(es):

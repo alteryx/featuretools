@@ -319,23 +319,7 @@ class EntitySet(object):
         return self
 
     def set_secondary_time_index(self, entity, secondary_time_index):
-        for time_index, columns in secondary_time_index.items():
-            if is_instance(entity.df, (dd, ks), 'DataFrame') or entity.df.empty:
-                variable_dtype = entity[time_index]._default_pandas_dtype
-                time_to_check = vtypes.DEFAULT_DTYPE_VALUES[variable_dtype]
-            else:
-                time_to_check = entity.df[time_index].head(1).iloc[0]
-            time_type = _check_time_type(time_to_check)
-            if time_type is None:
-                raise TypeError("%s time index not recognized as numeric or"
-                                " datetime" % (entity.id))
-            if self.time_type != time_type:
-                raise TypeError("%s time index is %s type which differs from"
-                                " other entityset time indexes" %
-                                (entity.id, time_type))
-            if time_index not in columns:
-                columns.append(time_index)
-
+        self._check_secondary_time_index(entity, secondary_time_index)
         entity.secondary_time_index = secondary_time_index
 
     ###########################################################################
@@ -568,6 +552,11 @@ class EntitySet(object):
             secondary_time_index=secondary_time_index,
             already_sorted=already_sorted,
             make_index=make_index)
+
+        if entity.time_index is not None:
+            self._check_uniform_time_index(entity)
+            self._check_secondary_time_index(entity)
+
         self.entity_dict[entity.id] = entity
         self.reset_data_description()
         return self
@@ -1205,11 +1194,50 @@ class EntitySet(object):
         self[entity_id].set_index(self[entity_id].index)
         if self[entity_id].time_index is not None:
             self[entity_id].set_time_index(self[entity_id].time_index, already_sorted=already_sorted)
+            self._check_uniform_time_index(self[entity_id])
 
         self.set_secondary_time_index(self[entity_id], self[entity_id].secondary_time_index)
         if recalculate_last_time_indexes and self[entity_id].last_time_index is not None:
             self.add_last_time_indexes(updated_entities=[self[entity_id].id])
         self.reset_data_description()
+
+    def _check_time_indexes(self):
+        for entity in self.entity_dict.values():
+            self._check_uniform_time_index(entity)
+            self._check_secondary_time_index(entity)
+
+    def _check_secondary_time_index(self, entity, secondary_time_index=None):
+        secondary_time_index = secondary_time_index or getattr(entity, 'secondary_time_index', {})
+        for time_index, columns in secondary_time_index.items():
+            self._check_uniform_time_index(entity, variable_id=time_index)
+            if time_index not in columns:
+                columns.append(time_index)
+
+    def _check_uniform_time_index(self, entity, variable_id=None):
+        variable_id = variable_id or entity.time_index
+        if variable_id is None:
+            return
+
+        time_type = self._get_time_type(entity, variable_id)
+        if self.time_type is None:
+            self.time_type = time_type
+        elif self.time_type != time_type:
+            info = "%s time index is %s type which differs from other entityset time indexes"
+            raise TypeError(info % (entity.id, time_type))
+
+    def _get_time_type(self, entity, variable_id=None):
+        variable_id = variable_id or entity.time_index
+        if not isinstance(entity.df, pd.DataFrame) or entity.df.empty:
+            dtype = entity[variable_id]._default_pandas_dtype
+            time_to_check = vtypes.DEFAULT_DTYPE_VALUES[dtype]
+        else:
+            time_to_check = entity.df[variable_id].iloc[0]
+
+        time_type = _check_time_type(time_to_check)
+        if time_type is None:
+            info = "%s time index not recognized as numeric or datetime"
+            raise TypeError(info % entity.id)
+        return time_type
 
 
 def _vals_to_series(instance_vals, variable_id):

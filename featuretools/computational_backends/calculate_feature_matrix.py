@@ -158,6 +158,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     target_entity = entityset[features[0].entity.id]
 
     cutoff_time = _validate_cutoff_time(cutoff_time, target_entity)
+    entityset._check_time_indexes()
 
     if isinstance(cutoff_time, pd.DataFrame):
         if instance_ids:

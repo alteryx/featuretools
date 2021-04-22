@@ -295,13 +295,6 @@ class Entity(object):
             raise TypeError("%s time index not recognized as numeric or"
                             " datetime" % (self.id))
 
-        if self.entityset.time_type is None:
-            self.entityset.time_type = time_type
-        elif self.entityset.time_type != time_type:
-            raise TypeError("%s time index is %s type which differs from"
-                            " other entityset time indexes" %
-                            (self.id, time_type))
-
         if is_instance(self.df, (dd, ks), 'DataFrame'):
             t = time_type  # skip checking values
             already_sorted = True  # skip sorting
