@@ -484,7 +484,7 @@ class EntitySet(object):
                       semantic_tags=None,
                       make_index=False,
                       time_index=None,
-                      secondary_time_index=None,
+                      secondary_time_index=None,  # --> do we need a way of adding last time indices since we wont have it on Entity???
                       already_sorted=False):  # --> maybe allow other kwargs for Woodwork Table???
         """
         Load the data for a specified entity from a Pandas DataFrame.
