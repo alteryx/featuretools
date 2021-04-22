@@ -206,7 +206,7 @@ class EntitySet(object):
     #             compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
     #             profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
     #     '''
-    #     if is_instance(self.dataframes[0].df, ks, 'DataFrame'):
+    #     if is_instance(self.dataframes[0], ks, 'DataFrame'):
     #         compression = str(compression)
     #     serialize.write_data_description(self, path, format='csv', index=False, sep=sep, encoding=encoding, engine=engine, compression=compression, profile_name=profile_name)
     #     return self
@@ -557,7 +557,7 @@ class EntitySet(object):
             if not isinstance(dataframe, type(self.dataframes[0])):
                 raise ValueError("All entity dataframes must be of the same type. "
                                  "Cannot add entity of type {} to an entityset with existing entities "
-                                 "of type {}".format(type(dataframe), type(self.dataframes[0].df)))
+                                 "of type {}".format(type(dataframe), type(self.dataframes[0])))
 
         if dataframe.ww.schema is None:
             # init woodwork with params
