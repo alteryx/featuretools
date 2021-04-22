@@ -415,7 +415,6 @@ def df4(request):
 
 
 def test_converts_dtype_on_init(df4):
-    # --> why cant we convert from int64 to Int64???????
     logical_types = {'id': ltypes.Categorical,
                      'ints': ltypes.Integer,
                      'floats': ltypes.Double}
@@ -427,52 +426,54 @@ def test_converts_dtype_on_init(df4):
     es.add_dataframe(dataframe_id='test_dataframe', dataframe=df4)
 
     entity_df = es['test_dataframe']
-    assert entity_df['ints'].dtype.name == 'Int64'
+    assert entity_df['ints'].dtype.name == 'int64'
     assert entity_df['floats'].dtype.name == 'float64'
 
     # this is infer from pandas dtype
-    e = es["test_dataframe"]
-    assert isinstance(e['category_int'], variable_types.Categorical)
+    df = es["test_dataframe"]
+    assert df.ww.logical_types['category_int'] == ltypes.Categorical
 
 
-def test_converts_variable_type_after_init(df4):
+def test_converts_dtype_after_init(df4):
+    category_dtype = 'category'
     if ks and isinstance(df4, ks.DataFrame):
-        pytest.xfail("Koalas doesn't support category dtype")
-    df4["category"] = df4["category"].astype("category")
+        category_dtype = 'string'
+
+    df4["category"] = df4["category"].astype(category_dtype)
     if not isinstance(df4, pd.DataFrame):
-        vtypes = {'id': variable_types.Categorical,
-                  'category': variable_types.Categorical,
-                  'category_int': variable_types.Categorical,
-                  'ints': variable_types.Numeric,
-                  'floats': variable_types.Numeric}
+        logical_types = {'id': ltypes.Categorical,
+                         'category': ltypes.Categorical,
+                         'category_int': ltypes.Categorical,
+                         'ints': ltypes.Integer,
+                         'floats': ltypes.Double}
     else:
-        vtypes = None
+        logical_types = None
     es = EntitySet(id='test')
     es.add_dataframe(dataframe_id='test_dataframe', index='id',
-                     dataframe=df4, variable_types=vtypes)
-    e = es['test_dataframe']
-    df = es['test_dataframe'].df
+                     dataframe=df4, logical_types=logical_types)
+    df = es['test_dataframe']
 
-    e.convert_variable_type('ints', variable_types.Numeric)
-    assert isinstance(e['ints'], variable_types.Numeric)
-    assert df['ints'].dtype.name in variable_types.PandasTypes._pandas_numerics
+    df.ww.set_types(logical_types={'ints': 'Integer'})
+    assert df.ww.logical_types['ints'] == ltypes.Integer
+    assert df['ints'].dtype == 'int64'
 
-    e.convert_variable_type('ints', variable_types.Categorical)
-    assert isinstance(e['ints'], variable_types.Categorical)
+    df.ww.set_types(logical_types={'ints': 'Categorical'})
+    assert df.ww.logical_types['ints'] == ltypes.Categorical
+    assert df['ints'].dtype == category_dtype
 
-    e.convert_variable_type('ints', variable_types.Ordinal)
-    assert isinstance(e['ints'], variable_types.Ordinal)
+    df.ww.set_types(logical_types={'ints': ltypes.Ordinal(order=[1, 2, 3])})
+    assert df.ww.logical_types['ints'] == ltypes.Ordinal(order=[1, 2, 3])
+    assert df['ints'].dtype == category_dtype
 
-    e.convert_variable_type('ints', variable_types.Boolean,
-                            true_val=1, false_val=2)
-    assert isinstance(e['ints'], variable_types.Boolean)
-    assert df['ints'].dtype.name == 'bool'
+    df.ww.set_types(logical_types={'ints': 'NaturalLanguage'})
+    assert df.ww.logical_types['ints'] == ltypes.NaturalLanguage
+    assert df['ints'].dtype == 'string'
 
 
 def test_errors_no_vtypes_dask(dd_df4):
     es = EntitySet(id='test')
-    msg = 'Variable types cannot be inferred from Dask DataFrames, ' \
-          'use variable_types to provide type metadata for entity'
+    msg = 'Variable types cannot be inferred from Dask DataFrames, '
+    'use variable_types to provide type metadata for entity'
     with pytest.raises(ValueError, match=msg):
         es.add_dataframe(dataframe_id='test_dataframe', index='id',
                          dataframe=dd_df4)
@@ -480,8 +481,8 @@ def test_errors_no_vtypes_dask(dd_df4):
 
 def test_errors_no_vtypes_koalas(ks_df4):
     es = EntitySet(id='test')
-    msg = 'Variable types cannot be inferred from Koalas DataFrames, ' \
-          'use variable_types to provide type metadata for entity'
+    msg = 'Variable types cannot be inferred from Koalas DataFrames, '
+    'use variable_types to provide type metadata for entity'
     with pytest.raises(ValueError, match=msg):
         es.add_dataframe(dataframe_id='test_dataframe', index='id',
                          dataframe=ks_df4)
@@ -654,6 +655,7 @@ def bad_df(request):
 
 # Skip for Koalas, automatically converts non-str column names to str
 def test_nonstr_column_names(bad_df):
+    # --> woodwork allows this but maybe we need to keep this requirement for featuretools
     es = ft.EntitySet(id='Failure')
     error_text = r"All column names must be strings \(Column 3 is not a string\)"
     with pytest.raises(ValueError, match=error_text):
@@ -666,8 +668,9 @@ def test_sort_time_id():
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                                     "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s")[::-1]})
 
-    es = EntitySet("test", entities={"t": (transactions_df, "id", "transaction_time")})
-    times = list(es["t"].df.transaction_time)
+    es = EntitySet("test", dataframes={"t": (transactions_df.copy(), "id", "transaction_time")})
+    assert es['t'] is not transactions_df
+    times = list(es["t"].transaction_time)
     assert times == sorted(list(transactions_df.transaction_time))
 
 
