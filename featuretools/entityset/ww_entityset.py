@@ -571,6 +571,10 @@ class EntitySet(object):
                               make_index=make_index,
                               already_sorted=already_sorted)
 
+        else:
+            # make sure name is set to match input
+            dataframe.ww.name = dataframe_id
+
         if secondary_time_index:
             self.set_secondary_time_index(dataframe, secondary_time_index=secondary_time_index)
 
@@ -583,12 +587,12 @@ class EntitySet(object):
         self.reset_data_description()
         return self
 
-    def normalize_entity(self, base_dataframe_id, new_dataframe_id, index,
-                         additional_columns=None, copy_columns=None,
-                         make_time_index=None,
-                         make_secondary_time_index=None,
-                         new_dataframe_time_index=None,
-                         new_dataframe_secondary_time_index=None):
+    def normalize_dataframe(self, base_dataframe_id, new_dataframe_id, index,
+                            additional_columns=None, copy_columns=None,
+                            make_time_index=None,
+                            make_secondary_time_index=None,
+                            new_dataframe_time_index=None,
+                            new_dataframe_secondary_time_index=None):
         # --> 3. necessary for Woodwork
         """Create a new entity and relationship from unique values of an existing variable.
 
@@ -666,18 +670,15 @@ class EntitySet(object):
         if index == base_dataframe.ww.index:
             raise ValueError("'index' must be different from the index column of the base entity")
 
-        # transfer_types = {}
-        # transfer_types[index] = base_dataframe.ww[index].ww.schema
-        # for v in additional_columns + copy_columns:
-        #     # --> going to need to ignore and time index tags at some point
-        #     transfer_types[v] = base_dataframe.ww[v].ww.schema
-
-        transfer_cols = [index] + additional_columns + copy_columns
+        transfer_types = {}
+        # Types will be a tuple of (logical_type, semantic_tags)
+        transfer_types[index] = (base_dataframe.ww.logical_types[index], base_dataframe.ww.semantic_tags[index])
+        for col_name in additional_columns + copy_columns:
+            # Remove any existing time index tags
+            transfer_types[col_name] = (base_dataframe.ww.logical_types[col_name], base_dataframe.ww.semantic_tags[col_name] - {'time_index'})
 
         # create and add new entity
-        # new_dataframe = self[base_dataframe_id].ww.copy()
-        new_dataframe = self[base_dataframe_id].ww[transfer_cols]
-        new_dataframe.ww.index = index
+        new_dataframe = self[base_dataframe_id].ww.copy()
 
         if make_time_index is None and base_dataframe.time_index is not None:
             make_time_index = True
@@ -689,19 +690,20 @@ class EntitySet(object):
             already_sorted = (new_dataframe_time_index == base_dataframe.time_index)
         elif make_time_index:
             # Create a new time index based on the base entity time index.
-            base_time_index = base_dataframe.time_index
+            base_time_index = base_dataframe.ww.time_index
             if new_dataframe_time_index is None:
-                new_dataframe_time_index = "first_%s_time" % (base_dataframe.id)
+                new_dataframe_time_index = "first_%s_time" % (base_dataframe.ww.name)
 
             already_sorted = True
 
-            assert base_dataframe.time_index is not None, \
+            assert base_dataframe.ww.time_index is not None, \
                 "Base entity doesn't have time_index defined"
 
             if base_time_index not in [v for v in additional_columns]:
                 copy_columns.append(base_time_index)
 
-            transfer_types[new_dataframe_time_index] = type(base_dataframe[base_dataframe.time_index])
+            transfer_types[new_dataframe_time_index] = (base_dataframe.ww.logical_types[base_dataframe.ww.time_index], base_dataframe.ww.semantic_tags[base_dataframe.ww.time_index])
+
         else:
             new_dataframe_time_index = None
             already_sorted = False
@@ -709,12 +711,12 @@ class EntitySet(object):
         if new_dataframe_time_index is not None and new_dataframe_time_index == index:
             raise ValueError("time_index and index cannot be the same value, %s" % (new_dataframe_time_index))
 
-        selected_variables = [index] +\
+        selected_columns = [index] +\
             [v for v in additional_columns] +\
             [v for v in copy_columns]
 
         new_dataframe2 = new_dataframe. \
-            drop_duplicates(index, keep='first')[selected_variables]
+            drop_duplicates(index, keep='first')[selected_columns]
 
         if make_time_index:
             new_dataframe2 = new_dataframe2.rename(columns={base_time_index: new_dataframe_time_index})
@@ -722,9 +724,9 @@ class EntitySet(object):
             assert len(make_secondary_time_index) == 1, "Can only provide 1 secondary time index"
             secondary_time_index = list(make_secondary_time_index.keys())[0]
 
-            secondary_variables = [index, secondary_time_index] + list(make_secondary_time_index.values())[0]
+            secondary_columns = [index, secondary_time_index] + list(make_secondary_time_index.values())[0]
             secondary_df = new_dataframe. \
-                drop_duplicates(index, keep='last')[secondary_variables]
+                drop_duplicates(index, keep='last')[secondary_columns]
             if new_dataframe_secondary_time_index:
                 secondary_df = secondary_df.rename(columns={secondary_time_index: new_dataframe_secondary_time_index})
                 secondary_time_index = new_dataframe_secondary_time_index
@@ -737,8 +739,10 @@ class EntitySet(object):
 
         base_dataframe_index = index
 
-        # --> translate to woodwork
-        transfer_types[index] = vtypes.Categorical
+        # --> not sure that this is the same as using vtype Categorical because we can't just set a standard tag
+        # --> why did we set it to variable Categorical???
+        # --> and why does it get reset when we did it above??
+        # transfer_types[index] = ('Categorical', set())
         if make_secondary_time_index:
             old_ti_name = list(make_secondary_time_index.keys())[0]
             ti_cols = list(make_secondary_time_index.values())[0]
@@ -748,20 +752,24 @@ class EntitySet(object):
         if is_instance(new_dataframe, ks, 'DataFrame'):
             already_sorted = False
 
+        # will initialize Woodwork on this DataFrame
         self.add_dataframe(
             new_dataframe_id,
             new_dataframe,
             index,
             already_sorted=already_sorted,
             time_index=new_dataframe_time_index,
-            secondary_time_index=make_secondary_time_index,  # --> getting ignored until we implement this
-            variable_types=transfer_types)
+            secondary_time_index=make_secondary_time_index,
+            logical_types={col_name: logical_type for (col_name, (logical_type, _)) in transfer_types.items()},
+            semantic_tags={col_name: (semantic_tags - {'time_index'})for (col_name, (_, semantic_tags)) in transfer_types.items()}
+        )
 
-        self.dataframe_dict[base_dataframe_id].delete_variables(additional_columns)
+        self.dataframe_dict[base_dataframe_id] = self.dataframe_dict[base_dataframe_id].ww.drop(additional_columns)
 
-        new_entity = self.dataframe_dict[new_dataframe_id]
-        base_dataframe.convert_variable_type(base_dataframe_index, vtypes.Id, convert_data=False)
-        self.add_relationship(new_entity.id, index, base_dataframe.id, base_dataframe_index)
+        new_dataframe = self.dataframe_dict[new_dataframe_id]
+        self.dataframe_dict[base_dataframe_id].ww.add_semantic_tags({base_dataframe_index: 'foreign_key'})
+
+        self.add_relationship(new_dataframe.ww.name, index, base_dataframe.ww.name, base_dataframe_index)
         self.reset_data_description()
         return self
 
@@ -1231,7 +1239,7 @@ class EntitySet(object):
             self._check_secondary_time_index(dataframe)
 
     def _check_secondary_time_index(self, dataframe, secondary_time_index=None):
-        secondary_time_index = secondary_time_index or dataframe.ww.metadata.get('secondary_time_index')
+        secondary_time_index = secondary_time_index or dataframe.ww.metadata.get('secondary_time_index', {})
         for time_index, columns in secondary_time_index.items():
             self._check_uniform_time_index(dataframe, column_id=time_index)
             if time_index not in columns:

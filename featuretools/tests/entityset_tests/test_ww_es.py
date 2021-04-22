@@ -166,21 +166,22 @@ def test_add_secondary_time_index():
     assert df.ww.metadata['secondary_time_index'] == {'repeating_dates': ['random_order', 'special', 'repeating_dates']}
 
 
-# def test_normalize_entity():
-#     df = pd.DataFrame({
-#         'id': range(4),
-#         'full_name': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner'],
-#         'email': ['john.smith@example.com', np.nan, 'team@featuretools.com', 'junk@example.com'],
-#         'phone_number': ['5555555555', '555-555-5555', '1-(555)-555-5555', '555-555-5555'],
-#         'age': pd.Series([33, None, 33, 57], dtype='Int64'),
-#         'signup_date': [pd.to_datetime('2020-09-01')] * 4,
-#         'is_registered': pd.Series([True, False, True, None], dtype='boolean'),
-#     })
+def test_normalize_dataframe():
+    df = pd.DataFrame({
+        'id': range(4),
+        'full_name': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner'],
+        'email': ['john.smith@example.com', np.nan, 'team@featuretools.com', 'junk@example.com'],
+        'phone_number': ['5555555555', '555-555-5555', '1-(555)-555-5555', '555-555-5555'],
+        'age': pd.Series([33, None, 33, 57], dtype='Int64'),
+        'signup_date': [pd.to_datetime('2020-09-01')] * 4,
+        'is_registered': pd.Series([True, False, True, None], dtype='boolean'),
+    })
 
-#     df.ww.init(index='id', time_index='signup_date')
-#     es = EntitySet('es')
-#     es.add_dataframe('first_table', df)
-#     es.normalize_entity('first_table', 'second_table', 'full_name',
-#                         additional_variables=['phone_number', 'age'],
-#                         make_time_index=True)
-#     assert len(es.dataframe_dict) == 2
+    df.ww.init(name='first_table', index='id', time_index='signup_date')
+    es = EntitySet('es')
+    es.add_dataframe('first_table', df)
+    es.normalize_dataframe('first_table', 'second_table', 'age',
+                           additional_columns=['phone_number', 'full_name'],
+                           make_time_index=True)
+    assert len(es.dataframe_dict) == 2
+    assert 'foreign_key' in es['first_table'].ww.semantic_tags['age']
