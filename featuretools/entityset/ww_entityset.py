@@ -680,14 +680,14 @@ class EntitySet(object):
         # create and add new entity
         new_dataframe = self[base_dataframe_id].ww.copy()
 
-        if make_time_index is None and base_dataframe.time_index is not None:
+        if make_time_index is None and base_dataframe.ww.time_index is not None:
             make_time_index = True
 
         if isinstance(make_time_index, str):
             # Set the new time index to make_time_index.
             base_time_index = make_time_index
             new_dataframe_time_index = make_time_index
-            already_sorted = (new_dataframe_time_index == base_dataframe.time_index)
+            already_sorted = (new_dataframe_time_index == base_dataframe.ww.time_index)
         elif make_time_index:
             # Create a new time index based on the base entity time index.
             base_time_index = base_dataframe.ww.time_index
