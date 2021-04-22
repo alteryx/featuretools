@@ -144,7 +144,6 @@ class EntitySet(object):
                 exist.
         """
         if dataframe_id in self.dataframe_dict:
-            # --> might want to consider returning the accessor or maybe just the schema instead of the DataFrame???
             return self.dataframe_dict[dataframe_id]
         name = self.id or "entity set"
         raise KeyError('DataFrame %s does not exist in %s' % (dataframe_id, name))
@@ -293,7 +292,6 @@ class EntitySet(object):
 
         # this is a new pair of entities
         child_df = relationship.child_dataframe
-        # --> is this a variable??? how do you have id?
         child_column = relationship.child_column.name
         if child_df.ww.index == child_column:
             msg = "Unable to add relationship because child column '{}' in '{}' is also its index"
@@ -486,8 +484,7 @@ class EntitySet(object):
                       make_index=False,
                       time_index=None,
                       secondary_time_index=None,
-                      already_sorted=False):
-        # --> 1. necessary for replacing - rename to add_dataframe - maybe allow other kwargs for Woodwork Table???
+                      already_sorted=False):  # --> maybe allow other kwargs for Woodwork Table???
         """
         Load the data for a specified entity from a Pandas DataFrame.
 
@@ -544,7 +541,7 @@ class EntitySet(object):
         logical_types = logical_types or {}
         semantic_tags = semantic_tags or {}
 
-# --> not necessary bc handled by woodwork
+# --> not necessary bc handled by woodwork???
         # if time_index is not None and time_index == index:
         #     raise ValueError("time_index and index cannot be the same value, %s" % (time_index))
 
@@ -561,8 +558,7 @@ class EntitySet(object):
 
         if dataframe.ww.schema is None:
             # init woodwork with params
-            # --> need to handle secondary time index!!!!!!!
-            # --> all these arams will be ignored if schema is not none - do we want to either raise warning or handle differenctly?
+            # --> all these params will be ignored if schema is not none - do we want to either raise warning or handle differenctly?
             dataframe.ww.init(name=dataframe_id,
                               index=index,
                               time_index=time_index,
@@ -572,7 +568,7 @@ class EntitySet(object):
                               already_sorted=already_sorted)
 
         else:
-            # make sure name is set to match input
+            # make sure name is set to match input dataframe_id
             dataframe.ww.name = dataframe_id
 
         if secondary_time_index:
@@ -582,7 +578,6 @@ class EntitySet(object):
             self._check_uniform_time_index(dataframe)
             self._check_secondary_time_index(dataframe)
 
-        # --> need to confirm that the names/dataframe_id match or deal with different names
         self.dataframe_dict[dataframe_id] = dataframe
         self.reset_data_description()
         return self
@@ -593,7 +588,6 @@ class EntitySet(object):
                             make_secondary_time_index=None,
                             new_dataframe_time_index=None,
                             new_dataframe_secondary_time_index=None):
-        # --> 3. necessary for Woodwork
         """Create a new entity and relationship from unique values of an existing variable.
 
         Args:

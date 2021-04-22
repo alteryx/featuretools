@@ -177,7 +177,7 @@ def test_normalize_dataframe():
         'is_registered': pd.Series([True, False, True, None], dtype='boolean'),
     })
 
-    df.ww.init(name='first_table', index='id', time_index='signup_date')
+    df.ww.init(index='id', time_index='signup_date')
     es = EntitySet('es')
     es.add_dataframe('first_table', df)
     es.normalize_dataframe('first_table', 'second_table', 'age',

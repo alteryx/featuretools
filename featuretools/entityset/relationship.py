@@ -71,7 +71,6 @@ class Relationship(object):
     @property
     def parent_column(self):
         """Column in parent dataframe"""
-        # --> consider returning a woodwork column here!!!!!! and in child column
         return self.parent_dataframe[self._parent_column_id]
 
     @property
