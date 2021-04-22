@@ -330,27 +330,10 @@ class EntitySet(object):
         self.reset_data_description()
         return self
 
-    def set_secondary_time_index(self, entity, secondary_time_index):
-        # --> necessary for replacing
-        for time_index, columns in secondary_time_index.items():
-            if is_instance(entity.df, (dd, ks), 'DataFrame') or entity.df.empty:
-                # --> look at dataframe.ww.physical_typew[time_index]
-                variable_dtype = entity[time_index]._default_pandas_dtype
-                time_to_check = vtypes.DEFAULT_DTYPE_VALUES[variable_dtype]
-            else:
-                time_to_check = entity.df[time_index].head(1).iloc[0]
-            time_type = _check_time_type(time_to_check)
-            if time_type is None:
-                raise TypeError("%s time index not recognized as numeric or"
-                                " datetime" % (entity.id))
-            if self.time_type != time_type:
-                raise TypeError("%s time index is %s type which differs from"
-                                " other entityset time indexes" %
-                                (entity.id, time_type))
-            if time_index not in columns:
-                columns.append(time_index)
-
-        entity.secondary_time_index = secondary_time_index
+    def set_secondary_time_index(self, dataframe, secondary_time_index):
+        """Updates metadata to include the secondary time index information"""
+        self._check_secondary_time_index(dataframe, secondary_time_index)
+        dataframe.ww.metadata['secondary_time_index'] = secondary_time_index
 
     ###########################################################################
     #   Relationship access/helper methods  ###################################
@@ -588,8 +571,14 @@ class EntitySet(object):
                               make_index=make_index,
                               already_sorted=already_sorted)
 
-        # --> need to confirm that the names match or deal with different names
+        if secondary_time_index:
+            self.set_secondary_time_index(dataframe, secondary_time_index=secondary_time_index)
 
+        if dataframe.ww.time_index is not None:
+            self._check_uniform_time_index(dataframe)
+            self._check_secondary_time_index(dataframe)
+
+        # --> need to confirm that the names/dataframe_id match or deal with different names
         self.dataframe_dict[dataframe_id] = dataframe
         self.reset_data_description()
         return self
@@ -1231,11 +1220,48 @@ class EntitySet(object):
     #     self[entity_id].set_index(self[entity_id].index)
     #     if self[entity_id].time_index is not None:
     #         self[entity_id].set_time_index(self[entity_id].time_index, already_sorted=already_sorted)
-
+    #         self._check_uniform_time_index(self[entity_id])
     #     self.set_secondary_time_index(self[entity_id], self[entity_id].secondary_time_index)
     #     if recalculate_last_time_indexes and self[entity_id].last_time_index is not None:
     #         self.add_last_time_indexes(updated_entities=[self[entity_id].id])
     #     self.reset_data_description()
+    def _check_time_indexes(self):
+        for dataframe in self.dataframe_dict.values():
+            self._check_uniform_time_index(dataframe)
+            self._check_secondary_time_index(dataframe)
+
+    def _check_secondary_time_index(self, dataframe, secondary_time_index=None):
+        secondary_time_index = secondary_time_index or dataframe.ww.metadata.get('secondary_time_index')
+        for time_index, columns in secondary_time_index.items():
+            self._check_uniform_time_index(dataframe, column_id=time_index)
+            if time_index not in columns:
+                columns.append(time_index)
+
+    def _check_uniform_time_index(self, dataframe, column_id=None):
+        column_id = column_id or dataframe.ww.time_index
+        if column_id is None:
+            return
+
+        time_type = self._get_time_type(dataframe, column_id)
+        if self.time_type is None:
+            self.time_type = time_type
+        elif self.time_type != time_type:
+            info = "%s time index is %s type which differs from other entityset time indexes"
+            raise TypeError(info % (dataframe.ww.name, time_type))
+
+    def _get_time_type(self, dataframe, column_id=None):
+        variable_id = column_id or dataframe.ww.time_index
+        if not isinstance(dataframe, pd.DataFrame) or dataframe.empty:
+            dtype = dataframe.ww.physical_types[column_id]
+            time_to_check = vtypes.DEFAULT_DTYPE_VALUES[dtype]
+        else:
+            time_to_check = dataframe[column_id].iloc[0]
+
+        time_type = _check_time_type(time_to_check)
+        if time_type is None:
+            info = "%s time index not recognized as numeric or datetime"
+            raise TypeError(info % dataframe.ww.name)
+        return time_type
 
 
 def _vals_to_series(instance_vals, variable_id):

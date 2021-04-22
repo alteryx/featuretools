@@ -150,21 +150,37 @@ def test_init_es_with_relationships(pd_df):
     assert forward_entities[0] == 'first_table'
 
 
-def test_normalize_entity():
+def test_add_secondary_time_index():
     df = pd.DataFrame({
-        'id': range(4),
-        'full_name': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner'],
-        'email': ['john.smith@example.com', np.nan, 'team@featuretools.com', 'junk@example.com'],
-        'phone_number': ['5555555555', '555-555-5555', '1-(555)-555-5555', '555-555-5555'],
-        'age': pd.Series([33, None, 33, 57], dtype='Int64'),
-        'signup_date': [pd.to_datetime('2020-09-01')] * 4,
-        'is_registered': pd.Series([True, False, True, None], dtype='boolean'),
+        'backwards_order': [8, 7, 6, 5, 4, 3, 2, 1, 0],
+        'dates_backwards': ['2020-09-09', '2020-09-08', '2020-09-07', '2020-09-06', '2020-09-05', '2020-09-04', '2020-09-03', '2020-09-02', '2020-09-01'],
+        'random_order': [7, 6, 8, 0, 2, 4, 3, 1, 5],
+        'repeating_dates': ['2020-08-01', '2019-08-01', '2020-08-01', '2012-08-01', '2019-08-01', '2019-08-01', '2019-08-01', '2013-08-01', '2019-08-01'],
+        'special': [7, 8, 0, 1, 4, 2, 6, 3, 5],
+        'special_dates': ['2020-08-01', '2019-08-01', '2020-08-01', '2012-08-01', '2019-08-01', '2019-08-01', '2019-08-01', '2013-08-01', '2019-08-01'],
     })
-
-    df.ww.init(index='id', time_index='signup_date')
+    df.ww.init(index='backwards_order', time_index='dates_backwards')
     es = EntitySet('es')
-    es.add_dataframe('first_table', df)
-    es.normalize_entity('first_table', 'second_table', 'full_name',
-                        additional_variables=['phone_number', 'age'],
-                        make_time_index=True)
-    assert len(es.dataframe_dict) == 2
+    es.add_dataframe('dates_table', df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
+
+    assert df.ww.metadata['secondary_time_index'] == {'repeating_dates': ['random_order', 'special', 'repeating_dates']}
+
+
+# def test_normalize_entity():
+#     df = pd.DataFrame({
+#         'id': range(4),
+#         'full_name': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner'],
+#         'email': ['john.smith@example.com', np.nan, 'team@featuretools.com', 'junk@example.com'],
+#         'phone_number': ['5555555555', '555-555-5555', '1-(555)-555-5555', '555-555-5555'],
+#         'age': pd.Series([33, None, 33, 57], dtype='Int64'),
+#         'signup_date': [pd.to_datetime('2020-09-01')] * 4,
+#         'is_registered': pd.Series([True, False, True, None], dtype='boolean'),
+#     })
+
+#     df.ww.init(index='id', time_index='signup_date')
+#     es = EntitySet('es')
+#     es.add_dataframe('first_table', df)
+#     es.normalize_entity('first_table', 'second_table', 'full_name',
+#                         additional_variables=['phone_number', 'age'],
+#                         make_time_index=True)
+#     assert len(es.dataframe_dict) == 2
