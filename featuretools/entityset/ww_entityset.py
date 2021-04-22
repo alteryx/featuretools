@@ -331,7 +331,8 @@ class EntitySet(object):
     def set_secondary_time_index(self, dataframe, secondary_time_index):
         """Updates metadata to include the secondary time index information"""
         self._check_secondary_time_index(dataframe, secondary_time_index)
-        dataframe.ww.metadata['secondary_time_index'] = secondary_time_index
+        if secondary_time_index is not None:
+            dataframe.ww.metadata['secondary_time_index'] = secondary_time_index
 
     ###########################################################################
     #   Relationship access/helper methods  ###################################
@@ -1203,30 +1204,37 @@ class EntitySet(object):
 
     #     return df
 
-    # def update_dataframe(self, entity_id, df, already_sorted=False, recalculate_last_time_indexes=True):
-    #     # --> necessary for woodwork
-    #     '''Update entity's internal dataframe, optionaly making sure data is sorted,
-    #     reference indexes to other entities are consistent, and last_time_indexes
-    #     are consistent.
-    #     '''
-    #     variables = self[entity_id].variables
-    #     if len(df.columns) != len(variables):
-    #         raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(df.columns),
-    #                                                                                       len(variables)))
-    #     for v in variables:
-    #         if v.id not in df.columns:
-    #             raise ValueError("Updated dataframe is missing new {} column".format(v.id))
+    def update_dataframe(self, dataframe_id, df, already_sorted=False, recalculate_last_time_indexes=True):
+        # --> necessary for woodwork
+        '''Update entity's internal dataframe, optionaly making sure data is sorted,
+        reference indexes to other entities are consistent, and last_time_indexes
+        are consistent.
+        '''
+        old_column_names = list(self[dataframe_id].columns)
+        if len(df.columns) != len(old_column_names):
+            raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(df.columns),
+                                                                                          len(old_column_names)))
+        for col_name in old_column_names:
+            if col_name not in df.columns:
+                raise ValueError("Updated dataframe is missing new {} column".format(col_name))
 
-    #     # Make sure column ordering matches variable ordering
-    #     self[entity_id].df = df[[v.id for v in variables]]
-    #     self[entity_id].set_index(self[entity_id].index)
-    #     if self[entity_id].time_index is not None:
-    #         self[entity_id].set_time_index(self[entity_id].time_index, already_sorted=already_sorted)
-    #         self._check_uniform_time_index(self[entity_id])
-    #     self.set_secondary_time_index(self[entity_id], self[entity_id].secondary_time_index)
-    #     if recalculate_last_time_indexes and self[entity_id].last_time_index is not None:
-    #         self.add_last_time_indexes(updated_entities=[self[entity_id].id])
-    #     self.reset_data_description()
+        # Make sure column ordering matches original ordering
+        df = df[old_column_names]
+        # --> this won't allow for dtype changes so maybe we need to explicity do that change ahead of time so that the schema is valid?
+        df.ww.init(schema=self[dataframe_id].ww.schema)
+        # --> probably isn't how we cant to update the dataframe dict??
+        self.dataframe_dict[dataframe_id] = df
+
+        if self[dataframe_id].ww.time_index is not None:
+            self._check_uniform_time_index(self[dataframe_id])
+
+        # --> maybe redundant????
+        df_metadata = self[dataframe_id].ww.metadata
+        self.set_secondary_time_index(self[dataframe_id], df_metadata.get('secondary_time_index'))
+        if recalculate_last_time_indexes and df_metadata.get('last_time_index') is not None:
+            self.add_last_time_indexes(updated_entities=[self[dataframe_id].ww.name])
+        self.reset_data_description()
+
     def _check_time_indexes(self):
         for dataframe in self.dataframe_dict.values():
             self._check_uniform_time_index(dataframe)

@@ -185,3 +185,26 @@ def test_normalize_dataframe():
                            make_time_index=True)
     assert len(es.dataframe_dict) == 2
     assert 'foreign_key' in es['first_table'].ww.semantic_tags['age']
+
+
+def test_update_dataframe():
+    df = pd.DataFrame({
+        'id': range(4),
+        'full_name': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner'],
+        'email': ['john.smith@example.com', np.nan, 'team@featuretools.com', 'junk@example.com'],
+        'phone_number': ['5555555555', '555-555-5555', '1-(555)-555-5555', '555-555-5555'],
+        'age': pd.Series([33, None, 33, 57], dtype='Int64'),
+        'signup_date': [pd.to_datetime('2020-09-01')] * 4,
+        'is_registered': pd.Series([True, False, True, None], dtype='boolean'),
+    })
+
+    df.ww.init()
+    es = EntitySet('es')
+    es.add_dataframe('table', df)
+    original_schema = es['table'].ww.schema
+
+    new_df = df.iloc[2:]
+    es.update_dataframe('table', new_df)
+
+    assert len(es['table']) == 2
+    assert es['table'].ww.schema == original_schema
