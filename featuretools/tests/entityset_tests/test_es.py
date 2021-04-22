@@ -6,6 +6,7 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork
 
 import featuretools as ft
 from featuretools import variable_types
@@ -17,214 +18,215 @@ from featuretools.utils.koalas_utils import pd_to_ks_clean
 ks = import_or_none('databricks.koalas')
 
 
-def test_normalize_time_index_as_additional_variable(es):
-    error_text = "Not moving signup_date as it is the base time index variable."
-    with pytest.raises(ValueError, match=error_text):
-        assert "signup_date" in es["customers"].df.columns
-        es.normalize_entity(base_entity_id='customers',
-                            new_entity_id='cancellations',
-                            index='cancel_reason',
-                            make_time_index='signup_date',
-                            additional_variables=['signup_date'],
-                            copy_variables=[])
+# --> anything with es has to wait until we implement make_ecommerce_entityset
+# def test_normalize_time_index_as_additional_variable(es):
+#     error_text = "Not moving signup_date as it is the base time index variable."
+#     with pytest.raises(ValueError, match=error_text):
+#         assert "signup_date" in es["customers"].df.columns
+#         es.normalize_entity(base_entity_id='customers',
+#                             new_entity_id='cancellations',
+#                             index='cancel_reason',
+#                             make_time_index='signup_date',
+#                             additional_variables=['signup_date'],
+#                             copy_variables=[])
 
 
-def test_cannot_re_add_relationships_that_already_exists(es):
-    warn_text = "Not adding duplicate relationship: " + str(es.relationships[0])
-    before_len = len(es.relationships)
-    rel = es.relationships[0]
-    with pytest.warns(UserWarning, match=warn_text):
-        es.add_relationship(relationship=rel)
-    with pytest.warns(UserWarning, match=warn_text):
-        es.add_relationship(rel._parent_dataframe_id, rel._parent_column_id,
-                            rel._child_dataframe_id, rel._child_column_id)
-    after_len = len(es.relationships)
-    assert before_len == after_len
+# def test_cannot_re_add_relationships_that_already_exists(es):
+#     warn_text = "Not adding duplicate relationship: " + str(es.relationships[0])
+#     before_len = len(es.relationships)
+#     rel = es.relationships[0]
+#     with pytest.warns(UserWarning, match=warn_text):
+#         es.add_relationship(relationship=rel)
+#     with pytest.warns(UserWarning, match=warn_text):
+#         es.add_relationship(rel._parent_dataframe_id, rel._parent_column_id,
+#                             rel._child_dataframe_id, rel._child_column_id)
+#     after_len = len(es.relationships)
+#     assert before_len == after_len
 
 
-def test_add_relationships_convert_type(es):
-    for r in es.relationships:
-        parent_e = es[r.parent_dataframe.id]
-        child_e = es[r.child_dataframe.id]
-        assert type(r.parent_column) == variable_types.Index
-        assert type(r.child_column) == variable_types.Id
-        assert parent_e.df[r.parent_column.id].dtype == child_e.df[r.child_column.id].dtype
+# def test_add_relationships_convert_type(es):
+#     for r in es.relationships:
+#         parent_e = es[r.parent_dataframe.id]
+#         child_e = es[r.child_dataframe.id]
+#         assert type(r.parent_column) == variable_types.Index
+#         assert type(r.child_column) == variable_types.Id
+#         assert parent_e.df[r.parent_column.id].dtype == child_e.df[r.child_column.id].dtype
 
 
-# TODO: Koalas does not support categorical types
-def test_add_relationship_errors_on_dtype_mismatch(es):
-    if ks and isinstance(es['customers'].df, ks.DataFrame):
-        pytest.xfail('Koalas does not support categorical types')
-    log_2_df = es['log'].df.copy()
-    log_variable_types = {
-        'id': variable_types.Categorical,
-        'session_id': variable_types.Id,
-        'product_id': variable_types.Id,
-        'datetime': variable_types.Datetime,
-        'value': variable_types.Numeric,
-        'value_2': variable_types.Numeric,
-        'latlong': variable_types.LatLong,
-        'latlong2': variable_types.LatLong,
-        'zipcode': variable_types.ZIPCode,
-        'countrycode': variable_types.CountryCode,
-        'subregioncode': variable_types.SubRegionCode,
-        'value_many_nans': variable_types.Numeric,
-        'priority_level': variable_types.Ordinal,
-        'purchased': variable_types.Boolean,
-        'comments': variable_types.NaturalLanguage
-    }
-    assert set(log_variable_types) == set(log_2_df.columns)
-    es.entity_from_dataframe(entity_id='log2',
-                             dataframe=log_2_df,
-                             index='id',
-                             variable_types=log_variable_types,
-                             time_index='datetime')
+# # TODO: Koalas does not support categorical types
+# def test_add_relationship_errors_on_dtype_mismatch(es):
+#     if ks and isinstance(es['customers'].df, ks.DataFrame):
+#         pytest.xfail('Koalas does not support categorical types')
+#     log_2_df = es['log'].df.copy()
+#     log_variable_types = {
+#         'id': variable_types.Categorical,
+#         'session_id': variable_types.Id,
+#         'product_id': variable_types.Id,
+#         'datetime': variable_types.Datetime,
+#         'value': variable_types.Numeric,
+#         'value_2': variable_types.Numeric,
+#         'latlong': variable_types.LatLong,
+#         'latlong2': variable_types.LatLong,
+#         'zipcode': variable_types.ZIPCode,
+#         'countrycode': variable_types.CountryCode,
+#         'subregioncode': variable_types.SubRegionCode,
+#         'value_many_nans': variable_types.Numeric,
+#         'priority_level': variable_types.Ordinal,
+#         'purchased': variable_types.Boolean,
+#         'comments': variable_types.NaturalLanguage
+#     }
+#     assert set(log_variable_types) == set(log_2_df.columns)
+#     es.entity_from_dataframe(entity_id='log2',
+#                              dataframe=log_2_df,
+#                              index='id',
+#                              variable_types=log_variable_types,
+#                              time_index='datetime')
 
-    error_text = u'Unable to add relationship because id in customers is Pandas dtype category and session_id in log2 is Pandas dtype int64.'
-    with pytest.raises(ValueError, match=error_text):
-        es.add_relationship(u'customers', 'id', 'log2', 'session_id')
-
-
-def test_add_relationship_errors_child_v_index(es):
-    log_df = es['log'].df.copy()
-    log_vtypes = es['log'].variable_types
-    es.entity_from_dataframe(entity_id='log2',
-                             dataframe=log_df,
-                             index='id',
-                             variable_types=log_vtypes,
-                             time_index='datetime')
-
-    to_match = "Unable to add relationship because child column 'id' in 'log2' is also its index"
-    with pytest.raises(ValueError, match=to_match):
-        es.add_relationship('log', 'id', 'log2', 'id')
+#     error_text = u'Unable to add relationship because id in customers is Pandas dtype category and session_id in log2 is Pandas dtype int64.'
+#     with pytest.raises(ValueError, match=error_text):
+#         es.add_relationship(u'customers', 'id', 'log2', 'session_id')
 
 
-def test_add_relationship_empty_child_convert_dtype(es):
-    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
-    es['log'].df = pd.DataFrame(columns=es['log'].df.columns)
-    assert len(es['log'].df) == 0
-    assert es['log'].df['session_id'].dtype == 'object'
+# def test_add_relationship_errors_child_v_index(es):
+#     log_df = es['log'].df.copy()
+#     log_vtypes = es['log'].variable_types
+#     es.entity_from_dataframe(entity_id='log2',
+#                              dataframe=log_df,
+#                              index='id',
+#                              variable_types=log_vtypes,
+#                              time_index='datetime')
 
-    es.relationships.remove(relationship)
-    assert(relationship not in es.relationships)
-
-    es.add_relationship(relationship=relationship)
-    assert es['log'].df['session_id'].dtype == 'int64'
-
-
-def test_add_relationship_with_relationship_object(es):
-    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
-    es.add_relationship(relationship=relationship)
-    assert relationship in es.relationships
+#     to_match = "Unable to add relationship because child column 'id' in 'log2' is also its index"
+#     with pytest.raises(ValueError, match=to_match):
+#         es.add_relationship('log', 'id', 'log2', 'id')
 
 
-def test_add_relationships_with_relationship_object(es):
-    relationships = [ft.Relationship(es, "sessions", "id", "log", "session_id")]
-    es.add_relationships(relationships)
-    assert relationships[0] in es.relationships
+# def test_add_relationship_empty_child_convert_dtype(es):
+#     relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
+#     es['log'].df = pd.DataFrame(columns=es['log'].df.columns)
+#     assert len(es['log'].df) == 0
+#     assert es['log'].df['session_id'].dtype == 'object'
+
+#     es.relationships.remove(relationship)
+#     assert(relationship not in es.relationships)
+
+#     es.add_relationship(relationship=relationship)
+#     assert es['log'].df['session_id'].dtype == 'int64'
 
 
-def test_add_relationship_error(es):
-    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
-    error_message = "Cannot specify dataframe and column id values and also supply a Relationship"
-    with pytest.raises(ValueError, match=error_message):
-        es.add_relationship(parent_dataframe_id="sessions", relationship=relationship)
+# def test_add_relationship_with_relationship_object(es):
+#     relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
+#     es.add_relationship(relationship=relationship)
+#     assert relationship in es.relationships
 
 
-def test_query_by_values_returns_rows_in_given_order():
-    data = pd.DataFrame({
-        "id": [1, 2, 3, 4, 5],
-        "value": ["a", "c", "b", "a", "a"],
-        "time": [1000, 2000, 3000, 4000, 5000]
-    })
-
-    es = ft.EntitySet()
-    es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
-                                  time_index="time", variable_types={
-                                            "value": ft.variable_types.Categorical
-                                  })
-    query = es.query_by_values('test', ['b', 'a'], variable_id='value')
-    assert np.array_equal(query['id'], [1, 3, 4, 5])
+# def test_add_relationships_with_relationship_object(es):
+#     relationships = [ft.Relationship(es, "sessions", "id", "log", "session_id")]
+#     es.add_relationships(relationships)
+#     assert relationships[0] in es.relationships
 
 
-def test_query_by_values_secondary_time_index(es):
-    end = np.datetime64(datetime(2011, 10, 1))
-    all_instances = [0, 1, 2]
-    result = es.query_by_values('customers', all_instances, time_last=end)
-    result = to_pandas(result, index='id')
+# def test_add_relationship_error(es):
+#     relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
+#     error_message = "Cannot specify dataframe and column id values and also supply a Relationship"
+#     with pytest.raises(ValueError, match=error_message):
+#         es.add_relationship(parent_dataframe_id="sessions", relationship=relationship)
 
-    for col in ["cancel_date", "cancel_reason"]:
-        nulls = result.loc[all_instances][col].isnull() == [False, True, True]
-        assert nulls.all(), "Some instance has data it shouldn't for column %s" % col
+# --> needs to wait until query_by_values is implemented
+# def test_query_by_values_returns_rows_in_given_order():
+#     data = pd.DataFrame({
+#         "id": [1, 2, 3, 4, 5],
+#         "value": ["a", "c", "b", "a", "a"],
+#         "time": [1000, 2000, 3000, 4000, 5000]
+#     })
 
-
-def test_query_by_id(es):
-    df = to_pandas(es.query_by_values('log', instance_vals=[0]))
-    assert df['id'].values[0] == 0
-
-
-def test_query_by_single_value(es):
-    df = to_pandas(es.query_by_values('log', instance_vals=0))
-    assert df['id'].values[0] == 0
-
-
-def test_query_by_df(es):
-    instance_df = pd.DataFrame({'id': [1, 3], 'vals': [0, 1]})
-    df = to_pandas(es.query_by_values('log', instance_vals=instance_df))
-
-    assert np.array_equal(df['id'], [1, 3])
+#     es = ft.EntitySet()
+#     es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
+#                                   time_index="time", variable_types={
+#                                             "value": ft.variable_types.Categorical
+#                                   })
+#     query = es.query_by_values('test', ['b', 'a'], variable_id='value')
+#     assert np.array_equal(query['id'], [1, 3, 4, 5])
 
 
-def test_query_by_id_with_time(es):
-    df = es.query_by_values(
-        entity_id='log',
-        instance_vals=[0, 1, 2, 3, 4],
-        time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
-    df = to_pandas(df)
-    if ks and isinstance(es['log'].df, ks.DataFrame):
-        # Koalas doesn't maintain order
-        df = df.sort_values('id')
+# def test_query_by_values_secondary_time_index(es):
+#     end = np.datetime64(datetime(2011, 10, 1))
+#     all_instances = [0, 1, 2]
+#     result = es.query_by_values('customers', all_instances, time_last=end)
+#     result = to_pandas(result, index='id')
 
-    assert list(df['id'].values) == [0, 1, 2]
+#     for col in ["cancel_date", "cancel_reason"]:
+#         nulls = result.loc[all_instances][col].isnull() == [False, True, True]
+#         assert nulls.all(), "Some instance has data it shouldn't for column %s" % col
 
 
-def test_query_by_variable_with_time(es):
-    df = es.query_by_values(
-        entity_id='log',
-        instance_vals=[0, 1, 2], variable_id='session_id',
-        time_last=datetime(2011, 4, 9, 10, 50, 0))
-    df = to_pandas(df)
-
-    true_values = [
-        i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
-    if ks and isinstance(es['log'].df, ks.DataFrame):
-        # Koalas doesn't maintain order
-        df = df.sort_values('id')
-
-    assert list(df['id'].values) == list(range(10))
-    assert list(df['value'].values) == true_values
+# def test_query_by_id(es):
+#     df = to_pandas(es.query_by_values('log', instance_vals=[0]))
+#     assert df['id'].values[0] == 0
 
 
-def test_query_by_variable_with_training_window(es):
-    df = es.query_by_values(
-        entity_id='log',
-        instance_vals=[0, 1, 2], variable_id='session_id',
-        time_last=datetime(2011, 4, 9, 10, 50, 0),
-        training_window='15m')
-    df = to_pandas(df)
-
-    assert list(df['id'].values) == [9]
-    assert list(df['value'].values) == [0]
+# def test_query_by_single_value(es):
+#     df = to_pandas(es.query_by_values('log', instance_vals=0))
+#     assert df['id'].values[0] == 0
 
 
-def test_query_by_indexed_variable(es):
-    df = es.query_by_values(
-        entity_id='log',
-        instance_vals=['taco clock'],
-        variable_id='product_id')
-    df = to_pandas(df)
+# def test_query_by_df(es):
+#     instance_df = pd.DataFrame({'id': [1, 3], 'vals': [0, 1]})
+#     df = to_pandas(es.query_by_values('log', instance_vals=instance_df))
 
-    assert list(df['id'].values) == [15, 16]
+#     assert np.array_equal(df['id'], [1, 3])
+
+
+# def test_query_by_id_with_time(es):
+#     df = es.query_by_values(
+#         entity_id='log',
+#         instance_vals=[0, 1, 2, 3, 4],
+#         time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
+#     df = to_pandas(df)
+#     if ks and isinstance(es['log'].df, ks.DataFrame):
+#         # Koalas doesn't maintain order
+#         df = df.sort_values('id')
+
+#     assert list(df['id'].values) == [0, 1, 2]
+
+
+# def test_query_by_variable_with_time(es):
+#     df = es.query_by_values(
+#         entity_id='log',
+#         instance_vals=[0, 1, 2], variable_id='session_id',
+#         time_last=datetime(2011, 4, 9, 10, 50, 0))
+#     df = to_pandas(df)
+
+#     true_values = [
+#         i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
+#     if ks and isinstance(es['log'].df, ks.DataFrame):
+#         # Koalas doesn't maintain order
+#         df = df.sort_values('id')
+
+#     assert list(df['id'].values) == list(range(10))
+#     assert list(df['value'].values) == true_values
+
+
+# def test_query_by_variable_with_training_window(es):
+#     df = es.query_by_values(
+#         entity_id='log',
+#         instance_vals=[0, 1, 2], variable_id='session_id',
+#         time_last=datetime(2011, 4, 9, 10, 50, 0),
+#         training_window='15m')
+#     df = to_pandas(df)
+
+#     assert list(df['id'].values) == [9]
+#     assert list(df['value'].values) == [0]
+
+
+# def test_query_by_indexed_variable(es):
+#     df = es.query_by_values(
+#         entity_id='log',
+#         instance_vals=['taco clock'],
+#         variable_id='product_id')
+#     df = to_pandas(df)
+
+#     assert list(df['id'].values) == [15, 16]
 
 
 @pytest.fixture
@@ -585,47 +587,47 @@ def test_handles_datetime_mismatch():
                                  time_index='time', variable_types=vtypes)
 
 
-def test_entity_init(es):
-    # Note: to convert the time column directly either the variable type
-    # or convert_date_columns must be specifie
-    df = pd.DataFrame({'id': [0, 1, 2],
-                       'time': [datetime(2011, 4, 9, 10, 31, 3 * i)
-                                for i in range(3)],
-                       'category': ['a', 'b', 'a'],
-                       'number': [4, 5, 6]})
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
-        df = dd.from_pandas(df, npartitions=2)
-    if ks and any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
-        df = ks.from_pandas(df)
+# def test_entity_init(es):
+#     # Note: to convert the time column directly either the variable type
+#     # or convert_date_columns must be specifie
+#     df = pd.DataFrame({'id': [0, 1, 2],
+#                        'time': [datetime(2011, 4, 9, 10, 31, 3 * i)
+#                                 for i in range(3)],
+#                        'category': ['a', 'b', 'a'],
+#                        'number': [4, 5, 6]})
+#     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+#         df = dd.from_pandas(df, npartitions=2)
+#     if ks and any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+#         df = ks.from_pandas(df)
 
-    vtypes = {'time': variable_types.Datetime}
-    if not isinstance(df, pd.DataFrame):
-        extra_vtypes = {
-            'id': variable_types.Categorical,
-            'category': variable_types.Categorical,
-            'number': variable_types.Numeric
-        }
-        vtypes.update(extra_vtypes)
-    es.entity_from_dataframe('test_entity', df, index='id',
-                             time_index='time', variable_types=vtypes)
-    if isinstance(df, dd.DataFrame):
-        df_shape = (df.shape[0].compute(), df.shape[1])
-    else:
-        df_shape = df.shape
-    if isinstance(es['test_entity'].df, dd.DataFrame):
-        es_df_shape = (es['test_entity'].df.shape[0].compute(), es['test_entity'].df.shape[1])
-    else:
-        es_df_shape = es['test_entity'].df.shape
-    assert es_df_shape == df_shape
-    assert es['test_entity'].index == 'id'
-    assert es['test_entity'].time_index == 'time'
-    assert set([v.id for v in es['test_entity'].variables]) == set(df.columns)
+#     vtypes = {'time': variable_types.Datetime}
+#     if not isinstance(df, pd.DataFrame):
+#         extra_vtypes = {
+#             'id': variable_types.Categorical,
+#             'category': variable_types.Categorical,
+#             'number': variable_types.Numeric
+#         }
+#         vtypes.update(extra_vtypes)
+#     es.entity_from_dataframe('test_entity', df, index='id',
+#                              time_index='time', variable_types=vtypes)
+#     if isinstance(df, dd.DataFrame):
+#         df_shape = (df.shape[0].compute(), df.shape[1])
+#     else:
+#         df_shape = df.shape
+#     if isinstance(es['test_entity'].df, dd.DataFrame):
+#         es_df_shape = (es['test_entity'].df.shape[0].compute(), es['test_entity'].df.shape[1])
+#     else:
+#         es_df_shape = es['test_entity'].df.shape
+#     assert es_df_shape == df_shape
+#     assert es['test_entity'].index == 'id'
+#     assert es['test_entity'].time_index == 'time'
+#     assert set([v.id for v in es['test_entity'].variables]) == set(df.columns)
 
-    assert es['test_entity'].df['time'].dtype == df['time'].dtype
-    if ks and isinstance(es['test_entity'].df, ks.DataFrame):
-        assert set(es['test_entity'].df['id'].to_list()) == set(df['id'].to_list())
-    else:
-        assert set(es['test_entity'].df['id']) == set(df['id'])
+#     assert es['test_entity'].df['time'].dtype == df['time'].dtype
+#     if ks and isinstance(es['test_entity'].df, ks.DataFrame):
+#         assert set(es['test_entity'].df['id'].to_list()) == set(df['id'].to_list())
+#     else:
+#         assert set(es['test_entity'].df['id']) == set(df['id'])
 
 
 @pytest.fixture
@@ -676,107 +678,109 @@ def test_already_sorted_parameter():
                                                          datetime(2016, 4, 9)]})
 
     es = EntitySet(id='test')
-    es.entity_from_dataframe('t',
-                             transactions_df,
-                             index='id',
-                             time_index="transaction_time",
-                             already_sorted=True)
-    times = list(es["t"].df.transaction_time)
+    es.add_dataframe('t',
+                     transactions_df.copy(),
+                     index='id',
+                     time_index="transaction_time",
+                     already_sorted=True)
+
+    assert es['t'] is not transactions_df
+    times = list(es["t"].transaction_time)
     assert times == list(transactions_df.transaction_time)
 
 
-# TODO: equality check fails, dask series have no .equals method; error computing lti if categorical index
-# TODO: dask deepcopy
-def test_concat_entitysets(es):
-    df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
-        pytest.xfail("Dask has no .equals method and issue with categoricals "
-                     "and add_last_time_indexes")
+# # TODO: equality check fails, dask series have no .equals method; error computing lti if categorical index
+# # TODO: dask deepcopy
+# def test_concat_entitysets(es):
+#     df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
+#     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+#         pytest.xfail("Dask has no .equals method and issue with categoricals "
+#                      "and add_last_time_indexes")
 
-    if ks and any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
-        pytest.xfail("Koalas deepcopy fails")
+#     if ks and any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+#         pytest.xfail("Koalas deepcopy fails")
 
-    vtypes = {'id': variable_types.Categorical,
-              'category': variable_types.Categorical}
-    es.entity_from_dataframe(entity_id='test_entity',
-                             index='id1',
-                             make_index=True,
-                             variable_types=vtypes,
-                             dataframe=df)
-    es.add_last_time_indexes()
+#     vtypes = {'id': variable_types.Categorical,
+#               'category': variable_types.Categorical}
+#     es.entity_from_dataframe(entity_id='test_entity',
+#                              index='id1',
+#                              make_index=True,
+#                              variable_types=vtypes,
+#                              dataframe=df)
+#     es.add_last_time_indexes()
 
-    assert es.__eq__(es)
-    es_1 = copy.deepcopy(es)
-    es_2 = copy.deepcopy(es)
+#     assert es.__eq__(es)
+#     es_1 = copy.deepcopy(es)
+#     es_2 = copy.deepcopy(es)
 
-    # map of what rows to take from es_1 and es_2 for each entity
-    emap = {
-        'log': [list(range(10)) + [14, 15, 16], list(range(10, 14)) + [15, 16]],
-        'sessions': [[0, 1, 2, 5], [1, 3, 4, 5]],
-        'customers': [[0, 2], [1, 2]],
-        'test_entity': [[0, 1], [0, 2]],
-    }
+#     # map of what rows to take from es_1 and es_2 for each entity
+#     emap = {
+#         'log': [list(range(10)) + [14, 15, 16], list(range(10, 14)) + [15, 16]],
+#         'sessions': [[0, 1, 2, 5], [1, 3, 4, 5]],
+#         'customers': [[0, 2], [1, 2]],
+#         'test_entity': [[0, 1], [0, 2]],
+#     }
 
-    assert es.__eq__(es_1, deep=True)
-    assert es.__eq__(es_2, deep=True)
+#     assert es.__eq__(es_1, deep=True)
+#     assert es.__eq__(es_2, deep=True)
 
-    for i, _es in enumerate([es_1, es_2]):
-        for entity, rows in emap.items():
-            df = _es[entity].df
-            _es.update_dataframe(entity_id=entity, df=df.loc[rows[i]])
+#     for i, _es in enumerate([es_1, es_2]):
+#         for entity, rows in emap.items():
+#             df = _es[entity].df
+#             _es.update_dataframe(entity_id=entity, df=df.loc[rows[i]])
 
-    assert 10 not in es_1['log'].last_time_index.index
-    assert 10 in es_2['log'].last_time_index.index
-    assert 9 in es_1['log'].last_time_index.index
-    assert 9 not in es_2['log'].last_time_index.index
-    assert not es.__eq__(es_1, deep=True)
-    assert not es.__eq__(es_2, deep=True)
+#     assert 10 not in es_1['log'].last_time_index.index
+#     assert 10 in es_2['log'].last_time_index.index
+#     assert 9 in es_1['log'].last_time_index.index
+#     assert 9 not in es_2['log'].last_time_index.index
+#     assert not es.__eq__(es_1, deep=True)
+#     assert not es.__eq__(es_2, deep=True)
 
-    # make sure internal indexes work before concat
-    regions = es_1.query_by_values('customers', ['United States'], variable_id=u'région_id')
-    assert regions.index.isin(es_1['customers'].df.index).all()
+#     # make sure internal indexes work before concat
+#     regions = es_1.query_by_values('customers', ['United States'], variable_id=u'région_id')
+#     assert regions.index.isin(es_1['customers'].df.index).all()
 
-    assert es_1.__eq__(es_2)
-    assert not es_1.__eq__(es_2, deep=True)
+#     assert es_1.__eq__(es_2)
+#     assert not es_1.__eq__(es_2, deep=True)
 
-    old_es_1 = copy.deepcopy(es_1)
-    old_es_2 = copy.deepcopy(es_2)
-    es_3 = es_1.concat(es_2)
+#     old_es_1 = copy.deepcopy(es_1)
+#     old_es_2 = copy.deepcopy(es_2)
+#     es_3 = es_1.concat(es_2)
 
-    assert old_es_1.__eq__(es_1, deep=True)
-    assert old_es_2.__eq__(es_2, deep=True)
+#     assert old_es_1.__eq__(es_1, deep=True)
+#     assert old_es_2.__eq__(es_2, deep=True)
 
-    assert es_3.__eq__(es)
-    for entity in es.entities:
-        df = es[entity.id].df.sort_index()
-        df_3 = es_3[entity.id].df.sort_index()
-        for column in df:
-            for x, y in zip(df[column], df_3[column]):
-                assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
-        orig_lti = es[entity.id].last_time_index.sort_index()
-        new_lti = es_3[entity.id].last_time_index.sort_index()
-        for x, y in zip(orig_lti, new_lti):
-            assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+#     assert es_3.__eq__(es)
+#     for entity in es.entities:
+#         df = es[entity.id].df.sort_index()
+#         df_3 = es_3[entity.id].df.sort_index()
+#         for column in df:
+#             for x, y in zip(df[column], df_3[column]):
+#                 assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+#         orig_lti = es[entity.id].last_time_index.sort_index()
+#         new_lti = es_3[entity.id].last_time_index.sort_index()
+#         for x, y in zip(orig_lti, new_lti):
+#             assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
 
-    es_1['stores'].last_time_index = None
-    es_1['test_entity'].last_time_index = None
-    es_2['test_entity'].last_time_index = None
-    es_4 = es_1.concat(es_2)
-    assert not es_4.__eq__(es, deep=True)
-    for entity in es.entities:
-        df = es[entity.id].df.sort_index()
-        df_4 = es_4[entity.id].df.sort_index()
-        for column in df:
-            for x, y in zip(df[column], df_4[column]):
-                assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+#     es_1['stores'].last_time_index = None
+#     es_1['test_entity'].last_time_index = None
+#     es_2['test_entity'].last_time_index = None
+#     es_4 = es_1.concat(es_2)
+#     assert not es_4.__eq__(es, deep=True)
+#     for entity in es.entities:
+#         df = es[entity.id].df.sort_index()
+#         df_4 = es_4[entity.id].df.sort_index()
+#         for column in df:
+#             for x, y in zip(df[column], df_4[column]):
+#                 assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
 
-        if entity.id != 'test_entity':
-            orig_lti = es[entity.id].last_time_index.sort_index()
-            new_lti = es_4[entity.id].last_time_index.sort_index()
-            for x, y in zip(orig_lti, new_lti):
-                assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
-        else:
-            assert es_4[entity.id].last_time_index is None
+#         if entity.id != 'test_entity':
+#             orig_lti = es[entity.id].last_time_index.sort_index()
+#             new_lti = es_4[entity.id].last_time_index.sort_index()
+#             for x, y in zip(orig_lti, new_lti):
+#                 assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+#         else:
+#             assert es_4[entity.id].last_time_index is None
 
 
 @pytest.fixture
@@ -894,149 +898,149 @@ def test_sets_time_when_adding_entity(transactions_df):
                                      time_index="signup_date")
 
 
-def test_checks_time_type_setting_time_index(es):
-    # set non time type as time index, Dask/Koalas and Pandas error differently
-    if isinstance(es['log'].df, pd.DataFrame):
-        error_text = 'log time index not recognized as numeric or datetime'
-    else:
-        error_text = "log time index is %s type which differs from" \
-                     " other entityset time indexes" % (variable_types.NumericTimeIndex)
-    with pytest.raises(TypeError, match=error_text):
-        es['log'].set_time_index('purchased')
-        es._check_uniform_time_index(es['log'])
+# def test_checks_time_type_setting_time_index(es):
+#     # set non time type as time index, Dask/Koalas and Pandas error differently
+#     if isinstance(es['log'].df, pd.DataFrame):
+#         error_text = 'log time index not recognized as numeric or datetime'
+#     else:
+#         error_text = "log time index is %s type which differs from" \
+#                      " other entityset time indexes" % (variable_types.NumericTimeIndex)
+#     with pytest.raises(TypeError, match=error_text):
+#         es['log'].set_time_index('purchased')
+#         es._check_uniform_time_index(es['log'])
 
 
-def test_checks_time_type_setting_secondary_time_index(es):
-    # entityset is timestamp time type
-    assert es.time_type == variable_types.DatetimeTimeIndex
-    # add secondary index that is timestamp type
-    new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
-                  'cancel_date': ['cancel_date', 'cancel_reason']}
-    es.set_secondary_time_index(es["customers"], new_2nd_ti)
-    assert es.time_type == variable_types.DatetimeTimeIndex
-    # add secondary index that is numeric type
-    new_2nd_ti = {'age': ['age', 'loves_ice_cream']}
+# def test_checks_time_type_setting_secondary_time_index(es):
+#     # entityset is timestamp time type
+#     assert es.time_type == variable_types.DatetimeTimeIndex
+#     # add secondary index that is timestamp type
+#     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
+#                   'cancel_date': ['cancel_date', 'cancel_reason']}
+#     es.set_secondary_time_index(es["customers"], new_2nd_ti)
+#     assert es.time_type == variable_types.DatetimeTimeIndex
+#     # add secondary index that is numeric type
+#     new_2nd_ti = {'age': ['age', 'loves_ice_cream']}
 
-    error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
-    with pytest.raises(TypeError, match=error_text):
-        es.set_secondary_time_index(es["customers"], new_2nd_ti)
-    # add secondary index that is non-time type
-    new_2nd_ti = {'favorite_quote': ['favorite_quote', 'loves_ice_cream']}
+#     error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
+#     with pytest.raises(TypeError, match=error_text):
+#         es.set_secondary_time_index(es["customers"], new_2nd_ti)
+#     # add secondary index that is non-time type
+#     new_2nd_ti = {'favorite_quote': ['favorite_quote', 'loves_ice_cream']}
 
-    error_text = r"data type (\"|')(All members of the working classes must seize the means of production.|test)(\"|') not understood"
-    with pytest.raises(TypeError, match=error_text):
-        es.set_secondary_time_index(es["customers"], new_2nd_ti)
-    # add mismatched pair of secondary time indexes
-    new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
-                  'age': ['age', 'loves_ice_cream']}
+#     error_text = r"data type (\"|')(All members of the working classes must seize the means of production.|test)(\"|') not understood"
+#     with pytest.raises(TypeError, match=error_text):
+#         es.set_secondary_time_index(es["customers"], new_2nd_ti)
+#     # add mismatched pair of secondary time indexes
+#     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
+#                   'age': ['age', 'loves_ice_cream']}
 
-    error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
-    with pytest.raises(TypeError, match=error_text):
-        es.set_secondary_time_index(es["customers"], new_2nd_ti)
+#     error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
+#     with pytest.raises(TypeError, match=error_text):
+#         es.set_secondary_time_index(es["customers"], new_2nd_ti)
 
-    # create entityset with numeric time type
-    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
-    transactions_df = pd.DataFrame({
-        "id": [1, 2, 3, 4, 5, 6],
-        "card_id": [1, 2, 1, 3, 4, 5],
-        "transaction_time": [10, 12, 13, 20, 21, 20],
-        "fraud_decision_time": [11, 14, 15, 21, 22, 21],
-        "transaction_city": ["City A"] * 6,
-        "transaction_date": [datetime(1989, 2, i) for i in range(1, 7)],
-        "fraud": [True, False, False, False, True, True]
-    })
-    entities = {
-        "cards": (cards_df, "id"),
-        "transactions": (transactions_df, "id", "transaction_time")
-    }
-    relationships = [("cards", "id", "transactions", "card_id")]
-    card_es = EntitySet("fraud", entities, relationships)
-    assert card_es.time_type == variable_types.NumericTimeIndex
-    # add secondary index that is numeric time type
-    new_2nd_ti = {'fraud_decision_time': ['fraud_decision_time', 'fraud']}
-    card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
-    assert card_es.time_type == variable_types.NumericTimeIndex
-    # add secondary index that is timestamp type
-    new_2nd_ti = {'transaction_date': ['transaction_date', 'fraud']}
+#     # create entityset with numeric time type
+#     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
+#     transactions_df = pd.DataFrame({
+#         "id": [1, 2, 3, 4, 5, 6],
+#         "card_id": [1, 2, 1, 3, 4, 5],
+#         "transaction_time": [10, 12, 13, 20, 21, 20],
+#         "fraud_decision_time": [11, 14, 15, 21, 22, 21],
+#         "transaction_city": ["City A"] * 6,
+#         "transaction_date": [datetime(1989, 2, i) for i in range(1, 7)],
+#         "fraud": [True, False, False, False, True, True]
+#     })
+#     entities = {
+#         "cards": (cards_df, "id"),
+#         "transactions": (transactions_df, "id", "transaction_time")
+#     }
+#     relationships = [("cards", "id", "transactions", "card_id")]
+#     card_es = EntitySet("fraud", entities, relationships)
+#     assert card_es.time_type == variable_types.NumericTimeIndex
+#     # add secondary index that is numeric time type
+#     new_2nd_ti = {'fraud_decision_time': ['fraud_decision_time', 'fraud']}
+#     card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
+#     assert card_es.time_type == variable_types.NumericTimeIndex
+#     # add secondary index that is timestamp type
+#     new_2nd_ti = {'transaction_date': ['transaction_date', 'fraud']}
 
-    error_text = "transactions time index is <class 'featuretools.variable_types.variable.DatetimeTimeIndex'> type which differs from other entityset time indexes"
-    with pytest.raises(TypeError, match=error_text):
-        card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
-    # add secondary index that is non-time type
-    new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud']}
+#     error_text = "transactions time index is <class 'featuretools.variable_types.variable.DatetimeTimeIndex'> type which differs from other entityset time indexes"
+#     with pytest.raises(TypeError, match=error_text):
+#         card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
+#     # add secondary index that is non-time type
+#     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud']}
 
-    error_text = r"data type ('|\")City A('|\") not understood"
-    with pytest.raises(TypeError, match=error_text):
-        card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
-    # add mixed secondary time indexes
-    new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud'],
-                  'fraud_decision_time': ['fraud_decision_time', 'fraud']}
-    with pytest.raises(TypeError, match=error_text):
-        card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
+#     error_text = r"data type ('|\")City A('|\") not understood"
+#     with pytest.raises(TypeError, match=error_text):
+#         card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
+#     # add mixed secondary time indexes
+#     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud'],
+#                   'fraud_decision_time': ['fraud_decision_time', 'fraud']}
+#     with pytest.raises(TypeError, match=error_text):
+#         card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
 
-    # add bool secondary time index
-    error_text = 'transactions time index not recognized as numeric or datetime'
-    with pytest.raises(TypeError, match=error_text):
-        card_es.set_secondary_time_index(card_es['transactions'], {'fraud': ['fraud']})
-
-
-def test_normalize_entity(es):
-    error_text = "'additional_variables' must be a list, but received type.*"
-    with pytest.raises(TypeError, match=error_text):
-        es.normalize_entity('sessions', 'device_types', 'device_type',
-                            additional_variables='log')
-
-    error_text = "'copy_variables' must be a list, but received type.*"
-    with pytest.raises(TypeError, match=error_text):
-        es.normalize_entity('sessions', 'device_types', 'device_type',
-                            copy_variables='log')
-
-    es.normalize_entity('sessions', 'device_types', 'device_type',
-                        additional_variables=['device_name'],
-                        make_time_index=False)
-
-    assert len(es.get_forward_relationships('sessions')) == 2
-    assert es.get_forward_relationships(
-        'sessions')[1].parent_dataframe.id == 'device_types'
-    assert 'device_name' in es['device_types'].df.columns
-    assert 'device_name' not in es['sessions'].df.columns
-    assert 'device_type' in es['device_types'].df.columns
+#     # add bool secondary time index
+#     error_text = 'transactions time index not recognized as numeric or datetime'
+#     with pytest.raises(TypeError, match=error_text):
+#         card_es.set_secondary_time_index(card_es['transactions'], {'fraud': ['fraud']})
 
 
-def test_normalize_entity_new_time_index_in_base_entity_error_check(es):
-    error_text = "'make_time_index' must be a variable in the base entity"
-    with pytest.raises(ValueError, match=error_text):
-        es.normalize_entity(base_entity_id='customers',
-                            new_entity_id='cancellations',
-                            index='cancel_reason',
-                            make_time_index="non-existent")
+# def test_normalize_entity(es):
+#     error_text = "'additional_variables' must be a list, but received type.*"
+#     with pytest.raises(TypeError, match=error_text):
+#         es.normalize_entity('sessions', 'device_types', 'device_type',
+#                             additional_variables='log')
+
+#     error_text = "'copy_variables' must be a list, but received type.*"
+#     with pytest.raises(TypeError, match=error_text):
+#         es.normalize_entity('sessions', 'device_types', 'device_type',
+#                             copy_variables='log')
+
+#     es.normalize_entity('sessions', 'device_types', 'device_type',
+#                         additional_variables=['device_name'],
+#                         make_time_index=False)
+
+#     assert len(es.get_forward_relationships('sessions')) == 2
+#     assert es.get_forward_relationships(
+#         'sessions')[1].parent_dataframe.id == 'device_types'
+#     assert 'device_name' in es['device_types'].df.columns
+#     assert 'device_name' not in es['sessions'].df.columns
+#     assert 'device_type' in es['device_types'].df.columns
 
 
-def test_normalize_entity_new_time_index_in_variable_list_error_check(es):
-    error_text = "'make_time_index' must be specified in 'additional_variables' or 'copy_variables'"
-    with pytest.raises(ValueError, match=error_text):
-        es.normalize_entity(base_entity_id='customers',
-                            new_entity_id='cancellations',
-                            index='cancel_reason',
-                            make_time_index='cancel_date')
+# def test_normalize_entity_new_time_index_in_base_entity_error_check(es):
+#     error_text = "'make_time_index' must be a variable in the base entity"
+#     with pytest.raises(ValueError, match=error_text):
+#         es.normalize_entity(base_entity_id='customers',
+#                             new_entity_id='cancellations',
+#                             index='cancel_reason',
+#                             make_time_index="non-existent")
 
 
-def test_normalize_entity_new_time_index_copy_success_check(es):
-    es.normalize_entity(base_entity_id='customers',
-                        new_entity_id='cancellations',
-                        index='cancel_reason',
-                        make_time_index='cancel_date',
-                        additional_variables=[],
-                        copy_variables=['cancel_date'])
+# def test_normalize_entity_new_time_index_in_variable_list_error_check(es):
+#     error_text = "'make_time_index' must be specified in 'additional_variables' or 'copy_variables'"
+#     with pytest.raises(ValueError, match=error_text):
+#         es.normalize_entity(base_entity_id='customers',
+#                             new_entity_id='cancellations',
+#                             index='cancel_reason',
+#                             make_time_index='cancel_date')
 
 
-def test_normalize_entity_new_time_index_additional_success_check(es):
-    es.normalize_entity(base_entity_id='customers',
-                        new_entity_id='cancellations',
-                        index='cancel_reason',
-                        make_time_index='cancel_date',
-                        additional_variables=['cancel_date'],
-                        copy_variables=[])
+# def test_normalize_entity_new_time_index_copy_success_check(es):
+#     es.normalize_entity(base_entity_id='customers',
+#                         new_entity_id='cancellations',
+#                         index='cancel_reason',
+#                         make_time_index='cancel_date',
+#                         additional_variables=[],
+#                         copy_variables=['cancel_date'])
+
+
+# def test_normalize_entity_new_time_index_additional_success_check(es):
+#     es.normalize_entity(base_entity_id='customers',
+#                         new_entity_id='cancellations',
+#                         index='cancel_reason',
+#                         make_time_index='cancel_date',
+#                         additional_variables=['cancel_date'],
+#                         copy_variables=[])
 
 
 @pytest.fixture
@@ -1097,40 +1101,40 @@ def test_normalize_time_index_from_none(normalize_es):
         assert df['time'].is_monotonic_increasing
 
 
-def test_raise_error_if_dupicate_additional_variables_passed(es):
-    error_text = "'additional_variables' contains duplicate variables. All variables must be unique."
-    with pytest.raises(ValueError, match=error_text):
-        es.normalize_entity('sessions', 'device_types', 'device_type',
-                            additional_variables=['device_name', 'device_name'])
+# def test_raise_error_if_dupicate_additional_variables_passed(es):
+#     error_text = "'additional_variables' contains duplicate variables. All variables must be unique."
+#     with pytest.raises(ValueError, match=error_text):
+#         es.normalize_entity('sessions', 'device_types', 'device_type',
+#                             additional_variables=['device_name', 'device_name'])
 
 
-def test_raise_error_if_dupicate_copy_variables_passed(es):
-    error_text = "'copy_variables' contains duplicate variables. All variables must be unique."
-    with pytest.raises(ValueError, match=error_text):
-        es.normalize_entity('sessions', 'device_types', 'device_type',
-                            copy_variables=['device_name', 'device_name'])
+# def test_raise_error_if_dupicate_copy_variables_passed(es):
+#     error_text = "'copy_variables' contains duplicate variables. All variables must be unique."
+#     with pytest.raises(ValueError, match=error_text):
+#         es.normalize_entity('sessions', 'device_types', 'device_type',
+#                             copy_variables=['device_name', 'device_name'])
 
 
-def test_normalize_entity_copies_variable_types(es):
-    es['log'].convert_variable_type(
-        'value', variable_types.Ordinal, convert_data=False)
-    assert es['log'].variable_types['value'] == variable_types.Ordinal
-    assert es['log'].variable_types['priority_level'] == variable_types.Ordinal
-    es.normalize_entity('log', 'values_2', 'value_2',
-                        additional_variables=['priority_level'],
-                        copy_variables=['value'],
-                        make_time_index=False)
+# def test_normalize_entity_copies_variable_types(es):
+#     es['log'].convert_variable_type(
+#         'value', variable_types.Ordinal, convert_data=False)
+#     assert es['log'].variable_types['value'] == variable_types.Ordinal
+#     assert es['log'].variable_types['priority_level'] == variable_types.Ordinal
+#     es.normalize_entity('log', 'values_2', 'value_2',
+#                         additional_variables=['priority_level'],
+#                         copy_variables=['value'],
+#                         make_time_index=False)
 
-    assert len(es.get_forward_relationships('log')) == 3
-    assert es.get_forward_relationships(
-        'log')[2].parent_dataframe.id == 'values_2'
-    assert 'priority_level' in es['values_2'].df.columns
-    assert 'value' in es['values_2'].df.columns
-    assert 'priority_level' not in es['log'].df.columns
-    assert 'value' in es['log'].df.columns
-    assert 'value_2' in es['values_2'].df.columns
-    assert es['values_2'].variable_types['priority_level'] == variable_types.Ordinal
-    assert es['values_2'].variable_types['value'] == variable_types.Ordinal
+#     assert len(es.get_forward_relationships('log')) == 3
+#     assert es.get_forward_relationships(
+#         'log')[2].parent_dataframe.id == 'values_2'
+#     assert 'priority_level' in es['values_2'].df.columns
+#     assert 'value' in es['values_2'].df.columns
+#     assert 'priority_level' not in es['log'].df.columns
+#     assert 'value' in es['log'].df.columns
+#     assert 'value_2' in es['values_2'].df.columns
+#     assert es['values_2'].variable_types['priority_level'] == variable_types.Ordinal
+#     assert es['values_2'].variable_types['value'] == variable_types.Ordinal
 
 
 # sorting not supported in Dask, Koalas
@@ -1155,61 +1159,61 @@ def test_make_time_index_keeps_original_sorting():
     assert (es['trips'].df['trip_id'] == order).all()
 
 
-def test_normalize_entity_new_time_index(es):
-    new_time_index = 'value_time'
-    es.normalize_entity('log', 'values', 'value',
-                        make_time_index=True,
-                        new_entity_time_index=new_time_index)
+# def test_normalize_entity_new_time_index(es):
+#     new_time_index = 'value_time'
+#     es.normalize_entity('log', 'values', 'value',
+#                         make_time_index=True,
+#                         new_entity_time_index=new_time_index)
 
-    assert es['values'].time_index == new_time_index
-    assert new_time_index in es['values'].df.columns
-    assert len(es['values'].df.columns) == 2
-    df = to_pandas(es['values'].df, sort_index=True)
-    assert df[new_time_index].is_monotonic_increasing
-
-
-def test_normalize_entity_same_index(es):
-    transactions_df = pd.DataFrame({"id": [1, 2, 3],
-                                    "transaction_time": pd.date_range(start="10:00", periods=3, freq="10s"),
-                                    "first_entity_time": [1, 2, 3]})
-    es = ft.EntitySet("example")
-    es.entity_from_dataframe(entity_id="entity",
-                             index="id",
-                             time_index="transaction_time",
-                             dataframe=transactions_df)
-
-    error_text = "'index' must be different from the index column of the base entity"
-    with pytest.raises(ValueError, match=error_text):
-        es.normalize_entity(base_entity_id="entity",
-                            new_entity_id="new_entity",
-                            index="id",
-                            make_time_index=True)
+#     assert es['values'].time_index == new_time_index
+#     assert new_time_index in es['values'].df.columns
+#     assert len(es['values'].df.columns) == 2
+#     df = to_pandas(es['values'].df, sort_index=True)
+#     assert df[new_time_index].is_monotonic_increasing
 
 
-# TODO: normalize entity fails with Dask, doesn't specify all vtypes when creating new entity
-def test_secondary_time_index(es):
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
-        pytest.xfail('vtype error when attempting to normalize entity')
-    es.normalize_entity('log', 'values', 'value',
-                        make_time_index=True,
-                        make_secondary_time_index={
-                               'datetime': ['comments']},
-                        new_entity_time_index="value_time",
-                        new_entity_secondary_time_index='second_ti')
+# def test_normalize_entity_same_index(es):
+#     transactions_df = pd.DataFrame({"id": [1, 2, 3],
+#                                     "transaction_time": pd.date_range(start="10:00", periods=3, freq="10s"),
+#                                     "first_entity_time": [1, 2, 3]})
+#     es = ft.EntitySet("example")
+#     es.entity_from_dataframe(entity_id="entity",
+#                              index="id",
+#                              time_index="transaction_time",
+#                              dataframe=transactions_df)
 
-    assert (isinstance(es['values'].df['second_ti'], pd.Series))
-    assert (es['values']['second_ti'].type_string == 'datetime')
-    assert (es['values'].secondary_time_index == {
-            'second_ti': ['comments', 'second_ti']})
+#     error_text = "'index' must be different from the index column of the base entity"
+#     with pytest.raises(ValueError, match=error_text):
+#         es.normalize_entity(base_entity_id="entity",
+#                             new_entity_id="new_entity",
+#                             index="id",
+#                             make_time_index=True)
 
 
-def test_sizeof(es):
-    total_size = 0
-    for entity in es.entities:
-        total_size += entity.df.__sizeof__()
-        total_size += entity.last_time_index.__sizeof__()
+# # TODO: normalize entity fails with Dask, doesn't specify all vtypes when creating new entity
+# def test_secondary_time_index(es):
+#     if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+#         pytest.xfail('vtype error when attempting to normalize entity')
+#     es.normalize_entity('log', 'values', 'value',
+#                         make_time_index=True,
+#                         make_secondary_time_index={
+#                                'datetime': ['comments']},
+#                         new_entity_time_index="value_time",
+#                         new_entity_secondary_time_index='second_ti')
 
-    assert es.__sizeof__() == total_size
+#     assert (isinstance(es['values'].df['second_ti'], pd.Series))
+#     assert (es['values']['second_ti'].type_string == 'datetime')
+#     assert (es['values'].secondary_time_index == {
+#             'second_ti': ['comments', 'second_ti']})
+
+
+# def test_sizeof(es):
+#     total_size = 0
+#     for entity in es.entities:
+#         total_size += entity.df.__sizeof__()
+#         total_size += entity.last_time_index.__sizeof__()
+
+#     assert es.__sizeof__() == total_size
 
 
 def test_construct_without_id():
@@ -1391,17 +1395,17 @@ def test_normalize_with_numeric_time_index(int_es):
     assert vtypes['upgrade_date'] == variable_types.Numeric
 
 
-def test_normalize_with_invalid_time_index(es):
-    es['customers'].convert_variable_type('signup_date', variable_types.Datetime)
-    error_text = "Time index 'signup_date' is not a NumericTimeIndex or DatetimeTimeIndex," \
-        + " but type <class 'featuretools.variable_types.variable.Datetime'>."\
-        + " Use set_time_index on entity 'customers' to set the time_index."
-    with pytest.raises(TypeError, match=error_text):
-        es.normalize_entity(base_entity_id="customers",
-                            new_entity_id="cancel_reason",
-                            index="cancel_reason",
-                            copy_variables=['upgrade_date'])
-    es['customers'].convert_variable_type('signup_date', variable_types.DatetimeTimeIndex)
+# def test_normalize_with_invalid_time_index(es):
+#     es['customers'].convert_variable_type('signup_date', variable_types.Datetime)
+#     error_text = "Time index 'signup_date' is not a NumericTimeIndex or DatetimeTimeIndex," \
+#         + " but type <class 'featuretools.variable_types.variable.Datetime'>."\
+#         + " Use set_time_index on entity 'customers' to set the time_index."
+#     with pytest.raises(TypeError, match=error_text):
+#         es.normalize_entity(base_entity_id="customers",
+#                             new_entity_id="cancel_reason",
+#                             index="cancel_reason",
+#                             copy_variables=['upgrade_date'])
+#     es['customers'].convert_variable_type('signup_date', variable_types.DatetimeTimeIndex)
 
 
 def test_entityset_init():
@@ -1455,37 +1459,37 @@ def test_add_interesting_values_verbose_output(caplog):
     assert 'Variable quantity: Marking 6 as an interesting value' in caplog.text
 
 
-def test_entityset_equality(es):
-    first_es = EntitySet()
-    second_es = EntitySet()
-    assert first_es == second_es
+# def test_entityset_equality(es):
+#     first_es = EntitySet()
+#     second_es = EntitySet()
+#     assert first_es == second_es
 
-    first_es.entity_from_dataframe(entity_id='customers',
-                                   dataframe=es['customers'].df,
-                                   index='id',
-                                   time_index='signup_date',
-                                   variable_types=es['customers'].variable_types)
-    assert first_es != second_es
+#     first_es.entity_from_dataframe(entity_id='customers',
+#                                    dataframe=es['customers'].df,
+#                                    index='id',
+#                                    time_index='signup_date',
+#                                    variable_types=es['customers'].variable_types)
+#     assert first_es != second_es
 
-    second_es.entity_from_dataframe(entity_id='sessions',
-                                    dataframe=es['sessions'].df,
-                                    index='id',
-                                    variable_types=es['sessions'].variable_types)
-    assert first_es != second_es
+#     second_es.entity_from_dataframe(entity_id='sessions',
+#                                     dataframe=es['sessions'].df,
+#                                     index='id',
+#                                     variable_types=es['sessions'].variable_types)
+#     assert first_es != second_es
 
-    first_es.entity_from_dataframe(entity_id='sessions',
-                                   dataframe=es['sessions'].df,
-                                   index='id',
-                                   variable_types=es['sessions'].variable_types)
-    second_es.entity_from_dataframe(entity_id='customers',
-                                    dataframe=es['customers'].df,
-                                    index='id',
-                                    time_index='signup_date',
-                                    variable_types=es['customers'].variable_types)
-    assert first_es == second_es
+#     first_es.entity_from_dataframe(entity_id='sessions',
+#                                    dataframe=es['sessions'].df,
+#                                    index='id',
+#                                    variable_types=es['sessions'].variable_types)
+#     second_es.entity_from_dataframe(entity_id='customers',
+#                                     dataframe=es['customers'].df,
+#                                     index='id',
+#                                     time_index='signup_date',
+#                                     variable_types=es['customers'].variable_types)
+#     assert first_es == second_es
 
-    first_es.add_relationship('customers', 'id', 'sessions', 'customer_id')
-    assert first_es != second_es
+#     first_es.add_relationship('customers', 'id', 'sessions', 'customer_id')
+#     assert first_es != second_es
 
-    second_es.add_relationship('customers', 'id', 'sessions', 'customer_id')
-    assert first_es == second_es
+#     second_es.add_relationship('customers', 'id', 'sessions', 'customer_id')
+#     assert first_es == second_es
