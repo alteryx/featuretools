@@ -560,6 +560,7 @@ class EntitySet(object):
         if dataframe.ww.schema is None:
             # init woodwork with params
             # --> all these params will be ignored if schema is not none - do we want to either raise warning or handle differenctly?
+
             dataframe.ww.init(name=dataframe_id,
                               index=index,
                               time_index=time_index,
@@ -571,6 +572,13 @@ class EntitySet(object):
         else:
             # make sure name is set to match input dataframe_id
             dataframe.ww.name = dataframe_id
+
+        # If no index column is specified, set the first column
+        if dataframe.ww.index is None:
+            # --> if you want to make index you needed to have done it at init
+            dataframe.ww.set_index(dataframe.columns[0])
+            warnings.warn(("Using first column as index. "
+                           "To change this, specify the index parameter"))
 
         if secondary_time_index:
             self.set_secondary_time_index(dataframe, secondary_time_index=secondary_time_index)

@@ -270,16 +270,16 @@ def test_make_index_variable_ordering(df):
                      'category': ltypes.Categorical}
 
     es = EntitySet(id='test')
-    es.add_dataframe(dataframe_id='test_entity',
+    es.add_dataframe(dataframe_id='test_dataframe',
                      index='id1',
                      make_index=True,
                      logical_types=logical_types,
                      dataframe=df)
     if dd and not isinstance(df, dd.DataFrame):
         # --> dask isn't inserting these in the correct order from Woodwork! We should follow FT behavior in WW
-        assert es.dataframe_dict['test_entity'].columns[0] == 'id1'
+        assert es.dataframe_dict['test_dataframe'].columns[0] == 'id1'
 
-    assert es.dataframe_dict['test_entity'].ww.index == 'id1'
+    assert es.dataframe_dict['test_dataframe'].ww.index == 'id1'
 
 
 def test_extra_variable_type(df):
@@ -324,16 +324,15 @@ def df2(request):
 
 
 def test_none_index(df2):
-    vtypes = {'category': variable_types.Categorical, 'category2': variable_types.Categorical}
-
     warn_text = "Using first column as index. To change this, specify the index parameter"
     es = EntitySet(id='test')
     with pytest.warns(UserWarning, match=warn_text):
-        es.add_dataframe(entity_id='test_entity',
-                         dataframe=df2,
-                         variable_types=vtypes)
-    assert es['test_entity'].index == 'category'
-    assert isinstance(es['test_entity']['category'], variable_types.Index)
+        es.add_dataframe(dataframe_id='test_dataframe',
+                         logical_types={'category': 'Categorical'},
+                         dataframe=df2)
+    assert es['test_dataframe'].ww.index == 'category'
+    assert es['test_dataframe'].ww.semantic_tags['category'] == {'index'}
+    assert es['test_dataframe'].ww.logical_types['category'] == ltypes.Categorical
 
 
 @pytest.fixture
@@ -358,34 +357,32 @@ def df3(request):
 
 
 def test_unknown_index(df3):
-    vtypes = {'category': variable_types.Categorical}
-
+    # --> this behavior is not allowed by Woodwork! how should we deal??
     warn_text = "index id not found in dataframe, creating new integer column"
     es = EntitySet(id='test')
     with pytest.warns(UserWarning, match=warn_text):
-        es.add_dataframe(entity_id='test_entity',
+        es.add_dataframe(dataframe_id='test_dataframe',
                          index='id',
-                         variable_types=vtypes, dataframe=df3)
-    assert es['test_entity'].index == 'id'
-    assert list(to_pandas(es['test_entity'].df['id'], sort_index=True)) == list(range(3))
+                         logical_types={'category': 'Categorical'}, dataframe=df3)
+    assert es['test_dataframe'].ww.index == 'id'
+    assert list(to_pandas(es['test_dataframe']['id'], sort_index=True)) == list(range(3))
 
 
 def test_doesnt_remake_index(df):
-    error_text = "Cannot make index: index variable already present"
-    with pytest.raises(RuntimeError, match=error_text):
+    error_text = "When setting make_index to True, the name specified for index cannot match an existing column name"
+    with pytest.raises(IndexError, match=error_text):
         es = EntitySet(id='test')
-        es.add_dataframe(entity_id='test_entity',
+        es.add_dataframe(dataframe_id='test_dataframe',
                          index='id',
                          make_index=True,
                          dataframe=df)
 
 
 def test_bad_time_index_variable(df3):
-    error_text = "Time index not found in dataframe"
+    error_text = "Specified time index column `time` not found in dataframe"
     with pytest.raises(LookupError, match=error_text):
         es = EntitySet(id='test')
-        es.add_dataframe(entity_id='test_entity',
-                         index="id",
+        es.add_dataframe(dataframe_id='test_dataframe',
                          dataframe=df3,
                          time_index='time')
 
@@ -417,23 +414,24 @@ def df4(request):
     return request.getfixturevalue(request.param)
 
 
-def test_converts_variable_types_on_init(df4):
-    vtypes = {'id': variable_types.Categorical,
-              'ints': variable_types.Numeric,
-              'floats': variable_types.Numeric}
+def test_converts_dtype_on_init(df4):
+    # --> why cant we convert from int64 to Int64???????
+    logical_types = {'id': ltypes.Categorical,
+                     'ints': ltypes.Integer,
+                     'floats': ltypes.Double}
     if not isinstance(df4, pd.DataFrame):
-        vtypes['category'] = variable_types.Categorical
-        vtypes['category_int'] = variable_types.Categorical
+        logical_types['category'] = ltypes.Categorical
+        logical_types['category_int'] = ltypes.Categorical
     es = EntitySet(id='test')
-    es.add_dataframe(entity_id='test_entity', index='id',
-                     variable_types=vtypes, dataframe=df4)
+    df4.ww.init(index='id', logical_types=logical_types)
+    es.add_dataframe(dataframe_id='test_dataframe', dataframe=df4)
 
-    entity_df = es['test_entity'].df
-    assert entity_df['ints'].dtype.name in variable_types.PandasTypes._pandas_numerics
-    assert entity_df['floats'].dtype.name in variable_types.PandasTypes._pandas_numerics
+    entity_df = es['test_dataframe']
+    assert entity_df['ints'].dtype.name == 'Int64'
+    assert entity_df['floats'].dtype.name == 'float64'
 
     # this is infer from pandas dtype
-    e = es["test_entity"]
+    e = es["test_dataframe"]
     assert isinstance(e['category_int'], variable_types.Categorical)
 
 
@@ -450,10 +448,10 @@ def test_converts_variable_type_after_init(df4):
     else:
         vtypes = None
     es = EntitySet(id='test')
-    es.add_dataframe(entity_id='test_entity', index='id',
+    es.add_dataframe(dataframe_id='test_dataframe', index='id',
                      dataframe=df4, variable_types=vtypes)
-    e = es['test_entity']
-    df = es['test_entity'].df
+    e = es['test_dataframe']
+    df = es['test_dataframe'].df
 
     e.convert_variable_type('ints', variable_types.Numeric)
     assert isinstance(e['ints'], variable_types.Numeric)
@@ -476,7 +474,7 @@ def test_errors_no_vtypes_dask(dd_df4):
     msg = 'Variable types cannot be inferred from Dask DataFrames, ' \
           'use variable_types to provide type metadata for entity'
     with pytest.raises(ValueError, match=msg):
-        es.add_dataframe(entity_id='test_entity', index='id',
+        es.add_dataframe(dataframe_id='test_dataframe', index='id',
                          dataframe=dd_df4)
 
 
@@ -485,7 +483,7 @@ def test_errors_no_vtypes_koalas(ks_df4):
     msg = 'Variable types cannot be inferred from Koalas DataFrames, ' \
           'use variable_types to provide type metadata for entity'
     with pytest.raises(ValueError, match=msg):
-        es.add_dataframe(entity_id='test_entity', index='id',
+        es.add_dataframe(dataframe_id='test_dataframe', index='id',
                          dataframe=ks_df4)
 
 
@@ -521,12 +519,12 @@ def test_converts_datetime(datetime1):
 
     es = EntitySet(id='test')
     es.add_dataframe(
-        entity_id='test_entity',
+        dataframe_id='test_dataframe',
         index='id',
         time_index="time",
         variable_types=vtypes,
         dataframe=datetime1)
-    pd_col = to_pandas(es['test_entity'].df['time'])
+    pd_col = to_pandas(es['test_dataframe'].df['time'])
     # assert type(es['test_entity']['time']) == variable_types.Datetime
     assert type(pd_col[0]) == pd.Timestamp
 
@@ -568,13 +566,13 @@ def test_handles_datetime_format(datetime2):
 
     es = EntitySet(id='test')
     es.add_dataframe(
-        entity_id='test_entity',
+        dataframe_id='test_dataframe',
         index='id',
         variable_types=vtypes,
         dataframe=datetime2)
 
-    col_format = to_pandas(es['test_entity'].df['time_format'])
-    col_no_format = to_pandas(es['test_entity'].df['time_no_format'])
+    col_format = to_pandas(es['test_dataframe'].df['time_format'])
+    col_no_format = to_pandas(es['test_dataframe'].df['time_no_format'])
     # without formatting pandas gets it wrong
     assert (col_no_format != actual).all()
 
@@ -592,7 +590,7 @@ def test_handles_datetime_mismatch():
     error_text = "Given date string not likely a datetime."
     with pytest.raises(ValueError, match=error_text):
         es = EntitySet(id='test')
-        es.add_dataframe('test_entity', df, 'id',
+        es.add_dataframe('test_dataframe', df, 'id',
                          time_index='time', variable_types=vtypes)
 
 
@@ -659,7 +657,7 @@ def test_nonstr_column_names(bad_df):
     es = ft.EntitySet(id='Failure')
     error_text = r"All column names must be strings \(Column 3 is not a string\)"
     with pytest.raises(ValueError, match=error_text):
-        es.add_dataframe(entity_id='str_cols',
+        es.add_dataframe(dataframe_id='str_cols',
                          dataframe=bad_df,
                          index='index')
 
@@ -1061,7 +1059,7 @@ def pd_normalize_es():
     })
     es = ft.EntitySet("es")
     return es.add_dataframe(
-        entity_id="data",
+        dataframe_id="data",
         dataframe=df,
         index="id")
 
@@ -1070,7 +1068,7 @@ def pd_normalize_es():
 def dd_normalize_es(pd_normalize_es):
     es = ft.EntitySet(id=pd_normalize_es.id)
     entity = pd_normalize_es['data']
-    es.add_dataframe(entity_id=entity.id,
+    es.add_dataframe(dataframe_id=entity.id,
                      dataframe=dd.from_pandas(entity.df, npartitions=2),
                      index=entity.index,
                      variable_types=entity.variable_types)
@@ -1082,7 +1080,7 @@ def ks_normalize_es(pd_normalize_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     es = ft.EntitySet(id=pd_normalize_es.id)
     entity = pd_normalize_es['data']
-    es.add_dataframe(entity_id=entity.id,
+    es.add_dataframe(dataframe_id=entity.id,
                      dataframe=ks.from_pandas(entity.df),
                      index=entity.index,
                      variable_types=entity.variable_types)
@@ -1097,8 +1095,8 @@ def normalize_es(request):
 def test_normalize_time_index_from_none(normalize_es):
     assert normalize_es['data'].time_index is None
 
-    normalize_es.normalize_entity(base_entity_id='data',
-                                  new_entity_id='normalized',
+    normalize_es.normalize_entity(base_dataframe_id='data',
+                                  new_dataframe_id='normalized',
                                   index='A',
                                   make_time_index='time',
                                   copy_variables=['time'])
@@ -1161,8 +1159,8 @@ def test_make_time_index_keeps_original_sorting():
                      index="trip_id",
                      time_index='flight_time')
     assert (es['trips'].df['trip_id'] == order).all()
-    es.normalize_entity(base_entity_id="trips",
-                        new_entity_id="flights",
+    es.normalize_entity(base_dataframe_id="trips",
+                        new_dataframe_id="flights",
                         index="flight_id",
                         make_time_index=True)
     assert (es['trips'].df['trip_id'] == order).all()
@@ -1284,12 +1282,12 @@ def test_datetime64_conversion(datetime3):
     else:
         vtypes = None
     es = EntitySet(id='test')
-    es.add_dataframe(entity_id='test_entity',
+    es.add_dataframe(dataframe_id='test_dataframe',
                      index='id',
                      dataframe=df,
                      variable_types=vtypes)
     vtype_time_index = variable_types.variable.DatetimeTimeIndex
-    es['test_entity'].convert_variable_type('time', vtype_time_index)
+    es['test_dataframe'].convert_variable_type('time', vtype_time_index)
 
 
 @pytest.fixture
@@ -1329,21 +1327,21 @@ def test_same_index_values(index_df):
 
     error_text = "time_index and index cannot be the same value"
     with pytest.raises(ValueError, match=error_text):
-        es.add_dataframe(entity_id="entity",
+        es.add_dataframe(dataframe_id="entity",
                          index="id",
                          time_index="id",
                          dataframe=index_df,
                          variable_types=vtypes)
 
-    es.add_dataframe(entity_id="entity",
+    es.add_dataframe(dataframe_id="entity",
                      index="id",
                      time_index="transaction_time",
                      dataframe=index_df,
                      variable_types=vtypes)
 
     with pytest.raises(ValueError, match=error_text):
-        es.normalize_entity(base_entity_id="entity",
-                            new_entity_id="new_entity",
+        es.normalize_entity(base_dataframe_id="entity",
+                            new_dataframe_id="new_entity",
                             index="first_entity_time",
                             make_time_index=True)
 
@@ -1368,12 +1366,12 @@ def test_use_time_index(index_df):
 
     error_text = "DatetimeTimeIndex variable transaction_time must be set using time_index parameter"
     with pytest.raises(ValueError, match=error_text):
-        es.add_dataframe(entity_id="entity",
+        es.add_dataframe(dataframe_id="entity",
                          index="id",
                          variable_types=bad_vtypes,
                          dataframe=index_df)
 
-    es.add_dataframe(entity_id="entity",
+    es.add_dataframe(dataframe_id="entity",
                      index="id",
                      time_index="transaction_time",
                      variable_types=vtypes,
@@ -1381,7 +1379,7 @@ def test_use_time_index(index_df):
 
 
 # def test_normalize_with_datetime_time_index(es):
-#     es.normalize_entity(base_entity_id="customers",
+#     es.normalize_entity(base_dataframe_id="customers",
 #                         new_entity_id="cancel_reason",
 #                         index="cancel_reason",
 #                         make_time_index=False,
@@ -1393,8 +1391,8 @@ def test_use_time_index(index_df):
 
 
 def test_normalize_with_numeric_time_index(int_es):
-    int_es.normalize_entity(base_entity_id="customers",
-                            new_entity_id="cancel_reason",
+    int_es.normalize_entity(base_dataframe_id="customers",
+                            new_dataframe_id="cancel_reason",
                             index="cancel_reason",
                             make_time_index=False,
                             copy_variables=['signup_date', 'upgrade_date'])
@@ -1440,10 +1438,10 @@ def test_entityset_init():
     assert es['transactions'].index == 'id'
     assert es['transactions'].time_index == 'transaction_time'
     es_copy = ft.EntitySet(id="fraud_data")
-    es_copy.add_dataframe(entity_id='cards',
+    es_copy.add_dataframe(dataframe_id='cards',
                           dataframe=cards_df,
                           index='id')
-    es_copy.add_dataframe(entity_id='transactions',
+    es_copy.add_dataframe(dataframe_id='transactions',
                           dataframe=transactions_df,
                           index='id',
                           variable_types=variable_types,
