@@ -334,6 +334,7 @@ class EntitySet(object):
         # --> necessary for replacing
         for time_index, columns in secondary_time_index.items():
             if is_instance(entity.df, (dd, ks), 'DataFrame') or entity.df.empty:
+                # --> look at dataframe.ww.physical_typew[time_index]
                 variable_dtype = entity[time_index]._default_pandas_dtype
                 time_to_check = vtypes.DEFAULT_DTYPE_VALUES[variable_dtype]
             else:
@@ -593,185 +594,187 @@ class EntitySet(object):
         self.reset_data_description()
         return self
 
-    # def normalize_entity(self, base_entity_id, new_entity_id, index,
-    #                      additional_variables=None, copy_variables=None,
-    #                      make_time_index=None,
-    #                      make_secondary_time_index=None,
-    #                      new_entity_time_index=None,
-    #                      new_entity_secondary_time_index=None):
-    #     # --> 3. necessary for Woodwork
-    #     """Create a new entity and relationship from unique values of an existing variable.
+    def normalize_entity(self, base_dataframe_id, new_dataframe_id, index,
+                         additional_columns=None, copy_columns=None,
+                         make_time_index=None,
+                         make_secondary_time_index=None,
+                         new_dataframe_time_index=None,
+                         new_dataframe_secondary_time_index=None):
+        # --> 3. necessary for Woodwork
+        """Create a new entity and relationship from unique values of an existing variable.
 
-    #     Args:
-    #         base_entity_id (str) : Entity id from which to split.
+        Args:
+            base_dataframe_id (str) : Entity id from which to split.
 
-    #         new_entity_id (str): Id of the new entity.
+            new_dataframe_id (str): Id of the new entity.
 
-    #         index (str): Variable in old entity
-    #             that will become index of new entity. Relationship
-    #             will be created across this variable.
+            index (str): Variable in old entity
+                that will become index of new entity. Relationship
+                will be created across this variable.
 
-    #         additional_variables (list[str]):
-    #             List of variable ids to remove from
-    #             base_entity and move to new entity.
+            additional_columns (list[str]):
+                List of variable ids to remove from
+                base_entity and move to new entity.
 
-    #         copy_variables (list[str]): List of
-    #             variable ids to copy from old entity
-    #             and move to new entity.
+            copy_columns (list[str]): List of
+                variable ids to copy from old entity
+                and move to new entity.
 
-    #         make_time_index (bool or str, optional): Create time index for new entity based
-    #             on time index in base_entity, optionally specifying which variable in base_entity
-    #             to use for time_index. If specified as True without a specific variable,
-    #             uses the primary time index. Defaults to True if base entity has a time index.
+            make_time_index (bool or str, optional): Create time index for new entity based
+                on time index in base_entity, optionally specifying which variable in base_entity
+                to use for time_index. If specified as True without a specific variable,
+                uses the primary time index. Defaults to True if base entity has a time index.
 
-    #         make_secondary_time_index (dict[str -> list[str]], optional): Create a secondary time index
-    #             from key. Values of dictionary
-    #             are the variables to associate with the secondary time index. Only one
-    #             secondary time index is allowed. If None, only associate the time index.
+            make_secondary_time_index (dict[str -> list[str]], optional): Create a secondary time index
+                from key. Values of dictionary
+                are the variables to associate with the secondary time index. Only one
+                secondary time index is allowed. If None, only associate the time index.
 
-    #         new_entity_time_index (str, optional): Rename new entity time index.
+            new_dataframe_time_index (str, optional): Rename new entity time index.
 
-    #         new_entity_secondary_time_index (str, optional): Rename new entity secondary time index.
+            new_dataframe_secondary_time_index (str, optional): Rename new entity secondary time index.
 
-    #     """
-    #     base_entity = self.dataframe_dict[base_entity_id]
-    #     additional_variables = additional_variables or []
-    #     copy_variables = copy_variables or []
+        """
+        base_dataframe = self.dataframe_dict[base_dataframe_id]
+        additional_columns = additional_columns or []
+        copy_columns = copy_columns or []
 
-    #     # Check base entity to make sure time index is valid
-    #     if base_entity.time_index is not None:
-    #         t_index = base_entity[base_entity.time_index]
-    #         if not isinstance(t_index, (vtypes.NumericTimeIndex, vtypes.DatetimeTimeIndex)):
-    #             base_error = "Time index '{0}' is not a NumericTimeIndex or DatetimeTimeIndex, but type {1}. Use set_time_index on entity '{2}' to set the time_index."
-    #             raise TypeError(base_error.format(base_entity.time_index, type(t_index), str(base_entity.id)))
+        # Check base entity to make sure time index is valid
+        # --> not sure if still relevalt with woodwork??
+        # if base_dataframe.ww.time_index is not None:
+        #     t_index = base_dataframe[base_dataframe.ww.time_index]
+        #     if not isinstance(t_index, (vtypes.NumericTimeIndex, vtypes.DatetimeTimeIndex)):
+        #         base_error = "Time index '{0}' is not a NumericTimeIndex or DatetimeTimeIndex, but type {1}. Use set_time_index on entity '{2}' to set the time_index."
+        #         raise TypeError(base_error.format(base_dataframe.time_index, type(t_index), str(base_dataframe.id)))
 
-    #     if not isinstance(additional_variables, list):
-    #         raise TypeError("'additional_variables' must be a list, but received type {}"
-    #                         .format(type(additional_variables)))
+        if not isinstance(additional_columns, list):
+            raise TypeError("'additional_columns' must be a list, but received type {}"
+                            .format(type(additional_columns)))
 
-    #     if len(additional_variables) != len(set(additional_variables)):
-    #         raise ValueError("'additional_variables' contains duplicate variables. All variables must be unique.")
+        if len(additional_columns) != len(set(additional_columns)):
+            raise ValueError("'additional_columns' contains duplicate variables. All variables must be unique.")
 
-    #     if not isinstance(copy_variables, list):
-    #         raise TypeError("'copy_variables' must be a list, but received type {}"
-    #                         .format(type(copy_variables)))
+        if not isinstance(copy_columns, list):
+            raise TypeError("'copy_columns' must be a list, but received type {}"
+                            .format(type(copy_columns)))
 
-    #     if len(copy_variables) != len(set(copy_variables)):
-    #         raise ValueError("'copy_variables' contains duplicate variables. All variables must be unique.")
+        if len(copy_columns) != len(set(copy_columns)):
+            raise ValueError("'copy_columns' contains duplicate variables. All variables must be unique.")
 
-    #     for v in additional_variables + copy_variables:
-    #         if v == index:
-    #             raise ValueError("Not copying {} as both index and variable".format(v))
+        for v in additional_columns + copy_columns:
+            if v == index:
+                raise ValueError("Not copying {} as both index and variable".format(v))
 
-    #     for v in additional_variables:
-    #         if v == base_entity.time_index:
-    #             raise ValueError("Not moving {} as it is the base time index variable. Perhaps, move the variable to the copy_variables.".format(v))
+        for v in additional_columns:
+            if v == base_dataframe.ww.time_index:
+                raise ValueError("Not moving {} as it is the base time index variable. Perhaps, move the variable to the copy_columns.".format(v))
 
-    #     if isinstance(make_time_index, str):
-    #         if make_time_index not in base_entity.df.columns:
-    #             raise ValueError("'make_time_index' must be a variable in the base entity")
-    #         elif make_time_index not in additional_variables + copy_variables:
-    #             raise ValueError("'make_time_index' must be specified in 'additional_variables' or 'copy_variables'")
-    #     if index == base_entity.index:
-    #         raise ValueError("'index' must be different from the index column of the base entity")
+        if isinstance(make_time_index, str):
+            if make_time_index not in base_dataframe.columns:
+                raise ValueError("'make_time_index' must be a variable in the base entity")
+            elif make_time_index not in additional_columns + copy_columns:
+                raise ValueError("'make_time_index' must be specified in 'additional_columns' or 'copy_columns'")
+        if index == base_dataframe.ww.index:
+            raise ValueError("'index' must be different from the index column of the base entity")
 
-    #     transfer_types = {}
-    #     transfer_types[index] = type(base_entity[index])
-    #     for v in additional_variables + copy_variables:
-    #         if type(base_entity[v]) == vtypes.DatetimeTimeIndex:
-    #             transfer_types[v] = vtypes.Datetime
-    #         elif type(base_entity[v]) == vtypes.NumericTimeIndex:
-    #             transfer_types[v] = vtypes.Numeric
-    #         else:
-    #             transfer_types[v] = type(base_entity[v])
+        # transfer_types = {}
+        # transfer_types[index] = base_dataframe.ww[index].ww.schema
+        # for v in additional_columns + copy_columns:
+        #     # --> going to need to ignore and time index tags at some point
+        #     transfer_types[v] = base_dataframe.ww[v].ww.schema
 
-    #     # create and add new entity
-    #     new_entity_df = self[base_entity_id].df.copy()
+        transfer_cols = [index] + additional_columns + copy_columns
 
-    #     if make_time_index is None and base_entity.time_index is not None:
-    #         make_time_index = True
+        # create and add new entity
+        # new_dataframe = self[base_dataframe_id].ww.copy()
+        new_dataframe = self[base_dataframe_id].ww[transfer_cols]
+        new_dataframe.ww.index = index
 
-    #     if isinstance(make_time_index, str):
-    #         # Set the new time index to make_time_index.
-    #         base_time_index = make_time_index
-    #         new_entity_time_index = make_time_index
-    #         already_sorted = (new_entity_time_index == base_entity.time_index)
-    #     elif make_time_index:
-    #         # Create a new time index based on the base entity time index.
-    #         base_time_index = base_entity.time_index
-    #         if new_entity_time_index is None:
-    #             new_entity_time_index = "first_%s_time" % (base_entity.id)
+        if make_time_index is None and base_dataframe.time_index is not None:
+            make_time_index = True
 
-    #         already_sorted = True
+        if isinstance(make_time_index, str):
+            # Set the new time index to make_time_index.
+            base_time_index = make_time_index
+            new_dataframe_time_index = make_time_index
+            already_sorted = (new_dataframe_time_index == base_dataframe.time_index)
+        elif make_time_index:
+            # Create a new time index based on the base entity time index.
+            base_time_index = base_dataframe.time_index
+            if new_dataframe_time_index is None:
+                new_dataframe_time_index = "first_%s_time" % (base_dataframe.id)
 
-    #         assert base_entity.time_index is not None, \
-    #             "Base entity doesn't have time_index defined"
+            already_sorted = True
 
-    #         if base_time_index not in [v for v in additional_variables]:
-    #             copy_variables.append(base_time_index)
+            assert base_dataframe.time_index is not None, \
+                "Base entity doesn't have time_index defined"
 
-    #         transfer_types[new_entity_time_index] = type(base_entity[base_entity.time_index])
-    #     else:
-    #         new_entity_time_index = None
-    #         already_sorted = False
+            if base_time_index not in [v for v in additional_columns]:
+                copy_columns.append(base_time_index)
 
-    #     if new_entity_time_index is not None and new_entity_time_index == index:
-    #         raise ValueError("time_index and index cannot be the same value, %s" % (new_entity_time_index))
+            transfer_types[new_dataframe_time_index] = type(base_dataframe[base_dataframe.time_index])
+        else:
+            new_dataframe_time_index = None
+            already_sorted = False
 
-    #     selected_variables = [index] +\
-    #         [v for v in additional_variables] +\
-    #         [v for v in copy_variables]
+        if new_dataframe_time_index is not None and new_dataframe_time_index == index:
+            raise ValueError("time_index and index cannot be the same value, %s" % (new_dataframe_time_index))
 
-    #     new_entity_df2 = new_entity_df. \
-    #         drop_duplicates(index, keep='first')[selected_variables]
+        selected_variables = [index] +\
+            [v for v in additional_columns] +\
+            [v for v in copy_columns]
 
-    #     if make_time_index:
-    #         new_entity_df2 = new_entity_df2.rename(columns={base_time_index: new_entity_time_index})
-    #     if make_secondary_time_index:
-    #         assert len(make_secondary_time_index) == 1, "Can only provide 1 secondary time index"
-    #         secondary_time_index = list(make_secondary_time_index.keys())[0]
+        new_dataframe2 = new_dataframe. \
+            drop_duplicates(index, keep='first')[selected_variables]
 
-    #         secondary_variables = [index, secondary_time_index] + list(make_secondary_time_index.values())[0]
-    #         secondary_df = new_entity_df. \
-    #             drop_duplicates(index, keep='last')[secondary_variables]
-    #         if new_entity_secondary_time_index:
-    #             secondary_df = secondary_df.rename(columns={secondary_time_index: new_entity_secondary_time_index})
-    #             secondary_time_index = new_entity_secondary_time_index
-    #         else:
-    #             new_entity_secondary_time_index = secondary_time_index
-    #         secondary_df = secondary_df.set_index(index)
-    #         new_entity_df = new_entity_df2.join(secondary_df, on=index)
-    #     else:
-    #         new_entity_df = new_entity_df2
+        if make_time_index:
+            new_dataframe2 = new_dataframe2.rename(columns={base_time_index: new_dataframe_time_index})
+        if make_secondary_time_index:
+            assert len(make_secondary_time_index) == 1, "Can only provide 1 secondary time index"
+            secondary_time_index = list(make_secondary_time_index.keys())[0]
 
-    #     base_entity_index = index
+            secondary_variables = [index, secondary_time_index] + list(make_secondary_time_index.values())[0]
+            secondary_df = new_dataframe. \
+                drop_duplicates(index, keep='last')[secondary_variables]
+            if new_dataframe_secondary_time_index:
+                secondary_df = secondary_df.rename(columns={secondary_time_index: new_dataframe_secondary_time_index})
+                secondary_time_index = new_dataframe_secondary_time_index
+            else:
+                new_dataframe_secondary_time_index = secondary_time_index
+            secondary_df = secondary_df.set_index(index)
+            new_dataframe = new_dataframe2.join(secondary_df, on=index)
+        else:
+            new_dataframe = new_dataframe2
 
-    #     transfer_types[index] = vtypes.Categorical
-    #     if make_secondary_time_index:
-    #         old_ti_name = list(make_secondary_time_index.keys())[0]
-    #         ti_cols = list(make_secondary_time_index.values())[0]
-    #         ti_cols = [c if c != old_ti_name else secondary_time_index for c in ti_cols]
-    #         make_secondary_time_index = {secondary_time_index: ti_cols}
+        base_dataframe_index = index
 
-    #     if is_instance(new_entity_df, ks, 'DataFrame'):
-    #         already_sorted = False
+        # --> translate to woodwork
+        transfer_types[index] = vtypes.Categorical
+        if make_secondary_time_index:
+            old_ti_name = list(make_secondary_time_index.keys())[0]
+            ti_cols = list(make_secondary_time_index.values())[0]
+            ti_cols = [c if c != old_ti_name else secondary_time_index for c in ti_cols]
+            make_secondary_time_index = {secondary_time_index: ti_cols}
 
-    #     self.entity_from_dataframe(
-    #         new_entity_id,
-    #         new_entity_df,
-    #         index,
-    #         already_sorted=already_sorted,
-    #         time_index=new_entity_time_index,
-    #         secondary_time_index=make_secondary_time_index,
-    #         variable_types=transfer_types)
+        if is_instance(new_dataframe, ks, 'DataFrame'):
+            already_sorted = False
 
-    #     self.dataframe_dict[base_entity_id].delete_variables(additional_variables)
+        self.add_dataframe(
+            new_dataframe_id,
+            new_dataframe,
+            index,
+            already_sorted=already_sorted,
+            time_index=new_dataframe_time_index,
+            secondary_time_index=make_secondary_time_index,  # --> getting ignored until we implement this
+            variable_types=transfer_types)
 
-    #     new_entity = self.dataframe_dict[new_entity_id]
-    #     base_entity.convert_variable_type(base_entity_index, vtypes.Id, convert_data=False)
-    #     self.add_relationship(new_entity.id, index, base_entity.id, base_entity_index)
-    #     self.reset_data_description()
-    #     return self
+        self.dataframe_dict[base_dataframe_id].delete_variables(additional_columns)
+
+        new_entity = self.dataframe_dict[new_dataframe_id]
+        base_dataframe.convert_variable_type(base_dataframe_index, vtypes.Id, convert_data=False)
+        self.add_relationship(new_entity.id, index, base_dataframe.id, base_dataframe_index)
+        self.reset_data_description()
+        return self
 
     # ###########################################################################
     # #  Data wrangling methods  ###############################################
