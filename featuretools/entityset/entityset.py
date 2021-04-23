@@ -114,8 +114,9 @@ class EntitySet(object):
     def __sizeof__(self):
         return sum([entity.__sizeof__() for entity in self.dataframes])
 
-    def __dask_tokenize__(self):
-        return (EntitySet, serialize.entityset_to_description(self.metadata))
+# --> needs to wait till serialization is implemented
+    # def __dask_tokenize__(self):
+    #     return (EntitySet, serialize.entityset_to_description(self.metadata))
 
     def __eq__(self, other, deep=False):
         if len(self.dataframe_dict) != len(other.dataframe_dict):
@@ -152,14 +153,15 @@ class EntitySet(object):
     def dataframes(self):
         return list(self.dataframe_dict.values())
 
-    @property
-    def metadata(self):
-        '''Returns the metadata for this EntitySet. The metadata will be recomputed if it does not exist.'''
-        if self._data_description is None:
-            description = serialize.entityset_to_description(self)
-            self._data_description = deserialize.description_to_entityset(description)
+# --> needs to wait till serialization is implemented
+    # @property
+    # def metadata(self):
+    #     '''Returns the metadata for this EntitySet. The metadata will be recomputed if it does not exist.'''
+    #     if self._data_description is None:
+    #         description = serialize.entityset_to_description(self)
+    #         self._data_description = deserialize.description_to_entityset(description)
 
-        return self._data_description
+    #     return self._data_description
 
     def reset_data_description(self):
         self._data_description = None

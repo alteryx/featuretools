@@ -525,7 +525,7 @@ def test_converts_datetime(datetime1):
         time_index="time",
         logical_types=logical_types,
         dataframe=datetime1)
-    pd_col = to_pandas(es['test_dataframe'].df['time'])
+    pd_col = to_pandas(es['test_dataframe']['time'])
     # assert type(es['test_entity']['time']) == variable_types.Datetime
     assert type(pd_col[0]) == pd.Timestamp
 
@@ -572,8 +572,8 @@ def test_handles_datetime_format(datetime2):
         logical_types=logical_types,
         dataframe=datetime2)
 
-    col_format = to_pandas(es['test_dataframe'].df['time_format'])
-    col_no_format = to_pandas(es['test_dataframe'].df['time_no_format'])
+    col_format = to_pandas(es['test_dataframe']['time_format'])
+    col_no_format = to_pandas(es['test_dataframe']['time_no_format'])
     # without formatting pandas gets it wrong
     assert (col_no_format != actual).all()
 
@@ -884,10 +884,10 @@ def test_sets_time_when_adding_entity(transactions_df):
     # assert time_type is set
     assert es.time_type == variable_types.NumericTimeIndex
     # add another entity
-    es.normalize_entity("transactions",
-                        "cards",
-                        "card_id",
-                        make_time_index=True)
+    es.normalize_dataframe("transactions",
+                           "cards",
+                           "card_id",
+                           make_time_index=True)
     # assert time_type unchanged
     assert es.time_type == variable_types.NumericTimeIndex
     # add wrong time type entity
@@ -1096,15 +1096,15 @@ def normalize_es(request):
 
 
 def test_normalize_time_index_from_none(normalize_es):
-    assert normalize_es['data'].time_index is None
+    assert normalize_es['data'].ww.time_index is None
 
-    normalize_es.normalize_entity(base_dataframe_id='data',
-                                  new_dataframe_id='normalized',
-                                  index='A',
-                                  make_time_index='time',
-                                  copy_variables=['time'])
-    assert normalize_es['normalized'].time_index == 'time'
-    df = normalize_es['normalized'].df
+    normalize_es.normalize_dataframe(base_dataframe_id='data',
+                                     new_dataframe_id='normalized',
+                                     index='A',
+                                     make_time_index='time',
+                                     copy_variables=['time'])
+    assert normalize_es['normalized'].ww.time_index == 'time'
+    df = normalize_es['normalized']
 
     # only pandas sorts by time index
     if isinstance(df, pd.DataFrame):
@@ -1161,12 +1161,12 @@ def test_make_time_index_keeps_original_sorting():
                      dataframe=df,
                      index="trip_id",
                      time_index='flight_time')
-    assert (es['trips'].df['trip_id'] == order).all()
-    es.normalize_entity(base_dataframe_id="trips",
-                        new_dataframe_id="flights",
-                        index="flight_id",
-                        make_time_index=True)
-    assert (es['trips'].df['trip_id'] == order).all()
+    assert (es['trips']['trip_id'] == order).all()
+    es.normalize_dataframe(base_dataframe_id="trips",
+                           new_dataframe_id="flights",
+                           index="flight_id",
+                           make_time_index=True)
+    assert (es['trips']['trip_id'] == order).all()
 
 
 # def test_normalize_entity_new_time_index(es):
@@ -1241,9 +1241,10 @@ def test_getitem_without_id():
         ft.EntitySet()['test']
 
 
-def test_metadata_without_id():
-    es = ft.EntitySet()
-    assert es.metadata.id is None
+# --> wait till serialization implemented
+# def test_metadata_without_id():
+#     es = ft.EntitySet()
+#     assert es.metadata.id is None
 
 
 @pytest.fixture
@@ -1343,10 +1344,10 @@ def test_same_index_values(index_df):
                      logical_types=logical_types)
 
     with pytest.raises(ValueError, match=error_text):
-        es.normalize_entity(base_dataframe_id="entity",
-                            new_dataframe_id="new_entity",
-                            index="first_entity_time",
-                            make_time_index=True)
+        es.normalize_dataframe(base_dataframe_id="entity",
+                               new_dataframe_id="new_entity",
+                               index="first_entity_time",
+                               make_time_index=True)
 
 
 def test_use_time_index(index_df):
@@ -1396,11 +1397,11 @@ def test_use_time_index(index_df):
 
 
 def test_normalize_with_numeric_time_index(int_es):
-    int_es.normalize_entity(base_dataframe_id="customers",
-                            new_dataframe_id="cancel_reason",
-                            index="cancel_reason",
-                            make_time_index=False,
-                            copy_variables=['signup_date', 'upgrade_date'])
+    int_es.normalize_dataframe(base_dataframe_id="customers",
+                               new_dataframe_id="cancel_reason",
+                               index="cancel_reason",
+                               make_time_index=False,
+                               copy_variables=['signup_date', 'upgrade_date'])
 
     vtypes = int_es['cancel_reason'].variable_types
     assert vtypes['signup_date'] == variable_types.Numeric
@@ -1441,7 +1442,7 @@ def test_entityset_init():
                       entities=entities,
                       relationships=relationships)
     assert es['transactions'].index == 'id'
-    assert es['transactions'].time_index == 'transaction_time'
+    assert es['transactions'].ww.time_index == 'transaction_time'
     es_copy = ft.EntitySet(id="fraud_data")
     es_copy.add_dataframe(dataframe_id='cards',
                           dataframe=cards_df,
