@@ -903,13 +903,13 @@ def test_sets_time_when_adding_entity(transactions_df):
                          time_index="signup_date",
                          logical_types=accounts_vtypes)
     # add non time type as time index, only valid for pandas
-    # if isinstance(transactions_df, pd.DataFrame): --> woodwork will do this for non pandas!
-    error_text = "Time index column must contain datetime or numeric values"
-    with pytest.raises(TypeError, match=error_text):
-        es.add_dataframe("accounts",
-                         accounts_df_string,
-                         index="id",
-                         time_index="signup_date")
+    if isinstance(transactions_df, pd.DataFrame):
+        error_text = "Time index column must contain datetime or numeric values"
+        with pytest.raises(TypeError, match=error_text):
+            es.add_dataframe("accounts",
+                             accounts_df_string,
+                             index="id",
+                             time_index="signup_date")
 
 
 # def test_checks_time_type_setting_time_index(es):

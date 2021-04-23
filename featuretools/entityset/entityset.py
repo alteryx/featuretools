@@ -96,7 +96,7 @@ class EntitySet(object):
                 semantic_tags = dataframes[df_name][4]
             if len(dataframes[df_name]) > 5:
                 make_index = dataframes[df_name][5]
-            # --> need to find a better way to pass ww params and if we want to allow other formats like ColumnSchema or TableSchema??
+            # --> Implementation: need to find a better way to pass ww params and if we want to allow other formats like ColumnSchema or TableSchema??
             self.add_dataframe(dataframe_id=df_name,
                                dataframe=df,
                                index=index_column,
@@ -114,17 +114,17 @@ class EntitySet(object):
     def __sizeof__(self):
         return sum([entity.__sizeof__() for entity in self.dataframes])
 
-# --> needs to wait till serialization is implemented
+# --> Add back later: needs to wait till serialization is implemented
     # def __dask_tokenize__(self):
     #     return (EntitySet, serialize.entityset_to_description(self.metadata))
 
     def __eq__(self, other, deep=False):
         if len(self.dataframe_dict) != len(other.dataframe_dict):
             return False
-        for eid, e in self.dataframe_dict.items():
-            if eid not in other.dataframe_dict:
+        for df_id, df in self.dataframe_dict.items():
+            if df_id not in other.dataframe_dict:
                 return False
-            if not e.__eq__(other[eid], deep=deep):
+            if not df.__eq__(other[df_id], deep=deep):
                 return False
         for r in self.relationships:
             if r not in other.relationships:
@@ -153,7 +153,7 @@ class EntitySet(object):
     def dataframes(self):
         return list(self.dataframe_dict.values())
 
-# --> needs to wait till serialization is implemented
+# --> Add back later: needs to wait till serialization is implemented
     # @property
     # def metadata(self):
     #     '''Returns the metadata for this EntitySet. The metadata will be recomputed if it does not exist.'''
@@ -166,7 +166,7 @@ class EntitySet(object):
     def reset_data_description(self):
         self._data_description = None
 
-# --> add back when updating serialization for Woodwork
+# --> Add back later: when updating serialization for Woodwork
     # def to_pickle(self, path, compression=None, profile_name=None):
     #     '''Write entityset in the pickle format, location specified by `path`.
     #         Path could be a local path or a S3 path.
@@ -300,13 +300,13 @@ class EntitySet(object):
             raise ValueError(msg.format(child_column, child_df.ww.name))
         parent_df = relationship.parent_dataframe
         parent_column = relationship.parent_column.name
-        # --> foreign key tag corresponds to a Id variable?
+        # --> Implementation:  foreign key tag corresponds to a Id variable?
         if 'foreign_key' not in child_df.ww.semantic_tags[child_column]:
             child_df.ww.add_semantic_tags({child_column: 'foreign_key'})
 
-        # --> what happens if there's another index set?????
+        # --> Implementation: what happens if there's another index set?????
         if parent_df.ww.index != parent_column:
-            # --> previously had 'convert_data=False` does this means we shouldn't set the underlying index?????
+            # --> Implementation: previously had 'convert_data=False` does this means we shouldn't set the underlying index?????
             parent_df.ww.set_index(parent_column)
         # Empty dataframes (as a result of accessing Entity.metadata)
         # default to object dtypes for discrete variables, but
@@ -315,8 +315,8 @@ class EntitySet(object):
         if isinstance(child_df, pd.DataFrame) and \
                 (child_df.empty and child_df[child_column].dtype == object and
                  parent_df.ww[parent_column].is_numeric):
-            # --> should this match Integer or IntegerNullable????
-            child_df[child_column] = pd.Series(name=child_column, dtype=np.int64)
+            # --> Implementation: should this match Integer or IntegerNullable????
+            child_df.ww[child_column] = pd.Series(name=child_column, dtype=np.int64)
 
         parent_dtype = parent_df[parent_column].dtype
         child_dtype = child_df[child_column].dtype
@@ -331,7 +331,6 @@ class EntitySet(object):
         return self
 
     def set_secondary_time_index(self, dataframe, secondary_time_index):
-        """Updates metadata to include the secondary time index information"""
         self._check_secondary_time_index(dataframe, secondary_time_index)
         if secondary_time_index is not None:
             dataframe.ww.metadata['secondary_time_index'] = secondary_time_index
@@ -486,8 +485,10 @@ class EntitySet(object):
                       semantic_tags=None,
                       make_index=False,
                       time_index=None,
-                      secondary_time_index=None,  # --> do we need a way of adding last time indices since we wont have it on Entity???
-                      already_sorted=False):  # --> maybe allow other kwargs for Woodwork Table???
+                      # --> Implementation: do we need a way of adding last time indices via a param here since we wont have it on Entity???
+                      secondary_time_index=None,
+                      # --> Implementation: maybe allow other kwargs for Woodwork Table???
+                      already_sorted=False):
         """
         Load the data for a specified entity from a Pandas DataFrame.
 
@@ -544,7 +545,7 @@ class EntitySet(object):
         logical_types = logical_types or {}
         semantic_tags = semantic_tags or {}
 
-# --> not necessary bc handled by woodwork???
+# --> Implementation: not necessary bc handled by woodwork???
         # if time_index is not None and time_index == index:
         #     raise ValueError("time_index and index cannot be the same value, %s" % (time_index))
 
@@ -561,8 +562,13 @@ class EntitySet(object):
 
         if dataframe.ww.schema is None:
             # init woodwork with params
-            # --> all these params will be ignored if schema is not none - do we want to either raise warning or handle differenctly?
+            # --> Implementation: all these params will be ignored if schema is not none - do we want to either raise warning or handle differenctly?
 
+            # --> Behavior change: Entities allow koalas DFs to make indices but Woodwork doesnt
+            # --> Behavior change: Woodwork inserts Dask index at different location than in FT
+            # --> Behavior change: Woodwork will perform inference on Dask and Koalas where FT errors
+            # --> Behavior change: Woodwork allows non string column names for koalas and pandas, FT doesnt
+            # --> Behavior change: Woodwork allows index and time index to match; FT doesnt (issue on WW exists!)
             dataframe.ww.init(name=dataframe_id,
                               index=index,
                               time_index=time_index,
@@ -577,7 +583,7 @@ class EntitySet(object):
 
         # If no index column is specified, set the first column
         if dataframe.ww.index is None:
-            # --> if you want to make index you needed to have done it at init
+            # --> Behavior Change: Featuretools will make an index even if make_index is not specified. Woodwork will error
             dataframe.ww.set_index(dataframe.columns[0])
             warnings.warn(("Using first column as index. "
                            "To change this, specify the index parameter"))
@@ -638,7 +644,7 @@ class EntitySet(object):
         copy_columns = copy_columns or []
 
         # Check base entity to make sure time index is valid
-        # --> not sure if still relevalt with woodwork??
+        # --> Implementation: not sure if still relevalt with woodwork??
         # if base_dataframe.ww.time_index is not None:
         #     t_index = base_dataframe[base_dataframe.ww.time_index]
         #     if not isinstance(t_index, (vtypes.NumericTimeIndex, vtypes.DatetimeTimeIndex)):
@@ -744,9 +750,9 @@ class EntitySet(object):
 
         base_dataframe_index = index
 
-        # --> not sure that this is the same as using vtype Categorical because we can't just set a standard tag
-        # --> why did we set it to variable Categorical???
-        # --> and why does it get reset when we did it above??
+        # --> Implementation: not sure that this is the same as using vtype Categorical because we can't just set a standard tag
+        # why did we set it to variable Categorical???
+        # and why does it get reset when we did it above??
         # transfer_types[index] = ('Categorical', set())
         if make_secondary_time_index:
             old_ti_name = list(make_secondary_time_index.keys())[0]
@@ -1215,7 +1221,6 @@ class EntitySet(object):
     #     return df
 
     def update_dataframe(self, dataframe_id, df, already_sorted=False, recalculate_last_time_indexes=True):
-        # --> necessary for woodwork
         '''Update entity's internal dataframe, optionaly making sure data is sorted,
         reference indexes to other entities are consistent, and last_time_indexes
         are consistent.
@@ -1230,15 +1235,15 @@ class EntitySet(object):
 
         # Make sure column ordering matches original ordering
         df = df[old_column_names]
-        # --> this won't allow for dtype changes so maybe we need to explicity do that change ahead of time so that the schema is valid?
+        # --> Implementation: this won't allow for dtype changes so maybe we need to explicity do that change ahead of time so that the schema is valid?
         df.ww.init(schema=self[dataframe_id].ww.schema)
-        # --> probably isn't how we cant to update the dataframe dict??
+        # --> Implementation: probably isn't how we cant to update the dataframe dict??
         self.dataframe_dict[dataframe_id] = df
 
         if self[dataframe_id].ww.time_index is not None:
             self._check_uniform_time_index(self[dataframe_id])
 
-        # --> maybe redundant????
+        # --> Implementation: maybe redundant????
         df_metadata = self[dataframe_id].ww.metadata
         self.set_secondary_time_index(self[dataframe_id], df_metadata.get('secondary_time_index'))
         if recalculate_last_time_indexes and df_metadata.get('last_time_index') is not None:
