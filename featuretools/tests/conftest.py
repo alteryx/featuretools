@@ -52,13 +52,12 @@ def int_es(make_int_es):
 @pytest.fixture
 def dask_es(make_es):
     es = ft.EntitySet(id=make_es.id)
-    for entity in make_es.entities:
-        es.entity_from_dataframe(entity.id,
-                                 dd.from_pandas(entity.df.reset_index(drop=True), npartitions=4),
-                                 index=entity.index,
-                                 time_index=entity.time_index,
-                                 variable_types=entity.variable_types,
-                                 secondary_time_index=entity.secondary_time_index)
+    for df in make_es.dataframes:
+        dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
+        dd_df.ww.init(schema=df.ww.schema)
+        es.entity_from_dataframe(df.ww.name,
+                                 dd_df,
+                                 secondary_time_index=df.ww.metadata.get('secondary_time_index'))
 
     for rel in make_es.relationships:
         es.add_relationship(rel.parent_dataframe.id, rel.parent_column.name,
@@ -70,18 +69,17 @@ def dask_es(make_es):
 def ks_es(make_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     es = ft.EntitySet(id=make_es.id)
-    for entity in make_es.entities:
-        cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
-        es.entity_from_dataframe(entity.id,
-                                 ks.from_pandas(cleaned_df),
-                                 index=entity.index,
-                                 time_index=entity.time_index,
-                                 variable_types=entity.variable_types,
-                                 secondary_time_index=entity.secondary_time_index)
+    for df in make_es.dataframes:
+        cleaned_df = pd_to_ks_clean(df).reset_index(drop=True)
+        ks_df = ks.from_pandas(cleaned_df)
+        ks_df.ww.init(schema=df.ww.schema)
+        es.add_dataframe(df.ww.name,
+                         ks_df,
+                         secondary_time_index=df.ww.metadata.get('secondary_time_index'))  # --> might be redundant since the metadata will already have it or necessary - test this
 
     for rel in make_es.relationships:
-        es.add_relationship(rel.parent_dataframe.id, rel.parent_column.name,
-                            rel.child_dataframe.id, rel.child_column.name)
+        es.add_relationship(rel.parent_dataframe.ww.name, rel.parent_column.name,
+                            rel.child_dataframe.ww.name, rel.child_column.name)
     return es
 
 

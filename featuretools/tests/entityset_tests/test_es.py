@@ -598,47 +598,47 @@ def test_handles_datetime_mismatch():
                          time_index='time', logical_types=logical_types)
 
 
-# def test_entity_init(es):
-#     # Note: to convert the time column directly either the variable type
-#     # or convert_date_columns must be specifie
-#     df = pd.DataFrame({'id': [0, 1, 2],
-#                        'time': [datetime(2011, 4, 9, 10, 31, 3 * i)
-#                                 for i in range(3)],
-#                        'category': ['a', 'b', 'a'],
-#                        'number': [4, 5, 6]})
-#     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
-#         df = dd.from_pandas(df, npartitions=2)
-#     if ks and any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
-#         df = ks.from_pandas(df)
+def test_entity_init(es):
+    # Note: to convert the time column directly either the variable type
+    # or convert_date_columns must be specifie
+    df = pd.DataFrame({'id': [0, 1, 2],
+                       'time': [datetime(2011, 4, 9, 10, 31, 3 * i)
+                                for i in range(3)],
+                       'category': ['a', 'b', 'a'],
+                       'number': [4, 5, 6]})
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        df = dd.from_pandas(df, npartitions=2)
+    if ks and any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+        df = ks.from_pandas(df)
 
-#     vtypes = {'time': variable_types.Datetime}
-#     if not isinstance(df, pd.DataFrame):
-#         extra_vtypes = {
-#             'id': variable_types.Categorical,
-#             'category': variable_types.Categorical,
-#             'number': variable_types.Numeric
-#         }
-#         vtypes.update(extra_vtypes)
-#     es.entity_from_dataframe('test_entity', df, index='id',
-#                              time_index='time', variable_types=vtypes)
-#     if isinstance(df, dd.DataFrame):
-#         df_shape = (df.shape[0].compute(), df.shape[1])
-#     else:
-#         df_shape = df.shape
-#     if isinstance(es['test_entity'].df, dd.DataFrame):
-#         es_df_shape = (es['test_entity'].df.shape[0].compute(), es['test_entity'].df.shape[1])
-#     else:
-#         es_df_shape = es['test_entity'].df.shape
-#     assert es_df_shape == df_shape
-#     assert es['test_entity'].index == 'id'
-#     assert es['test_entity'].time_index == 'time'
-#     assert set([v.id for v in es['test_entity'].variables]) == set(df.columns)
+    vtypes = {'time': variable_types.Datetime}
+    if not isinstance(df, pd.DataFrame):
+        extra_vtypes = {
+            'id': variable_types.Categorical,
+            'category': variable_types.Categorical,
+            'number': variable_types.Numeric
+        }
+        vtypes.update(extra_vtypes)
+    es.entity_from_dataframe('test_entity', df, index='id',
+                             time_index='time', variable_types=vtypes)
+    if isinstance(df, dd.DataFrame):
+        df_shape = (df.shape[0].compute(), df.shape[1])
+    else:
+        df_shape = df.shape
+    if isinstance(es['test_entity'].df, dd.DataFrame):
+        es_df_shape = (es['test_entity'].df.shape[0].compute(), es['test_entity'].df.shape[1])
+    else:
+        es_df_shape = es['test_entity'].df.shape
+    assert es_df_shape == df_shape
+    assert es['test_entity'].index == 'id'
+    assert es['test_entity'].time_index == 'time'
+    assert set([v.id for v in es['test_entity'].variables]) == set(df.columns)
 
-#     assert es['test_entity'].df['time'].dtype == df['time'].dtype
-#     if ks and isinstance(es['test_entity'].df, ks.DataFrame):
-#         assert set(es['test_entity'].df['id'].to_list()) == set(df['id'].to_list())
-#     else:
-#         assert set(es['test_entity'].df['id']) == set(df['id'])
+    assert es['test_entity'].df['time'].dtype == df['time'].dtype
+    if ks and isinstance(es['test_entity'].df, ks.DataFrame):
+        assert set(es['test_entity'].df['id'].to_list()) == set(df['id'].to_list())
+    else:
+        assert set(es['test_entity'].df['id']) == set(df['id'])
 
 
 @pytest.fixture

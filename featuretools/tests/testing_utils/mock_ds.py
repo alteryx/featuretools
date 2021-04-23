@@ -2,6 +2,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+import woodwork.logical_types as ltypes
 
 from featuretools import variable_types
 from featuretools.entityset import EntitySet
@@ -19,37 +20,39 @@ def make_ecommerce_entityset(with_integer_time_index=False):
               L     Log
     """
     dataframes = make_ecommerce_dataframes(with_integer_time_index=with_integer_time_index)
-    entities = dataframes.keys()
+    dataframe_names = dataframes.keys()
     es_id = 'ecommerce'
     if with_integer_time_index:
         es_id += "_int_time_index"
 
-    variable_types = make_variable_types(
+    logical_types = make_logical_types(
         with_integer_time_index=with_integer_time_index)
+    semantic_tags = make_semantic_tags()
     time_indexes = make_time_indexes(
         with_integer_time_index=with_integer_time_index)
 
     es = EntitySet(id=es_id)
 
-    for entity in entities:
-        time_index = time_indexes.get(entity, None)
+    for df_name in dataframe_names:
+        time_index = time_indexes.get(df_name, None)
         ti_name = None
         secondary = None
         if time_index is not None:
             ti_name = time_index['name']
             secondary = time_index['secondary']
-        df = dataframes[entity]
-        es.entity_from_dataframe(entity,
-                                 df,
-                                 index='id',
-                                 variable_types=variable_types[entity],
-                                 time_index=ti_name,
-                                 secondary_time_index=secondary)
+        df = dataframes[df_name]
+        es.add_dataframe(df_name,
+                         df,
+                         index='id',
+                         logical_types=logical_types[df_name],  # set these
+                         semantic_tags=semantic_tags[df_name],
+                         time_index=ti_name,
+                         secondary_time_index=secondary)
 
-    es.normalize_entity('customers', 'cohorts', 'cohort',
-                        additional_variables=['cohort_name'],
-                        make_time_index=True,
-                        new_entity_time_index='cohort_end')
+    es.normalize_dataframe('customers', 'cohorts', 'cohort',
+                           additional_columns=['cohort_name'],
+                           make_time_index=True,
+                           new_dataframe_time_index='cohort_end')
 
     es.add_relationships(
         [(u'régions', 'id', 'customers', u'région_id'),
@@ -211,80 +214,100 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
             'log': log_df}
 
 
-def make_variable_types(with_integer_time_index=False):
-    region_variable_types = {
-        'id': variable_types.Categorical,
-        'language': variable_types.Categorical
-    }
+def make_semantic_tags():
+    store_semantic_tags = {u'région_id': 'foreign_key'}
 
-    store_variable_types = {
-        'id': variable_types.Categorical,
-        u'région_id': variable_types.Id
-    }
+    customer_semantic_tags = {u'région_id': 'foreign_key',
+                              'date_of_birth': 'date_of_birth'}
 
-    product_variable_types = {
-        'id': variable_types.Categorical,
-        'rating': variable_types.Numeric,
-        'department': variable_types.Categorical,
-        'url': variable_types.URL,
-    }
+    session_semantic_tags = {'customer_id': 'foreign_key'}
 
-    customer_variable_types = {
-        'id': variable_types.Categorical,
-        'age': variable_types.Numeric,
-        u'région_id': variable_types.Id,
-        'loves_ice_cream': variable_types.Boolean,
-        'favorite_quote': variable_types.NaturalLanguage,
-        'signup_date': variable_types.Datetime,
-        'upgrade_date': variable_types.Datetime,
-        'cancel_date': variable_types.Datetime,
-        'cancel_reason': variable_types.Categorical,
-        'engagement_level': variable_types.Ordinal,
-        'full_name': variable_types.FullName,
-        'email': variable_types.EmailAddress,
-        'phone_number': variable_types.PhoneNumber,
-        'date_of_birth': variable_types.DateOfBirth,
-    }
-
-    session_variable_types = {
-        'id': variable_types.Categorical,
-        'customer_id': variable_types.Id,
-        'device_type': variable_types.Categorical,
-        'ip': variable_types.IPAddress,
-        'filepath': variable_types.FilePath,
-    }
-
-    log_variable_types = {
-        'id': variable_types.Categorical,
-        'session_id': variable_types.Id,
-        'product_id': variable_types.Categorical,
-        'datetime': variable_types.Datetime,
-        'value': variable_types.Numeric,
-        'value_2': variable_types.Numeric,
-        'latlong': variable_types.LatLong,
-        'latlong2': variable_types.LatLong,
-        'zipcode': variable_types.ZIPCode,
-        'countrycode': variable_types.CountryCode,
-        'subregioncode': variable_types.SubRegionCode,
-        'value_many_nans': variable_types.Numeric,
-        'priority_level': variable_types.Ordinal,
-        'purchased': variable_types.Boolean,
-        'comments': variable_types.NaturalLanguage
-    }
-    if with_integer_time_index:
-        log_variable_types['datetime'] = variable_types.Numeric
-        customer_variable_types['signup_date'] = variable_types.Numeric
-        customer_variable_types['upgrade_date'] = variable_types.Numeric
-        customer_variable_types['cancel_date'] = variable_types.Numeric
-        customer_variable_types['date_of_birth'] = variable_types.Numeric
+    log_semantic_tags = {'session_id': 'foreign_key'}
 
     return {
-        'customers': customer_variable_types,
-        'sessions': session_variable_types,
-        'log': log_variable_types,
-        'products': product_variable_types,
-        'stores': store_variable_types,
-        u'régions': region_variable_types
+        'customers': customer_semantic_tags,
+        'sessions': session_semantic_tags,
+        'log': log_semantic_tags,
+        'products': {},
+        'stores': store_semantic_tags,
+        u'régions': {}
+    }
+
+
+def make_logical_types(with_integer_time_index=False):
+    region_logical_types = {
+        'id': ltypes.Categorical,
+        'language': ltypes.Categorical
+    }
+
+    store_logical_types = {
+        'id': ltypes.Categorical,
+        u'région_id': ltypes.Categorical
+    }
+
+    product_logical_types = {
+        'id': ltypes.Categorical,
+        'rating': ltypes.Integer,  # confirm this is integer
+        'department': ltypes.Categorical,
+        'url': ltypes.URL,
+    }
+
+    customer_logical_types = {
+        'id': ltypes.Categorical,
+        'age': ltypes.Integer,
+        u'région_id': ltypes.Categorical,
+        'loves_ice_cream': ltypes.Boolean,
+        'favorite_quote': ltypes.NaturalLanguage,
+        'signup_date': ltypes.Datetime,
+        'upgrade_date': ltypes.Datetime,
+        'cancel_date': ltypes.Datetime,
+        'cancel_reason': ltypes.Categorical,
+        'engagement_level': ltypes.Ordinal(order=[1, 2, 3]),  # --> need to add order
+        'full_name': ltypes.PersonFullName,
+        'email': ltypes.EmailAddress,
+        'phone_number': ltypes.PhoneNumber,
+        'date_of_birth': ltypes.Datetime,
+    }
+
+    session_logical_types = {
+        'id': ltypes.Categorical,
+        'customer_id': ltypes.Categorical,
+        'device_type': ltypes.Categorical,
+        'ip': ltypes.IPAddress,
+        'filepath': ltypes.Filepath,
+    }
+
+    log_logical_types = {
+        'id': ltypes.Categorical,
+        'session_id': ltypes.Categorical,
+        'product_id': ltypes.Categorical,
+        'datetime': ltypes.Datetime,
+        'value': ltypes.Double,
+        'value_2': ltypes.Double,
+        'latlong': ltypes.LatLong,
+        'latlong2': ltypes.LatLong,
+        'zipcode': ltypes.PostalCode,
+        'countrycode': ltypes.CountryCode,
+        'subregioncode': ltypes.SubRegionCode,
+        'value_many_nans': ltypes.Double,  # --> confirm this is a double
+        'priority_level': ltypes.Ordinal(order=[0, 1, 2]),  # --> need to add order
+        'purchased': ltypes.Boolean,
+        'comments': ltypes.NaturalLanguage
+    }
+    if with_integer_time_index:
+        log_logical_types['datetime'] = ltypes.Integer
+        customer_logical_types['signup_date'] = ltypes.Integer
+        customer_logical_types['upgrade_date'] = ltypes.Integer
+        customer_logical_types['cancel_date'] = ltypes.Integer
+        customer_logical_types['date_of_birth'] = ltypes.Integer
+
+    return {
+        'customers': customer_logical_types,
+        'sessions': session_logical_types,
+        'log': log_logical_types,
+        'products': product_logical_types,
+        'stores': store_logical_types,
+        u'régions': region_logical_types
     }
 
 
