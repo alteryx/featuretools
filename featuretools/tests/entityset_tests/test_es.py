@@ -474,6 +474,7 @@ def test_errors_no_vtypes_dask(dd_df4):
     es = EntitySet(id='test')
     msg = 'Variable types cannot be inferred from Dask DataFrames, '
     'use variable_types to provide type metadata for entity'
+    # --> Woodwork will perform inference - should FT just ignore it???
     with pytest.raises(ValueError, match=msg):
         es.add_dataframe(dataframe_id='test_dataframe', index='id',
                          dataframe=dd_df4)
@@ -661,7 +662,7 @@ def test_nonstr_column_names(bad_df):
     with pytest.raises(ValueError, match=error_text):
         es.add_dataframe(dataframe_id='str_cols',
                          dataframe=bad_df,
-                         index='index')
+                         index='a')
 
 
 def test_sort_time_id():
@@ -899,13 +900,13 @@ def test_sets_time_when_adding_entity(transactions_df):
                          time_index="signup_date",
                          logical_types=accounts_vtypes)
     # add non time type as time index, only valid for pandas
-    if isinstance(transactions_df, pd.DataFrame):
-        error_text = "Attempted to convert all string column signup_date to numeric"
-        with pytest.raises(TypeError, match=error_text):
-            es.add_dataframe("accounts",
-                             accounts_df_string,
-                             index="id",
-                             time_index="signup_date")
+    # if isinstance(transactions_df, pd.DataFrame): --> woodwork will do this for non pandas!
+    error_text = "Time index column must contain datetime or numeric values"
+    with pytest.raises(TypeError, match=error_text):
+        es.add_dataframe("accounts",
+                         accounts_df_string,
+                         index="id",
+                         time_index="signup_date")
 
 
 # def test_checks_time_type_setting_time_index(es):
@@ -1329,6 +1330,7 @@ def test_same_index_values(index_df):
 
     es = ft.EntitySet("example")
 
+    # --> there's a woodwork issue for this right now!
     error_text = "time_index and index cannot be the same value"
     with pytest.raises(ValueError, match=error_text):
         es.add_dataframe(dataframe_id="entity",
@@ -1432,16 +1434,16 @@ def test_entityset_init():
         'fraud': 'boolean',
         'card_id': 'categorical'
     }
-    entities = {
-        "cards": (cards_df, "id"),
+    dataframes = {
+        "cards": (cards_df, "id", None, {'id': 'Categorical'}),
         "transactions": (transactions_df, 'id', 'transaction_time',
-                         variable_types, False)
+                         logical_types, None, False)
     }
     relationships = [('cards', 'id', 'transactions', 'card_id')]
     es = ft.EntitySet(id="fraud_data",
-                      entities=entities,
+                      dataframes=dataframes,
                       relationships=relationships)
-    assert es['transactions'].index == 'id'
+    assert es['transactions'].ww.index == 'id'
     assert es['transactions'].ww.time_index == 'transaction_time'
     es_copy = ft.EntitySet(id="fraud_data")
     es_copy.add_dataframe(dataframe_id='cards',
@@ -1458,18 +1460,19 @@ def test_entityset_init():
     assert es['transactions'].__eq__(es_copy['transactions'], deep=True)
 
 
-def test_add_interesting_values_verbose_output(caplog):
-    es = ft.demo.load_retail(nrows=200)
-    es['order_products'].convert_variable_type('quantity', ft.variable_types.Discrete)
-    logger = logging.getLogger('featuretools')
-    logger.propagate = True
-    logger_es = logging.getLogger('featuretools.entityset')
-    logger_es.propagate = True
-    es.add_interesting_values(verbose=True, max_values=10)
-    logger.propagate = False
-    logger_es.propagate = False
-    assert 'Variable country: Marking United Kingdom as an interesting value' in caplog.text
-    assert 'Variable quantity: Marking 6 as an interesting value' in caplog.text
+# --> need to update load_retail
+# def test_add_interesting_values_verbose_output(caplog):
+#     es = ft.demo.load_retail(nrows=200)
+#     es['order_products'].convert_variable_type('quantity', ft.variable_types.Discrete)
+#     logger = logging.getLogger('featuretools')
+#     logger.propagate = True
+#     logger_es = logging.getLogger('featuretools.entityset')
+#     logger_es.propagate = True
+#     es.add_interesting_values(verbose=True, max_values=10)
+#     logger.propagate = False
+#     logger_es.propagate = False
+#     assert 'Variable country: Marking United Kingdom as an interesting value' in caplog.text
+#     assert 'Variable quantity: Marking 6 as an interesting value' in caplog.text
 
 
 # def test_entityset_equality(es):
