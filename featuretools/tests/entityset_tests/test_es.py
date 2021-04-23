@@ -515,15 +515,15 @@ def test_converts_datetime(datetime1):
     # string converts to datetime correctly
     # This test fails without defining vtypes.  Entityset
     # infers time column should be numeric type
-    vtypes = {'id': variable_types.Categorical,
-              'time': variable_types.Datetime}
+    logical_types = {'id': ltypes.Categorical,
+                     'time': ltypes.Datetime}
 
     es = EntitySet(id='test')
     es.add_dataframe(
         dataframe_id='test_dataframe',
         index='id',
         time_index="time",
-        variable_types=vtypes,
+        logical_types=logical_types,
         dataframe=datetime1)
     pd_col = to_pandas(es['test_dataframe'].df['time'])
     # assert type(es['test_entity']['time']) == variable_types.Datetime
@@ -561,15 +561,15 @@ def test_handles_datetime_format(datetime2):
     datetime_format = "%d-%m-%Y"
     actual = pd.Timestamp('Jan 2, 2011')
 
-    vtypes = {'id': variable_types.Categorical,
-              'time_format': (variable_types.Datetime, {"format": datetime_format}),
-              'time_no_format': variable_types.Datetime}
+    logical_types = {'id': ltypes.Categorical,
+                     'time_format': (ltypes.Datetime(datetime_format=datetime_format)),
+                     'time_no_format': ltypes.Datetime}
 
     es = EntitySet(id='test')
     es.add_dataframe(
         dataframe_id='test_dataframe',
         index='id',
-        variable_types=vtypes,
+        logical_types=logical_types,
         dataframe=datetime2)
 
     col_format = to_pandas(es['test_dataframe'].df['time_format'])
@@ -585,14 +585,14 @@ def test_handles_datetime_format(datetime2):
 def test_handles_datetime_mismatch():
     # can't convert arbitrary strings
     df = pd.DataFrame({'id': [0, 1, 2], 'time': ['a', 'b', 'tomorrow']})
-    vtypes = {'id': variable_types.Categorical,
-              'time': variable_types.Datetime}
+    logical_types = {'id': ltypes.Categorical,
+                     'time': ltypes.Datetime}
 
     error_text = "Given date string not likely a datetime."
     with pytest.raises(ValueError, match=error_text):
         es = EntitySet(id='test')
         es.add_dataframe('test_dataframe', df, 'id',
-                         time_index='time', variable_types=vtypes)
+                         time_index='time', logical_types=logical_types)
 
 
 # def test_entity_init(es):
@@ -825,12 +825,12 @@ def test_set_time_type_on_init(transactions_df):
     if ks and isinstance(transactions_df, ks.DataFrame):
         cards_df = ks.from_pandas(cards_df)
     if not isinstance(transactions_df, pd.DataFrame):
-        cards_vtypes = {'id': variable_types.Categorical}
+        cards_vtypes = {'id': ltypes.Categorical}
         transactions_vtypes = {
-            'id': variable_types.Categorical,
-            'card_id': variable_types.Categorical,
-            'transaction_time': variable_types.Numeric,
-            'fraud': variable_types.Boolean
+            'id': ltypes.Categorical,
+            'card_id': ltypes.Categorical,
+            'transaction_time': ltypes.Integer,
+            'fraud': ltypes.Boolean
         }
     else:
         cards_vtypes = None
@@ -860,12 +860,12 @@ def test_sets_time_when_adding_entity(transactions_df):
     if ks and isinstance(transactions_df, ks.DataFrame):
         accounts_df = ks.from_pandas(accounts_df)
     if not isinstance(transactions_df, pd.DataFrame):
-        accounts_vtypes = {'id': variable_types.Categorical, 'signup_date': variable_types.Datetime}
+        accounts_vtypes = {'id': ltypes.Categorical, 'signup_date': ltypes.Datetime}
         transactions_vtypes = {
-            'id': variable_types.Categorical,
-            'card_id': variable_types.Categorical,
-            'transaction_time': variable_types.Numeric,
-            'fraud': variable_types.Boolean
+            'id': ltypes.Categorical,
+            'card_id': ltypes.Categorical,
+            'transaction_time': ltypes.Integer,
+            'fraud': ltypes.Boolean
         }
     else:
         accounts_vtypes = None
@@ -880,7 +880,7 @@ def test_sets_time_when_adding_entity(transactions_df):
                      transactions_df,
                      index="id",
                      time_index="transaction_time",
-                     variable_types=transactions_vtypes)
+                     logical_types=transactions_vtypes)
     # assert time_type is set
     assert es.time_type == variable_types.NumericTimeIndex
     # add another entity
@@ -897,7 +897,7 @@ def test_sets_time_when_adding_entity(transactions_df):
                          accounts_df,
                          index="id",
                          time_index="signup_date",
-                         variable_types=accounts_vtypes)
+                         logical_types=accounts_vtypes)
     # add non time type as time index, only valid for pandas
     if isinstance(transactions_df, pd.DataFrame):
         error_text = "Attempted to convert all string column signup_date to numeric"
@@ -1074,7 +1074,7 @@ def dd_normalize_es(pd_normalize_es):
     es.add_dataframe(dataframe_id=entity.id,
                      dataframe=dd.from_pandas(entity.df, npartitions=2),
                      index=entity.index,
-                     variable_types=entity.variable_types)
+                     logical_types=entity.variable_types)
     return es
 
 
@@ -1086,7 +1086,7 @@ def ks_normalize_es(pd_normalize_es):
     es.add_dataframe(dataframe_id=entity.id,
                      dataframe=ks.from_pandas(entity.df),
                      index=entity.index,
-                     variable_types=entity.variable_types)
+                     logical_types=entity.variable_types)
     return es
 
 
@@ -1277,18 +1277,18 @@ def test_datetime64_conversion(datetime3):
         df["time"] = df["time"].astype("datetime64[ns, UTC]")
 
     if not isinstance(df, pd.DataFrame):
-        vtypes = {
-            'id': variable_types.Categorical,
-            'ints': variable_types.Numeric,
-            'time': variable_types.Datetime
+        logical_types = {
+            'id': ltypes.Categorical,
+            'ints': ltypes.Integer,
+            'time': ltypes.Datetime
         }
     else:
-        vtypes = None
+        logical_types = None
     es = EntitySet(id='test')
     es.add_dataframe(dataframe_id='test_dataframe',
                      index='id',
                      dataframe=df,
-                     variable_types=vtypes)
+                     logical_types=logical_types)
     vtype_time_index = variable_types.variable.DatetimeTimeIndex
     es['test_dataframe'].convert_variable_type('time', vtype_time_index)
 
@@ -1318,13 +1318,13 @@ def index_df(request):
 
 def test_same_index_values(index_df):
     if not isinstance(index_df, pd.DataFrame):
-        vtypes = {
-            'id': variable_types.Categorical,
-            'transaction_time': variable_types.Datetime,
-            'first_entity_time': variable_types.Numeric
+        logical_types = {
+            'id': ltypes.Categorical,
+            'transaction_time': ltypes.Datetime,
+            'first_entity_time': ltypes.Integer
         }
     else:
-        vtypes = None
+        logical_types = None
 
     es = ft.EntitySet("example")
 
@@ -1334,13 +1334,13 @@ def test_same_index_values(index_df):
                          index="id",
                          time_index="id",
                          dataframe=index_df,
-                         variable_types=vtypes)
+                         logical_types=logical_types)
 
     es.add_dataframe(dataframe_id="entity",
                      index="id",
                      time_index="transaction_time",
                      dataframe=index_df,
-                     variable_types=vtypes)
+                     logical_types=logical_types)
 
     with pytest.raises(ValueError, match=error_text):
         es.normalize_entity(base_dataframe_id="entity",
@@ -1352,18 +1352,20 @@ def test_same_index_values(index_df):
 def test_use_time_index(index_df):
     if not isinstance(index_df, pd.DataFrame):
         bad_vtypes = {
-            'id': variable_types.Categorical,
-            'transaction_time': variable_types.DatetimeTimeIndex,
-            'first_entity_time': variable_types.Numeric
+            'id': ltypes.Categorical,
+            'transaction_time': ltypes.Datetime,
+            'first_entity_time': ltypes.Integer
         }
-        vtypes = {
-            'id': variable_types.Categorical,
-            'transaction_time': variable_types.Datetime,
-            'first_entity_time': variable_types.Numeric
+        bad_semantic_tags = {'transaction_time': 'time_index'}  # --> can't set time index directly so may not work
+        logical_types = {
+            'id': ltypes.Categorical,
+            'transaction_time': ltypes.Datetime,
+            'first_entity_time': ltypes.Integer
         }
     else:
-        bad_vtypes = {"transaction_time": variable_types.DatetimeTimeIndex}
-        vtypes = None
+        bad_vtypes = {"transaction_time": ltypes.Datetime}
+        bad_semantic_tags = {'transaction_time': 'time_index'}
+        logical_types = None
 
     es = ft.EntitySet()
 
@@ -1371,13 +1373,13 @@ def test_use_time_index(index_df):
     with pytest.raises(ValueError, match=error_text):
         es.add_dataframe(dataframe_id="entity",
                          index="id",
-                         variable_types=bad_vtypes,
+                         logical_types=bad_vtypes,
                          dataframe=index_df)
 
     es.add_dataframe(dataframe_id="entity",
                      index="id",
                      time_index="transaction_time",
-                     variable_types=vtypes,
+                     logical_types=logical_types,
                      dataframe=index_df)
 
 
@@ -1425,7 +1427,7 @@ def test_entityset_init():
                                     "transaction_time": [10, 12, 13, 20, 21, 20],
                                     "upgrade_date": [51, 23, 45, 12, 22, 53],
                                     "fraud": [True, False, False, False, True, True]})
-    variable_types = {
+    logical_types = {
         'fraud': 'boolean',
         'card_id': 'categorical'
     }
@@ -1447,7 +1449,7 @@ def test_entityset_init():
     es_copy.add_dataframe(dataframe_id='transactions',
                           dataframe=transactions_df,
                           index='id',
-                          variable_types=variable_types,
+                          logical_types=logical_types,
                           make_index=False,
                           time_index='transaction_time')
     es_copy.add_relationship('cards', 'id', 'transactions', 'card_id')
