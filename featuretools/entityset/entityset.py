@@ -320,11 +320,6 @@ class EntitySet(object):
 
         parent_dtype = parent_df[parent_column].dtype
         child_dtype = child_df[child_column].dtype
-        print(parent_dtype, type(parent_dtype), child_dtype, type(child_dtype))
-        print('is equal?', is_dtype_equal(parent_dtype, child_dtype))
-        if str(parent_dtype) == 'category':
-            print(parent_dtype.categories)
-            print(child_dtype.categories)
         msg = u"Unable to add relationship because {} in {} is Pandas dtype {}"\
             u" and {} in {} is Pandas dtype {}."
         # --> the following commented out line can't recognize two categorical dtypes if they have different categories

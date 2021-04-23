@@ -44,7 +44,7 @@ def make_ecommerce_entityset(with_integer_time_index=False):
         es.add_dataframe(df_name,
                          df,
                          index='id',
-                         logical_types=logical_types[df_name],  # set these
+                         logical_types=logical_types[df_name],
                          semantic_tags=semantic_tags[df_name],
                          time_index=ti_name,
                          secondary_time_index=secondary)
@@ -262,7 +262,7 @@ def make_logical_types(with_integer_time_index=False):
         'upgrade_date': ltypes.Datetime,
         'cancel_date': ltypes.Datetime,
         'cancel_reason': ltypes.Categorical,
-        'engagement_level': ltypes.Ordinal(order=[1, 2, 3]),  # --> need to add order
+        'engagement_level': ltypes.Ordinal(order=[1, 2, 3]),
         'full_name': ltypes.PersonFullName,
         'email': ltypes.EmailAddress,
         'phone_number': ltypes.PhoneNumber,
@@ -290,7 +290,7 @@ def make_logical_types(with_integer_time_index=False):
         'countrycode': ltypes.CountryCode,
         'subregioncode': ltypes.SubRegionCode,
         'value_many_nans': ltypes.Double,  # --> confirm this is a double
-        'priority_level': ltypes.Ordinal(order=[0, 1, 2]),  # --> need to add order
+        'priority_level': ltypes.Ordinal(order=[0, 1, 2]),
         'purchased': ltypes.Boolean,
         'comments': ltypes.NaturalLanguage
     }

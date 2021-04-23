@@ -19,119 +19,122 @@ from featuretools.utils.koalas_utils import pd_to_ks_clean
 ks = import_or_none('databricks.koalas')
 
 
-# --> anything with es has to wait until we implement make_ecommerce_entityset
-# def test_normalize_time_index_as_additional_variable(es):
-#     error_text = "Not moving signup_date as it is the base time index variable."
-#     with pytest.raises(ValueError, match=error_text):
-#         assert "signup_date" in es["customers"].df.columns
-#         es.normalize_entity(base_entity_id='customers',
-#                             new_entity_id='cancellations',
-#                             index='cancel_reason',
-#                             make_time_index='signup_date',
-#                             additional_variables=['signup_date'],
-#                             copy_variables=[])
+def test_normalize_time_index_as_additional_variable(es):
+    error_text = "Not moving signup_date as it is the base time index variable."
+    with pytest.raises(ValueError, match=error_text):
+        assert "signup_date" in es["customers"].df.columns
+        es.normalize_entity(base_dataframe_id='customers',
+                            new_dataframe_id='cancellations',
+                            index='cancel_reason',
+                            make_time_index='signup_date',
+                            additional_variables=['signup_date'],
+                            copy_variables=[])
 
 
-# def test_cannot_re_add_relationships_that_already_exists(es):
-#     warn_text = "Not adding duplicate relationship: " + str(es.relationships[0])
-#     before_len = len(es.relationships)
-#     rel = es.relationships[0]
-#     with pytest.warns(UserWarning, match=warn_text):
-#         es.add_relationship(relationship=rel)
-#     with pytest.warns(UserWarning, match=warn_text):
-#         es.add_relationship(rel._parent_dataframe_id, rel._parent_column_id,
-#                             rel._child_dataframe_id, rel._child_column_id)
-#     after_len = len(es.relationships)
-#     assert before_len == after_len
+def test_cannot_re_add_relationships_that_already_exists(es):
+    warn_text = "Not adding duplicate relationship: " + str(es.relationships[0])
+    before_len = len(es.relationships)
+    rel = es.relationships[0]
+    with pytest.warns(UserWarning, match=warn_text):
+        es.add_relationship(relationship=rel)
+    with pytest.warns(UserWarning, match=warn_text):
+        es.add_relationship(rel._parent_dataframe_id, rel._parent_column_id,
+                            rel._child_dataframe_id, rel._child_column_id)
+    after_len = len(es.relationships)
+    assert before_len == after_len
 
 
-# def test_add_relationships_convert_type(es):
-#     for r in es.relationships:
-#         parent_e = es[r.parent_dataframe.id]
-#         child_e = es[r.child_dataframe.id]
-#         assert type(r.parent_column) == variable_types.Index
-#         assert type(r.child_column) == variable_types.Id
-#         assert parent_e.df[r.parent_column.id].dtype == child_e.df[r.child_column.id].dtype
+def test_add_relationships_convert_type(es):
+    for r in es.relationships:
+        parent_e = es[r.parent_dataframe.id]
+        child_e = es[r.child_dataframe.id]
+        assert type(r.parent_column) == variable_types.Index
+        assert type(r.child_column) == variable_types.Id
+        assert parent_e.df[r.parent_column.id].dtype == child_e.df[r.child_column.id].dtype
 
 
-# # TODO: Koalas does not support categorical types
-# def test_add_relationship_errors_on_dtype_mismatch(es):
-#     if ks and isinstance(es['customers'].df, ks.DataFrame):
-#         pytest.xfail('Koalas does not support categorical types')
-#     log_2_df = es['log'].df.copy()
-#     log_variable_types = {
-#         'id': variable_types.Categorical,
-#         'session_id': variable_types.Id,
-#         'product_id': variable_types.Id,
-#         'datetime': variable_types.Datetime,
-#         'value': variable_types.Numeric,
-#         'value_2': variable_types.Numeric,
-#         'latlong': variable_types.LatLong,
-#         'latlong2': variable_types.LatLong,
-#         'zipcode': variable_types.ZIPCode,
-#         'countrycode': variable_types.CountryCode,
-#         'subregioncode': variable_types.SubRegionCode,
-#         'value_many_nans': variable_types.Numeric,
-#         'priority_level': variable_types.Ordinal,
-#         'purchased': variable_types.Boolean,
-#         'comments': variable_types.NaturalLanguage
-#     }
-#     assert set(log_variable_types) == set(log_2_df.columns)
-#     es.entity_from_dataframe(entity_id='log2',
-#                              dataframe=log_2_df,
-#                              index='id',
-#                              variable_types=log_variable_types,
-#                              time_index='datetime')
+def test_add_relationship_errors_on_dtype_mismatch(es):
+    log_2_df = es['log'].copy()
+    log_logical_types = {
+        'id': ltypes.Categorical,
+        'session_id': ltypes.Integer,
+        'product_id': ltypes.Categorical,
+        'datetime': ltypes.Datetime,
+        'value': ltypes.Double,
+        'value_2': ltypes.Double,
+        'latlong': ltypes.LatLong,
+        'latlong2': ltypes.LatLong,
+        'zipcode': ltypes.PostalCode,
+        'countrycode': ltypes.CountryCode,
+        'subregioncode': ltypes.SubRegionCode,
+        'value_many_nans': ltypes.Double,
+        'priority_level': ltypes.Ordinal(order=[0, 1, 2]),
+        'purchased': ltypes.Boolean,
+        'comments': ltypes.NaturalLanguage
+    }
+    log_semantic_tags = {
+        'session_id': 'foreign_key',
+        'product_id': 'foreign_key'
+    }
+    assert set(log_logical_types) == set(log_2_df.columns)
+    es.add_dataframe(dataframe_id='log2',
+                     dataframe=log_2_df,
+                     index='id',
+                     logical_types=log_logical_types,
+                     semantic_tags=log_semantic_tags,
+                     time_index='datetime')
+    assert 'log2' in es.dataframe_dict
+    assert es['log2'].ww.schema is not None
 
-#     error_text = u'Unable to add relationship because id in customers is Pandas dtype category and session_id in log2 is Pandas dtype int64.'
-#     with pytest.raises(ValueError, match=error_text):
-#         es.add_relationship(u'customers', 'id', 'log2', 'session_id')
-
-
-# def test_add_relationship_errors_child_v_index(es):
-#     log_df = es['log'].df.copy()
-#     log_vtypes = es['log'].variable_types
-#     es.entity_from_dataframe(entity_id='log2',
-#                              dataframe=log_df,
-#                              index='id',
-#                              variable_types=log_vtypes,
-#                              time_index='datetime')
-
-#     to_match = "Unable to add relationship because child column 'id' in 'log2' is also its index"
-#     with pytest.raises(ValueError, match=to_match):
-#         es.add_relationship('log', 'id', 'log2', 'id')
+    error_text = u'Unable to add relationship because id in customers is Pandas dtype category and session_id in log2 is Pandas dtype int64.'
+    with pytest.raises(ValueError, match=error_text):
+        es.add_relationship(u'customers', 'id', 'log2', 'session_id')
 
 
-# def test_add_relationship_empty_child_convert_dtype(es):
-#     relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
-#     es['log'].df = pd.DataFrame(columns=es['log'].df.columns)
-#     assert len(es['log'].df) == 0
-#     assert es['log'].df['session_id'].dtype == 'object'
+def test_add_relationship_errors_child_v_index(es):
+    log_df = es['log'].df.copy()
+    log_vtypes = es['log'].variable_types
+    es.entity_from_dataframe(dataframe_id='log2',
+                             dataframe=log_df,
+                             index='id',
+                             variable_types=log_vtypes,
+                             time_index='datetime')
 
-#     es.relationships.remove(relationship)
-#     assert(relationship not in es.relationships)
-
-#     es.add_relationship(relationship=relationship)
-#     assert es['log'].df['session_id'].dtype == 'int64'
-
-
-# def test_add_relationship_with_relationship_object(es):
-#     relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
-#     es.add_relationship(relationship=relationship)
-#     assert relationship in es.relationships
+    to_match = "Unable to add relationship because child column 'id' in 'log2' is also its index"
+    with pytest.raises(ValueError, match=to_match):
+        es.add_relationship('log', 'id', 'log2', 'id')
 
 
-# def test_add_relationships_with_relationship_object(es):
-#     relationships = [ft.Relationship(es, "sessions", "id", "log", "session_id")]
-#     es.add_relationships(relationships)
-#     assert relationships[0] in es.relationships
+def test_add_relationship_empty_child_convert_dtype(es):
+    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
+    es['log'].df = pd.DataFrame(columns=es['log'].df.columns)
+    assert len(es['log'].df) == 0
+    assert es['log'].df['session_id'].dtype == 'object'
+
+    es.relationships.remove(relationship)
+    assert(relationship not in es.relationships)
+
+    es.add_relationship(relationship=relationship)
+    assert es['log'].df['session_id'].dtype == 'int64'
 
 
-# def test_add_relationship_error(es):
-#     relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
-#     error_message = "Cannot specify dataframe and column id values and also supply a Relationship"
-#     with pytest.raises(ValueError, match=error_message):
-#         es.add_relationship(parent_dataframe_id="sessions", relationship=relationship)
+def test_add_relationship_with_relationship_object(es):
+    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
+    es.add_relationship(relationship=relationship)
+    assert relationship in es.relationships
+
+
+def test_add_relationships_with_relationship_object(es):
+    relationships = [ft.Relationship(es, "sessions", "id", "log", "session_id")]
+    es.add_relationships(relationships)
+    assert relationships[0] in es.relationships
+
+
+def test_add_relationship_error(es):
+    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
+    error_message = "Cannot specify dataframe and column id values and also supply a Relationship"
+    with pytest.raises(ValueError, match=error_message):
+        es.add_relationship(parent_dataframe_id="sessions", relationship=relationship)
 
 # --> needs to wait until query_by_values is implemented
 # def test_query_by_values_returns_rows_in_given_order():
@@ -606,39 +609,39 @@ def test_entity_init(es):
                                 for i in range(3)],
                        'category': ['a', 'b', 'a'],
                        'number': [4, 5, 6]})
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+    if any(isinstance(dataframe, dd.DataFrame) for dataframe in es.dataframes):
         df = dd.from_pandas(df, npartitions=2)
-    if ks and any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if ks and any(isinstance(dataframe, ks.DataFrame) for dataframe in es.dataframes):
         df = ks.from_pandas(df)
 
-    vtypes = {'time': variable_types.Datetime}
+    logical_types = {'time': ltypes.Datetime}
     if not isinstance(df, pd.DataFrame):
-        extra_vtypes = {
-            'id': variable_types.Categorical,
-            'category': variable_types.Categorical,
-            'number': variable_types.Numeric
+        extra_logical_types = {
+            'id': ltypes.Categorical,
+            'category': ltypes.Categorical,
+            'number': ltypes.Integer
         }
-        vtypes.update(extra_vtypes)
-    es.entity_from_dataframe('test_entity', df, index='id',
-                             time_index='time', variable_types=vtypes)
+        logical_types.update(extra_logical_types)
+    es.add_dataframe('test_dataframe', df.copy(), index='id',
+                     time_index='time', logical_types=logical_types)
     if isinstance(df, dd.DataFrame):
         df_shape = (df.shape[0].compute(), df.shape[1])
     else:
         df_shape = df.shape
-    if isinstance(es['test_entity'].df, dd.DataFrame):
-        es_df_shape = (es['test_entity'].df.shape[0].compute(), es['test_entity'].df.shape[1])
+    if isinstance(es['test_dataframe'], dd.DataFrame):
+        es_df_shape = (es['test_dataframe'].shape[0].compute(), es['test_dataframe'].shape[1])
     else:
-        es_df_shape = es['test_entity'].df.shape
+        es_df_shape = es['test_dataframe'].shape
     assert es_df_shape == df_shape
-    assert es['test_entity'].index == 'id'
-    assert es['test_entity'].time_index == 'time'
-    assert set([v.id for v in es['test_entity'].variables]) == set(df.columns)
+    assert es['test_dataframe'].ww.index == 'id'
+    assert es['test_dataframe'].ww.time_index == 'time'
+    assert set([v for v in es['test_dataframe'].ww.columns]) == set(df.columns)
 
-    assert es['test_entity'].df['time'].dtype == df['time'].dtype
-    if ks and isinstance(es['test_entity'].df, ks.DataFrame):
-        assert set(es['test_entity'].df['id'].to_list()) == set(df['id'].to_list())
+    assert es['test_dataframe']['time'].dtype == df['time'].dtype
+    if ks and isinstance(es['test_dataframe'], ks.DataFrame):
+        assert set(es['test_dataframe']['id'].to_list()) == set(df['id'].to_list())
     else:
-        assert set(es['test_entity'].df['id']) == set(df['id'])
+        assert set(es['test_dataframe']['id']) == set(df['id'])
 
 
 @pytest.fixture
