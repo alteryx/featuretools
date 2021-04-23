@@ -357,7 +357,7 @@ def df3(request):
 
 
 def test_unknown_index(df3):
-    # --> this behavior is not allowed by Woodwork! how should we deal??
+    # --> Behavior change: Woodwork will not create an index unless make_index is specified
     warn_text = "index id not found in dataframe, creating new integer column"
     es = EntitySet(id='test')
     with pytest.warns(UserWarning, match=warn_text):
@@ -474,7 +474,7 @@ def test_errors_no_vtypes_dask(dd_df4):
     es = EntitySet(id='test')
     msg = 'Variable types cannot be inferred from Dask DataFrames, '
     'use variable_types to provide type metadata for entity'
-    # --> Woodwork will perform inference - should FT just ignore it???
+    # --> Behavior change: Woodwork will perform inference - should FT just ignore it???
     with pytest.raises(ValueError, match=msg):
         es.add_dataframe(dataframe_id='test_dataframe', index='id',
                          dataframe=dd_df4)
@@ -484,6 +484,7 @@ def test_errors_no_vtypes_koalas(ks_df4):
     es = EntitySet(id='test')
     msg = 'Variable types cannot be inferred from Koalas DataFrames, '
     'use variable_types to provide type metadata for entity'
+    # --> Behavior change: Woodwork will perform inference - should FT just ignore it???
     with pytest.raises(ValueError, match=msg):
         es.add_dataframe(dataframe_id='test_dataframe', index='id',
                          dataframe=ks_df4)
@@ -583,14 +584,15 @@ def test_handles_datetime_format(datetime2):
 
 
 # Inferring variable types and verifying typing not supported in Dask, Koalas
+# --> woodowrk will allow this so we should test
 def test_handles_datetime_mismatch():
     # can't convert arbitrary strings
     df = pd.DataFrame({'id': [0, 1, 2], 'time': ['a', 'b', 'tomorrow']})
     logical_types = {'id': ltypes.Categorical,
                      'time': ltypes.Datetime}
 
-    error_text = "Given date string not likely a datetime."
-    with pytest.raises(ValueError, match=error_text):
+    error_text = "Time index column must contain datetime or numeric values"
+    with pytest.raises(TypeError, match=error_text):
         es = EntitySet(id='test')
         es.add_dataframe('test_dataframe', df, 'id',
                          time_index='time', logical_types=logical_types)
@@ -659,7 +661,7 @@ def test_nonstr_column_names(bad_df):
     if dd and isinstance(bad_df, dd.DataFrame):
         pytest.xfail('Dask DataFrames cannot handle integer column names')
 
-    # --> woodwork allows this for non dask columns but maybe we need to keep this requirement for featuretools
+    # --> Behavior Change: woodwork allows non string column names (except for dask which still doesnt support)
     es = ft.EntitySet(id='Failure')
     error_text = r"All column names must be strings \(Column 3 is not a string\)"
     with pytest.raises(ValueError, match=error_text):
@@ -1074,11 +1076,11 @@ def pd_normalize_es():
 @pytest.fixture
 def dd_normalize_es(pd_normalize_es):
     es = ft.EntitySet(id=pd_normalize_es.id)
-    entity = pd_normalize_es['data']
-    es.add_dataframe(dataframe_id=entity.id,
-                     dataframe=dd.from_pandas(entity.df, npartitions=2),
-                     index=entity.index,
-                     logical_types=entity.variable_types)
+    dd_df = dd.from_pandas(pd_normalize_es['data'], npartitions=2)
+    dd_df.ww.init(schema=pd_normalize_es['data'].ww.schema)
+
+    es.add_dataframe(dataframe_id=dd_df.ww.name,
+                     dataframe=dd_df)
     return es
 
 
@@ -1086,11 +1088,10 @@ def dd_normalize_es(pd_normalize_es):
 def ks_normalize_es(pd_normalize_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     es = ft.EntitySet(id=pd_normalize_es.id)
-    entity = pd_normalize_es['data']
-    es.add_dataframe(dataframe_id=entity.id,
-                     dataframe=ks.from_pandas(entity.df),
-                     index=entity.index,
-                     logical_types=entity.variable_types)
+    ks_df = ks.from_pandas(pd_normalize_es['data'])
+    ks_df.ww.init(schema=pd_normalize_es['data'].ww.schema)
+    es.add_dataframe(dataframe_id=ks_df.ww.name,
+                     dataframe=ks_df)
     return es
 
 
@@ -1335,7 +1336,7 @@ def test_same_index_values(index_df):
 
     es = ft.EntitySet("example")
 
-    # --> there's a woodwork issue for this right now!
+    # --> Behavior change: Woodwork allows same index and time index
     error_text = "time_index and index cannot be the same value"
     with pytest.raises(ValueError, match=error_text):
         es.add_dataframe(dataframe_id="entity",
@@ -1364,7 +1365,7 @@ def test_use_time_index(index_df):
             'transaction_time': ltypes.Datetime,
             'first_entity_time': ltypes.Integer
         }
-        bad_semantic_tags = {'transaction_time': 'time_index'}  # --> can't set time index directly so may not work
+        bad_semantic_tags = {'transaction_time': 'time_index'}
         logical_types = {
             'id': ltypes.Categorical,
             'transaction_time': ltypes.Datetime,
@@ -1377,11 +1378,12 @@ def test_use_time_index(index_df):
 
     es = ft.EntitySet()
 
-    error_text = "DatetimeTimeIndex variable transaction_time must be set using time_index parameter"
+    error_text = re.escape("Cannot add 'time_index' tag directly for column transaction_time. To set a column as the time index, use DataFrame.ww.set_time_index() instead.")
     with pytest.raises(ValueError, match=error_text):
         es.add_dataframe(dataframe_id="entity",
                          index="id",
                          logical_types=bad_vtypes,
+                         semantic_tags=bad_semantic_tags,
                          dataframe=index_df)
 
     es.add_dataframe(dataframe_id="entity",
@@ -1403,16 +1405,17 @@ def test_use_time_index(index_df):
 #     assert vtypes['upgrade_date'] == variable_types.Datetime
 
 
-def test_normalize_with_numeric_time_index(int_es):
-    int_es.normalize_dataframe(base_dataframe_id="customers",
-                               new_dataframe_id="cancel_reason",
-                               index="cancel_reason",
-                               make_time_index=False,
-                               copy_columns=['signup_date', 'upgrade_date'])
+# --> wait till make_ecommerce_entitset implemented
+# def test_normalize_with_numeric_time_index(int_es):
+#     int_es.normalize_dataframe(base_dataframe_id="customers",
+#                                new_dataframe_id="cancel_reason",
+#                                index="cancel_reason",
+#                                make_time_index=False,
+#                                copy_columns=['signup_date', 'upgrade_date'])
 
-    vtypes = int_es['cancel_reason'].variable_types
-    assert vtypes['signup_date'] == variable_types.Numeric
-    assert vtypes['upgrade_date'] == variable_types.Numeric
+#     vtypes = int_es['cancel_reason'].variable_types
+#     assert vtypes['signup_date'] == variable_types.Numeric
+#     assert vtypes['upgrade_date'] == variable_types.Numeric
 
 
 # def test_normalize_with_invalid_time_index(es):
@@ -1461,8 +1464,10 @@ def test_entityset_init():
                           make_index=False,
                           time_index='transaction_time')
     es_copy.add_relationship('cards', 'id', 'transactions', 'card_id')
-    assert es['cards'].__eq__(es_copy['cards'], deep=True)
-    assert es['transactions'].__eq__(es_copy['transactions'], deep=True)
+
+    # --> any time we do this equality check it will be deep bc Woodwork doesn't differentiate
+    assert es['cards'].ww == es_copy['cards'].ww
+    assert es['transactions'].ww == es_copy['transactions'].ww
 
 
 # --> need to update load_retail
