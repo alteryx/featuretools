@@ -22,13 +22,13 @@ ks = import_or_none('databricks.koalas')
 def test_normalize_time_index_as_additional_variable(es):
     error_text = "Not moving signup_date as it is the base time index variable."
     with pytest.raises(ValueError, match=error_text):
-        assert "signup_date" in es["customers"].df.columns
-        es.normalize_entity(base_dataframe_id='customers',
-                            new_dataframe_id='cancellations',
-                            index='cancel_reason',
-                            make_time_index='signup_date',
-                            additional_variables=['signup_date'],
-                            copy_variables=[])
+        assert "signup_date" in es["customers"].columns
+        es.normalize_dataframe(base_dataframe_id='customers',
+                               new_dataframe_id='cancellations',
+                               index='cancel_reason',
+                               make_time_index='signup_date',
+                               additional_columns=['signup_date'],
+                               copy_columns=[])
 
 
 def test_cannot_re_add_relationships_that_already_exists(es):
@@ -46,11 +46,11 @@ def test_cannot_re_add_relationships_that_already_exists(es):
 
 def test_add_relationships_convert_type(es):
     for r in es.relationships:
-        parent_e = es[r.parent_dataframe.id]
-        child_e = es[r.child_dataframe.id]
-        assert type(r.parent_column) == variable_types.Index
-        assert type(r.child_column) == variable_types.Id
-        assert parent_e.df[r.parent_column.id].dtype == child_e.df[r.child_column.id].dtype
+        parent_df = es[r.parent_dataframe.ww.name]
+        child_df = es[r.child_dataframe.ww.name]
+        assert parent_df.ww.index == r.parent_column.name
+        assert 'foreign_key' in r.child_column.ww.semantic_tags
+        assert str(parent_df[r.parent_column.name].dtype) == str(child_df[r.child_column.name].dtype)
 
 
 def test_add_relationship_errors_on_dtype_mismatch(es):

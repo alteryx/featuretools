@@ -40,13 +40,13 @@ def make_int_es():
 
 
 @pytest.fixture
-def pd_es(make_es):
-    return copy.deepcopy(make_es)
+def pd_es(make_es):  # --> temporary while waiting to implement deepcopy
+    return make_ecommerce_entityset()
 
 
 @pytest.fixture
-def int_es(make_int_es):
-    return copy.deepcopy(make_int_es)
+def int_es(make_int_es):  # --> temporary while waiting to implement deepcopy
+    return make_ecommerce_entityset(with_integer_time_index=True)
 
 
 @pytest.fixture
