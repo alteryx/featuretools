@@ -656,7 +656,10 @@ def bad_df(request):
 
 # Skip for Koalas, automatically converts non-str column names to str
 def test_nonstr_column_names(bad_df):
-    # --> woodwork allows this but maybe we need to keep this requirement for featuretools
+    if dd and isinstance(bad_df, dd.DataFrame):
+        pytest.xfail('Dask DataFrames cannot handle integer column names')
+
+    # --> woodwork allows this for non dask columns but maybe we need to keep this requirement for featuretools
     es = ft.EntitySet(id='Failure')
     error_text = r"All column names must be strings \(Column 3 is not a string\)"
     with pytest.raises(ValueError, match=error_text):
@@ -1103,7 +1106,7 @@ def test_normalize_time_index_from_none(normalize_es):
                                      new_dataframe_id='normalized',
                                      index='A',
                                      make_time_index='time',
-                                     copy_variables=['time'])
+                                     copy_columns=['time'])
     assert normalize_es['normalized'].ww.time_index == 'time'
     df = normalize_es['normalized']
 
@@ -1237,7 +1240,7 @@ def test_repr_without_id():
 
 
 def test_getitem_without_id():
-    error_text = 'Entity test does not exist'
+    error_text = 'DataFrame test does not exist in entity set'
     with pytest.raises(KeyError, match=error_text):
         ft.EntitySet()['test']
 
@@ -1292,7 +1295,9 @@ def test_datetime64_conversion(datetime3):
                      dataframe=df,
                      logical_types=logical_types)
     vtype_time_index = variable_types.variable.DatetimeTimeIndex
-    es['test_dataframe'].convert_variable_type('time', vtype_time_index)
+    # --> is this testing setting time index or setting ltype??? and why are there no checks afterwards
+    es['test_dataframe'].ww.set_time_index('time')
+    assert es['test_dataframe'].ww.time_index == 'time'
 
 
 @pytest.fixture
@@ -1403,7 +1408,7 @@ def test_normalize_with_numeric_time_index(int_es):
                                new_dataframe_id="cancel_reason",
                                index="cancel_reason",
                                make_time_index=False,
-                               copy_variables=['signup_date', 'upgrade_date'])
+                               copy_columns=['signup_date', 'upgrade_date'])
 
     vtypes = int_es['cancel_reason'].variable_types
     assert vtypes['signup_date'] == variable_types.Numeric

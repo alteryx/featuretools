@@ -10,7 +10,7 @@ import pytest
 
 import featuretools as ft
 from featuretools import variable_types
-from featuretools.entityset.ww_entityset import EntitySet
+from featuretools.entityset import EntitySet
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
@@ -68,7 +68,7 @@ def test_init_es_with_woodwork_table(df):
 
     assert es['table'].ww.schema is not None
 
-    assert es['table'].ww.index is None
+    assert es['table'].ww.index == 'id'
     assert es['table'].ww.time_index is None
 
     assert es['table'].ww.logical_types['id'] == Integer
@@ -128,7 +128,7 @@ def test_change_es_dataframe_schema(df):
     df.ww.init()
     es = EntitySet('es', dataframes={'table': (df,)})
 
-    assert es['table'].ww.index is None
+    assert es['table'].ww.index == 'id'
 
     es.dataframe_dict['table'].ww.set_index('id')
     assert es['table'].ww.index == 'id'
