@@ -7,6 +7,7 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
+import woodwork as ww
 from pandas.api.types import is_dtype_equal, is_numeric_dtype
 
 import featuretools.variable_types.variable as vtypes
@@ -1278,14 +1279,23 @@ class EntitySet(object):
             raise TypeError(info % (dataframe.ww.name, time_type))
 
     def _get_time_type(self, dataframe, column_id=None):
-        variable_id = column_id or dataframe.ww.time_index
+        # --> is there any reason we can't just use Woodwork typing for is_numeric or is_datetime?
+        column_id = column_id or dataframe.ww.time_index
+
         if not isinstance(dataframe, pd.DataFrame) or dataframe.empty:
             dtype = dataframe.ww.physical_types[column_id]
             time_to_check = vtypes.DEFAULT_DTYPE_VALUES[dtype]
         else:
             time_to_check = dataframe[column_id].iloc[0]
 
-        time_type = _check_time_type(time_to_check)
+        # --> by using column schema typing this might help us later on???
+        time_type = None
+        column_schema = dataframe.ww.columns[column_id]
+        if column_schema.is_numeric:
+            time_type = 'numeric'
+        elif column_schema.is_datetime:
+            time_type = ww.logical_types.Datetime
+
         if time_type is None:
             info = "%s time index not recognized as numeric or datetime"
             raise TypeError(info % dataframe.ww.name)

@@ -834,25 +834,25 @@ def test_set_time_type_on_init(transactions_df):
     if ks and isinstance(transactions_df, ks.DataFrame):
         cards_df = ks.from_pandas(cards_df)
     if not isinstance(transactions_df, pd.DataFrame):
-        cards_vtypes = {'id': ltypes.Categorical}
-        transactions_vtypes = {
+        cards_logical_types = {'id': ltypes.Categorical}
+        transactions_logical_types = {
             'id': ltypes.Categorical,
             'card_id': ltypes.Categorical,
             'transaction_time': ltypes.Integer,
             'fraud': ltypes.Boolean
         }
     else:
-        cards_vtypes = None
-        transactions_vtypes = None
+        cards_logical_types = None
+        transactions_logical_types = None
 
     entities = {
-        "cards": (cards_df, "id", None, cards_vtypes),
-        "transactions": (transactions_df, "id", "transaction_time", transactions_vtypes)
+        "cards": (cards_df, "id", None, cards_logical_types),
+        "transactions": (transactions_df, "id", "transaction_time", transactions_logical_types)
     }
     relationships = [("cards", "id", "transactions", "card_id")]
     es = EntitySet("fraud", entities, relationships)
     # assert time_type is set
-    assert es.time_type == variable_types.NumericTimeIndex
+    assert es.time_type == 'numeric'
 
 
 def test_sets_time_when_adding_entity(transactions_df):
@@ -869,16 +869,16 @@ def test_sets_time_when_adding_entity(transactions_df):
     if ks and isinstance(transactions_df, ks.DataFrame):
         accounts_df = ks.from_pandas(accounts_df)
     if not isinstance(transactions_df, pd.DataFrame):
-        accounts_vtypes = {'id': ltypes.Categorical, 'signup_date': ltypes.Datetime}
-        transactions_vtypes = {
+        accounts_logical_types = {'id': ltypes.Categorical, 'signup_date': ltypes.Datetime}
+        transactions_logical_types = {
             'id': ltypes.Categorical,
             'card_id': ltypes.Categorical,
             'transaction_time': ltypes.Integer,
             'fraud': ltypes.Boolean
         }
     else:
-        accounts_vtypes = None
-        transactions_vtypes = None
+        accounts_logical_types = None
+        transactions_logical_types = None
 
     # create empty entityset
     es = EntitySet("fraud")
@@ -889,24 +889,24 @@ def test_sets_time_when_adding_entity(transactions_df):
                      transactions_df,
                      index="id",
                      time_index="transaction_time",
-                     logical_types=transactions_vtypes)
+                     logical_types=transactions_logical_types)
     # assert time_type is set
-    assert es.time_type == variable_types.NumericTimeIndex
+    assert es.time_type == 'numeric'
     # add another entity
     es.normalize_dataframe("transactions",
                            "cards",
                            "card_id",
                            make_time_index=True)
     # assert time_type unchanged
-    assert es.time_type == variable_types.NumericTimeIndex
+    assert es.time_type == 'numeric'
     # add wrong time type entity
-    error_text = "accounts time index is <class 'featuretools.variable_types.variable.DatetimeTimeIndex'> type which differs from other entityset time indexes"
+    error_text = "accounts time index is Datetime type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
         es.add_dataframe("accounts",
                          accounts_df,
                          index="id",
                          time_index="signup_date",
-                         logical_types=accounts_vtypes)
+                         logical_types=accounts_logical_types)
     # add non time type as time index, only valid for pandas
     if isinstance(transactions_df, pd.DataFrame):
         error_text = "Time index column must contain datetime or numeric values"
