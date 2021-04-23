@@ -92,30 +92,30 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
 
 
 def test_add_relationship_errors_child_v_index(es):
-    log_df = es['log'].df.copy()
-    log_vtypes = es['log'].variable_types
-    es.entity_from_dataframe(dataframe_id='log2',
-                             dataframe=log_df,
-                             index='id',
-                             variable_types=log_vtypes,
-                             time_index='datetime')
+    es.add_dataframe(dataframe_id='log2',
+                     dataframe=es['log'].ww.copy())
 
     to_match = "Unable to add relationship because child column 'id' in 'log2' is also its index"
     with pytest.raises(ValueError, match=to_match):
         es.add_relationship('log', 'id', 'log2', 'id')
 
 
-def test_add_relationship_empty_child_convert_dtype(es):
-    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
-    es['log'].df = pd.DataFrame(columns=es['log'].df.columns)
-    assert len(es['log'].df) == 0
-    assert es['log'].df['session_id'].dtype == 'object'
+# def test_add_relationship_empty_child_convert_dtype(es):
+#     relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
+#     empty_log_df = pd.DataFrame(columns=es['log'].columns)
+#     # --> schema isn't valid.... not sure what this is testing
+#     empty_log_df.ww.init(schema=es['log'].ww.schema)
 
-    es.relationships.remove(relationship)
-    assert(relationship not in es.relationships)
+#     es.add_dataframe('log', empty_log_df)
 
-    es.add_relationship(relationship=relationship)
-    assert es['log'].df['session_id'].dtype == 'int64'
+#     assert len(es['log']) == 0
+#     assert es['log']['session_id'].dtype == 'object'
+
+#     es.relationships.remove(relationship)
+#     assert(relationship not in es.relationships)
+
+#     es.add_relationship(relationship=relationship)
+#     assert es['log']['session_id'].dtype == 'int64'
 
 
 def test_add_relationship_with_relationship_object(es):
@@ -917,90 +917,85 @@ def test_sets_time_when_adding_entity(transactions_df):
                              time_index="signup_date")
 
 
-# def test_checks_time_type_setting_time_index(es):
-#     # set non time type as time index, Dask/Koalas and Pandas error differently
-#     if isinstance(es['log'].df, pd.DataFrame):
-#         error_text = 'log time index not recognized as numeric or datetime'
-#     else:
-#         error_text = "log time index is %s type which differs from" \
-#                      " other entityset time indexes" % (variable_types.NumericTimeIndex)
-#     with pytest.raises(TypeError, match=error_text):
-#         es['log'].set_time_index('purchased')
-#         es._check_uniform_time_index(es['log'])
+def test_checks_time_type_setting_time_index(es):
+    error_text = 'Time index column must be a Datetime or numeric column.'
+    with pytest.raises(TypeError, match=error_text):
+        es['log'].ww.set_time_index('purchased')
+        es._check_uniform_time_index(es['log'])
 
 
-# def test_checks_time_type_setting_secondary_time_index(es):
-#     # entityset is timestamp time type
-#     assert es.time_type == variable_types.DatetimeTimeIndex
-#     # add secondary index that is timestamp type
-#     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
-#                   'cancel_date': ['cancel_date', 'cancel_reason']}
-#     es.set_secondary_time_index(es["customers"], new_2nd_ti)
-#     assert es.time_type == variable_types.DatetimeTimeIndex
-#     # add secondary index that is numeric type
-#     new_2nd_ti = {'age': ['age', 'loves_ice_cream']}
+def test_checks_time_type_setting_secondary_time_index(es):
+    # entityset is timestamp time type
+    assert es.time_type == variable_types.DatetimeTimeIndex
+    # add secondary index that is timestamp type
+    new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
+                  'cancel_date': ['cancel_date', 'cancel_reason']}
+    es.set_secondary_time_index(es["customers"], new_2nd_ti)
+    assert es.time_type == variable_types.DatetimeTimeIndex
+    # add secondary index that is numeric type
+    new_2nd_ti = {'age': ['age', 'loves_ice_cream']}
 
-#     error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
-#     with pytest.raises(TypeError, match=error_text):
-#         es.set_secondary_time_index(es["customers"], new_2nd_ti)
-#     # add secondary index that is non-time type
-#     new_2nd_ti = {'favorite_quote': ['favorite_quote', 'loves_ice_cream']}
+    error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
+    with pytest.raises(TypeError, match=error_text):
+        es.set_secondary_time_index(es["customers"], new_2nd_ti)
+    # add secondary index that is non-time type
+    new_2nd_ti = {'favorite_quote': ['favorite_quote', 'loves_ice_cream']}
 
-#     error_text = r"data type (\"|')(All members of the working classes must seize the means of production.|test)(\"|') not understood"
-#     with pytest.raises(TypeError, match=error_text):
-#         es.set_secondary_time_index(es["customers"], new_2nd_ti)
-#     # add mismatched pair of secondary time indexes
-#     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
-#                   'age': ['age', 'loves_ice_cream']}
+    error_text = r"data type (\"|')(All members of the working classes must seize the means of production.|test)(\"|') not understood"
+    with pytest.raises(TypeError, match=error_text):
+        es.set_secondary_time_index(es["customers"], new_2nd_ti)
+    # add mismatched pair of secondary time indexes
+    new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
+                  'age': ['age', 'loves_ice_cream']}
 
-#     error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
-#     with pytest.raises(TypeError, match=error_text):
-#         es.set_secondary_time_index(es["customers"], new_2nd_ti)
+    error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
+    with pytest.raises(TypeError, match=error_text):
+        es.set_secondary_time_index(es["customers"], new_2nd_ti)
 
-#     # create entityset with numeric time type
-#     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
-#     transactions_df = pd.DataFrame({
-#         "id": [1, 2, 3, 4, 5, 6],
-#         "card_id": [1, 2, 1, 3, 4, 5],
-#         "transaction_time": [10, 12, 13, 20, 21, 20],
-#         "fraud_decision_time": [11, 14, 15, 21, 22, 21],
-#         "transaction_city": ["City A"] * 6,
-#         "transaction_date": [datetime(1989, 2, i) for i in range(1, 7)],
-#         "fraud": [True, False, False, False, True, True]
-#     })
-#     entities = {
-#         "cards": (cards_df, "id"),
-#         "transactions": (transactions_df, "id", "transaction_time")
-#     }
-#     relationships = [("cards", "id", "transactions", "card_id")]
-#     card_es = EntitySet("fraud", entities, relationships)
-#     assert card_es.time_type == variable_types.NumericTimeIndex
-#     # add secondary index that is numeric time type
-#     new_2nd_ti = {'fraud_decision_time': ['fraud_decision_time', 'fraud']}
-#     card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
-#     assert card_es.time_type == variable_types.NumericTimeIndex
-#     # add secondary index that is timestamp type
-#     new_2nd_ti = {'transaction_date': ['transaction_date', 'fraud']}
+    # create entityset with numeric time type
+    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
+    transactions_df = pd.DataFrame({
+        "id": [1, 2, 3, 4, 5, 6],
+        "card_id": [1, 2, 1, 3, 4, 5],
+        "transaction_time": [10, 12, 13, 20, 21, 20],
+        "fraud_decision_time": [11, 14, 15, 21, 22, 21],
+        "transaction_city": ["City A"] * 6,
+        "transaction_date": [datetime(1989, 2, i) for i in range(1, 7)],
+        "fraud": [True, False, False, False, True, True]
+    })
+    entities = {
+        "cards": (cards_df, "id"),
+        "transactions": (transactions_df, "id", "transaction_time")
+    }
+    relationships = [("cards", "id", "transactions", "card_id")]
+    card_es = EntitySet("fraud", entities, relationships)
+    assert card_es.time_type == variable_types.NumericTimeIndex
+    # add secondary index that is numeric time type
+    new_2nd_ti = {'fraud_decision_time': ['fraud_decision_time', 'fraud']}
+    card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
+    assert card_es.time_type == variable_types.NumericTimeIndex
+    # add secondary index that is timestamp type
+    new_2nd_ti = {'transaction_date': ['transaction_date', 'fraud']}
 
-#     error_text = "transactions time index is <class 'featuretools.variable_types.variable.DatetimeTimeIndex'> type which differs from other entityset time indexes"
-#     with pytest.raises(TypeError, match=error_text):
-#         card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
-#     # add secondary index that is non-time type
-#     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud']}
+    error_text = "transactions time index is <class 'featuretools.variable_types.variable.DatetimeTimeIndex'> type which differs from other entityset time indexes"
+    with pytest.raises(TypeError, match=error_text):
+        card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
+    # add secondary index that is non-time type
+    new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud']}
 
-#     error_text = r"data type ('|\")City A('|\") not understood"
-#     with pytest.raises(TypeError, match=error_text):
-#         card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
-#     # add mixed secondary time indexes
-#     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud'],
-#                   'fraud_decision_time': ['fraud_decision_time', 'fraud']}
-#     with pytest.raises(TypeError, match=error_text):
-#         card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
+    error_text = r"data type ('|\")City A('|\") not understood"
+    with pytest.raises(TypeError, match=error_text):
+        card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
+    # add mixed secondary time indexes
+    new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud'],
+                  'fraud_decision_time': ['fraud_decision_time', 'fraud']}
+    with pytest.raises(TypeError, match=error_text):
+        card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
 
-#     # add bool secondary time index
-#     error_text = 'transactions time index not recognized as numeric or datetime'
-#     with pytest.raises(TypeError, match=error_text):
-#         card_es.set_secondary_time_index(card_es['transactions'], {'fraud': ['fraud']})
+    # add bool secondary time index
+    error_text = 'transactions time index not recognized as numeric or datetime'
+    with pytest.raises(TypeError, match=error_text):
+        card_es.set_secondary_time_index(card_es['transactions'], {'fraud': ['fraud']})
 
 
 # def test_normalize_entity(es):
