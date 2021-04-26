@@ -883,13 +883,13 @@ class EntitySet(object):
             queue = [self[p] for p in parents]
             to_explore = parents
         else:
-            to_explore = set([e.id for e in self.dataframes[:]])
+            to_explore = set([df.ww.name for df in self.dataframes[:]])
             queue = self.dataframes[:]
 
         explored = set()
 
         for e in queue:
-            e.last_time_index = None
+            e.ww.metadata['last_time_index'] = None
 
         # We will explore children of entities on the queue,
         # which may not be in the to_explore set. Therefore,
@@ -898,36 +898,36 @@ class EntitySet(object):
         while not to_explore.issubset(explored):
             entity = queue.pop(0)
 
-            if entity.last_time_index is None:
-                if entity.time_index is not None:
-                    lti = entity.df[entity.time_index].copy()
-                    if isinstance(entity.df, dd.DataFrame):
+            if entity.ww.metadata.get('last_time_index') is None:
+                if entity.ww.time_index is not None:
+                    lti = entity[entity.ww.time_index].copy()
+                    if isinstance(entity, dd.DataFrame):
                         # The current Dask implementation doesn't set the index of the dataframe
                         # to the entity's index, so we have to do it manually here
-                        lti.index = entity.df[entity.index].copy()
+                        lti.index = entity[entity.ww.index].copy()
                 else:
-                    lti = entity.df[entity.index].copy()
-                    if isinstance(entity.df, dd.DataFrame):
-                        lti.index = entity.df[entity.index].copy()
+                    lti = entity[entity.ww.index].copy()
+                    if isinstance(entity, dd.DataFrame):
+                        lti.index = entity[entity.ww.index].copy()
                         lti = lti.apply(lambda x: None)
-                    elif is_instance(entity.df, ks, 'DataFrame'):
+                    elif is_instance(entity, ks, 'DataFrame'):
                         lti = ks.Series(pd.Series(index=lti.to_list(), name=lti.name))
                     else:
                         lti[:] = None
-                entity.last_time_index = lti
+                entity.ww.metadata['last_time_index'] = lti
 
-            if entity.id in children:
-                child_entities = children[entity.id]
+            if entity.ww.name in children:
+                child_entities = children[entity.ww.name]
 
                 # if all children not explored, skip for now
-                if not set([e.id for e in child_entities]).issubset(explored):
+                if not set([df.ww.name for df in child_entities]).issubset(explored):
                     # Now there is a possibility that a child entity
                     # was not explicitly provided in updated_entities,
                     # and never made it onto the queue. If updated_entities
                     # is None then we just load all entities onto the queue
                     # so we didn't need this logic
-                    for e in child_entities:
-                        if e.id not in explored and e.id not in [q.id for q in queue]:
+                    for df in child_entities:
+                        if df.ww.name not in explored and df.ww.name not in [q.ww.name for q in queue]:
                             queue.append(e)
                     queue.append(entity)
                     continue
@@ -935,19 +935,21 @@ class EntitySet(object):
                 # updated last time from all children
                 for child_e in child_entities:
                     # TODO: Figure out if Dask code related to indexes is important for Koalas
-                    if child_e.last_time_index is None:
+                    if child_e.ww.metadata.get('last_time_index') is None:
                         continue
-                    link_var = child_cols[entity.id][child_e.id].id
+                    # --> should be a colschema?
+                    link_var = child_cols[entity.ww.name][child_e.ww.name].name
 
-                    lti_is_dask = isinstance(child_e.last_time_index, dd.Series)
-                    lti_is_koalas = is_instance(child_e.last_time_index, ks, 'Series')
+                    lti_is_dask = isinstance(child_e.ww.metadata.get('last_time_index'), dd.Series)
+                    lti_is_koalas = is_instance(child_e.ww.metadata.get('last_time_index'), ks, 'Series')
                     if lti_is_dask or lti_is_koalas:
                         to_join = child_e.df[link_var]
                         if lti_is_dask:
-                            to_join.index = child_e.df[child_e.index]
+                            # --> is this a df index setting or is it ww index?
+                            to_join.index = child_e[child_e.ww.index]
 
-                        lti_df = child_e.last_time_index.to_frame(name='last_time').join(
-                            to_join.to_frame(name=entity.index)
+                        lti_df = child_e.ww.metadata.get('last_time_index').to_frame(name='last_time').join(
+                            to_join.to_frame(name=entity.ww.index)
                         )
 
                         if lti_is_dask:
@@ -956,23 +958,23 @@ class EntitySet(object):
                             lti_df.index = new_index
                         lti_df = lti_df.groupby(lti_df[entity.index]).agg('max')
 
-                        lti_df = entity.last_time_index.to_frame(name='last_time_old').join(lti_df)
+                        lti_df = entity.ww.metadata.get('last_time_index').to_frame(name='last_time_old').join(lti_df)
 
                     else:
-                        lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
-                                               entity.index: child_e.df[link_var]})
+                        lti_df = pd.DataFrame({'last_time': child_e.ww.metadata.get('last_time_index'),
+                                               entity.ww.index: child_e[link_var]})
 
                         # sort by time and keep only the most recent
-                        lti_df.sort_values(['last_time', entity.index],
+                        lti_df.sort_values(['last_time', entity.ww.index],
                                            kind="mergesort", inplace=True)
 
-                        lti_df.drop_duplicates(entity.index,
+                        lti_df.drop_duplicates(entity.ww.index,
                                                keep='last',
                                                inplace=True)
 
-                        lti_df.set_index(entity.index, inplace=True)
-                        lti_df = lti_df.reindex(entity.last_time_index.index)
-                        lti_df['last_time_old'] = entity.last_time_index
+                        lti_df.set_index(entity.ww.index, inplace=True)
+                        lti_df = lti_df.reindex(entity.ww.metadata.get('last_time_index').index)
+                        lti_df['last_time_old'] = entity.ww.metadata.get('last_time_index')
                     if not (lti_is_dask or lti_is_koalas) and lti_df.empty:
                         # Pandas errors out if it tries to do fillna and then max on an empty dataframe
                         lti_df = pd.Series()
@@ -984,15 +986,16 @@ class EntitySet(object):
                             lti_df = lti_df.max(axis=1)
                         else:
                             lti_df['last_time'] = lti_df['last_time'].astype('datetime64[ns]')
+                            print('lti_df', lti_df['last_time_old'])
                             lti_df['last_time_old'] = lti_df['last_time_old'].astype('datetime64[ns]')
                             lti_df = lti_df.fillna(pd.to_datetime('1800-01-01 00:00')).max(axis=1)
                             lti_df = lti_df.replace(pd.to_datetime('1800-01-01 00:00'), pd.NaT)
                     # lti_df = lti_df.apply(lambda x: x.dropna().max(), axis=1)
 
-                    entity.last_time_index = lti_df
-                    entity.last_time_index.name = 'last_time'
+                    entity.ww.metadata['last_time_index'] = lti
+                    entity.ww.metadata.get('last_time_index').name = 'last_time'
 
-            explored.add(entity.id)
+            explored.add(entity.ww.name)
         self.reset_data_description()
 
     # ###########################################################################
