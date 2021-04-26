@@ -86,7 +86,11 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
     assert 'log2' in es.dataframe_dict
     assert es['log2'].ww.schema is not None
 
-    error_text = u'Unable to add relationship because id in customers is Pandas dtype category and session_id in log2 is Pandas dtype int64.'
+    category_dtype = 'category'
+    if ks and isinstance(es['customers'], ks.DataFrame):
+        category_dtype = 'string'
+
+    error_text = f'Unable to add relationship because id in customers is Pandas dtype {category_dtype} and session_id in log2 is Pandas dtype int64.'
     with pytest.raises(ValueError, match=error_text):
         es.add_relationship(u'customers', 'id', 'log2', 'session_id')
 
@@ -601,10 +605,10 @@ def test_handles_datetime_mismatch():
                          time_index='time', logical_types=logical_types)
 
 
-def test_entity_init(es):
+def test_dataframe_init(es):
     # Note: to convert the time column directly either the variable type
     # or convert_date_columns must be specifie
-    df = pd.DataFrame({'id': [0, 1, 2],
+    df = pd.DataFrame({'id': ['0', '1', '2'],
                        'time': [datetime(2011, 4, 9, 10, 31, 3 * i)
                                 for i in range(3)],
                        'category': ['a', 'b', 'a'],
