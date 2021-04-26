@@ -37,7 +37,7 @@ Sometimes we want to create features that are conditioned on a second value befo
 By default, where clauses are built using the ``interesting_values`` of a variable.
 
 
-.. Interesting values can be automatically added to all variables by calling `EntitySet.add_interesting_values` or `Entity.add_interesting_values`. We can manually specify interesting values by directly as well.
+.. Interesting values can be automatically added to all variables by calling ``EntitySet.add_interesting_values``. We can manually specify interesting values by directly as well.
 
 .. Currently, interesting values are only considered for variables of type :class:`.variable_types.Categorical`, :class:`.variable_types.Ordinal`, and :class:`.variable_types.Boolean`.
 

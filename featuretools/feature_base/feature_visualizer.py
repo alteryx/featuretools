@@ -150,19 +150,19 @@ def get_feature_data(feat, entities, groupbys, edges, primitives, layer=0):
     dependencies = [(dep.hash(), dep) for dep in feat.get_dependencies()]
     for is_forward, r in feat.relationship_path:
         if is_forward:
-            if r.child_entity.id not in entities:
-                add_entity(r.child_entity, entities)
-            entities[r.child_entity.id]['vars'].add(r.child_variable.name)
-            child_node = '{}:{}'.format(r.child_entity.id, r.child_variable.name)
+            if r.child_dataframe.id not in entities:
+                add_entity(r.child_dataframe, entities)
+            entities[r.child_dataframe.id]['vars'].add(r.child_column.name)
+            child_node = '{}:{}'.format(r.child_dataframe.id, r.child_column.name)
             edges[0].append([base_node, child_node])
         else:
-            if r.child_entity.id not in entities:
-                add_entity(r.child_entity, entities)
-            entities[r.child_entity.id]['vars'].add(r.child_variable.name)
-            child_node = '{}:{}'.format(r.child_entity.id, r.child_variable.name)
+            if r.child_dataframe.id not in entities:
+                add_entity(r.child_dataframe, entities)
+            entities[r.child_dataframe.id]['vars'].add(r.child_column.name)
+            child_node = '{}:{}'.format(r.child_dataframe.id, r.child_column.name)
             child_name = child_node.replace(':', '--')
             groupby_node = "{}_groupby_{}".format(feat_name, child_name)
-            groupby_name = 'group by\n{}'.format(r.child_variable.name)
+            groupby_name = 'group by\n{}'.format(r.child_column.name)
             groupbys.append((groupby_node, groupby_name))
             edges[0].append([child_node, groupby_node])
             edges[1].append([groupby_node, base_node])

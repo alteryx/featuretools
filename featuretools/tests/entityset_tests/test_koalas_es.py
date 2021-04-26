@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 
 import featuretools as ft
-from featuretools.entityset import EntitySet, Relationship
+from featuretools.entityset import EntitySet
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
 
@@ -119,11 +119,8 @@ def test_add_last_time_indexes():
     pd_es.entity_from_dataframe(entity_id="transactions", dataframe=transactions, index="id", time_index="time")
     ks_es.entity_from_dataframe(entity_id="transactions", dataframe=transactions_ks, index="id", time_index="time", variable_types=transactions_vtypes)
 
-    new_rel = Relationship(pd_es["sessions"]["id"], pd_es["transactions"]["session_id"])
-    ks_rel = Relationship(ks_es["sessions"]["id"], ks_es["transactions"]["session_id"])
-
-    pd_es = pd_es.add_relationship(new_rel)
-    ks_es = ks_es.add_relationship(ks_rel)
+    pd_es = pd_es.add_relationship("sessions", "id", "transactions", "session_id")
+    ks_es = ks_es.add_relationship("sessions", "id", "transactions", "session_id")
 
     assert pd_es['sessions'].last_time_index is None
     assert ks_es['sessions'].last_time_index is None

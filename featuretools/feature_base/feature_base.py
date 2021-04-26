@@ -402,16 +402,16 @@ class DirectFeature(FeatureBase):
 
     def _handle_relationship(self, child_entity, relationship):
         if relationship:
-            relationship_child = relationship.child_entity
+            relationship_child = relationship.child_dataframe
             assert child_entity.id == relationship_child.id, \
                 'child_entity must be the relationship child entity'
 
-            assert self.parent_entity.id == relationship.parent_entity.id, \
+            assert self.parent_entity.id == relationship.parent_dataframe.id, \
                 'Base feature must be defined on the relationship parent entity'
         else:
             child_relationships = child_entity.entityset.get_forward_relationships(child_entity.id)
             possible_relationships = (r for r in child_relationships
-                                      if r.parent_entity.id == self.parent_entity.id)
+                                      if r.parent_dataframe.id == self.parent_entity.id)
             relationship = next(possible_relationships, None)
 
             if not relationship:
@@ -430,7 +430,7 @@ class DirectFeature(FeatureBase):
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         base_feature = dependencies[arguments['base_feature']]
         relationship = Relationship.from_dictionary(arguments['relationship'], entityset)
-        child_entity = relationship.child_entity
+        child_entity = relationship.child_dataframe
         return cls(base_feature=base_feature,
                    child_entity=child_entity,
                    relationship=relationship,
@@ -536,12 +536,12 @@ class AggregationFeature(FeatureBase):
                 'All relationships in path must be backward'
 
             _is_forward, first_relationship = relationship_path[0]
-            first_parent = first_relationship.parent_entity
+            first_parent = first_relationship.parent_dataframe
             assert parent_entity.id == first_parent.id, \
                 'parent_entity must match first relationship in path.'
 
             _is_forward, last_relationship = relationship_path[-1]
-            assert self.child_entity.id == last_relationship.child_entity.id, \
+            assert self.child_entity.id == last_relationship.child_dataframe.id, \
                 'Base feature must be defined on the entity at the end of relationship_path'
 
             path_is_unique = parent_entity.entityset \
@@ -570,7 +570,7 @@ class AggregationFeature(FeatureBase):
         base_features = [dependencies[name] for name in arguments['base_features']]
         relationship_path = [Relationship.from_dictionary(r, entityset)
                              for r in arguments['relationship_path']]
-        parent_entity = relationship_path[0].parent_entity
+        parent_entity = relationship_path[0].parent_dataframe
         relationship_path = RelationshipPath([(False, r) for r in relationship_path])
 
         primitive = primitives_deserializer.deserialize_primitive(arguments['primitive'])

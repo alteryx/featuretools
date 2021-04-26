@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from featuretools import variable_types
-from featuretools.entityset import EntitySet, Relationship
+from featuretools.entityset import EntitySet
 
 
 def make_ecommerce_entityset(with_integer_time_index=False):
@@ -52,11 +52,11 @@ def make_ecommerce_entityset(with_integer_time_index=False):
                         new_entity_time_index='cohort_end')
 
     es.add_relationships(
-        [Relationship(es[u'régions']['id'], es['customers'][u'région_id']),
-         Relationship(es[u'régions']['id'], es['stores'][u'région_id']),
-         Relationship(es['customers']['id'], es['sessions']['customer_id']),
-         Relationship(es['sessions']['id'], es['log']['session_id']),
-         Relationship(es['products']['id'], es['log']['product_id'])])
+        [(u'régions', 'id', 'customers', u'région_id'),
+         (u'régions', 'id', 'stores', u'région_id'),
+         ('customers', 'id', 'sessions', 'customer_id'),
+         ('sessions', 'id', 'log', 'session_id'),
+         ('products', 'id', 'log', 'product_id')])
 
     return es
 

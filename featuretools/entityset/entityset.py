@@ -19,7 +19,7 @@ from featuretools.utils.plot_utils import (
     get_graphviz_format,
     save_graph
 )
-from featuretools.utils.wrangle import _check_timedelta
+from featuretools.utils.wrangle import _check_time_type, _check_timedelta
 
 ks = import_or_none('databricks.koalas')
 
@@ -97,10 +97,9 @@ class EntitySet(object):
                                        make_index=make_index)
 
         for relationship in relationships:
-            parent_variable = self[relationship[0]][relationship[1]]
-            child_variable = self[relationship[2]][relationship[3]]
-            self.add_relationship(Relationship(parent_variable,
-                                               child_variable))
+            parent_df, parent_column, child_df, child_column = relationship
+            self.add_relationship(parent_df, parent_column, child_df, child_column)
+
         self.reset_data_description()
 
     def __sizeof__(self):
@@ -225,8 +224,8 @@ class EntitySet(object):
 
         for r in self.relationships:
             repr_out += u"\n    %s.%s -> %s.%s" % \
-                (r._child_entity_id, r._child_variable_id,
-                 r._parent_entity_id, r._parent_variable_id)
+                (r._child_dataframe_id, r._child_column_id,
+                 r._parent_dataframe_id, r._parent_column_id)
 
         return repr_out
 
@@ -234,18 +233,46 @@ class EntitySet(object):
         """Add multiple new relationships to a entityset
 
         Args:
-            relationships (list[Relationship]) : List of new
-                relationships.
+            relationships (list[tuple(str, str, str, str)] or list[Relationship]) : List of
+                new relationships to add. Relationships are specified either as a :class:`.Relationship`
+                object or a four element tuple identifying the parent and child columns:
+                (parent_dataframe_id, parent_column_id, child_dataframe_id, child_column_id)
         """
-        return [self.add_relationship(r) for r in relationships][-1]
+        for rel in relationships:
+            if isinstance(rel, Relationship):
+                self.add_relationship(relationship=rel)
+            else:
+                self.add_relationship(*rel)
+        return self
 
-    def add_relationship(self, relationship):
-        """Add a new relationship between entities in the entityset
+    def add_relationship(self,
+                         parent_dataframe_id=None,
+                         parent_column_id=None,
+                         child_dataframe_id=None,
+                         child_column_id=None,
+                         relationship=None):
+        """Add a new relationship between entities in the entityset. Relationships can be specified
+        by passing dataframe and columns ids or by passing a :class:`.Relationship` object.
 
         Args:
-            relationship (Relationship) : Instance of new
-                relationship to be added.
+            parent_dataframe_id (str): Name of the parent dataframe in the EntitySet. Must be specified
+                if relationship is not.
+            parent_column_id (str): Name of the parent column. Must be specified if relationship is not.
+            child_dataframe_id (str): Name of the child dataframe in the EntitySet. Must be specified
+                if relationship is not.
+            child_column_id (str): Name of the child column. Must be specified if relationship is not.
+            relationship (Relationship): Instance of new relationship to be added. Must be specified
+                if dataframe and column ids are not supplied.
         """
+        if relationship and (parent_dataframe_id or parent_column_id or child_dataframe_id or child_column_id):
+            raise ValueError("Cannot specify dataframe and column id values and also supply a Relationship")
+
+        if not relationship:
+            relationship = Relationship(self,
+                                        parent_dataframe_id,
+                                        parent_column_id,
+                                        child_dataframe_id,
+                                        child_column_id)
         if relationship in self.relationships:
             warnings.warn(
                 "Not adding duplicate relationship: " + str(relationship))
@@ -254,13 +281,13 @@ class EntitySet(object):
         # _operations?
 
         # this is a new pair of entities
-        child_e = relationship.child_entity
-        child_v = relationship.child_variable.id
+        child_e = relationship.child_dataframe
+        child_v = relationship.child_column.id
         if child_e.index == child_v:
-            msg = "Unable to add relationship because child variable '{}' in '{}' is also its index"
+            msg = "Unable to add relationship because child column '{}' in '{}' is also its index"
             raise ValueError(msg.format(child_v, child_e.id))
-        parent_e = relationship.parent_entity
-        parent_v = relationship.parent_variable.id
+        parent_e = relationship.parent_dataframe
+        parent_v = relationship.parent_column.id
         if not isinstance(child_e[child_v], vtypes.Id):
             child_e.convert_variable_type(variable_id=child_v,
                                           new_type=vtypes.Id,
@@ -290,6 +317,10 @@ class EntitySet(object):
         self.relationships.append(relationship)
         self.reset_data_description()
         return self
+
+    def set_secondary_time_index(self, entity, secondary_time_index):
+        self._check_secondary_time_index(entity, secondary_time_index)
+        entity.secondary_time_index = secondary_time_index
 
     ###########################################################################
     #   Relationship access/helper methods  ###################################
@@ -346,7 +377,7 @@ class EntitySet(object):
         yield start_entity_id, []
 
         for relationship in self.get_forward_relationships(start_entity_id):
-            next_entity = relationship.parent_entity.id
+            next_entity = relationship.parent_dataframe.id
             # Copy seen entities for each next node to allow multiple paths (but
             # not cycles).
             descendants = self._forward_entity_paths(next_entity, seen_entities.copy())
@@ -364,7 +395,7 @@ class EntitySet(object):
         Yields a tuple of (descendent_id, path from entity_id to descendant).
         """
         for relationship in self.get_forward_relationships(entity_id):
-            parent_eid = relationship.parent_entity.id
+            parent_eid = relationship.parent_dataframe.id
             direct_path = RelationshipPath([(True, relationship)])
             yield parent_eid, direct_path
 
@@ -384,7 +415,7 @@ class EntitySet(object):
         Yields a tuple of (descendent_id, path from entity_id to descendant).
         """
         for relationship in self.get_backward_relationships(entity_id):
-            child_eid = relationship.child_entity.id
+            child_eid = relationship.child_dataframe.id
             direct_path = RelationshipPath([(False, relationship)])
             yield child_eid, direct_path
 
@@ -402,7 +433,7 @@ class EntitySet(object):
         Returns:
             list[:class:`.Relationship`]: List of forward relationships.
         """
-        return [r for r in self.relationships if r.child_entity.id == entity_id]
+        return [r for r in self.relationships if r.child_dataframe.id == entity_id]
 
     def get_backward_relationships(self, entity_id):
         """
@@ -414,7 +445,7 @@ class EntitySet(object):
         Returns:
             list[:class:`.Relationship`]: list of backward relationships
         """
-        return [r for r in self.relationships if r.parent_entity.id == entity_id]
+        return [r for r in self.relationships if r.parent_dataframe.id == entity_id]
 
     def has_unique_forward_path(self, start_entity_id, end_entity_id):
         """
@@ -521,6 +552,11 @@ class EntitySet(object):
             secondary_time_index=secondary_time_index,
             already_sorted=already_sorted,
             make_index=make_index)
+
+        if entity.time_index is not None:
+            self._check_uniform_time_index(entity)
+            self._check_secondary_time_index(entity)
+
         self.entity_dict[entity.id] = entity
         self.reset_data_description()
         return self
@@ -700,7 +736,7 @@ class EntitySet(object):
 
         new_entity = self.entity_dict[new_entity_id]
         base_entity.convert_variable_type(base_entity_index, vtypes.Id, convert_data=False)
-        self.add_relationship(Relationship(new_entity[index], base_entity[base_entity_index]))
+        self.add_relationship(new_entity.id, index, base_entity.id, base_entity_index)
         self.reset_data_description()
         return self
 
@@ -750,8 +786,12 @@ class EntitySet(object):
             if (entity.last_time_index is not None or
                     other[entity.id].last_time_index is not None):
                 has_last_time_index.append(entity.id)
-            combined_es[entity.id].update_data(df=combined_df,
-                                               recalculate_last_time_indexes=False)
+
+            combined_es.update_dataframe(
+                entity_id=entity.id,
+                df=combined_df,
+                recalculate_last_time_indexes=False,
+            )
 
         combined_es.add_last_time_indexes(updated_entities=has_last_time_index)
         self.reset_data_description()
@@ -773,8 +813,8 @@ class EntitySet(object):
         children = defaultdict(list)  # parent --> child mapping
         child_vars = defaultdict(dict)
         for r in self.relationships:
-            children[r.parent_entity.id].append(r.child_entity)
-            child_vars[r.parent_entity.id][r.child_entity.id] = r.child_variable
+            children[r.parent_dataframe.id].append(r.child_dataframe)
+            child_vars[r.parent_dataframe.id][r.child_dataframe.id] = r.child_column
 
         updated_entities = updated_entities or []
         if updated_entities:
@@ -909,19 +949,65 @@ class EntitySet(object):
     #  Other ###############################################
     ###########################################################################
 
-    def add_interesting_values(self, max_values=5, verbose=False):
+    def add_interesting_values(self, max_values=5, verbose=False, entity_id=None):
         """Find interesting values for categorical variables, to be used to generate "where" clauses
 
         Args:
             max_values (int) : Maximum number of values per variable to add.
             verbose (bool) : If True, print summary of interesting values found.
+            entity_id (str) : The Entity for which to add interesting values. If not specified
+                interesting values will be added for all Entities.
 
         Returns:
             None
 
         """
-        for entity in self.entities:
-            entity.add_interesting_values(max_values=max_values, verbose=verbose)
+        if entity_id:
+            entities = [self[entity_id]]
+        else:
+            entities = self.entities
+        for entity in entities:
+            for variable in entity.variables:
+                # some heuristics to find basic 'where'-able variables
+                if isinstance(variable, vtypes.Discrete):
+                    variable.interesting_values = pd.Series(dtype=variable.entity.df[variable.id].dtype)
+
+                    # TODO - consider removing this constraints
+                    # don't add interesting values for entities in relationships
+                    skip = False
+                    for r in self.relationships:
+                        if variable in [r.child_column, r.parent_column]:
+                            skip = True
+                            break
+                    if skip:
+                        continue
+
+                    counts = entity.df[variable.id].value_counts()
+
+                    # find how many of each unique value there are; sort by count,
+                    # and add interesting values to each variable
+                    total_count = np.sum(counts)
+                    counts[:] = counts.sort_values()[::-1]
+                    for i in range(min(max_values, len(counts.index))):
+                        idx = counts.index[i]
+
+                        if len(counts.index) < 25:
+                            if verbose:
+                                msg = "Variable {}: Marking {} as an "
+                                msg += "interesting value"
+                                logger.info(msg.format(variable.id, idx))
+                            variable.interesting_values = variable.interesting_values.append(pd.Series([idx]))
+                        else:
+                            fraction = counts[idx] / total_count
+                            if fraction > 0.05 and fraction < 0.95:
+                                if verbose:
+                                    msg = "Variable {}: Marking {} as an "
+                                    msg += "interesting value"
+                                    logger.info(msg.format(variable.id, idx))
+                                variable.interesting_values = variable.interesting_values.append(pd.Series([idx]))
+                            else:
+                                break
+
         self.reset_data_description()
 
     def plot(self, to_file=None):
@@ -959,13 +1045,13 @@ class EntitySet(object):
         # Draw relationships
         for rel in self.relationships:
             # Display the key only once if is the same for both related entities
-            if rel._parent_variable_id == rel._child_variable_id:
-                label = rel._parent_variable_id
+            if rel._parent_column_id == rel._child_column_id:
+                label = rel._parent_column_id
             else:
-                label = '%s -> %s' % (rel._parent_variable_id,
-                                      rel._child_variable_id)
+                label = '%s -> %s' % (rel._parent_column_id,
+                                      rel._child_column_id)
 
-            graph.edge(rel._child_entity_id, rel._parent_entity_id, xlabel=label)
+            graph.edge(rel._child_dataframe_id, rel._parent_column_id, xlabel=label)
 
         if to_file:
             save_graph(graph, to_file, format_)
@@ -1089,6 +1175,69 @@ class EntitySet(object):
             df = df[columns]
 
         return df
+
+    def update_dataframe(self, entity_id, df, already_sorted=False, recalculate_last_time_indexes=True):
+        '''Update entity's internal dataframe, optionaly making sure data is sorted,
+        reference indexes to other entities are consistent, and last_time_indexes
+        are consistent.
+        '''
+        variables = self[entity_id].variables
+        if len(df.columns) != len(variables):
+            raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(df.columns),
+                                                                                          len(variables)))
+        for v in variables:
+            if v.id not in df.columns:
+                raise ValueError("Updated dataframe is missing new {} column".format(v.id))
+
+        # Make sure column ordering matches variable ordering
+        self[entity_id].df = df[[v.id for v in variables]]
+        self[entity_id].set_index(self[entity_id].index)
+        if self[entity_id].time_index is not None:
+            self[entity_id].set_time_index(self[entity_id].time_index, already_sorted=already_sorted)
+            self._check_uniform_time_index(self[entity_id])
+
+        self.set_secondary_time_index(self[entity_id], self[entity_id].secondary_time_index)
+        if recalculate_last_time_indexes and self[entity_id].last_time_index is not None:
+            self.add_last_time_indexes(updated_entities=[self[entity_id].id])
+        self.reset_data_description()
+
+    def _check_time_indexes(self):
+        for entity in self.entity_dict.values():
+            self._check_uniform_time_index(entity)
+            self._check_secondary_time_index(entity)
+
+    def _check_secondary_time_index(self, entity, secondary_time_index=None):
+        secondary_time_index = secondary_time_index or getattr(entity, 'secondary_time_index', {})
+        for time_index, columns in secondary_time_index.items():
+            self._check_uniform_time_index(entity, variable_id=time_index)
+            if time_index not in columns:
+                columns.append(time_index)
+
+    def _check_uniform_time_index(self, entity, variable_id=None):
+        variable_id = variable_id or entity.time_index
+        if variable_id is None:
+            return
+
+        time_type = self._get_time_type(entity, variable_id)
+        if self.time_type is None:
+            self.time_type = time_type
+        elif self.time_type != time_type:
+            info = "%s time index is %s type which differs from other entityset time indexes"
+            raise TypeError(info % (entity.id, time_type))
+
+    def _get_time_type(self, entity, variable_id=None):
+        variable_id = variable_id or entity.time_index
+        if not isinstance(entity.df, pd.DataFrame) or entity.df.empty:
+            dtype = entity[variable_id]._default_pandas_dtype
+            time_to_check = vtypes.DEFAULT_DTYPE_VALUES[dtype]
+        else:
+            time_to_check = entity.df[variable_id].iloc[0]
+
+        time_type = _check_time_type(time_to_check)
+        if time_type is None:
+            info = "%s time index not recognized as numeric or datetime"
+            raise TypeError(info % entity.id)
+        return time_type
 
 
 def _vals_to_series(instance_vals, variable_id):

@@ -661,7 +661,7 @@ def test_training_window_recent_time_index(pd_es):
     df.index = df.index.astype("category")
     df["id"] = df["id"].astype("category")
 
-    pd_es['customers'].update_data(df=df, recalculate_last_time_indexes=False)
+    pd_es.update_dataframe(entity_id='customers', df=df, recalculate_last_time_indexes=False)
     pd_es.add_last_time_indexes()
 
     property_feature = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['customers'], primitive=Count)
@@ -1884,3 +1884,13 @@ def test_no_relationships(entities):
     fm_1 = to_pandas(fm_1, index='id')
     fm_2 = to_pandas(fm_2, index='id')
     assert fm_1.equals(fm_2)
+
+
+def test_cfm_with_invalid_time_index(es):
+    features = ft.dfs(entityset=es, target_entity="customers", features_only=True)
+    es['customers'].convert_variable_type('signup_date', ft.variable_types.Numeric)
+    match = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> "
+    match += "type which differs from other entityset time indexes"
+    with pytest.raises(TypeError, match=match):
+        calculate_feature_matrix(features=features, entityset=es)
+    es['customers'].convert_variable_type('signup_date', ft.variable_types.DatetimeTimeIndex)

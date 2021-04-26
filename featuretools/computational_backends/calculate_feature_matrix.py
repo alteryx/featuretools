@@ -158,6 +158,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     target_entity = entityset[features[0].entity.id]
 
     cutoff_time = _validate_cutoff_time(cutoff_time, target_entity)
+    entityset._check_time_indexes()
 
     if isinstance(cutoff_time, pd.DataFrame):
         if instance_ids:
@@ -702,13 +703,13 @@ def _add_approx_entity_index_var(es, target_entity_id, cutoffs, path):
     last_parent_var = es[target_entity_id].index
 
     for _, relationship in path:
-        child_vars = [last_parent_var, relationship.child_variable.id]
-        child_df = es[relationship.child_entity.id].df[child_vars]
+        child_vars = [last_parent_var, relationship.child_column.id]
+        child_df = es[relationship.child_dataframe.id].df[child_vars]
 
-        # Rename relationship.child_variable to include the variables we have
+        # Rename relationship.child_column to include the variables we have
         # joined through.
-        new_var_name = '%s.%s' % (last_child_var, relationship.child_variable.id)
-        to_rename = {relationship.child_variable.id: new_var_name}
+        new_var_name = '%s.%s' % (last_child_var, relationship.child_column.id)
+        to_rename = {relationship.child_column.id: new_var_name}
         child_df = child_df.rename(columns=to_rename)
         cutoffs = cutoffs.merge(child_df,
                                 left_on=last_child_var,
@@ -716,7 +717,7 @@ def _add_approx_entity_index_var(es, target_entity_id, cutoffs, path):
 
         # These will be used in the next iteration.
         last_child_var = new_var_name
-        last_parent_var = relationship.parent_variable.id
+        last_parent_var = relationship.parent_column.id
 
     return cutoffs, new_var_name
 

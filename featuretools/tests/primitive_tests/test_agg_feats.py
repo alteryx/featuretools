@@ -333,7 +333,7 @@ def test_name_with_multiple_possible_paths(diamond_es):
 
 def test_copy(games_es):
     home_games = next(r for r in games_es.relationships
-                      if r.child_variable.id == 'home_team_id')
+                      if r.child_column.id == 'home_team_id')
     path = RelationshipPath([(False, home_games)])
     feat = ft.AggregationFeature(games_es['games']['home_team_score'],
                                  games_es['teams'],

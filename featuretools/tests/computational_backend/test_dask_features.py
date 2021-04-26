@@ -26,5 +26,5 @@ def test_tokenize_entityset(pd_es, int_es):
                            columns=['cohort', 'cohort_name', 'cohort_end'],
                            index=[2])
     more_cohorts = cohorts_df.append(new_row, ignore_index=True, sort=True)
-    dupe['cohorts'].update_data(more_cohorts)
+    dupe.update_dataframe(entity_id='cohorts', df=more_cohorts)
     assert tokenize(pd_es) == tokenize(dupe)

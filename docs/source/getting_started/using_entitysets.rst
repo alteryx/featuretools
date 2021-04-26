@@ -88,9 +88,7 @@ We want to relate these two entities by the columns called "product_id" in each 
 
 .. ipython:: python
 
-    new_relationship = ft.Relationship(es["products"]["product_id"],
-                                       es["transactions"]["product_id"])
-    es = es.add_relationship(new_relationship)
+    es = es.add_relationship("products", "product_id", "transactions", "product_id")
     es
 
 Now, we see the relationship has been added to our entity set.
