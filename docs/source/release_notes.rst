@@ -15,7 +15,7 @@ Future Release
         * Update Spark config in test fixtures and docs (:pr:`1387`, :pr:`1389`)
         * Don't cancel other CI jobs if one fails (:pr:`1386`)
         * Update boto3 and urllib3 version requirements (:pr:`1394`)
-        * Change from GitHub PAT to auto generated GitHub Token for dependency checker (:pr:`1402`, :pr:`1407`)
+        * Update token for dependency checker PR creation (:pr:`1402`, :pr:`1407`, :pr:`1409`)
         
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
