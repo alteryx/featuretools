@@ -125,7 +125,8 @@ class EntitySet(object):
         for df_id, df in self.dataframe_dict.items():
             if df_id not in other.dataframe_dict:
                 return False
-            if not df.__eq__(other[df_id], deep=deep):
+            # --> Behavior change: should we allow deep keywork here??
+            if not df.ww.__eq__(other[df_id].ww):
                 return False
         for r in self.relationships:
             if r not in other.relationships:
@@ -660,6 +661,7 @@ class EntitySet(object):
                             .format(type(additional_columns)))
 
         if len(additional_columns) != len(set(additional_columns)):
+            # --> change all of these to use columns instead of variables
             raise ValueError("'additional_columns' contains duplicate variables. All variables must be unique.")
 
         if not isinstance(copy_columns, list):
