@@ -1274,12 +1274,12 @@ class EntitySet(object):
         time_type = self._get_time_type(dataframe, column_id)
         if self.time_type is None:
             self.time_type = time_type
+            # --> might be worth storing all ltype and semantic tag info as time type and defining an "is_subset" function here
         elif self.time_type != time_type:
             info = "%s time index is %s type which differs from other entityset time indexes"
             raise TypeError(info % (dataframe.ww.name, time_type))
 
     def _get_time_type(self, dataframe, column_id=None):
-        # --> is there any reason we can't just use Woodwork typing for is_numeric or is_datetime?
         column_id = column_id or dataframe.ww.time_index
 
         if not isinstance(dataframe, pd.DataFrame) or dataframe.empty:
@@ -1288,9 +1288,13 @@ class EntitySet(object):
         else:
             time_to_check = dataframe[column_id].iloc[0]
 
-        # --> by using column schema typing this might help us later on???
+        # --> try and find a way to test this case!!!!
+        if dataframe.ww.schema is None:
+            column_schema = dataframe[column_id].head().ww.init()
+        else:
+            column_schema = dataframe.ww.columns[column_id]
+
         time_type = None
-        column_schema = dataframe.ww.columns[column_id]
         if column_schema.is_numeric:
             time_type = 'numeric'
         elif column_schema.is_datetime:

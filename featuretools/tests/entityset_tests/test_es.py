@@ -926,29 +926,29 @@ def test_checks_time_type_setting_time_index(es):
 
 def test_checks_time_type_setting_secondary_time_index(es):
     # entityset is timestamp time type
-    assert es.time_type == variable_types.DatetimeTimeIndex
+    assert es.time_type == ltypes.Datetime
     # add secondary index that is timestamp type
     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
                   'cancel_date': ['cancel_date', 'cancel_reason']}
     es.set_secondary_time_index(es["customers"], new_2nd_ti)
-    assert es.time_type == variable_types.DatetimeTimeIndex
+    assert es.time_type == ltypes.Datetime
     # add secondary index that is numeric type
     new_2nd_ti = {'age': ['age', 'loves_ice_cream']}
 
-    error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
+    error_text = "customers time index is numeric type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
         es.set_secondary_time_index(es["customers"], new_2nd_ti)
     # add secondary index that is non-time type
     new_2nd_ti = {'favorite_quote': ['favorite_quote', 'loves_ice_cream']}
 
-    error_text = r"data type (\"|')(All members of the working classes must seize the means of production.|test)(\"|') not understood"
+    error_text = 'customers time index not recognized as numeric or datetime'
     with pytest.raises(TypeError, match=error_text):
         es.set_secondary_time_index(es["customers"], new_2nd_ti)
     # add mismatched pair of secondary time indexes
     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
                   'age': ['age', 'loves_ice_cream']}
 
-    error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
+    error_text = "customers time index is numeric type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
         es.set_secondary_time_index(es["customers"], new_2nd_ti)
 
@@ -969,21 +969,21 @@ def test_checks_time_type_setting_secondary_time_index(es):
     }
     relationships = [("cards", "id", "transactions", "card_id")]
     card_es = EntitySet("fraud", entities, relationships)
-    assert card_es.time_type == variable_types.NumericTimeIndex
+    assert card_es.time_type == 'numeric'
     # add secondary index that is numeric time type
     new_2nd_ti = {'fraud_decision_time': ['fraud_decision_time', 'fraud']}
     card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
-    assert card_es.time_type == variable_types.NumericTimeIndex
+    assert card_es.time_type == 'numeric'
     # add secondary index that is timestamp type
     new_2nd_ti = {'transaction_date': ['transaction_date', 'fraud']}
 
-    error_text = "transactions time index is <class 'featuretools.variable_types.variable.DatetimeTimeIndex'> type which differs from other entityset time indexes"
+    error_text = "transactions time index is Datetime type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
         card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
     # add secondary index that is non-time type
     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud']}
 
-    error_text = r"data type ('|\")City A('|\") not understood"
+    error_text = 'transactions time index not recognized as numeric or datetime'
     with pytest.raises(TypeError, match=error_text):
         card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
     # add mixed secondary time indexes
