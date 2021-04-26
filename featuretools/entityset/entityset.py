@@ -843,20 +843,20 @@ class EntitySet(object):
     #             recalculate_last_time_indexes=False,
     #         )
 
-    #     combined_es.add_last_time_indexes(updated_entities=has_last_time_index)
+    #     combined_es.add_last_time_indexes(updated_dataframes=has_last_time_index)
     #     self.reset_data_description()
     #     return combined_es
 
     ###########################################################################
     #  Indexing methods  ###############################################
     ###########################################################################
-    def add_last_time_indexes(self, updated_entities=None):
+    def add_last_time_indexes(self, updated_dataframes=None):
         """
         Calculates the last time index values for each entity (the last time
         an instance or children of that instance were observed).  Used when
         calculating features using training windows
         Args:
-            updated_entities (list[str]): List of entity ids to update last_time_index for
+            updated_dataframes (list[str]): List of entity ids to update last_time_index for
                 (will update all parents of those entities as well)
         """
         # Generate graph of entities to find leaf entities
@@ -866,115 +866,116 @@ class EntitySet(object):
             children[r.parent_dataframe.ww.name].append(r.child_dataframe)
             child_cols[r.parent_dataframe.ww.name][r.child_dataframe.ww.name] = r.child_column
 
-        updated_entities = updated_entities or []
-        if updated_entities:
-            # find parents of updated_entities
-            parent_queue = updated_entities[:]
+        updated_dataframes = updated_dataframes or []
+        if updated_dataframes:
+            # find parents of updated_dataframes
+            parent_queue = updated_dataframes[:]
             parents = set()
             while len(parent_queue):
-                e = parent_queue.pop(0)
-                if e in parents:
+                df_name = parent_queue.pop(0)
+                if df_name in parents:
                     continue
-                parents.add(e)
+                parents.add(df_name)
 
-                for parent_id, _ in self.get_forward_entities(e):
+                for parent_id, _ in self.get_forward_entities(df_name):
                     parent_queue.append(parent_id)
 
             queue = [self[p] for p in parents]
             to_explore = parents
         else:
-            to_explore = set([df.ww.name for df in self.dataframes[:]])
+            to_explore = set(self.dataframe_dict.keys())
             queue = self.dataframes[:]
 
         explored = set()
 
-        for e in queue:
-            e.ww.metadata['last_time_index'] = None
+        for df in queue:
+            df.ww.metadata['last_time_index'] = None
 
         # We will explore children of entities on the queue,
         # which may not be in the to_explore set. Therefore,
         # we check whether all elements of to_explore are in
         # explored, rather than just comparing length
         while not to_explore.issubset(explored):
-            entity = queue.pop(0)
+            dataframe = queue.pop(0)
 
-            if entity.ww.metadata.get('last_time_index') is None:
-                if entity.ww.time_index is not None:
-                    lti = entity[entity.ww.time_index].copy()
-                    if isinstance(entity, dd.DataFrame):
+            if dataframe.ww.metadata.get('last_time_index') is None:
+                if dataframe.ww.time_index is not None:
+                    # --> not sure if we want to maintain the ww typing info and if so we prob want time index tag???
+                    lti = dataframe.ww[dataframe.ww.time_index].copy()
+                    if isinstance(dataframe, dd.DataFrame):
                         # The current Dask implementation doesn't set the index of the dataframe
-                        # to the entity's index, so we have to do it manually here
-                        lti.index = entity[entity.ww.index].copy()
+                        # to the dataframe's index, so we have to do it manually here
+                        lti.index = dataframe[dataframe.ww.index].copy()
                 else:
-                    lti = entity[entity.ww.index].copy()
-                    if isinstance(entity, dd.DataFrame):
-                        lti.index = entity[entity.ww.index].copy()
+                    lti = dataframe.ww[dataframe.ww.index].copy()
+                    if isinstance(dataframe, dd.DataFrame):
+                        lti.index = dataframe[dataframe.ww.index].copy()
                         lti = lti.apply(lambda x: None)
-                    elif is_instance(entity, ks, 'DataFrame'):
+                    elif is_instance(dataframe, ks, 'DataFrame'):
                         lti = ks.Series(pd.Series(index=lti.to_list(), name=lti.name))
                     else:
                         lti[:] = None
-                entity.ww.metadata['last_time_index'] = lti
+                # --> not totally confident that lti is what we want here :/ this is why we cant do astype later
+                dataframe.ww.metadata['last_time_index'] = lti
 
-            if entity.ww.name in children:
-                child_entities = children[entity.ww.name]
+            if dataframe.ww.name in children:
+                child_dataframes = children[dataframe.ww.name]
 
                 # if all children not explored, skip for now
-                if not set([df.ww.name for df in child_entities]).issubset(explored):
-                    # Now there is a possibility that a child entity
-                    # was not explicitly provided in updated_entities,
-                    # and never made it onto the queue. If updated_entities
+                if not set([df.ww.name for df in child_dataframes]).issubset(explored):
+                    # Now there is a possibility that a child dataframe
+                    # was not explicitly provided in updated_dataframes,
+                    # and never made it onto the queue. If updated_dataframes
                     # is None then we just load all entities onto the queue
                     # so we didn't need this logic
-                    for df in child_entities:
+                    for df in child_dataframes:
                         if df.ww.name not in explored and df.ww.name not in [q.ww.name for q in queue]:
                             queue.append(e)
-                    queue.append(entity)
+                    queue.append(dataframe)
                     continue
 
                 # updated last time from all children
-                for child_e in child_entities:
+                for child_df in child_dataframes:
                     # TODO: Figure out if Dask code related to indexes is important for Koalas
-                    if child_e.ww.metadata.get('last_time_index') is None:
+                    if child_df.ww.metadata.get('last_time_index') is None:
                         continue
-                    # --> should be a colschema?
-                    link_var = child_cols[entity.ww.name][child_e.ww.name].name
+                    link_col = child_cols[dataframe.ww.name][child_df.ww.name].name
 
-                    lti_is_dask = isinstance(child_e.ww.metadata.get('last_time_index'), dd.Series)
-                    lti_is_koalas = is_instance(child_e.ww.metadata.get('last_time_index'), ks, 'Series')
+                    lti_is_dask = isinstance(child_df.ww.metadata.get('last_time_index'), dd.Series)
+                    lti_is_koalas = is_instance(child_df.ww.metadata.get('last_time_index'), ks, 'Series')
                     if lti_is_dask or lti_is_koalas:
-                        to_join = child_e.df[link_var]
+                        to_join = child_df[link_col]
                         if lti_is_dask:
                             # --> is this a df index setting or is it ww index?
-                            to_join.index = child_e[child_e.ww.index]
+                            to_join.index = child_df[child_df.ww.index]
 
-                        lti_df = child_e.ww.metadata.get('last_time_index').to_frame(name='last_time').join(
-                            to_join.to_frame(name=entity.ww.index)
+                        lti_df = child_df.ww.metadata.get('last_time_index').to_frame(name='last_time').join(
+                            to_join.to_frame(name=dataframe.ww.index)
                         )
 
                         if lti_is_dask:
                             new_index = lti_df.index.copy()
                             new_index.name = None
                             lti_df.index = new_index
-                        lti_df = lti_df.groupby(lti_df[entity.index]).agg('max')
+                        lti_df = lti_df.groupby(lti_df[dataframe.ww.index]).agg('max')
 
-                        lti_df = entity.ww.metadata.get('last_time_index').to_frame(name='last_time_old').join(lti_df)
+                        lti_df = dataframe.ww.metadata.get('last_time_index').to_frame(name='last_time_old').join(lti_df)
 
                     else:
-                        lti_df = pd.DataFrame({'last_time': child_e.ww.metadata.get('last_time_index'),
-                                               entity.ww.index: child_e[link_var]})
+                        lti_df = pd.DataFrame({'last_time': child_df.ww.metadata.get('last_time_index'),
+                                               dataframe.ww.index: child_df[link_col]})
 
                         # sort by time and keep only the most recent
-                        lti_df.sort_values(['last_time', entity.ww.index],
+                        lti_df.sort_values(['last_time', dataframe.ww.index],
                                            kind="mergesort", inplace=True)
 
-                        lti_df.drop_duplicates(entity.ww.index,
+                        lti_df.drop_duplicates(dataframe.ww.index,
                                                keep='last',
                                                inplace=True)
 
-                        lti_df.set_index(entity.ww.index, inplace=True)
-                        lti_df = lti_df.reindex(entity.ww.metadata.get('last_time_index').index)
-                        lti_df['last_time_old'] = entity.ww.metadata.get('last_time_index')
+                        lti_df.set_index(dataframe.ww.index, inplace=True)
+                        lti_df = lti_df.reindex(dataframe.ww.metadata.get('last_time_index').index)
+                        lti_df['last_time_old'] = dataframe.ww.metadata.get('last_time_index')
                     if not (lti_is_dask or lti_is_koalas) and lti_df.empty:
                         # Pandas errors out if it tries to do fillna and then max on an empty dataframe
                         lti_df = pd.Series()
@@ -986,16 +987,15 @@ class EntitySet(object):
                             lti_df = lti_df.max(axis=1)
                         else:
                             lti_df['last_time'] = lti_df['last_time'].astype('datetime64[ns]')
-                            print('lti_df', lti_df['last_time_old'])
                             lti_df['last_time_old'] = lti_df['last_time_old'].astype('datetime64[ns]')
                             lti_df = lti_df.fillna(pd.to_datetime('1800-01-01 00:00')).max(axis=1)
                             lti_df = lti_df.replace(pd.to_datetime('1800-01-01 00:00'), pd.NaT)
                     # lti_df = lti_df.apply(lambda x: x.dropna().max(), axis=1)
 
-                    entity.ww.metadata['last_time_index'] = lti
-                    entity.ww.metadata.get('last_time_index').name = 'last_time'
+                    dataframe.ww.metadata['last_time_index'] = lti
+                    dataframe.ww.metadata.get('last_time_index').name = 'last_time'
 
-            explored.add(entity.ww.name)
+            explored.add(dataframe.ww.name)
         self.reset_data_description()
 
     # ###########################################################################
@@ -1256,7 +1256,7 @@ class EntitySet(object):
         df_metadata = self[dataframe_id].ww.metadata
         self.set_secondary_time_index(self[dataframe_id], df_metadata.get('secondary_time_index'))
         if recalculate_last_time_indexes and df_metadata.get('last_time_index') is not None:
-            self.add_last_time_indexes(updated_entities=[self[dataframe_id].ww.name])
+            self.add_last_time_indexes(updated_dataframes=[self[dataframe_id].ww.name])
         self.reset_data_description()
 
     def _check_time_indexes(self):
