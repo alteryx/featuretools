@@ -3,6 +3,7 @@ from datetime import datetime
 import pandas as pd
 import pytest
 from dask import dataframe as dd
+import woodwork.logical_types as ltypes
 
 import featuretools as ft
 from featuretools.tests.testing_utils import to_pandas
@@ -13,9 +14,9 @@ ks = import_or_none('databricks.koalas')
 
 @pytest.fixture
 def values_es(es):
-    es.normalize_entity('log', 'values', 'value',
-                        make_time_index=True,
-                        new_entity_time_index="value_time")
+    es.normalize_dataframe('log', 'values', 'value',
+                           make_time_index=True,
+                           new_dataframe_time_index="value_time")
     return es
 
 
@@ -70,11 +71,11 @@ def extra_session_df(es):
                   'device_type': 0,
                   'id': 6}
     row = pd.DataFrame(row_values, index=pd.Index([6], name='id'))
-    df = to_pandas(es['sessions'].df)
+    df = to_pandas(es['sessions'])
     df = df.append(row, sort=True).sort_index()
-    if isinstance(es['sessions'].df, dd.DataFrame):
+    if isinstance(es['sessions'], dd.DataFrame):
         df = dd.from_pandas(df, npartitions=3)
-    if ks and isinstance(es['sessions'].df, ks.DataFrame):
+    if ks and isinstance(es['sessions'], ks.DataFrame):
         df = ks.from_pandas(df)
     return df
 
@@ -83,9 +84,9 @@ class TestLastTimeIndex(object):
     def test_leaf(self, es):
         es.add_last_time_indexes()
         log = es['log']
-        assert len(log.last_time_index) == 17
-        log_df = to_pandas(log.df)
-        log_lti = to_pandas(log.last_time_index)
+        assert len(log.ww.metadata.get('last_time_index')) == 17
+        log_df = to_pandas(log)
+        log_lti = to_pandas(log.ww.metadata.get('last_time_index'))
         for v1, v2 in zip(log_lti, log_df['datetime']):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -93,27 +94,27 @@ class TestLastTimeIndex(object):
         es.add_last_time_indexes()
         stores = es['stores']
         true_lti = pd.Series([None for x in range(6)], dtype='datetime64[ns]')
-        assert len(true_lti) == len(stores.last_time_index)
-        stores_lti = to_pandas(stores.last_time_index)
+        assert len(true_lti) == len(stores.ww.metadata.get('last_time_index'))
+        stores_lti = to_pandas(stores.ww.metadata.get('last_time_index'))
         for v1, v2 in zip(stores_lti, true_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
-    # TODO: possible issue with either normalize_entity or add_last_time_indexes
+    # TODO: possible issue with either normalize_dataframe or add_last_time_indexes
     def test_parent(self, values_es, true_values_lti):
-        # test entity with time index and all instances in child entity
-        if not all(isinstance(entity.df, pd.DataFrame) for entity in values_es.entities):
-            pytest.xfail('possible issue with either normalize_entity or add_last_time_indexes')
+        # test dataframe with time index and all instances in child dataframe
+        if not all(isinstance(dataframe.df, pd.DataFrame) for dataframe in values_es.dataframes):
+            pytest.xfail('possible issue with either normalize_dataframe or add_last_time_indexes')
         values_es.add_last_time_indexes()
         values = values_es['values']
-        assert len(values.last_time_index) == 11
-        sorted_lti = to_pandas(values.last_time_index).sort_index()
+        assert len(values.ww.metadata.get('last_time_index')) == 11
+        sorted_lti = to_pandas(values.ww.metadata.get('last_time_index')).sort_index()
         for v1, v2 in zip(sorted_lti, true_values_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     # TODO: fails with Dask, tests needs to be reworked
     def test_parent_some_missing(self, values_es, true_values_lti):
-        # test entity with time index and not all instances have children
-        if not all(isinstance(entity.df, pd.DataFrame) for entity in values_es.entities):
+        # test dataframe with time index and not all instances have children
+        if not all(isinstance(dataframe, pd.DataFrame) for dataframe in values_es.dataframes):
             pytest.xfail('fails with Dask, tests needs to be reworked')
         values = values_es['values']
 
@@ -123,62 +124,62 @@ class TestLastTimeIndex(object):
                       'values_id': 11}
         # make sure index doesn't have same name as column to suppress pandas warning
         row = pd.DataFrame(row_values, index=pd.Index([11]))
-        df = values.df.append(row, sort=True)
+        df = values.append(row, sort=True)
         df = df[['value', 'value_time']].sort_values(by='value')
         df.index.name = 'values_id'
-        values_es.update_dataframe(entity_id='values', df=df)
+        values_es.update_dataframe(dataframe_id='values', df=df)
         values_es.add_last_time_indexes()
         # lti value should default to instance's time index
         true_values_lti[10] = pd.Timestamp("2011-04-10 11:10:02")
         true_values_lti[11] = pd.Timestamp("2011-04-10 11:10:03")
 
-        assert len(values.last_time_index) == 12
-        sorted_lti = values.last_time_index.sort_index()
+        assert len(values.ww.metadata.get('last_time_index')) == 12
+        sorted_lti = values.ww.metadata.get('last_time_index').sort_index()
         for v1, v2 in zip(sorted_lti, true_values_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_parent_no_time_index(self, es, true_sessions_lti):
-        # test entity without time index and all instances have children
+        # test dataframe without time index and all instances have children
         es.add_last_time_indexes()
         sessions = es['sessions']
-        assert len(sessions.last_time_index) == 6
-        sorted_lti = to_pandas(sessions.last_time_index).sort_index()
+        assert len(sessions.ww.metadata.get('last_time_index')) == 6
+        sorted_lti = to_pandas(sessions.ww.metadata.get('last_time_index')).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_parent_no_time_index_missing(self, es, extra_session_df,
                                           true_sessions_lti):
-        # test entity without time index and not all instance have children
+        # test dataframe without time index and not all instance have children
         sessions = es['sessions']
 
         # add session instance with no associated log instances
-        es.update_dataframe(entity_id='sessions', df=extra_session_df)
+        es.update_dataframe(dataframe_id='sessions', df=extra_session_df)
         es.add_last_time_indexes()
         # since sessions has no time index, default value is NaT
         true_sessions_lti[6] = pd.NaT
 
-        assert len(sessions.last_time_index) == 7
-        sorted_lti = to_pandas(sessions.last_time_index).sort_index()
+        assert len(sessions.ww.metadata.get('last_time_index')) == 7
+        sorted_lti = to_pandas(sessions.ww.metadata.get('last_time_index')).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_multiple_children(self, es, wishlist_df,
                                true_sessions_lti):
         # test all instances in both children
-        if isinstance(es.entities[0].df, dd.DataFrame):
+        if isinstance(es.dataframes[0], dd.DataFrame):
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
-        if ks and isinstance(es.entities[0].df, ks.DataFrame):
+        if ks and isinstance(es.dataframes[0], ks.DataFrame):
             wishlist_df = ks.from_pandas(wishlist_df)
-        variable_types = {'id': ft.variable_types.variable.Index,
-                          'session_id': ft.variable_types.variable.Numeric,
-                          'datetime': ft.variable_types.variable.DatetimeTimeIndex,
-                          'product_id': ft.variable_types.variable.Categorical}
-        es.entity_from_dataframe(entity_id="wishlist_log",
-                                 dataframe=wishlist_df,
-                                 index='id',
-                                 make_index=True,
-                                 time_index='datetime',
-                                 variable_types=variable_types)
+        logical_types = {'id': ft.variable_types.variable.Index,
+                         'session_id': ft.variable_types.variable.Numeric,
+                         'datetime': ft.variable_types.variable.DatetimeTimeIndex,
+                         'product_id': ft.variable_types.variable.Categorical}
+        es.add_dataframe(dataframe_id="wishlist_log",
+                         dataframe=wishlist_df,
+                         index='id',
+                         make_index=True,
+                         time_index='datetime',
+                         logical_types=logical_types)
         es.add_relationship('sessions', 'id', 'wishlist_log', 'session_id')
         es.add_last_time_indexes()
         sessions = es['sessions']
@@ -186,8 +187,8 @@ class TestLastTimeIndex(object):
         true_sessions_lti[1] = pd.Timestamp("2011-4-9 10:31:30")
         true_sessions_lti[3] = pd.Timestamp("2011-4-10 10:41:00")
 
-        assert len(sessions.last_time_index) == 6
-        sorted_lti = to_pandas(sessions.last_time_index).sort_index()
+        assert len(sessions.ww.metadata.get('last_time_index')) == 6
+        sorted_lti = to_pandas(sessions.ww.metadata.get('last_time_index')).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -198,28 +199,28 @@ class TestLastTimeIndex(object):
 
         # drop wishlist instance related to id 3 so it's only in log
         wishlist_df.drop(4, inplace=True)
-        if isinstance(es.entities[0].df, dd.DataFrame):
+        if isinstance(es.dataframes[0], dd.DataFrame):
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
-        if ks and isinstance(es.entities[0].df, ks.DataFrame):
+        if ks and isinstance(es.dataframes[0], ks.DataFrame):
             wishlist_df = ks.from_pandas(wishlist_df)
-        variable_types = {'id': ft.variable_types.variable.Index,
-                          'session_id': ft.variable_types.variable.Numeric,
-                          'datetime': ft.variable_types.variable.DatetimeTimeIndex,
-                          'product_id': ft.variable_types.variable.Categorical}
-        es.entity_from_dataframe(entity_id="wishlist_log",
-                                 dataframe=wishlist_df,
-                                 index='id',
-                                 make_index=True,
-                                 time_index='datetime',
-                                 variable_types=variable_types)
+        logical_types = {'id': ft.variable_types.variable.Index,
+                         'session_id': ft.variable_types.variable.Numeric,
+                         'datetime': ft.variable_types.variable.DatetimeTimeIndex,
+                         'product_id': ft.variable_types.variable.Categorical}
+        es.add_dataframe(dataframe_id="wishlist_log",
+                         dataframe=wishlist_df,
+                         index='id',
+                         make_index=True,
+                         time_index='datetime',
+                         logical_types=logical_types)
         es.add_relationship('sessions', 'id', 'wishlist_log', 'session_id')
         es.add_last_time_indexes()
 
         # now only session id 1 has newer event in wishlist_log
         true_sessions_lti[1] = pd.Timestamp("2011-4-9 10:31:30")
 
-        assert len(sessions.last_time_index) == 6
-        sorted_lti = to_pandas(sessions.last_time_index).sort_index()
+        assert len(sessions.ww.metadata.get('last_time_index')) == 6
+        sorted_lti = to_pandas(sessions.ww.metadata.get('last_time_index')).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -229,7 +230,7 @@ class TestLastTimeIndex(object):
         sessions = es['sessions']
 
         # add row to sessions so not all session instances are in log
-        es.update_dataframe(entity_id='sessions', df=extra_session_df)
+        es.update_dataframe(dataframe_id='sessions', df=extra_session_df)
 
         # add row to wishlist df so new session instance in in wishlist_log
         row_values = {'session_id': 6,
@@ -237,20 +238,20 @@ class TestLastTimeIndex(object):
                       'product_id': 'toothpaste'}
         row = pd.DataFrame(row_values, index=pd.RangeIndex(start=7, stop=8))
         df = wishlist_df.append(row)
-        if isinstance(es.entities[0].df, dd.DataFrame):
+        if isinstance(es.dataframes[0], dd.DataFrame):
             df = dd.from_pandas(df, npartitions=2)
-        if ks and isinstance(es.entities[0].df, ks.DataFrame):
+        if ks and isinstance(es.dataframes[0], ks.DataFrame):
             df = ks.from_pandas(df)
-        variable_types = {'id': ft.variable_types.variable.Index,
-                          'session_id': ft.variable_types.variable.Numeric,
-                          'datetime': ft.variable_types.variable.DatetimeTimeIndex,
-                          'product_id': ft.variable_types.variable.Categorical}
-        es.entity_from_dataframe(entity_id="wishlist_log",
-                                 dataframe=df,
-                                 index='id',
-                                 make_index=True,
-                                 time_index='datetime',
-                                 variable_types=variable_types)
+        logical_types = {'id': ft.variable_types.variable.Index,
+                         'session_id': ft.variable_types.variable.Numeric,
+                         'datetime': ft.variable_types.variable.DatetimeTimeIndex,
+                         'product_id': ft.variable_types.variable.Categorical}
+        es.add_dataframe(dataframe_id="wishlist_log",
+                         dataframe=df,
+                         index='id',
+                         make_index=True,
+                         time_index='datetime',
+                         logical_types=logical_types)
         es.add_relationship('sessions', 'id', 'wishlist_log', 'session_id')
         es.add_last_time_indexes()
 
@@ -259,8 +260,8 @@ class TestLastTimeIndex(object):
         true_sessions_lti[3] = pd.Timestamp("2011-4-10 10:41:00")
         true_sessions_lti[6] = pd.Timestamp("2011-04-11 11:11:11")
 
-        assert len(sessions.last_time_index) == 7
-        sorted_lti = to_pandas(sessions.last_time_index).sort_index()
+        assert len(sessions.ww.metadata.get('last_time_index')) == 7
+        sorted_lti = to_pandas(sessions.ww.metadata.get('last_time_index')).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -270,7 +271,7 @@ class TestLastTimeIndex(object):
         sessions = es['sessions']
 
         # add row to sessions so not all session instances are in log
-        es.update_dataframe(entity_id='sessions', df=extra_session_df)
+        es.update_dataframe(dataframe_id='sessions', df=extra_session_df)
 
         # add row to wishlist_log so extra session has child instance
         row_values = {'session_id': 6,
@@ -281,20 +282,20 @@ class TestLastTimeIndex(object):
 
         # drop instance 4 so wishlist_log does not have session id 3 instance
         df.drop(4, inplace=True)
-        if isinstance(es.entities[0].df, dd.DataFrame):
+        if isinstance(es.dataframes[0], dd.DataFrame):
             df = dd.from_pandas(df, npartitions=2)
-        if ks and isinstance(es.entities[0].df, ks.DataFrame):
+        if ks and isinstance(es.dataframes[0], ks.DataFrame):
             df = ks.from_pandas(df)
-        variable_types = {'id': ft.variable_types.variable.Index,
-                          'session_id': ft.variable_types.variable.Numeric,
-                          'datetime': ft.variable_types.variable.DatetimeTimeIndex,
-                          'product_id': ft.variable_types.variable.Categorical}
-        es.entity_from_dataframe(entity_id="wishlist_log",
-                                 dataframe=df,
-                                 index='id',
-                                 make_index=True,
-                                 time_index='datetime',
-                                 variable_types=variable_types)
+        logical_types = {'id': ft.variable_types.variable.Index,
+                         'session_id': ft.variable_types.variable.Numeric,
+                         'datetime': ft.variable_types.variable.DatetimeTimeIndex,
+                         'product_id': ft.variable_types.variable.Categorical}
+        es.add_dataframe(dataframe_id="wishlist_log",
+                         dataframe=df,
+                         index='id',
+                         make_index=True,
+                         time_index='datetime',
+                         logical_types=logical_types)
         es.add_relationship('sessions', 'id', 'wishlist_log', 'session_id')
         es.add_last_time_indexes()
 
@@ -302,8 +303,8 @@ class TestLastTimeIndex(object):
         true_sessions_lti[1] = pd.Timestamp("2011-4-9 10:31:30")
         true_sessions_lti[6] = pd.Timestamp("2011-04-11 11:11:11")
 
-        assert len(sessions.last_time_index) == 7
-        sorted_lti = to_pandas(sessions.last_time_index).sort_index()
+        assert len(sessions.ww.metadata.get('last_time_index')) == 7
+        sorted_lti = to_pandas(sessions.ww.metadata.get('last_time_index')).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -312,24 +313,24 @@ class TestLastTimeIndex(object):
         # test all instances in neither child
         sessions = es['sessions']
 
-        if isinstance(es.entities[0].df, dd.DataFrame):
+        if isinstance(es.dataframes[0], dd.DataFrame):
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
-        if ks and isinstance(es.entities[0].df, ks.DataFrame):
+        if ks and isinstance(es.dataframes[0], ks.DataFrame):
             wishlist_df = ks.from_pandas(wishlist_df)
 
-        variable_types = {'id': ft.variable_types.variable.Index,
-                          'session_id': ft.variable_types.variable.Numeric,
-                          'datetime': ft.variable_types.variable.DatetimeTimeIndex,
-                          'product_id': ft.variable_types.variable.Categorical}
+        logical_types = {'id': ft.variable_types.variable.Index,
+                         'session_id': ft.variable_types.variable.Numeric,
+                         'datetime': ft.variable_types.variable.DatetimeTimeIndex,
+                         'product_id': ft.variable_types.variable.Categorical}
         # add row to sessions to create session with no events
-        es.update_dataframe(entity_id='sessions', df=extra_session_df)
+        es.update_dataframe(dataframe_id='sessions', df=extra_session_df)
 
-        es.entity_from_dataframe(entity_id="wishlist_log",
-                                 dataframe=wishlist_df,
-                                 index='id',
-                                 make_index=True,
-                                 time_index='datetime',
-                                 variable_types=variable_types)
+        es.add_dataframe(dataframe_id="wishlist_log",
+                         dataframe=wishlist_df,
+                         index='id',
+                         make_index=True,
+                         time_index='datetime',
+                         logical_types=logical_types)
         es.add_relationship('sessions', 'id', 'wishlist_log', 'session_id')
         es.add_last_time_indexes()
         sessions = es['sessions']
@@ -339,8 +340,8 @@ class TestLastTimeIndex(object):
         true_sessions_lti[3] = pd.Timestamp("2011-4-10 10:41:00")
         true_sessions_lti[6] = pd.NaT
 
-        assert len(sessions.last_time_index) == 7
-        sorted_lti = to_pandas(sessions.last_time_index).sort_index()
+        assert len(sessions.ww.metadata.get('last_time_index')) == 7
+        sorted_lti = to_pandas(sessions.ww.metadata.get('last_time_index')).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -352,23 +353,23 @@ class TestLastTimeIndex(object):
         # For one user, change a log event to be newer than the user's normal
         # last time index. This event should be from a different session than
         # the current last time index.
-        df = to_pandas(log.df)
+        df = to_pandas(log)
         df['datetime'][5] = pd.Timestamp("2011-4-09 10:40:01")
         df = (df.set_index('datetime', append=True)
               .sort_index(level=[1, 0], kind="mergesort")
               .reset_index('datetime', drop=False))
-        if isinstance(log.df, dd.DataFrame):
+        if isinstance(log, dd.DataFrame):
             df = dd.from_pandas(df, npartitions=2)
-        if ks and isinstance(log.df, ks.DataFrame):
+        if ks and isinstance(log, ks.DataFrame):
             df = ks.from_pandas(df)
-        es.update_dataframe(entity_id='log', df=df)
+        es.update_dataframe(dataframe_id='log', df=df)
         es.add_last_time_indexes()
 
         true_customers_lti = pd.Series([datetime(2011, 4, 9, 10, 40, 1),
                                         datetime(2011, 4, 10, 10, 41, 6),
                                         datetime(2011, 4, 10, 11, 10, 3)])
 
-        assert len(customers.last_time_index) == 3
-        sorted_lti = to_pandas(customers.last_time_index).sort_index()
+        assert len(customers.ww.metadata.get('last_time_index')) == 3
+        sorted_lti = to_pandas(customers.ww.metadata.get('last_time_index')).sort_index()
         for v1, v2 in zip(sorted_lti, true_customers_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
