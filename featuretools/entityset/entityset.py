@@ -930,7 +930,7 @@ class EntitySet(object):
                     # so we didn't need this logic
                     for df in child_dataframes:
                         if df.ww.name not in explored and df.ww.name not in [q.ww.name for q in queue]:
-                            queue.append(e)
+                            queue.append(df)
                     queue.append(dataframe)
                     continue
 
@@ -992,7 +992,7 @@ class EntitySet(object):
                             lti_df = lti_df.replace(pd.to_datetime('1800-01-01 00:00'), pd.NaT)
                     # lti_df = lti_df.apply(lambda x: x.dropna().max(), axis=1)
 
-                    dataframe.ww.metadata['last_time_index'] = lti
+                    dataframe.ww.metadata['last_time_index'] = lti_df
                     dataframe.ww.metadata.get('last_time_index').name = 'last_time'
 
             explored.add(dataframe.ww.name)

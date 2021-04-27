@@ -211,9 +211,6 @@ def test_update_dataframe():
 
 
 def test_add_last_time_indexes(es):
-    print([df.ww.metadata for df in es.dataframes])
-    es.add_last_time_indexes()
-
-    print([df.ww.metadata for df in es.dataframes])
+    es.add_last_time_indexes(['products'])
 
     assert 'last_time_index' in es['customers'].ww.metadata
