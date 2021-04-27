@@ -76,6 +76,7 @@ def extra_session_df(es):
     if isinstance(es['sessions'], dd.DataFrame):
         df = dd.from_pandas(df, npartitions=3)
     if ks and isinstance(es['sessions'], ks.DataFrame):
+        # --> pyarrow.lib.ArrowTypeError: Expected bytes, got a 'int' object ???
         df = ks.from_pandas(df)
     return df
 
@@ -102,7 +103,7 @@ class TestLastTimeIndex(object):
     # TODO: possible issue with either normalize_dataframe or add_last_time_indexes
     def test_parent(self, values_es, true_values_lti):
         # test dataframe with time index and all instances in child dataframe
-        if not all(isinstance(dataframe.df, pd.DataFrame) for dataframe in values_es.dataframes):
+        if not all(isinstance(dataframe, pd.DataFrame) for dataframe in values_es.dataframes):
             pytest.xfail('possible issue with either normalize_dataframe or add_last_time_indexes')
         values_es.add_last_time_indexes()
         values = values_es['values']
@@ -123,6 +124,7 @@ class TestLastTimeIndex(object):
                       'value_time': pd.Timestamp("2011-04-10 11:10:02"),
                       'values_id': 11}
         # make sure index doesn't have same name as column to suppress pandas warning
+        # --> going to need to make sure it's valid for the schema
         row = pd.DataFrame(row_values, index=pd.Index([11]))
         df = values.append(row, sort=True)
         df = df[['value', 'value_time']].sort_values(by='value')
@@ -149,6 +151,7 @@ class TestLastTimeIndex(object):
 
     def test_parent_no_time_index_missing(self, es, extra_session_df,
                                           true_sessions_lti):
+        # --> going to need to make sure it's valid for the schema
         # test dataframe without time index and not all instance have children
         sessions = es['sessions']
 
@@ -170,10 +173,10 @@ class TestLastTimeIndex(object):
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
         if ks and isinstance(es.dataframes[0], ks.DataFrame):
             wishlist_df = ks.from_pandas(wishlist_df)
-        logical_types = {'id': ft.variable_types.variable.Index,
-                         'session_id': ft.variable_types.variable.Numeric,
-                         'datetime': ft.variable_types.variable.DatetimeTimeIndex,
-                         'product_id': ft.variable_types.variable.Categorical}
+        logical_types = {'session_id': ltypes.Categorical,
+                         'datetime': ltypes.Datetime,
+                         'product_id': ltypes.Categorical}
+        # --> Behavior change: in ks for this to happen we need to go through fT
         es.add_dataframe(dataframe_id="wishlist_log",
                          dataframe=wishlist_df,
                          index='id',
@@ -203,10 +206,9 @@ class TestLastTimeIndex(object):
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
         if ks and isinstance(es.dataframes[0], ks.DataFrame):
             wishlist_df = ks.from_pandas(wishlist_df)
-        logical_types = {'id': ft.variable_types.variable.Index,
-                         'session_id': ft.variable_types.variable.Numeric,
-                         'datetime': ft.variable_types.variable.DatetimeTimeIndex,
-                         'product_id': ft.variable_types.variable.Categorical}
+        logical_types = {'session_id': ltypes.Categorical,
+                         'datetime': ltypes.Datetime,
+                         'product_id': ltypes.Categorical}
         es.add_dataframe(dataframe_id="wishlist_log",
                          dataframe=wishlist_df,
                          index='id',
@@ -242,10 +244,9 @@ class TestLastTimeIndex(object):
             df = dd.from_pandas(df, npartitions=2)
         if ks and isinstance(es.dataframes[0], ks.DataFrame):
             df = ks.from_pandas(df)
-        logical_types = {'id': ft.variable_types.variable.Index,
-                         'session_id': ft.variable_types.variable.Numeric,
-                         'datetime': ft.variable_types.variable.DatetimeTimeIndex,
-                         'product_id': ft.variable_types.variable.Categorical}
+        logical_types = {'session_id': ltypes.Categorical,
+                         'datetime': ltypes.Datetime,
+                         'product_id': ltypes.Categorical}
         es.add_dataframe(dataframe_id="wishlist_log",
                          dataframe=df,
                          index='id',
@@ -286,10 +287,9 @@ class TestLastTimeIndex(object):
             df = dd.from_pandas(df, npartitions=2)
         if ks and isinstance(es.dataframes[0], ks.DataFrame):
             df = ks.from_pandas(df)
-        logical_types = {'id': ft.variable_types.variable.Index,
-                         'session_id': ft.variable_types.variable.Numeric,
-                         'datetime': ft.variable_types.variable.DatetimeTimeIndex,
-                         'product_id': ft.variable_types.variable.Categorical}
+        logical_types = {'session_id': ltypes.Categorical,
+                         'datetime': ltypes.Datetime,
+                         'product_id': ltypes.Categorical}
         es.add_dataframe(dataframe_id="wishlist_log",
                          dataframe=df,
                          index='id',
@@ -318,10 +318,9 @@ class TestLastTimeIndex(object):
         if ks and isinstance(es.dataframes[0], ks.DataFrame):
             wishlist_df = ks.from_pandas(wishlist_df)
 
-        logical_types = {'id': ft.variable_types.variable.Index,
-                         'session_id': ft.variable_types.variable.Numeric,
-                         'datetime': ft.variable_types.variable.DatetimeTimeIndex,
-                         'product_id': ft.variable_types.variable.Categorical}
+        logical_types = {'session_id': ltypes.Categorical,  # --> should be able tp be integer
+                         'datetime': ltypes.Datetime,
+                         'product_id': ltypes.Categorical}
         # add row to sessions to create session with no events
         es.update_dataframe(dataframe_id='sessions', df=extra_session_df)
 
