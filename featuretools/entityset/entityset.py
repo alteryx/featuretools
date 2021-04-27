@@ -914,8 +914,9 @@ class EntitySet(object):
                     elif is_instance(dataframe, ks, 'DataFrame'):
                         lti = ks.Series(pd.Series(index=lti.to_list(), name=lti.name))
                     else:
+                        # Cannot have a category dtype with nans when calculating last time index
+                        lti = lti.astype('object')
                         lti[:] = None
-                # --> not totally confident that lti is what we want here :/ this is why we cant do astype later
                 dataframe.ww.metadata['last_time_index'] = lti
 
             if dataframe.ww.name in children:
