@@ -1,17 +1,12 @@
 import numpy as np
 import pandas as pd
+from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import Boolean, Datetime, Ordinal
 
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
 )
 from featuretools.utils.gen_utils import Library
-from featuretools.variable_types import (
-    Boolean,
-    Datetime,
-    Numeric,
-    Ordinal,
-    Variable
-)
 
 
 class GreaterThan(TransformPrimitive):
@@ -28,8 +23,10 @@ class GreaterThan(TransformPrimitive):
         [True, False, False]
     """
     name = "greater_than"
-    input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
-    return_type = Boolean
+    input_types = [[ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(semantic_tags={'numeric'})],
+                   [ColumnSchema(logical_type=Datetime), ColumnSchema(logical_type=Datetime)],
+                   [ColumnSchema(logical_type=Ordinal), ColumnSchema(logical_type=Ordinal)]]
+    return_type = ColumnSchema(logical_type=Boolean)
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "whether {} is greater than {}"
 
@@ -54,8 +51,10 @@ class GreaterThanScalar(TransformPrimitive):
         [True, False, False]
     """
     name = "greater_than_scalar"
-    input_types = [[Numeric], [Datetime], [Ordinal]]
-    return_type = Boolean
+    input_types = [[ColumnSchema(semantic_tags={'numeric'})],
+                   [ColumnSchema(logical_type=Datetime)],
+                   [ColumnSchema(logical_type=Ordinal)]]
+    return_type = ColumnSchema(logical_type=Boolean)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=0):
@@ -85,8 +84,10 @@ class GreaterThanEqualTo(TransformPrimitive):
         [True, False, True]
     """
     name = "greater_than_equal_to"
-    input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
-    return_type = Boolean
+    input_types = [[ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(semantic_tags={'numeric'})],
+                   [ColumnSchema(logical_type=Datetime), ColumnSchema(logical_type=Datetime)],
+                   [ColumnSchema(logical_type=Ordinal), ColumnSchema(logical_type=Ordinal)]]
+    return_type = ColumnSchema(logical_type=Boolean)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "whether {} is greater than or equal to {}"
 
@@ -111,8 +112,10 @@ class GreaterThanEqualToScalar(TransformPrimitive):
         [True, False, True]
     """
     name = "greater_than_equal_to_scalar"
-    input_types = [[Numeric], [Datetime], [Ordinal]]
-    return_type = Boolean
+    input_types = [[ColumnSchema(semantic_tags={'numeric'})],
+                   [ColumnSchema(logical_type=Datetime)],
+                   [ColumnSchema(logical_type=Ordinal)]]
+    return_type = ColumnSchema(logical_type=Boolean)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=0):
@@ -142,8 +145,10 @@ class LessThan(TransformPrimitive):
         [False, True, False]
     """
     name = "less_than"
-    input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
-    return_type = Boolean
+    input_types = [[ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(semantic_tags={'numeric'})],
+                   [ColumnSchema(logical_type=Datetime), ColumnSchema(logical_type=Datetime)],
+                   [ColumnSchema(logical_type=Ordinal), ColumnSchema(logical_type=Ordinal)]]
+    return_type = ColumnSchema(logical_type=Boolean)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "whether {} is less than {}"
 
@@ -168,8 +173,10 @@ class LessThanScalar(TransformPrimitive):
         [False, True, False]
     """
     name = "less_than_scalar"
-    input_types = [[Numeric], [Datetime], [Ordinal]]
-    return_type = Boolean
+    input_types = [[ColumnSchema(semantic_tags={'numeric'})],
+                   [ColumnSchema(logical_type=Datetime)],
+                   [ColumnSchema(logical_type=Ordinal)]]
+    return_type = ColumnSchema(logical_type=Boolean)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=0):
@@ -199,8 +206,10 @@ class LessThanEqualTo(TransformPrimitive):
         [False, True, True]
     """
     name = "less_than_equal_to"
-    input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
-    return_type = Boolean
+    input_types = [[ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(semantic_tags={'numeric'})],
+                   [ColumnSchema(logical_type=Datetime), ColumnSchema(logical_type=Datetime)],
+                   [ColumnSchema(logical_type=Ordinal), ColumnSchema(logical_type=Ordinal)]]
+    return_type = ColumnSchema(logical_type=Boolean)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "whether {} is less than or equal to {}"
 
@@ -225,8 +234,10 @@ class LessThanEqualToScalar(TransformPrimitive):
         [False, True, True]
     """
     name = "less_than_equal_to_scalar"
-    input_types = [[Numeric], [Datetime], [Ordinal]]
-    return_type = Boolean
+    input_types = [[ColumnSchema(semantic_tags={'numeric'})],
+                   [ColumnSchema(logical_type=Datetime)],
+                   [ColumnSchema(logical_type=Ordinal)]]
+    return_type = ColumnSchema(logical_type=Boolean)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=0):
@@ -256,8 +267,8 @@ class Equal(TransformPrimitive):
         [False, False, True]
     """
     name = "equal"
-    input_types = [Variable, Variable]
-    return_type = Boolean
+    input_types = [ColumnSchema(), ColumnSchema()]
+    return_type = ColumnSchema(logical_type=Boolean)
     commutative = True
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "whether {} equals {}"
@@ -290,8 +301,8 @@ class EqualScalar(TransformPrimitive):
         [False, False, True]
     """
     name = "equal_scalar"
-    input_types = [Variable]
-    return_type = Boolean
+    input_types = [ColumnSchema()]
+    return_type = ColumnSchema(logical_type=Boolean)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=None):
@@ -321,8 +332,8 @@ class NotEqual(TransformPrimitive):
         [True, True, False]
     """
     name = "not_equal"
-    input_types = [Variable, Variable]
-    return_type = Boolean
+    input_types = [ColumnSchema(), ColumnSchema()]
+    return_type = ColumnSchema(logical_type=Boolean)
     commutative = True
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "whether {} does not equal {}"
@@ -355,8 +366,8 @@ class NotEqualScalar(TransformPrimitive):
         [True, True, False]
     """
     name = "not_equal_scalar"
-    input_types = [Variable]
-    return_type = Boolean
+    input_types = [ColumnSchema()]
+    return_type = ColumnSchema(logical_type=Boolean)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=None):
@@ -386,8 +397,8 @@ class AddNumeric(TransformPrimitive):
         [3, 3, 4]
     """
     name = "add_numeric"
-    input_types = [Numeric, Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     commutative = True
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the sum of {} and {}"
@@ -412,8 +423,8 @@ class AddNumericScalar(TransformPrimitive):
         [5, 3, 4]
     """
     name = "add_numeric_scalar"
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=0):
@@ -448,8 +459,8 @@ class SubtractNumeric(TransformPrimitive):
         [1, -1, 0]
     """
     name = "subtract_numeric"
-    input_types = [Numeric, Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "the result of {} minus {}"
 
@@ -476,8 +487,8 @@ class SubtractNumericScalar(TransformPrimitive):
         [1, -1, 0]
     """
     name = "subtract_numeric_scalar"
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=0):
@@ -507,8 +518,8 @@ class ScalarSubtractNumericFeature(TransformPrimitive):
         [-1, 1, 0]
     """
     name = "scalar_subtract_numeric_feature"
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=0):
@@ -539,11 +550,11 @@ class MultiplyNumeric(TransformPrimitive):
     """
     name = "multiply_numeric"
     input_types = [
-        [Numeric, Numeric],
-        [Numeric, Boolean],
-        [Boolean, Numeric],
+        [ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(semantic_tags={'numeric'})],
+        [ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(logical_type=Boolean)],
+        [ColumnSchema(logical_type=Boolean), ColumnSchema(semantic_tags={'numeric'})],
     ]
-    return_type = Numeric
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     commutative = True
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the product of {} and {}"
@@ -568,8 +579,8 @@ class MultiplyNumericScalar(TransformPrimitive):
         [6, 2, 4]
     """
     name = "multiply_numeric_scalar"
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=1):
@@ -599,9 +610,8 @@ class MultiplyBoolean(TransformPrimitive):
         [True, False, False]
     """
     name = "multiply_boolean"
-    input_types = [[Boolean, Boolean]]
-
-    return_type = Boolean
+    input_types = [ColumnSchema(logical_type=Boolean), ColumnSchema(logical_type=Boolean)]
+    return_type = ColumnSchema(logical_type=Boolean)
     commutative = True
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "the product of {} and {}"
@@ -632,8 +642,8 @@ class DivideNumeric(TransformPrimitive):
         [2.0, 0.5, 1.0]
     """
     name = "divide_numeric"
-    input_types = [Numeric, Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the result of {} divided by {}"
 
@@ -660,8 +670,8 @@ class DivideNumericScalar(TransformPrimitive):
         [1.5, 0.5, 1.0]
     """
     name = "divide_numeric_scalar"
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=1):
@@ -691,8 +701,8 @@ class DivideByFeature(TransformPrimitive):
         [0.5, 2.0, 1.0]
     """
     name = "divide_by_feature"
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=1):
@@ -722,8 +732,8 @@ class ModuloNumeric(TransformPrimitive):
         [0, 1, 1]
     """
     name = "modulo_numeric"
-    input_types = [Numeric, Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the remainder after dividing {} by {}"
 
@@ -748,8 +758,8 @@ class ModuloNumericScalar(TransformPrimitive):
         [1, 1, 0]
     """
     name = "modulo_numeric_scalar"
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=1):
@@ -779,8 +789,8 @@ class ModuloByFeature(TransformPrimitive):
         [2, 0, 0]
     """
     name = "modulo_by_feature"
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=1):
@@ -810,8 +820,8 @@ class And(TransformPrimitive):
         [False, True, False]
     """
     name = "and"
-    input_types = [Boolean, Boolean]
-    return_type = Boolean
+    input_types = [ColumnSchema(logical_type=Boolean), ColumnSchema(logical_type=Boolean)]
+    return_type = ColumnSchema(logical_type=Boolean)
     commutative = True
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "whether {} and {} are true"
@@ -837,8 +847,8 @@ class Or(TransformPrimitive):
         [True, True, False]
     """
     name = "or"
-    input_types = [Boolean, Boolean]
-    return_type = Boolean
+    input_types = [ColumnSchema(logical_type=Boolean), ColumnSchema(logical_type=Boolean)]
+    return_type = ColumnSchema(logical_type=Boolean)
     commutative = True
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "whether {} is true or {} is true"
