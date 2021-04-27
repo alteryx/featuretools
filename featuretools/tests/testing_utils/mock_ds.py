@@ -241,7 +241,7 @@ def make_logical_types(with_integer_time_index=False):
     }
 
     store_logical_types = {
-        'id': ltypes.Categorical,
+        'id': ltypes.Integer,
         u'région_id': ltypes.Categorical
     }
 
@@ -253,7 +253,7 @@ def make_logical_types(with_integer_time_index=False):
     }
 
     customer_logical_types = {
-        'id': ltypes.Categorical,
+        'id': ltypes.Integer,
         'age': ltypes.Integer,
         u'région_id': ltypes.Categorical,
         'loves_ice_cream': ltypes.Boolean,
@@ -270,16 +270,16 @@ def make_logical_types(with_integer_time_index=False):
     }
 
     session_logical_types = {
-        'id': ltypes.Categorical,
-        'customer_id': ltypes.Categorical,
+        'id': ltypes.Integer,
+        'customer_id': ltypes.Integer,
         'device_type': ltypes.Categorical,
         'ip': ltypes.IPAddress,
         'filepath': ltypes.Filepath,
     }
 
     log_logical_types = {
-        'id': ltypes.Categorical,
-        'session_id': ltypes.Categorical,
+        'id': ltypes.Integer,
+        'session_id': ltypes.Integer,
         'product_id': ltypes.Categorical,
         'datetime': ltypes.Datetime,
         'value': ltypes.Double,

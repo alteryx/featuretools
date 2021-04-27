@@ -1245,7 +1245,8 @@ class EntitySet(object):
 
         # Make sure column ordering matches original ordering
         df = df[old_column_names]
-        # --> Implementation: this won't allow for dtype changes so maybe we need to explicity do that change ahead of time so that the schema is valid?
+        original_dtypes = self[dataframe_id].dtypes
+        df = df.astype(original_dtypes)
         df.ww.init(schema=self[dataframe_id].ww.schema)
         # --> Implementation: probably isn't how we cant to update the dataframe dict??
         self.dataframe_dict[dataframe_id] = df

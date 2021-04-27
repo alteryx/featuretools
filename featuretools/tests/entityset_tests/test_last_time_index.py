@@ -76,7 +76,8 @@ def extra_session_df(es):
     if isinstance(es['sessions'], dd.DataFrame):
         df = dd.from_pandas(df, npartitions=3)
     if ks and isinstance(es['sessions'], ks.DataFrame):
-        # --> pyarrow.lib.ArrowTypeError: Expected bytes, got a 'int' object ???
+        # Koalas can't handle object dtypes
+        df = df.astype('string')
         df = ks.from_pandas(df)
     return df
 
@@ -122,19 +123,20 @@ class TestLastTimeIndex(object):
         # add extra value instance with no children
         row_values = {'value': 21.0,
                       'value_time': pd.Timestamp("2011-04-10 11:10:02"),
-                      'values_id': 11}
+                      'values_id': 21.0}
         # make sure index doesn't have same name as column to suppress pandas warning
-        # --> going to need to make sure it's valid for the schema
-        row = pd.DataFrame(row_values, index=pd.Index([11]))
+        row = pd.DataFrame(row_values, index=pd.Index([21]))
         df = values.append(row, sort=True)
         df = df[['value', 'value_time']].sort_values(by='value')
-        df.index.name = 'values_id'
+        df.index.name = None
+
         values_es.update_dataframe(dataframe_id='values', df=df)
         values_es.add_last_time_indexes()
         # lti value should default to instance's time index
         true_values_lti[10] = pd.Timestamp("2011-04-10 11:10:02")
         true_values_lti[11] = pd.Timestamp("2011-04-10 11:10:03")
 
+        values = values_es['values']
         assert len(values.ww.metadata.get('last_time_index')) == 12
         sorted_lti = values.ww.metadata.get('last_time_index').sort_index()
         for v1, v2 in zip(sorted_lti, true_values_lti):
@@ -153,13 +155,13 @@ class TestLastTimeIndex(object):
                                           true_sessions_lti):
         # --> going to need to make sure it's valid for the schema
         # test dataframe without time index and not all instance have children
-        sessions = es['sessions']
 
         # add session instance with no associated log instances
         es.update_dataframe(dataframe_id='sessions', df=extra_session_df)
         es.add_last_time_indexes()
         # since sessions has no time index, default value is NaT
         true_sessions_lti[6] = pd.NaT
+        sessions = es['sessions']
 
         assert len(sessions.ww.metadata.get('last_time_index')) == 7
         sorted_lti = to_pandas(sessions.ww.metadata.get('last_time_index')).sort_index()
@@ -173,7 +175,7 @@ class TestLastTimeIndex(object):
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
         if ks and isinstance(es.dataframes[0], ks.DataFrame):
             wishlist_df = ks.from_pandas(wishlist_df)
-        logical_types = {'session_id': ltypes.Categorical,
+        logical_types = {'session_id': ltypes.Integer,
                          'datetime': ltypes.Datetime,
                          'product_id': ltypes.Categorical}
         # --> Behavior change: in ks for this to happen we need to go through fT
@@ -206,7 +208,7 @@ class TestLastTimeIndex(object):
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
         if ks and isinstance(es.dataframes[0], ks.DataFrame):
             wishlist_df = ks.from_pandas(wishlist_df)
-        logical_types = {'session_id': ltypes.Categorical,
+        logical_types = {'session_id': ltypes.Integer,
                          'datetime': ltypes.Datetime,
                          'product_id': ltypes.Categorical}
         es.add_dataframe(dataframe_id="wishlist_log",
@@ -228,8 +230,6 @@ class TestLastTimeIndex(object):
 
     def test_multiple_children_left_missing(self, es, extra_session_df,
                                             wishlist_df, true_sessions_lti):
-        # test all instances in right child
-        sessions = es['sessions']
 
         # add row to sessions so not all session instances are in log
         es.update_dataframe(dataframe_id='sessions', df=extra_session_df)
@@ -244,7 +244,7 @@ class TestLastTimeIndex(object):
             df = dd.from_pandas(df, npartitions=2)
         if ks and isinstance(es.dataframes[0], ks.DataFrame):
             df = ks.from_pandas(df)
-        logical_types = {'session_id': ltypes.Categorical,
+        logical_types = {'session_id': ltypes.Integer,
                          'datetime': ltypes.Datetime,
                          'product_id': ltypes.Categorical}
         es.add_dataframe(dataframe_id="wishlist_log",
@@ -255,6 +255,9 @@ class TestLastTimeIndex(object):
                          logical_types=logical_types)
         es.add_relationship('sessions', 'id', 'wishlist_log', 'session_id')
         es.add_last_time_indexes()
+
+        # test all instances in right child
+        sessions = es['sessions']
 
         # now wishlist_log has newer events for 3 session ids
         true_sessions_lti[1] = pd.Timestamp("2011-4-9 10:31:30")
@@ -268,8 +271,6 @@ class TestLastTimeIndex(object):
 
     def test_multiple_children_all_combined(self, es, extra_session_df,
                                             wishlist_df, true_sessions_lti):
-        # test some instances in right, some in left, all when combined
-        sessions = es['sessions']
 
         # add row to sessions so not all session instances are in log
         es.update_dataframe(dataframe_id='sessions', df=extra_session_df)
@@ -287,7 +288,7 @@ class TestLastTimeIndex(object):
             df = dd.from_pandas(df, npartitions=2)
         if ks and isinstance(es.dataframes[0], ks.DataFrame):
             df = ks.from_pandas(df)
-        logical_types = {'session_id': ltypes.Categorical,
+        logical_types = {'session_id': ltypes.Integer,
                          'datetime': ltypes.Datetime,
                          'product_id': ltypes.Categorical}
         es.add_dataframe(dataframe_id="wishlist_log",
@@ -298,6 +299,9 @@ class TestLastTimeIndex(object):
                          logical_types=logical_types)
         es.add_relationship('sessions', 'id', 'wishlist_log', 'session_id')
         es.add_last_time_indexes()
+
+        # test some instances in right, some in left, all when combined
+        sessions = es['sessions']
 
         # wishlist has newer events for 2 sessions
         true_sessions_lti[1] = pd.Timestamp("2011-4-9 10:31:30")
@@ -318,7 +322,7 @@ class TestLastTimeIndex(object):
         if ks and isinstance(es.dataframes[0], ks.DataFrame):
             wishlist_df = ks.from_pandas(wishlist_df)
 
-        logical_types = {'session_id': ltypes.Categorical,  # --> should be able tp be integer
+        logical_types = {'session_id': ltypes.Integer,  # --> should be able tp be integer
                          'datetime': ltypes.Datetime,
                          'product_id': ltypes.Categorical}
         # add row to sessions to create session with no events
