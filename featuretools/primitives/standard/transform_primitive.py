@@ -1,6 +1,14 @@
 import warnings
 
 import numpy as np
+from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import (
+    Boolean,
+    Datetime,
+    LatLong,
+    NaturalLanguage,
+    Ordinal
+)
 
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
@@ -8,17 +16,6 @@ from featuretools.primitives.base.transform_primitive_base import (
 from featuretools.utils import convert_time_units
 from featuretools.utils.entity_utils import replace_latlong_nan
 from featuretools.utils.gen_utils import Library
-from featuretools.variable_types import (
-    Boolean,
-    DateOfBirth,
-    Datetime,
-    DatetimeTimeIndex,
-    LatLong,
-    NaturalLanguage,
-    Numeric,
-    Ordinal,
-    Variable
-)
 
 
 class IsNull(TransformPrimitive):
@@ -30,8 +27,8 @@ class IsNull(TransformPrimitive):
         [False, True, False]
     """
     name = "is_null"
-    input_types = [Variable]
-    return_type = Boolean
+    input_types = [ColumnSchema()]
+    return_type = ColumnSchema(logical_type=Boolean)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "whether {} is null"
 
@@ -50,8 +47,8 @@ class Absolute(TransformPrimitive):
         [3.0, 5.0, 2.4]
     """
     name = "absolute"
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the absolute value of {}"
 
@@ -84,8 +81,8 @@ class TimeSincePrevious(TransformPrimitive):
         [nan, 120.0, 60.0, -30.0, 450.0]
     """
     name = "time_since_previous"
-    input_types = [DatetimeTimeIndex]
-    return_type = Numeric
+    input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     description_template = "the time since the previous instance of {}"
 
     def __init__(self, unit="seconds"):
@@ -110,8 +107,8 @@ class Day(TransformPrimitive):
         [1, 3, 31]
     """
     name = "day"
-    input_types = [Datetime]
-    return_type = Ordinal
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=Ordinal)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the day of the month of {}"
 
@@ -134,8 +131,8 @@ class Hour(TransformPrimitive):
         [0, 11, 19]
     """
     name = "hour"
-    input_types = [Datetime]
-    return_type = Ordinal
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=Ordinal)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = 'the hour value of {}'
 
@@ -158,8 +155,8 @@ class Second(TransformPrimitive):
         [0, 50, 15]
     """
     name = "second"
-    input_types = [Datetime]
-    return_type = Numeric
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the seconds value of {}"
 
@@ -182,8 +179,8 @@ class Minute(TransformPrimitive):
         [0, 10, 45]
     """
     name = "minute"
-    input_types = [Datetime]
-    return_type = Numeric
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the minutes value of {}"
 
@@ -211,8 +208,8 @@ class Week(TransformPrimitive):
         [1, 25, 48]
         """
     name = "week"
-    input_types = [Datetime]
-    return_type = Ordinal
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=Ordinal)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the week of the year of {}"
 
@@ -240,8 +237,8 @@ class Month(TransformPrimitive):
         [3, 6, 11]
     """
     name = "month"
-    input_types = [Datetime]
-    return_type = Ordinal
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=Ordinal)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the month of {}"
 
@@ -264,8 +261,8 @@ class Year(TransformPrimitive):
         [2019, 2048, 1950]
     """
     name = "year"
-    input_types = [Datetime]
-    return_type = Ordinal
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=Ordinal)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the year of {}"
 
@@ -288,8 +285,8 @@ class IsWeekend(TransformPrimitive):
         [False, False, True]
     """
     name = "is_weekend"
-    input_types = [Datetime]
-    return_type = Boolean
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=Boolean)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "whether {} occurred on a weekend"
 
@@ -316,8 +313,8 @@ class Weekday(TransformPrimitive):
         [4, 0, 5]
     """
     name = "weekday"
-    input_types = [Datetime]
-    return_type = Ordinal
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=Ordinal)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the day of the week of {}"
 
@@ -338,8 +335,8 @@ class NumCharacters(TransformPrimitive):
         [16, 11, 6]
     """
     name = 'num_characters'
-    input_types = [NaturalLanguage]
-    return_type = Numeric
+    input_types = [ColumnSchema(logical_type=NaturalLanguage)]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the number of characters in {}"
 
@@ -361,8 +358,8 @@ class NumWords(TransformPrimitive):
         [4, 2, 1, 6]
     """
     name = 'num_words'
-    input_types = [NaturalLanguage]
-    return_type = Numeric
+    input_types = [ColumnSchema(logical_type=NaturalLanguage)]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the number of words in {}"
 
@@ -404,8 +401,8 @@ class TimeSince(TransformPrimitive):
         [-1000, -1000000000, -120000000000]
     """
     name = 'time_since'
-    input_types = [Datetime]
-    return_type = Numeric
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     uses_calc_time = True
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "the time from {} to the cutoff time"
@@ -429,8 +426,8 @@ class IsIn(TransformPrimitive):
         [True, False, True]
     """
     name = "isin"
-    input_types = [Variable]
-    return_type = Boolean
+    input_types = [ColumnSchema()]
+    return_type = ColumnSchema(logical_type=Boolean)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, list_of_outputs=None):
@@ -468,8 +465,8 @@ class Diff(TransformPrimitive):
         [nan, 9.0, -7.0, 1.0, 11.0]
     """
     name = "diff"
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     uses_full_entity = True
     description_template = "the difference from the previous value of {}"
 
@@ -488,8 +485,8 @@ class Negate(TransformPrimitive):
         [-1.0, -23.2, 7.0]
     """
     name = "negate"
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the negation of {}"
 
@@ -511,8 +508,8 @@ class Not(TransformPrimitive):
         [False, False, True]
     """
     name = "not"
-    input_types = [Boolean]
-    return_type = Boolean
+    input_types = [ColumnSchema(logical_type=Boolean)]
+    return_type = ColumnSchema(logical_type=Boolean)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the negation of {}"
 
@@ -538,8 +535,8 @@ class Percentile(TransformPrimitive):
     """
     name = 'percentile'
     uses_full_entity = True
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     description_template = "the percentile rank of {}"
 
     def get_function(self):
@@ -558,8 +555,8 @@ class Latitude(TransformPrimitive):
         [42.4, 40.0, 41.2]
     """
     name = 'latitude'
-    input_types = [LatLong]
-    return_type = Numeric
+    input_types = [ColumnSchema(logical_type=LatLong)]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     description_template = "the latitude of {}"
 
     def get_function(self):
@@ -582,8 +579,8 @@ class Longitude(TransformPrimitive):
         [-71.1, -122.4, -96.75]
     """
     name = 'longitude'
-    input_types = [LatLong]
-    return_type = Numeric
+    input_types = [ColumnSchema(logical_type=LatLong)]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     description_template = "the longitude of {}"
 
     def get_function(self):
@@ -618,8 +615,8 @@ class Haversine(TransformPrimitive):
             [4234.555, 2161.814]
     """
     name = 'haversine'
-    input_types = [LatLong, LatLong]
-    return_type = Numeric
+    input_types = [ColumnSchema(logical_type=LatLong), ColumnSchema(logical_type=LatLong)]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     commutative = True
 
     def __init__(self, unit='miles'):
@@ -683,8 +680,8 @@ class Age(TransformPrimitive):
         [19.013698630136986, 35.61643835616438, 21.221917808219178]
     """
     name = "age"
-    input_types = [DateOfBirth]
-    return_type = Numeric
+    input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'date_of_birth'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     uses_calc_time = True
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "the age from {}"
