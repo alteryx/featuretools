@@ -153,7 +153,6 @@ class TestLastTimeIndex(object):
 
     def test_parent_no_time_index_missing(self, es, extra_session_df,
                                           true_sessions_lti):
-        # --> going to need to make sure it's valid for the schema
         # test dataframe without time index and not all instance have children
 
         # add session instance with no associated log instances
@@ -322,7 +321,7 @@ class TestLastTimeIndex(object):
         if ks and isinstance(es.dataframes[0], ks.DataFrame):
             wishlist_df = ks.from_pandas(wishlist_df)
 
-        logical_types = {'session_id': ltypes.Integer,  # --> should be able tp be integer
+        logical_types = {'session_id': ltypes.Integer,
                          'datetime': ltypes.Datetime,
                          'product_id': ltypes.Categorical}
         # add row to sessions to create session with no events

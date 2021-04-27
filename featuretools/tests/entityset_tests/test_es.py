@@ -57,7 +57,7 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
     log_2_df = es['log'].copy()
     log_logical_types = {
         'id': ltypes.Categorical,
-        'session_id': ltypes.Integer,
+        'session_id': ltypes.Categorical,
         'product_id': ltypes.Categorical,
         'datetime': ltypes.Datetime,
         'value': ltypes.Double,
@@ -90,7 +90,7 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
     if ks and isinstance(es['customers'], ks.DataFrame):
         category_dtype = 'string'
 
-    error_text = f'Unable to add relationship because id in customers is Pandas dtype {category_dtype} and session_id in log2 is Pandas dtype int64.'
+    error_text = f'Unable to add relationship because id in customers is Pandas dtype int64 and session_id in log2 is Pandas dtype {category_dtype}.'
     with pytest.raises(ValueError, match=error_text):
         es.add_relationship(u'customers', 'id', 'log2', 'session_id')
 
@@ -1133,7 +1133,7 @@ def test_raise_error_if_dupicate_copy_variables_passed(es):
 
 
 def test_normalize_dataframe_copies_variable_types(es):
-    es['log'].ww.set_types(logical_types={'value': ltypes.Ordinal(order=[0.0, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 14.0, 15.0, 20.0])})  # --> set order
+    es['log'].ww.set_types(logical_types={'value': ltypes.Ordinal(order=[0.0, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 14.0, 15.0, 20.0])})
 
     assert isinstance(es['log'].ww.logical_types['value'], ltypes.Ordinal)
     assert isinstance(es['log'].ww.logical_types['priority_level'], ltypes.Ordinal)

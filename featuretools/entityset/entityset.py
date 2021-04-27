@@ -302,11 +302,9 @@ class EntitySet(object):
             raise ValueError(msg.format(child_column, child_df.ww.name))
         parent_df = relationship.parent_dataframe
         parent_column = relationship.parent_column.name
-        # --> Implementation:  foreign key tag corresponds to a Id variable?
         if 'foreign_key' not in child_df.ww.semantic_tags[child_column]:
             child_df.ww.add_semantic_tags({child_column: 'foreign_key'})
 
-        # --> Implementation: what happens if there's another index set?????
         if parent_df.ww.index != parent_column:
             # --> Implementation: previously had 'convert_data=False` does this means we shouldn't set the underlying index?????
             parent_df.ww.set_index(parent_column)
@@ -316,7 +314,7 @@ class EntitySet(object):
         # the empty column's type to int
         if isinstance(child_df, pd.DataFrame) and \
                 (child_df.empty and child_df[child_column].dtype == object and
-                 parent_df.ww[parent_column].is_numeric):
+                 parent_df.ww.columns[parent_column].is_numeric):
             # --> Implementation: should this match Integer or IntegerNullable????
             child_df.ww[child_column] = pd.Series(name=child_column, dtype=np.int64)
 
@@ -490,7 +488,6 @@ class EntitySet(object):
                       semantic_tags=None,
                       make_index=False,
                       time_index=None,
-                      # --> Implementation: do we need a way of adding last time indices via a param here since we wont have it on Entity???
                       secondary_time_index=None,
                       # --> Implementation: maybe allow other kwargs for Woodwork Table???
                       already_sorted=False):
@@ -900,8 +897,7 @@ class EntitySet(object):
 
             if dataframe.ww.metadata.get('last_time_index') is None:
                 if dataframe.ww.time_index is not None:
-                    # --> not sure if we want to maintain the ww typing info and if so we prob want time index tag???
-                    lti = dataframe.ww[dataframe.ww.time_index].copy()
+                    lti = dataframe.[dataframe.ww.time_index].copy()
                     if isinstance(dataframe, dd.DataFrame):
                         # The current Dask implementation doesn't set the index of the dataframe
                         # to the dataframe's index, so we have to do it manually here
@@ -947,7 +943,6 @@ class EntitySet(object):
                     if lti_is_dask or lti_is_koalas:
                         to_join = child_df[link_col]
                         if lti_is_dask:
-                            # --> is this a df index setting or is it ww index?
                             to_join.index = child_df[child_df.ww.index]
 
                         lti_df = child_df.ww.metadata.get('last_time_index').to_frame(name='last_time').join(

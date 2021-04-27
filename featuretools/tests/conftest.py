@@ -67,7 +67,6 @@ def dask_es(make_es):
 
 @pytest.fixture
 def ks_es(make_es):
-    # --> fix this and add back ValueError: Woodwork typing information is not valid for this DataFrame: dtype mismatch for column id between DataFrame dtype, object, and Categorical dtype, string
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     es = ft.EntitySet(id=make_es.id)
     for df in make_es.dataframes:

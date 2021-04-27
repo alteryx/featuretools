@@ -289,7 +289,7 @@ def make_logical_types(with_integer_time_index=False):
         'zipcode': ltypes.PostalCode,
         'countrycode': ltypes.CountryCode,
         'subregioncode': ltypes.SubRegionCode,
-        'value_many_nans': ltypes.Double,  # --> confirm this is a double
+        'value_many_nans': ltypes.Double,
         'priority_level': ltypes.Ordinal(order=[0, 1, 2]),
         'purchased': ltypes.Boolean,
         'comments': ltypes.NaturalLanguage
