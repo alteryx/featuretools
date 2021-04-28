@@ -1,19 +1,11 @@
-import copy
-import logging
-from datetime import datetime
-
-from woodwork.logical_types import Categorical, Integer, NaturalLanguage
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
 
-import featuretools as ft
-from featuretools import variable_types
+from woodwork.logical_types import Categorical, Integer, NaturalLanguage
+
 from featuretools.entityset import EntitySet
-from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import import_or_none
-from featuretools.utils.koalas_utils import pd_to_ks_clean
 
 
 def test_empty_es():
@@ -21,7 +13,7 @@ def test_empty_es():
     assert es.id == 'es'
     assert es.dataframe_dict == {}
     assert es.relationships == []
-    assert es.time_type == None
+    assert es.time_type is None
 
 
 @pytest.fixture
@@ -213,4 +205,4 @@ def test_update_dataframe():
 def test_add_last_time_indexes(es):
     es.add_last_time_indexes(['products'])
 
-    assert 'last_time_index' in es['customers'].ww.metadata
+    assert 'last_time_index' in es['products'].ww.metadata

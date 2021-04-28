@@ -1,16 +1,16 @@
-import copy
-import logging
-from datetime import datetime
+# import copy
+# import logging
 import re
+from datetime import datetime
 
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
+
 import woodwork.logical_types as ltypes
 
 import featuretools as ft
-from featuretools import variable_types
 from featuretools.entityset import EntitySet
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
@@ -1295,7 +1295,6 @@ def test_datetime64_conversion(datetime3):
                      index='id',
                      dataframe=df,
                      logical_types=logical_types)
-    vtype_time_index = variable_types.variable.DatetimeTimeIndex
     # --> is this testing setting time index or setting ltype??? and why are there no checks afterwards
     es['test_dataframe'].ww.set_time_index('time')
     assert es['test_dataframe'].ww.time_index == 'time'

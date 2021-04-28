@@ -2,9 +2,9 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+
 import woodwork.logical_types as ltypes
 
-from featuretools import variable_types
 from featuretools.entityset import EntitySet
 
 

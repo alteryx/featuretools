@@ -1,4 +1,4 @@
-import copy
+# import copy
 import logging
 import warnings
 from collections import defaultdict
@@ -6,21 +6,22 @@ from collections import defaultdict
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
-import pandas.api.types as pdtypes
-import woodwork as ww
-from pandas.api.types import is_dtype_equal, is_numeric_dtype
 
-import featuretools.variable_types.variable as vtypes
-from featuretools.entityset import deserialize, serialize
-from featuretools.entityset.entity import Entity
+import woodwork as ww
+
+# from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.relationship import Relationship, RelationshipPath
 from featuretools.utils.gen_utils import import_or_none, is_instance
-from featuretools.utils.plot_utils import (
-    check_graphviz,
-    get_graphviz_format,
-    save_graph
-)
-from featuretools.utils.wrangle import _check_time_type, _check_timedelta
+
+# import pandas.api.types as pdtypes
+
+
+# from featuretools.utils.plot_utils import (
+#     check_graphviz,
+#     get_graphviz_format,
+#     save_graph
+# )
+# from featuretools.utils.wrangle import _check_timedelta
 
 ks = import_or_none('databricks.koalas')
 
@@ -55,8 +56,8 @@ class EntitySet(object):
                     Note that time_index, variable_types and make_index are optional.
 
                 relationships (list[(str, str, str, str)]): List of relationships
-                    between entities. List items are a tuple with the format
-                    (parent entity id, parent variable, child entity id, child variable).
+                    between dataframes. List items are a tuple with the format
+                    (parent dataframe id, parent column, child dataframe id, child column).
 
             Example:
 
@@ -83,7 +84,6 @@ class EntitySet(object):
 
             index_column = None
             time_index = None
-            variable_types = None
             make_index = None
             semantic_tags = None
             logical_types = None
@@ -897,7 +897,7 @@ class EntitySet(object):
 
             if dataframe.ww.metadata.get('last_time_index') is None:
                 if dataframe.ww.time_index is not None:
-                    lti = dataframe.[dataframe.ww.time_index].copy()
+                    lti = dataframe[dataframe.ww.time_index].copy()
                     if isinstance(dataframe, dd.DataFrame):
                         # The current Dask implementation doesn't set the index of the dataframe
                         # to the dataframe's index, so we have to do it manually here
@@ -1283,12 +1283,6 @@ class EntitySet(object):
 
     def _get_time_type(self, dataframe, column_id=None):
         column_id = column_id or dataframe.ww.time_index
-
-        if not isinstance(dataframe, pd.DataFrame) or dataframe.empty:
-            dtype = dataframe.ww.physical_types[column_id]
-            time_to_check = vtypes.DEFAULT_DTYPE_VALUES[dtype]
-        else:
-            time_to_check = dataframe[column_id].iloc[0]
 
         # --> try and find a way to test this case!!!!
         if dataframe.ww.schema is None:
