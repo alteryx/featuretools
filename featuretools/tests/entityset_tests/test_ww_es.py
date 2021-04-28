@@ -32,8 +32,7 @@ def ks_df(pd_df):
     return ks.from_pandas(pd_df)
 
 
-# --> add other fixtures back in
-@pytest.fixture(params=['pd_df', 'dd_df'])
+@pytest.fixture(params=['pd_df', 'dd_df', 'ks_df'])
 def df(request):
     return request.getfixturevalue(request.param)
 
@@ -206,3 +205,38 @@ def test_add_last_time_indexes(es):
     es.add_last_time_indexes(['products'])
 
     assert 'last_time_index' in es['products'].ww.metadata
+
+
+def test_conflicting_dataframe_names(es):
+    new_es = EntitySet()
+
+    sessions_df = es['sessions'].ww.copy()
+
+    assert sessions_df.ww.name == 'sessions'
+
+    new_es.add_dataframe('different_name', sessions_df)
+    assert sessions_df.ww.name == 'different_name'
+    assert new_es['different_name'] is sessions_df
+    assert 'sessions' not in new_es.dataframe_dict
+
+
+def test_extra_woodwork_params(es):
+    new_es = EntitySet()
+
+    sessions_df = es['sessions'].ww.copy()
+
+    assert sessions_df.ww.index == 'id'
+    assert sessions_df.ww.time_index is None
+    assert sessions_df.ww.logical_types['id'] == Integer
+
+    warning_msg = ('A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: '
+                   'index, make_index, time_index, logical_types, semantic_tags, already_sorted')
+    with pytest.warns(UserWarning, match=warning_msg):
+        new_es.add_dataframe(dataframe_id='sessions', dataframe=sessions_df,
+                             index='filepath', time_index='customer_id',
+                             logical_types={'id': Categorical}, make_index=True,
+                             already_sorted=True, semantic_tags={'id': 'new_tag'})
+    assert sessions_df.ww.index == 'id'
+    assert sessions_df.ww.time_index is None
+    assert sessions_df.ww.logical_types['id'] == Integer
+    assert 'new_tag' not in sessions_df.ww.semantic_tags

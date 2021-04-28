@@ -97,7 +97,6 @@ class EntitySet(object):
                 semantic_tags = dataframes[df_name][4]
             if len(dataframes[df_name]) > 5:
                 make_index = dataframes[df_name][5]
-            # --> Implementation: need to find a better way to pass ww params and if we want to allow other formats like ColumnSchema or TableSchema??
             self.add_dataframe(dataframe_id=df_name,
                                dataframe=df,
                                index=index_column,
@@ -554,9 +553,6 @@ class EntitySet(object):
                              "are not strings)".format(non_string_names))
 
         if dataframe.ww.schema is None:
-            # init woodwork with params
-            # --> Implementation: all these params will be ignored if schema is not none - do we want to either raise warning or handle differenctly?
-
             # Warn when performing inference on Dask or Koalas DataFrames
             if not set(dataframe.columns).issubset(set(logical_types.keys())) and \
                     (isinstance(dataframe, dd.DataFrame) or is_instance(dataframe, ks, 'DataFrame')):
@@ -578,6 +574,23 @@ class EntitySet(object):
         else:
             if dataframe.ww.index is None:
                 raise ValueError('Cannot add Woodwork DataFrame to EntitySet without index')
+
+            extra_params = []
+            if index is not None:
+                extra_params.append('index')
+            if make_index:
+                extra_params.append('make_index')
+            if time_index is not None:
+                extra_params.append('time_index')
+            if logical_types is not None:
+                extra_params.append('logical_types')
+            if semantic_tags is not None:
+                extra_params.append('semantic_tags')
+            if already_sorted:
+                extra_params.append('already_sorted')
+            if extra_params:
+                warnings.warn("A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: " + ", ".join(extra_params))
+
             # make sure name is set to match input dataframe_id
             dataframe.ww.name = dataframe_id
 
