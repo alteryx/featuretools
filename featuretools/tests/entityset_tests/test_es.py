@@ -57,7 +57,7 @@ def test_add_relationships_convert_type(es):
 def test_add_relationship_errors_on_dtype_mismatch(es):
     log_2_df = es['log'].copy()
     log_logical_types = {
-        'id': ltypes.Categorical,
+        'id': ltypes.Integer,
         'session_id': ltypes.Categorical,
         'product_id': ltypes.Categorical,
         'datetime': ltypes.Datetime,
@@ -261,7 +261,7 @@ def df(request):
 
 def test_check_variables_and_dataframe(df):
     # matches
-    logical_types = {'id': ltypes.Categorical,
+    logical_types = {'id': ltypes.Integer,
                      'category': ltypes.Categorical}
     es = EntitySet(id='test')
     es.add_dataframe('test_dataframe', df, index='id',
@@ -270,11 +270,10 @@ def test_check_variables_and_dataframe(df):
     assert es.dataframe_dict['test_dataframe'].ww.semantic_tags['category'] == {'category'}
 
 
-def test_make_index_variable_ordering(df):
+def test_make_index_any_location(df):
     if ks and isinstance(df, ks.DataFrame):
-        # --> in woodwork we don't allow koalas dfs to make indices, but if we do in ft why not ww???
         pytest.xfail('Woodwork does not support make_index on Koalas DataFrames')
-    logical_types = {'id': ltypes.Categorical,
+    logical_types = {'id': ltypes.Integer,
                      'category': ltypes.Categorical}
 
     es = EntitySet(id='test')
@@ -283,16 +282,30 @@ def test_make_index_variable_ordering(df):
                      make_index=True,
                      logical_types=logical_types,
                      dataframe=df)
-    if dd and not isinstance(df, dd.DataFrame):
-        # --> dask isn't inserting these in the correct order from Woodwork! We should follow FT behavior in WW
+    if dd and isinstance(df, dd.DataFrame):
+        assert es.dataframe_dict['test_dataframe'].columns[-1] == 'id1'
+    else:
         assert es.dataframe_dict['test_dataframe'].columns[0] == 'id1'
 
     assert es.dataframe_dict['test_dataframe'].ww.index == 'id1'
 
 
+def test_index_any_location(df):
+    logical_types = {'id': ltypes.Integer,
+                     'category': ltypes.Categorical}
+
+    es = EntitySet(id='test')
+    es.add_dataframe(dataframe_id='test_dataframe',
+                     index='category',
+                     logical_types=logical_types,
+                     dataframe=df)
+    assert es.dataframe_dict['test_dataframe'].columns[1] == 'category'
+    assert es.dataframe_dict['test_dataframe'].ww.index == 'category'
+
+
 def test_extra_variable_type(df):
     # more variables
-    logical_types = {'id': ltypes.Categorical,
+    logical_types = {'id': ltypes.Integer,
                      'category': ltypes.Categorical,
                      'category2': ltypes.Categorical}
 
@@ -428,7 +441,7 @@ def df4(request):
 
 
 def test_converts_dtype_on_init(df4):
-    logical_types = {'id': ltypes.Categorical,
+    logical_types = {'id': ltypes.Integer,
                      'ints': ltypes.Integer,
                      'floats': ltypes.Double}
     if not isinstance(df4, pd.DataFrame):
@@ -454,7 +467,7 @@ def test_converts_dtype_after_init(df4):
 
     df4["category"] = df4["category"].astype(category_dtype)
     if not isinstance(df4, pd.DataFrame):
-        logical_types = {'id': ltypes.Categorical,
+        logical_types = {'id': ltypes.Integer,
                          'category': ltypes.Categorical,
                          'category_int': ltypes.Categorical,
                          'ints': ltypes.Integer,
@@ -524,7 +537,7 @@ def test_converts_datetime(datetime1):
     # string converts to datetime correctly
     # This test fails without defining vtypes.  Entityset
     # infers time column should be numeric type
-    logical_types = {'id': ltypes.Categorical,
+    logical_types = {'id': ltypes.Integer,
                      'time': ltypes.Datetime}
 
     es = EntitySet(id='test')
@@ -570,7 +583,7 @@ def test_handles_datetime_format(datetime2):
     datetime_format = "%d-%m-%Y"
     actual = pd.Timestamp('Jan 2, 2011')
 
-    logical_types = {'id': ltypes.Categorical,
+    logical_types = {'id': ltypes.Integer,
                      'time_format': (ltypes.Datetime(datetime_format=datetime_format)),
                      'time_no_format': ltypes.Datetime}
 
@@ -594,7 +607,7 @@ def test_handles_datetime_format(datetime2):
 def test_handles_datetime_mismatch():
     # can't convert arbitrary strings
     df = pd.DataFrame({'id': [0, 1, 2], 'time': ['a', 'b', 'tomorrow']})
-    logical_types = {'id': ltypes.Categorical,
+    logical_types = {'id': ltypes.Integer,
                      'time': ltypes.Datetime}
 
     error_text = "Time index column must contain datetime or numeric values"
@@ -843,7 +856,7 @@ def test_set_time_type_on_init(transactions_df):
     if not isinstance(transactions_df, pd.DataFrame):
         cards_logical_types = {'id': ltypes.Categorical}
         transactions_logical_types = {
-            'id': ltypes.Categorical,
+            'id': ltypes.Integer,
             'card_id': ltypes.Categorical,
             'transaction_time': ltypes.Integer,
             'fraud': ltypes.Boolean
@@ -878,7 +891,7 @@ def test_sets_time_when_adding_entity(transactions_df):
     if not isinstance(transactions_df, pd.DataFrame):
         accounts_logical_types = {'id': ltypes.Categorical, 'signup_date': ltypes.Datetime}
         transactions_logical_types = {
-            'id': ltypes.Categorical,
+            'id': ltypes.Integer,
             'card_id': ltypes.Categorical,
             'transaction_time': ltypes.Integer,
             'fraud': ltypes.Boolean
@@ -1287,7 +1300,7 @@ def test_datetime64_conversion(datetime3):
 
     if not isinstance(df, pd.DataFrame):
         logical_types = {
-            'id': ltypes.Categorical,
+            'id': ltypes.Integer,
             'ints': ltypes.Integer,
             'time': ltypes.Datetime
         }
@@ -1363,13 +1376,13 @@ def test_same_index_values(index_df):
 def test_use_time_index(index_df):
     if not isinstance(index_df, pd.DataFrame):
         bad_vtypes = {
-            'id': ltypes.Categorical,
+            'id': ltypes.Integer,
             'transaction_time': ltypes.Datetime,
             'first_entity_time': ltypes.Integer
         }
         bad_semantic_tags = {'transaction_time': 'time_index'}
         logical_types = {
-            'id': ltypes.Categorical,
+            'id': ltypes.Integer,
             'transaction_time': ltypes.Datetime,
             'first_entity_time': ltypes.Integer
         }
