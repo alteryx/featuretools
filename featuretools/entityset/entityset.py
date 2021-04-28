@@ -562,6 +562,12 @@ class EntitySet(object):
                                  "Cannot add entity of type {} to an entityset with existing entities "
                                  "of type {}".format(type(dataframe), type(self.dataframes[0])))
 
+        # Only allow string column names
+        non_string_names = [name for name in dataframe.columns if not isinstance(name, str)]
+        if non_string_names:
+            raise ValueError("All column names must be strings (Columns {} "
+                             "are not strings)".format(non_string_names))
+
         if dataframe.ww.schema is None:
             # init woodwork with params
             # --> Implementation: all these params will be ignored if schema is not none - do we want to either raise warning or handle differenctly?

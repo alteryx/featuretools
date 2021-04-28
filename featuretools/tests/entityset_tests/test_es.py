@@ -9,6 +9,7 @@ import pandas as pd
 import pytest
 
 import woodwork.logical_types as ltypes
+import woodwork as ww
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
@@ -371,15 +372,13 @@ def df3(request):
 
 
 def test_unknown_index(df3):
-    # --> Behavior change: Woodwork will not create an index unless make_index is specified
-    warn_text = "index id not found in dataframe, creating new integer column"
+    error_message = 'Specified index column `id` not found in dataframe. To create a new index column, set make_index to True.'
     es = EntitySet(id='test')
-    with pytest.warns(UserWarning, match=warn_text):
+    with pytest.raises(ww.exceptions.ColumnNotPresentError, match=error_message):
         es.add_dataframe(dataframe_id='test_dataframe',
                          index='id',
                          logical_types={'category': 'Categorical'}, dataframe=df3)
-    assert es['test_dataframe'].ww.index == 'id'
-    assert list(to_pandas(es['test_dataframe']['id'], sort_index=True)) == list(range(3))
+# --> test not allowing for koalas index!!!
 
 
 def test_doesnt_remake_index(df):
@@ -674,13 +673,17 @@ def test_nonstr_column_names(bad_df):
     if dd and isinstance(bad_df, dd.DataFrame):
         pytest.xfail('Dask DataFrames cannot handle integer column names')
 
-    # --> Behavior Change: woodwork allows non string column names (except for dask which still doesnt support)
     es = ft.EntitySet(id='Failure')
-    error_text = r"All column names must be strings \(Column 3 is not a string\)"
+    error_text = r"All column names must be strings \(Columns \[3\] are not strings\)"
     with pytest.raises(ValueError, match=error_text):
         es.add_dataframe(dataframe_id='str_cols',
                          dataframe=bad_df,
                          index='a')
+
+    bad_df.ww.init()
+    with pytest.raises(ValueError, match=error_text):
+        es.add_dataframe(dataframe_id='str_cols',
+                         dataframe=bad_df)
 
 
 def test_sort_time_id():
