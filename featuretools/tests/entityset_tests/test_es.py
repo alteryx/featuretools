@@ -591,7 +591,6 @@ def test_handles_datetime_format(datetime2):
 
 
 # Inferring variable types and verifying typing not supported in Dask, Koalas
-# --> woodowrk will allow this so we should test
 def test_handles_datetime_mismatch():
     # can't convert arbitrary strings
     df = pd.DataFrame({'id': [0, 1, 2], 'time': ['a', 'b', 'tomorrow']})
@@ -1326,7 +1325,7 @@ def index_df(request):
 def test_same_index_values(index_df):
     if not isinstance(index_df, pd.DataFrame):
         logical_types = {
-            'id': ltypes.Categorical,
+            'id': ltypes.Integer,
             'transaction_time': ltypes.Datetime,
             'first_entity_time': ltypes.Integer
         }
@@ -1335,8 +1334,7 @@ def test_same_index_values(index_df):
 
     es = ft.EntitySet("example")
 
-    # --> Behavior change: Woodwork allows same index and time index
-    error_text = "time_index and index cannot be the same value"
+    error_text = '"id" is already set as the index. An index cannot also be the time index.'
     with pytest.raises(ValueError, match=error_text):
         es.add_dataframe(dataframe_id="entity",
                          index="id",
@@ -1350,6 +1348,7 @@ def test_same_index_values(index_df):
                      dataframe=index_df,
                      logical_types=logical_types)
 
+    error_text = "time_index and index cannot be the same value, first_entity_time"
     with pytest.raises(ValueError, match=error_text):
         es.normalize_dataframe(base_dataframe_id="entity",
                                new_dataframe_id="new_entity",
