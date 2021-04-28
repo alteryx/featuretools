@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import Datetime
 
 import featuretools as ft
 from featuretools.computational_backends.feature_set import FeatureSet
@@ -22,7 +24,6 @@ from featuretools.primitives.utils import (
 )
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import feature_with_name
-from featuretools.variable_types import Datetime, DatetimeTimeIndex, Numeric
 
 
 class TestCumCount:
@@ -220,8 +221,8 @@ def test_cum_sum_numpy_group_on_nan(pd_es):
         """Returns the cumulative sum after grouping"""
 
         name = "cum_sum"
-        input_types = [Numeric]
-        return_type = Numeric
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
         uses_full_entity = True
 
         def get_function(self):
@@ -335,8 +336,8 @@ def test_groupby_uses_calc_time(pd_es):
     class ProjectedAmountRemaining(TransformPrimitive):
         name = "projected_amount_remaining"
         uses_calc_time = True
-        input_types = [Numeric, DatetimeTimeIndex]
-        return_type = Numeric
+        input_types = [ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
         uses_full_entity = True
 
         def get_function(self):
@@ -359,8 +360,8 @@ def test_groupby_multi_output_stacking(pd_es):
     TestTime = make_trans_primitive(
         function=lambda x: x,
         name="test_time",
-        input_types=[Datetime],
-        return_type=Numeric,
+        input_types=[ColumnSchema(logical_type=Datetime)],
+        return_type=ColumnSchema(semantic_tags={'numeric'}),
         number_output_features=6,
     )
 
@@ -408,8 +409,8 @@ def test_groupby_with_multioutput_primitive(pd_es):
 
     num_features = 3
     MultiCumSum = make_trans_primitive(function=multi_cum_sum,
-                                       input_types=[Numeric],
-                                       return_type=Numeric,
+                                       input_types=[ColumnSchema(semantic_tags={'numeric'})],
+                                       return_type=ColumnSchema(semantic_tags={'numeric'}),
                                        number_output_features=num_features)
 
     fm, _ = dfs(entityset=pd_es,
@@ -459,8 +460,8 @@ def test_groupby_with_multioutput_primitive_custom_names(pd_es):
 
     num_features = 3
     MultiCumSum = make_trans_primitive(function=multi_cum_sum,
-                                       input_types=[Numeric],
-                                       return_type=Numeric,
+                                       input_types=[ColumnSchema(semantic_tags={'numeric'})],
+                                       return_type=ColumnSchema(semantic_tags={'numeric'}),
                                        number_output_features=num_features,
                                        cls_attributes={"generate_names": gen_custom_names})
 

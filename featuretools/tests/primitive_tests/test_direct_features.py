@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
+from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import Datetime
 
 import featuretools as ft
 from featuretools.computational_backends.feature_set import FeatureSet
@@ -22,7 +24,6 @@ from featuretools.primitives import (
 from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import to_pandas
-from featuretools.variable_types import Categorical, Datetime, Numeric
 
 
 def test_direct_from_identity(es):
@@ -92,8 +93,8 @@ def test_direct_of_multi_output_transform_feat(es):
 
     class TestTime(TransformPrimitive):
         name = "test_time"
-        input_types = [Datetime]
-        return_type = Numeric
+        input_types = [ColumnSchema(logical_types=Datetime)]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
         number_output_features = 6
 
         def get_function(self):
@@ -128,8 +129,8 @@ def test_direct_of_multi_output_transform_feat(es):
 def test_direct_features_of_multi_output_agg_primitives(pd_es):
     class ThreeMostCommonCat(AggregationPrimitive):
         name = "n_most_common_categorical"
-        input_types = [Categorical]
-        return_type = Categorical
+        input_types = [ColumnSchema(semantic_tags={'category'})]
+        return_type = ColumnSchema(semantic_tags={'category'})
         number_output_features = 3
 
         def get_function(self, agg_type='pandas'):

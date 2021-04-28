@@ -2,6 +2,8 @@ import os.path
 
 import pytest
 from pympler.asizeof import asizeof
+from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import Datetime
 
 import featuretools as ft
 from featuretools import config
@@ -18,7 +20,7 @@ from featuretools.primitives import (
     TransformPrimitive
 )
 from featuretools.tests.testing_utils import check_rename
-from featuretools.variable_types import Categorical, Datetime, Id, Numeric
+from featuretools.variable_types import Categorical, Id, Numeric
 
 
 def test_copy_features_does_not_copy_entityset(es):
@@ -283,8 +285,8 @@ def test_multi_output_base_error_agg(es):
 def test_multi_output_base_error_trans(es):
     class TestTime(TransformPrimitive):
         name = "test_time"
-        input_types = [Datetime]
-        return_type = Numeric
+        input_types = [ColumnSchema(logical_type=Datetime)]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
         number_output_features = 6
 
     tc = ft.Feature(es['customers']['date_of_birth'], primitive=TestTime)
