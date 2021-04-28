@@ -570,7 +570,6 @@ class EntitySet(object):
             # --> Behavior change: Woodwork inserts Dask index at different location than in FT
             # --> Behavior change: Woodwork will perform inference on Dask and Koalas where FT errors
             # --> Behavior change: Woodwork allows non string column names for koalas and pandas, FT doesnt
-            # --> Behavior change: Woodwork allows index and time index to match; FT doesnt (issue on WW exists!)
             dataframe.ww.init(name=dataframe_id,
                               index=index,
                               time_index=time_index,
@@ -578,17 +577,17 @@ class EntitySet(object):
                               semantic_tags=semantic_tags,
                               make_index=make_index,
                               already_sorted=already_sorted)
+            # If no index column is specified, set the first column
+            if dataframe.ww.index is None:
+                dataframe.ww.set_index(dataframe.columns[0])
+                warnings.warn(("Using first column as index. "
+                               "To change this, specify the index parameter"))
 
         else:
+            if dataframe.ww.index is None:
+                raise ValueError('Cannot add Woodwork DataFrame to EntitySet without index')
             # make sure name is set to match input dataframe_id
             dataframe.ww.name = dataframe_id
-
-        # If no index column is specified, set the first column
-        if dataframe.ww.index is None:
-            # --> Behavior Change: Featuretools will make an index even if make_index is not specified. Woodwork will error
-            dataframe.ww.set_index(dataframe.columns[0])
-            warnings.warn(("Using first column as index. "
-                           "To change this, specify the index parameter"))
 
         if secondary_time_index:
             self.set_secondary_time_index(dataframe, secondary_time_index=secondary_time_index)

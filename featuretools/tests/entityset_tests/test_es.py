@@ -331,8 +331,15 @@ def df2(request):
 
 
 def test_none_index(df2):
-    warn_text = "Using first column as index. To change this, specify the index parameter"
     es = EntitySet(id='test')
+
+    copy_df = df2.copy()
+    copy_df.ww.init()
+    error_msg = 'Cannot add Woodwork DataFrame to EntitySet without index'
+    with pytest.raises(ValueError, match=error_msg):
+        es.add_dataframe(dataframe_id='test_dataframe', dataframe=copy_df)
+
+    warn_text = "Using first column as index. To change this, specify the index parameter"
     with pytest.warns(UserWarning, match=warn_text):
         es.add_dataframe(dataframe_id='test_dataframe',
                          logical_types={'category': 'Categorical'},
