@@ -386,14 +386,14 @@ class EntitySet(object):
         yield start_dataframe_id, []
 
         for relationship in self.get_forward_relationships(start_dataframe_id):
-            next_dataframe = relationship.parent_dataframe.ww.id
+            next_dataframe = relationship.parent_dataframe.ww.name
             # Copy seen entities for each next node to allow multiple paths (but
             # not cycles).
             descendants = self._forward_entity_paths(next_dataframe, seen_dataframes.copy())
             for sub_dataframe_id, sub_path in descendants:
                 yield sub_dataframe_id, [relationship] + sub_path
 
-    def get_forward_entities(self, entity_id, deep=False):
+    def get_forward_dataframes(self, entity_id, deep=False):
         """
         Get entities that are in a forward relationship with entity
 
@@ -409,11 +409,11 @@ class EntitySet(object):
             yield parent_dataframe_id, direct_path
 
             if deep:
-                sub_dataframes = self.get_forward_entities(parent_dataframe_id, deep=True)
+                sub_dataframes = self.get_forward_dataframes(parent_dataframe_id, deep=True)
                 for sub_dataframe_id, path in sub_dataframes:
                     yield sub_dataframe_id, direct_path + path
 
-    def get_backward_entities(self, entity_id, deep=False):
+    def get_backward_dataframes(self, entity_id, deep=False):
         """
         Get entities that are in a backward relationship with entity
 
@@ -424,12 +424,12 @@ class EntitySet(object):
         Yields a tuple of (descendent_id, path from entity_id to descendant).
         """
         for relationship in self.get_backward_relationships(entity_id):
-            child_dataframe_id = relationship.child_dataframe.ww.id
+            child_dataframe_id = relationship.child_dataframe.ww.name
             direct_path = RelationshipPath([(False, relationship)])
             yield child_dataframe_id, direct_path
 
             if deep:
-                sub_entities = self.get_backward_entities(child_dataframe_id, deep=True)
+                sub_entities = self.get_backward_dataframes(child_dataframe_id, deep=True)
                 for sub_dataframe_id, path in sub_entities:
                     yield sub_dataframe_id, direct_path + path
 
@@ -870,7 +870,7 @@ class EntitySet(object):
                     continue
                 parents.add(df_name)
 
-                for parent_id, _ in self.get_forward_entities(df_name):
+                for parent_id, _ in self.get_forward_dataframes(df_name):
                     parent_queue.append(parent_id)
 
             queue = [self[p] for p in parents]

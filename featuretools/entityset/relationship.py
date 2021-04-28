@@ -25,8 +25,8 @@ class Relationship(object):
 
         if (self.parent_dataframe.ww.index is not None and
                 self._parent_column_id != self.parent_dataframe.ww.index):
-            raise AttributeError(f"Parent column '{self.parent_column}' is not the index of "
-                                 f"dataframe {self.parent_dataframe}")
+            raise AttributeError(f"Parent column '{self.parent_column.name}' is not the index of "
+                                 f"dataframe {self.parent_dataframe.ww.name}")
 
     @classmethod
     def from_dictionary(cls, arguments, es):

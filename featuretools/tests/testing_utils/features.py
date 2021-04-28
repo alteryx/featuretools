@@ -16,7 +16,7 @@ def backward_path(es, entity_ids):
     """
     def _get_relationship(child, parent):
         return next(r for r in es.get_forward_relationships(child)
-                    if r.parent_dataframe.id == parent)
+                    if r.parent_dataframe.ww.name == parent)
 
     relationships = [_get_relationship(child, parent)
                      for parent, child in zip(entity_ids[:-1], entity_ids[1:])]
@@ -31,7 +31,7 @@ def forward_path(es, entity_ids):
     """
     def _get_relationship(child, parent):
         return next(r for r in es.get_forward_relationships(child)
-                    if r.parent_dataframe.id == parent)
+                    if r.parent_dataframe.ww.name == parent)
 
     relationships = [_get_relationship(child, parent)
                      for child, parent in zip(entity_ids[:-1], entity_ids[1:])]
