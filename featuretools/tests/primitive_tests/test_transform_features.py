@@ -2,6 +2,8 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
+from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import Boolean, Datetime
 
 import featuretools as ft
 from featuretools.computational_backends.feature_set import FeatureSet
@@ -61,7 +63,6 @@ from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.tests.testing_utils import feature_with_name, to_pandas
 from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
-from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 ks = import_or_none('databricks.koalas')
 
@@ -795,8 +796,8 @@ def test_isin_feat_custom(es):
 
     IsIn = make_trans_primitive(
         pd_is_in,
-        [Variable],
-        Boolean,
+        [ColumnSchema()],
+        ColumnSchema(logical_type=Boolean),
         name="is_in",
         description="For each value of the base feature, checks whether it is "
         "in a list that is provided.",
@@ -977,8 +978,8 @@ def test_two_kinds_of_dependents(pd_es):
 def test_make_transform_restricts_time_keyword():
     make_trans_primitive(
         lambda x, time=False: x,
-        [Datetime],
-        Numeric,
+        [ColumnSchema(logical_type=Datetime)],
+        ColumnSchema(semantic_tags={'numeric'}),
         name="AllowedPrimitive",
         description="This primitive should be accepted",
         uses_calc_time=True)
@@ -987,8 +988,8 @@ def test_make_transform_restricts_time_keyword():
     with pytest.raises(ValueError, match=error_text):
         make_trans_primitive(
             lambda x, time=False: x,
-            [Datetime],
-            Numeric,
+            [ColumnSchema(logical_type=Datetime)],
+            ColumnSchema(semantic_tags={'numeric'}),
             name="BadPrimitive",
             description="This primitive should error")
 
@@ -996,8 +997,8 @@ def test_make_transform_restricts_time_keyword():
 def test_make_transform_restricts_time_arg():
     make_trans_primitive(
         lambda time: time,
-        [Datetime],
-        Numeric,
+        [ColumnSchema(logical_type=Datetime)],
+        ColumnSchema(semantic_tags={'numeric'}),
         name="AllowedPrimitive",
         description="This primitive should be accepted",
         uses_calc_time=True)
@@ -1006,8 +1007,8 @@ def test_make_transform_restricts_time_arg():
     with pytest.raises(ValueError, match=error_text):
         make_trans_primitive(
             lambda time: time,
-            [Datetime],
-            Numeric,
+            [ColumnSchema(logical_type=Datetime)],
+            ColumnSchema(semantic_tags={'numeric'}),
             name="BadPrimitive",
             description="This primitive should erorr")
 
@@ -1024,8 +1025,8 @@ def test_make_transform_sets_kwargs_correctly(es):
 
     IsIn = make_trans_primitive(
         pd_is_in,
-        [Variable],
-        Boolean,
+        [ColumnSchema()],
+        ColumnSchema(logical_type=Boolean),
         name="is_in",
         description="For each value of the base feature, checks whether it is "
         "in a list that is provided.",
@@ -1056,8 +1057,8 @@ def test_make_transform_multiple_output_features(pd_es):
 
     TestTime = make_trans_primitive(
         function=test_time,
-        input_types=[Datetime],
-        return_type=Numeric,
+        input_types=[ColumnSchema(logical_type=Datetime)],
+        return_type=ColumnSchema(semantic_tags={'numeric'}),
         number_output_features=6,
         cls_attributes={"get_feature_names": gen_feat_names},
     )
@@ -1096,8 +1097,8 @@ def test_get_filepath(es):
     class Mod4(TransformPrimitive):
         '''Return base feature modulo 4'''
         name = "mod4"
-        input_types = [Numeric]
-        return_type = Numeric
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
         compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
         def get_function(self):
@@ -1142,8 +1143,8 @@ def test_override_multi_feature_names(pd_es):
 
     num_features = 3
     IsGreater = make_trans_primitive(function=is_greater,
-                                     input_types=[Numeric],
-                                     return_type=Numeric,
+                                     input_types=[ColumnSchema(semantic_tags={'numeric'})],
+                                     return_type=ColumnSchema(semantic_tags={'numeric'}),
                                      number_output_features=num_features,
                                      cls_attributes={"generate_names": gen_custom_names})
 

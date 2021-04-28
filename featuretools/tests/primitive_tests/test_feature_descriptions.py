@@ -2,6 +2,7 @@ import json
 import os
 
 import pytest
+from woodwork.column_schema import ColumnSchema
 
 from featuretools import describe_feature
 from featuretools.feature_base import (
@@ -24,7 +25,6 @@ from featuretools.primitives import (
     Sum,
     TransformPrimitive
 )
-from featuretools.variable_types import Discrete
 
 
 def test_identity_description(es):
@@ -117,8 +117,8 @@ def test_multioutput_description(es):
 
     class CustomMultiOutput(TransformPrimitive):
         name = "custom_multioutput"
-        input_types = [Discrete]
-        return_type = Discrete
+        input_types = [ColumnSchema(semantic_tags={'category'})]
+        return_type = ColumnSchema(semantic_tags={'category'})
 
         number_output_features = 4
 
@@ -161,8 +161,8 @@ def test_multioutput_description(es):
 
 def test_generic_description(es):
     class NoName(TransformPrimitive):
-        input_types = [Discrete]
-        output_type = Discrete
+        input_types = [ColumnSchema(semantic_tags={'category'})]
+        output_type = ColumnSchema(semantic_tags={'category'})
 
         def generate_name(self, base_feature_names):
             return u"%s(%s%s)" % (
@@ -173,13 +173,13 @@ def test_generic_description(es):
 
     class CustomAgg(AggregationPrimitive):
         name = 'custom_aggregation'
-        input_types = [Discrete]
-        output_type = Discrete
+        input_types = [ColumnSchema(semantic_tags={'category'})]
+        output_type = ColumnSchema(semantic_tags={'category'})
 
     class CustomTrans(TransformPrimitive):
         name = 'custom_transform'
-        input_types = [Discrete]
-        output_type = Discrete
+        input_types = [ColumnSchema(semantic_tags={'category'})]
+        output_type = ColumnSchema(semantic_tags={'category'})
 
     no_name = TransformFeature(es['log']['zipcode'], NoName)
     no_name_description = 'The result of applying NoName to the "zipcode".'

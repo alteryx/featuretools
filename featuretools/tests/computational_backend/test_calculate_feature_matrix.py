@@ -13,6 +13,7 @@ import pytest
 from dask import dataframe as dd
 from distributed.utils_test import cluster
 from tqdm import tqdm
+from woodwork.column_schema import ColumnSchema
 
 import featuretools as ft
 from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
@@ -1744,7 +1745,7 @@ def test_closes_tqdm(es):
     class ErrorPrim(TransformPrimitive):
         '''A primitive whose function raises an error'''
         name = "error_prim"
-        input_types = [ft.variable_types.Numeric]
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
         return_type = "Numeric"
         compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
