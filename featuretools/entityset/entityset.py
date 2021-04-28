@@ -576,6 +576,11 @@ class EntitySet(object):
             # --> Behavior change: Woodwork inserts Dask index at different location than in FT
             # --> Behavior change: Woodwork will perform inference on Dask and Koalas where FT errors
             # --> Behavior change: Woodwork allows non string column names for koalas and pandas, FT doesnt
+            # Warn when performing inference on Dask or Koalas DataFrames
+            if not set(dataframe.columns).issubset(set(logical_types.keys())) and \
+                    (isinstance(dataframe, dd.DataFrame) or is_instance(dataframe, ks, 'DataFrame')):
+                warnings.warn('Performing type inference on Dask or Koalas DataFrames may be computationally intensive. Specify logical types for each column to speed up EntitySet initialization.')
+
             dataframe.ww.init(name=dataframe_id,
                               index=index,
                               time_index=time_index,

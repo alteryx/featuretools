@@ -483,24 +483,18 @@ def test_converts_dtype_after_init(df4):
     assert df['ints'].dtype == 'string'
 
 
-def test_errors_no_vtypes_dask(dd_df4):
+def test_warns_no_typing(df4):
     es = EntitySet(id='test')
-    msg = 'Variable types cannot be inferred from Dask DataFrames, '
-    'use variable_types to provide type metadata for entity'
-    # --> Behavior change: Woodwork will perform inference - should FT just ignore it???
-    with pytest.raises(ValueError, match=msg):
+    if not isinstance(df4, pd.DataFrame):
+        msg = 'Performing type inference on Dask or Koalas DataFrames may be computationally intensive. Specify logical types for each column to speed up EntitySet initialization.'
+        with pytest.warns(UserWarning, match=msg):
+            es.add_dataframe(dataframe_id='test_dataframe', index='id',
+                             dataframe=df4)
+    else:
         es.add_dataframe(dataframe_id='test_dataframe', index='id',
-                         dataframe=dd_df4)
+                         dataframe=df4)
 
-
-def test_errors_no_vtypes_koalas(ks_df4):
-    es = EntitySet(id='test')
-    msg = 'Variable types cannot be inferred from Koalas DataFrames, '
-    'use variable_types to provide type metadata for entity'
-    # --> Behavior change: Woodwork will perform inference - should FT just ignore it???
-    with pytest.raises(ValueError, match=msg):
-        es.add_dataframe(dataframe_id='test_dataframe', index='id',
-                         dataframe=ks_df4)
+    assert 'test_dataframe' in es.dataframe_dict
 
 
 @pytest.fixture
