@@ -149,6 +149,12 @@ class DeepFeatureSynthesis(object):
         # need to change max_depth to None because DFs terminates when  <0
         if max_depth == -1:
             max_depth = None
+
+        # if just one entity, set max depth to 1 (transform stacking rule)
+        if len(entityset.entity_dict) == 1 and (max_depth is None or max_depth > 1):
+            logger.info("single entity detected, setting max_depth to 1")
+            max_depth = 1
+
         self.max_depth = max_depth
 
         self.max_features = max_features
