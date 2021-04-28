@@ -54,11 +54,104 @@ def test_add_relationships_convert_type(es):
         assert str(parent_df[r.parent_column.name].dtype) == str(child_df[r.child_column.name].dtype)
 
 
-def test_add_relationship_errors_on_dtype_mismatch(es):
+def test_add_relationship_instantiated_logical_types(es):
     log_2_df = es['log'].copy()
     log_logical_types = {
         'id': ltypes.Integer,
-        'session_id': ltypes.Categorical,
+        'session_id': ltypes.Integer,
+        'product_id': ltypes.Categorical(),
+        'datetime': ltypes.Datetime,
+        'value': ltypes.Double,
+        'value_2': ltypes.Double,
+        'latlong': ltypes.LatLong,
+        'latlong2': ltypes.LatLong,
+        'zipcode': ltypes.PostalCode,
+        'countrycode': ltypes.CountryCode,
+        'subregioncode': ltypes.SubRegionCode,
+        'value_many_nans': ltypes.Double,
+        'priority_level': ltypes.Ordinal(order=[0, 1, 2]),
+        'purchased': ltypes.Boolean,
+        'comments': ltypes.NaturalLanguage
+    }
+    log_semantic_tags = {
+        'session_id': 'foreign_key',
+        'product_id': 'foreign_key'
+    }
+    assert set(log_logical_types) == set(log_2_df.columns)
+    es.add_dataframe(dataframe_id='log2',
+                     dataframe=log_2_df,
+                     index='id',
+                     logical_types=log_logical_types,
+                     semantic_tags=log_semantic_tags,
+                     time_index='datetime')
+    assert 'log2' in es.dataframe_dict
+    assert es['log2'].ww.schema is not None
+    assert es['log2'].ww.logical_types['product_id'] == ltypes.Categorical()
+    assert es['products'].ww.logical_types['id'] == ltypes.Categorical
+
+    category_dtype = 'category'
+    if ks and isinstance(es['customers'], ks.DataFrame):
+        category_dtype = 'string'
+
+    # --> terrible error message
+    warning_text = f'Logical type for child column Categorical does not match parent column logical type Categorical. Changing child logical type to match parent.'
+    with pytest.warns(UserWarning, match=warning_text):
+        es.add_relationship(u'products', 'id', 'log2', 'product_id')
+    assert es['log2'].ww.logical_types['product_id'] == ltypes.Categorical
+    assert es['products'].ww.logical_types['id'] == ltypes.Categorical
+
+
+def test_add_relationship_different_logical_types_same_dtype(es):
+    log_2_df = es['log'].copy()
+    log_logical_types = {
+        'id': ltypes.Integer,
+        'session_id': ltypes.Integer,
+        'product_id': ltypes.CountryCode,
+        'datetime': ltypes.Datetime,
+        'value': ltypes.Double,
+        'value_2': ltypes.Double,
+        'latlong': ltypes.LatLong,
+        'latlong2': ltypes.LatLong,
+        'zipcode': ltypes.PostalCode,
+        'countrycode': ltypes.CountryCode,
+        'subregioncode': ltypes.SubRegionCode,
+        'value_many_nans': ltypes.Double,
+        'priority_level': ltypes.Ordinal(order=[0, 1, 2]),
+        'purchased': ltypes.Boolean,
+        'comments': ltypes.NaturalLanguage
+    }
+    log_semantic_tags = {
+        'session_id': 'foreign_key',
+        'product_id': 'foreign_key'
+    }
+    assert set(log_logical_types) == set(log_2_df.columns)
+    es.add_dataframe(dataframe_id='log2',
+                     dataframe=log_2_df,
+                     index='id',
+                     logical_types=log_logical_types,
+                     semantic_tags=log_semantic_tags,
+                     time_index='datetime')
+    assert 'log2' in es.dataframe_dict
+    assert es['log2'].ww.schema is not None
+    assert es['log2'].ww.logical_types['product_id'] == ltypes.CountryCode
+    assert es['products'].ww.logical_types['id'] == ltypes.Categorical
+
+    category_dtype = 'category'
+    if ks and isinstance(es['customers'], ks.DataFrame):
+        category_dtype = 'string'
+
+    warning_text = f'Logical type for child column CountryCode does not match parent column logical type Categorical. Changing child logical type to match parent.'
+    with pytest.warns(UserWarning, match=warning_text):
+        es.add_relationship(u'products', 'id', 'log2', 'product_id')
+    assert es['log2'].ww.logical_types['product_id'] == ltypes.Categorical
+    assert es['products'].ww.logical_types['id'] == ltypes.Categorical
+
+
+def test_add_relationship_different_compatible_dtypes(es):
+    log_2_df = es['log'].copy()
+    log_logical_types = {
+        'id': ltypes.Integer,
+        'session_id': ltypes.Datetime,
         'product_id': ltypes.Categorical,
         'datetime': ltypes.Datetime,
         'value': ltypes.Double,
@@ -86,14 +179,18 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
                      time_index='datetime')
     assert 'log2' in es.dataframe_dict
     assert es['log2'].ww.schema is not None
+    assert es['log2'].ww.logical_types['session_id'] == ltypes.Datetime
+    assert es['customers'].ww.logical_types['id'] == ltypes.Integer
 
     category_dtype = 'category'
     if ks and isinstance(es['customers'], ks.DataFrame):
         category_dtype = 'string'
 
-    error_text = f'Unable to add relationship because id in customers is Pandas dtype int64 and session_id in log2 is Pandas dtype {category_dtype}.'
-    with pytest.raises(ValueError, match=error_text):
+    warning_text = f'Logical type for child column Datetime does not match parent column logical type Integer. Changing child logical type to match parent.'
+    with pytest.warns(UserWarning, match=warning_text):
         es.add_relationship(u'customers', 'id', 'log2', 'session_id')
+    assert es['log2'].ww.logical_types['session_id'] == ltypes.Integer
+    assert es['customers'].ww.logical_types['id'] == ltypes.Integer
 
 
 def test_add_relationship_errors_child_v_index(es):

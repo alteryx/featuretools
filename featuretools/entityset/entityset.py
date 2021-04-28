@@ -306,7 +306,6 @@ class EntitySet(object):
             child_df.ww.add_semantic_tags({child_column: 'foreign_key'})
 
         if parent_df.ww.index != parent_column:
-            # --> Implementation: previously had 'convert_data=False` does this means we shouldn't set the underlying index?????
             parent_df.ww.set_index(parent_column)
         # Empty dataframes (as a result of accessing Entity.metadata)
         # default to object dtypes for discrete variables, but
@@ -315,19 +314,14 @@ class EntitySet(object):
         if isinstance(child_df, pd.DataFrame) and \
                 (child_df.empty and child_df[child_column].dtype == object and
                  parent_df.ww.columns[parent_column].is_numeric):
-            # --> Implementation: should this match Integer or IntegerNullable????
             child_df.ww[child_column] = pd.Series(name=child_column, dtype=np.int64)
 
-        parent_dtype = parent_df[parent_column].dtype
-        child_dtype = child_df[child_column].dtype
-        msg = u"Unable to add relationship because {} in {} is Pandas dtype {}"\
-            u" and {} in {} is Pandas dtype {}."
-        # --> the following commented out line can't recognize two categorical dtypes if they have different categories
-        # this seems bad - comparing their strings should be fine
-        # if not is_dtype_equal(parent_dtype, child_dtype):
-        if str(parent_dtype) != str(child_dtype):
-            raise ValueError(msg.format(parent_column, parent_df.ww.name, parent_dtype,
-                                        child_column, child_df.ww.name, child_dtype))
+        parent_ltype = parent_df.ww.logical_types[parent_column]
+        child_ltype = child_df.ww.logical_types[child_column]
+        if parent_ltype != child_ltype:
+            # --> should have a better warning here that can differentiate between instance and not :/
+            warnings.warn(f'Logical type for child column {child_ltype} does not match parent column logical type {parent_ltype}. Changing child logical type to match parent.')
+            child_df.ww.set_types(logical_types={child_column: parent_ltype})
 
         self.relationships.append(relationship)
         self.reset_data_description()
@@ -547,15 +541,6 @@ class EntitySet(object):
         logical_types = logical_types or {}
         semantic_tags = semantic_tags or {}
 
-# --> Implementation: not necessary bc handled by woodwork???
-        # if time_index is not None and time_index == index:
-        #     raise ValueError("time_index and index cannot be the same value, %s" % (time_index))
-
-        # if time_index is None:
-        #     for variable, variable_type in variable_types.items():
-        #         if variable_type == vtypes.DatetimeTimeIndex:
-        #             raise ValueError("DatetimeTimeIndex variable %s must be set using time_index parameter" % (variable))
-
         if len(self.dataframes) > 0:
             if not isinstance(dataframe, type(self.dataframes[0])):
                 raise ValueError("All entity dataframes must be of the same type. "
@@ -572,10 +557,6 @@ class EntitySet(object):
             # init woodwork with params
             # --> Implementation: all these params will be ignored if schema is not none - do we want to either raise warning or handle differenctly?
 
-            # --> Behavior change: Entities allow koalas DFs to make indices but Woodwork doesnt
-            # --> Behavior change: Woodwork inserts Dask index at different location than in FT
-            # --> Behavior change: Woodwork will perform inference on Dask and Koalas where FT errors
-            # --> Behavior change: Woodwork allows non string column names for koalas and pandas, FT doesnt
             # Warn when performing inference on Dask or Koalas DataFrames
             if not set(dataframe.columns).issubset(set(logical_types.keys())) and \
                     (isinstance(dataframe, dd.DataFrame) or is_instance(dataframe, ks, 'DataFrame')):
@@ -654,14 +635,6 @@ class EntitySet(object):
         base_dataframe = self.dataframe_dict[base_dataframe_id]
         additional_columns = additional_columns or []
         copy_columns = copy_columns or []
-
-        # Check base entity to make sure time index is valid
-        # --> Implementation: not sure if still relevalt with woodwork??
-        # if base_dataframe.ww.time_index is not None:
-        #     t_index = base_dataframe[base_dataframe.ww.time_index]
-        #     if not isinstance(t_index, (vtypes.NumericTimeIndex, vtypes.DatetimeTimeIndex)):
-        #         base_error = "Time index '{0}' is not a NumericTimeIndex or DatetimeTimeIndex, but type {1}. Use set_time_index on entity '{2}' to set the time_index."
-        #         raise TypeError(base_error.format(base_dataframe.time_index, type(t_index), str(base_dataframe.id)))
 
         if not isinstance(additional_columns, list):
             raise TypeError("'additional_columns' must be a list, but received type {}"
@@ -1253,7 +1226,6 @@ class EntitySet(object):
         original_dtypes = self[dataframe_id].dtypes
         df = df.astype(original_dtypes)
         df.ww.init(schema=self[dataframe_id].ww.schema)
-        # --> Implementation: probably isn't how we cant to update the dataframe dict??
         self.dataframe_dict[dataframe_id] = df
 
         if self[dataframe_id].ww.time_index is not None:
@@ -1286,7 +1258,6 @@ class EntitySet(object):
         time_type = self._get_time_type(dataframe, column_id)
         if self.time_type is None:
             self.time_type = time_type
-            # --> might be worth storing all ltype and semantic tag info as time type and defining an "is_subset" function here
         elif self.time_type != time_type:
             info = "%s time index is %s type which differs from other entityset time indexes"
             raise TypeError(info % (dataframe.ww.name, time_type))
