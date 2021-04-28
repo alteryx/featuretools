@@ -169,11 +169,11 @@ class TestLastTimeIndex(object):
 
     def test_multiple_children(self, es, wishlist_df,
                                true_sessions_lti):
+        if ks and isinstance(es.dataframes[0], ks.DataFrame):
+            pytest.xfail('Cannot make index on a Koalas DataFrame')
         # test all instances in both children
         if isinstance(es.dataframes[0], dd.DataFrame):
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
-        if ks and isinstance(es.dataframes[0], ks.DataFrame):
-            wishlist_df = ks.from_pandas(wishlist_df)
         logical_types = {'session_id': ltypes.Integer,
                          'datetime': ltypes.Datetime,
                          'product_id': ltypes.Categorical}
@@ -198,6 +198,8 @@ class TestLastTimeIndex(object):
 
     def test_multiple_children_right_missing(self, es, wishlist_df,
                                              true_sessions_lti):
+        if ks and isinstance(es.dataframes[0], ks.DataFrame):
+            pytest.xfail('Cannot make index on a Koalas DataFrame')
         # test all instances in left child
         sessions = es['sessions']
 
@@ -205,8 +207,6 @@ class TestLastTimeIndex(object):
         wishlist_df.drop(4, inplace=True)
         if isinstance(es.dataframes[0], dd.DataFrame):
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
-        if ks and isinstance(es.dataframes[0], ks.DataFrame):
-            wishlist_df = ks.from_pandas(wishlist_df)
         logical_types = {'session_id': ltypes.Integer,
                          'datetime': ltypes.Datetime,
                          'product_id': ltypes.Categorical}
@@ -229,6 +229,8 @@ class TestLastTimeIndex(object):
 
     def test_multiple_children_left_missing(self, es, extra_session_df,
                                             wishlist_df, true_sessions_lti):
+        if ks and isinstance(es.dataframes[0], ks.DataFrame):
+            pytest.xfail('Cannot make index on a Koalas DataFrame')
 
         # add row to sessions so not all session instances are in log
         es.update_dataframe(dataframe_id='sessions', df=extra_session_df)
@@ -241,8 +243,6 @@ class TestLastTimeIndex(object):
         df = wishlist_df.append(row)
         if isinstance(es.dataframes[0], dd.DataFrame):
             df = dd.from_pandas(df, npartitions=2)
-        if ks and isinstance(es.dataframes[0], ks.DataFrame):
-            df = ks.from_pandas(df)
         logical_types = {'session_id': ltypes.Integer,
                          'datetime': ltypes.Datetime,
                          'product_id': ltypes.Categorical}
@@ -270,6 +270,8 @@ class TestLastTimeIndex(object):
 
     def test_multiple_children_all_combined(self, es, extra_session_df,
                                             wishlist_df, true_sessions_lti):
+        if ks and isinstance(es.dataframes[0], ks.DataFrame):
+            pytest.xfail('Cannot make index on a Koalas DataFrame')
 
         # add row to sessions so not all session instances are in log
         es.update_dataframe(dataframe_id='sessions', df=extra_session_df)
@@ -285,8 +287,6 @@ class TestLastTimeIndex(object):
         df.drop(4, inplace=True)
         if isinstance(es.dataframes[0], dd.DataFrame):
             df = dd.from_pandas(df, npartitions=2)
-        if ks and isinstance(es.dataframes[0], ks.DataFrame):
-            df = ks.from_pandas(df)
         logical_types = {'session_id': ltypes.Integer,
                          'datetime': ltypes.Datetime,
                          'product_id': ltypes.Categorical}
@@ -313,13 +313,13 @@ class TestLastTimeIndex(object):
 
     def test_multiple_children_both_missing(self, es, extra_session_df,
                                             wishlist_df, true_sessions_lti):
+        if ks and isinstance(es.dataframes[0], ks.DataFrame):
+            pytest.xfail('Cannot make index on a Koalas DataFrame')
         # test all instances in neither child
         sessions = es['sessions']
 
         if isinstance(es.dataframes[0], dd.DataFrame):
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
-        if ks and isinstance(es.dataframes[0], ks.DataFrame):
-            wishlist_df = ks.from_pandas(wishlist_df)
 
         logical_types = {'session_id': ltypes.Integer,
                          'datetime': ltypes.Datetime,
