@@ -468,9 +468,9 @@ def test_max_depth_single_table(transform_es):
 
     def make_dfs_obj(max_depth):
         dfs_obj = DeepFeatureSynthesis(target_entity_id='first',
-                                        entityset=transform_es,
-                                        trans_primitives=[AddNumeric],
-                                        max_depth=max_depth)
+                                       entityset=transform_es,
+                                       trans_primitives=[AddNumeric],
+                                       max_depth=max_depth)
         return dfs_obj
 
     for i in [-1, 0, 1, 2]:
