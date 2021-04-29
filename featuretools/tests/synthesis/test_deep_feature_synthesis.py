@@ -612,7 +612,7 @@ def test_dfs_includes_seed_features_greater_than_max_depth(es):
                                    max_depth=1,
                                    seed_features=[customer_agg])
     features = dfs_obj.build_features()
-    assert customer_agg.get_name() in [f.get_name() for f in features]
+    assert feature_with_name(features=features, name=customer_agg.get_name())
 
 
 def test_allowed_paths(es):
