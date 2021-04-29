@@ -414,10 +414,10 @@ def test_extra_variable_type(df):
                          logical_types=logical_types, dataframe=df)
 
 
-# def test_add_parent_not_index_varible(es):
-#     error_text = "Parent column.*is not the index of dataframe Entity.*"
-#     with pytest.raises(AttributeError, match=error_text):
-#         es.add_relationship(u'régions', 'language', 'customers', u'région_id')
+def test_add_parent_not_index_varible(es):
+    error_text = "Parent column 'language' is not the index of dataframe régions"
+    with pytest.raises(AttributeError, match=error_text):
+        es.add_relationship(u'régions', 'language', 'customers', u'région_id')
 
 
 @pytest.fixture
@@ -1334,14 +1334,14 @@ def test_secondary_time_index(es):
             'second_ti': ['comments', 'second_ti']})
 
 
-# --> wait till after implement last time index
-# def test_sizeof(es):
-#     total_size = 0
-#     for entity in es.entities:
-#         total_size += entity.df.__sizeof__()
-#         total_size += entity.last_time_index.__sizeof__()
+def test_sizeof(es):
+    es.add_last_time_indexes()
+    total_size = 0
+    for df in es.dataframes:
+        total_size += df.__sizeof__()
+        total_size += df.ww.metadata.get('last_time_index').__sizeof__()
 
-#     assert es.__sizeof__() == total_size
+    assert es.__sizeof__() == total_size
 
 
 def test_construct_without_id():
