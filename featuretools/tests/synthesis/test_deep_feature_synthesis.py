@@ -460,7 +460,6 @@ def test_abides_by_max_depth_param(es):
 
         features = dfs_obj.build_features()
         for f in features:
-            # last feature is identity feature which doesn't count
             assert (f.get_depth() <= i)
 
 
