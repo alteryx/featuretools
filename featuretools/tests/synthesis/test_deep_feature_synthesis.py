@@ -451,7 +451,7 @@ def test_bad_groupby_feature(es):
 
 
 def test_abides_by_max_depth_param(es):
-    for i in [1, 2, 3]:
+    for i in [0, 1, 2, 3]:
         dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                        entityset=es,
                                        agg_primitives=[Sum],
@@ -460,8 +460,38 @@ def test_abides_by_max_depth_param(es):
 
         features = dfs_obj.build_features()
         for f in features:
-            # last feature is identity feature which doesn't count
-            assert (f.get_depth() <= i + 1)
+            assert (f.get_depth() <= i)
+
+
+def test_max_depth_single_table(transform_es):
+    assert len(transform_es.entity_dict) == 1
+
+    def make_dfs_obj(max_depth):
+        dfs_obj = DeepFeatureSynthesis(target_entity_id='first',
+                                       entityset=transform_es,
+                                       trans_primitives=[AddNumeric],
+                                       max_depth=max_depth)
+        return dfs_obj
+
+    for i in [-1, 0, 1, 2]:
+        if i in [-1, 2]:
+            match = ("Only one entity in entityset, changing max_depth to 1 "
+                     "since deeper features cannot be created")
+            with pytest.warns(UserWarning, match=match):
+                dfs_obj = make_dfs_obj(i)
+        else:
+            dfs_obj = make_dfs_obj(i)
+
+        features = dfs_obj.build_features()
+        assert len(features) > 0
+        if i != 0:
+            # at least one depth 1 feature made
+            assert any([f.get_depth() == 1 for f in features])
+            # no depth 2 or higher even with max_depth=2
+            assert all([f.get_depth() <= 1 for f in features])
+        else:
+            # no depth 1 or higher features with max_depth=0
+            assert all([f.get_depth() == 0 for f in features])
 
 
 def test_drop_contains(es):
@@ -570,6 +600,21 @@ def test_dfs_builds_on_seed_features_more_than_max_depth(es):
     assert session_agg.get_name() in [f.get_name() for f in features]
     assert session_agg_trans.get_name() not in [f.get_name()
                                                 for f in features]
+
+
+def test_dfs_includes_seed_features_greater_than_max_depth(es):
+    session_agg = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum)
+    customer_agg = ft.Feature(session_agg, parent_entity=es["customers"], primitive=Mean)
+    assert customer_agg.get_depth() == 2
+
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   agg_primitives=[Mean],
+                                   trans_primitives=[],
+                                   max_depth=1,
+                                   seed_features=[customer_agg])
+    features = dfs_obj.build_features()
+    assert feature_with_name(features=features, name=customer_agg.get_name())
 
 
 def test_allowed_paths(es):
