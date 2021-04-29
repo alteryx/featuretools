@@ -465,7 +465,7 @@ def test_abides_by_max_depth_param(es):
 
 def test_max_depth_single_table(transform_es):
     assert len(transform_es.entity_dict) == 1
-    for i in [0, 1, 2]:
+    for i in [-1, 0, 1, 2, None]:
         def make_dfs_obj(max_depth=i):
             dfs_obj = DeepFeatureSynthesis(target_entity_id='first',
                                            entityset=transform_es,
@@ -473,7 +473,7 @@ def test_max_depth_single_table(transform_es):
                                            max_depth=max_depth)
             return dfs_obj
 
-        if i == 2:
+        if i in [-1, 2, None]:
             match = ("Only one entity in entityset, changing max_depth to 1 "
                      "since deeper features cannot be created")
             with pytest.warns(UserWarning, match=match):
@@ -483,7 +483,7 @@ def test_max_depth_single_table(transform_es):
 
         features = dfs_obj.build_features()
         assert len(features) > 0
-        if i > 0:
+        if i != 0:
             # at least one depth 1 feature made
             assert any([f.get_depth() == 1 for f in features])
             # no depth 2 or higher even with max_depth=2
