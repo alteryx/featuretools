@@ -274,17 +274,17 @@ def test_update_dataframe_already_sorted(es):
     df = df.set_index('id', drop=False)
     df.index.name = None
 
-    # import pdb
-    # pdb.set_trace()
+    assert es["sessions"].ww.time_index is None
 
-    # if ks and isinstance(df, ks.DataFrame):
-    #     pdb.set_trace('KOALAS DF')
-    #     df["id"] = updated_id.to_list()
-    #     df = df.sort_index()
-    # else:
-    #     df["id"] = updated_id
-    # pdb.set_trace()
-    es.update_dataframe(dataframe_id='sessions', df=df.copy())
+    if ks and isinstance(df, ks.DataFrame):
+        df["id"] = updated_id.to_list()
+        df = df.sort_index()
+    elif dd and isinstance(df, dd.DataFrame):
+        df["id"] = updated_id
+    else:
+        assert df['id'].iloc[1] == 2
+
+    es.update_dataframe(dataframe_id='sessions', df=df.copy(), already_sorted=False)
     sessions_df = to_pandas(es['sessions'])
     assert sessions_df["id"].iloc[1] == 2  # no sorting since time index not defined
     es.update_dataframe(dataframe_id='sessions', df=df.copy(), already_sorted=True)
@@ -296,21 +296,25 @@ def test_update_dataframe_already_sorted(es):
     updated_signup = to_pandas(df['signup_date'])
     updated_signup.iloc[0] = datetime(2011, 4, 11)
 
+    assert es["customers"].ww.time_index == 'signup_date'
+
     if ks and isinstance(df, ks.DataFrame):
         df['signup_date'] = updated_signup.to_list()
         df = df.sort_index()
     else:
         df['signup_date'] = updated_signup
+
     es.update_dataframe(dataframe_id='customers', df=df.copy(), already_sorted=True)
     customers_df = to_pandas(es['customers'])
     assert customers_df["id"].iloc[0] == 2
 
     # only pandas allows for sorting:
+    es.update_dataframe(dataframe_id='customers', df=df.copy(), already_sorted=False)
+    updated_customers = to_pandas(es['customers'])
     if isinstance(df, pd.DataFrame):
-        import pdb
-        pdb.set_trace()
-        es.update_dataframe(dataframe_id='customers', df=df.copy())
-        assert es['customers']["id"].iloc[0] == 0
+        assert updated_customers["id"].iloc[0] == 0
+    else:
+        assert updated_customers["id"].iloc[0] == 2
 
 
 def test_update_dataframe_invalid_schema(es):
