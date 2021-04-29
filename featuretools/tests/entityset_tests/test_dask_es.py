@@ -2,40 +2,47 @@ import dask.dataframe as dd
 import pandas as pd
 import pytest
 
+import woodwork.logical_types as ltypes
+
 import featuretools as ft
 from featuretools.entityset import EntitySet
 
 
-def test_create_entity_from_dask_df(pd_es):
+def test_add_dataframe(pd_es):
     dask_es = EntitySet(id="dask_es")
-    log_dask = dd.from_pandas(pd_es["log"].df, npartitions=2)
-    dask_es = dask_es.entity_from_dataframe(
-        entity_id="log_dask",
+    log_dask = dd.from_pandas(pd_es["log"], npartitions=2)
+    semantic_tags = {}
+    for col_name in pd_es["log"].columns:
+        semantic_tags[col_name] = pd_es["log"].ww.semantic_tags[col_name] - {'time_index', 'index'}
+    dask_es = dask_es.add_dataframe(
+        dataframe_id="log_dask",
         dataframe=log_dask,
         index="id",
         time_index="datetime",
-        variable_types=pd_es["log"].variable_types
+        logical_types=pd_es["log"].ww.logical_types,
+        semantic_tags=semantic_tags
     )
-    pd.testing.assert_frame_equal(pd_es["log"].df, dask_es["log_dask"].df.compute(), check_like=True)
+    pd.testing.assert_frame_equal(pd_es["log"], dask_es["log_dask"].compute(), check_like=True)
 
 
-def test_create_entity_with_non_numeric_index(pd_es, dask_es):
+def test_add_dataframe_with_non_numeric_index(pd_es, dask_es):
     df = pd.DataFrame({"id": ["A_1", "A_2", "C", "D"],
                        "values": [1, 12, -34, 27]})
     dask_df = dd.from_pandas(df, npartitions=2)
 
-    pd_es.entity_from_dataframe(
-        entity_id="new_entity",
+    pd_es.add_dataframe(
+        dataframe_id="new_entity",
         dataframe=df,
         index="id")
 
-    dask_es.entity_from_dataframe(
-        entity_id="new_entity",
+    dask_es.add_dataframe(
+        dataframe_id="new_entity",
         dataframe=dask_df,
         index="id",
-        variable_types={"id": ft.variable_types.Id, "values": ft.variable_types.Numeric})
+        logical_types={"id": ltypes.Categorical, "values": ltypes.Integer},
+        semantic_tags={'id': 'foreign_key'})
 
-    pd.testing.assert_frame_equal(pd_es['new_entity'].df.reset_index(drop=True), dask_es['new_entity'].df.compute())
+    pd.testing.assert_frame_equal(pd_es['new_entity'].reset_index(drop=True), dask_es['new_entity'].compute())
 
 
 def test_create_entityset_with_mixed_dataframe_types(pd_es, dask_es):
@@ -46,22 +53,22 @@ def test_create_entityset_with_mixed_dataframe_types(pd_es, dask_es):
     # Test error is raised when trying to add Dask entity to entitset with existing pandas entities
     err_msg = "All entity dataframes must be of the same type. " \
               "Cannot add entity of type {} to an entityset with existing entities " \
-              "of type {}".format(type(dask_df), type(pd_es.entities[0].df))
+              "of type {}".format(type(dask_df), type(pd_es.dataframes[0]))
 
     with pytest.raises(ValueError, match=err_msg):
-        pd_es.entity_from_dataframe(
-            entity_id="new_entity",
+        pd_es.add_dataframe(
+            dataframe_id="new_entity",
             dataframe=dask_df,
             index="id")
 
     # Test error is raised when trying to add pandas entity to entitset with existing dask entities
     err_msg = "All entity dataframes must be of the same type. " \
               "Cannot add entity of type {} to an entityset with existing entities " \
-              "of type {}".format(type(df), type(dask_es.entities[0].df))
+              "of type {}".format(type(df), type(dask_es.dataframes[0]))
 
     with pytest.raises(ValueError, match=err_msg):
-        dask_es.entity_from_dataframe(
-            entity_id="new_entity",
+        dask_es.add_dataframe(
+            dataframe_id="new_entity",
             dataframe=df,
             index="id")
 
@@ -81,12 +88,13 @@ def test_add_last_time_indexes():
                                          "abcdef ghijk",
                                          ""]})
     sessions_dask = dd.from_pandas(sessions, npartitions=2)
-    sessions_vtypes = {
-        "id": ft.variable_types.Id,
-        "user": ft.variable_types.Id,
-        "time": ft.variable_types.DatetimeTimeIndex,
-        "strings": ft.variable_types.NaturalLanguage
+    sessions_logical_types = {
+        "id": ltypes.Integer,
+        "user": ltypes.Integer,
+        "time": ltypes.Datetime,
+        "strings": ltypes.NaturalLanguage
     }
+    sessions_semantic_tags = {'user': 'foreign_key'}
 
     transactions = pd.DataFrame({"id": [0, 1, 2, 3, 4, 5],
                                  "session_id": [0, 0, 1, 2, 2, 3],
@@ -98,38 +106,45 @@ def test_add_last_time_indexes():
                                           pd.to_datetime('2019-01-01 12:49'),
                                           pd.to_datetime('2017-08-25 04:53')]})
     transactions_dask = dd.from_pandas(transactions, npartitions=2)
-    transactions_vtypes = {
-        "id": ft.variable_types.Id,
-        "session_id": ft.variable_types.Id,
-        "amount": ft.variable_types.Numeric,
-        "time": ft.variable_types.DatetimeTimeIndex,
+
+    transactions_logical_types = {
+        "id": ltypes.Integer,
+        "session_id": ltypes.Integer,
+        "time": ltypes.Datetime,
+        "amount": ltypes.Double
     }
+    transactions_semantic_tags = {'session_id': 'foreign_key'}
 
-    pd_es.entity_from_dataframe(entity_id="sessions", dataframe=sessions, index="id", time_index="time")
-    dask_es.entity_from_dataframe(entity_id="sessions", dataframe=sessions_dask, index="id", time_index="time", variable_types=sessions_vtypes)
+    pd_es.add_dataframe(dataframe_id="sessions", dataframe=sessions, index="id", time_index="time")
+    dask_es.add_dataframe(dataframe_id="sessions", dataframe=sessions_dask,
+                          index="id", time_index="time",
+                          logical_types=sessions_logical_types, semantic_tags=sessions_semantic_tags)
 
-    pd_es.entity_from_dataframe(entity_id="transactions", dataframe=transactions, index="id", time_index="time")
-    dask_es.entity_from_dataframe(entity_id="transactions", dataframe=transactions_dask, index="id", time_index="time", variable_types=transactions_vtypes)
+    pd_es.add_dataframe(dataframe_id="transactions", dataframe=transactions, index="id", time_index="time")
+    dask_es.add_dataframe(dataframe_id="transactions", dataframe=transactions_dask,
+                          index="id", time_index="time",
+                          logical_types=transactions_logical_types, semantic_tags=transactions_semantic_tags)
 
     pd_es = pd_es.add_relationship("sessions", "id", "transactions", "session_id")
     dask_es = dask_es.add_relationship("sessions", "id", "transactions", "session_id")
 
-    assert pd_es['sessions'].last_time_index is None
-    assert dask_es['sessions'].last_time_index is None
+    assert pd_es['sessions'].ww.metadata.get('last_time_index') is None
+    assert dask_es['sessions'].ww.metadata.get('last_time_index') is None
 
     pd_es.add_last_time_indexes()
     dask_es.add_last_time_indexes()
 
-    pd.testing.assert_series_equal(pd_es['sessions'].last_time_index.sort_index(), dask_es['sessions'].last_time_index.compute(), check_names=False)
+    pd.testing.assert_series_equal(pd_es['sessions'].ww.metadata.get('last_time_index').sort_index(),
+                                   dask_es['sessions'].ww.metadata.get('last_time_index').compute(), check_names=False)
 
 
-def test_create_entity_with_make_index():
+def test_add_dataframe_with_make_index():
     values = [1, 12, -23, 27]
     df = pd.DataFrame({"values": values})
     dask_df = dd.from_pandas(df, npartitions=2)
     dask_es = EntitySet(id="dask_es")
-    vtypes = {"values": ft.variable_types.Numeric}
-    dask_es.entity_from_dataframe(entity_id="new_entity", dataframe=dask_df, make_index=True, index="new_index", variable_types=vtypes)
+    logical_types = {"values": ltypes.Integer}
+    dask_es.add_dataframe(dataframe_id="new_entity", dataframe=dask_df, make_index=True, index="new_index", logical_types=logical_types)
 
-    expected_df = pd.DataFrame({"new_index": range(len(values)), "values": values})
-    pd.testing.assert_frame_equal(expected_df, dask_es['new_entity'].df.compute())
+    expected_df = pd.DataFrame({"values": values, "new_index": range(len(values))})
+    pd.testing.assert_frame_equal(expected_df, dask_es['new_entity'].compute())
