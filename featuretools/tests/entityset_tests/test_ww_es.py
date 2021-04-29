@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 
 from woodwork.logical_types import Categorical, Integer, NaturalLanguage
+import woodwork as ww
 
 from featuretools.entityset import EntitySet
 from featuretools.tests.testing_utils import to_pandas
@@ -318,8 +319,99 @@ def test_update_dataframe_already_sorted(es):
 
 
 def test_update_dataframe_invalid_schema(es):
-    pass
+    if not isinstance(es['customers'], pd.DataFrame):
+        pytest.xfail('Invalid schema checks able to be caught by Woodwork only relevant for Pandas')
+    df = es['customers'].copy()
+    df['id'] = pd.Series([1, 1, 1])
+
+    error_text = 'Woodwork typing information is not valid for this DataFrame: Index mismatch between DataFrame and typing information'
+    with pytest.raises(ValueError, match=error_text):
+        es.update_dataframe(dataframe_id='customers', df=df)
 
 
 def test_update_dataframe_different_dtypes(es):
+    float_dtype_df = es['customers'].copy()
+    float_dtype_df = float_dtype_df.astype({'age': 'float64'})
+
+    es.update_dataframe(dataframe_id='customers', df=float_dtype_df)
+
+    assert es['customers']['age'].dtype == 'int64'
+    assert es['customers'].ww.logical_types['age'] == Integer
+
+    incompatible_dtype_df = es['customers'].copy()
+    incompatible_list = ['hi', 'bye', 'bye']
+    if ks and isinstance(df, ks.DataFrame):
+        incompatible_dtype_df['age'] = incompatible_list
+    else:
+        incompatible_dtype_df['age'] = pd.Series(incompatible_list)
+
+    if isinstance(es['customers'], pd.DataFrame):
+        # Dask does not error on invalid type conversion until compute
+        # --> koalas should work right???
+        error_msg = 'Error converting datatype for age from type object to type int64. Please confirm the underlying data is consistent with logical type Integer.'
+        with pytest.raises(ww.exceptions.TypeConversionError, match=error_msg):
+            es.update_dataframe(dataframe_id='customers', df=incompatible_dtype_df)
+
+
+def test_update_dataframe_data_transformation():
+    # --> ideally test this with koalas and dask as well
+    latlong_df = pd.DataFrame({
+        'tuple_ints': pd.Series([(1, 2), (3, 4)]),
+        'tuple_strings': pd.Series([('1', '2'), ('3', '4')]),
+        'string_tuple': pd.Series(['(1, 2)', '(3, 4)']),
+        'bracketless_string_tuple': pd.Series(['1, 2', '3, 4']),
+        'list_strings': pd.Series([['1', '2'], ['3', '4']]),
+        'combo_tuple_types': pd.Series(['[1, 2]', '(3, 4)']),
+    })
+    latlong_df.set_index('tuple_ints', drop=False, inplace=True)
+    latlong_df.index.name = None
+
+    initial_df = latlong_df.iloc[[0], :]
+    initial_df.ww.init(index='tuple_ints', logical_types={col_name: 'LatLong' for col_name in initial_df.columns})
+    es = EntitySet()
+    es.add_dataframe(dataframe_id='latlongs', dataframe=initial_df)
+
+    expected_val = (1, 2)
+    assert all(es['latlongs'].iloc[0] == expected_val)
+
+    es.update_dataframe('latlongs', latlong_df)
+    expected_val = (3, 4)
+    assert all(es['latlongs'].iloc[-1] == expected_val)
+
+
+def test_update_dataframe_column_order(es):
+    original_column_order = es['customers'].columns.copy()
+
+    df = es['customers'].copy()
+    col = df.pop('cohort')
+    df[col.name] = col
+
+    assert not df.columns.equals(original_column_order)
+    assert set(df.columns) == set(original_column_order)
+
+    es.update_dataframe(dataframe_id='customers', df=df)
+
+    assert es['customers'].columns.equals(original_column_order)
+
+
+def test_update_dataframe_woodwork_initialized(es):
     pass
+
+
+def test_update_dataframe_last_time_index(es):
+    # --> koalas currently fails bc we can't get the schema because it deepcopies
+    es.add_last_time_indexes()
+    df = es['customers'].copy()
+    original_last_time_index = to_pandas(es['customers'].ww.metadata['last_time_index'].copy())
+
+    new_time_index = ['2012-04-06', '2012-04-08', '2012-04-09']
+    if ks and isinstance(df, ks.DataFrame):
+        df['signup_date'] = new_time_index
+    else:
+        df['signup_date'] = pd.Series(new_time_index)
+
+    es.update_dataframe('customers', df, recalculate_last_time_indexes=False)
+    assert original_last_time_index.equals(to_pandas(es['customers'].ww.metadata['last_time_index']))
+
+    es.update_dataframe('customers', df, recalculate_last_time_indexes=True)
+    assert not original_last_time_index.equals(to_pandas(es['customers'].ww.metadata['last_time_index']))
