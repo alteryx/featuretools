@@ -451,7 +451,7 @@ def test_bad_groupby_feature(es):
 
 
 def test_abides_by_max_depth_param(es):
-    for i in [1, 2, 3]:
+    for i in [0, 1, 2, 3]:
         dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                        entityset=es,
                                        agg_primitives=[Sum],
@@ -461,8 +461,22 @@ def test_abides_by_max_depth_param(es):
         features = dfs_obj.build_features()
         for f in features:
             # last feature is identity feature which doesn't count
-            assert (f.get_depth() <= i + 1)
+            assert (f.get_depth() <= i)
 
+
+def test_max_depth_single_table(transform_es):
+    assert len(transform_es.entity_dict) == 1
+    for i in [0, 1, 2]:
+        dfs_obj = DeepFeatureSynthesis(target_entity_id='first',
+                                       entityset=transform_es,
+                                       trans_primitives=[AddNumeric],
+                                       max_depth=i)
+
+        features = dfs_obj.build_features()
+        # check transform features made if max_depth>=1
+        assert any([f.get_depth() == min(i, 1) for f in features])
+        # check all features depth 1 or less
+        assert all([f.get_depth() <= min(i, 1) for f in features])
 
 def test_drop_contains(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
