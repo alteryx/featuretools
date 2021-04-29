@@ -492,6 +492,7 @@ def test_max_depth_single_table(transform_es):
             # no depth 1 or higher features with max_depth=0
             assert all([f.get_depth() == 0 for f in features])
 
+
 def test_drop_contains(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
