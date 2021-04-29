@@ -8,6 +8,7 @@ Future Release
     * Fixes
     * Changes
         * Add auto assign bot on GitHub (:pr:`1380`)
+        * Reduce DFS max_depth to 1 if single entity in entityset (:pr:`1412`)
     * Documentation Changes
         * Improve formatting of release notes (:pr:`1396`)
     * Testing Changes
