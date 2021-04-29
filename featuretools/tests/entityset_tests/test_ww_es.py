@@ -1,3 +1,4 @@
+from datetime import datetime
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
@@ -6,6 +7,10 @@ import pytest
 from woodwork.logical_types import Categorical, Integer, NaturalLanguage
 
 from featuretools.entityset import EntitySet
+from featuretools.tests.testing_utils import to_pandas
+from featuretools.utils.gen_utils import import_or_none
+
+ks = import_or_none('databricks.koalas')
 
 
 def test_empty_es():
@@ -189,7 +194,7 @@ def test_update_dataframe():
         'is_registered': pd.Series([True, False, True, None], dtype='boolean'),
     })
 
-    df.ww.init()
+    df.ww.init(index='id')
     es = EntitySet('es')
     es.add_dataframe('table', df)
     original_schema = es['table'].ww.schema
@@ -240,3 +245,77 @@ def test_extra_woodwork_params(es):
     assert sessions_df.ww.time_index is None
     assert sessions_df.ww.logical_types['id'] == Integer
     assert 'new_tag' not in sessions_df.ww.semantic_tags
+
+
+def test_update_dataframe_errors(es):
+    # --> test with ww initalized dataframe, test with dtype change, test with other index problems
+    df = es['customers'].copy()
+    if ks and isinstance(df, ks.DataFrame):
+        df['new'] = [1, 2, 3]
+    else:
+        df['new'] = pd.Series([1, 2, 3])
+
+    error_text = 'Updated dataframe is missing new cohort column'
+    with pytest.raises(ValueError, match=error_text):
+        es.update_dataframe(dataframe_id='customers', df=df.drop(columns=['cohort']))
+
+    error_text = 'Updated dataframe contains 16 columns, expecting 15'
+    with pytest.raises(ValueError, match=error_text):
+        es.update_dataframe(dataframe_id='customers', df=df)
+
+
+def test_update_dataframe_already_sorted(es):
+    # test already_sorted on entity without time index
+    df = es["sessions"].copy()
+    updated_id = to_pandas(df['id'])
+    updated_id.iloc[1] = 2
+    updated_id.iloc[2] = 1
+
+    df = df.set_index('id', drop=False)
+    df.index.name = None
+
+    # import pdb
+    # pdb.set_trace()
+
+    # if ks and isinstance(df, ks.DataFrame):
+    #     pdb.set_trace('KOALAS DF')
+    #     df["id"] = updated_id.to_list()
+    #     df = df.sort_index()
+    # else:
+    #     df["id"] = updated_id
+    # pdb.set_trace()
+    es.update_dataframe(dataframe_id='sessions', df=df.copy())
+    sessions_df = to_pandas(es['sessions'])
+    assert sessions_df["id"].iloc[1] == 2  # no sorting since time index not defined
+    es.update_dataframe(dataframe_id='sessions', df=df.copy(), already_sorted=True)
+    sessions_df = to_pandas(es['sessions'])
+    assert sessions_df["id"].iloc[1] == 2
+
+    # test already_sorted on entity with time index
+    df = es["customers"].copy()
+    updated_signup = to_pandas(df['signup_date'])
+    updated_signup.iloc[0] = datetime(2011, 4, 11)
+
+    if ks and isinstance(df, ks.DataFrame):
+        df['signup_date'] = updated_signup.to_list()
+        df = df.sort_index()
+    else:
+        df['signup_date'] = updated_signup
+    es.update_dataframe(dataframe_id='customers', df=df.copy(), already_sorted=True)
+    customers_df = to_pandas(es['customers'])
+    assert customers_df["id"].iloc[0] == 2
+
+    # only pandas allows for sorting:
+    if isinstance(df, pd.DataFrame):
+        import pdb
+        pdb.set_trace()
+        es.update_dataframe(dataframe_id='customers', df=df.copy())
+        assert es['customers']["id"].iloc[0] == 0
+
+
+def test_update_dataframe_invalid_schema(es):
+    pass
+
+
+def test_update_dataframe_different_dtypes(es):
+    pass

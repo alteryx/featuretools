@@ -1226,6 +1226,8 @@ class EntitySet(object):
         reference indexes to other entities are consistent, and last_time_indexes
         are consistent.
         '''
+        import pdb
+        pdb.set_trace()
         old_column_names = list(self[dataframe_id].columns)
         if len(df.columns) != len(old_column_names):
             raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(df.columns),
@@ -1238,8 +1240,24 @@ class EntitySet(object):
         df = df[old_column_names]
         original_dtypes = self[dataframe_id].dtypes
         df = df.astype(original_dtypes)
+        # --> need to handle already_sorted by sorting if False before reinit
+
+        # Only sort Pandas dataframes
+        if is_instance(df, (dd, ks), 'DataFrame'):
+            already_sorted = True
+
+        # --> if we can init first then we can use ww sort
+        # if not already_sorted:
+        #     index = self[dataframe_id].ww.index
+        #     time_index = self[dataframe_id].ww.time_index
+
+        #     sort_cols = [time_index, index]
+        #     sort_cols = [col for col in sort_cols if col is not None and col in df.columns]
+        #     df.sort_values(sort_cols, inplace=True)
+
         df.ww.init(schema=self[dataframe_id].ww.schema)
         self.dataframe_dict[dataframe_id] = df
+        pdb.set_trace()
 
         if self[dataframe_id].ww.time_index is not None:
             self._check_uniform_time_index(self[dataframe_id])
