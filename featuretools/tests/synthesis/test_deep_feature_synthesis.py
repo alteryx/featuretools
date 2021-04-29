@@ -572,6 +572,21 @@ def test_dfs_builds_on_seed_features_more_than_max_depth(es):
                                                 for f in features]
 
 
+def test_dfs_includes_seed_features_greater_than_max_depth(es):
+    session_agg = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum)
+    customer_agg = ft.Feature(session_agg, parent_entity=es["customers"], primitive=Mean)
+    assert customer_agg.get_depth() == 2
+
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   agg_primitives=[Mean],
+                                   trans_primitives=[],
+                                   max_depth=1,
+                                   seed_features=[customer_agg])
+    features = dfs_obj.build_features()
+    assert customer_agg.get_name() in [f.get_name() for f in features]
+
+
 def test_allowed_paths(es):
     # TODO: Update to work with Dask and Koalas supported primitive
     if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
