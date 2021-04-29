@@ -482,11 +482,15 @@ def test_max_depth_single_table(transform_es):
             dfs_obj = make_dfs_obj(i)
 
         features = dfs_obj.build_features()
-        # check transform features made if max_depth>=1
-        assert any([f.get_depth() == min(i, 1) for f in features])
-        # check all features depth 1 or less
-        assert all([f.get_depth() <= min(i, 1) for f in features])
-
+        assert len(features) > 0
+        if i > 0:
+            # at least one depth 1 feature made
+            assert any([f.get_depth() == 1 for f in features])
+            # no depth 2 or higher even with max_depth=2
+            assert all([f.get_depth() <= 1 for f in features])
+        else:
+            # no depth 1 or higher features with max_depth=0
+            assert all([f.get_depth() == 0 for f in features])
 
 def test_drop_contains(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
