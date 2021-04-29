@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.logical_types import Categorical, Integer, NaturalLanguage
+from woodwork.logical_types import Categorical, Integer, NaturalLanguage, Datetime
 import woodwork as ww
 
 from featuretools.entityset import EntitySet
@@ -340,7 +340,7 @@ def test_update_dataframe_different_dtypes(es):
 
     incompatible_dtype_df = es['customers'].copy()
     incompatible_list = ['hi', 'bye', 'bye']
-    if ks and isinstance(df, ks.DataFrame):
+    if ks and isinstance(incompatible_dtype_df, ks.DataFrame):
         incompatible_dtype_df['age'] = incompatible_list
     else:
         incompatible_dtype_df['age'] = pd.Series(incompatible_list)
@@ -395,7 +395,50 @@ def test_update_dataframe_column_order(es):
 
 
 def test_update_dataframe_woodwork_initialized(es):
-    pass
+    # test schemas are the same
+    # test different logical types
+    df = es['customers'].copy()
+    if ks and isinstance(df, ks.DataFrame):
+        df['age'] = [1, 2, 3]
+    else:
+        df['age'] = pd.Series([1, 2, 3])
+
+    df.ww.init(schema=es['customers'].ww.schema)
+    es.update_dataframe('customers', df, already_sorted=True)
+
+    if dd and isinstance(df, dd.DataFrame):
+        assert all(to_pandas(es['customers']['age']) == [1, 2, 3])
+    else:
+        assert all(to_pandas(es['customers']['age']) == [3, 1, 2])
+
+
+def test_update_dataframe_different_dataframe_types():
+    dask_es = EntitySet(id="dask_es")
+
+    sessions = pd.DataFrame({"id": [0, 1, 2, 3],
+                             "user": [1, 2, 1, 3],
+                             "time": [pd.to_datetime('2019-01-10'),
+                                      pd.to_datetime('2019-02-03'),
+                                      pd.to_datetime('2019-01-01'),
+                                      pd.to_datetime('2017-08-25')],
+                             "strings": ["I am a string",
+                                         "23",
+                                         "abcdef ghijk",
+                                         ""]})
+    sessions_dask = dd.from_pandas(sessions, npartitions=2)
+    sessions_logical_types = {
+        "id": Integer,
+        "user": Integer,
+        "time": Datetime,
+        "strings": NaturalLanguage
+    }
+    sessions_semantic_tags = {'user': 'foreign_key'}
+
+    dask_es.add_dataframe(dataframe_id="sessions", dataframe=sessions_dask, index="id", time_index="time",
+                          logical_types=sessions_logical_types, semantic_tags=sessions_semantic_tags)
+
+    with pytest.raises(TypeError, match='Incorrect DataFrame type used'):
+        dask_es.update_dataframe('sessions', sessions)
 
 
 def test_update_dataframe_last_time_index(es):

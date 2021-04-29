@@ -1227,6 +1227,9 @@ class EntitySet(object):
         reference indexes to other entities are consistent, and last_time_indexes
         are consistent.
         '''
+        if not isinstance(df, type(self[dataframe_id])):
+            raise TypeError('Incorrect DataFrame type used')
+
         old_column_names = list(self[dataframe_id].columns)
         if len(df.columns) != len(old_column_names):
             raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(df.columns),
@@ -1238,16 +1241,22 @@ class EntitySet(object):
         # Make sure column ordering matches original ordering
         df = df[old_column_names]
 
-        # Update the dtypes to match the original dataframe's if they're different
-        for col_name in df.columns:
-            series = df[col_name]
-            updated_series = ww.accessor_utils._update_column_dtype(series, self[dataframe_id].ww.logical_types[col_name])
-            if updated_series is not series:
-                # --> why does this error for dask????
-                df[col_name] = updated_series
+        # If Woodwork is initialized
+        if df.ww.schema is not None:
+            # --> note that we're potentially losing descriptions and metadata here bc we dont check that they match too
+            if df.ww.logical_types != self[dataframe_id].ww.logical_types or df.ww.semantic_tags != self[dataframe_id].ww.semantic_tags:
+                raise ValueError('Woodwork types for new DataFrame do not match those of the original DataFrame.')
+        else:
+            # Update the dtypes to match the original dataframe's if they're different in koalas
+            for col_name in df.columns:
+                series = df[col_name]
+                updated_series = ww.accessor_utils._update_column_dtype(series, self[dataframe_id].ww.logical_types[col_name])
+                if updated_series is not series:
+                    # --> why does this error for dask????
+                    df[col_name] = updated_series
 
-        # --> has an issue with deeopcopying of a dataframe schema when it has a last time index???
-        df.ww.init(schema=self[dataframe_id].ww.schema)
+            # --> has an issue with deeopcopying of a dataframe schema when it has a last time index???
+            df.ww.init(schema=self[dataframe_id].ww.schema)
         self.dataframe_dict[dataframe_id] = df
 
         # Sort the dataframe through Woodwork
