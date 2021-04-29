@@ -1575,10 +1575,10 @@ def test_entityset_init():
     assert es['transactions'].ww == es_copy['transactions'].ww
 
 
-# --> need to update load_retail
+# --> wait till add_interesting_values
 # def test_add_interesting_values_verbose_output(caplog):
 #     es = ft.demo.load_retail(nrows=200)
-#     es['order_products'].convert_variable_type('quantity', ft.variable_types.Discrete)
+#     es['order_products'].convert_variable_type('quantity', ltypes.Categorical)
 #     logger = logging.getLogger('featuretools')
 #     logger.propagate = True
 #     logger_es = logging.getLogger('featuretools.entityset')
