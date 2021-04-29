@@ -30,12 +30,11 @@ setup(
          'Development Status :: 3 - Alpha',
          'Intended Audience :: Developers',
          'Programming Language :: Python :: 3',
-         'Programming Language :: Python :: 3.6',
          'Programming Language :: Python :: 3.7',
          'Programming Language :: Python :: 3.8'
     ],
     install_requires=open('requirements.txt').readlines(),
-    python_requires='>=3.6, <4',
+    python_requires='>=3.7, <4',
     extras_require=extras_require,
     keywords='feature engineering data science machine learning',
     include_package_data=True,
