@@ -2,10 +2,18 @@
 
 Release Notes
 -------------
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
     * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.24.0 Apr 30, 2021
+====================
     * Changes
         * Add auto assign bot on GitHub (:pr:`1380`)
         * Reduce DFS max_depth to 1 if single entity in entityset (:pr:`1412`)
