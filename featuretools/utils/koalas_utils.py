@@ -6,7 +6,6 @@ def replace_tuple_columns(pdf):
     new_df = pd.DataFrame()
     for c in pdf.columns:
         if isinstance(pdf[c].iloc[0], tuple):
-            # --> why did we just now need to handle nans???
             new_df[c] = pdf[c].map(lambda x: list(x) if isinstance(x, tuple) else x)
         else:
             new_df[c] = pdf[c]

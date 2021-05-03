@@ -41,12 +41,14 @@ def make_int_es():
 
 
 @pytest.fixture
-def pd_es(make_es):  # --> temporary while waiting to implement deepcopy
+def pd_es(make_es):
+    # --> TODO temporary while waiting to implement deepcopy
     return make_ecommerce_entityset()
 
 
 @pytest.fixture
-def int_es(make_int_es):  # --> temporary while waiting to implement deepcopy
+def int_es(make_int_es):
+    # --> TODO temporary while waiting to implement deepcopy
     return make_ecommerce_entityset(with_integer_time_index=True)
 
 
@@ -76,7 +78,8 @@ def ks_es(make_es):
         ks_df.ww.init(schema=df.ww.schema)
         es.add_dataframe(df.ww.name,
                          ks_df,
-                         secondary_time_index=df.ww.metadata.get('secondary_time_index'))  # --> might be redundant since the metadata will already have it or necessary - test this
+                         # --> TODO might be redundant since the metadata will already have it or necessary - test this
+                         secondary_time_index=df.ww.metadata.get('secondary_time_index'))
 
     for rel in make_es.relationships:
         es.add_relationship(rel.parent_dataframe.ww.name, rel.parent_column.name,

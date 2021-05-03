@@ -127,7 +127,7 @@ class EntitySet(object):
         for df_id, df in self.dataframe_dict.items():
             if df_id not in other.dataframe_dict:
                 return False
-            # --> Behavior change: Waiting on deep behavior for WW equality
+            # --> WW bug: Waiting on deep behavior for WW equality
             if not df.ww.__eq__(other[df_id].ww):
                 return False
         for r in self.relationships:
@@ -313,7 +313,7 @@ class EntitySet(object):
         # default to object dtypes for discrete variables, but
         # indexes/ids default to ints. In this case, we convert
         # the empty column's type to int
-        # --> is this still relevant?
+        # --> Implementation: is this still relevant?
         if isinstance(child_df, pd.DataFrame) and \
                 (child_df.empty and child_df[child_column].dtype == object and
                  parent_df.ww.columns[parent_column].is_numeric):
@@ -322,7 +322,6 @@ class EntitySet(object):
         parent_ltype = parent_df.ww.logical_types[parent_column]
         child_ltype = child_df.ww.logical_types[child_column]
         if parent_ltype != child_ltype:
-            # --> should have a better warning here that can differentiate between instance and not :/
             warnings.warn(f'Logical type {child_ltype} for child column {child_column} does not match '
                           f'parent column {parent_column} logical type {parent_ltype}. '
                           'Changing child logical type to match parent.')
@@ -335,7 +334,7 @@ class EntitySet(object):
     def set_secondary_time_index(self, dataframe, secondary_time_index):
         self._check_secondary_time_index(dataframe, secondary_time_index)
         if secondary_time_index is not None:
-            # --> issue with setting a series here!!!!
+            # --> WW bug: series in Metadata can be problematig
             dataframe.ww.metadata['secondary_time_index'] = secondary_time_index
 
     ###########################################################################
@@ -437,8 +436,8 @@ class EntitySet(object):
 
             if deep:
                 sub_dataframes = self.get_backward_dataframes(child_dataframe_id, deep=True)
-
-                yield sub_dataframe_id, direct_path + path
+                for sub_dataframe_id, path in sub_dataframes:
+                    yield sub_dataframe_id, direct_path + path
 
     def get_forward_relationships(self, dataframe_id):
         """Get relationships where dataframe "dataframe_id" is the child
@@ -662,7 +661,6 @@ class EntitySet(object):
                             .format(type(additional_columns)))
 
         if len(additional_columns) != len(set(additional_columns)):
-            # --> change all of these errors to use columns instead of variables
             raise ValueError("'additional_columns' contains duplicate variables. All variables must be unique.")
 
         if not isinstance(copy_columns, list):
@@ -779,7 +777,6 @@ class EntitySet(object):
             time_index=new_dataframe_time_index,
             secondary_time_index=make_secondary_time_index,
             logical_types={col_name: logical_type for (col_name, (logical_type, _)) in transfer_types.items()},
-            # --> might also want to get rid of index tag here?
             semantic_tags={col_name: (semantic_tags - {'time_index'}) for (col_name, (_, semantic_tags)) in transfer_types.items()}
         )
 
@@ -1247,11 +1244,9 @@ class EntitySet(object):
                 raise ValueError("Updated dataframe is missing new {} column".format(col_name))
 
         # Make sure column ordering matches original ordering
-        df = df[old_column_names]
+        df = df.ww[old_column_names]
 
-        # If Woodwork is initialized
         if df.ww.schema is not None:
-            # --> note that we're potentially losing descriptions and metadata here bc we dont check that they match too
             if df.ww.logical_types != self[dataframe_id].ww.logical_types or df.ww.semantic_tags != self[dataframe_id].ww.semantic_tags:
                 raise ValueError('Woodwork types for new DataFrame do not match those of the original DataFrame.')
         else:
@@ -1260,16 +1255,15 @@ class EntitySet(object):
                 series = df[col_name]
                 updated_series = ww.accessor_utils._update_column_dtype(series, self[dataframe_id].ww.logical_types[col_name])
                 if updated_series is not series:
-                    # --> why does this error for koalas????
                     df[col_name] = updated_series
 
-            # --> has an issue with deeopcopying of a dataframe schema when it has a last time index???
+            # --> WW bug: if metadata has a series in it, cannot deepcopy
             df.ww.init(schema=self[dataframe_id].ww.schema)
+
         self.dataframe_dict[dataframe_id] = df
 
         # Sort the dataframe through Woodwork
         if self.dataframe_dict[dataframe_id].ww.time_index is not None:
-            # --> maybe _sort_columns should be public?
             self.dataframe_dict[dataframe_id].ww._sort_columns(already_sorted)
 
         if self[dataframe_id].ww.time_index is not None:
@@ -1299,7 +1293,7 @@ class EntitySet(object):
             return
 
         time_type = self._get_time_type(dataframe, column_id)
-        # --> need to make sure this is getting tested correctly for secondary and last time indexes because I think they dont have woodwork typing??
+        # --> TODO need to make sure this is getting tested correctly for secondary and last time indexes because I think they dont have woodwork typing??
         if self.time_type is None:
             self.time_type = time_type
         elif self.time_type != time_type:
@@ -1309,7 +1303,7 @@ class EntitySet(object):
     def _get_time_type(self, dataframe, column_id=None):
         column_id = column_id or dataframe.ww.time_index
 
-        # --> try and find a way to test this case!!!!
+        # --> TODO try and find a way to test this case!!!!
         if dataframe.ww.schema is None:
             column_schema = dataframe[column_id].head().ww.init()
         else:

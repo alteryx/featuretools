@@ -487,7 +487,6 @@ def test_unknown_index(df3):
         es.add_dataframe(dataframe_id='test_dataframe',
                          index='id',
                          logical_types={'category': 'Categorical'}, dataframe=df3)
-# --> test not allowing for koalas index!!!
 
 
 def test_doesnt_remake_index(df):
@@ -1411,7 +1410,6 @@ def test_datetime64_conversion(datetime3):
                      index='id',
                      dataframe=df,
                      logical_types=logical_types)
-    # --> is this testing setting time index or setting ltype??? and why are there no checks afterwards
     es['test_dataframe'].ww.set_time_index('time')
     assert es['test_dataframe'].ww.time_index == 'time'
 
@@ -1573,7 +1571,6 @@ def test_entityset_init():
                           time_index='transaction_time')
     es_copy.add_relationship('cards', 'id', 'transactions', 'card_id')
 
-    # --> any time we do this equality check it will be deep bc Woodwork doesn't differentiate
     assert es['cards'].ww == es_copy['cards'].ww
     assert es['transactions'].ww == es_copy['transactions'].ww
 

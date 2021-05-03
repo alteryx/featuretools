@@ -422,8 +422,6 @@ def test_update_dataframe_column_order(es):
 
 
 def test_update_dataframe_woodwork_initialized(es):
-    # test schemas are the same
-    # test different logical types
     df = es['customers'].copy()
     if ks and isinstance(df, ks.DataFrame):
         df['age'] = [1, 2, 3]
@@ -431,12 +429,21 @@ def test_update_dataframe_woodwork_initialized(es):
         df['age'] = pd.Series([1, 2, 3])
 
     df.ww.init(schema=es['customers'].ww.schema)
+
+    # Change the original Schema
+    es['customers'].ww.metadata['user'] = 'user0'
+    original_schema = es['customers'].ww.schema
+    assert 'user' in es['customers'].ww.metadata
+
     es.update_dataframe('customers', df, already_sorted=True)
 
     if dd and isinstance(df, dd.DataFrame):
         assert all(to_pandas(es['customers']['age']) == [1, 2, 3])
     else:
         assert all(to_pandas(es['customers']['age']) == [3, 1, 2])
+
+    assert es['customers'].ww.schema != original_schema
+    assert 'user' not in es['customers'].ww.metadata
 
 
 def test_update_dataframe_different_dataframe_types():

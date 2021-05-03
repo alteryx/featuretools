@@ -177,7 +177,6 @@ class TestLastTimeIndex(object):
         logical_types = {'session_id': ltypes.Integer,
                          'datetime': ltypes.Datetime,
                          'product_id': ltypes.Categorical}
-        # --> Behavior change: in ks for this to happen we need to go through fT
         es.add_dataframe(dataframe_id="wishlist_log",
                          dataframe=wishlist_df,
                          index='id',

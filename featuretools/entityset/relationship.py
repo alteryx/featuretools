@@ -71,13 +71,13 @@ class Relationship(object):
     @property
     def parent_column(self):
         """Column in parent dataframe"""
-        # --> a problem bc we want to retain index tags here!!! why do we remove
+        # --> WW bug - keep index tags here
         return self.parent_dataframe.ww[self._parent_column_id]
 
     @property
     def child_column(self):
         """Column in child dataframe"""
-        # --> a problem bc we want to retain index tags here!!! why do we remove
+        # --> WW bug - keep index tags here
         return self.child_dataframe.ww[self._child_column_id]
 
     @property
