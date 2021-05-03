@@ -163,9 +163,6 @@ def ks_diamond_es(pd_diamond_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     dataframes = {}
     for df in pd_diamond_es.dataframes:
-        semantic_tags = {}
-        for col_name in df.columns:
-            semantic_tags[col_name] = df.ww.semantic_tags[col_name] - {'time_index', 'index'}
         dataframes[df.ww.name] = (ks.from_pandas(pd_to_ks_clean(df)), df.ww.index, None, df.ww.logical_types, get_df_tags(df))
 
     relationships = [(rel.parent_dataframe.ww.name,

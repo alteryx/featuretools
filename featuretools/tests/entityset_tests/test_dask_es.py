@@ -6,21 +6,19 @@ import woodwork.logical_types as ltypes
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
+from featuretools.tests.testing_utils import get_df_tags
 
 
 def test_add_dataframe(pd_es):
     dask_es = EntitySet(id="dask_es")
     log_dask = dd.from_pandas(pd_es["log"], npartitions=2)
-    semantic_tags = {}
-    for col_name in pd_es["log"].columns:
-        semantic_tags[col_name] = pd_es["log"].ww.semantic_tags[col_name] - {'time_index', 'index'}
     dask_es = dask_es.add_dataframe(
         dataframe_id="log_dask",
         dataframe=log_dask,
         index="id",
         time_index="datetime",
         logical_types=pd_es["log"].ww.logical_types,
-        semantic_tags=semantic_tags
+        semantic_tags=get_df_tags(pd_es["log"])
     )
     pd.testing.assert_frame_equal(pd_es["log"], dask_es["log_dask"].compute(), check_like=True)
 

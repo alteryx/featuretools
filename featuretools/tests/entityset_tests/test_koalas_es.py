@@ -5,6 +5,7 @@ import woodwork.logical_types as ltypes
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
+from featuretools.tests.testing_utils import get_df_tags
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
 
@@ -15,9 +16,6 @@ ks = import_or_none('databricks.koalas')
 def test_create_entity_from_ks_df(pd_es):
     cleaned_df = pd_to_ks_clean(pd_es["log"])
     log_ks = ks.from_pandas(cleaned_df)
-    semantic_tags = {}
-    for col_name in pd_es["log"].columns:
-        semantic_tags[col_name] = pd_es["log"].ww.semantic_tags[col_name] - {'time_index', 'index'}
 
     ks_es = EntitySet(id="ks_es")
     ks_es = ks_es.add_dataframe(
@@ -26,7 +24,7 @@ def test_create_entity_from_ks_df(pd_es):
         index="id",
         time_index="datetime",
         logical_types=pd_es["log"].ww.logical_types,
-        semantic_tags=semantic_tags
+        semantic_tags=get_df_tags(pd_es["log"])
     )
     pd.testing.assert_frame_equal(cleaned_df, ks_es["log_ks"].to_pandas(), check_like=True)
 
