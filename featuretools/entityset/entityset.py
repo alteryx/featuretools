@@ -87,7 +87,7 @@ class EntitySet(object):
 
             index_column = None
             time_index = None
-            make_index = None
+            make_index = False
             semantic_tags = None
             logical_types = None
             if len(dataframes[df_name]) > 1:
@@ -323,7 +323,9 @@ class EntitySet(object):
         child_ltype = child_df.ww.logical_types[child_column]
         if parent_ltype != child_ltype:
             # --> should have a better warning here that can differentiate between instance and not :/
-            warnings.warn(f'Logical type for child column {child_ltype} does not match parent column logical type {parent_ltype}. Changing child logical type to match parent.')
+            warnings.warn(f'Logical type {child_ltype} for child column {child_column} does not match '
+                          f'parent column {parent_column} logical type {parent_ltype}. '
+                          'Changing child logical type to match parent.')
             child_df.ww.set_types(logical_types={child_column: parent_ltype})
 
         self.relationships.append(relationship)
@@ -587,14 +589,14 @@ class EntitySet(object):
                 extra_params.append('make_index')
             if time_index is not None:
                 extra_params.append('time_index')
-            if logical_types is not None:
+            if logical_types:
                 extra_params.append('logical_types')
-            if semantic_tags is not None:
+            if semantic_tags:
                 extra_params.append('semantic_tags')
             if already_sorted:
                 extra_params.append('already_sorted')
             if extra_params:
-                warnings.warn("A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: " + ", ".join(extra_params))
+                warnings.warn(header="A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: " + ", ".join(extra_params))
 
             # make sure name is set to match input dataframe_id
             dataframe.ww.name = dataframe_id
@@ -776,7 +778,8 @@ class EntitySet(object):
             time_index=new_dataframe_time_index,
             secondary_time_index=make_secondary_time_index,
             logical_types={col_name: logical_type for (col_name, (logical_type, _)) in transfer_types.items()},
-            semantic_tags={col_name: (semantic_tags - {'time_index'})for (col_name, (_, semantic_tags)) in transfer_types.items()}
+            # --> might also want to get rid of index tag here?
+            semantic_tags={col_name: (semantic_tags - {'time_index'}) for (col_name, (_, semantic_tags)) in transfer_types.items()}
         )
 
         self.dataframe_dict[base_dataframe_id] = self.dataframe_dict[base_dataframe_id].ww.drop(additional_columns)

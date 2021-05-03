@@ -8,6 +8,7 @@ import pytest
 import featuretools as ft
 from featuretools import variable_types as vtypes
 from featuretools.tests.testing_utils import (
+    get_df_tags,
     make_ecommerce_entityset,
     to_pandas
 )
@@ -144,10 +145,7 @@ def pd_diamond_es():
 def dask_diamond_es(pd_diamond_es):
     dataframes = {}
     for df in pd_diamond_es.dataframes:
-        semantic_tags = {}
-        for col_name in df.columns:
-            semantic_tags[col_name] = df.ww.semantic_tags[col_name] - {'time_index', 'index'}
-        dataframes[df.ww.name] = (dd.from_pandas(df, npartitions=2), df.ww.index, None, df.ww.logical_types, semantic_tags)
+        dataframes[df.ww.name] = (dd.from_pandas(df, npartitions=2), df.ww.index, None, df.ww.logical_types, get_df_tags(df))
 
     relationships = [(rel.parent_dataframe.ww.name,
                       rel.parent_column.name,
@@ -165,7 +163,7 @@ def ks_diamond_es(pd_diamond_es):
         semantic_tags = {}
         for col_name in df.columns:
             semantic_tags[col_name] = df.ww.semantic_tags[col_name] - {'time_index', 'index'}
-        dataframes[df.ww.name] = (ks.from_pandas(pd_to_ks_clean(df)), df.ww.index, None, df.ww.logical_types, semantic_tags)
+        dataframes[df.ww.name] = (ks.from_pandas(pd_to_ks_clean(df)), df.ww.index, None, df.ww.logical_types, get_df_tags(df))
 
     relationships = [(rel.parent_dataframe.ww.name,
                       rel.parent_column.name,
@@ -208,10 +206,7 @@ def pd_default_value_es():
 def dask_default_value_es(pd_default_value_es):
     dataframes = {}
     for df in pd_default_value_es.dataframes:
-        semantic_tags = {}
-        for col_name in df.columns:
-            semantic_tags[col_name] = df.ww.semantic_tags[col_name] - {'time_index', 'index'}
-        dataframes[df.ww.name] = (dd.from_pandas(df, npartitions=4), df.ww.index, None, df.ww.logical_types, semantic_tags)
+        dataframes[df.ww.name] = (dd.from_pandas(df, npartitions=4), df.ww.index, None, df.ww.logical_types, get_df_tags(df))
 
     relationships = [(rel.parent_dataframe.ww.name,
                       rel.parent_column.name,
@@ -226,10 +221,7 @@ def ks_default_value_es(pd_default_value_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     dataframes = {}
     for df in pd_default_value_es.dataframes:
-        semantic_tags = {}
-        for col_name in df.columns:
-            semantic_tags[col_name] = df.ww.semantic_tags[col_name] - {'time_index', 'index'}
-        dataframes[df.ww.name] = (ks.from_pandas(pd_to_ks_clean(df)), df.ww.index, None, df.ww.logical_types, semantic_tags)
+        dataframes[df.ww.name] = (ks.from_pandas(pd_to_ks_clean(df)), df.ww.index, None, df.ww.logical_types, get_df_tags(df))
 
     relationships = [(rel.parent_dataframe.ww.name,
                       rel.parent_column.name,
@@ -267,10 +259,7 @@ def pd_home_games_es():
 def dask_home_games_es(pd_home_games_es):
     dataframes = {}
     for df in pd_home_games_es.dataframes:
-        semantic_tags = {}
-        for col_name in df.columns:
-            semantic_tags[col_name] = df.ww.semantic_tags[col_name] - {'time_index', 'index'}
-        dataframes[df.ww.name] = (dd.from_pandas(df, npartitions=2), df.ww.index, None, df.ww.logical_types, semantic_tags)
+        dataframes[df.ww.name] = (dd.from_pandas(df, npartitions=2), df.ww.index, None, df.ww.logical_types, get_df_tags(df))
 
     relationships = [(rel.parent_dataframe.ww.name,
                       rel.parent_column.name,
@@ -285,10 +274,7 @@ def ks_home_games_es(pd_home_games_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     dataframes = {}
     for df in pd_home_games_es.dataframes:
-        semantic_tags = {}
-        for col_name in df.columns:
-            semantic_tags[col_name] = df.ww.semantic_tags[col_name] - {'time_index', 'index'}
-        dataframes[df.ww.name] = (ks.from_pandas(pd_to_ks_clean(df)), df.ww.index, None, df.ww.logical_types, semantic_tags)
+        dataframes[df.ww.name] = (ks.from_pandas(pd_to_ks_clean(df)), df.ww.index, None, df.ww.logical_types, get_df_tags(df))
 
     relationships = [(rel.parent_dataframe.ww.name,
                       rel.parent_column.name,
