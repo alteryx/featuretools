@@ -26,7 +26,7 @@ class Relationship(object):
         if (self.parent_dataframe.ww.index is not None and
                 self._parent_column_id != self.parent_dataframe.ww.index):
             raise AttributeError(f"Parent column '{self.parent_column.name}' is not the index of "
-                                 f"dataframe {self.parent_dataframe.ww.name}")
+                                 f"dataframe {self._parent_dataframe_id}")
 
     @classmethod
     def from_dictionary(cls, arguments, es):
@@ -132,16 +132,16 @@ class RelationshipPath(object):
             # Yield first dataframe.
             is_forward, relationship = self[0]
             if is_forward:
-                yield relationship.child_dataframe.ww.name
+                yield relationship._child_dataframe_id
             else:
-                yield relationship.parent_dataframe.ww.name
+                yield relationship._parent_dataframe_id
 
         # Yield the dataframe pointed to by each relationship.
         for is_forward, relationship in self:
             if is_forward:
-                yield relationship.parent_dataframe.ww.name
+                yield relationship._parent_dataframe_id
             else:
-                yield relationship.child_dataframe.ww.name
+                yield relationship._child_dataframe_id
 
     def __add__(self, other):
         return RelationshipPath(self._relationships_with_direction +
