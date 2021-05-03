@@ -1575,6 +1575,38 @@ def test_entityset_init():
     assert es['transactions'].ww == es_copy['transactions'].ww
 
 
+def test_add_interesting_values_specified_vals(es):
+    product_vals = ['coke zero', 'taco clock']
+    country_vals = ['AL', 'US']
+    interesting_values = {
+        'product_id': product_vals,
+        'countrycode': country_vals,
+    }
+    es.add_interesting_values(dataframe_id='log', values=interesting_values)
+
+    assert es['log'].ww['product_id'].ww.metadata['interesting_values'] == product_vals
+    assert es['log'].ww['countrycode'].ww.metadata['interesting_values'] == country_vals
+
+
+def test_add_interesting_values_vals_specified_without_entity_id(es):
+    interesting_values = {
+        'countrycode': ['AL', 'US'],
+    }
+    error_msg = "entity_id must be specified if values are provided"
+    with pytest.raises(ValueError, match=error_msg):
+        es.add_interesting_values(values=interesting_values)
+
+
+def test_add_interesting_values_single_entity(es):
+    es.add_interesting_values(dataframe_id='log')
+    breakpoint()
+
+
+def test_add_interesting_values_multiple_entities(es):
+    es.add_interesting_values()
+    breakpoint()
+
+
 # --> need to update load_retail
 # def test_add_interesting_values_verbose_output(caplog):
 #     es = ft.demo.load_retail(nrows=200)

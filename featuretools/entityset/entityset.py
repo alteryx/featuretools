@@ -981,66 +981,86 @@ class EntitySet(object):
     # #  Other ###############################################
     # ###########################################################################
 
-    # def add_interesting_values(self, max_values=5, verbose=False, entity_id=None):
-    #     """Find interesting values for categorical variables, to be used to generate "where" clauses
+    def add_interesting_values(self, max_values=5, verbose=False, dataframe_id=None, values=None):
+        """Find interesting values for categorical variables, to be used to generate "where" clauses
 
-    #     Args:
-    #         max_values (int) : Maximum number of values per variable to add.
-    #         verbose (bool) : If True, print summary of interesting values found.
-    #         entity_id (str) : The Entity for which to add interesting values. If not specified
-    #             interesting values will be added for all Entities.
+        Args:
+            max_values (int) : Maximum number of values per variable to add.
+            verbose (bool) : If True, print summary of interesting values found.
+            dataframe_id (str) : The dataframe in the EntitySet for which to add interesting values.
+                If not specified interesting values will be added for all dataframes.
+            values (dict): A dictionary mapping column names to the interesting values to set
+                for the column. If specified, a corresponding dataframe_id must also be provided.
+                If not specified, interesting values will be set for all eligible columns. If values
+                are specified, max_values and verbose parameters will be ignored.
 
-    #     Returns:
-    #         None
+        Returns:
+            None
 
-    #     """
-    #     if entity_id:
-    #         entities = [self[entity_id]]
-    #     else:
-    #         entities = self.dataframes
-    #     for entity in entities:
-    #         for variable in entity.variables:
-    #             # some heuristics to find basic 'where'-able variables
-    #             if isinstance(variable, vtypes.Discrete):
-    #                 variable.interesting_values = pd.Series(dtype=variable.entity.df[variable.id].dtype)
+        """
+        if dataframe_id is None and values is not None:
+            raise ValueError("dataframe_id must be specified if values are provided")
+        
+        if dataframe_id is not None and values is not None:
+            for column, vals in values.items():
+                self[dataframe_id].ww.columns[column].metadata['interesting_values'] = vals
+            return
 
-    #                 # TODO - consider removing this constraints
-    #                 # don't add interesting values for entities in relationships
-    #                 skip = False
-    #                 for r in self.relationships:
-    #                     if variable in [r.child_column, r.parent_column]:
-    #                         skip = True
-    #                         break
-    #                 if skip:
-    #                     continue
+        if dataframe_id:
+            dataframes = [self[dataframe_id]]
+        else:
+            dataframes = self.dataframes
+        for df in dataframes:
+            for column in df.columns:
+                # some heuristics to find basic 'where'-able variables
+                if df.ww.columns[column].is_categorical:
+                    # variable.interesting_values = pd.Series(dtype=variable.entity.df[variable.id].dtype)
 
-    #                 counts = entity.df[variable.id].value_counts()
+                    # TODO - consider removing this constraints
+                    # don't add interesting values for entities in relationships
+                    skip = False
+                    for r in self.relationships:
+                        if column in [r.child_column.name, r.parent_column.name]:
+                            skip = True
+                            break
+                    if skip:
+                        continue
 
-    #                 # find how many of each unique value there are; sort by count,
-    #                 # and add interesting values to each variable
-    #                 total_count = np.sum(counts)
-    #                 counts[:] = counts.sort_values()[::-1]
-    #                 for i in range(min(max_values, len(counts.index))):
-    #                     idx = counts.index[i]
+                    counts = df[column].value_counts()
 
-    #                     if len(counts.index) < 25:
-    #                         if verbose:
-    #                             msg = "Variable {}: Marking {} as an "
-    #                             msg += "interesting value"
-    #                             logger.info(msg.format(variable.id, idx))
-    #                         variable.interesting_values = variable.interesting_values.append(pd.Series([idx]))
-    #                     else:
-    #                         fraction = counts[idx] / total_count
-    #                         if fraction > 0.05 and fraction < 0.95:
-    #                             if verbose:
-    #                                 msg = "Variable {}: Marking {} as an "
-    #                                 msg += "interesting value"
-    #                                 logger.info(msg.format(variable.id, idx))
-    #                             variable.interesting_values = variable.interesting_values.append(pd.Series([idx]))
-    #                         else:
-    #                             break
+                    # find how many of each unique value there are; sort by count,
+                    # and add interesting values to each column
+                    total_count = np.sum(counts)
+                    counts[:] = counts.sort_values()[::-1]
+                    for i in range(min(max_values, len(counts.index))):
+                        idx = counts.index[i]
 
-    #     self.reset_data_description()
+                        if len(counts.index) < 25:
+                            if verbose:
+                                msg = "Column {}: Marking {} as an "
+                                msg += "interesting value"
+                                logger.info(msg.format(column, idx))
+                            interesting_vals = df.ww.columns[column].metadata.get('interesting_values') or []
+                            if interesting_vals is not None:
+                                df.ww.columns[column].metadata['interesting_values'] = interesting_vals + [idx]
+                            else:
+                                df.ww.columns[column].metadata['interesting_values'] = [idx]
+                        else:
+                            fraction = counts[idx] / total_count
+                            if fraction > 0.05 and fraction < 0.95:
+                                if verbose:
+                                    msg = "Variable {}: Marking {} as an "
+                                    msg += "interesting value"
+                                    logger.info(msg.format(column, idx))
+                                interesting_vals = df.ww.columns[column].metadata.get('interesting_values') or []
+                                if interesting_vals is not None:
+                                    df.ww.columns[column].metadata['interesting_values'] = interesting_vals + [idx]
+                                else:
+                                    df.ww.columns[column].metadata['interesting_values'] = [idx]
+                            else:
+                                break
+
+        self.reset_data_description()
 
     # def plot(self, to_file=None):
     #     """
