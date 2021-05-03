@@ -2,13 +2,7 @@ import pandas as pd
 import pytest
 
 import featuretools as ft
-from featuretools.variable_types import (
-    Categorical,
-    Datetime,
-    NaturalLanguage,
-    Text,
-    Timedelta
-)
+from featuretools.variable_types import Categorical, NaturalLanguage, Text
 
 
 def test_enforces_variable_id_is_str(es):
@@ -17,14 +11,6 @@ def test_enforces_variable_id_is_str(es):
     error_text = 'Variable id must be a string'
     with pytest.raises(AssertionError, match=error_text):
         Categorical(1, es["customers"])
-
-
-def test_no_column_default_datetime(es):
-    variable = Datetime("new_time", es["customers"])
-    assert variable.interesting_values.dtype == "datetime64[ns]"
-
-    variable = Timedelta("timedelta", es["customers"])
-    assert variable.interesting_values.dtype == "timedelta64[ns]"
 
 
 def test_text_depreciation():

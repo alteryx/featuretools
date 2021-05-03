@@ -50,7 +50,8 @@ class Variable(object):
         if default_dtype == np.timedelta64:
             default_dtype = 'timedelta64[ns]'
 
-        self._interesting_values = pd.Series(dtype=default_dtype)
+        # self._interesting_values = pd.Series(dtype=default_dtype)
+        self._interesting_values = []
 
     @property
     def entityset(self):
@@ -63,7 +64,7 @@ class Variable(object):
         if not deep:
             return shallow_eq
         else:
-            return shallow_eq and set(self.interesting_values.values) == set(other.interesting_values.values)
+            return shallow_eq and set(self.interesting_values) == set(other.interesting_values)
 
     def __hash__(self):
         return hash((self.id, self.entity_id))
@@ -114,8 +115,7 @@ class Variable(object):
 
     @interesting_values.setter
     def interesting_values(self, interesting_values):
-        self._interesting_values = pd.Series(interesting_values,
-                                             dtype=self._interesting_values.dtype)
+        self._interesting_values = interesting_values
 
     @property
     def series(self):
@@ -131,7 +131,7 @@ class Variable(object):
                 'name': self.name,
                 'description': self.description,
                 'entity': self.entity.id,
-                'interesting_values': self._interesting_values.to_json()
+                'interesting_values': self._interesting_values
             },
         }
 
@@ -154,9 +154,7 @@ class Discrete(Variable):
     def interesting_values(self, values):
         seen = set()
         seen_add = seen.add
-        self._interesting_values = pd.Series([v for v in values if not
-                                              (v in seen or seen_add(v))],
-                                             dtype=self._interesting_values.dtype)
+        self._interesting_values = [v for v in values if not (v in seen or seen_add(v))]
 
 
 class Boolean(Variable):

@@ -304,7 +304,7 @@ class Entity(object):
         for variable in self.variables:
             # some heuristics to find basic 'where'-able variables
             if isinstance(variable, vtypes.Discrete):
-                variable.interesting_values = pd.Series(dtype=variable.entity.df[variable.id].dtype)
+                variable.interesting_values = []
 
                 # TODO - consider removing this constraints
                 # don't add interesting values for entities in relationships
@@ -322,8 +322,9 @@ class Entity(object):
                 # and add interesting values to each variable
                 total_count = np.sum(counts)
                 counts[:] = counts.sort_values()[::-1]
+                counts_idx = counts.index.tolist()
                 for i in range(min(max_values, len(counts.index))):
-                    idx = counts.index[i]
+                    idx = counts_idx[i]
 
                     # add the value to interesting_values if it represents more than
                     # 25% of the values we have not seen so far
@@ -332,7 +333,7 @@ class Entity(object):
                             msg = "Variable {}: Marking {} as an "
                             msg += "interesting value"
                             logger.info(msg.format(variable.id, idx))
-                        variable.interesting_values = variable.interesting_values.append(pd.Series([idx]))
+                        variable.interesting_values.append(idx)
                     else:
                         fraction = counts[idx] / total_count
                         if fraction > 0.05 and fraction < 0.95:
@@ -340,7 +341,7 @@ class Entity(object):
                                 msg = "Variable {}: Marking {} as an "
                                 msg += "interesting value"
                                 logger.info(msg.format(variable.id, idx))
-                            variable.interesting_values = variable.interesting_values.append(pd.Series([idx]))
+                            variable.interesting_values.append(idx)
                             # total_count -= counts[idx]
                         else:
                             break
