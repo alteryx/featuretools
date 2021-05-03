@@ -56,7 +56,7 @@ def test_init_es_with_dataframe(df):
 
 
 def test_init_es_with_woodwork_table(df):
-    df.ww.init()
+    df.ww.init(index='id')
     es = EntitySet('es', dataframes={'table': (df,)})
 
     assert es.id == 'es'
@@ -122,13 +122,13 @@ def test_add_dataframe_to_es(df):
 
 
 def test_change_es_dataframe_schema(df):
-    df.ww.init()
+    df.ww.init(index='id')
     es = EntitySet('es', dataframes={'table': (df,)})
 
     assert es['table'].ww.index == 'id'
 
-    es.dataframe_dict['table'].ww.set_index('id')
-    assert es['table'].ww.index == 'id'
+    es.dataframe_dict['table'].ww.set_index('category')
+    assert es['table'].ww.index == 'category'
 
 
 def test_init_es_with_relationships(pd_df):
@@ -249,7 +249,6 @@ def test_extra_woodwork_params(es):
 
 
 def test_update_dataframe_errors(es):
-    # --> test with ww initalized dataframe, test with dtype change, test with other index problems
     df = es['customers'].copy()
     if ks and isinstance(df, ks.DataFrame):
         df['new'] = [1, 2, 3]
@@ -346,37 +345,65 @@ def test_update_dataframe_different_dtypes(es):
         incompatible_dtype_df['age'] = pd.Series(incompatible_list)
 
     if isinstance(es['customers'], pd.DataFrame):
-        # Dask does not error on invalid type conversion until compute
-        # --> koalas should work right???
+        # Dask and Koalas do not error on invalid type conversion until compute
         error_msg = 'Error converting datatype for age from type object to type int64. Please confirm the underlying data is consistent with logical type Integer.'
         with pytest.raises(ww.exceptions.TypeConversionError, match=error_msg):
             es.update_dataframe(dataframe_id='customers', df=incompatible_dtype_df)
 
 
-def test_update_dataframe_data_transformation():
-    # --> ideally test this with koalas and dask as well
+@pytest.fixture()
+def latlong_df_pandas():
     latlong_df = pd.DataFrame({
-        'tuple_ints': pd.Series([(1, 2), (3, 4)]),
-        'tuple_strings': pd.Series([('1', '2'), ('3', '4')]),
         'string_tuple': pd.Series(['(1, 2)', '(3, 4)']),
         'bracketless_string_tuple': pd.Series(['1, 2', '3, 4']),
         'list_strings': pd.Series([['1', '2'], ['3', '4']]),
         'combo_tuple_types': pd.Series(['[1, 2]', '(3, 4)']),
     })
-    latlong_df.set_index('tuple_ints', drop=False, inplace=True)
+    latlong_df.set_index('string_tuple', drop=False, inplace=True)
     latlong_df.index.name = None
+    return latlong_df
 
-    initial_df = latlong_df.iloc[[0], :]
-    initial_df.ww.init(index='tuple_ints', logical_types={col_name: 'LatLong' for col_name in initial_df.columns})
+
+@pytest.fixture()
+def latlong_df_dask(latlong_df_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
+    return dd.from_pandas(latlong_df_pandas, npartitions=2)
+
+
+@pytest.fixture()
+def latlong_df_koalas(latlong_df_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
+    return ks.from_pandas(latlong_df_pandas.applymap(lambda tup: list(tup) if isinstance(tup, tuple) else tup))
+
+
+@pytest.fixture(params=['latlong_df_pandas', 'latlong_df_dask', 'latlong_df_koalas'])
+def latlong_df(request):
+    return request.getfixturevalue(request.param)
+
+
+def test_update_dataframe_data_transformation(latlong_df):
+    initial_df = latlong_df.copy()
+    initial_df.ww.init(index='string_tuple', logical_types={col_name: 'LatLong' for col_name in initial_df.columns})
     es = EntitySet()
     es.add_dataframe(dataframe_id='latlongs', dataframe=initial_df)
 
+    df = to_pandas(es['latlongs'])
     expected_val = (1, 2)
-    assert all(es['latlongs'].iloc[0] == expected_val)
+    if ks and isinstance(es['latlongs'], ks.DataFrame):
+        expected_val = [1, 2]
+    for col in latlong_df.columns:
+        series = df[col]
+        assert series.iloc[0] == expected_val
 
+    latlong_df.index = initial_df.index  # Need the underlying index to match
     es.update_dataframe('latlongs', latlong_df)
+    df = to_pandas(es['latlongs'])
     expected_val = (3, 4)
-    assert all(es['latlongs'].iloc[-1] == expected_val)
+    if ks and isinstance(es['latlongs'], ks.DataFrame):
+        expected_val = [3, 4]
+    for col in latlong_df.columns:
+        series = df[col]
+        assert series.iloc[-1] == expected_val
 
 
 def test_update_dataframe_column_order(es):

@@ -597,7 +597,7 @@ class EntitySet(object):
             if already_sorted:
                 extra_params.append('already_sorted')
             if extra_params:
-                warnings.warn(header="A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: " + ", ".join(extra_params))
+                warnings.warn("A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: " + ", ".join(extra_params))
 
             # make sure name is set to match input dataframe_id
             dataframe.ww.name = dataframe_id
