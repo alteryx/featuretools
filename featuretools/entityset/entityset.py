@@ -225,7 +225,7 @@ class EntitySet(object):
 
     def __repr__(self):
         repr_out = u"Entityset: {}\n".format(self.id)
-        repr_out += u"  Entities:"
+        repr_out += u"  DataFrames:"
         for df in self.dataframes:
             if df.shape:
                 repr_out += u"\n    {} [Rows: {}, Columns: {}]".format(
@@ -477,7 +477,7 @@ class EntitySet(object):
         return not second_path
 
     ###########################################################################
-    #  Entity creation methods  ##############################################
+    #  DataFrame creation methods  ##############################################
     ###########################################################################
 
     def add_dataframe(self,
@@ -549,8 +549,8 @@ class EntitySet(object):
 
         if len(self.dataframes) > 0:
             if not isinstance(dataframe, type(self.dataframes[0])):
-                raise ValueError("All entity dataframes must be of the same type. "
-                                 "Cannot add entity of type {} to an entityset with existing entities "
+                raise ValueError("All dataframes must be of the same type. "
+                                 "Cannot add dataframe of type {} to an entityset with existing dataframes "
                                  "of type {}".format(type(dataframe), type(self.dataframes[0])))
 
         # Only allow string column names
@@ -563,7 +563,8 @@ class EntitySet(object):
             # Warn when performing inference on Dask or Koalas DataFrames
             if not set(dataframe.columns).issubset(set(logical_types.keys())) and \
                     (isinstance(dataframe, dd.DataFrame) or is_instance(dataframe, ks, 'DataFrame')):
-                warnings.warn('Performing type inference on Dask or Koalas DataFrames may be computationally intensive. Specify logical types for each column to speed up EntitySet initialization.')
+                warnings.warn('Performing type inference on Dask or Koalas DataFrames may be computationally intensive. '
+                              'Specify logical types for each column to speed up EntitySet initialization.')
 
             dataframe.ww.init(name=dataframe_id,
                               index=index,
@@ -618,7 +619,7 @@ class EntitySet(object):
                             make_secondary_time_index=None,
                             new_dataframe_time_index=None,
                             new_dataframe_secondary_time_index=None):
-        """Create a new dataframe and relationship from unique values of an existing variable.
+        """Create a new dataframe and relationship from unique values of an existing column.
 
         Args:
             base_dataframe_id (str) : Datarame id from which to split.
@@ -673,19 +674,19 @@ class EntitySet(object):
 
         for v in additional_columns + copy_columns:
             if v == index:
-                raise ValueError("Not copying {} as both index and variable".format(v))
+                raise ValueError("Not copying {} as both index and column in copy_columns".format(v))
 
         for v in additional_columns:
             if v == base_dataframe.ww.time_index:
-                raise ValueError("Not moving {} as it is the base time index variable. Perhaps, move the variable to the copy_columns.".format(v))
+                raise ValueError("Not moving {} as it is the base time index column. Perhaps, move the column to the copy_columns.".format(v))
 
         if isinstance(make_time_index, str):
             if make_time_index not in base_dataframe.columns:
-                raise ValueError("'make_time_index' must be a variable in the base entity")
+                raise ValueError("'make_time_index' must be a column in the base dataframe")
             elif make_time_index not in additional_columns + copy_columns:
                 raise ValueError("'make_time_index' must be specified in 'additional_columns' or 'copy_columns'")
         if index == base_dataframe.ww.index:
-            raise ValueError("'index' must be different from the index column of the base entity")
+            raise ValueError("'index' must be different from the index column of the base dataframe")
 
         transfer_types = {}
         # Types will be a tuple of (logical_type, semantic_tags)
@@ -694,7 +695,7 @@ class EntitySet(object):
             # Remove any existing time index tags
             transfer_types[col_name] = (base_dataframe.ww.logical_types[col_name], base_dataframe.ww.semantic_tags[col_name] - {'time_index'})
 
-        # create and add new entity
+        # create and add new dataframe
         new_dataframe = self[base_dataframe_id].ww.copy()
 
         if make_time_index is None and base_dataframe.ww.time_index is not None:
@@ -706,7 +707,7 @@ class EntitySet(object):
             new_dataframe_time_index = make_time_index
             already_sorted = (new_dataframe_time_index == base_dataframe.ww.time_index)
         elif make_time_index:
-            # Create a new time index based on the base entity time index.
+            # Create a new time index based on the base dataframe time index.
             base_time_index = base_dataframe.ww.time_index
             if new_dataframe_time_index is None:
                 new_dataframe_time_index = "first_%s_time" % (base_dataframe.ww.name)
@@ -714,7 +715,7 @@ class EntitySet(object):
             already_sorted = True
 
             assert base_dataframe.ww.time_index is not None, \
-                "Base entity doesn't have time_index defined"
+                "Base dataframe doesn't have time_index defined"
 
             if base_time_index not in [v for v in additional_columns]:
                 copy_columns.append(base_time_index)
@@ -1230,8 +1231,8 @@ class EntitySet(object):
     #     return df
 
     def update_dataframe(self, dataframe_id, df, already_sorted=False, recalculate_last_time_indexes=True):
-        '''Update entity's internal dataframe, optionaly making sure data is sorted,
-        reference indexes to other entities are consistent, and last_time_indexes
+        '''Update the internal dataframe of an EntitSet table, keeping Woodwork typing information the same.
+        Optionaly makes sure data is sorted, reference indexes to other dataframes are consistent, and last_time_indexes
         are consistent.
         '''
         if not isinstance(df, type(self[dataframe_id])):

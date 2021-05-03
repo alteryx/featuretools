@@ -58,8 +58,8 @@ def test_create_entityset_with_mixed_dataframe_types(pd_es, ks_es):
     ks_df = ks.from_pandas(df)
 
     # Test error is raised when trying to add Koalas entity to entitset with existing pandas entities
-    err_msg = "All entity dataframes must be of the same type. " \
-              "Cannot add entity of type {} to an entityset with existing entities " \
+    err_msg = "All dataframes must be of the same type. " \
+              "Cannot add dataframe of type {} to an entityset with existing dataframes " \
               "of type {}".format(type(ks_df), type(pd_es.dataframes[0]))
 
     with pytest.raises(ValueError, match=err_msg):
@@ -69,8 +69,8 @@ def test_create_entityset_with_mixed_dataframe_types(pd_es, ks_es):
             index="id")
 
     # Test error is raised when trying to add pandas entity to entitset with existing ks entities
-    err_msg = "All entity dataframes must be of the same type. " \
-              "Cannot add entity of type {} to an entityset with existing entities " \
+    err_msg = "All dataframes must be of the same type. " \
+              "Cannot add dataframe of type {} to an entityset with existing dataframes " \
               "of type {}".format(type(df), type(ks_es.dataframes[0]))
 
     with pytest.raises(ValueError, match=err_msg):

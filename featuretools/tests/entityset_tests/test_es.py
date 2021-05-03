@@ -21,7 +21,7 @@ ks = import_or_none('databricks.koalas')
 
 
 def test_normalize_time_index_as_additional_variable(es):
-    error_text = "Not moving signup_date as it is the base time index variable."
+    error_text = "Not moving signup_date as it is the base time index column. Perhaps, move the column to the copy_columns."
     with pytest.raises(ValueError, match=error_text):
         assert "signup_date" in es["customers"].columns
         es.normalize_dataframe(base_dataframe_id='customers',
@@ -1142,7 +1142,7 @@ def test_normalize_dataframe(es):
 
 
 def test_normalize_dataframe_new_time_index_in_base_entity_error_check(es):
-    error_text = "'make_time_index' must be a variable in the base entity"
+    error_text = "'make_time_index' must be a column in the base dataframe"
     with pytest.raises(ValueError, match=error_text):
         es.normalize_dataframe(base_dataframe_id='customers',
                                new_dataframe_id='cancellations',
@@ -1315,7 +1315,7 @@ def test_normalize_dataframe_same_index(es):
                      time_index="transaction_time",
                      dataframe=transactions_df)
 
-    error_text = "'index' must be different from the index column of the base entity"
+    error_text = "'index' must be different from the index column of the base dataframe"
     with pytest.raises(ValueError, match=error_text):
         es.normalize_dataframe(base_dataframe_id="df",
                                new_dataframe_id="new_dataframe",
@@ -1352,7 +1352,7 @@ def test_construct_without_id():
 
 
 def test_repr_without_id():
-    match = 'Entityset: None\n  Entities:\n  Relationships:\n    No relationships'
+    match = 'Entityset: None\n  DataFrames:\n  Relationships:\n    No relationships'
     assert repr(ft.EntitySet()) == match
 
 
