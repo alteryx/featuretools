@@ -1243,9 +1243,6 @@ class EntitySet(object):
             if col_name not in df.columns:
                 raise ValueError("Updated dataframe is missing new {} column".format(col_name))
 
-        # Make sure column ordering matches original ordering
-        df = df.ww[old_column_names]
-
         if df.ww.schema is not None:
             if df.ww.logical_types != self[dataframe_id].ww.logical_types or df.ww.semantic_tags != self[dataframe_id].ww.semantic_tags:
                 raise ValueError('Woodwork types for new DataFrame do not match those of the original DataFrame.')
@@ -1259,6 +1256,8 @@ class EntitySet(object):
 
             # --> WW bug: if metadata has a series in it, cannot deepcopy
             df.ww.init(schema=self[dataframe_id].ww.schema)
+            # Make sure column ordering matches original ordering
+            df = df.ww[old_column_names]
 
         self.dataframe_dict[dataframe_id] = df
 
