@@ -32,7 +32,10 @@ def description_to_variable(description, entity=None):
         variable_class = variable_types.get(variable, variable_types.get('unknown'))
         kwargs = {} if is_type_string else description['type']
         variable = variable_class(description['id'], entity, **kwargs)
-        interesting_values = pd.read_json(description['properties']['interesting_values'], typ='series')
+        interesting_values = description['properties']['interesting_values']
+        # Temp fix for interesting values in saved files not being serialized the same:
+        if interesting_values == '{}':
+            interesting_values = []
         variable.interesting_values = interesting_values
         variable_description = description['properties'].get('description')
         if variable_description is not None and variable_description != 'the "{}"'.format(variable.name):
@@ -64,7 +67,9 @@ def description_to_entity(description, entityset, path=None):
         variable_types={variable: variable_types[variable][0] for variable in variable_types})
     for variable in es[description['id']].variables:
         interesting_values = variable_types[variable.id][1]['properties']['interesting_values']
-        interesting_values = pd.read_json(interesting_values, typ="series")
+        # Temp fix for interesting values in saved files not being serialized the same:
+        if interesting_values == '{}':
+            interesting_values = []
         variable.interesting_values = interesting_values
         variable_description = variable_types[variable.id][1]['properties'].get('description')
         if variable_description is not None and variable_description != 'the "{}"'.format(variable.name):

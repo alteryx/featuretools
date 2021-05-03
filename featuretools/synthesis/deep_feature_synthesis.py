@@ -547,7 +547,7 @@ class DeepFeatureSynthesis(object):
             # Features can contain a stale EntitySet reference without
             # interesting_values
             variable = self.es[feat.variable.entity.id][feat.variable.id]
-            if variable.interesting_values.empty:
+            if len(variable.interesting_values) == 0:
                 continue
 
             for val in variable.interesting_values:
