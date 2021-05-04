@@ -298,7 +298,7 @@ class EntitySet(object):
 
         # this is a new pair of dataframes
         child_df = relationship.child_dataframe
-        child_column = relationship.child_column.name
+        child_column = relationship._child_column_id
         if child_df.ww.index == child_column:
             msg = "Unable to add relationship because child column '{}' in '{}' is also its index"
             raise ValueError(msg.format(child_column, child_df.ww.name))
@@ -392,7 +392,7 @@ class EntitySet(object):
         yield start_dataframe_id, []
 
         for relationship in self.get_forward_relationships(start_dataframe_id):
-            next_dataframe = relationship.parent_dataframe.ww.name
+            next_dataframe = relationship._parent_dataframe_id
             # Copy seen dataframes for each next node to allow multiple paths (but
             # not cycles).
             descendants = self._forward_dataframe_paths(next_dataframe, seen_dataframes.copy())
@@ -410,7 +410,7 @@ class EntitySet(object):
         Yields a tuple of (descendent_id, path from dataframe_id to descendant).
         """
         for relationship in self.get_forward_relationships(dataframe_id):
-            parent_dataframe_id = relationship.parent_dataframe.ww.name
+            parent_dataframe_id = relationship._parent_dataframe_id
             direct_path = RelationshipPath([(True, relationship)])
             yield parent_dataframe_id, direct_path
 
@@ -430,7 +430,7 @@ class EntitySet(object):
         Yields a tuple of (descendent_id, path from dataframe_id to descendant).
         """
         for relationship in self.get_backward_relationships(dataframe_id):
-            child_dataframe_id = relationship.child_dataframe.ww.name
+            child_dataframe_id = relationship._child_dataframe_id
             direct_path = RelationshipPath([(False, relationship)])
             yield child_dataframe_id, direct_path
 
@@ -448,7 +448,7 @@ class EntitySet(object):
         Returns:
             list[:class:`.Relationship`]: List of forward relationships.
         """
-        return [r for r in self.relationships if r.child_dataframe.ww.name == dataframe_id]
+        return [r for r in self.relationships if r._child_dataframe_id == dataframe_id]
 
     def get_backward_relationships(self, dataframe_id):
         """
@@ -460,7 +460,7 @@ class EntitySet(object):
         Returns:
             list[:class:`.Relationship`]: list of backward relationships
         """
-        return [r for r in self.relationships if r.parent_dataframe.ww.name == dataframe_id]
+        return [r for r in self.relationships if r._parent_dataframe_id == dataframe_id]
 
     def has_unique_forward_path(self, start_dataframe_id, end_dataframe_id):
         """
@@ -862,8 +862,8 @@ class EntitySet(object):
         children = defaultdict(list)  # parent --> child mapping
         child_cols = defaultdict(dict)
         for r in self.relationships:
-            children[r.parent_dataframe.ww.name].append(r.child_dataframe)
-            child_cols[r.parent_dataframe.ww.name][r.child_dataframe.ww.name] = r.child_column
+            children[r._parent_dataframe_id].append(r.child_dataframe)
+            child_cols[r._parent_dataframe_id][r._child_dataframe_id] = r.child_column
 
         updated_dataframes = updated_dataframes or []
         if updated_dataframes:
