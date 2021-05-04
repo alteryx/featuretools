@@ -1599,7 +1599,7 @@ def test_add_interesting_values_vals_specified_without_dataframe_id(es):
 
 def test_add_interesting_values_single_dataframe(pd_es):
     pd_es.add_interesting_values(dataframe_id='log')
-    
+
     expected_vals = {
         'zipcode': ['02116', '02116-3899', '1234567890', '12345-6789', '0'],
         'countrycode': ['US', 'AL', 'ALB', 'USA'],

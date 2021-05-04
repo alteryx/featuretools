@@ -1000,7 +1000,7 @@ class EntitySet(object):
         """
         if dataframe_id is None and values is not None:
             raise ValueError("dataframe_id must be specified if values are provided")
-        
+
         if dataframe_id is not None and values is not None:
             for column, vals in values.items():
                 self[dataframe_id].ww.columns[column].metadata['interesting_values'] = vals
