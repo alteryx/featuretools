@@ -81,7 +81,7 @@ jobs:
         name: Run unit tests (no code coverage)
         run: |
           cd unpacked_sdist
-          pytest woodwork/ -n 2
+          pytest featuretools/ -n 2
       - if: ${{ matrix.python_version == 3.7 }}
         name: Run unit tests with code coverage
         run: |
@@ -89,7 +89,7 @@ jobs:
           coverage erase
           cd unpacked_sdist/
           coverage erase
-          pytest woodwork/ -n 2 --cov=woodwork --cov-config=../.coveragerc
+          pytest featuretools/ -n 2 --cov=featuretools --cov-config=../.coveragerc
       - if: ${{ matrix.python_version == 3.7 }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
