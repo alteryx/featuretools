@@ -1588,23 +1588,50 @@ def test_add_interesting_values_specified_vals(es):
     assert es['log'].ww['countrycode'].ww.metadata['interesting_values'] == country_vals
 
 
-def test_add_interesting_values_vals_specified_without_entity_id(es):
+def test_add_interesting_values_vals_specified_without_dataframe_id(es):
     interesting_values = {
         'countrycode': ['AL', 'US'],
     }
-    error_msg = "entity_id must be specified if values are provided"
+    error_msg = "dataframe_id must be specified if values are provided"
     with pytest.raises(ValueError, match=error_msg):
         es.add_interesting_values(values=interesting_values)
 
 
-def test_add_interesting_values_single_entity(es):
-    es.add_interesting_values(dataframe_id='log')
-    breakpoint()
+def test_add_interesting_values_single_dataframe(pd_es):
+    pd_es.add_interesting_values(dataframe_id='log')
+    
+    expected_vals = {
+        'zipcode': ['02116', '02116-3899', '1234567890', '12345-6789', '0'],
+        'countrycode': ['US', 'AL', 'ALB', 'USA'],
+        'subregioncode': ['US-AZ', 'US-MT', 'ZM-06', 'UG-219'],
+        'priority_level': [0, 1, 2],
+    }
+
+    for col in pd_es['log'].columns:
+        if col in expected_vals:
+            assert pd_es['log'].ww.columns[col].metadata.get('interesting_values') == expected_vals[col]
+        else:
+            assert pd_es['log'].ww.columns[col].metadata.get('interesting_values') is None
 
 
-def test_add_interesting_values_multiple_entities(es):
-    es.add_interesting_values()
-    breakpoint()
+def test_add_interesting_values_multiple_dataframes(pd_es):
+    pd_es.add_interesting_values()
+    expected_cols_with_vals = {
+        'régions': {'language'},
+        'stores': {},
+        'products': {'department'},
+        'customers': {'cancel_reason', 'engagement_level'},
+        'sessions': {'device_type', 'device_name'},
+        'log': {'zipcode', 'countrycode', 'subregioncode', 'priority_level'},
+        'cohorts': {},
+    }
+    for df_id, df in pd_es.dataframe_dict.items():
+        expected_cols = expected_cols_with_vals[df_id]
+        for col in df.columns:
+            if col in expected_cols:
+                assert df.ww.columns[col].metadata.get('interesting_values') is not None
+            else:
+                assert df.ww.columns[col].metadata.get('interesting_values') is None
 
 
 # --> need to update load_retail

@@ -1014,8 +1014,6 @@ class EntitySet(object):
             for column in df.columns:
                 # some heuristics to find basic 'where'-able variables
                 if df.ww.columns[column].is_categorical:
-                    # variable.interesting_values = pd.Series(dtype=variable.entity.df[variable.id].dtype)
-
                     # TODO - consider removing this constraints
                     # don't add interesting values for entities in relationships
                     skip = False
@@ -1031,20 +1029,18 @@ class EntitySet(object):
                     # find how many of each unique value there are; sort by count,
                     # and add interesting values to each column
                     total_count = np.sum(counts)
-                    counts[:] = counts.sort_values()[::-1]
+                    counts_idx = counts.index.tolist()
                     for i in range(min(max_values, len(counts.index))):
-                        idx = counts.index[i]
+                        idx = counts_idx[i]
 
                         if len(counts.index) < 25:
                             if verbose:
                                 msg = "Column {}: Marking {} as an "
                                 msg += "interesting value"
                                 logger.info(msg.format(column, idx))
-                            interesting_vals = df.ww.columns[column].metadata.get('interesting_values') or []
-                            if interesting_vals is not None:
-                                df.ww.columns[column].metadata['interesting_values'] = interesting_vals + [idx]
-                            else:
-                                df.ww.columns[column].metadata['interesting_values'] = [idx]
+                            interesting_vals = df.ww.columns[column].metadata.get('interesting_values', [])
+                            df.ww.columns[column].metadata['interesting_values'] = interesting_vals + [idx]
+
                         else:
                             fraction = counts[idx] / total_count
                             if fraction > 0.05 and fraction < 0.95:
@@ -1052,11 +1048,8 @@ class EntitySet(object):
                                     msg = "Variable {}: Marking {} as an "
                                     msg += "interesting value"
                                     logger.info(msg.format(column, idx))
-                                interesting_vals = df.ww.columns[column].metadata.get('interesting_values') or []
-                                if interesting_vals is not None:
-                                    df.ww.columns[column].metadata['interesting_values'] = interesting_vals + [idx]
-                                else:
-                                    df.ww.columns[column].metadata['interesting_values'] = [idx]
+                                interesting_vals = df.ww.columns[column].metadata.get('interesting_values', [])
+                                df.ww.columns[column].metadata['interesting_values'] = interesting_vals + [idx]
                             else:
                                 break
 
