@@ -354,6 +354,7 @@ def test_update_dataframe_different_dtypes(es):
 @pytest.fixture()
 def latlong_df_pandas():
     latlong_df = pd.DataFrame({
+        'tuples': pd.Series([(1, 2), (3, 4)]),
         'string_tuple': pd.Series(['(1, 2)', '(3, 4)']),
         'bracketless_string_tuple': pd.Series(['1, 2', '3, 4']),
         'list_strings': pd.Series([['1', '2'], ['3', '4']]),
@@ -395,7 +396,6 @@ def test_update_dataframe_data_transformation(latlong_df):
         series = df[col]
         assert series.iloc[0] == expected_val
 
-    latlong_df.index = initial_df.index  # Need the underlying index to match
     es.update_dataframe('latlongs', latlong_df)
     df = to_pandas(es['latlongs'])
     expected_val = (3, 4)
