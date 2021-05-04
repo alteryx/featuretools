@@ -51,7 +51,7 @@ class EntitySet(object):
             Args:
                 id (str) : Unique identifier to associate with this instance
 
-                dataframes (dict[str -> tuple(pd.DataFrame, str, str, 
+                dataframes (dict[str -> tuple(DataFrame, str, str, 
                                               dict[str -> str/Woodwork.LogicalType], 
                                               dict[str->str/set], 
                                               boolean)]): dictionary of DataFrames. 
