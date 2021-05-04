@@ -127,7 +127,7 @@ def test_change_es_dataframe_schema(df):
 
     assert es['table'].ww.index == 'id'
 
-    es.dataframe_dict['table'].ww.set_index('category')
+    es['table'].ww.set_index('category')
     assert es['table'].ww.index == 'category'
 
 
@@ -281,8 +281,6 @@ def test_update_dataframe_already_sorted(es):
         df = df.sort_index()
     elif dd and isinstance(df, dd.DataFrame):
         df["id"] = updated_id
-    else:
-        assert df['id'].iloc[1] == 2
 
     es.update_dataframe(dataframe_id='sessions', df=df.copy(), already_sorted=False)
     sessions_df = to_pandas(es['sessions'])
