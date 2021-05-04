@@ -100,7 +100,6 @@ def test_add_last_time_indexes():
         "strings": ltypes.NaturalLanguage,
         "time": ltypes.Datetime,
     }
-    sessions_semantic_tags = {'user': 'foreign_key'}
 
     transactions = pd.DataFrame({"id": [0, 1, 2, 3, 4, 5],
                                  "session_id": [0, 0, 1, 2, 2, 3],
@@ -118,18 +117,20 @@ def test_add_last_time_indexes():
         "amount": ltypes.Double,
         "time": ltypes.Datetime,
     }
-    transactions_semantic_tags = {'session_id': 'foreign_key'}
 
     pd_es.add_dataframe(dataframe_id="sessions", dataframe=sessions, index="id", time_index="time")
     ks_es.add_dataframe(dataframe_id="sessions", dataframe=sessions_ks, index="id", time_index="time",
-                        logical_types=sessions_logical_types, semantic_tags=sessions_semantic_tags)
+                        logical_types=sessions_logical_types)
 
     pd_es.add_dataframe(dataframe_id="transactions", dataframe=transactions, index="id", time_index="time")
     ks_es.add_dataframe(dataframe_id="transactions", dataframe=transactions_ks, index="id", time_index="time",
-                        logical_types=transactions_logical_types, semantic_tags=transactions_semantic_tags)
+                        logical_types=transactions_logical_types)
 
     pd_es = pd_es.add_relationship("sessions", "id", "transactions", "session_id")
     ks_es = ks_es.add_relationship("sessions", "id", "transactions", "session_id")
+
+    assert 'foreign_key' in pd_es['transactions'].ww.semantic_tags['session_id']
+    assert 'foreign_key' in ks_es['transactions'].ww.semantic_tags['session_id']
 
     assert pd_es['sessions'].ww.metadata.get('last_time_index') is None
     assert ks_es['sessions'].ww.metadata.get('last_time_index') is None

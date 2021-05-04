@@ -37,8 +37,7 @@ def test_add_dataframe_with_non_numeric_index(pd_es, dask_es):
         dataframe_id="new_entity",
         dataframe=dask_df,
         index="id",
-        logical_types={"id": ltypes.Categorical, "values": ltypes.Integer},
-        semantic_tags={'id': 'foreign_key'})
+        logical_types={"id": ltypes.Categorical, "values": ltypes.Integer})
 
     pd.testing.assert_frame_equal(pd_es['new_entity'].reset_index(drop=True), dask_es['new_entity'].compute())
 
@@ -48,7 +47,7 @@ def test_create_entityset_with_mixed_dataframe_types(pd_es, dask_es):
                        "values": [1, 12, -34, 27]})
     dask_df = dd.from_pandas(df, npartitions=2)
 
-    # Test error is raised when trying to add Dask dataframe to entitset with existing pandas entities
+    # Test error is raised when trying to add Dask dataframe to entitset with existing pandas dataframes
     err_msg = "All dataframes must be of the same type. " \
               "Cannot add dataframe of type {} to an entityset with existing dataframes " \
               "of type {}".format(type(dask_df), type(pd_es.dataframes[0]))
@@ -59,7 +58,7 @@ def test_create_entityset_with_mixed_dataframe_types(pd_es, dask_es):
             dataframe=dask_df,
             index="id")
 
-    # Test error is raised when trying to add pandas dataframe to entitset with existing dask entities
+    # Test error is raised when trying to add pandas dataframe to entitset with existing dask dataframes
     err_msg = "All dataframes must be of the same type. " \
               "Cannot add dataframe of type {} to an entityset with existing dataframes " \
               "of type {}".format(type(df), type(dask_es.dataframes[0]))
@@ -92,7 +91,6 @@ def test_add_last_time_indexes():
         "time": ltypes.Datetime,
         "strings": ltypes.NaturalLanguage
     }
-    sessions_semantic_tags = {'user': 'foreign_key'}
 
     transactions = pd.DataFrame({"id": [0, 1, 2, 3, 4, 5],
                                  "session_id": [0, 0, 1, 2, 2, 3],
@@ -111,20 +109,22 @@ def test_add_last_time_indexes():
         "time": ltypes.Datetime,
         "amount": ltypes.Double
     }
-    transactions_semantic_tags = {'session_id': 'foreign_key'}
 
     pd_es.add_dataframe(dataframe_id="sessions", dataframe=sessions, index="id", time_index="time")
     dask_es.add_dataframe(dataframe_id="sessions", dataframe=sessions_dask,
                           index="id", time_index="time",
-                          logical_types=sessions_logical_types, semantic_tags=sessions_semantic_tags)
+                          logical_types=sessions_logical_types)
 
     pd_es.add_dataframe(dataframe_id="transactions", dataframe=transactions, index="id", time_index="time")
     dask_es.add_dataframe(dataframe_id="transactions", dataframe=transactions_dask,
                           index="id", time_index="time",
-                          logical_types=transactions_logical_types, semantic_tags=transactions_semantic_tags)
+                          logical_types=transactions_logical_types)
 
     pd_es = pd_es.add_relationship("sessions", "id", "transactions", "session_id")
     dask_es = dask_es.add_relationship("sessions", "id", "transactions", "session_id")
+
+    assert 'foreign_key' in pd_es['transactions'].ww.semantic_tags['session_id']
+    assert 'foreign_key' in dask_es['transactions'].ww.semantic_tags['session_id']
 
     assert pd_es['sessions'].ww.metadata.get('last_time_index') is None
     assert dask_es['sessions'].ww.metadata.get('last_time_index') is None
