@@ -2,15 +2,17 @@
 
 Release Notes
 -------------
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Separate latest unit tests for pandas, dask and koalas (:pr:`1422`)
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 v0.24.0 Apr 30, 2021
 ====================
@@ -26,7 +28,7 @@ v0.24.0 Apr 30, 2021
         * Don't cancel other CI jobs if one fails (:pr:`1386`)
         * Update boto3 and urllib3 version requirements (:pr:`1394`)
         * Update token for dependency checker PR creation (:pr:`1402`, :pr:`1407`, :pr:`1409`)
-        
+
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
 
