@@ -9,7 +9,7 @@ Future Release
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Separate latest unit tests for pandas, dask and koalas (:pr:`1422`)
+        * Create separate worksflows for each CI job (:pr:`1422`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
