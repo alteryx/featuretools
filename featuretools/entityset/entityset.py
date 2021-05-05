@@ -1236,9 +1236,9 @@ class EntitySet(object):
     #     return df
 
     def update_dataframe(self, dataframe_id, df, already_sorted=False, recalculate_last_time_indexes=True):
-        '''Update the internal dataframe of an EntitSet table, keeping Woodwork typing information the same.
-        Optionaly makes sure data is sorted, reference indexes to other dataframes are consistent, and last_time_indexes
-        are consistent.
+        '''Update the internal dataframe of an EntitySet table, keeping Woodwork typing information the same.
+        Optionally makes sure that data is sorted, that reference indexes to other dataframes are consistent, 
+        and that last_time_indexes are updated to reflect the new data.
         '''
         if not isinstance(df, type(self[dataframe_id])):
             raise TypeError('Incorrect DataFrame type used')
