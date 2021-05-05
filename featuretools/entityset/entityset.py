@@ -1244,18 +1244,17 @@ class EntitySet(object):
                 raise ValueError("Updated dataframe is missing new {} column".format(col_name))
 
         if df.ww.schema is not None:
-            if df.ww.logical_types != self[dataframe_id].ww.logical_types or df.ww.semantic_tags != self[dataframe_id].ww.semantic_tags:
-                raise ValueError('Woodwork types for new DataFrame do not match those of the original DataFrame.')
-        else:
-            # Update the dtypes to match the original dataframe's and transform data if necessary
-            for col_name in df.columns:
-                series = df[col_name]
-                updated_series = ww.accessor_utils._update_column_dtype(series, self[dataframe_id].ww.logical_types[col_name])
-                if updated_series is not series:
-                    df[col_name] = updated_series
+            warnings.warn('Woodwork typing information on new dataframe will be replaced '
+                          f'with existing typing information from {dataframe_id}')
+        # Update the dtypes to match the original dataframe's and transform data if necessary
+        for col_name in df.columns:
+            series = df[col_name]
+            updated_series = ww.accessor_utils._update_column_dtype(series, self[dataframe_id].ww.logical_types[col_name])
+            if updated_series is not series:
+                df[col_name] = updated_series
 
-            # --> WW bug: if metadata has a series in it, cannot deepcopy
-            df.ww.init(schema=self[dataframe_id].ww.schema)
+        # --> WW bug: if metadata has a series in it, cannot deepcopy
+        df.ww.init(schema=self[dataframe_id].ww._schema)
         # Make sure column ordering matches original ordering
         df = df.ww[old_column_names]
 

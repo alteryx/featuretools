@@ -419,29 +419,36 @@ def test_update_dataframe_column_order(es):
     assert es['customers'].columns.equals(original_column_order)
 
 
-def test_update_dataframe_woodwork_initialized(es):
+def test_update_dataframe_different_woodwork_initialized(es):
     df = es['customers'].copy()
     if ks and isinstance(df, ks.DataFrame):
         df['age'] = [1, 2, 3]
     else:
         df['age'] = pd.Series([1, 2, 3])
 
+    # Initialize Woodwork on the new DataFrame and change the schema so it won't match the original DataFrame's schema
     df.ww.init(schema=es['customers'].ww.schema)
+    df.ww.set_types(logical_types={'id': 'NaturalLanguage', 'cancel_date': 'NaturalLanguage'})
+    assert df['id'].dtype == 'string'
+    assert df['cancel_date'].dtype == 'string'
 
-    # Change the original Schema
-    es['customers'].ww.metadata['user'] = 'user0'
+    assert es['customers']['id'].dtype == 'int64'
+    assert es['customers']['cancel_date'].dtype == 'datetime64[ns]'
+
     original_schema = es['customers'].ww.schema
-    assert 'user' in es['customers'].ww.metadata
 
-    es.update_dataframe('customers', df, already_sorted=True)
+    warning = 'Woodwork typing information on new dataframe will be replaced with existing typing information from customers'
+    with pytest.warns(UserWarning, match=warning):
+        es.update_dataframe('customers', df, already_sorted=True)
 
     if dd and isinstance(df, dd.DataFrame):
         assert all(to_pandas(es['customers']['age']) == [1, 2, 3])
     else:
         assert all(to_pandas(es['customers']['age']) == [3, 1, 2])
 
-    assert es['customers'].ww.schema != original_schema
-    assert 'user' not in es['customers'].ww.metadata
+    assert es['customers'].ww._schema == original_schema
+    assert es['customers']['id'].dtype == 'int64'
+    assert es['customers']['cancel_date'].dtype == 'datetime64[ns]'
 
 
 def test_update_dataframe_different_dataframe_types():
