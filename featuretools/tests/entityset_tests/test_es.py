@@ -1336,21 +1336,6 @@ def test_secondary_time_index(es):
             'second_ti': ['comments', 'second_ti']})
 
 
-def test_set_secondary_time_index_dataframe_not_present(es):
-    error = 'DataFrame not_present does not exist in ecommerce'
-    with pytest.raises(KeyError, match=error):
-        es.set_secondary_time_index('not_present', {'dates': ['id']})
-
-
-def test_set_secondary_time_index_on_external_dataframe(es):
-    external_df = pd.DataFrame({'id': [1, 2, 3], 'dates': ['2020-08-01', '2019-08-01', '2020-08-01']})
-    external_df.ww.init(name='external')
-
-    es._set_secondary_time_index(external_df, {'dates': ['id']})
-    assert 'external' not in es.dataframe_dict
-    assert external_df.ww.metadata['secondary_time_index'] == {'dates': ['id', 'dates']}
-
-
 def test_sizeof(es):
     es.add_last_time_indexes()
     total_size = 0
