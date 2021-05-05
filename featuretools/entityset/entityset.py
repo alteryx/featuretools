@@ -342,7 +342,7 @@ class EntitySet(object):
             "Cannot set secondary time index if Woodwork is not initialized"
         self._check_secondary_time_index(dataframe, secondary_time_index)
         if secondary_time_index is not None:
-            # --> WW bug: series in Metadata can be problematig
+            # --> WW bug: series in Metadata can be problematic
             dataframe.ww.metadata['secondary_time_index'] = secondary_time_index
 
     ###########################################################################
