@@ -331,7 +331,15 @@ class EntitySet(object):
         self.reset_data_description()
         return self
 
-    def set_secondary_time_index(self, dataframe, secondary_time_index):
+    def set_secondary_time_index(self, dataframe_id, secondary_time_index):
+        '''Sets the secondary time index for a dataframe in the EntitySet using its dataframe id'''
+        dataframe = self[dataframe_id]
+        self._set_secondary_time_index(dataframe, secondary_time_index)
+
+    def _set_secondary_time_index(self, dataframe, secondary_time_index):
+        '''Sets the secondary time index for a Woodwork dataframe passed in'''
+        assert dataframe.ww.schema is not None, \
+            "Cannot set secondary time index if Woodwork is not initialized"
         self._check_secondary_time_index(dataframe, secondary_time_index)
         if secondary_time_index is not None:
             # --> WW bug: series in Metadata can be problematig
@@ -602,7 +610,7 @@ class EntitySet(object):
             dataframe.ww.name = dataframe_id
 
         if secondary_time_index:
-            self.set_secondary_time_index(dataframe, secondary_time_index=secondary_time_index)
+            self._set_secondary_time_index(dataframe, secondary_time_index=secondary_time_index)
 
         if dataframe.ww.time_index is not None:
             self._check_uniform_time_index(dataframe)
@@ -1268,7 +1276,7 @@ class EntitySet(object):
             self._check_uniform_time_index(self[dataframe_id])
 
         df_metadata = self[dataframe_id].ww.metadata
-        self.set_secondary_time_index(self[dataframe_id], df_metadata.get('secondary_time_index'))
+        self.set_secondary_time_index(dataframe_id, df_metadata.get('secondary_time_index'))
         if recalculate_last_time_indexes and df_metadata.get('last_time_index') is not None:
             self.add_last_time_indexes(updated_dataframes=[self[dataframe_id].ww.name])
         self.reset_data_description()
@@ -1301,11 +1309,7 @@ class EntitySet(object):
     def _get_time_type(self, dataframe, column_id=None):
         column_id = column_id or dataframe.ww.time_index
 
-        # --> TODO try and find a way to test this case!!!!
-        if dataframe.ww.schema is None:
-            column_schema = dataframe[column_id].head().ww.init()
-        else:
-            column_schema = dataframe.ww.columns[column_id]
+        column_schema = dataframe.ww.columns[column_id]
 
         time_type = None
         if column_schema.is_numeric:

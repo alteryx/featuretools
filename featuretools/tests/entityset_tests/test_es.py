@@ -1049,27 +1049,27 @@ def test_checks_time_type_setting_secondary_time_index(es):
     # add secondary index that is timestamp type
     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
                   'cancel_date': ['cancel_date', 'cancel_reason']}
-    es.set_secondary_time_index(es["customers"], new_2nd_ti)
+    es.set_secondary_time_index("customers", new_2nd_ti)
     assert es.time_type == ltypes.Datetime
     # add secondary index that is numeric type
     new_2nd_ti = {'age': ['age', 'loves_ice_cream']}
 
     error_text = "customers time index is numeric type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
-        es.set_secondary_time_index(es["customers"], new_2nd_ti)
+        es.set_secondary_time_index("customers", new_2nd_ti)
     # add secondary index that is non-time type
     new_2nd_ti = {'favorite_quote': ['favorite_quote', 'loves_ice_cream']}
 
     error_text = 'customers time index not recognized as numeric or datetime'
     with pytest.raises(TypeError, match=error_text):
-        es.set_secondary_time_index(es["customers"], new_2nd_ti)
+        es.set_secondary_time_index("customers", new_2nd_ti)
     # add mismatched pair of secondary time indexes
     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
                   'age': ['age', 'loves_ice_cream']}
 
     error_text = "customers time index is numeric type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
-        es.set_secondary_time_index(es["customers"], new_2nd_ti)
+        es.set_secondary_time_index("customers", new_2nd_ti)
 
     # create entityset with numeric time type
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
@@ -1091,30 +1091,30 @@ def test_checks_time_type_setting_secondary_time_index(es):
     assert card_es.time_type == 'numeric'
     # add secondary index that is numeric time type
     new_2nd_ti = {'fraud_decision_time': ['fraud_decision_time', 'fraud']}
-    card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
+    card_es.set_secondary_time_index("transactions", new_2nd_ti)
     assert card_es.time_type == 'numeric'
     # add secondary index that is timestamp type
     new_2nd_ti = {'transaction_date': ['transaction_date', 'fraud']}
 
     error_text = "transactions time index is Datetime type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
-        card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
+        card_es.set_secondary_time_index("transactions", new_2nd_ti)
     # add secondary index that is non-time type
     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud']}
 
     error_text = 'transactions time index not recognized as numeric or datetime'
     with pytest.raises(TypeError, match=error_text):
-        card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
+        card_es.set_secondary_time_index("transactions", new_2nd_ti)
     # add mixed secondary time indexes
     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud'],
                   'fraud_decision_time': ['fraud_decision_time', 'fraud']}
     with pytest.raises(TypeError, match=error_text):
-        card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
+        card_es.set_secondary_time_index("transactions", new_2nd_ti)
 
     # add bool secondary time index
     error_text = 'transactions time index not recognized as numeric or datetime'
     with pytest.raises(TypeError, match=error_text):
-        card_es.set_secondary_time_index(card_es['transactions'], {'fraud': ['fraud']})
+        card_es.set_secondary_time_index("transactions", {'fraud': ['fraud']})
 
 
 def test_normalize_dataframe(es):
@@ -1334,6 +1334,12 @@ def test_secondary_time_index(es):
     assert (es['values'].ww.semantic_tags['second_ti'] == set())
     assert (es['values'].ww.metadata['secondary_time_index'] == {
             'second_ti': ['comments', 'second_ti']})
+
+
+def test_set_secondary_time_index_dataframe_not_present(es):
+    error = 'DataFrame not_present does not exist in ecommerce'
+    with pytest.raises(KeyError, match=error):
+        es.set_secondary_time_index('not_present', {'dates': ['id']})
 
 
 def test_sizeof(es):
