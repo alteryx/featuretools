@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import woodwork.logical_types as ltypes
 import woodwork as ww
+import woodwork.logical_types as ltypes
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
@@ -89,10 +89,6 @@ def test_add_relationship_instantiated_logical_types(es):
     assert es['log2'].ww.logical_types['product_id'] == ltypes.Categorical()
     assert es['products'].ww.logical_types['id'] == ltypes.Categorical
 
-    category_dtype = 'category'
-    if ks and isinstance(es['customers'], ks.DataFrame):
-        category_dtype = 'string'
-
     warning_text = f'Logical type Categorical for child column product_id does not match parent column id logical type Categorical. Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
         es.add_relationship(u'products', 'id', 'log2', 'product_id')
@@ -135,10 +131,6 @@ def test_add_relationship_different_logical_types_same_dtype(es):
     assert es['log2'].ww.logical_types['product_id'] == ltypes.CountryCode
     assert es['products'].ww.logical_types['id'] == ltypes.Categorical
 
-    category_dtype = 'category'
-    if ks and isinstance(es['customers'], ks.DataFrame):
-        category_dtype = 'string'
-
     warning_text = f'Logical type CountryCode for child column product_id does not match parent column id logical type Categorical. Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
         es.add_relationship(u'products', 'id', 'log2', 'product_id')
@@ -180,10 +172,6 @@ def test_add_relationship_different_compatible_dtypes(es):
     assert es['log2'].ww.schema is not None
     assert es['log2'].ww.logical_types['session_id'] == ltypes.Datetime
     assert es['customers'].ww.logical_types['id'] == ltypes.Integer
-
-    category_dtype = 'category'
-    if ks and isinstance(es['customers'], ks.DataFrame):
-        category_dtype = 'string'
 
     warning_text = f'Logical type Datetime for child column session_id does not match parent column id logical type Integer. Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
