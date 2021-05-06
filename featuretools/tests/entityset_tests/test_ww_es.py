@@ -184,7 +184,7 @@ def test_time_type_check_order(dates_df):
     error = 'dates_table time index is numeric type which differs from other entityset time indexes'
     with pytest.raises(TypeError, match=error):
         # Because we set secondary time index before checking that time_index is valid, the time type will match the secondary time index
-        es.add_dataframe('dates_table', df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
+        es.add_dataframe('dates_table', dates_df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
 
     # Metadata on the woodwork table still gets set --> maybe we should reverse the order here
     assert df.ww.metadata['secondary_time_index'] == {'repeating_dates': ['random_order', 'special', 'repeating_dates']}
@@ -559,3 +559,29 @@ def test_update_dataframe_last_time_index(es):
 
     es.update_dataframe('customers', df, recalculate_last_time_indexes=True)
     assert not original_last_time_index.equals(to_pandas(es['customers'].ww.metadata['last_time_index']))
+
+
+def test_normalize_dataframe_loses_column_metadata(es):
+    es['log'].ww.columns['value'].metadata['interesting_values'] = [0.0, 1.0]
+    es['log'].ww.columns['priority_level'].metadata['interesting_values'] = [1]
+
+    es['log'].ww.columns['value'].description = 'a value column'
+    es['log'].ww.columns['priority_level'].description = 'a priority level column'
+
+    assert 'interesting_values' in es['log'].ww.columns['priority_level'].metadata
+    assert 'interesting_values' in es['log'].ww.columns['value'].metadata
+    assert es['log'].ww.columns['value'].description == 'a value column'
+    assert es['log'].ww.columns['priority_level'].description == 'a priority level column'
+
+    es.normalize_dataframe('log', 'values_2', 'value_2',
+                           additional_columns=['priority_level'],
+                           copy_columns=['value'],
+                           make_time_index=False)
+
+    # Metadata in the original dataframe is maintained, but it's lost in the new dataframe
+    assert 'interesting_values' in es['log'].ww.columns['value'].metadata
+    assert 'interesting_values' not in es['values_2'].ww.columns['value'].metadata
+    assert 'interesting_values' not in es['values_2'].ww.columns['priority_level'].metadata
+    assert es['log'].ww.columns['value'].description == 'a value column'
+    assert es['values_2'].ww.columns['value'].description is None
+    assert es['values_2'].ww.columns['priority_level'].description is None

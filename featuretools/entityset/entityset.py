@@ -302,7 +302,7 @@ class EntitySet(object):
             msg = "Unable to add relationship because child column '{}' in '{}' is also its index"
             raise ValueError(msg.format(child_column, child_df.ww.name))
         parent_df = relationship.parent_dataframe
-        parent_column = relationship.parent_column.name
+        parent_column = relationship._parent_column_id
         if 'foreign_key' not in child_df.ww.semantic_tags[child_column]:
             child_df.ww.add_semantic_tags({child_column: 'foreign_key'})
 
@@ -581,9 +581,9 @@ class EntitySet(object):
                               already_sorted=already_sorted)
             # If no index column is specified, set the first column
             if dataframe.ww.index is None:
-                dataframe.ww.set_index(dataframe.columns[0])
                 warnings.warn(("Using first column as index. "
                                "To change this, specify the index parameter"))
+                dataframe.ww.set_index(dataframe.columns[0])
 
         else:
             if dataframe.ww.index is None:
@@ -668,14 +668,14 @@ class EntitySet(object):
                             .format(type(additional_columns)))
 
         if len(additional_columns) != len(set(additional_columns)):
-            raise ValueError("'additional_columns' contains duplicate variables. All variables must be unique.")
+            raise ValueError("'additional_columns' contains duplicate columns. All columns must be unique.")
 
         if not isinstance(copy_columns, list):
             raise TypeError("'copy_columns' must be a list, but received type {}"
                             .format(type(copy_columns)))
 
         if len(copy_columns) != len(set(copy_columns)):
-            raise ValueError("'copy_columns' contains duplicate variables. All variables must be unique.")
+            raise ValueError("'copy_columns' contains duplicate columns. All columns must be unique.")
 
         for v in additional_columns + copy_columns:
             if v == index:
@@ -701,7 +701,7 @@ class EntitySet(object):
             transfer_types[col_name] = (base_dataframe.ww.logical_types[col_name], base_dataframe.ww.semantic_tags[col_name] - {'time_index'})
 
         # create and add new dataframe
-        new_dataframe = self[base_dataframe_id].ww.copy()
+        new_dataframe = self[base_dataframe_id].copy()
 
         if make_time_index is None and base_dataframe.ww.time_index is not None:
             make_time_index = True
@@ -789,10 +789,9 @@ class EntitySet(object):
 
         self.dataframe_dict[base_dataframe_id] = self.dataframe_dict[base_dataframe_id].ww.drop(additional_columns)
 
-        new_dataframe = self.dataframe_dict[new_dataframe_id]
         self.dataframe_dict[base_dataframe_id].ww.add_semantic_tags({base_dataframe_index: 'foreign_key'})
 
-        self.add_relationship(new_dataframe.ww.name, index, base_dataframe.ww.name, base_dataframe_index)
+        self.add_relationship(new_dataframe_id, index, base_dataframe_id, base_dataframe_index)
         self.reset_data_description()
         return self
 

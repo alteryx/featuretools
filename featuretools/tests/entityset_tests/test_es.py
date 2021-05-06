@@ -1230,24 +1230,26 @@ def test_normalize_time_index_from_none(normalize_es):
 
 
 def test_raise_error_if_dupicate_additional_variables_passed(es):
-    error_text = "'additional_columns' contains duplicate variables. All variables must be unique."
+    error_text = "'additional_columns' contains duplicate columns. All columns must be unique."
     with pytest.raises(ValueError, match=error_text):
         es.normalize_dataframe('sessions', 'device_types', 'device_type',
                                additional_columns=['device_name', 'device_name'])
 
 
-def test_raise_error_if_dupicate_copy_variables_passed(es):
-    error_text = "'copy_columns' contains duplicate variables. All variables must be unique."
+def test_raise_error_if_dupicate_copy_columns_passed(es):
+    error_text = "'copy_columns' contains duplicate columns. All columns must be unique."
     with pytest.raises(ValueError, match=error_text):
         es.normalize_dataframe('sessions', 'device_types', 'device_type',
                                copy_columns=['device_name', 'device_name'])
 
 
-def test_normalize_dataframe_copies_variable_types(es):
+def test_normalize_dataframe_copies_logical_types(es):
     es['log'].ww.set_types(logical_types={'value': ltypes.Ordinal(order=[0.0, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 14.0, 15.0, 20.0])})
 
     assert isinstance(es['log'].ww.logical_types['value'], ltypes.Ordinal)
+    assert len(es['log'].ww.logical_types['value'].order) == 10
     assert isinstance(es['log'].ww.logical_types['priority_level'], ltypes.Ordinal)
+    assert len(es['log'].ww.logical_types['priority_level'].order) == 3
     es.normalize_dataframe('log', 'values_2', 'value_2',
                            additional_columns=['priority_level'],
                            copy_columns=['value'],
@@ -1262,7 +1264,9 @@ def test_normalize_dataframe_copies_variable_types(es):
     assert 'value' in es['log'].columns
     assert 'value_2' in es['values_2'].columns
     assert isinstance(es['values_2'].ww.logical_types['priority_level'], ltypes.Ordinal)
+    assert len(es['values_2'].ww.logical_types['priority_level'].order) == 3
     assert isinstance(es['values_2'].ww.logical_types['value'], ltypes.Ordinal)
+    assert len(es['values_2'].ww.logical_types['value'].order) == 10
 
 
 # sorting not supported in Dask, Koalas
