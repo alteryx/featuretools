@@ -20,7 +20,7 @@ from featuretools.utils.koalas_utils import pd_to_ks_clean
 ks = import_or_none('databricks.koalas')
 
 
-def test_normalize_time_index_as_additional_variable(es):
+def test_normalize_time_index_as_additional_column(es):
     error_text = "Not moving signup_date as it is the base time index column. Perhaps, move the column to the copy_columns."
     with pytest.raises(ValueError, match=error_text):
         assert "signup_date" in es["customers"].columns
@@ -343,7 +343,7 @@ def df(request):
     return request.getfixturevalue(request.param)
 
 
-def test_check_variables_and_dataframe(df):
+def test_check_columns_and_dataframe(df):
     # matches
     logical_types = {'id': ltypes.Integer,
                      'category': ltypes.Categorical}
@@ -387,8 +387,8 @@ def test_index_any_location(df):
     assert es.dataframe_dict['test_dataframe'].ww.index == 'category'
 
 
-def test_extra_variable_type(df):
-    # more variables
+def test_extra_column_type(df):
+    # more columns
     logical_types = {'id': ltypes.Integer,
                      'category': ltypes.Categorical,
                      'category2': ltypes.Categorical}
@@ -489,7 +489,7 @@ def test_doesnt_remake_index(df):
                          logical_types=logical_types)
 
 
-def test_bad_time_index_variable(df3):
+def test_bad_time_index_column(df3):
     logical_types = {'category': 'Categorical'}
     error_text = "Specified time index column `time` not found in dataframe"
     with pytest.raises(LookupError, match=error_text):
@@ -690,7 +690,6 @@ def test_handles_datetime_format(datetime2):
     assert (col_format == actual).all()
 
 
-# Inferring variable types and verifying typing not supported in Dask, Koalas
 def test_handles_datetime_mismatch():
     # can't convert arbitrary strings
     df = pd.DataFrame({'id': [0, 1, 2], 'time': ['a', 'b', 'tomorrow']})
@@ -705,8 +704,6 @@ def test_handles_datetime_mismatch():
 
 
 def test_dataframe_init(es):
-    # Note: to convert the time column directly either the variable type
-    # or convert_date_columns must be specifie
     df = pd.DataFrame({'id': ['0', '1', '2'],
                        'time': [datetime(2011, 4, 9, 10, 31, 3 * i)
                                 for i in range(3)],
@@ -1145,7 +1142,7 @@ def test_normalize_dataframe_new_time_index_in_base_entity_error_check(es):
                                make_time_index="non-existent")
 
 
-def test_normalize_entity_new_time_index_in_variable_list_error_check(es):
+def test_normalize_entity_new_time_index_in_column_list_error_check(es):
     error_text = "'make_time_index' must be specified in 'additional_columns' or 'copy_columns'"
     with pytest.raises(ValueError, match=error_text):
         es.normalize_dataframe(base_dataframe_id='customers',
@@ -1229,7 +1226,7 @@ def test_normalize_time_index_from_none(normalize_es):
         assert df['time'].is_monotonic_increasing
 
 
-def test_raise_error_if_dupicate_additional_variables_passed(es):
+def test_raise_error_if_dupicate_additional_columns_passed(es):
     error_text = "'additional_columns' contains duplicate columns. All columns must be unique."
     with pytest.raises(ValueError, match=error_text):
         es.normalize_dataframe('sessions', 'device_types', 'device_type',
