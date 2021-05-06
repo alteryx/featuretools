@@ -1007,10 +1007,10 @@ class EntitySet(object):
     # ###########################################################################
 
     def add_interesting_values(self, max_values=5, verbose=False, dataframe_id=None, values=None):
-        """Find interesting values for categorical variables, to be used to generate "where" clauses
+        """Find interesting values for categorical columns, to be used to generate "where" clauses
 
         Args:
-            max_values (int) : Maximum number of values per variable to add.
+            max_values (int) : Maximum number of values per column to add.
             verbose (bool) : If True, print summary of interesting values found.
             dataframe_id (str) : The dataframe in the EntitySet for which to add interesting values.
                 If not specified interesting values will be added for all dataframes.
