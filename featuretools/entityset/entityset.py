@@ -1037,18 +1037,12 @@ class EntitySet(object):
             dataframes = self.dataframes
         for df in dataframes:
             for column in df.columns:
-                # some heuristics to find basic 'where'-able variables
-                if df.ww.columns[column].is_categorical:
-                    # TODO - consider removing this constraints
-                    # don't add interesting values for index or foreign key columns
-                    skip = False
-                    for r in self.relationships:
-                        if column in [r.child_column.name, r.parent_column.name]:
-                            skip = True
-                            break
-                    if skip:
-                        continue
+                # some heuristics to find basic 'where'-able columns
+                col_schema = df.ww.columns[column]
+                col_is_valid = (col_schema.is_categorical and 
+                    not {'index', 'foreign_key'}.intersection(col_schema.semantic_tags))
 
+                if col_is_valid:
                     counts = df[column].value_counts()
 
                     # find how many of each unique value there are; sort by count,
