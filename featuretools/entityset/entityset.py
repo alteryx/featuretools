@@ -1040,7 +1040,7 @@ class EntitySet(object):
                 # some heuristics to find basic 'where'-able variables
                 if df.ww.columns[column].is_categorical:
                     # TODO - consider removing this constraints
-                    # don't add interesting values for entities in relationships
+                    # don't add interesting values for index or foreign key columns
                     skip = False
                     for r in self.relationships:
                         if column in [r.child_column.name, r.parent_column.name]:
