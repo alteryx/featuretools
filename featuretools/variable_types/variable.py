@@ -429,6 +429,7 @@ class FilePath(Variable):
     _default_pandas_dtype = str
 
 
+# --> TODO Remove when Entity class is removed
 DEFAULT_DTYPE_VALUES = {
     'datetime64[ns]': pd.Timestamp.now(),
     'int64': 0,
