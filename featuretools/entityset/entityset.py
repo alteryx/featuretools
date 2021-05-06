@@ -1040,8 +1040,8 @@ class EntitySet(object):
                 # some heuristics to find basic 'where'-able columns
                 # include categorical columns, exclude index or foreign key columns
                 col_schema = df.ww.columns[column]
-                col_is_valid = (col_schema.is_categorical and 
-                    not {'index', 'foreign_key'}.intersection(col_schema.semantic_tags))
+                col_is_valid = (col_schema.is_categorical and
+                                not {'index', 'foreign_key'}.intersection(col_schema.semantic_tags))
 
                 if col_is_valid:
                     counts = df[column].value_counts()
