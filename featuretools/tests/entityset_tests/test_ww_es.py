@@ -135,7 +135,7 @@ def test_init_es_with_relationships(pd_df):
     second_df = pd.DataFrame({'id': [0, 1, 2, 3], 'first_table_id': [1, 2, 2, 1]})
 
     pd_df.ww.init(name='first_table', index='id')
-    second_df.ww.init(name='second_table', index='id', semantic_tags={'first_table_id': 'foreign_key'})
+    second_df.ww.init(name='second_table', index='id')
 
     es = EntitySet('es',
                    dataframes={'first_table': (pd_df,), 'second_table': (second_df,)},
@@ -145,6 +145,10 @@ def test_init_es_with_relationships(pd_df):
 
     forward_dataframes = [name for name, _ in es.get_forward_dataframes('second_table')]
     assert forward_dataframes[0] == 'first_table'
+
+    relationship = es.relationships[0]
+    assert 'foreign_key' in relationship.child_column.ww.semantic_tags
+    assert 'index' in relationship.parent_column.ww.semantic_tags
 
 
 def test_add_secondary_time_index():
