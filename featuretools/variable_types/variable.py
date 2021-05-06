@@ -206,7 +206,7 @@ class Categorical(Discrete):
         return description
 
 
-class Id(Categorical):  # --> Implementation: Should we be using Integer instead of ID???? How will it have categorical tag then???
+class Id(Categorical):
     """Represents variables that identify another entity"""
     _default_pandas_dtype = int
 

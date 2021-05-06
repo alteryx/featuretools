@@ -13,7 +13,7 @@ import woodwork as ww
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
-from featuretools.tests.testing_utils import to_pandas
+from featuretools.tests.testing_utils import get_df_tags, to_pandas
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
 
@@ -21,7 +21,7 @@ ks = import_or_none('databricks.koalas')
 
 
 def test_normalize_time_index_as_additional_variable(es):
-    error_text = "Not moving signup_date as it is the base time index variable."
+    error_text = "Not moving signup_date as it is the base time index column. Perhaps, move the column to the copy_columns."
     with pytest.raises(ValueError, match=error_text):
         assert "signup_date" in es["customers"].columns
         es.normalize_dataframe(base_dataframe_id='customers',
@@ -93,8 +93,7 @@ def test_add_relationship_instantiated_logical_types(es):
     if ks and isinstance(es['customers'], ks.DataFrame):
         category_dtype = 'string'
 
-    # --> terrible error message
-    warning_text = f'Logical type for child column Categorical does not match parent column logical type Categorical. Changing child logical type to match parent.'
+    warning_text = f'Logical type Categorical for child column product_id does not match parent column id logical type Categorical. Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
         es.add_relationship(u'products', 'id', 'log2', 'product_id')
     assert es['log2'].ww.logical_types['product_id'] == ltypes.Categorical
@@ -140,7 +139,7 @@ def test_add_relationship_different_logical_types_same_dtype(es):
     if ks and isinstance(es['customers'], ks.DataFrame):
         category_dtype = 'string'
 
-    warning_text = f'Logical type for child column CountryCode does not match parent column logical type Categorical. Changing child logical type to match parent.'
+    warning_text = f'Logical type CountryCode for child column product_id does not match parent column id logical type Categorical. Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
         es.add_relationship(u'products', 'id', 'log2', 'product_id')
     assert es['log2'].ww.logical_types['product_id'] == ltypes.Categorical
@@ -186,7 +185,7 @@ def test_add_relationship_different_compatible_dtypes(es):
     if ks and isinstance(es['customers'], ks.DataFrame):
         category_dtype = 'string'
 
-    warning_text = f'Logical type for child column Datetime does not match parent column logical type Integer. Changing child logical type to match parent.'
+    warning_text = f'Logical type Datetime for child column session_id does not match parent column id logical type Integer. Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
         es.add_relationship(u'customers', 'id', 'log2', 'session_id')
     assert es['log2'].ww.logical_types['session_id'] == ltypes.Integer
@@ -414,10 +413,10 @@ def test_extra_variable_type(df):
                          logical_types=logical_types, dataframe=df)
 
 
-# def test_add_parent_not_index_varible(es):
-#     error_text = "Parent column.*is not the index of dataframe Entity.*"
-#     with pytest.raises(AttributeError, match=error_text):
-#         es.add_relationship(u'régions', 'language', 'customers', u'région_id')
+def test_add_parent_not_index_varible(es):
+    error_text = "Parent column 'language' is not the index of dataframe régions"
+    with pytest.raises(AttributeError, match=error_text):
+        es.add_relationship(u'régions', 'language', 'customers', u'région_id')
 
 
 @pytest.fixture
@@ -488,26 +487,29 @@ def test_unknown_index(df3):
         es.add_dataframe(dataframe_id='test_dataframe',
                          index='id',
                          logical_types={'category': 'Categorical'}, dataframe=df3)
-# --> test not allowing for koalas index!!!
 
 
 def test_doesnt_remake_index(df):
+    logical_types = {'id': 'Integer', 'category': 'Categorical'}
     error_text = "When setting make_index to True, the name specified for index cannot match an existing column name"
     with pytest.raises(IndexError, match=error_text):
         es = EntitySet(id='test')
         es.add_dataframe(dataframe_id='test_dataframe',
                          index='id',
                          make_index=True,
-                         dataframe=df)
+                         dataframe=df,
+                         logical_types=logical_types)
 
 
 def test_bad_time_index_variable(df3):
+    logical_types = {'category': 'Categorical'}
     error_text = "Specified time index column `time` not found in dataframe"
     with pytest.raises(LookupError, match=error_text):
         es = EntitySet(id='test')
         es.add_dataframe(dataframe_id='test_dataframe',
                          dataframe=df3,
-                         time_index='time')
+                         time_index='time',
+                         logical_types=logical_types)
 
 
 @pytest.fixture
@@ -1047,27 +1049,27 @@ def test_checks_time_type_setting_secondary_time_index(es):
     # add secondary index that is timestamp type
     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
                   'cancel_date': ['cancel_date', 'cancel_reason']}
-    es.set_secondary_time_index(es["customers"], new_2nd_ti)
+    es.set_secondary_time_index("customers", new_2nd_ti)
     assert es.time_type == ltypes.Datetime
     # add secondary index that is numeric type
     new_2nd_ti = {'age': ['age', 'loves_ice_cream']}
 
     error_text = "customers time index is numeric type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
-        es.set_secondary_time_index(es["customers"], new_2nd_ti)
+        es.set_secondary_time_index("customers", new_2nd_ti)
     # add secondary index that is non-time type
     new_2nd_ti = {'favorite_quote': ['favorite_quote', 'loves_ice_cream']}
 
     error_text = 'customers time index not recognized as numeric or datetime'
     with pytest.raises(TypeError, match=error_text):
-        es.set_secondary_time_index(es["customers"], new_2nd_ti)
+        es.set_secondary_time_index("customers", new_2nd_ti)
     # add mismatched pair of secondary time indexes
     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
                   'age': ['age', 'loves_ice_cream']}
 
     error_text = "customers time index is numeric type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
-        es.set_secondary_time_index(es["customers"], new_2nd_ti)
+        es.set_secondary_time_index("customers", new_2nd_ti)
 
     # create entityset with numeric time type
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
@@ -1089,30 +1091,30 @@ def test_checks_time_type_setting_secondary_time_index(es):
     assert card_es.time_type == 'numeric'
     # add secondary index that is numeric time type
     new_2nd_ti = {'fraud_decision_time': ['fraud_decision_time', 'fraud']}
-    card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
+    card_es.set_secondary_time_index("transactions", new_2nd_ti)
     assert card_es.time_type == 'numeric'
     # add secondary index that is timestamp type
     new_2nd_ti = {'transaction_date': ['transaction_date', 'fraud']}
 
     error_text = "transactions time index is Datetime type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
-        card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
+        card_es.set_secondary_time_index("transactions", new_2nd_ti)
     # add secondary index that is non-time type
     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud']}
 
     error_text = 'transactions time index not recognized as numeric or datetime'
     with pytest.raises(TypeError, match=error_text):
-        card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
+        card_es.set_secondary_time_index("transactions", new_2nd_ti)
     # add mixed secondary time indexes
     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud'],
                   'fraud_decision_time': ['fraud_decision_time', 'fraud']}
     with pytest.raises(TypeError, match=error_text):
-        card_es.set_secondary_time_index(card_es['transactions'], new_2nd_ti)
+        card_es.set_secondary_time_index("transactions", new_2nd_ti)
 
     # add bool secondary time index
     error_text = 'transactions time index not recognized as numeric or datetime'
     with pytest.raises(TypeError, match=error_text):
-        card_es.set_secondary_time_index(card_es['transactions'], {'fraud': ['fraud']})
+        card_es.set_secondary_time_index("transactions", {'fraud': ['fraud']})
 
 
 def test_normalize_dataframe(es):
@@ -1139,7 +1141,7 @@ def test_normalize_dataframe(es):
 
 
 def test_normalize_dataframe_new_time_index_in_base_entity_error_check(es):
-    error_text = "'make_time_index' must be a variable in the base entity"
+    error_text = "'make_time_index' must be a column in the base dataframe"
     with pytest.raises(ValueError, match=error_text):
         es.normalize_dataframe(base_dataframe_id='customers',
                                new_dataframe_id='cancellations',
@@ -1312,7 +1314,7 @@ def test_normalize_dataframe_same_index(es):
                      time_index="transaction_time",
                      dataframe=transactions_df)
 
-    error_text = "'index' must be different from the index column of the base entity"
+    error_text = "'index' must be different from the index column of the base dataframe"
     with pytest.raises(ValueError, match=error_text):
         es.normalize_dataframe(base_dataframe_id="df",
                                new_dataframe_id="new_dataframe",
@@ -1334,14 +1336,14 @@ def test_secondary_time_index(es):
             'second_ti': ['comments', 'second_ti']})
 
 
-# --> wait till after implement last time index
-# def test_sizeof(es):
-#     total_size = 0
-#     for entity in es.entities:
-#         total_size += entity.df.__sizeof__()
-#         total_size += entity.last_time_index.__sizeof__()
+def test_sizeof(es):
+    es.add_last_time_indexes()
+    total_size = 0
+    for df in es.dataframes:
+        total_size += df.__sizeof__()
+        total_size += df.ww.metadata.get('last_time_index').__sizeof__()
 
-#     assert es.__sizeof__() == total_size
+    assert es.__sizeof__() == total_size
 
 
 def test_construct_without_id():
@@ -1349,7 +1351,7 @@ def test_construct_without_id():
 
 
 def test_repr_without_id():
-    match = 'Entityset: None\n  Entities:\n  Relationships:\n    No relationships'
+    match = 'Entityset: None\n  DataFrames:\n  Relationships:\n    No relationships'
     assert repr(ft.EntitySet()) == match
 
 
@@ -1408,7 +1410,6 @@ def test_datetime64_conversion(datetime3):
                      index='id',
                      dataframe=df,
                      logical_types=logical_types)
-    # --> is this testing setting time index or setting ltype??? and why are there no checks afterwards
     es['test_dataframe'].ww.set_time_index('time')
     assert es['test_dataframe'].ww.time_index == 'time'
 
@@ -1545,11 +1546,11 @@ def test_entityset_init():
                                     "fraud": [True, False, False, False, True, True]})
     logical_types = {
         'fraud': 'boolean',
-        'card_id': 'categorical'
+        'card_id': 'integer'
     }
     dataframes = {
-        "cards": (cards_df, "id", None, {'id': 'Categorical'}),
-        "transactions": (transactions_df, 'id', 'transaction_time',
+        "cards": (cards_df.copy(), "id", None, {'id': 'Integer'}),
+        "transactions": (transactions_df.copy(), 'id', 'transaction_time',
                          logical_types, None, False)
     }
     relationships = [('cards', 'id', 'transactions', 'card_id')]
@@ -1560,25 +1561,24 @@ def test_entityset_init():
     assert es['transactions'].ww.time_index == 'transaction_time'
     es_copy = ft.EntitySet(id="fraud_data")
     es_copy.add_dataframe(dataframe_id='cards',
-                          dataframe=cards_df,
+                          dataframe=cards_df.copy(),
                           index='id')
     es_copy.add_dataframe(dataframe_id='transactions',
-                          dataframe=transactions_df,
+                          dataframe=transactions_df.copy(),
                           index='id',
                           logical_types=logical_types,
                           make_index=False,
                           time_index='transaction_time')
     es_copy.add_relationship('cards', 'id', 'transactions', 'card_id')
 
-    # --> any time we do this equality check it will be deep bc Woodwork doesn't differentiate
     assert es['cards'].ww == es_copy['cards'].ww
     assert es['transactions'].ww == es_copy['transactions'].ww
 
 
-# --> need to update load_retail
+# --> wait till add_interesting_values
 # def test_add_interesting_values_verbose_output(caplog):
 #     es = ft.demo.load_retail(nrows=200)
-#     es['order_products'].convert_variable_type('quantity', ft.variable_types.Discrete)
+#     es['order_products'].convert_variable_type('quantity', ltypes.Categorical)
 #     logger = logging.getLogger('featuretools')
 #     logger.propagate = True
 #     logger_es = logging.getLogger('featuretools.entityset')
@@ -1596,31 +1596,31 @@ def test_entityset_equality(es):
     assert first_es == second_es
 
     first_es.add_dataframe(dataframe_id='customers',
-                           dataframe=es['customers'],
+                           dataframe=es['customers'].copy(),
                            index='id',
                            time_index='signup_date',
                            logical_types=es['customers'].ww.logical_types,
-                           semantic_tags=es['customers'].ww.semantic_tags)
+                           semantic_tags=get_df_tags(es['customers']))
     assert first_es != second_es
 
     second_es.add_dataframe(dataframe_id='sessions',
-                            dataframe=es['sessions'],
+                            dataframe=es['sessions'].copy(),
                             index='id',
                             logical_types=es['sessions'].ww.logical_types,
-                            semantic_tags=es['sessions'].ww.semantic_tags)
+                            semantic_tags=get_df_tags(es['sessions']))
     assert first_es != second_es
 
     first_es.add_dataframe(dataframe_id='sessions',
-                           dataframe=es['sessions'],
+                           dataframe=es['sessions'].copy(),
                            index='id',
                            logical_types=es['sessions'].ww.logical_types,
-                           semantic_tags=es['sessions'].ww.semantic_tags)
+                           semantic_tags=get_df_tags(es['sessions']))
     second_es.add_dataframe(dataframe_id='customers',
-                            dataframe=es['customers'],
+                            dataframe=es['customers'].copy(),
                             index='id',
                             time_index='signup_date',
                             logical_types=es['customers'].ww.logical_types,
-                            semantic_tags=es['customers'].ww.semantic_tags)
+                            semantic_tags=get_df_tags(es['customers']))
     assert first_es == second_es
 
     first_es.add_relationship('customers', 'id', 'sessions', 'customer_id')

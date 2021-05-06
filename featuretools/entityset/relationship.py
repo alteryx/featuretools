@@ -25,8 +25,8 @@ class Relationship(object):
 
         if (self.parent_dataframe.ww.index is not None and
                 self._parent_column_id != self.parent_dataframe.ww.index):
-            raise AttributeError(f"Parent column '{self.parent_column}' is not the index of "
-                                 f"dataframe {self.parent_dataframe}")
+            raise AttributeError(f"Parent column '{self.parent_column.name}' is not the index of "
+                                 f"dataframe {self._parent_dataframe_id}")
 
     @classmethod
     def from_dictionary(cls, arguments, es):
@@ -71,13 +71,13 @@ class Relationship(object):
     @property
     def parent_column(self):
         """Column in parent dataframe"""
-        # --> a problem bc we want to retain index tags here!!! why do we remove
+        # --> WW bug - keep index tags here
         return self.parent_dataframe.ww[self._parent_column_id]
 
     @property
     def child_column(self):
         """Column in child dataframe"""
-        # --> a problem bc we want to retain index tags here!!! why do we remove
+        # --> WW bug - keep index tags here
         return self.child_dataframe.ww[self._child_column_id]
 
     @property
@@ -132,16 +132,16 @@ class RelationshipPath(object):
             # Yield first dataframe.
             is_forward, relationship = self[0]
             if is_forward:
-                yield relationship.child_dataframe.ww.name
+                yield relationship._child_dataframe_id
             else:
-                yield relationship.parent_dataframe.ww.name
+                yield relationship._parent_dataframe_id
 
         # Yield the dataframe pointed to by each relationship.
         for is_forward, relationship in self:
             if is_forward:
-                yield relationship.parent_dataframe.ww.name
+                yield relationship._parent_dataframe_id
             else:
-                yield relationship.child_dataframe.ww.name
+                yield relationship._child_dataframe_id
 
     def __add__(self, other):
         return RelationshipPath(self._relationships_with_direction +
