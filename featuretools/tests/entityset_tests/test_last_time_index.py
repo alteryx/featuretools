@@ -2,9 +2,8 @@ from datetime import datetime
 
 import pandas as pd
 import pytest
-from dask import dataframe as dd
-
 import woodwork.logical_types as ltypes
+from dask import dataframe as dd
 
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none

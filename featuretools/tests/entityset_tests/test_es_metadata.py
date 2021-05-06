@@ -1,7 +1,6 @@
 import pandas as pd
 import pytest
 from dask import dataframe as dd
-import woodwork.logical_types as ltypes
 
 import featuretools as ft
 from featuretools import EntitySet

@@ -6,8 +6,6 @@ from collections import defaultdict
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_dtype_equal
-
 import woodwork as ww
 
 # from featuretools.entityset import deserialize, serialize
@@ -51,10 +49,10 @@ class EntitySet(object):
             Args:
                 id (str) : Unique identifier to associate with this instance
 
-                dataframes (dict[str -> tuple(DataFrame, str, str, 
-                                              dict[str -> str/Woodwork.LogicalType], 
-                                              dict[str->str/set], 
-                                              boolean)]): dictionary of DataFrames. 
+                dataframes (dict[str -> tuple(DataFrame, str, str,
+                                              dict[str -> str/Woodwork.LogicalType],
+                                              dict[str->str/set],
+                                              boolean)]): dictionary of DataFrames.
                     Entries take the format dataframe id -> (dataframe, index column, time_index, logical_types, semantic_tags, make_index)}.
                     Note that only the dataframe is required. If a Woodwork DataFrame is supplied, any other parameters
                     will be ignored.
@@ -1008,66 +1006,74 @@ class EntitySet(object):
     # #  Other ###############################################
     # ###########################################################################
 
-    # def add_interesting_values(self, max_values=5, verbose=False, entity_id=None):
-    #     """Find interesting values for categorical variables, to be used to generate "where" clauses
+    def add_interesting_values(self, max_values=5, verbose=False, dataframe_id=None, values=None):
+        """Find interesting values for categorical columns, to be used to generate "where" clauses
 
-    #     Args:
-    #         max_values (int) : Maximum number of values per variable to add.
-    #         verbose (bool) : If True, print summary of interesting values found.
-    #         entity_id (str) : The Entity for which to add interesting values. If not specified
-    #             interesting values will be added for all Entities.
+        Args:
+            max_values (int) : Maximum number of values per column to add.
+            verbose (bool) : If True, print summary of interesting values found.
+            dataframe_id (str) : The dataframe in the EntitySet for which to add interesting values.
+                If not specified interesting values will be added for all dataframes.
+            values (dict): A dictionary mapping column names to the interesting values to set
+                for the column. If specified, a corresponding dataframe_id must also be provided.
+                If not specified, interesting values will be set for all eligible columns. If values
+                are specified, max_values and verbose parameters will be ignored.
 
-    #     Returns:
-    #         None
+        Returns:
+            None
 
-    #     """
-    #     if entity_id:
-    #         entities = [self[entity_id]]
-    #     else:
-    #         entities = self.dataframes
-    #     for entity in entities:
-    #         for variable in entity.variables:
-    #             # some heuristics to find basic 'where'-able variables
-    #             if isinstance(variable, vtypes.Discrete):
-    #                 variable.interesting_values = pd.Series(dtype=variable.entity.df[variable.id].dtype)
+        """
+        if dataframe_id is None and values is not None:
+            raise ValueError("dataframe_id must be specified if values are provided")
 
-    #                 # TODO - consider removing this constraints
-    #                 # don't add interesting values for entities in relationships
-    #                 skip = False
-    #                 for r in self.relationships:
-    #                     if variable in [r.child_column, r.parent_column]:
-    #                         skip = True
-    #                         break
-    #                 if skip:
-    #                     continue
+        if dataframe_id is not None and values is not None:
+            for column, vals in values.items():
+                self[dataframe_id].ww.columns[column].metadata['interesting_values'] = vals
+            return
 
-    #                 counts = entity.df[variable.id].value_counts()
+        if dataframe_id:
+            dataframes = [self[dataframe_id]]
+        else:
+            dataframes = self.dataframes
+        for df in dataframes:
+            for column in df.columns:
+                # some heuristics to find basic 'where'-able columns
+                # include categorical columns, exclude index or foreign key columns
+                col_schema = df.ww.columns[column]
+                col_is_valid = (col_schema.is_categorical and
+                                not {'index', 'foreign_key'}.intersection(col_schema.semantic_tags))
 
-    #                 # find how many of each unique value there are; sort by count,
-    #                 # and add interesting values to each variable
-    #                 total_count = np.sum(counts)
-    #                 counts[:] = counts.sort_values()[::-1]
-    #                 for i in range(min(max_values, len(counts.index))):
-    #                     idx = counts.index[i]
+                if col_is_valid:
+                    counts = df[column].value_counts()
 
-    #                     if len(counts.index) < 25:
-    #                         if verbose:
-    #                             msg = "Variable {}: Marking {} as an "
-    #                             msg += "interesting value"
-    #                             logger.info(msg.format(variable.id, idx))
-    #                         variable.interesting_values = variable.interesting_values.append(pd.Series([idx]))
-    #                     else:
-    #                         fraction = counts[idx] / total_count
-    #                         if fraction > 0.05 and fraction < 0.95:
-    #                             if verbose:
-    #                                 msg = "Variable {}: Marking {} as an "
-    #                                 msg += "interesting value"
-    #                                 logger.info(msg.format(variable.id, idx))
-    #                             variable.interesting_values = variable.interesting_values.append(pd.Series([idx]))
-    #                         else:
-    #                             break
+                    # find how many of each unique value there are; sort by count,
+                    # and add interesting values to each column
+                    total_count = np.sum(counts)
+                    counts_idx = counts.index.tolist()
+                    for i in range(min(max_values, len(counts.index))):
+                        idx = counts_idx[i]
 
-    #     self.reset_data_description()
+                        if len(counts.index) < 25:
+                            if verbose:
+                                msg = "Column {}: Marking {} as an "
+                                msg += "interesting value"
+                                logger.info(msg.format(column, idx))
+                            interesting_vals = df.ww.columns[column].metadata.get('interesting_values', [])
+                            df.ww.columns[column].metadata['interesting_values'] = interesting_vals + [idx]
+
+                        else:
+                            fraction = counts[idx] / total_count
+                            if fraction > 0.05 and fraction < 0.95:
+                                if verbose:
+                                    msg = "Column {}: Marking {} as an "
+                                    msg += "interesting value"
+                                    logger.info(msg.format(column, idx))
+                                interesting_vals = df.ww.columns[column].metadata.get('interesting_values', [])
+                                df.ww.columns[column].metadata['interesting_values'] = interesting_vals + [idx]
+                            else:
+                                break
+
+        self.reset_data_description()
 
     # def plot(self, to_file=None):
     #     """
@@ -1237,7 +1243,7 @@ class EntitySet(object):
 
     def update_dataframe(self, dataframe_id, df, already_sorted=False, recalculate_last_time_indexes=True):
         '''Update the internal dataframe of an EntitySet table, keeping Woodwork typing information the same.
-        Optionally makes sure that data is sorted, that reference indexes to other dataframes are consistent, 
+        Optionally makes sure that data is sorted, that reference indexes to other dataframes are consistent,
         and that last_time_indexes are updated to reflect the new data.
         '''
         if not isinstance(df, type(self[dataframe_id])):
