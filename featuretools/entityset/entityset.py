@@ -521,7 +521,7 @@ class EntitySet(object):
             time_index (str, optional): Name of the column containing
                 time data. Type must be numeric or datetime in nature.
 
-            secondary_time_index (dict[str -> Series]): Name of column
+            secondary_time_index (dict[str -> list[str]]): Name of column
                 containing time data to use a second time index for the dataframe.
 
             already_sorted (bool, optional) : If True, assumes that input dataframe
@@ -1299,7 +1299,6 @@ class EntitySet(object):
             return
 
         time_type = self._get_time_type(dataframe, column_id)
-        # --> TODO need to make sure this is getting tested correctly for secondary and last time indexes because I think they dont have woodwork typing??
         if self.time_type is None:
             self.time_type = time_type
         elif self.time_type != time_type:

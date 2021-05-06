@@ -151,8 +151,9 @@ def test_init_es_with_relationships(pd_df):
     assert 'index' in relationship.parent_column.ww.semantic_tags
 
 
-def test_add_secondary_time_index():
-    df = pd.DataFrame({
+@pytest.fixture
+def dates_df():
+    return pd.DataFrame({
         'backwards_order': [8, 7, 6, 5, 4, 3, 2, 1, 0],
         'dates_backwards': ['2020-09-09', '2020-09-08', '2020-09-07', '2020-09-06', '2020-09-05', '2020-09-04', '2020-09-03', '2020-09-02', '2020-09-01'],
         'random_order': [7, 6, 8, 0, 2, 4, 3, 1, 5],
@@ -160,11 +161,62 @@ def test_add_secondary_time_index():
         'special': [7, 8, 0, 1, 4, 2, 6, 3, 5],
         'special_dates': ['2020-08-01', '2019-08-01', '2020-08-01', '2012-08-01', '2019-08-01', '2019-08-01', '2019-08-01', '2013-08-01', '2019-08-01'],
     })
-    df.ww.init(index='backwards_order', time_index='dates_backwards')
-    es = EntitySet('es')
-    es.add_dataframe('dates_table', df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
 
+
+def test_add_secondary_time_index(dates_df):
+    dates_df.ww.init(index='backwards_order', time_index='dates_backwards')
+    es = EntitySet('es')
+    es.add_dataframe('dates_table', dates_df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
+
+    assert dates_df.ww.metadata['secondary_time_index'] == {'repeating_dates': ['random_order', 'special', 'repeating_dates']}
+
+
+def test_time_type_check_order(dates_df):
+    dates_df.ww.init(index='backwards_order', time_index='random_order')
+    es = EntitySet('es')
+
+    error = 'dates_table time index is numeric type which differs from other entityset time indexes'
+    with pytest.raises(TypeError, match=error):
+        # Because we set secondary time index before checking that time_index is valid, the time type will match the secondary time index
+        es.add_dataframe('dates_table', df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
+
+    # Metadata on the woodwork table still gets set --> maybe we should reverse the order here
     assert df.ww.metadata['secondary_time_index'] == {'repeating_dates': ['random_order', 'special', 'repeating_dates']}
+
+
+def test_add_time_index_through_woodwork_different_type(dates_df):
+    dates_df.ww.init(index='backwards_order')
+    es = EntitySet('es')
+
+    es.add_dataframe('dates_table', dates_df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
+
+    assert dates_df.ww.metadata['secondary_time_index'] == {'repeating_dates': ['random_order', 'special', 'repeating_dates']}
+    assert es.time_type == Datetime
+
+    assert es._check_uniform_time_index(es['dates_table']) is None
+
+    # --> bug? IF a user sets the time index after initalization through woodwork, there's no way to check the time type
+    # --> should we add a entityset add time index method to help with this??
+    dates_df.ww.set_time_index('random_order')
+    assert dates_df.ww.time_index == 'random_order'
+
+    error = 'dates_table time index is numeric type which differs from other entityset time indexes'
+    with pytest.raises(TypeError, match=error):
+        es._check_uniform_time_index(es['dates_table'])
+
+
+def test_init_with_mismatched_time_types(dates_df):
+    dates_df.ww.init(index='backwards_order', time_index='repeating_dates')
+    es = EntitySet('es')
+    es.add_dataframe('dates_table', dates_df, secondary_time_index={'special_dates': ['special']})
+    assert es.time_type == Datetime
+
+    nums_df = pd.DataFrame({'id': [1, 2, 3], 'times': [9, 8, 7]})
+    nums_df.ww.init(index='id', time_index='times')
+
+    error = 'numerics_table time index is numeric type which differs from other entityset time indexes'
+    with pytest.raises(TypeError, match=error):
+        es.add_dataframe('numerics_table', nums_df)
 
 
 def test_normalize_dataframe():

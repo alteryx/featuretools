@@ -1036,11 +1036,19 @@ def test_sets_time_when_adding_entity(transactions_df):
                              time_index="signup_date")
 
 
-def test_checks_time_type_setting_time_index(es):
+def test_secondary_time_index_no_primary_time_index(es):
+    es['products'].ww.set_types(logical_types={'rating': 'Datetime'})
+    assert es['products'].ww.time_index is None
+    es.set_secondary_time_index('products', {'rating': ['url']})
+
+    assert 'secondary_time_index' in es['products'].ww.metadata
+    assert es['products'].ww.time_index is None
+
+
+def test_set_non_valid_time_index_type(es):
     error_text = 'Time index column must be a Datetime or numeric column.'
     with pytest.raises(TypeError, match=error_text):
         es['log'].ww.set_time_index('purchased')
-        es._check_uniform_time_index(es['log'])
 
 
 def test_checks_time_type_setting_secondary_time_index(es):
