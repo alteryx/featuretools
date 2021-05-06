@@ -4,6 +4,8 @@ import re
 import pandas as pd
 from tqdm import tqdm
 
+import woodwork as ww
+
 import featuretools as ft
 import featuretools.variable_types as vtypes
 
@@ -94,30 +96,30 @@ def make_es(data):
                         'late_aircraft_delay', 'canceled', 'diverted',
                         'taxi_in', 'taxi_out', 'air_time', 'dep_time']
 
-    variable_types = {'flight_num': vtypes.Categorical,
-                      'distance_group': vtypes.Ordinal,
-                      'canceled': vtypes.Boolean,
-                      'diverted': vtypes.Boolean}
+    logical_types = {'flight_num': ww.logical_types.Categorical,
+                     'distance_group': ww.logical_types.Ordinal(order=[1, 2, 3, 8, 10]),
+                     'canceled': ww.logical_types.Boolean,
+                     'diverted': ww.logical_types.Boolean}
 
-    es.entity_from_dataframe('trip_logs',
-                             data,
-                             index='trip_log_id',
-                             make_index=True,
-                             time_index='date_scheduled',
-                             secondary_time_index={'arr_time': arr_time_columns},
-                             variable_types=variable_types)
+    es.add_dataframe('trip_logs',
+                     data,
+                     index='trip_log_id',
+                     make_index=True,
+                     time_index='date_scheduled',
+                     secondary_time_index={'arr_time': arr_time_columns},
+                     logical_types=logical_types)
 
-    es.normalize_entity('trip_logs', 'flights', 'flight_id',
-                        additional_variables=['origin', 'origin_city', 'origin_state',
-                                              'dest', 'dest_city', 'dest_state',
-                                              'distance_group', 'carrier', 'flight_num'])
+    es.normalize_dataframe('trip_logs', 'flights', 'flight_id',
+                           additional_columns=['origin', 'origin_city', 'origin_state',
+                                               'dest', 'dest_city', 'dest_state',
+                                               'distance_group', 'carrier', 'flight_num'])
 
-    es.normalize_entity('flights', 'airlines', 'carrier',
-                        make_time_index=False)
+    es.normalize_dataframe('flights', 'airlines', 'carrier',
+                           make_time_index=False)
 
-    es.normalize_entity('flights', 'airports', 'dest',
-                        additional_variables=['dest_city', 'dest_state'],
-                        make_time_index=False)
+    es.normalize_dataframe('flights', 'airports', 'dest',
+                           additional_columns=['dest_city', 'dest_state'],
+                           make_time_index=False)
     return es
 
 

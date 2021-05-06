@@ -15,10 +15,10 @@ def set_testing_headers():
 def test_load_retail_diff():
     nrows = 10
     es_first = load_retail(nrows=nrows)
-    assert es_first['order_products'].df.shape[0] == nrows
+    assert es_first['order_products'].shape[0] == nrows
     nrows_second = 11
     es_second = load_retail(nrows=nrows_second)
-    assert es_second['order_products'].df.shape[0] == nrows_second
+    assert es_second['order_products'].shape[0] == nrows_second
 
 
 def test_mock_customer():
@@ -28,13 +28,13 @@ def test_mock_customer():
     n_transactions = 400
     es = load_mock_customer(n_customers=n_customers, n_products=n_products, n_sessions=n_sessions,
                             n_transactions=n_transactions, random_seed=0, return_entityset=True)
-    entity_names = [entity.id for entity in es.entities]
+    df_names = [df.ww.name for df in es.dataframes]
     expected_names = ['transactions', 'products', 'sessions', 'customers']
-    assert set(expected_names) == set(entity_names)
-    assert len(es['customers'].df) == 4
-    assert len(es['products'].df) == 3
-    assert len(es['sessions'].df) == 30
-    assert len(es['transactions'].df) == 400
+    assert set(expected_names) == set(df_names)
+    assert len(es['customers']) == 4
+    assert len(es['products']) == 3
+    assert len(es['sessions']) == 30
+    assert len(es['transactions']) == 400
 
 
 def test_load_flight():

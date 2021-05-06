@@ -430,11 +430,13 @@ class FilePath(Variable):
 
 
 DEFAULT_DTYPE_VALUES = {
-    np.datetime64: pd.Timestamp.now(),
-    int: 0,
-    float: 0.1,
-    np.timedelta64: pd.Timedelta('1d'),
-    object: 'object',
-    bool: True,
-    str: 'test'
+    'datetime64[ns]': pd.Timestamp.now(),
+    'int64': 0,
+    'Int64': 0,
+    'float64': 0.1,
+    'timedelta64[ns]': pd.Timedelta('1d'),
+    'object': 'object',
+    'bool': True,
+    'boolean': True,
+    'string': 'test'
 }

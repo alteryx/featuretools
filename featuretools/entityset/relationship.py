@@ -23,10 +23,10 @@ class Relationship(object):
         self._parent_column_id = parent_column_id
         self._child_column_id = child_column_id
 
-        if (self.parent_dataframe.index is not None and
-                self._parent_column_id != self.parent_dataframe.index):
-            raise AttributeError(f"Parent column '{self.parent_column}' is not the index of "
-                                 f"dataframe {self.parent_dataframe}")
+        if (self.parent_dataframe.ww.index is not None and
+                self._parent_column_id != self.parent_dataframe.ww.index):
+            raise AttributeError(f"Parent column '{self.parent_column.name}' is not the index of "
+                                 f"dataframe {self._parent_dataframe_id}")
 
     @classmethod
     def from_dictionary(cls, arguments, es):
@@ -71,12 +71,14 @@ class Relationship(object):
     @property
     def parent_column(self):
         """Column in parent dataframe"""
-        return self.parent_dataframe[self._parent_column_id]
+        # --> WW bug - keep index tags here
+        return self.parent_dataframe.ww[self._parent_column_id]
 
     @property
     def child_column(self):
         """Column in child dataframe"""
-        return self.child_dataframe[self._child_column_id]
+        # --> WW bug - keep index tags here
+        return self.child_dataframe.ww[self._child_column_id]
 
     @property
     def parent_name(self):
@@ -104,7 +106,7 @@ class Relationship(object):
 
     def _is_unique(self):
         """Is there any other relationship with same parent and child entities?"""
-        es = self.child_dataframe.entityset
+        es = self.entityset
         relationships = es.get_forward_relationships(self._child_dataframe_id)
         n = len([r for r in relationships
                  if r._parent_dataframe_id == self._parent_dataframe_id])
@@ -130,16 +132,16 @@ class RelationshipPath(object):
             # Yield first dataframe.
             is_forward, relationship = self[0]
             if is_forward:
-                yield relationship.child_dataframe.id
+                yield relationship._child_dataframe_id
             else:
-                yield relationship.parent_dataframe.id
+                yield relationship._parent_dataframe_id
 
         # Yield the dataframe pointed to by each relationship.
         for is_forward, relationship in self:
             if is_forward:
-                yield relationship.parent_dataframe.id
+                yield relationship._parent_dataframe_id
             else:
-                yield relationship.child_dataframe.id
+                yield relationship._child_dataframe_id
 
     def __add__(self, other):
         return RelationshipPath(self._relationships_with_direction +
