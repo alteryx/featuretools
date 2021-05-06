@@ -1038,6 +1038,7 @@ class EntitySet(object):
         for df in dataframes:
             for column in df.columns:
                 # some heuristics to find basic 'where'-able columns
+                # include categorical columns, exclude index or foreign key columns
                 col_schema = df.ww.columns[column]
                 col_is_valid = (col_schema.is_categorical and 
                     not {'index', 'foreign_key'}.intersection(col_schema.semantic_tags))
