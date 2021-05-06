@@ -1,5 +1,5 @@
 # import copy
-# import logging
+import logging
 import re
 from datetime import datetime
 
@@ -7,9 +7,8 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
-
-import woodwork.logical_types as ltypes
 import woodwork as ww
+import woodwork.logical_types as ltypes
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
@@ -89,10 +88,6 @@ def test_add_relationship_instantiated_logical_types(es):
     assert es['log2'].ww.logical_types['product_id'] == ltypes.Categorical()
     assert es['products'].ww.logical_types['id'] == ltypes.Categorical
 
-    category_dtype = 'category'
-    if ks and isinstance(es['customers'], ks.DataFrame):
-        category_dtype = 'string'
-
     warning_text = f'Logical type Categorical for child column product_id does not match parent column id logical type Categorical. Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
         es.add_relationship(u'products', 'id', 'log2', 'product_id')
@@ -135,10 +130,6 @@ def test_add_relationship_different_logical_types_same_dtype(es):
     assert es['log2'].ww.logical_types['product_id'] == ltypes.CountryCode
     assert es['products'].ww.logical_types['id'] == ltypes.Categorical
 
-    category_dtype = 'category'
-    if ks and isinstance(es['customers'], ks.DataFrame):
-        category_dtype = 'string'
-
     warning_text = f'Logical type CountryCode for child column product_id does not match parent column id logical type Categorical. Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
         es.add_relationship(u'products', 'id', 'log2', 'product_id')
@@ -180,10 +171,6 @@ def test_add_relationship_different_compatible_dtypes(es):
     assert es['log2'].ww.schema is not None
     assert es['log2'].ww.logical_types['session_id'] == ltypes.Datetime
     assert es['customers'].ww.logical_types['id'] == ltypes.Integer
-
-    category_dtype = 'category'
-    if ks and isinstance(es['customers'], ks.DataFrame):
-        category_dtype = 'string'
 
     warning_text = f'Logical type Datetime for child column session_id does not match parent column id logical type Integer. Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
@@ -1634,19 +1621,19 @@ def test_add_interesting_values_multiple_dataframes(pd_es):
                 assert df.ww.columns[col].metadata.get('interesting_values') is None
 
 
-# --> wait till add_interesting_values
-# def test_add_interesting_values_verbose_output(caplog):
-#     es = ft.demo.load_retail(nrows=200)
-#     es['order_products'].convert_variable_type('quantity', ltypes.Categorical)
-#     logger = logging.getLogger('featuretools')
-#     logger.propagate = True
-#     logger_es = logging.getLogger('featuretools.entityset')
-#     logger_es.propagate = True
-#     es.add_interesting_values(verbose=True, max_values=10)
-#     logger.propagate = False
-#     logger_es.propagate = False
-#     assert 'Variable country: Marking United Kingdom as an interesting value' in caplog.text
-#     assert 'Variable quantity: Marking 6 as an interesting value' in caplog.text
+def test_add_interesting_values_verbose_output(caplog):
+    es = ft.demo.load_retail(nrows=200)
+    es['order_products'].ww.set_types({'quantity': 'Categorical'})
+    es['orders'].ww.set_types({'country': 'Categorical'})
+    logger = logging.getLogger('featuretools')
+    logger.propagate = True
+    logger_es = logging.getLogger('featuretools.entityset')
+    logger_es.propagate = True
+    es.add_interesting_values(verbose=True, max_values=10)
+    logger.propagate = False
+    logger_es.propagate = False
+    assert 'Column country: Marking United Kingdom as an interesting value' in caplog.text
+    assert 'Column quantity: Marking 6 as an interesting value' in caplog.text
 
 
 def test_entityset_equality(es):

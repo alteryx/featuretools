@@ -1,9 +1,7 @@
 import pandas as pd
 import pytest
-
 import woodwork.logical_types as ltypes
 
-import featuretools as ft
 from featuretools.entityset import EntitySet
 from featuretools.tests.testing_utils import get_df_tags
 from featuretools.utils.gen_utils import import_or_none

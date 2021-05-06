@@ -1,11 +1,16 @@
 from datetime import datetime
+
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
-
-from woodwork.logical_types import Categorical, Integer, NaturalLanguage, Datetime
 import woodwork as ww
+from woodwork.logical_types import (
+    Categorical,
+    Datetime,
+    Integer,
+    NaturalLanguage
+)
 
 from featuretools.entityset import EntitySet
 from featuretools.tests.testing_utils import to_pandas

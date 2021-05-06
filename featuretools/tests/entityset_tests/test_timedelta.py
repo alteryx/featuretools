@@ -2,9 +2,7 @@ import pandas as pd
 import pytest
 from dateutil.relativedelta import relativedelta
 
-import featuretools as ft
 from featuretools.entityset import Timedelta
-from featuretools.primitives import Count
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.wrangle import _check_timedelta
 

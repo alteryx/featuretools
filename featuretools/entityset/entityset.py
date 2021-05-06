@@ -6,8 +6,6 @@ from collections import defaultdict
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_dtype_equal
-
 import woodwork as ww
 
 # from featuretools.entityset import deserialize, serialize
@@ -51,10 +49,10 @@ class EntitySet(object):
             Args:
                 id (str) : Unique identifier to associate with this instance
 
-                dataframes (dict[str -> tuple(DataFrame, str, str, 
-                                              dict[str -> str/Woodwork.LogicalType], 
-                                              dict[str->str/set], 
-                                              boolean)]): dictionary of DataFrames. 
+                dataframes (dict[str -> tuple(DataFrame, str, str,
+                                              dict[str -> str/Woodwork.LogicalType],
+                                              dict[str->str/set],
+                                              boolean)]): dictionary of DataFrames.
                     Entries take the format dataframe id -> (dataframe, index column, time_index, logical_types, semantic_tags, make_index)}.
                     Note that only the dataframe is required. If a Woodwork DataFrame is supplied, any other parameters
                     will be ignored.
@@ -1072,7 +1070,7 @@ class EntitySet(object):
                             fraction = counts[idx] / total_count
                             if fraction > 0.05 and fraction < 0.95:
                                 if verbose:
-                                    msg = "Variable {}: Marking {} as an "
+                                    msg = "Column {}: Marking {} as an "
                                     msg += "interesting value"
                                     logger.info(msg.format(column, idx))
                                 interesting_vals = df.ww.columns[column].metadata.get('interesting_values', [])
@@ -1250,7 +1248,7 @@ class EntitySet(object):
 
     def update_dataframe(self, dataframe_id, df, already_sorted=False, recalculate_last_time_indexes=True):
         '''Update the internal dataframe of an EntitySet table, keeping Woodwork typing information the same.
-        Optionally makes sure that data is sorted, that reference indexes to other dataframes are consistent, 
+        Optionally makes sure that data is sorted, that reference indexes to other dataframes are consistent,
         and that last_time_indexes are updated to reflect the new data.
         '''
         if not isinstance(df, type(self[dataframe_id])):
