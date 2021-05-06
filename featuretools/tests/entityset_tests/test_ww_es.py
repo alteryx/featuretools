@@ -9,6 +9,7 @@ import woodwork as ww
 from woodwork.logical_types import (
     Categorical,
     Datetime,
+    Double,
     Integer,
     NaturalLanguage
 )
@@ -223,6 +224,21 @@ def test_init_with_mismatched_time_types(dates_df):
     error = 'numerics_table time index is numeric type which differs from other entityset time indexes'
     with pytest.raises(TypeError, match=error):
         es.add_dataframe('numerics_table', nums_df)
+
+
+def test_int_double_time_type(dates_df):
+    dates_df.ww.init(index='backwards_order', time_index='random_order',
+                     logical_types={'random_order': 'Integer', 'special': 'Double'})
+    es = EntitySet('es')
+
+    # Both random_order and special are numeric, but they are different logical types
+    es.add_dataframe('dates_table', dates_df, secondary_time_index={'special': ['dates_backwards']})
+
+    assert es['dates_table'].ww.logical_types['random_order'] == Integer
+    assert es['dates_table'].ww.logical_types['special'] == Double
+
+    assert es['dates_table'].ww.time_index == 'random_order'
+    assert 'special' in es['dates_table'].ww.metadata['secondary_time_index']
 
 
 def test_normalize_dataframe():
