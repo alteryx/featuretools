@@ -58,9 +58,7 @@ def dask_es(make_es):
     for df in make_es.dataframes:
         dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
         dd_df.ww.init(schema=df.ww.schema)
-        es.add_dataframe(df.ww.name,
-                         dd_df,
-                         secondary_time_index=df.ww.metadata.get('secondary_time_index'))
+        es.add_dataframe(df.ww.name, dd_df)
 
     for rel in make_es.relationships:
         es.add_relationship(rel.parent_dataframe.ww.name, rel.parent_column.name,
@@ -76,10 +74,7 @@ def ks_es(make_es):
         cleaned_df = pd_to_ks_clean(df).reset_index(drop=True)
         ks_df = ks.from_pandas(cleaned_df)
         ks_df.ww.init(schema=df.ww.schema)
-        es.add_dataframe(df.ww.name,
-                         ks_df,
-                         # --> TODO might be redundant since the metadata will already have it or necessary - test this
-                         secondary_time_index=df.ww.metadata.get('secondary_time_index'))
+        es.add_dataframe(df.ww.name, ks_df)
 
     for rel in make_es.relationships:
         es.add_relationship(rel.parent_dataframe.ww.name, rel.parent_column.name,
