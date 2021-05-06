@@ -1,7 +1,8 @@
 import pandas as pd
 
-import featuretools as ft
 import woodwork as ww
+
+import featuretools as ft
 
 
 def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):

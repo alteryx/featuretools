@@ -8,7 +8,6 @@ import pytest
 import featuretools as ft
 from featuretools import variable_types as vtypes
 from featuretools.tests.testing_utils import (
-    get_df_tags,
     make_ecommerce_entityset,
     to_pandas
 )
@@ -58,9 +57,7 @@ def dask_es(make_es):
     for df in make_es.dataframes:
         dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
         dd_df.ww.init(schema=df.ww.schema)
-        es.add_dataframe(df.ww.name,
-                         dd_df,
-                         secondary_time_index=df.ww.metadata.get('secondary_time_index'))
+        es.add_dataframe(df.ww.name, dd_df)
 
     for rel in make_es.relationships:
         es.add_relationship(rel.parent_dataframe.ww.name, rel.parent_column.name,
@@ -76,14 +73,11 @@ def ks_es(make_es):
         cleaned_df = pd_to_ks_clean(df).reset_index(drop=True)
         ks_df = ks.from_pandas(cleaned_df)
         ks_df.ww.init(schema=df.ww.schema)
-        es.add_dataframe(df.ww.name,
-                         ks_df,
-                         # --> TODO might be redundant since the metadata will already have it or necessary - test this
-                         secondary_time_index=df.ww.metadata.get('secondary_time_index'))
+        es.add_dataframe(df.ww.name, ks_df)
 
     for rel in make_es.relationships:
-        es.add_relationship(rel.parent_dataframe.ww.name, rel.parent_column.name,
-                            rel.child_dataframe.ww.name, rel.child_column.name)
+        es.add_relationship(rel._parent_dataframe_id, rel._parent_column_id,
+                            rel._child_dataframe_id, rel._child_column_id)
     return es
 
 
@@ -148,12 +142,14 @@ def pd_diamond_es():
 def dask_diamond_es(pd_diamond_es):
     dataframes = {}
     for df in pd_diamond_es.dataframes:
-        dataframes[df.ww.name] = (dd.from_pandas(df, npartitions=2), df.ww.index, None, df.ww.logical_types, get_df_tags(df))
+        dd_df = dd.from_pandas(df, npartitions=2)
+        dd_df.ww.init(schema=df.ww.schema)
+        dataframes[df.ww.name] = (dd_df,)
 
-    relationships = [(rel.parent_dataframe.ww.name,
-                      rel.parent_column.name,
-                      rel.child_dataframe.ww.name,
-                      rel.child_column.name) for rel in pd_diamond_es.relationships]
+    relationships = [(rel._parent_dataframe_id,
+                      rel._parent_column_id,
+                      rel._child_dataframe_id,
+                      rel._child_column_id) for rel in pd_diamond_es.relationships]
 
     return ft.EntitySet(id=pd_diamond_es.id, dataframes=dataframes, relationships=relationships)
 
@@ -163,12 +159,14 @@ def ks_diamond_es(pd_diamond_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     dataframes = {}
     for df in pd_diamond_es.dataframes:
-        dataframes[df.ww.name] = (ks.from_pandas(pd_to_ks_clean(df)), df.ww.index, None, df.ww.logical_types, get_df_tags(df))
+        ks_df = ks.from_pandas(pd_to_ks_clean(df))
+        ks_df.ww.init(schema=df.ww.schema)
+        dataframes[df.ww.name] = (ks_df,)
 
-    relationships = [(rel.parent_dataframe.ww.name,
-                      rel.parent_column.name,
-                      rel.child_dataframe.ww.name,
-                      rel.child_column.name) for rel in pd_diamond_es.relationships]
+    relationships = [(rel._parent_dataframe_id,
+                      rel._parent_column_id,
+                      rel._child_dataframe_id,
+                      rel._child_column_id) for rel in pd_diamond_es.relationships]
 
     return ft.EntitySet(id=pd_diamond_es.id, dataframes=dataframes, relationships=relationships)
 
@@ -206,12 +204,14 @@ def pd_default_value_es():
 def dask_default_value_es(pd_default_value_es):
     dataframes = {}
     for df in pd_default_value_es.dataframes:
-        dataframes[df.ww.name] = (dd.from_pandas(df, npartitions=4), df.ww.index, None, df.ww.logical_types, get_df_tags(df))
+        dd_df = dd.from_pandas(df, npartitions=4)
+        dd_df.ww.init(schema=df.ww.schema)
+        dataframes[df.ww.name] = (dd_df,)
 
-    relationships = [(rel.parent_dataframe.ww.name,
-                      rel.parent_column.name,
-                      rel.child_dataframe.ww.name,
-                      rel.child_column.name) for rel in pd_default_value_es.relationships]
+    relationships = [(rel._parent_dataframe_id,
+                      rel._parent_column_id,
+                      rel._child_dataframe_id,
+                      rel._child_column_id) for rel in pd_default_value_es.relationships]
 
     return ft.EntitySet(id=pd_default_value_es.id, dataframes=dataframes, relationships=relationships)
 
@@ -221,12 +221,14 @@ def ks_default_value_es(pd_default_value_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     dataframes = {}
     for df in pd_default_value_es.dataframes:
-        dataframes[df.ww.name] = (ks.from_pandas(pd_to_ks_clean(df)), df.ww.index, None, df.ww.logical_types, get_df_tags(df))
+        ks_df = ks.from_pandas(pd_to_ks_clean(df))
+        ks_df.ww.init(schema=df.ww.schema)
+        dataframes[df.ww.name] = (ks_df,)
 
-    relationships = [(rel.parent_dataframe.ww.name,
-                      rel.parent_column.name,
-                      rel.child_dataframe.ww.name,
-                      rel.child_column.name) for rel in pd_default_value_es.relationships]
+    relationships = [(rel._parent_dataframe_id,
+                      rel._parent_column_id,
+                      rel._child_dataframe_id,
+                      rel._child_column_id) for rel in pd_default_value_es.relationships]
 
     return ft.EntitySet(id=pd_default_value_es.id, dataframes=dataframes, relationships=relationships)
 
@@ -259,12 +261,14 @@ def pd_home_games_es():
 def dask_home_games_es(pd_home_games_es):
     dataframes = {}
     for df in pd_home_games_es.dataframes:
-        dataframes[df.ww.name] = (dd.from_pandas(df, npartitions=2), df.ww.index, None, df.ww.logical_types, get_df_tags(df))
+        dd_df = dd.from_pandas(df, npartitions=2)
+        dd_df.ww.init(schema=df.ww.schema)
+        dataframes[df.ww.name] = (dd_df,)
 
-    relationships = [(rel.parent_dataframe.ww.name,
-                      rel.parent_column.name,
-                      rel.child_dataframe.ww.name,
-                      rel.child_column.name) for rel in pd_home_games_es.relationships]
+    relationships = [(rel._parent_dataframe_id,
+                      rel._parent_column_id,
+                      rel._child_dataframe_id,
+                      rel._child_column_id) for rel in pd_home_games_es.relationships]
 
     return ft.EntitySet(id=pd_home_games_es.id, dataframes=dataframes, relationships=relationships)
 
@@ -274,12 +278,14 @@ def ks_home_games_es(pd_home_games_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     dataframes = {}
     for df in pd_home_games_es.dataframes:
-        dataframes[df.ww.name] = (ks.from_pandas(pd_to_ks_clean(df)), df.ww.index, None, df.ww.logical_types, get_df_tags(df))
+        ks_df = ks.from_pandas(pd_to_ks_clean(df))
+        ks_df.ww.init(schema=df.ww.schema)
+        dataframes[df.ww.name] = (ks_df,)
 
-    relationships = [(rel.parent_dataframe.ww.name,
-                      rel.parent_column.name,
-                      rel.child_dataframe.ww.name,
-                      rel.child_column.name) for rel in pd_home_games_es.relationships]
+    relationships = [(rel._parent_dataframe_id,
+                      rel._parent_column_id,
+                      rel._child_dataframe_id,
+                      rel._child_column_id) for rel in pd_home_games_es.relationships]
 
     return ft.EntitySet(id=pd_home_games_es.id, dataframes=dataframes, relationships=relationships)
 

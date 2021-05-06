@@ -99,6 +99,7 @@ def _check_time_against_column(time, time_column):
         return False
 
 
+# --> TODO possibly remove this or convert to Woodwork
 def _check_time_type(time):
     '''
     Checks if `time` is an instance of common int, float, or datetime types.

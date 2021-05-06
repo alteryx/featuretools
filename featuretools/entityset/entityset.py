@@ -6,7 +6,6 @@ from collections import defaultdict
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_dtype_equal
 
 import woodwork as ww
 
@@ -51,10 +50,10 @@ class EntitySet(object):
             Args:
                 id (str) : Unique identifier to associate with this instance
 
-                dataframes (dict[str -> tuple(DataFrame, str, str, 
-                                              dict[str -> str/Woodwork.LogicalType], 
-                                              dict[str->str/set], 
-                                              boolean)]): dictionary of DataFrames. 
+                dataframes (dict[str -> tuple(DataFrame, str, str,
+                                              dict[str -> str/Woodwork.LogicalType],
+                                              dict[str->str/set],
+                                              boolean)]): dictionary of DataFrames.
                     Entries take the format dataframe id -> (dataframe, index column, time_index, logical_types, semantic_tags, make_index)}.
                     Note that only the dataframe is required. If a Woodwork DataFrame is supplied, any other parameters
                     will be ignored.
@@ -303,7 +302,7 @@ class EntitySet(object):
             msg = "Unable to add relationship because child column '{}' in '{}' is also its index"
             raise ValueError(msg.format(child_column, child_df.ww.name))
         parent_df = relationship.parent_dataframe
-        parent_column = relationship.parent_column.name
+        parent_column = relationship._parent_column_id
         if 'foreign_key' not in child_df.ww.semantic_tags[child_column]:
             child_df.ww.add_semantic_tags({child_column: 'foreign_key'})
 
@@ -521,7 +520,7 @@ class EntitySet(object):
             time_index (str, optional): Name of the column containing
                 time data. Type must be numeric or datetime in nature.
 
-            secondary_time_index (dict[str -> Series]): Name of column
+            secondary_time_index (dict[str -> list[str]]): Name of column
                 containing time data to use a second time index for the dataframe.
 
             already_sorted (bool, optional) : If True, assumes that input dataframe
@@ -582,9 +581,9 @@ class EntitySet(object):
                               already_sorted=already_sorted)
             # If no index column is specified, set the first column
             if dataframe.ww.index is None:
-                dataframe.ww.set_index(dataframe.columns[0])
                 warnings.warn(("Using first column as index. "
                                "To change this, specify the index parameter"))
+                dataframe.ww.set_index(dataframe.columns[0])
 
         else:
             if dataframe.ww.index is None:
@@ -669,14 +668,14 @@ class EntitySet(object):
                             .format(type(additional_columns)))
 
         if len(additional_columns) != len(set(additional_columns)):
-            raise ValueError("'additional_columns' contains duplicate variables. All variables must be unique.")
+            raise ValueError("'additional_columns' contains duplicate columns. All columns must be unique.")
 
         if not isinstance(copy_columns, list):
             raise TypeError("'copy_columns' must be a list, but received type {}"
                             .format(type(copy_columns)))
 
         if len(copy_columns) != len(set(copy_columns)):
-            raise ValueError("'copy_columns' contains duplicate variables. All variables must be unique.")
+            raise ValueError("'copy_columns' contains duplicate columns. All columns must be unique.")
 
         for v in additional_columns + copy_columns:
             if v == index:
@@ -702,7 +701,7 @@ class EntitySet(object):
             transfer_types[col_name] = (base_dataframe.ww.logical_types[col_name], base_dataframe.ww.semantic_tags[col_name] - {'time_index'})
 
         # create and add new dataframe
-        new_dataframe = self[base_dataframe_id].ww.copy()
+        new_dataframe = self[base_dataframe_id].copy()
 
         if make_time_index is None and base_dataframe.ww.time_index is not None:
             make_time_index = True
@@ -790,10 +789,9 @@ class EntitySet(object):
 
         self.dataframe_dict[base_dataframe_id] = self.dataframe_dict[base_dataframe_id].ww.drop(additional_columns)
 
-        new_dataframe = self.dataframe_dict[new_dataframe_id]
         self.dataframe_dict[base_dataframe_id].ww.add_semantic_tags({base_dataframe_index: 'foreign_key'})
 
-        self.add_relationship(new_dataframe.ww.name, index, base_dataframe.ww.name, base_dataframe_index)
+        self.add_relationship(new_dataframe_id, index, base_dataframe_id, base_dataframe_index)
         self.reset_data_description()
         return self
 
@@ -1237,7 +1235,7 @@ class EntitySet(object):
 
     def update_dataframe(self, dataframe_id, df, already_sorted=False, recalculate_last_time_indexes=True):
         '''Update the internal dataframe of an EntitySet table, keeping Woodwork typing information the same.
-        Optionally makes sure that data is sorted, that reference indexes to other dataframes are consistent, 
+        Optionally makes sure that data is sorted, that reference indexes to other dataframes are consistent,
         and that last_time_indexes are updated to reflect the new data.
         '''
         if not isinstance(df, type(self[dataframe_id])):
@@ -1299,7 +1297,6 @@ class EntitySet(object):
             return
 
         time_type = self._get_time_type(dataframe, column_id)
-        # --> TODO need to make sure this is getting tested correctly for secondary and last time indexes because I think they dont have woodwork typing??
         if self.time_type is None:
             self.time_type = time_type
         elif self.time_type != time_type:

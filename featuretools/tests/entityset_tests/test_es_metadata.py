@@ -1,7 +1,6 @@
 import pandas as pd
 import pytest
 from dask import dataframe as dd
-import woodwork.logical_types as ltypes
 
 import featuretools as ft
 from featuretools import EntitySet
@@ -159,8 +158,7 @@ def employee_df(request):
 
 
 def test_find_forward_paths_ignores_loops(employee_df):
-    dataframes = {'employees': (employee_df, 'id', None, None, {'id': 'foreign_key',
-                                                                'manager_id': 'foreign_key'})}
+    dataframes = {'employees': (employee_df, 'id')}
     relationships = [('employees', 'id', 'employees', 'manager_id')]
     es = ft.EntitySet(dataframes=dataframes, relationships=relationships)
 
