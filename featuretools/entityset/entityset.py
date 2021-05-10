@@ -1022,7 +1022,7 @@ class EntitySet(object):
         Notes:
 
             Finding interesting values is not supported with Dask or Koalas EntitySets.
-            To set interesting values for Dask or Koalas EntitySets, values must be 
+            To set interesting values for Dask or Koalas EntitySets, values must be
             specified with the ``values`` parameter.
 
         Returns:
