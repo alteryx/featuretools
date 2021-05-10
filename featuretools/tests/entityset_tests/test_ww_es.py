@@ -190,7 +190,7 @@ def test_time_type_check_order(dates_df):
 
 
 def test_add_time_index_through_woodwork_different_type(dates_df):
-    dates_df.ww.init(index='backwards_order')
+    dates_df.ww.init(index='backwards_order', time_index='dates_backwards')
     es = EntitySet('es')
 
     es.add_dataframe('dates_table', dates_df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
@@ -200,8 +200,6 @@ def test_add_time_index_through_woodwork_different_type(dates_df):
 
     assert es._check_uniform_time_index(es['dates_table']) is None
 
-    # --> bug? IF a user sets the time index after initalization through woodwork, there's no way to check the time type
-    # --> should we add a entityset add time index method to help with this??
     dates_df.ww.set_time_index('random_order')
     assert dates_df.ww.time_index == 'random_order'
 
@@ -592,10 +590,10 @@ def test_normalize_dataframe_loses_column_metadata(es):
                            copy_columns=['value'],
                            make_time_index=False)
 
-    # Metadata in the original dataframe is maintained, but it's lost in the new dataframe
+    # Metadata in the original dataframe and the new dataframe are maintained
     assert 'interesting_values' in es['log'].ww.columns['value'].metadata
-    assert 'interesting_values' not in es['values_2'].ww.columns['value'].metadata
-    assert 'interesting_values' not in es['values_2'].ww.columns['priority_level'].metadata
+    assert 'interesting_values' in es['values_2'].ww.columns['value'].metadata
+    assert 'interesting_values' in es['values_2'].ww.columns['priority_level'].metadata
     assert es['log'].ww.columns['value'].description == 'a value column'
-    assert es['values_2'].ww.columns['value'].description is None
-    assert es['values_2'].ww.columns['priority_level'].description is None
+    assert es['values_2'].ww.columns['value'].description == 'a value column'
+    assert es['values_2'].ww.columns['priority_level'].description == 'a priority level column'
