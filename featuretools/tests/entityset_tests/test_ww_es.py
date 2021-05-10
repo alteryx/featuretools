@@ -182,13 +182,11 @@ def test_time_type_check_order(dates_df):
     dates_df.ww.init(index='backwards_order', time_index='random_order')
     es = EntitySet('es')
 
-    error = 'dates_table time index is numeric type which differs from other entityset time indexes'
+    error = 'dates_table time index is Datetime type which differs from other entityset time indexes'
     with pytest.raises(TypeError, match=error):
-        # Because we set secondary time index before checking that time_index is valid, the time type will match the secondary time index
         es.add_dataframe('dates_table', dates_df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
 
-    # Metadata on the woodwork table still gets set --> maybe we should reverse the order here
-    assert df.ww.metadata['secondary_time_index'] == {'repeating_dates': ['random_order', 'special', 'repeating_dates']}
+    assert 'secondary_time_index' not in dates_df.ww.metadata
 
 
 def test_add_time_index_through_woodwork_different_type(dates_df):

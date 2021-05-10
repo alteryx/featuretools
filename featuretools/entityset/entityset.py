@@ -608,12 +608,12 @@ class EntitySet(object):
             # make sure name is set to match input dataframe_id
             dataframe.ww.name = dataframe_id
 
-        if secondary_time_index:
-            self._set_secondary_time_index(dataframe, secondary_time_index=secondary_time_index)
-
         if dataframe.ww.time_index is not None:
             self._check_uniform_time_index(dataframe)
             self._check_secondary_time_index(dataframe)
+
+        if secondary_time_index:
+            self._set_secondary_time_index(dataframe, secondary_time_index=secondary_time_index)
 
         self.dataframe_dict[dataframe_id] = dataframe
         self.reset_data_description()
