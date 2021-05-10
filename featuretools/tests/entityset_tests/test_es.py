@@ -19,7 +19,7 @@ from featuretools.utils.koalas_utils import pd_to_ks_clean
 ks = import_or_none('databricks.koalas')
 
 
-def test_normalize_time_index_as_additional_variable(es):
+def test_normalize_time_index_as_additional_column(es):
     error_text = "Not moving signup_date as it is the base time index column. Perhaps, move the column to the copy_columns."
     with pytest.raises(ValueError, match=error_text):
         assert "signup_date" in es["customers"].columns
@@ -342,7 +342,7 @@ def df(request):
     return request.getfixturevalue(request.param)
 
 
-def test_check_variables_and_dataframe(df):
+def test_check_columns_and_dataframe(df):
     # matches
     logical_types = {'id': ltypes.Integer,
                      'category': ltypes.Categorical}
@@ -386,8 +386,8 @@ def test_index_any_location(df):
     assert es.dataframe_dict['test_dataframe'].ww.index == 'category'
 
 
-def test_extra_variable_type(df):
-    # more variables
+def test_extra_column_type(df):
+    # more columns
     logical_types = {'id': ltypes.Integer,
                      'category': ltypes.Categorical,
                      'category2': ltypes.Categorical}
@@ -488,7 +488,7 @@ def test_doesnt_remake_index(df):
                          logical_types=logical_types)
 
 
-def test_bad_time_index_variable(df3):
+def test_bad_time_index_column(df3):
     logical_types = {'category': 'Categorical'}
     error_text = "Specified time index column `time` not found in dataframe"
     with pytest.raises(LookupError, match=error_text):
@@ -689,7 +689,6 @@ def test_handles_datetime_format(datetime2):
     assert (col_format == actual).all()
 
 
-# Inferring variable types and verifying typing not supported in Dask, Koalas
 def test_handles_datetime_mismatch():
     # can't convert arbitrary strings
     df = pd.DataFrame({'id': [0, 1, 2], 'time': ['a', 'b', 'tomorrow']})
@@ -704,8 +703,6 @@ def test_handles_datetime_mismatch():
 
 
 def test_dataframe_init(es):
-    # Note: to convert the time column directly either the variable type
-    # or convert_date_columns must be specifie
     df = pd.DataFrame({'id': ['0', '1', '2'],
                        'time': [datetime(2011, 4, 9, 10, 31, 3 * i)
                                 for i in range(3)],
@@ -1023,11 +1020,22 @@ def test_sets_time_when_adding_entity(transactions_df):
                              time_index="signup_date")
 
 
-def test_checks_time_type_setting_time_index(es):
+def test_secondary_time_index_no_primary_time_index(es):
+    es['products'].ww.set_types(logical_types={'rating': 'Datetime'})
+    assert es['products'].ww.time_index is None
+
+    error = 'Cannot set secondary time index on a DataFrame that has no primary time index.'
+    with pytest.raises(ValueError, match=error):
+        es.set_secondary_time_index('products', {'rating': ['url']})
+
+    assert 'secondary_time_index' not in es['products'].ww.metadata
+    assert es['products'].ww.time_index is None
+
+
+def test_set_non_valid_time_index_type(es):
     error_text = 'Time index column must be a Datetime or numeric column.'
     with pytest.raises(TypeError, match=error_text):
         es['log'].ww.set_time_index('purchased')
-        es._check_uniform_time_index(es['log'])
 
 
 def test_checks_time_type_setting_secondary_time_index(es):
@@ -1136,7 +1144,7 @@ def test_normalize_dataframe_new_time_index_in_base_entity_error_check(es):
                                make_time_index="non-existent")
 
 
-def test_normalize_entity_new_time_index_in_variable_list_error_check(es):
+def test_normalize_entity_new_time_index_in_column_list_error_check(es):
     error_text = "'make_time_index' must be specified in 'additional_columns' or 'copy_columns'"
     with pytest.raises(ValueError, match=error_text):
         es.normalize_dataframe(base_dataframe_id='customers',
@@ -1220,25 +1228,27 @@ def test_normalize_time_index_from_none(normalize_es):
         assert df['time'].is_monotonic_increasing
 
 
-def test_raise_error_if_dupicate_additional_variables_passed(es):
-    error_text = "'additional_columns' contains duplicate variables. All variables must be unique."
+def test_raise_error_if_dupicate_additional_columns_passed(es):
+    error_text = "'additional_columns' contains duplicate columns. All columns must be unique."
     with pytest.raises(ValueError, match=error_text):
         es.normalize_dataframe('sessions', 'device_types', 'device_type',
                                additional_columns=['device_name', 'device_name'])
 
 
-def test_raise_error_if_dupicate_copy_variables_passed(es):
-    error_text = "'copy_columns' contains duplicate variables. All variables must be unique."
+def test_raise_error_if_dupicate_copy_columns_passed(es):
+    error_text = "'copy_columns' contains duplicate columns. All columns must be unique."
     with pytest.raises(ValueError, match=error_text):
         es.normalize_dataframe('sessions', 'device_types', 'device_type',
                                copy_columns=['device_name', 'device_name'])
 
 
-def test_normalize_dataframe_copies_variable_types(es):
+def test_normalize_dataframe_copies_logical_types(es):
     es['log'].ww.set_types(logical_types={'value': ltypes.Ordinal(order=[0.0, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 14.0, 15.0, 20.0])})
 
     assert isinstance(es['log'].ww.logical_types['value'], ltypes.Ordinal)
+    assert len(es['log'].ww.logical_types['value'].order) == 10
     assert isinstance(es['log'].ww.logical_types['priority_level'], ltypes.Ordinal)
+    assert len(es['log'].ww.logical_types['priority_level'].order) == 3
     es.normalize_dataframe('log', 'values_2', 'value_2',
                            additional_columns=['priority_level'],
                            copy_columns=['value'],
@@ -1253,7 +1263,9 @@ def test_normalize_dataframe_copies_variable_types(es):
     assert 'value' in es['log'].columns
     assert 'value_2' in es['values_2'].columns
     assert isinstance(es['values_2'].ww.logical_types['priority_level'], ltypes.Ordinal)
+    assert len(es['values_2'].ww.logical_types['priority_level'].order) == 3
     assert isinstance(es['values_2'].ww.logical_types['value'], ltypes.Ordinal)
+    assert len(es['values_2'].ww.logical_types['value'].order) == 10
 
 
 # sorting not supported in Dask, Koalas

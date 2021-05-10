@@ -246,7 +246,7 @@ def make_logical_types(with_integer_time_index=False):
 
     product_logical_types = {
         'id': ltypes.Categorical,
-        'rating': ltypes.Integer,  # confirm this is integer
+        'rating': ltypes.Integer,
         'department': ltypes.Categorical,
         'url': ltypes.URL,
     }
