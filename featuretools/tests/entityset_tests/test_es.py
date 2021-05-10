@@ -1024,9 +1024,12 @@ def test_sets_time_when_adding_entity(transactions_df):
 def test_secondary_time_index_no_primary_time_index(es):
     es['products'].ww.set_types(logical_types={'rating': 'Datetime'})
     assert es['products'].ww.time_index is None
-    es.set_secondary_time_index('products', {'rating': ['url']})
 
-    assert 'secondary_time_index' in es['products'].ww.metadata
+    error = 'Cannot set secondary time index on a DataFrame that has no primary time index.'
+    with pytest.raises(ValueError, match=error):
+        es.set_secondary_time_index('products', {'rating': ['url']})
+
+    assert 'secondary_time_index' not in es['products'].ww.metadata
     assert es['products'].ww.time_index is None
 
 

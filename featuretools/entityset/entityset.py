@@ -1286,6 +1286,10 @@ class EntitySet(object):
 
     def _check_secondary_time_index(self, dataframe, secondary_time_index=None):
         secondary_time_index = secondary_time_index or dataframe.ww.metadata.get('secondary_time_index', {})
+
+        if secondary_time_index is not None and dataframe.ww.time_index is None:
+            raise ValueError('Cannot set secondary time index on a DataFrame that has no primary time index.')
+
         for time_index, columns in secondary_time_index.items():
             self._check_uniform_time_index(dataframe, column_id=time_index)
             if time_index not in columns:
