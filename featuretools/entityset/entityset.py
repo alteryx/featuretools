@@ -1007,7 +1007,7 @@ class EntitySet(object):
     # ###########################################################################
 
     def add_interesting_values(self, max_values=5, verbose=False, dataframe_id=None, values=None):
-        """Find interesting values for categorical columns, to be used to generate "where" clauses
+        """Find or set interesting values for categorical columns, to be used to generate "where" clauses
 
         Args:
             max_values (int) : Maximum number of values per column to add.
@@ -1018,6 +1018,12 @@ class EntitySet(object):
                 for the column. If specified, a corresponding dataframe_id must also be provided.
                 If not specified, interesting values will be set for all eligible columns. If values
                 are specified, max_values and verbose parameters will be ignored.
+
+        Notes:
+
+            Finding interesting values is not supported with Dask or Koalas EntitySets.
+            To set interesting values for Dask or Koalas EntitySets, values must be 
+            specified with the ``values`` parameter.
 
         Returns:
             None
