@@ -1,11 +1,18 @@
 from datetime import datetime
+
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.logical_types import Categorical, Integer, NaturalLanguage, Datetime
 import woodwork as ww
+from woodwork.logical_types import (
+    Categorical,
+    Datetime,
+    Double,
+    Integer,
+    NaturalLanguage
+)
 
 from featuretools.entityset import EntitySet
 from featuretools.tests.testing_utils import to_pandas
@@ -135,7 +142,7 @@ def test_init_es_with_relationships(pd_df):
     second_df = pd.DataFrame({'id': [0, 1, 2, 3], 'first_table_id': [1, 2, 2, 1]})
 
     pd_df.ww.init(name='first_table', index='id')
-    second_df.ww.init(name='second_table', index='id', semantic_tags={'first_table_id': 'foreign_key'})
+    second_df.ww.init(name='second_table', index='id')
 
     es = EntitySet('es',
                    dataframes={'first_table': (pd_df,), 'second_table': (second_df,)},
@@ -146,9 +153,14 @@ def test_init_es_with_relationships(pd_df):
     forward_dataframes = [name for name, _ in es.get_forward_dataframes('second_table')]
     assert forward_dataframes[0] == 'first_table'
 
+    relationship = es.relationships[0]
+    assert 'foreign_key' in relationship.child_column.ww.semantic_tags
+    assert 'index' in relationship.parent_column.ww.semantic_tags
 
-def test_add_secondary_time_index():
-    df = pd.DataFrame({
+
+@pytest.fixture
+def dates_df():
+    return pd.DataFrame({
         'backwards_order': [8, 7, 6, 5, 4, 3, 2, 1, 0],
         'dates_backwards': ['2020-09-09', '2020-09-08', '2020-09-07', '2020-09-06', '2020-09-05', '2020-09-04', '2020-09-03', '2020-09-02', '2020-09-01'],
         'random_order': [7, 6, 8, 0, 2, 4, 3, 1, 5],
@@ -156,11 +168,73 @@ def test_add_secondary_time_index():
         'special': [7, 8, 0, 1, 4, 2, 6, 3, 5],
         'special_dates': ['2020-08-01', '2019-08-01', '2020-08-01', '2012-08-01', '2019-08-01', '2019-08-01', '2019-08-01', '2013-08-01', '2019-08-01'],
     })
-    df.ww.init(index='backwards_order', time_index='dates_backwards')
-    es = EntitySet('es')
-    es.add_dataframe('dates_table', df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
 
-    assert df.ww.metadata['secondary_time_index'] == {'repeating_dates': ['random_order', 'special', 'repeating_dates']}
+
+def test_add_secondary_time_index(dates_df):
+    dates_df.ww.init(index='backwards_order', time_index='dates_backwards')
+    es = EntitySet('es')
+    es.add_dataframe('dates_table', dates_df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
+
+    assert dates_df.ww.metadata['secondary_time_index'] == {'repeating_dates': ['random_order', 'special', 'repeating_dates']}
+
+
+def test_time_type_check_order(dates_df):
+    dates_df.ww.init(index='backwards_order', time_index='random_order')
+    es = EntitySet('es')
+
+    error = 'dates_table time index is Datetime type which differs from other entityset time indexes'
+    with pytest.raises(TypeError, match=error):
+        es.add_dataframe('dates_table', dates_df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
+
+    assert 'secondary_time_index' not in dates_df.ww.metadata
+
+
+def test_add_time_index_through_woodwork_different_type(dates_df):
+    dates_df.ww.init(index='backwards_order', time_index='dates_backwards')
+    es = EntitySet('es')
+
+    es.add_dataframe('dates_table', dates_df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
+
+    assert dates_df.ww.metadata['secondary_time_index'] == {'repeating_dates': ['random_order', 'special', 'repeating_dates']}
+    assert es.time_type == Datetime
+
+    assert es._check_uniform_time_index(es['dates_table']) is None
+
+    dates_df.ww.set_time_index('random_order')
+    assert dates_df.ww.time_index == 'random_order'
+
+    error = 'dates_table time index is numeric type which differs from other entityset time indexes'
+    with pytest.raises(TypeError, match=error):
+        es._check_uniform_time_index(es['dates_table'])
+
+
+def test_init_with_mismatched_time_types(dates_df):
+    dates_df.ww.init(index='backwards_order', time_index='repeating_dates')
+    es = EntitySet('es')
+    es.add_dataframe('dates_table', dates_df, secondary_time_index={'special_dates': ['special']})
+    assert es.time_type == Datetime
+
+    nums_df = pd.DataFrame({'id': [1, 2, 3], 'times': [9, 8, 7]})
+    nums_df.ww.init(index='id', time_index='times')
+
+    error = 'numerics_table time index is numeric type which differs from other entityset time indexes'
+    with pytest.raises(TypeError, match=error):
+        es.add_dataframe('numerics_table', nums_df)
+
+
+def test_int_double_time_type(dates_df):
+    dates_df.ww.init(index='backwards_order', time_index='random_order',
+                     logical_types={'random_order': 'Integer', 'special': 'Double'})
+    es = EntitySet('es')
+
+    # Both random_order and special are numeric, but they are different logical types
+    es.add_dataframe('dates_table', dates_df, secondary_time_index={'special': ['dates_backwards']})
+
+    assert es['dates_table'].ww.logical_types['random_order'] == Integer
+    assert es['dates_table'].ww.logical_types['special'] == Double
+
+    assert es['dates_table'].ww.time_index == 'random_order'
+    assert 'special' in es['dates_table'].ww.metadata['secondary_time_index']
 
 
 def test_normalize_dataframe():
@@ -497,3 +571,29 @@ def test_update_dataframe_last_time_index(es):
 
     es.update_dataframe('customers', df, recalculate_last_time_indexes=True)
     assert not original_last_time_index.equals(to_pandas(es['customers'].ww.metadata['last_time_index']))
+
+
+def test_normalize_dataframe_loses_column_metadata(es):
+    es['log'].ww.columns['value'].metadata['interesting_values'] = [0.0, 1.0]
+    es['log'].ww.columns['priority_level'].metadata['interesting_values'] = [1]
+
+    es['log'].ww.columns['value'].description = 'a value column'
+    es['log'].ww.columns['priority_level'].description = 'a priority level column'
+
+    assert 'interesting_values' in es['log'].ww.columns['priority_level'].metadata
+    assert 'interesting_values' in es['log'].ww.columns['value'].metadata
+    assert es['log'].ww.columns['value'].description == 'a value column'
+    assert es['log'].ww.columns['priority_level'].description == 'a priority level column'
+
+    es.normalize_dataframe('log', 'values_2', 'value_2',
+                           additional_columns=['priority_level'],
+                           copy_columns=['value'],
+                           make_time_index=False)
+
+    # Metadata in the original dataframe and the new dataframe are maintained
+    assert 'interesting_values' in es['log'].ww.columns['value'].metadata
+    assert 'interesting_values' in es['values_2'].ww.columns['value'].metadata
+    assert 'interesting_values' in es['values_2'].ww.columns['priority_level'].metadata
+    assert es['log'].ww.columns['value'].description == 'a value column'
+    assert es['values_2'].ww.columns['value'].description == 'a value column'
+    assert es['values_2'].ww.columns['priority_level'].description == 'a priority level column'
