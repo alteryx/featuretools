@@ -2,7 +2,7 @@ scipy==0.13.3
 numpy==1.13.3
 pandas==0.24.1
 tqdm==4.32.0
-pyyaml==3.12
+pyyaml==5.4
 cloudpickle==0.4.0
 distributed==2.12.0
 dask[dataframe]==2.12.0
