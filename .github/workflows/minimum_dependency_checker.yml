@@ -6,7 +6,6 @@ on:
     paths:
       - 'requirements.txt'
       - 'test-requirements.txt'
-      - 'dask-requirements.txt'
       - 'koalas-requirements.txt'
 jobs:
   build:
