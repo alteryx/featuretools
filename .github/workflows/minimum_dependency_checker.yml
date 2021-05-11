@@ -27,11 +27,11 @@ jobs:
         run: |
           mkdir /tmp/dependencies_updated_artifacts
           printf "${{ steps.min_dep_gen_test.outputs.min_reqs }}" > /tmp/minimum_test_requirements.txt
-          diff /tmp/minimum_test_requirements.txt featuretools/tests/minimum_test_requirements.txt
+          diff /tmp/minimum_test_requirements.txt featuretools/tests/requirement_files/minimum_test_requirements.txt
       - name: if min test deps have changed, write output file
         if: steps.check_min_test.outcome != 'success'
         run: |
-          printf "${{ steps.min_dep_gen_test.outputs.min_reqs }}" > featuretools/tests/minimum_test_requirements.txt
+          printf "${{ steps.min_dep_gen_test.outputs.min_reqs }}" > featuretools/tests/requirement_files/minimum_test_requirements.txt
       - name: Run min dep generator - core reqs
         id: min_dep_gen_core
         uses: alteryx/minimum-dependency-generator@v2
@@ -42,11 +42,11 @@ jobs:
         continue-on-error: true
         run: |
           printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > /tmp/minimum_core_requirements.txt
-          diff /tmp/minimum_core_requirements.txt featuretools/tests/minimum_core_requirements.txt
+          diff /tmp/minimum_core_requirements.txt featuretools/tests/requirement_files/minimum_core_requirements.txt
       - name: if min core deps have changed, write output file
         if: steps.check_core_deps.outcome != 'success'
         run: |
-          printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > featuretools/tests/minimum_core_requirements.txt
+          printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > featuretools/tests/requirement_files/minimum_core_requirements.txt
       - name: Run min dep generator - koalas
         id: min_dep_gen_koalas
         uses: alteryx/minimum-dependency-generator@v2
@@ -57,11 +57,11 @@ jobs:
         continue-on-error: true
         run: |
           printf "${{ steps.min_dep_gen_koalas.outputs.min_reqs }}" > /tmp/minimum_koalas_requirements.txt
-          diff /tmp/minimum_koalas_requirements.txt featuretools/tests/minimum_koalas_requirements.txt
+          diff /tmp/minimum_koalas_requirements.txt featuretools/tests/requirement_files/minimum_koalas_requirements.txt
       - name: if min koalas deps have changed, write output file
         if: steps.check_koalas_deps.outcome != 'success'
         run: |
-          printf "${{ steps.min_dep_gen_koalas.outputs.min_reqs }}" > featuretools/tests/minimum_koalas_requirements.txt
+          printf "${{ steps.min_dep_gen_koalas.outputs.min_reqs }}" > featuretools/tests/requirement_files/minimum_koalas_requirements.txt
       - name: Create Pull Request
         uses: FeatureLabs/create-pull-request@v3
         with:
