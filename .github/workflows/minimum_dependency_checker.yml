@@ -1,7 +1,5 @@
 name: Minimum Dependency Checker
 on:
-  pull_request:
-    types: [opened, synchronize]
   push:
     branches:
       - main
