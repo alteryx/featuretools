@@ -10,6 +10,7 @@ Future Release
     * Documentation Changes
     * Testing Changes
         * Create separate worksflows for each CI job (:pr:`1422`)
+        * Add minimum dependency checker to generate minimum text files (:pr:`1428`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
