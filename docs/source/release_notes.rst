@@ -6,6 +6,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Update minimum pyyaml requirement to 5.4 (:pr:`1433`)
     * Changes
     * Documentation Changes
     * Testing Changes
