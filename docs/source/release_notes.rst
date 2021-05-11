@@ -6,12 +6,12 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Update minimum pyyaml requirement to 5.4 (:pr:`1433`)
     * Changes
     * Documentation Changes
     * Testing Changes
         * Create separate worksflows for each CI job (:pr:`1422`)
         * Add minimum dependency checker to generate minimum requirement files (:pr:`1428`)
-        * Update minimum pyyaml requirement to 5.4 (:pr:`1433`)
         
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
