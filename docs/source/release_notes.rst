@@ -9,13 +9,14 @@ Future Release
         * Update minimum pyyaml requirement to 5.4 (:pr:`1433`)
     * Changes
     * Documentation Changes
+        * Update nbsphinx version to fix docs build issue (:pr:`1436`)
     * Testing Changes
         * Create separate worksflows for each CI job (:pr:`1422`)
         * Add minimum dependency checker to generate minimum requirement files (:pr:`1428`)
         * Add unit tests against minimum dependencies for python 3.7 on PRs and main (:pr:`1432`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`thehomebrewnerd`
 
 v0.24.0 Apr 30, 2021
 ====================
