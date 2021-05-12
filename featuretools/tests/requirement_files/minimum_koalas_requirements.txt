@@ -9,3 +9,4 @@ cloudpickle==0.4.0
 distributed==2.12.0
 dask[dataframe]==2.12.0
 psutil==5.4.8
+click==7.0.0
