@@ -2,10 +2,6 @@ name: Unit Tests - Minimum Dependencies
 on:
   pull_request:
     types: [opened, synchronize]
-    paths:
-      - 'requirements.txt'
-      - 'test-requirements.txt'
-      - 'koalas-requirements.txt'
   push:
     branches:
       - main
