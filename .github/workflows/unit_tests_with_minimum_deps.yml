@@ -24,15 +24,15 @@ jobs:
           python-version: 3.7
       - name: Install featuretools - minimum tests dependencies
         run: |
-          python -m pip install -r featuretools/requirement_files/tests/minimum_test_requirements.txt
+          python -m pip install -r featuretools/tests/requirement_files/minimum_test_requirements.txt
       - if: ${{ matrix.libraries == 'koalas' }}
         name: Install featuretools - minimum koalas, core dependencies
         run: |
-          python -m pip install -r featuretools/requirement_files/tests/minimum_koalas_requirements.txt
+          python -m pip install -r featuretools/tests/requirement_files/minimum_koalas_requirements.txt
       - if: ${{ matrix.libraries == 'core' }}
         name: Install featuretools - minimum core dependencies
         run: |
-          python -m pip install -r featuretools/requirement_files/tests/minimum_core_requirements.txt
+          python -m pip install -r featuretools/tests/requirement_files/minimum_core_requirements.txt
       - name: Run unit tests without code coverage
         run: |
           python -m pytest featuretools/ -n 2
