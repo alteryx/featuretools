@@ -1,4 +1,4 @@
-click==7.1.2
+click==8.0.0
 cloudpickle==1.6.0
 dask==2021.4.1
 distributed==2021.4.1
