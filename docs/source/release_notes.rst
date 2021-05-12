@@ -9,13 +9,13 @@ Future Release
         * Update minimum pyyaml requirement to 5.4 (:pr:`1433`)
     * Changes
     * Documentation Changes
-        * Pin MarkupSafe version to fix docs build issue
+        * Pin MarkupSafe version to fix docs build issue (:pr:`1436`)
     * Testing Changes
         * Create separate worksflows for each CI job (:pr:`1422`)
         * Add minimum dependency checker to generate minimum requirement files (:pr:`1428`)
         
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`thehomebrewnerd`
 
 v0.24.0 Apr 30, 2021
 ====================
