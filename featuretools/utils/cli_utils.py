@@ -10,13 +10,11 @@ import pkg_resources
 import featuretools
 
 deps = ["numpy", "pandas", "tqdm", "PyYAML", "cloudpickle",
-        "dask", "distributed", "psutil", "Click",
-        "pip", "setuptools"]
+        "dask", "distributed", "psutil", "pip", "setuptools"]
 
 
 def show_info():
-    res = subprocess.run(["featuretools", "info"], stdout=subprocess.PIPE)
-    print(res.stdout.decode('utf-8'))
+    print_info()
 
 
 def print_info():
