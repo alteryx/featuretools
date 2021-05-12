@@ -28,6 +28,8 @@ jobs:
       - if: ${{ matrix.libraries == 'koalas' }}
         name: Install featuretools - minimum koalas, core dependencies
         run: |
+          sudo apt install -y openjdk-11-jre-headless
+          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           python -m pip install -r featuretools/tests/requirement_files/minimum_koalas_requirements.txt
       - if: ${{ matrix.libraries == 'core' }}
         name: Install featuretools - minimum core dependencies
