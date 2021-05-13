@@ -46,4 +46,4 @@ jobs:
           python -m pip install -r featuretools/tests/requirement_files/minimum_core_requirements.txt
       - name: Run unit tests without code coverage
         run: |
-          python -m pytest featuretools/ -n 2
+          python -m pytest -x -n 2 featuretools/tests/entityset_tests/test_serialization.py
