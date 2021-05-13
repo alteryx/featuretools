@@ -605,6 +605,8 @@ class EntitySet(object):
                 warnings.warn("A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: " + ", ".join(extra_params))
 
             # make sure name is set to match input dataframe_id
+            # --> bug with how we set name on woodwork schema/accessor
+            # dataframe.ww.schema.name = dataframe_id
             dataframe.ww.name = dataframe_id
 
         if dataframe.ww.time_index is not None:
