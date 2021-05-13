@@ -1,5 +1,5 @@
 # import copy
-# import logging
+import logging
 import re
 from datetime import datetime
 
@@ -7,7 +7,6 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
-
 import woodwork as ww
 import woodwork.logical_types as ltypes
 
@@ -1575,19 +1574,78 @@ def test_entityset_init():
     assert es['transactions'].ww == es_copy['transactions'].ww
 
 
-# --> wait till add_interesting_values
-# def test_add_interesting_values_verbose_output(caplog):
-#     es = ft.demo.load_retail(nrows=200)
-#     es['order_products'].convert_variable_type('quantity', ltypes.Categorical)
-#     logger = logging.getLogger('featuretools')
-#     logger.propagate = True
-#     logger_es = logging.getLogger('featuretools.entityset')
-#     logger_es.propagate = True
-#     es.add_interesting_values(verbose=True, max_values=10)
-#     logger.propagate = False
-#     logger_es.propagate = False
-#     assert 'Variable country: Marking United Kingdom as an interesting value' in caplog.text
-#     assert 'Variable quantity: Marking 6 as an interesting value' in caplog.text
+def test_add_interesting_values_specified_vals(es):
+    product_vals = ['coke zero', 'taco clock']
+    country_vals = ['AL', 'US']
+    interesting_values = {
+        'product_id': product_vals,
+        'countrycode': country_vals,
+    }
+    es.add_interesting_values(dataframe_id='log', values=interesting_values)
+
+    assert es['log'].ww['product_id'].ww.metadata['interesting_values'] == product_vals
+    assert es['log'].ww['countrycode'].ww.metadata['interesting_values'] == country_vals
+
+
+def test_add_interesting_values_vals_specified_without_dataframe_id(es):
+    interesting_values = {
+        'countrycode': ['AL', 'US'],
+    }
+    error_msg = "dataframe_id must be specified if values are provided"
+    with pytest.raises(ValueError, match=error_msg):
+        es.add_interesting_values(values=interesting_values)
+
+
+def test_add_interesting_values_single_dataframe(pd_es):
+    pd_es.add_interesting_values(dataframe_id='log')
+
+    expected_vals = {
+        'zipcode': ['02116', '02116-3899', '12345-6789', '1234567890', '0'],
+        'countrycode': ['US', 'AL', 'ALB', 'USA'],
+        'subregioncode': ['US-AZ', 'US-MT', 'ZM-06', 'UG-219'],
+        'priority_level': [0, 1, 2],
+    }
+
+    for col in pd_es['log'].columns:
+        if col in expected_vals:
+            assert pd_es['log'].ww.columns[col].metadata.get('interesting_values') == expected_vals[col]
+        else:
+            assert pd_es['log'].ww.columns[col].metadata.get('interesting_values') is None
+
+
+def test_add_interesting_values_multiple_dataframes(pd_es):
+    pd_es.add_interesting_values()
+    expected_cols_with_vals = {
+        'régions': {'language'},
+        'stores': {},
+        'products': {'department'},
+        'customers': {'cancel_reason', 'engagement_level'},
+        'sessions': {'device_type', 'device_name'},
+        'log': {'zipcode', 'countrycode', 'subregioncode', 'priority_level'},
+        'cohorts': {},
+    }
+    for df_id, df in pd_es.dataframe_dict.items():
+        expected_cols = expected_cols_with_vals[df_id]
+        for col in df.columns:
+            if col in expected_cols:
+                assert df.ww.columns[col].metadata.get('interesting_values') is not None
+            else:
+                assert df.ww.columns[col].metadata.get('interesting_values') is None
+
+
+def test_add_interesting_values_verbose_output(caplog):
+    es = ft.demo.load_retail(nrows=200)
+    es['order_products'].ww.set_types({'quantity': 'Categorical'})
+    es['orders'].ww.set_types({'country': 'Categorical'})
+    logger = logging.getLogger('featuretools')
+    logger.propagate = True
+    logger_es = logging.getLogger('featuretools.entityset')
+    logger_es.propagate = True
+    es.add_interesting_values(verbose=True, max_values=10)
+    logger.propagate = False
+    logger_es.propagate = False
+    assert 'Column country: Marking United Kingdom as an interesting value' in caplog.text
+    assert 'Column quantity: Marking 6 as an interesting value' in caplog.text
 
 
 def test_entityset_equality(es):
