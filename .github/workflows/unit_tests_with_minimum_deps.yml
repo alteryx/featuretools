@@ -26,7 +26,6 @@ jobs:
         run: |
           pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
-          python -m pip install wheel
           sudo apt update && sudo apt install -y graphviz
       - name: Install featuretools with no dependencies
         run: |
