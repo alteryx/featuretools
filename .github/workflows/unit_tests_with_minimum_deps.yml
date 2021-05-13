@@ -27,7 +27,7 @@ jobs:
           pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
           python -m pip install "$(cat featuretools/tests/requirement_files/minimum_test_requirements.txt | grep wheel)"
-          sudo apt update && sudo apt install -y apt install build-essential && sudo apt install -y graphviz
+          sudo apt update && sudo apt install -y gcc && sudo apt install -y make && sudo apt install -y graphviz
       - name: Install featuretools with no dependencies
         run: |
           python -m pip install -e . --no-dependencies
