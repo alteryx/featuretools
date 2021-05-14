@@ -77,7 +77,7 @@ def ks_es(make_es):
 
     for rel in make_es.relationships:
         es.add_relationship(rel._parent_dataframe_name, rel._parent_column_id,
-                            rel._child_dataframe_id, rel._child_column_id)
+                            rel._child_dataframe_name, rel._child_column_id)
     return es
 
 
@@ -148,7 +148,7 @@ def dask_diamond_es(pd_diamond_es):
 
     relationships = [(rel._parent_dataframe_name,
                       rel._parent_column_id,
-                      rel._child_dataframe_id,
+                      rel._child_dataframe_name,
                       rel._child_column_id) for rel in pd_diamond_es.relationships]
 
     return ft.EntitySet(id=pd_diamond_es.id, dataframes=dataframes, relationships=relationships)
@@ -165,7 +165,7 @@ def ks_diamond_es(pd_diamond_es):
 
     relationships = [(rel._parent_dataframe_name,
                       rel._parent_column_id,
-                      rel._child_dataframe_id,
+                      rel._child_dataframe_name,
                       rel._child_column_id) for rel in pd_diamond_es.relationships]
 
     return ft.EntitySet(id=pd_diamond_es.id, dataframes=dataframes, relationships=relationships)
@@ -210,7 +210,7 @@ def dask_default_value_es(pd_default_value_es):
 
     relationships = [(rel._parent_dataframe_name,
                       rel._parent_column_id,
-                      rel._child_dataframe_id,
+                      rel._child_dataframe_name,
                       rel._child_column_id) for rel in pd_default_value_es.relationships]
 
     return ft.EntitySet(id=pd_default_value_es.id, dataframes=dataframes, relationships=relationships)
@@ -227,7 +227,7 @@ def ks_default_value_es(pd_default_value_es):
 
     relationships = [(rel._parent_dataframe_name,
                       rel._parent_column_id,
-                      rel._child_dataframe_id,
+                      rel._child_dataframe_name,
                       rel._child_column_id) for rel in pd_default_value_es.relationships]
 
     return ft.EntitySet(id=pd_default_value_es.id, dataframes=dataframes, relationships=relationships)
@@ -267,7 +267,7 @@ def dask_home_games_es(pd_home_games_es):
 
     relationships = [(rel._parent_dataframe_name,
                       rel._parent_column_id,
-                      rel._child_dataframe_id,
+                      rel._child_dataframe_name,
                       rel._child_column_id) for rel in pd_home_games_es.relationships]
 
     return ft.EntitySet(id=pd_home_games_es.id, dataframes=dataframes, relationships=relationships)
@@ -284,7 +284,7 @@ def ks_home_games_es(pd_home_games_es):
 
     relationships = [(rel._parent_dataframe_name,
                       rel._parent_column_id,
-                      rel._child_dataframe_id,
+                      rel._child_dataframe_name,
                       rel._child_column_id) for rel in pd_home_games_es.relationships]
 
     return ft.EntitySet(id=pd_home_games_es.id, dataframes=dataframes, relationships=relationships)

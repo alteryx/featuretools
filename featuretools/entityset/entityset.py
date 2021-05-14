@@ -238,7 +238,7 @@ class EntitySet(object):
 
         for r in self.relationships:
             repr_out += u"\n    %s.%s -> %s.%s" % \
-                (r._child_dataframe_id, r._child_column_id,
+                (r._child_dataframe_name, r._child_column_id,
                  r._parent_dataframe_name, r._parent_column_id)
 
         return repr_out
@@ -443,7 +443,7 @@ class EntitySet(object):
         Yields a tuple of (descendent_id, path from dataframe_id to descendant).
         """
         for relationship in self.get_backward_relationships(dataframe_id):
-            child_dataframe_id = relationship._child_dataframe_id
+            child_dataframe_id = relationship._child_dataframe_name
             direct_path = RelationshipPath([(False, relationship)])
             yield child_dataframe_id, direct_path
 
@@ -461,7 +461,7 @@ class EntitySet(object):
         Returns:
             list[:class:`.Relationship`]: List of forward relationships.
         """
-        return [r for r in self.relationships if r._child_dataframe_id == dataframe_id]
+        return [r for r in self.relationships if r._child_dataframe_name == dataframe_id]
 
     def get_backward_relationships(self, dataframe_id):
         """
@@ -898,7 +898,7 @@ class EntitySet(object):
         child_cols = defaultdict(dict)
         for r in self.relationships:
             children[r._parent_dataframe_name].append(r.child_dataframe)
-            child_cols[r._parent_dataframe_name][r._child_dataframe_id] = r.child_column
+            child_cols[r._parent_dataframe_name][r._child_dataframe_name] = r.child_column
 
         updated_dataframes = updated_dataframes or []
         if updated_dataframes:
@@ -1151,7 +1151,7 @@ class EntitySet(object):
     #             label = '%s -> %s' % (rel._parent_column_id,
     #                                   rel._child_column_id)
 
-    #         graph.edge(rel._child_dataframe_id, rel._parent_column_id, xlabel=label)
+    #         graph.edge(rel._child_dataframe_name, rel._parent_column_id, xlabel=label)
 
     #     if to_file:
     #         save_graph(graph, to_file, format_)

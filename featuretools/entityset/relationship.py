@@ -19,7 +19,7 @@ class Relationship(object):
 
         self.entityset = entityset
         self._parent_dataframe_name = parent_dataframe_id
-        self._child_dataframe_id = child_dataframe_id
+        self._child_dataframe_name = child_dataframe_id
         self._parent_column_id = parent_column_id
         self._child_column_id = child_column_id
 
@@ -38,7 +38,7 @@ class Relationship(object):
 
     def __repr__(self):
         ret = u"<Relationship: %s.%s -> %s.%s>" % \
-            (self._child_dataframe_id, self._child_column_id,
+            (self._child_dataframe_name, self._child_column_id,
              self._parent_dataframe_name, self._parent_column_id)
 
         return ret
@@ -48,13 +48,13 @@ class Relationship(object):
             return False
 
         return self._parent_dataframe_name == other._parent_dataframe_name and \
-            self._child_dataframe_id == other._child_dataframe_id and \
+            self._child_dataframe_name == other._child_dataframe_name and \
             self._parent_column_id == other._parent_column_id and \
             self._child_column_id == other._child_column_id
 
     def __hash__(self):
         return hash((self._parent_dataframe_name,
-                     self._child_dataframe_id,
+                     self._child_dataframe_name,
                      self._parent_column_id,
                      self._child_column_id))
 
@@ -66,7 +66,7 @@ class Relationship(object):
     @property
     def child_dataframe(self):
         """Child dataframe object"""
-        return self.entityset[self._child_dataframe_id]
+        return self.entityset[self._child_dataframe_name]
 
     @property
     def parent_column(self):
@@ -90,14 +90,14 @@ class Relationship(object):
     def child_name(self):
         """The name of the child, relative to the parent."""
         if self._is_unique():
-            return self._child_dataframe_id
+            return self._child_dataframe_name
         else:
-            return '%s[%s]' % (self._child_dataframe_id, self._child_column_id)
+            return '%s[%s]' % (self._child_dataframe_name, self._child_column_id)
 
     def to_dictionary(self):
         return {
             'parent_dataframe_id': self._parent_dataframe_name,
-            'child_dataframe_id': self._child_dataframe_id,
+            'child_dataframe_id': self._child_dataframe_name,
             'parent_column_id': self._parent_column_id,
             'child_column_id': self._child_column_id,
         }
@@ -105,7 +105,7 @@ class Relationship(object):
     def _is_unique(self):
         """Is there any other relationship with same parent and child entities?"""
         es = self.entityset
-        relationships = es.get_forward_relationships(self._child_dataframe_id)
+        relationships = es.get_forward_relationships(self._child_dataframe_name)
         n = len([r for r in relationships
                  if r._parent_dataframe_name == self._parent_dataframe_name])
 
@@ -130,7 +130,7 @@ class RelationshipPath(object):
             # Yield first dataframe.
             is_forward, relationship = self[0]
             if is_forward:
-                yield relationship._child_dataframe_id
+                yield relationship._child_dataframe_name
             else:
                 yield relationship._parent_dataframe_name
 
@@ -139,7 +139,7 @@ class RelationshipPath(object):
             if is_forward:
                 yield relationship._parent_dataframe_name
             else:
-                yield relationship._child_dataframe_id
+                yield relationship._child_dataframe_name
 
     def __add__(self, other):
         return RelationshipPath(self._relationships_with_direction +

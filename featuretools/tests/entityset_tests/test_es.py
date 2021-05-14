@@ -39,7 +39,7 @@ def test_cannot_re_add_relationships_that_already_exists(es):
         es.add_relationship(relationship=rel)
     with pytest.warns(UserWarning, match=warn_text):
         es.add_relationship(rel._parent_dataframe_name, rel._parent_column_id,
-                            rel._child_dataframe_id, rel._child_column_id)
+                            rel._child_dataframe_name, rel._child_column_id)
     after_len = len(es.relationships)
     assert before_len == after_len
 
