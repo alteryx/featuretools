@@ -330,7 +330,14 @@ class EntitySet(object):
         return self
 
     def set_secondary_time_index(self, dataframe_id, secondary_time_index):
-        '''Sets the secondary time index for a dataframe in the EntitySet using its dataframe id'''
+        """
+        Set the secondary time index for a dataframe in the EntitySet using its dataframe id.
+
+        Args:
+            dataframe_id (str) : id of the dataframe for which to set the secondary time index.
+            secondary_time_index (dict[str-> list[str]]): Name of column
+                containing time data to use a second time index for the dataframe.
+        """
         dataframe = self[dataframe_id]
         self._set_secondary_time_index(dataframe, secondary_time_index)
 
@@ -605,9 +612,7 @@ class EntitySet(object):
                 warnings.warn("A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: " + ", ".join(extra_params))
 
             # make sure name is set to match input dataframe_id
-            # --> bug with how we set name on woodwork schema/accessor
-            # dataframe.ww.schema.name = dataframe_id
-            dataframe.ww.name = dataframe_id
+            dataframe.ww._schema.name = dataframe_id
 
         if dataframe.ww.time_index is not None:
             self._check_uniform_time_index(dataframe)

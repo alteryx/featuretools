@@ -596,3 +596,23 @@ def test_normalize_dataframe_loses_column_metadata(es):
     assert es['log'].ww.columns['value'].description == 'a value column'
     assert es['values_2'].ww.columns['value'].description == 'a value column'
     assert es['values_2'].ww.columns['priority_level'].description == 'a priority level column'
+
+
+def test_normalize_ww_init():
+    es = EntitySet()
+    df = pd.DataFrame({'id': [1, 2, 3, 4], 'col': ['a', 'b', 'c', 'd'],
+                       'df2_id': [1, 1, 2, 2], 'df2_col': [True, False, True, True]})
+
+    df.ww.init(index='id')
+    es.add_dataframe(dataframe_id='test_name', dataframe=df)
+
+    assert es['test_name'].ww.name == 'test_name'
+    assert es['test_name'].ww.schema.name == 'test_name'
+
+    es.normalize_dataframe('test_name', 'new_df', 'df2_id', additional_columns=['df2_col'])
+
+    assert es['test_name'].ww.name == 'test_name'
+    assert es['test_name'].ww.schema.name == 'test_name'
+
+    assert es['new_df'].ww.name == 'new_df'
+    assert es['new_df'].ww.schema.name == 'new_df'

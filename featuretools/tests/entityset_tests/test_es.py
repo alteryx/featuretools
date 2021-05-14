@@ -88,7 +88,8 @@ def test_add_relationship_instantiated_logical_types(es):
     assert es['log2'].ww.logical_types['product_id'] == ltypes.Categorical()
     assert es['products'].ww.logical_types['id'] == ltypes.Categorical
 
-    warning_text = f'Logical type Categorical for child column product_id does not match parent column id logical type Categorical. Changing child logical type to match parent.'
+    warning_text = 'Logical type Categorical for child column product_id does not match parent '\
+        'column id logical type Categorical. Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
         es.add_relationship(u'products', 'id', 'log2', 'product_id')
     assert es['log2'].ww.logical_types['product_id'] == ltypes.Categorical
