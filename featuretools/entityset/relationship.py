@@ -21,7 +21,7 @@ class Relationship(object):
         self._parent_dataframe_name = parent_dataframe_id
         self._child_dataframe_name = child_dataframe_id
         self._parent_column_id = parent_column_id
-        self._child_column_id = child_column_id
+        self._child_column_name = child_column_id
 
         if (self.parent_dataframe.ww.index is not None and
                 self._parent_column_id != self.parent_dataframe.ww.index):
@@ -38,7 +38,7 @@ class Relationship(object):
 
     def __repr__(self):
         ret = u"<Relationship: %s.%s -> %s.%s>" % \
-            (self._child_dataframe_name, self._child_column_id,
+            (self._child_dataframe_name, self._child_column_name,
              self._parent_dataframe_name, self._parent_column_id)
 
         return ret
@@ -50,13 +50,13 @@ class Relationship(object):
         return self._parent_dataframe_name == other._parent_dataframe_name and \
             self._child_dataframe_name == other._child_dataframe_name and \
             self._parent_column_id == other._parent_column_id and \
-            self._child_column_id == other._child_column_id
+            self._child_column_name == other._child_column_name
 
     def __hash__(self):
         return hash((self._parent_dataframe_name,
                      self._child_dataframe_name,
                      self._parent_column_id,
-                     self._child_column_id))
+                     self._child_column_name))
 
     @property
     def parent_dataframe(self):
@@ -76,7 +76,7 @@ class Relationship(object):
     @property
     def child_column(self):
         """Column in child dataframe"""
-        return self.child_dataframe.ww[self._child_column_id]
+        return self.child_dataframe.ww[self._child_column_name]
 
     @property
     def parent_name(self):
@@ -84,7 +84,7 @@ class Relationship(object):
         if self._is_unique():
             return self._parent_dataframe_name
         else:
-            return '%s[%s]' % (self._parent_dataframe_name, self._child_column_id)
+            return '%s[%s]' % (self._parent_dataframe_name, self._child_column_name)
 
     @property
     def child_name(self):
@@ -92,14 +92,14 @@ class Relationship(object):
         if self._is_unique():
             return self._child_dataframe_name
         else:
-            return '%s[%s]' % (self._child_dataframe_name, self._child_column_id)
+            return '%s[%s]' % (self._child_dataframe_name, self._child_column_name)
 
     def to_dictionary(self):
         return {
             'parent_dataframe_id': self._parent_dataframe_name,
             'child_dataframe_id': self._child_dataframe_name,
             'parent_column_id': self._parent_column_id,
-            'child_column_id': self._child_column_id,
+            'child_column_id': self._child_column_name,
         }
 
     def _is_unique(self):

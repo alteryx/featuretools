@@ -238,7 +238,7 @@ class EntitySet(object):
 
         for r in self.relationships:
             repr_out += u"\n    %s.%s -> %s.%s" % \
-                (r._child_dataframe_name, r._child_column_id,
+                (r._child_dataframe_name, r._child_column_name,
                  r._parent_dataframe_name, r._parent_column_id)
 
         return repr_out
@@ -296,7 +296,7 @@ class EntitySet(object):
 
         # this is a new pair of dataframes
         child_df = relationship.child_dataframe
-        child_column = relationship._child_column_id
+        child_column = relationship._child_column_name
         if child_df.ww.index == child_column:
             msg = "Unable to add relationship because child column '{}' in '{}' is also its index"
             raise ValueError(msg.format(child_column, child_df.ww.name))
@@ -1145,11 +1145,11 @@ class EntitySet(object):
     #     # Draw relationships
     #     for rel in self.relationships:
     #         # Display the key only once if is the same for both related entities
-    #         if rel._parent_column_id == rel._child_column_id:
+    #         if rel._parent_column_id == rel._child_column_name:
     #             label = rel._parent_column_id
     #         else:
     #             label = '%s -> %s' % (rel._parent_column_id,
-    #                                   rel._child_column_id)
+    #                                   rel._child_column_name)
 
     #         graph.edge(rel._child_dataframe_name, rel._parent_column_id, xlabel=label)
 

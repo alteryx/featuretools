@@ -130,8 +130,8 @@ def test_find_forward_paths_multiple_relationships(games_es):
     assert r1._parent_dataframe_name == 'teams'
     assert r2._parent_dataframe_name == 'teams'
 
-    assert r1._child_column_id == 'home_team_id'
-    assert r2._child_column_id == 'away_team_id'
+    assert r1._child_column_name == 'home_team_id'
+    assert r2._child_column_name == 'away_team_id'
     assert r1._parent_column_id == 'id'
     assert r2._parent_column_id == 'id'
 
@@ -214,8 +214,8 @@ def test_find_backward_paths_multiple_relationships(games_es):
     assert r1._parent_dataframe_name == 'teams'
     assert r2._parent_dataframe_name == 'teams'
 
-    assert r1._child_column_id == 'home_team_id'
-    assert r2._child_column_id == 'away_team_id'
+    assert r1._child_column_name == 'home_team_id'
+    assert r2._child_column_name == 'away_team_id'
     assert r1._parent_column_id == 'id'
     assert r2._parent_column_id == 'id'
 
