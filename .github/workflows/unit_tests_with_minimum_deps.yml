@@ -33,10 +33,6 @@ jobs:
           sudo apt install -y gcc
           sudo apt install -y make
           sudo apt install -y graphviz
-      - name: Install numpy from source
-        continue-on-error: true
-        run: |
-          sudo apt install -y python-numpy=1:1.16.5-2ubuntu7
       - name: Install featuretools with no dependencies
         run: |
           python -m pip install -e . --no-dependencies
