@@ -1,4 +1,4 @@
-pip==20.0.2
+pip==21.1.1
 wheel==0.35.0
 setuptools==42.0.0
 packaging==20.4
