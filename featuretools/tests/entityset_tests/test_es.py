@@ -23,8 +23,8 @@ def test_normalize_time_index_as_additional_column(es):
     error_text = "Not moving signup_date as it is the base time index column. Perhaps, move the column to the copy_columns."
     with pytest.raises(ValueError, match=error_text):
         assert "signup_date" in es["customers"].columns
-        es.normalize_dataframe(base_dataframe_id='customers',
-                               new_dataframe_id='cancellations',
+        es.normalize_dataframe(base_dataframe_name='customers',
+                               new_dataframe_name='cancellations',
                                index='cancel_reason',
                                make_time_index='signup_date',
                                additional_columns=['signup_date'],
@@ -223,7 +223,7 @@ def test_add_relationship_error(es):
     relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
     error_message = "Cannot specify dataframe and column id values and also supply a Relationship"
     with pytest.raises(ValueError, match=error_message):
-        es.add_relationship(parent_dataframe_id="sessions", relationship=relationship)
+        es.add_relationship(parent_dataframe_name="sessions", relationship=relationship)
 
 # --> needs to wait until query_by_values is implemented
 # def test_query_by_values_returns_rows_in_given_order():
@@ -1139,8 +1139,8 @@ def test_normalize_dataframe(es):
 def test_normalize_dataframe_new_time_index_in_base_entity_error_check(es):
     error_text = "'make_time_index' must be a column in the base dataframe"
     with pytest.raises(ValueError, match=error_text):
-        es.normalize_dataframe(base_dataframe_id='customers',
-                               new_dataframe_id='cancellations',
+        es.normalize_dataframe(base_dataframe_name='customers',
+                               new_dataframe_name='cancellations',
                                index='cancel_reason',
                                make_time_index="non-existent")
 
@@ -1148,15 +1148,15 @@ def test_normalize_dataframe_new_time_index_in_base_entity_error_check(es):
 def test_normalize_entity_new_time_index_in_column_list_error_check(es):
     error_text = "'make_time_index' must be specified in 'additional_columns' or 'copy_columns'"
     with pytest.raises(ValueError, match=error_text):
-        es.normalize_dataframe(base_dataframe_id='customers',
-                               new_dataframe_id='cancellations',
+        es.normalize_dataframe(base_dataframe_name='customers',
+                               new_dataframe_name='cancellations',
                                index='cancel_reason',
                                make_time_index='cancel_date')
 
 
 def test_normalize_dataframe_new_time_index_copy_success_check(es):
-    es.normalize_dataframe(base_dataframe_id='customers',
-                           new_dataframe_id='cancellations',
+    es.normalize_dataframe(base_dataframe_name='customers',
+                           new_dataframe_name='cancellations',
                            index='cancel_reason',
                            make_time_index='cancel_date',
                            additional_columns=[],
@@ -1164,8 +1164,8 @@ def test_normalize_dataframe_new_time_index_copy_success_check(es):
 
 
 def test_normalize_dataframe_new_time_index_additional_success_check(es):
-    es.normalize_dataframe(base_dataframe_id='customers',
-                           new_dataframe_id='cancellations',
+    es.normalize_dataframe(base_dataframe_name='customers',
+                           new_dataframe_name='cancellations',
                            index='cancel_reason',
                            make_time_index='cancel_date',
                            additional_columns=['cancel_date'],
@@ -1216,8 +1216,8 @@ def normalize_es(request):
 def test_normalize_time_index_from_none(normalize_es):
     assert normalize_es['data'].ww.time_index is None
 
-    normalize_es.normalize_dataframe(base_dataframe_id='data',
-                                     new_dataframe_id='normalized',
+    normalize_es.normalize_dataframe(base_dataframe_name='data',
+                                     new_dataframe_name='normalized',
                                      index='A',
                                      make_time_index='time',
                                      copy_columns=['time'])
@@ -1284,8 +1284,8 @@ def test_make_time_index_keeps_original_sorting():
                      index="trip_id",
                      time_index='flight_time')
     assert (es['trips']['trip_id'] == order).all()
-    es.normalize_dataframe(base_dataframe_id="trips",
-                           new_dataframe_id="flights",
+    es.normalize_dataframe(base_dataframe_name="trips",
+                           new_dataframe_name="flights",
                            index="flight_id",
                            make_time_index=True)
     assert (es['trips']['trip_id'] == order).all()
@@ -1316,8 +1316,8 @@ def test_normalize_dataframe_same_index(es):
 
     error_text = "'index' must be different from the index column of the base dataframe"
     with pytest.raises(ValueError, match=error_text):
-        es.normalize_dataframe(base_dataframe_id="df",
-                               new_dataframe_id="new_dataframe",
+        es.normalize_dataframe(base_dataframe_name="df",
+                               new_dataframe_name="new_dataframe",
                                index="id",
                                make_time_index=True)
 
@@ -1465,8 +1465,8 @@ def test_same_index_values(index_df):
 
     error_text = "time_index and index cannot be the same value, first_entity_time"
     with pytest.raises(ValueError, match=error_text):
-        es.normalize_dataframe(base_dataframe_id="entity",
-                               new_dataframe_id="new_entity",
+        es.normalize_dataframe(base_dataframe_name="entity",
+                               new_dataframe_name="new_entity",
                                index="first_entity_time",
                                make_time_index=True)
 
@@ -1507,8 +1507,8 @@ def test_use_time_index(index_df):
 
 
 def test_normalize_with_datetime_time_index(es):
-    es.normalize_dataframe(base_dataframe_id="customers",
-                           new_dataframe_id="cancel_reason",
+    es.normalize_dataframe(base_dataframe_name="customers",
+                           new_dataframe_name="cancel_reason",
                            index="cancel_reason",
                            make_time_index=False,
                            copy_columns=['signup_date', 'upgrade_date'])
@@ -1518,8 +1518,8 @@ def test_normalize_with_datetime_time_index(es):
 
 
 def test_normalize_with_numeric_time_index(int_es):
-    int_es.normalize_dataframe(base_dataframe_id="customers",
-                               new_dataframe_id="cancel_reason",
+    int_es.normalize_dataframe(base_dataframe_name="customers",
+                               new_dataframe_name="cancel_reason",
                                index="cancel_reason",
                                make_time_index=False,
                                copy_columns=['signup_date', 'upgrade_date'])
@@ -1530,8 +1530,8 @@ def test_normalize_with_numeric_time_index(int_es):
 def test_normalize_with_invalid_time_index(es):
     error_text = 'Time index column must contain datetime or numeric values'
     with pytest.raises(TypeError, match=error_text):
-        es.normalize_dataframe(base_dataframe_id="customers",
-                               new_dataframe_id="cancel_reason",
+        es.normalize_dataframe(base_dataframe_name="customers",
+                               new_dataframe_name="cancel_reason",
                                index="cancel_reason",
                                copy_columns=['upgrade_date', 'favorite_quote'],
                                make_time_index='favorite_quote')
@@ -1588,7 +1588,7 @@ def test_add_interesting_values_specified_vals(es):
     assert es['log'].ww['countrycode'].ww.metadata['interesting_values'] == country_vals
 
 
-def test_add_interesting_values_vals_specified_without_dataframe_id(es):
+def test_add_interesting_values_vals_specified_without_dataframe_name(es):
     interesting_values = {
         'countrycode': ['AL', 'US'],
     }

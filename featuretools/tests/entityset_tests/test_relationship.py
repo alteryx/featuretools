@@ -63,9 +63,9 @@ def test_relationship_serialization(es):
     relationship = Relationship(es, 'sessions', 'id', 'log', 'session_id')
 
     dictionary = {
-        'parent_dataframe_id': 'sessions',
+        'parent_dataframe_name': 'sessions',
         'parent_column_id': 'id',
-        'child_dataframe_id': 'log',
+        'child_dataframe_name': 'log',
         'child_column_id': 'session_id',
     }
     assert relationship.to_dictionary() == dictionary

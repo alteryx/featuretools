@@ -5,21 +5,21 @@ class Relationship(object):
         :class:`.EntitySet`, :class:`.Entity`
     """
 
-    def __init__(self, entityset, parent_dataframe_id, parent_column_id,
-                 child_dataframe_id, child_column_id):
+    def __init__(self, entityset, parent_dataframe_name, parent_column_id,
+                 child_dataframe_name, child_column_id):
         """ Create a relationship
 
         Args:
             entityset (:class:`.EntitySet`): EntitySet to which the relationship belongs
-            parent_dataframe_id (str): Name of the parent dataframe in the EntitySet
+            parent_dataframe_name (str): Name of the parent dataframe in the EntitySet
             parent_column_id (str): Name of the parent column
-            child_dataframe_id (str): Name of the child dataframe in the EntitySet
+            child_dataframe_name (str): Name of the child dataframe in the EntitySet
             child_column_id (str): Name of the child column
         """
 
         self.entityset = entityset
-        self._parent_dataframe_name = parent_dataframe_id
-        self._child_dataframe_name = child_dataframe_id
+        self._parent_dataframe_name = parent_dataframe_name
+        self._child_dataframe_name = child_dataframe_name
         self._parent_column_name = parent_column_id
         self._child_column_name = child_column_id
 
@@ -30,8 +30,8 @@ class Relationship(object):
 
     @classmethod
     def from_dictionary(cls, arguments, es):
-        parent_dataframe = arguments['parent_dataframe_id']
-        child_dataframe = arguments['child_dataframe_id']
+        parent_dataframe = arguments['parent_dataframe_name']
+        child_dataframe = arguments['child_dataframe_name']
         parent_column = arguments['parent_column_id']
         child_column = arguments['child_column_id']
         return cls(es, parent_dataframe, parent_column, child_dataframe, child_column)
@@ -96,8 +96,8 @@ class Relationship(object):
 
     def to_dictionary(self):
         return {
-            'parent_dataframe_id': self._parent_dataframe_name,
-            'child_dataframe_id': self._child_dataframe_name,
+            'parent_dataframe_name': self._parent_dataframe_name,
+            'child_dataframe_name': self._child_dataframe_name,
             'parent_column_id': self._parent_column_name,
             'child_column_id': self._child_column_name,
         }

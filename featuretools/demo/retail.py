@@ -81,18 +81,18 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
                      time_index="order_date",
                      logical_types={'description': ww.logical_types.NaturalLanguage})
 
-    es.normalize_dataframe(new_dataframe_id="products",
-                           base_dataframe_id="order_products",
+    es.normalize_dataframe(new_dataframe_name="products",
+                           base_dataframe_name="order_products",
                            index="product_id",
                            additional_columns=["description"])
 
-    es.normalize_dataframe(new_dataframe_id="orders",
-                           base_dataframe_id="order_products",
+    es.normalize_dataframe(new_dataframe_name="orders",
+                           base_dataframe_name="order_products",
                            index="order_id",
                            additional_columns=["customer_name", "country", "cancelled"])
 
-    es.normalize_dataframe(new_dataframe_id="customers",
-                           base_dataframe_id="orders",
+    es.normalize_dataframe(new_dataframe_name="customers",
+                           base_dataframe_name="orders",
                            index="customer_name")
     es.add_last_time_indexes()
 

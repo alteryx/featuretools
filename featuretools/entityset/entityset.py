@@ -250,7 +250,7 @@ class EntitySet(object):
             relationships (list[tuple(str, str, str, str)] or list[Relationship]) : List of
                 new relationships to add. Relationships are specified either as a :class:`.Relationship`
                 object or a four element tuple identifying the parent and child columns:
-                (parent_dataframe_id, parent_column_id, child_dataframe_id, child_column_id)
+                (parent_dataframe_name, parent_column_id, child_dataframe_name, child_column_id)
         """
         for rel in relationships:
             if isinstance(rel, Relationship):
@@ -260,32 +260,32 @@ class EntitySet(object):
         return self
 
     def add_relationship(self,
-                         parent_dataframe_id=None,
+                         parent_dataframe_name=None,
                          parent_column_id=None,
-                         child_dataframe_id=None,
+                         child_dataframe_name=None,
                          child_column_id=None,
                          relationship=None):
         """Add a new relationship between dataframes in the entityset. Relationships can be specified
         by passing dataframe and columns ids or by passing a :class:`.Relationship` object.
 
         Args:
-            parent_dataframe_id (str): Name of the parent dataframe in the EntitySet. Must be specified
+            parent_dataframe_name (str): Name of the parent dataframe in the EntitySet. Must be specified
                 if relationship is not.
             parent_column_id (str): Name of the parent column. Must be specified if relationship is not.
-            child_dataframe_id (str): Name of the child dataframe in the EntitySet. Must be specified
+            child_dataframe_name (str): Name of the child dataframe in the EntitySet. Must be specified
                 if relationship is not.
             child_column_id (str): Name of the child column. Must be specified if relationship is not.
             relationship (Relationship): Instance of new relationship to be added. Must be specified
                 if dataframe and column ids are not supplied.
         """
-        if relationship and (parent_dataframe_id or parent_column_id or child_dataframe_id or child_column_id):
+        if relationship and (parent_dataframe_name or parent_column_id or child_dataframe_name or child_column_id):
             raise ValueError("Cannot specify dataframe and column id values and also supply a Relationship")
 
         if not relationship:
             relationship = Relationship(self,
-                                        parent_dataframe_id,
+                                        parent_dataframe_name,
                                         parent_column_id,
-                                        child_dataframe_id,
+                                        child_dataframe_name,
                                         child_column_id)
         if relationship in self.relationships:
             warnings.warn(
@@ -354,39 +354,39 @@ class EntitySet(object):
     #   Relationship access/helper methods  ###################################
     ###########################################################################
 
-    def find_forward_paths(self, start_dataframe_id, goal_dataframe_id):
+    def find_forward_paths(self, start_dataframe_name, goal_dataframe_name):
         """
         Generator which yields all forward paths between a start and goal
         dataframe. Does not include paths which contain cycles.
 
         Args:
-            start_dataframe_id (str) : id of dataframe to start the search from
-            goal_dataframe_id  (str) : if of dataframe to find forward path to
+            start_dataframe_name (str) : name of dataframe to start the search from
+            goal_dataframe_name  (str) : name of dataframe to find forward path to
 
         See Also:
             :func:`BaseEntitySet.find_backward_paths`
         """
-        for sub_dataframe_id, path in self._forward_dataframe_paths(start_dataframe_id):
-            if sub_dataframe_id == goal_dataframe_id:
+        for sub_dataframe_name, path in self._forward_dataframe_paths(start_dataframe_name):
+            if sub_dataframe_name == goal_dataframe_name:
                 yield path
 
-    def find_backward_paths(self, start_dataframe_id, goal_dataframe_id):
+    def find_backward_paths(self, start_dataframe_name, goal_dataframe_name):
         """
         Generator which yields all backward paths between a start and goal
         dataframe. Does not include paths which contain cycles.
 
         Args:
-            start_dataframe_id (str) : Id of dataframe to start the search from.
-            goal_dataframe_id  (str) : Id of dataframe to find backward path to.
+            start_dataframe_name (str) : Name of dataframe to start the search from.
+            goal_dataframe_name  (str) : Name of dataframe to find backward path to.
 
         See Also:
             :func:`BaseEntitySet.find_forward_paths`
         """
-        for path in self.find_forward_paths(goal_dataframe_id, start_dataframe_id):
+        for path in self.find_forward_paths(goal_dataframe_name, start_dataframe_name):
             # Reverse path
             yield path[::-1]
 
-    def _forward_dataframe_paths(self, start_dataframe_id, seen_dataframes=None):
+    def _forward_dataframe_paths(self, start_dataframe_name, seen_dataframes=None):
         """
         Generator which yields the ids of all dataframes connected through forward
         relationships, and the path taken to each. A dataframe will be yielded
@@ -397,20 +397,20 @@ class EntitySet(object):
         if seen_dataframes is None:
             seen_dataframes = set()
 
-        if start_dataframe_id in seen_dataframes:
+        if start_dataframe_name in seen_dataframes:
             return
 
-        seen_dataframes.add(start_dataframe_id)
+        seen_dataframes.add(start_dataframe_name)
 
-        yield start_dataframe_id, []
+        yield start_dataframe_name, []
 
-        for relationship in self.get_forward_relationships(start_dataframe_id):
+        for relationship in self.get_forward_relationships(start_dataframe_name):
             next_dataframe = relationship._parent_dataframe_name
             # Copy seen dataframes for each next node to allow multiple paths (but
             # not cycles).
             descendants = self._forward_dataframe_paths(next_dataframe, seen_dataframes.copy())
-            for sub_dataframe_id, sub_path in descendants:
-                yield sub_dataframe_id, [relationship] + sub_path
+            for sub_dataframe_name, sub_path in descendants:
+                yield sub_dataframe_name, [relationship] + sub_path
 
     def get_forward_dataframes(self, dataframe_name, deep=False):
         """
@@ -423,14 +423,14 @@ class EntitySet(object):
         Yields a tuple of (descendent_name, path from dataframe_name to descendant).
         """
         for relationship in self.get_forward_relationships(dataframe_name):
-            parent_dataframe_id = relationship._parent_dataframe_name
+            parent_dataframe_name = relationship._parent_dataframe_name
             direct_path = RelationshipPath([(True, relationship)])
-            yield parent_dataframe_id, direct_path
+            yield parent_dataframe_name, direct_path
 
             if deep:
-                sub_dataframes = self.get_forward_dataframes(parent_dataframe_id, deep=True)
-                for sub_dataframe_id, path in sub_dataframes:
-                    yield sub_dataframe_id, direct_path + path
+                sub_dataframes = self.get_forward_dataframes(parent_dataframe_name, deep=True)
+                for sub_dataframe_name, path in sub_dataframes:
+                    yield sub_dataframe_name, direct_path + path
 
     def get_backward_dataframes(self, dataframe_name, deep=False):
         """
@@ -443,14 +443,14 @@ class EntitySet(object):
         Yields a tuple of (descendent_name, path from dataframe_name to descendant).
         """
         for relationship in self.get_backward_relationships(dataframe_name):
-            child_dataframe_id = relationship._child_dataframe_name
+            child_dataframe_name = relationship._child_dataframe_name
             direct_path = RelationshipPath([(False, relationship)])
-            yield child_dataframe_id, direct_path
+            yield child_dataframe_name, direct_path
 
             if deep:
-                sub_dataframes = self.get_backward_dataframes(child_dataframe_id, deep=True)
-                for sub_dataframe_id, path in sub_dataframes:
-                    yield sub_dataframe_id, direct_path + path
+                sub_dataframes = self.get_backward_dataframes(child_dataframe_name, deep=True)
+                for sub_dataframe_name, path in sub_dataframes:
+                    yield sub_dataframe_name, direct_path + path
 
     def get_forward_relationships(self, dataframe_name):
         """Get relationships where dataframe "dataframe_name" is the child
@@ -475,13 +475,13 @@ class EntitySet(object):
         """
         return [r for r in self.relationships if r._parent_dataframe_name == dataframe_name]
 
-    def has_unique_forward_path(self, start_dataframe_id, end_dataframe_id):
+    def has_unique_forward_path(self, start_dataframe_name, end_dataframe_name):
         """
         Is the forward path from start to end unique?
 
         This will raise if there is no such path.
         """
-        paths = self.find_forward_paths(start_dataframe_id, end_dataframe_id)
+        paths = self.find_forward_paths(start_dataframe_name, end_dataframe_name)
 
         next(paths)
         second_path = next(paths, None)
@@ -625,7 +625,7 @@ class EntitySet(object):
         self.reset_data_description()
         return self
 
-    def normalize_dataframe(self, base_dataframe_id, new_dataframe_id, index,
+    def normalize_dataframe(self, base_dataframe_name, new_dataframe_name, index,
                             additional_columns=None, copy_columns=None,
                             make_time_index=None,
                             make_secondary_time_index=None,
@@ -634,9 +634,9 @@ class EntitySet(object):
         """Create a new dataframe and relationship from unique values of an existing column.
 
         Args:
-            base_dataframe_id (str) : Datarame id from which to split.
+            base_dataframe_name (str) : Datarame name from which to split.
 
-            new_dataframe_id (str): Id of the new dataframe.
+            new_dataframe_name (str): Name of the new dataframe.
 
             index (str): Column in old dataframe
                 that will become index of new dataframe. Relationship
@@ -665,7 +665,7 @@ class EntitySet(object):
             new_dataframe_secondary_time_index (str, optional): Rename new dataframe secondary time index.
 
         """
-        base_dataframe = self.dataframe_dict[base_dataframe_id]
+        base_dataframe = self.dataframe_dict[base_dataframe_name]
         additional_columns = additional_columns or []
         copy_columns = copy_columns or []
 
@@ -713,7 +713,7 @@ class EntitySet(object):
                                         base_dataframe.ww.columns[col_name].description)
 
         # create and add new dataframe
-        new_dataframe = self[base_dataframe_id].copy()
+        new_dataframe = self[base_dataframe_name].copy()
 
         if make_time_index is None and base_dataframe.ww.time_index is not None:
             make_time_index = True
@@ -801,7 +801,7 @@ class EntitySet(object):
             column_metadata[col_name] = copy.deepcopy(metadata)
             column_descriptions[col_name] = description
 
-        new_dataframe.ww.init(name=new_dataframe_id, index=index,
+        new_dataframe.ww.init(name=new_dataframe_name, index=index,
                               already_sorted=already_sorted,
                               time_index=new_dataframe_time_index,
                               logical_types=logical_types,
@@ -811,16 +811,16 @@ class EntitySet(object):
                               )
 
         self.add_dataframe(
-            new_dataframe_id,
+            new_dataframe_name,
             new_dataframe,
             secondary_time_index=make_secondary_time_index
         )
 
-        self.dataframe_dict[base_dataframe_id] = self.dataframe_dict[base_dataframe_id].ww.drop(additional_columns)
+        self.dataframe_dict[base_dataframe_name] = self.dataframe_dict[base_dataframe_name].ww.drop(additional_columns)
 
-        self.dataframe_dict[base_dataframe_id].ww.add_semantic_tags({base_dataframe_index: 'foreign_key'})
+        self.dataframe_dict[base_dataframe_name].ww.add_semantic_tags({base_dataframe_index: 'foreign_key'})
 
-        self.add_relationship(new_dataframe_id, index, base_dataframe_id, base_dataframe_index)
+        self.add_relationship(new_dataframe_name, index, base_dataframe_name, base_dataframe_index)
         self.reset_data_description()
         return self
 
