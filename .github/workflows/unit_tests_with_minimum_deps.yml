@@ -34,8 +34,12 @@ jobs:
           sudo apt install -y make
           sudo apt install -y graphviz
       - name: Install numpy from source
+        continue-on-error: true
         run: |
-          sudo apt-cache madison f-spot
+          sudo apt-cache madison python-numpy
+          echo sudo apt-cache madison python-numpy
+          apt apt list -a python-numpy
+          echo apt apt list -a python-numpy
           sudo apt install -y python-numpy=1.16.5-2ubuntu7
       - name: Install featuretools with no dependencies
         run: |
