@@ -30,8 +30,6 @@ jobs:
           python -m pip install "$(cat featuretools/tests/requirement_files/minimum_test_requirements.txt | grep setuptools)"
           python -m pip install "$(cat featuretools/tests/requirement_files/minimum_test_requirements.txt | grep packaging)"
           sudo apt update
-          sudo apt install -y gcc
-          sudo apt install -y make
           sudo apt install -y graphviz
       - name: Install featuretools with no dependencies
         run: |
