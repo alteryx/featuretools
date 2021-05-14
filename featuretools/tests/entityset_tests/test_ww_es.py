@@ -311,7 +311,7 @@ def test_extra_woodwork_params(es):
     warning_msg = ('A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: '
                    'index, make_index, time_index, logical_types, semantic_tags, already_sorted')
     with pytest.warns(UserWarning, match=warning_msg):
-        new_es.add_dataframe(dataframe_id='sessions', dataframe=sessions_df,
+        new_es.add_dataframe(dataframe_name='sessions', dataframe=sessions_df,
                              index='filepath', time_index='customer_id',
                              logical_types={'id': Categorical}, make_index=True,
                              already_sorted=True, semantic_tags={'id': 'new_tag'})
@@ -330,11 +330,11 @@ def test_update_dataframe_errors(es):
 
     error_text = 'Updated dataframe is missing new cohort column'
     with pytest.raises(ValueError, match=error_text):
-        es.update_dataframe(dataframe_id='customers', df=df.drop(columns=['cohort']))
+        es.update_dataframe(dataframe_name='customers', df=df.drop(columns=['cohort']))
 
     error_text = 'Updated dataframe contains 16 columns, expecting 15'
     with pytest.raises(ValueError, match=error_text):
-        es.update_dataframe(dataframe_id='customers', df=df)
+        es.update_dataframe(dataframe_name='customers', df=df)
 
 
 def test_update_dataframe_already_sorted(es):
@@ -355,10 +355,10 @@ def test_update_dataframe_already_sorted(es):
     elif dd and isinstance(df, dd.DataFrame):
         df["id"] = updated_id
 
-    es.update_dataframe(dataframe_id='sessions', df=df.copy(), already_sorted=False)
+    es.update_dataframe(dataframe_name='sessions', df=df.copy(), already_sorted=False)
     sessions_df = to_pandas(es['sessions'])
     assert sessions_df["id"].iloc[1] == 2  # no sorting since time index not defined
-    es.update_dataframe(dataframe_id='sessions', df=df.copy(), already_sorted=True)
+    es.update_dataframe(dataframe_name='sessions', df=df.copy(), already_sorted=True)
     sessions_df = to_pandas(es['sessions'])
     assert sessions_df["id"].iloc[1] == 2
 
@@ -375,12 +375,12 @@ def test_update_dataframe_already_sorted(es):
     else:
         df['signup_date'] = updated_signup
 
-    es.update_dataframe(dataframe_id='customers', df=df.copy(), already_sorted=True)
+    es.update_dataframe(dataframe_name='customers', df=df.copy(), already_sorted=True)
     customers_df = to_pandas(es['customers'])
     assert customers_df["id"].iloc[0] == 2
 
     # only pandas allows for sorting:
-    es.update_dataframe(dataframe_id='customers', df=df.copy(), already_sorted=False)
+    es.update_dataframe(dataframe_name='customers', df=df.copy(), already_sorted=False)
     updated_customers = to_pandas(es['customers'])
     if isinstance(df, pd.DataFrame):
         assert updated_customers["id"].iloc[0] == 0
@@ -396,14 +396,14 @@ def test_update_dataframe_invalid_schema(es):
 
     error_text = 'Woodwork typing information is not valid for this DataFrame: Index mismatch between DataFrame and typing information'
     with pytest.raises(ValueError, match=error_text):
-        es.update_dataframe(dataframe_id='customers', df=df)
+        es.update_dataframe(dataframe_name='customers', df=df)
 
 
 def test_update_dataframe_different_dtypes(es):
     float_dtype_df = es['customers'].copy()
     float_dtype_df = float_dtype_df.astype({'age': 'float64'})
 
-    es.update_dataframe(dataframe_id='customers', df=float_dtype_df)
+    es.update_dataframe(dataframe_name='customers', df=float_dtype_df)
 
     assert es['customers']['age'].dtype == 'int64'
     assert es['customers'].ww.logical_types['age'] == Integer
@@ -419,7 +419,7 @@ def test_update_dataframe_different_dtypes(es):
         # Dask and Koalas do not error on invalid type conversion until compute
         error_msg = 'Error converting datatype for age from type object to type int64. Please confirm the underlying data is consistent with logical type Integer.'
         with pytest.raises(ww.exceptions.TypeConversionError, match=error_msg):
-            es.update_dataframe(dataframe_id='customers', df=incompatible_dtype_df)
+            es.update_dataframe(dataframe_name='customers', df=incompatible_dtype_df)
 
 
 @pytest.fixture()
@@ -457,7 +457,7 @@ def test_update_dataframe_data_transformation(latlong_df):
     initial_df = latlong_df.copy()
     initial_df.ww.init(index='string_tuple', logical_types={col_name: 'LatLong' for col_name in initial_df.columns})
     es = EntitySet()
-    es.add_dataframe(dataframe_id='latlongs', dataframe=initial_df)
+    es.add_dataframe(dataframe_name='latlongs', dataframe=initial_df)
 
     df = to_pandas(es['latlongs'])
     expected_val = (1, 2)
@@ -487,7 +487,7 @@ def test_update_dataframe_column_order(es):
     assert not df.columns.equals(original_column_order)
     assert set(df.columns) == set(original_column_order)
 
-    es.update_dataframe(dataframe_id='customers', df=df)
+    es.update_dataframe(dataframe_name='customers', df=df)
 
     assert es['customers'].columns.equals(original_column_order)
 
@@ -546,7 +546,7 @@ def test_update_dataframe_different_dataframe_types():
     }
     sessions_semantic_tags = {'user': 'foreign_key'}
 
-    dask_es.add_dataframe(dataframe_id="sessions", dataframe=sessions_dask, index="id", time_index="time",
+    dask_es.add_dataframe(dataframe_name="sessions", dataframe=sessions_dask, index="id", time_index="time",
                           logical_types=sessions_logical_types, semantic_tags=sessions_semantic_tags)
 
     with pytest.raises(TypeError, match='Incorrect DataFrame type used'):
@@ -604,7 +604,7 @@ def test_normalize_ww_init():
                        'df2_id': [1, 1, 2, 2], 'df2_col': [True, False, True, True]})
 
     df.ww.init(index='id')
-    es.add_dataframe(dataframe_id='test_name', dataframe=df)
+    es.add_dataframe(dataframe_name='test_name', dataframe=df)
 
     assert es['test_name'].ww.name == 'test_name'
     assert es['test_name'].ww.schema.name == 'test_name'

@@ -129,7 +129,7 @@ class TestLastTimeIndex(object):
         df = df[['value', 'value_time']].sort_values(by='value')
         df.index.name = None
 
-        values_es.update_dataframe(dataframe_id='values', df=df)
+        values_es.update_dataframe(dataframe_name='values', df=df)
         values_es.add_last_time_indexes()
         # lti value should default to instance's time index
         true_values_lti[10] = pd.Timestamp("2011-04-10 11:10:02")
@@ -155,7 +155,7 @@ class TestLastTimeIndex(object):
         # test dataframe without time index and not all instance have children
 
         # add session instance with no associated log instances
-        es.update_dataframe(dataframe_id='sessions', df=extra_session_df)
+        es.update_dataframe(dataframe_name='sessions', df=extra_session_df)
         es.add_last_time_indexes()
         # since sessions has no time index, default value is NaT
         true_sessions_lti[6] = pd.NaT
@@ -176,7 +176,7 @@ class TestLastTimeIndex(object):
         logical_types = {'session_id': ltypes.Integer,
                          'datetime': ltypes.Datetime,
                          'product_id': ltypes.Categorical}
-        es.add_dataframe(dataframe_id="wishlist_log",
+        es.add_dataframe(dataframe_name="wishlist_log",
                          dataframe=wishlist_df,
                          index='id',
                          make_index=True,
@@ -208,7 +208,7 @@ class TestLastTimeIndex(object):
         logical_types = {'session_id': ltypes.Integer,
                          'datetime': ltypes.Datetime,
                          'product_id': ltypes.Categorical}
-        es.add_dataframe(dataframe_id="wishlist_log",
+        es.add_dataframe(dataframe_name="wishlist_log",
                          dataframe=wishlist_df,
                          index='id',
                          make_index=True,
@@ -231,7 +231,7 @@ class TestLastTimeIndex(object):
             pytest.xfail('Cannot make index on a Koalas DataFrame')
 
         # add row to sessions so not all session instances are in log
-        es.update_dataframe(dataframe_id='sessions', df=extra_session_df)
+        es.update_dataframe(dataframe_name='sessions', df=extra_session_df)
 
         # add row to wishlist df so new session instance in in wishlist_log
         row_values = {'session_id': 6,
@@ -244,7 +244,7 @@ class TestLastTimeIndex(object):
         logical_types = {'session_id': ltypes.Integer,
                          'datetime': ltypes.Datetime,
                          'product_id': ltypes.Categorical}
-        es.add_dataframe(dataframe_id="wishlist_log",
+        es.add_dataframe(dataframe_name="wishlist_log",
                          dataframe=df,
                          index='id',
                          make_index=True,
@@ -272,7 +272,7 @@ class TestLastTimeIndex(object):
             pytest.xfail('Cannot make index on a Koalas DataFrame')
 
         # add row to sessions so not all session instances are in log
-        es.update_dataframe(dataframe_id='sessions', df=extra_session_df)
+        es.update_dataframe(dataframe_name='sessions', df=extra_session_df)
 
         # add row to wishlist_log so extra session has child instance
         row_values = {'session_id': 6,
@@ -288,7 +288,7 @@ class TestLastTimeIndex(object):
         logical_types = {'session_id': ltypes.Integer,
                          'datetime': ltypes.Datetime,
                          'product_id': ltypes.Categorical}
-        es.add_dataframe(dataframe_id="wishlist_log",
+        es.add_dataframe(dataframe_name="wishlist_log",
                          dataframe=df,
                          index='id',
                          make_index=True,
@@ -323,9 +323,9 @@ class TestLastTimeIndex(object):
                          'datetime': ltypes.Datetime,
                          'product_id': ltypes.Categorical}
         # add row to sessions to create session with no events
-        es.update_dataframe(dataframe_id='sessions', df=extra_session_df)
+        es.update_dataframe(dataframe_name='sessions', df=extra_session_df)
 
-        es.add_dataframe(dataframe_id="wishlist_log",
+        es.add_dataframe(dataframe_name="wishlist_log",
                          dataframe=wishlist_df,
                          index='id',
                          make_index=True,
@@ -362,7 +362,7 @@ class TestLastTimeIndex(object):
             df = dd.from_pandas(df, npartitions=2)
         if ks and isinstance(log, ks.DataFrame):
             df = ks.from_pandas(df)
-        es.update_dataframe(dataframe_id='log', df=df)
+        es.update_dataframe(dataframe_name='log', df=df)
         es.add_last_time_indexes()
 
         true_customers_lti = pd.Series([datetime(2011, 4, 9, 10, 40, 1),

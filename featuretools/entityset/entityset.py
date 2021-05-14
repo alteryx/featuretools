@@ -98,7 +98,7 @@ class EntitySet(object):
                 semantic_tags = dataframes[df_name][4]
             if len(dataframes[df_name]) > 5:
                 make_index = dataframes[df_name][5]
-            self.add_dataframe(dataframe_id=df_name,
+            self.add_dataframe(dataframe_name=df_name,
                                dataframe=df,
                                index=index_column,
                                time_index=time_index,
@@ -136,20 +136,20 @@ class EntitySet(object):
     def __ne__(self, other, deep=False):
         return not self.__eq__(other, deep=deep)
 
-    def __getitem__(self, dataframe_id):
+    def __getitem__(self, dataframe_name):
         """Get dataframe instance from entityset
 
         Args:
-            dataframe_id (str): Id of dataframe.
+            dataframe_name (str): Name of dataframe.
 
         Returns:
             :class:`.DataFrame` : Instance of dataframe with Woodwork typing information. None if dataframe doesn't
                 exist on the entityset.
         """
-        if dataframe_id in self.dataframe_dict:
-            return self.dataframe_dict[dataframe_id]
+        if dataframe_name in self.dataframe_dict:
+            return self.dataframe_dict[dataframe_name]
         name = self.id or "entity set"
-        raise KeyError('DataFrame %s does not exist in %s' % (dataframe_id, name))
+        raise KeyError('DataFrame %s does not exist in %s' % (dataframe_name, name))
 
     @property
     def dataframes(self):
@@ -329,16 +329,16 @@ class EntitySet(object):
         self.reset_data_description()
         return self
 
-    def set_secondary_time_index(self, dataframe_id, secondary_time_index):
+    def set_secondary_time_index(self, dataframe_name, secondary_time_index):
         """
         Set the secondary time index for a dataframe in the EntitySet using its dataframe id.
 
         Args:
-            dataframe_id (str) : id of the dataframe for which to set the secondary time index.
+            dataframe_name (str) : name of the dataframe for which to set the secondary time index.
             secondary_time_index (dict[str-> list[str]]): Name of column
                 containing time data to use a second time index for the dataframe.
         """
-        dataframe = self[dataframe_id]
+        dataframe = self[dataframe_name]
         self._set_secondary_time_index(dataframe, secondary_time_index)
 
     def _set_secondary_time_index(self, dataframe, secondary_time_index):
@@ -412,17 +412,17 @@ class EntitySet(object):
             for sub_dataframe_id, sub_path in descendants:
                 yield sub_dataframe_id, [relationship] + sub_path
 
-    def get_forward_dataframes(self, dataframe_id, deep=False):
+    def get_forward_dataframes(self, dataframe_name, deep=False):
         """
         Get dataframes that are in a forward relationship with dataframe
 
         Args:
-            dataframe_id (str): Id dataframe of dataframe to search from.
+            dataframe_name (str): Name dataframe of dataframe to search from.
             deep (bool): if True, recursively find forward dataframes.
 
-        Yields a tuple of (descendent_id, path from dataframe_id to descendant).
+        Yields a tuple of (descendent_name, path from dataframe_name to descendant).
         """
-        for relationship in self.get_forward_relationships(dataframe_id):
+        for relationship in self.get_forward_relationships(dataframe_name):
             parent_dataframe_id = relationship._parent_dataframe_name
             direct_path = RelationshipPath([(True, relationship)])
             yield parent_dataframe_id, direct_path
@@ -432,17 +432,17 @@ class EntitySet(object):
                 for sub_dataframe_id, path in sub_dataframes:
                     yield sub_dataframe_id, direct_path + path
 
-    def get_backward_dataframes(self, dataframe_id, deep=False):
+    def get_backward_dataframes(self, dataframe_name, deep=False):
         """
         Get dataframes that are in a backward relationship with dataframe
 
         Args:
-            dataframe_id (str): Id dataframe of dataframe to search from.
+            dataframe_name (str): Name dataframe of dataframe to search from.
             deep (bool): if True, recursively find backward dataframes.
 
-        Yields a tuple of (descendent_id, path from dataframe_id to descendant).
+        Yields a tuple of (descendent_name, path from dataframe_name to descendant).
         """
-        for relationship in self.get_backward_relationships(dataframe_id):
+        for relationship in self.get_backward_relationships(dataframe_name):
             child_dataframe_id = relationship._child_dataframe_name
             direct_path = RelationshipPath([(False, relationship)])
             yield child_dataframe_id, direct_path
@@ -452,28 +452,28 @@ class EntitySet(object):
                 for sub_dataframe_id, path in sub_dataframes:
                     yield sub_dataframe_id, direct_path + path
 
-    def get_forward_relationships(self, dataframe_id):
-        """Get relationships where dataframe "dataframe_id" is the child
+    def get_forward_relationships(self, dataframe_name):
+        """Get relationships where dataframe "dataframe_name" is the child
 
         Args:
-            dataframe_id (str): Id of dataframe to get relationships for.
+            dataframe_name (str): Name of dataframe to get relationships for.
 
         Returns:
             list[:class:`.Relationship`]: List of forward relationships.
         """
-        return [r for r in self.relationships if r._child_dataframe_name == dataframe_id]
+        return [r for r in self.relationships if r._child_dataframe_name == dataframe_name]
 
-    def get_backward_relationships(self, dataframe_id):
+    def get_backward_relationships(self, dataframe_name):
         """
-        get relationships where dataframe "dataframe_id" is the parent.
+        get relationships where dataframe "dataframe_name" is the parent.
 
         Args:
-            dataframe_id (str): Id of dataframe to get relationships for.
+            dataframe_name (str): Name of dataframe to get relationships for.
 
         Returns:
             list[:class:`.Relationship`]: list of backward relationships
         """
-        return [r for r in self.relationships if r._parent_dataframe_name == dataframe_id]
+        return [r for r in self.relationships if r._parent_dataframe_name == dataframe_name]
 
     def has_unique_forward_path(self, start_dataframe_id, end_dataframe_id):
         """
@@ -493,7 +493,7 @@ class EntitySet(object):
     ###########################################################################
 
     def add_dataframe(self,
-                      dataframe_id,
+                      dataframe_name,
                       dataframe,
                       index=None,
                       logical_types=None,
@@ -506,7 +506,7 @@ class EntitySet(object):
         Add a DataFrame to the EntitySet with Woodwork typing information.
 
         Args:
-            dataframe_id (str) : Unique id to associate with this dataframe.
+            dataframe_name (str) : Unique name to associate with this dataframe.
 
             dataframe (pandas.DataFrame) : Dataframe containing the data.
 
@@ -578,7 +578,7 @@ class EntitySet(object):
                 warnings.warn('Performing type inference on Dask or Koalas DataFrames may be computationally intensive. '
                               'Specify logical types for each column to speed up EntitySet initialization.')
 
-            dataframe.ww.init(name=dataframe_id,
+            dataframe.ww.init(name=dataframe_name,
                               index=index,
                               time_index=time_index,
                               logical_types=logical_types,
@@ -611,8 +611,8 @@ class EntitySet(object):
             if extra_params:
                 warnings.warn("A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: " + ", ".join(extra_params))
 
-            # make sure name is set to match input dataframe_id
-            dataframe.ww._schema.name = dataframe_id
+            # make sure name is set to match input dataframe_name
+            dataframe.ww._schema.name = dataframe_name
 
         if dataframe.ww.time_index is not None:
             self._check_uniform_time_index(dataframe)
@@ -621,7 +621,7 @@ class EntitySet(object):
         if secondary_time_index:
             self._set_secondary_time_index(dataframe, secondary_time_index=secondary_time_index)
 
-        self.dataframe_dict[dataframe_id] = dataframe
+        self.dataframe_dict[dataframe_name] = dataframe
         self.reset_data_description()
         return self
 
@@ -1035,16 +1035,16 @@ class EntitySet(object):
     # #  Other ###############################################
     # ###########################################################################
 
-    def add_interesting_values(self, max_values=5, verbose=False, dataframe_id=None, values=None):
+    def add_interesting_values(self, max_values=5, verbose=False, dataframe_name=None, values=None):
         """Find or set interesting values for categorical columns, to be used to generate "where" clauses
 
         Args:
             max_values (int) : Maximum number of values per column to add.
             verbose (bool) : If True, print summary of interesting values found.
-            dataframe_id (str) : The dataframe in the EntitySet for which to add interesting values.
+            dataframe_name (str) : The dataframe in the EntitySet for which to add interesting values.
                 If not specified interesting values will be added for all dataframes.
             values (dict): A dictionary mapping column names to the interesting values to set
-                for the column. If specified, a corresponding dataframe_id must also be provided.
+                for the column. If specified, a corresponding dataframe_name must also be provided.
                 If not specified, interesting values will be set for all eligible columns. If values
                 are specified, max_values and verbose parameters will be ignored.
 
@@ -1058,16 +1058,16 @@ class EntitySet(object):
             None
 
         """
-        if dataframe_id is None and values is not None:
-            raise ValueError("dataframe_id must be specified if values are provided")
+        if dataframe_name is None and values is not None:
+            raise ValueError("dataframe_name must be specified if values are provided")
 
-        if dataframe_id is not None and values is not None:
+        if dataframe_name is not None and values is not None:
             for column, vals in values.items():
-                self[dataframe_id].ww.columns[column].metadata['interesting_values'] = vals
+                self[dataframe_name].ww.columns[column].metadata['interesting_values'] = vals
             return
 
-        if dataframe_id:
-            dataframes = [self[dataframe_id]]
+        if dataframe_name:
+            dataframes = [self[dataframe_name]]
         else:
             dataframes = self.dataframes
         for df in dataframes:
@@ -1276,15 +1276,15 @@ class EntitySet(object):
 
     #     return df
 
-    def update_dataframe(self, dataframe_id, df, already_sorted=False, recalculate_last_time_indexes=True):
+    def update_dataframe(self, dataframe_name, df, already_sorted=False, recalculate_last_time_indexes=True):
         '''Update the internal dataframe of an EntitySet table, keeping Woodwork typing information the same.
         Optionally makes sure that data is sorted, that reference indexes to other dataframes are consistent,
         and that last_time_indexes are updated to reflect the new data.
         '''
-        if not isinstance(df, type(self[dataframe_id])):
+        if not isinstance(df, type(self[dataframe_name])):
             raise TypeError('Incorrect DataFrame type used')
 
-        old_column_names = list(self[dataframe_id].columns)
+        old_column_names = list(self[dataframe_name].columns)
         if len(df.columns) != len(old_column_names):
             raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(df.columns),
                                                                                           len(old_column_names)))
@@ -1294,32 +1294,32 @@ class EntitySet(object):
 
         if df.ww.schema is not None:
             warnings.warn('Woodwork typing information on new dataframe will be replaced '
-                          f'with existing typing information from {dataframe_id}')
+                          f'with existing typing information from {dataframe_name}')
         # Update the dtypes to match the original dataframe's and transform data if necessary
         for col_name in df.columns:
             series = df[col_name]
-            updated_series = ww.accessor_utils._update_column_dtype(series, self[dataframe_id].ww.logical_types[col_name])
+            updated_series = ww.accessor_utils._update_column_dtype(series, self[dataframe_name].ww.logical_types[col_name])
             if updated_series is not series:
                 df[col_name] = updated_series
 
         # --> WW bug: if metadata has a series in it, cannot deepcopy
-        df.ww.init(schema=self[dataframe_id].ww._schema)
+        df.ww.init(schema=self[dataframe_name].ww._schema)
         # Make sure column ordering matches original ordering
         df = df.ww[old_column_names]
 
-        self.dataframe_dict[dataframe_id] = df
+        self.dataframe_dict[dataframe_name] = df
 
         # Sort the dataframe through Woodwork
-        if self.dataframe_dict[dataframe_id].ww.time_index is not None:
-            self.dataframe_dict[dataframe_id].ww._sort_columns(already_sorted)
+        if self.dataframe_dict[dataframe_name].ww.time_index is not None:
+            self.dataframe_dict[dataframe_name].ww._sort_columns(already_sorted)
 
-        if self[dataframe_id].ww.time_index is not None:
-            self._check_uniform_time_index(self[dataframe_id])
+        if self[dataframe_name].ww.time_index is not None:
+            self._check_uniform_time_index(self[dataframe_name])
 
-        df_metadata = self[dataframe_id].ww.metadata
-        self.set_secondary_time_index(dataframe_id, df_metadata.get('secondary_time_index'))
+        df_metadata = self[dataframe_name].ww.metadata
+        self.set_secondary_time_index(dataframe_name, df_metadata.get('secondary_time_index'))
         if recalculate_last_time_indexes and df_metadata.get('last_time_index') is not None:
-            self.add_last_time_indexes(updated_dataframes=[self[dataframe_id].ww.name])
+            self.add_last_time_indexes(updated_dataframes=[self[dataframe_name].ww.name])
         self.reset_data_description()
 
     def _check_time_indexes(self):

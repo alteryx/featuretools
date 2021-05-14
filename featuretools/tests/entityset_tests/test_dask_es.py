@@ -11,7 +11,7 @@ def test_add_dataframe(pd_es):
     dask_es = EntitySet(id="dask_es")
     log_dask = dd.from_pandas(pd_es["log"], npartitions=2)
     dask_es = dask_es.add_dataframe(
-        dataframe_id="log_dask",
+        dataframe_name="log_dask",
         dataframe=log_dask,
         index="id",
         time_index="datetime",
@@ -27,12 +27,12 @@ def test_add_dataframe_with_non_numeric_index(pd_es, dask_es):
     dask_df = dd.from_pandas(df, npartitions=2)
 
     pd_es.add_dataframe(
-        dataframe_id="new_entity",
+        dataframe_name="new_entity",
         dataframe=df,
         index="id")
 
     dask_es.add_dataframe(
-        dataframe_id="new_entity",
+        dataframe_name="new_entity",
         dataframe=dask_df,
         index="id",
         logical_types={"id": ltypes.Categorical, "values": ltypes.Integer})
@@ -52,7 +52,7 @@ def test_create_entityset_with_mixed_dataframe_types(pd_es, dask_es):
 
     with pytest.raises(ValueError, match=err_msg):
         pd_es.add_dataframe(
-            dataframe_id="new_dataframe",
+            dataframe_name="new_dataframe",
             dataframe=dask_df,
             index="id")
 
@@ -63,7 +63,7 @@ def test_create_entityset_with_mixed_dataframe_types(pd_es, dask_es):
 
     with pytest.raises(ValueError, match=err_msg):
         dask_es.add_dataframe(
-            dataframe_id="new_dataframe",
+            dataframe_name="new_dataframe",
             dataframe=df,
             index="id")
 
@@ -108,13 +108,13 @@ def test_add_last_time_indexes():
         "amount": ltypes.Double
     }
 
-    pd_es.add_dataframe(dataframe_id="sessions", dataframe=sessions, index="id", time_index="time")
-    dask_es.add_dataframe(dataframe_id="sessions", dataframe=sessions_dask,
+    pd_es.add_dataframe(dataframe_name="sessions", dataframe=sessions, index="id", time_index="time")
+    dask_es.add_dataframe(dataframe_name="sessions", dataframe=sessions_dask,
                           index="id", time_index="time",
                           logical_types=sessions_logical_types)
 
-    pd_es.add_dataframe(dataframe_id="transactions", dataframe=transactions, index="id", time_index="time")
-    dask_es.add_dataframe(dataframe_id="transactions", dataframe=transactions_dask,
+    pd_es.add_dataframe(dataframe_name="transactions", dataframe=transactions, index="id", time_index="time")
+    dask_es.add_dataframe(dataframe_name="transactions", dataframe=transactions_dask,
                           index="id", time_index="time",
                           logical_types=transactions_logical_types)
 
@@ -140,7 +140,7 @@ def test_add_dataframe_with_make_index():
     dask_df = dd.from_pandas(df, npartitions=2)
     dask_es = EntitySet(id="dask_es")
     logical_types = {"values": ltypes.Integer}
-    dask_es.add_dataframe(dataframe_id="new_entity", dataframe=dask_df, make_index=True, index="new_index", logical_types=logical_types)
+    dask_es.add_dataframe(dataframe_name="new_entity", dataframe=dask_df, make_index=True, index="new_index", logical_types=logical_types)
 
     expected_df = pd.DataFrame({"values": values, "new_index": range(len(values))})
     pd.testing.assert_frame_equal(expected_df, dask_es['new_entity'].compute())

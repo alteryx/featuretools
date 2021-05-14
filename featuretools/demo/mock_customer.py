@@ -48,22 +48,22 @@ def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transaction
         return transactions_df.merge(sessions_df).merge(customers_df).merge(products_df).reset_index(drop=True)
     elif return_entityset:
         es = ft.EntitySet(id="transactions")
-        es = es.add_dataframe(dataframe_id="transactions",
+        es = es.add_dataframe(dataframe_name="transactions",
                               dataframe=transactions_df,
                               index="transaction_id",
                               time_index="transaction_time",
                               logical_types={"product_id": ww.logical_types.Categorical})
 
-        es = es.add_dataframe(dataframe_id="products",
+        es = es.add_dataframe(dataframe_name="products",
                               dataframe=products_df,
                               index="product_id")
 
-        es = es.add_dataframe(dataframe_id="sessions",
+        es = es.add_dataframe(dataframe_name="sessions",
                               dataframe=sessions_df,
                               index="session_id",
                               time_index="session_start")
 
-        es = es.add_dataframe(dataframe_id="customers",
+        es = es.add_dataframe(dataframe_name="customers",
                               dataframe=customers_df,
                               index="customer_id",
                               time_index="join_date",

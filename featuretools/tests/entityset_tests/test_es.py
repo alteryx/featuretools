@@ -77,7 +77,7 @@ def test_add_relationship_instantiated_logical_types(es):
         'product_id': 'foreign_key'
     }
     assert set(log_logical_types) == set(log_2_df.columns)
-    es.add_dataframe(dataframe_id='log2',
+    es.add_dataframe(dataframe_name='log2',
                      dataframe=log_2_df,
                      index='id',
                      logical_types=log_logical_types,
@@ -120,7 +120,7 @@ def test_add_relationship_different_logical_types_same_dtype(es):
         'product_id': 'foreign_key'
     }
     assert set(log_logical_types) == set(log_2_df.columns)
-    es.add_dataframe(dataframe_id='log2',
+    es.add_dataframe(dataframe_name='log2',
                      dataframe=log_2_df,
                      index='id',
                      logical_types=log_logical_types,
@@ -162,7 +162,7 @@ def test_add_relationship_different_compatible_dtypes(es):
         'product_id': 'foreign_key'
     }
     assert set(log_logical_types) == set(log_2_df.columns)
-    es.add_dataframe(dataframe_id='log2',
+    es.add_dataframe(dataframe_name='log2',
                      dataframe=log_2_df,
                      index='id',
                      logical_types=log_logical_types,
@@ -181,7 +181,7 @@ def test_add_relationship_different_compatible_dtypes(es):
 
 
 def test_add_relationship_errors_child_v_index(es):
-    es.add_dataframe(dataframe_id='log2',
+    es.add_dataframe(dataframe_name='log2',
                      dataframe=es['log'].ww.copy())
 
     to_match = "Unable to add relationship because child column 'id' in 'log2' is also its index"
@@ -361,7 +361,7 @@ def test_make_index_any_location(df):
                      'category': ltypes.Categorical}
 
     es = EntitySet(id='test')
-    es.add_dataframe(dataframe_id='test_dataframe',
+    es.add_dataframe(dataframe_name='test_dataframe',
                      index='id1',
                      make_index=True,
                      logical_types=logical_types,
@@ -379,7 +379,7 @@ def test_index_any_location(df):
                      'category': ltypes.Categorical}
 
     es = EntitySet(id='test')
-    es.add_dataframe(dataframe_id='test_dataframe',
+    es.add_dataframe(dataframe_name='test_dataframe',
                      index='category',
                      logical_types=logical_types,
                      dataframe=df)
@@ -396,7 +396,7 @@ def test_extra_column_type(df):
     error_text = re.escape("logical_types contains columns that are not present in dataframe: ['category2']")
     with pytest.raises(LookupError, match=error_text):
         es = EntitySet(id='test')
-        es.add_dataframe(dataframe_id='test_dataframe',
+        es.add_dataframe(dataframe_name='test_dataframe',
                          index='id',
                          logical_types=logical_types, dataframe=df)
 
@@ -435,11 +435,11 @@ def test_none_index(df2):
     copy_df.ww.init()
     error_msg = 'Cannot add Woodwork DataFrame to EntitySet without index'
     with pytest.raises(ValueError, match=error_msg):
-        es.add_dataframe(dataframe_id='test_dataframe', dataframe=copy_df)
+        es.add_dataframe(dataframe_name='test_dataframe', dataframe=copy_df)
 
     warn_text = "Using first column as index. To change this, specify the index parameter"
     with pytest.warns(UserWarning, match=warn_text):
-        es.add_dataframe(dataframe_id='test_dataframe',
+        es.add_dataframe(dataframe_name='test_dataframe',
                          logical_types={'category': 'Categorical'},
                          dataframe=df2)
     assert es['test_dataframe'].ww.index == 'category'
@@ -472,7 +472,7 @@ def test_unknown_index(df3):
     error_message = 'Specified index column `id` not found in dataframe. To create a new index column, set make_index to True.'
     es = EntitySet(id='test')
     with pytest.raises(ww.exceptions.ColumnNotPresentError, match=error_message):
-        es.add_dataframe(dataframe_id='test_dataframe',
+        es.add_dataframe(dataframe_name='test_dataframe',
                          index='id',
                          logical_types={'category': 'Categorical'}, dataframe=df3)
 
@@ -482,7 +482,7 @@ def test_doesnt_remake_index(df):
     error_text = "When setting make_index to True, the name specified for index cannot match an existing column name"
     with pytest.raises(IndexError, match=error_text):
         es = EntitySet(id='test')
-        es.add_dataframe(dataframe_id='test_dataframe',
+        es.add_dataframe(dataframe_name='test_dataframe',
                          index='id',
                          make_index=True,
                          dataframe=df,
@@ -494,7 +494,7 @@ def test_bad_time_index_column(df3):
     error_text = "Specified time index column `time` not found in dataframe"
     with pytest.raises(LookupError, match=error_text):
         es = EntitySet(id='test')
-        es.add_dataframe(dataframe_id='test_dataframe',
+        es.add_dataframe(dataframe_name='test_dataframe',
                          dataframe=df3,
                          time_index='time',
                          logical_types=logical_types)
@@ -536,7 +536,7 @@ def test_converts_dtype_on_init(df4):
         logical_types['category_int'] = ltypes.Categorical
     es = EntitySet(id='test')
     df4.ww.init(index='id', logical_types=logical_types)
-    es.add_dataframe(dataframe_id='test_dataframe', dataframe=df4)
+    es.add_dataframe(dataframe_name='test_dataframe', dataframe=df4)
 
     entity_df = es['test_dataframe']
     assert entity_df['ints'].dtype.name == 'int64'
@@ -562,7 +562,7 @@ def test_converts_dtype_after_init(df4):
     else:
         logical_types = None
     es = EntitySet(id='test')
-    es.add_dataframe(dataframe_id='test_dataframe', index='id',
+    es.add_dataframe(dataframe_name='test_dataframe', index='id',
                      dataframe=df4, logical_types=logical_types)
     df = es['test_dataframe']
 
@@ -588,10 +588,10 @@ def test_warns_no_typing(df4):
     if not isinstance(df4, pd.DataFrame):
         msg = 'Performing type inference on Dask or Koalas DataFrames may be computationally intensive. Specify logical types for each column to speed up EntitySet initialization.'
         with pytest.warns(UserWarning, match=msg):
-            es.add_dataframe(dataframe_id='test_dataframe', index='id',
+            es.add_dataframe(dataframe_name='test_dataframe', index='id',
                              dataframe=df4)
     else:
-        es.add_dataframe(dataframe_id='test_dataframe', index='id',
+        es.add_dataframe(dataframe_name='test_dataframe', index='id',
                          dataframe=df4)
 
     assert 'test_dataframe' in es.dataframe_dict
@@ -629,7 +629,7 @@ def test_converts_datetime(datetime1):
 
     es = EntitySet(id='test')
     es.add_dataframe(
-        dataframe_id='test_dataframe',
+        dataframe_name='test_dataframe',
         index='id',
         time_index="time",
         logical_types=logical_types,
@@ -676,7 +676,7 @@ def test_handles_datetime_format(datetime2):
 
     es = EntitySet(id='test')
     es.add_dataframe(
-        dataframe_id='test_dataframe',
+        dataframe_name='test_dataframe',
         index='id',
         logical_types=logical_types,
         dataframe=datetime2)
@@ -767,13 +767,13 @@ def test_nonstr_column_names(bad_df):
     es = ft.EntitySet(id='Failure')
     error_text = r"All column names must be strings \(Columns \[3\] are not strings\)"
     with pytest.raises(ValueError, match=error_text):
-        es.add_dataframe(dataframe_id='str_cols',
+        es.add_dataframe(dataframe_name='str_cols',
                          dataframe=bad_df,
                          index='a')
 
     bad_df.ww.init()
     with pytest.raises(ValueError, match=error_text):
-        es.add_dataframe(dataframe_id='str_cols',
+        es.add_dataframe(dataframe_name='str_cols',
                          dataframe=bad_df)
 
 
@@ -1181,7 +1181,7 @@ def pd_normalize_es():
     })
     es = ft.EntitySet("es")
     return es.add_dataframe(
-        dataframe_id="data",
+        dataframe_name="data",
         dataframe=df,
         index="id")
 
@@ -1192,7 +1192,7 @@ def dd_normalize_es(pd_normalize_es):
     dd_df = dd.from_pandas(pd_normalize_es['data'], npartitions=2)
     dd_df.ww.init(schema=pd_normalize_es['data'].ww.schema)
 
-    es.add_dataframe(dataframe_id=dd_df.ww.name,
+    es.add_dataframe(dataframe_name=dd_df.ww.name,
                      dataframe=dd_df)
     return es
 
@@ -1203,7 +1203,7 @@ def ks_normalize_es(pd_normalize_es):
     es = ft.EntitySet(id=pd_normalize_es.id)
     ks_df = ks.from_pandas(pd_normalize_es['data'])
     ks_df.ww.init(schema=pd_normalize_es['data'].ww.schema)
-    es.add_dataframe(dataframe_id=ks_df.ww.name,
+    es.add_dataframe(dataframe_name=ks_df.ww.name,
                      dataframe=ks_df)
     return es
 
@@ -1309,7 +1309,7 @@ def test_normalize_dataframe_same_index(es):
                                     "transaction_time": pd.date_range(start="10:00", periods=3, freq="10s"),
                                     "first_df_time": [1, 2, 3]})
     es = ft.EntitySet("example")
-    es.add_dataframe(dataframe_id="df",
+    es.add_dataframe(dataframe_name="df",
                      index="id",
                      time_index="transaction_time",
                      dataframe=transactions_df)
@@ -1406,7 +1406,7 @@ def test_datetime64_conversion(datetime3):
     else:
         logical_types = None
     es = EntitySet(id='test')
-    es.add_dataframe(dataframe_id='test_dataframe',
+    es.add_dataframe(dataframe_name='test_dataframe',
                      index='id',
                      dataframe=df,
                      logical_types=logical_types)
@@ -1451,13 +1451,13 @@ def test_same_index_values(index_df):
 
     error_text = '"id" is already set as the index. An index cannot also be the time index.'
     with pytest.raises(ValueError, match=error_text):
-        es.add_dataframe(dataframe_id="entity",
+        es.add_dataframe(dataframe_name="entity",
                          index="id",
                          time_index="id",
                          dataframe=index_df,
                          logical_types=logical_types)
 
-    es.add_dataframe(dataframe_id="entity",
+    es.add_dataframe(dataframe_name="entity",
                      index="id",
                      time_index="transaction_time",
                      dataframe=index_df,
@@ -1493,13 +1493,13 @@ def test_use_time_index(index_df):
 
     error_text = re.escape("Cannot add 'time_index' tag directly for column transaction_time. To set a column as the time index, use DataFrame.ww.set_time_index() instead.")
     with pytest.raises(ValueError, match=error_text):
-        es.add_dataframe(dataframe_id="entity",
+        es.add_dataframe(dataframe_name="entity",
                          index="id",
                          logical_types=bad_vtypes,
                          semantic_tags=bad_semantic_tags,
                          dataframe=index_df)
 
-    es.add_dataframe(dataframe_id="entity",
+    es.add_dataframe(dataframe_name="entity",
                      index="id",
                      time_index="transaction_time",
                      logical_types=logical_types,
@@ -1560,10 +1560,10 @@ def test_entityset_init():
     assert es['transactions'].ww.index == 'id'
     assert es['transactions'].ww.time_index == 'transaction_time'
     es_copy = ft.EntitySet(id="fraud_data")
-    es_copy.add_dataframe(dataframe_id='cards',
+    es_copy.add_dataframe(dataframe_name='cards',
                           dataframe=cards_df.copy(),
                           index='id')
-    es_copy.add_dataframe(dataframe_id='transactions',
+    es_copy.add_dataframe(dataframe_name='transactions',
                           dataframe=transactions_df.copy(),
                           index='id',
                           logical_types=logical_types,
@@ -1582,7 +1582,7 @@ def test_add_interesting_values_specified_vals(es):
         'product_id': product_vals,
         'countrycode': country_vals,
     }
-    es.add_interesting_values(dataframe_id='log', values=interesting_values)
+    es.add_interesting_values(dataframe_name='log', values=interesting_values)
 
     assert es['log'].ww['product_id'].ww.metadata['interesting_values'] == product_vals
     assert es['log'].ww['countrycode'].ww.metadata['interesting_values'] == country_vals
@@ -1592,13 +1592,13 @@ def test_add_interesting_values_vals_specified_without_dataframe_id(es):
     interesting_values = {
         'countrycode': ['AL', 'US'],
     }
-    error_msg = "dataframe_id must be specified if values are provided"
+    error_msg = "dataframe_name must be specified if values are provided"
     with pytest.raises(ValueError, match=error_msg):
         es.add_interesting_values(values=interesting_values)
 
 
 def test_add_interesting_values_single_dataframe(pd_es):
-    pd_es.add_interesting_values(dataframe_id='log')
+    pd_es.add_interesting_values(dataframe_name='log')
 
     expected_vals = {
         'zipcode': ['02116', '02116-3899', '12345-6789', '1234567890', '0'],
@@ -1654,7 +1654,7 @@ def test_entityset_equality(es):
     second_es = EntitySet()
     assert first_es == second_es
 
-    first_es.add_dataframe(dataframe_id='customers',
+    first_es.add_dataframe(dataframe_name='customers',
                            dataframe=es['customers'].copy(),
                            index='id',
                            time_index='signup_date',
@@ -1662,19 +1662,19 @@ def test_entityset_equality(es):
                            semantic_tags=get_df_tags(es['customers']))
     assert first_es != second_es
 
-    second_es.add_dataframe(dataframe_id='sessions',
+    second_es.add_dataframe(dataframe_name='sessions',
                             dataframe=es['sessions'].copy(),
                             index='id',
                             logical_types=es['sessions'].ww.logical_types,
                             semantic_tags=get_df_tags(es['sessions']))
     assert first_es != second_es
 
-    first_es.add_dataframe(dataframe_id='sessions',
+    first_es.add_dataframe(dataframe_name='sessions',
                            dataframe=es['sessions'].copy(),
                            index='id',
                            logical_types=es['sessions'].ww.logical_types,
                            semantic_tags=get_df_tags(es['sessions']))
-    second_es.add_dataframe(dataframe_id='customers',
+    second_es.add_dataframe(dataframe_name='customers',
                             dataframe=es['customers'].copy(),
                             index='id',
                             time_index='signup_date',

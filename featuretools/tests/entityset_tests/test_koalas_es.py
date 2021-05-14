@@ -17,7 +17,7 @@ def test_create_entity_from_ks_df(pd_es):
 
     ks_es = EntitySet(id="ks_es")
     ks_es = ks_es.add_dataframe(
-        dataframe_id="log_ks",
+        dataframe_name="log_ks",
         dataframe=log_ks,
         index="id",
         time_index="datetime",
@@ -34,13 +34,13 @@ def test_add_dataframe_with_non_numeric_index(pd_es, ks_es):
     ks_df = ks.from_pandas(df)
 
     pd_es.add_dataframe(
-        dataframe_id="new_entity",
+        dataframe_name="new_entity",
         dataframe=df,
         index="id",
         logical_types={"id": ltypes.NaturalLanguage, "values": ltypes.Integer})
 
     ks_es.add_dataframe(
-        dataframe_id="new_entity",
+        dataframe_name="new_entity",
         dataframe=ks_df,
         index="id",
         logical_types={"id": ltypes.NaturalLanguage, "values": ltypes.Integer})
@@ -60,7 +60,7 @@ def test_create_entityset_with_mixed_dataframe_types(pd_es, ks_es):
 
     with pytest.raises(ValueError, match=err_msg):
         pd_es.add_dataframe(
-            dataframe_id="new_entity",
+            dataframe_name="new_entity",
             dataframe=ks_df,
             index="id")
 
@@ -71,7 +71,7 @@ def test_create_entityset_with_mixed_dataframe_types(pd_es, ks_es):
 
     with pytest.raises(ValueError, match=err_msg):
         ks_es.add_dataframe(
-            dataframe_id="new_entity",
+            dataframe_name="new_entity",
             dataframe=df,
             index="id")
 
@@ -116,12 +116,12 @@ def test_add_last_time_indexes():
         "time": ltypes.Datetime,
     }
 
-    pd_es.add_dataframe(dataframe_id="sessions", dataframe=sessions, index="id", time_index="time")
-    ks_es.add_dataframe(dataframe_id="sessions", dataframe=sessions_ks, index="id", time_index="time",
+    pd_es.add_dataframe(dataframe_name="sessions", dataframe=sessions, index="id", time_index="time")
+    ks_es.add_dataframe(dataframe_name="sessions", dataframe=sessions_ks, index="id", time_index="time",
                         logical_types=sessions_logical_types)
 
-    pd_es.add_dataframe(dataframe_id="transactions", dataframe=transactions, index="id", time_index="time")
-    ks_es.add_dataframe(dataframe_id="transactions", dataframe=transactions_ks, index="id", time_index="time",
+    pd_es.add_dataframe(dataframe_name="transactions", dataframe=transactions, index="id", time_index="time")
+    ks_es.add_dataframe(dataframe_name="transactions", dataframe=transactions_ks, index="id", time_index="time",
                         logical_types=transactions_logical_types)
 
     pd_es = pd_es.add_relationship("sessions", "id", "transactions", "session_id")
@@ -150,4 +150,4 @@ def test_add_dataframe_with_make_index():
 
     error_msg = "Cannot make index on a Koalas DataFrame."
     with pytest.raises(TypeError, match=error_msg):
-        ks_es.add_dataframe(dataframe_id="new_entity", dataframe=ks_df, make_index=True, index="new_index", logical_types=vtypes)
+        ks_es.add_dataframe(dataframe_name="new_entity", dataframe=ks_df, make_index=True, index="new_index", logical_types=vtypes)
