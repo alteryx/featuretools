@@ -60,26 +60,26 @@ def test_get_backward_dataframes_deep(es):
 def test_get_forward_relationships(es):
     relationships = es.get_forward_relationships('log')
     assert len(relationships) == 2
-    assert relationships[0]._parent_dataframe_id == 'sessions'
+    assert relationships[0]._parent_dataframe_name == 'sessions'
     assert relationships[0]._child_dataframe_id == 'log'
-    assert relationships[1]._parent_dataframe_id == 'products'
+    assert relationships[1]._parent_dataframe_name == 'products'
     assert relationships[1]._child_dataframe_id == 'log'
 
     relationships = es.get_forward_relationships('sessions')
     assert len(relationships) == 1
-    assert relationships[0]._parent_dataframe_id == 'customers'
+    assert relationships[0]._parent_dataframe_name == 'customers'
     assert relationships[0]._child_dataframe_id == 'sessions'
 
 
 def test_get_backward_relationships(es):
     relationships = es.get_backward_relationships('sessions')
     assert len(relationships) == 1
-    assert relationships[0]._parent_dataframe_id == 'sessions'
+    assert relationships[0]._parent_dataframe_name == 'sessions'
     assert relationships[0]._child_dataframe_id == 'log'
 
     relationships = es.get_backward_relationships('customers')
     assert len(relationships) == 1
-    assert relationships[0]._parent_dataframe_id == 'customers'
+    assert relationships[0]._parent_dataframe_name == 'customers'
     assert relationships[0]._child_dataframe_id == 'sessions'
 
 
@@ -91,9 +91,9 @@ def test_find_forward_paths(es):
 
     assert len(path) == 2
     assert path[0]._child_dataframe_id == 'log'
-    assert path[0]._parent_dataframe_id == 'sessions'
+    assert path[0]._parent_dataframe_name == 'sessions'
     assert path[1]._child_dataframe_id == 'sessions'
-    assert path[1]._parent_dataframe_id == 'customers'
+    assert path[1]._parent_dataframe_name == 'customers'
 
 
 def test_find_forward_paths_multiple_paths(diamond_es):
@@ -104,15 +104,15 @@ def test_find_forward_paths_multiple_paths(diamond_es):
 
     r1, r2 = path1
     assert r1._child_dataframe_id == 'transactions'
-    assert r1._parent_dataframe_id == 'stores'
+    assert r1._parent_dataframe_name == 'stores'
     assert r2._child_dataframe_id == 'stores'
-    assert r2._parent_dataframe_id == 'regions'
+    assert r2._parent_dataframe_name == 'regions'
 
     r1, r2 = path2
     assert r1._child_dataframe_id == 'transactions'
-    assert r1._parent_dataframe_id == 'customers'
+    assert r1._parent_dataframe_name == 'customers'
     assert r2._child_dataframe_id == 'customers'
-    assert r2._parent_dataframe_id == 'regions'
+    assert r2._parent_dataframe_name == 'regions'
 
 
 def test_find_forward_paths_multiple_relationships(games_es):
@@ -127,8 +127,8 @@ def test_find_forward_paths_multiple_relationships(games_es):
 
     assert r1._child_dataframe_id == 'games'
     assert r2._child_dataframe_id == 'games'
-    assert r1._parent_dataframe_id == 'teams'
-    assert r2._parent_dataframe_id == 'teams'
+    assert r1._parent_dataframe_name == 'teams'
+    assert r2._parent_dataframe_name == 'teams'
 
     assert r1._child_column_id == 'home_team_id'
     assert r2._child_column_id == 'away_team_id'
@@ -175,9 +175,9 @@ def test_find_backward_paths(es):
 
     assert len(path) == 2
     assert path[0]._child_dataframe_id == 'sessions'
-    assert path[0]._parent_dataframe_id == 'customers'
+    assert path[0]._parent_dataframe_name == 'customers'
     assert path[1]._child_dataframe_id == 'log'
-    assert path[1]._parent_dataframe_id == 'sessions'
+    assert path[1]._parent_dataframe_name == 'sessions'
 
 
 def test_find_backward_paths_multiple_paths(diamond_es):
@@ -188,15 +188,15 @@ def test_find_backward_paths_multiple_paths(diamond_es):
 
     r1, r2 = path1
     assert r1._child_dataframe_id == 'stores'
-    assert r1._parent_dataframe_id == 'regions'
+    assert r1._parent_dataframe_name == 'regions'
     assert r2._child_dataframe_id == 'transactions'
-    assert r2._parent_dataframe_id == 'stores'
+    assert r2._parent_dataframe_name == 'stores'
 
     r1, r2 = path2
     assert r1._child_dataframe_id == 'customers'
-    assert r1._parent_dataframe_id == 'regions'
+    assert r1._parent_dataframe_name == 'regions'
     assert r2._child_dataframe_id == 'transactions'
-    assert r2._parent_dataframe_id == 'customers'
+    assert r2._parent_dataframe_name == 'customers'
 
 
 def test_find_backward_paths_multiple_relationships(games_es):
@@ -211,8 +211,8 @@ def test_find_backward_paths_multiple_relationships(games_es):
 
     assert r1._child_dataframe_id == 'games'
     assert r2._child_dataframe_id == 'games'
-    assert r1._parent_dataframe_id == 'teams'
-    assert r2._parent_dataframe_id == 'teams'
+    assert r1._parent_dataframe_name == 'teams'
+    assert r2._parent_dataframe_name == 'teams'
 
     assert r1._child_column_id == 'home_team_id'
     assert r2._child_column_id == 'away_team_id'

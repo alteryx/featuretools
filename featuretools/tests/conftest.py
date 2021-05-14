@@ -76,7 +76,7 @@ def ks_es(make_es):
         es.add_dataframe(df.ww.name, ks_df)
 
     for rel in make_es.relationships:
-        es.add_relationship(rel._parent_dataframe_id, rel._parent_column_id,
+        es.add_relationship(rel._parent_dataframe_name, rel._parent_column_id,
                             rel._child_dataframe_id, rel._child_column_id)
     return es
 
@@ -146,7 +146,7 @@ def dask_diamond_es(pd_diamond_es):
         dd_df.ww.init(schema=df.ww.schema)
         dataframes[df.ww.name] = (dd_df,)
 
-    relationships = [(rel._parent_dataframe_id,
+    relationships = [(rel._parent_dataframe_name,
                       rel._parent_column_id,
                       rel._child_dataframe_id,
                       rel._child_column_id) for rel in pd_diamond_es.relationships]
@@ -163,7 +163,7 @@ def ks_diamond_es(pd_diamond_es):
         ks_df.ww.init(schema=df.ww.schema)
         dataframes[df.ww.name] = (ks_df,)
 
-    relationships = [(rel._parent_dataframe_id,
+    relationships = [(rel._parent_dataframe_name,
                       rel._parent_column_id,
                       rel._child_dataframe_id,
                       rel._child_column_id) for rel in pd_diamond_es.relationships]
@@ -208,7 +208,7 @@ def dask_default_value_es(pd_default_value_es):
         dd_df.ww.init(schema=df.ww.schema)
         dataframes[df.ww.name] = (dd_df,)
 
-    relationships = [(rel._parent_dataframe_id,
+    relationships = [(rel._parent_dataframe_name,
                       rel._parent_column_id,
                       rel._child_dataframe_id,
                       rel._child_column_id) for rel in pd_default_value_es.relationships]
@@ -225,7 +225,7 @@ def ks_default_value_es(pd_default_value_es):
         ks_df.ww.init(schema=df.ww.schema)
         dataframes[df.ww.name] = (ks_df,)
 
-    relationships = [(rel._parent_dataframe_id,
+    relationships = [(rel._parent_dataframe_name,
                       rel._parent_column_id,
                       rel._child_dataframe_id,
                       rel._child_column_id) for rel in pd_default_value_es.relationships]
@@ -265,7 +265,7 @@ def dask_home_games_es(pd_home_games_es):
         dd_df.ww.init(schema=df.ww.schema)
         dataframes[df.ww.name] = (dd_df,)
 
-    relationships = [(rel._parent_dataframe_id,
+    relationships = [(rel._parent_dataframe_name,
                       rel._parent_column_id,
                       rel._child_dataframe_id,
                       rel._child_column_id) for rel in pd_home_games_es.relationships]
@@ -282,7 +282,7 @@ def ks_home_games_es(pd_home_games_es):
         ks_df.ww.init(schema=df.ww.schema)
         dataframes[df.ww.name] = (ks_df,)
 
-    relationships = [(rel._parent_dataframe_id,
+    relationships = [(rel._parent_dataframe_name,
                       rel._parent_column_id,
                       rel._child_dataframe_id,
                       rel._child_column_id) for rel in pd_home_games_es.relationships]

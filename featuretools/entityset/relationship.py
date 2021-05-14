@@ -18,7 +18,7 @@ class Relationship(object):
         """
 
         self.entityset = entityset
-        self._parent_dataframe_id = parent_dataframe_id
+        self._parent_dataframe_name = parent_dataframe_id
         self._child_dataframe_id = child_dataframe_id
         self._parent_column_id = parent_column_id
         self._child_column_id = child_column_id
@@ -26,7 +26,7 @@ class Relationship(object):
         if (self.parent_dataframe.ww.index is not None and
                 self._parent_column_id != self.parent_dataframe.ww.index):
             raise AttributeError(f"Parent column '{self.parent_column.name}' is not the index of "
-                                 f"dataframe {self._parent_dataframe_id}")
+                                 f"dataframe {self._parent_dataframe_name}")
 
     @classmethod
     def from_dictionary(cls, arguments, es):
@@ -39,7 +39,7 @@ class Relationship(object):
     def __repr__(self):
         ret = u"<Relationship: %s.%s -> %s.%s>" % \
             (self._child_dataframe_id, self._child_column_id,
-             self._parent_dataframe_id, self._parent_column_id)
+             self._parent_dataframe_name, self._parent_column_id)
 
         return ret
 
@@ -47,13 +47,13 @@ class Relationship(object):
         if not isinstance(other, self.__class__):
             return False
 
-        return self._parent_dataframe_id == other._parent_dataframe_id and \
+        return self._parent_dataframe_name == other._parent_dataframe_name and \
             self._child_dataframe_id == other._child_dataframe_id and \
             self._parent_column_id == other._parent_column_id and \
             self._child_column_id == other._child_column_id
 
     def __hash__(self):
-        return hash((self._parent_dataframe_id,
+        return hash((self._parent_dataframe_name,
                      self._child_dataframe_id,
                      self._parent_column_id,
                      self._child_column_id))
@@ -61,7 +61,7 @@ class Relationship(object):
     @property
     def parent_dataframe(self):
         """Parent dataframe object"""
-        return self.entityset[self._parent_dataframe_id]
+        return self.entityset[self._parent_dataframe_name]
 
     @property
     def child_dataframe(self):
@@ -82,9 +82,9 @@ class Relationship(object):
     def parent_name(self):
         """The name of the parent, relative to the child."""
         if self._is_unique():
-            return self._parent_dataframe_id
+            return self._parent_dataframe_name
         else:
-            return '%s[%s]' % (self._parent_dataframe_id, self._child_column_id)
+            return '%s[%s]' % (self._parent_dataframe_name, self._child_column_id)
 
     @property
     def child_name(self):
@@ -96,7 +96,7 @@ class Relationship(object):
 
     def to_dictionary(self):
         return {
-            'parent_dataframe_id': self._parent_dataframe_id,
+            'parent_dataframe_id': self._parent_dataframe_name,
             'child_dataframe_id': self._child_dataframe_id,
             'parent_column_id': self._parent_column_id,
             'child_column_id': self._child_column_id,
@@ -107,7 +107,7 @@ class Relationship(object):
         es = self.entityset
         relationships = es.get_forward_relationships(self._child_dataframe_id)
         n = len([r for r in relationships
-                 if r._parent_dataframe_id == self._parent_dataframe_id])
+                 if r._parent_dataframe_name == self._parent_dataframe_name])
 
         assert n > 0, 'This relationship is missing from the entityset'
 
@@ -132,12 +132,12 @@ class RelationshipPath(object):
             if is_forward:
                 yield relationship._child_dataframe_id
             else:
-                yield relationship._parent_dataframe_id
+                yield relationship._parent_dataframe_name
 
         # Yield the dataframe pointed to by each relationship.
         for is_forward, relationship in self:
             if is_forward:
-                yield relationship._parent_dataframe_id
+                yield relationship._parent_dataframe_name
             else:
                 yield relationship._child_dataframe_id
 

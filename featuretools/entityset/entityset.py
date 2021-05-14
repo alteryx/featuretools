@@ -239,7 +239,7 @@ class EntitySet(object):
         for r in self.relationships:
             repr_out += u"\n    %s.%s -> %s.%s" % \
                 (r._child_dataframe_id, r._child_column_id,
-                 r._parent_dataframe_id, r._parent_column_id)
+                 r._parent_dataframe_name, r._parent_column_id)
 
         return repr_out
 
@@ -405,7 +405,7 @@ class EntitySet(object):
         yield start_dataframe_id, []
 
         for relationship in self.get_forward_relationships(start_dataframe_id):
-            next_dataframe = relationship._parent_dataframe_id
+            next_dataframe = relationship._parent_dataframe_name
             # Copy seen dataframes for each next node to allow multiple paths (but
             # not cycles).
             descendants = self._forward_dataframe_paths(next_dataframe, seen_dataframes.copy())
@@ -423,7 +423,7 @@ class EntitySet(object):
         Yields a tuple of (descendent_id, path from dataframe_id to descendant).
         """
         for relationship in self.get_forward_relationships(dataframe_id):
-            parent_dataframe_id = relationship._parent_dataframe_id
+            parent_dataframe_id = relationship._parent_dataframe_name
             direct_path = RelationshipPath([(True, relationship)])
             yield parent_dataframe_id, direct_path
 
@@ -473,7 +473,7 @@ class EntitySet(object):
         Returns:
             list[:class:`.Relationship`]: list of backward relationships
         """
-        return [r for r in self.relationships if r._parent_dataframe_id == dataframe_id]
+        return [r for r in self.relationships if r._parent_dataframe_name == dataframe_id]
 
     def has_unique_forward_path(self, start_dataframe_id, end_dataframe_id):
         """
@@ -897,8 +897,8 @@ class EntitySet(object):
         children = defaultdict(list)  # parent --> child mapping
         child_cols = defaultdict(dict)
         for r in self.relationships:
-            children[r._parent_dataframe_id].append(r.child_dataframe)
-            child_cols[r._parent_dataframe_id][r._child_dataframe_id] = r.child_column
+            children[r._parent_dataframe_name].append(r.child_dataframe)
+            child_cols[r._parent_dataframe_name][r._child_dataframe_id] = r.child_column
 
         updated_dataframes = updated_dataframes or []
         if updated_dataframes:
