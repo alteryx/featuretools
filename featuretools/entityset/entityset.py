@@ -239,7 +239,7 @@ class EntitySet(object):
         for r in self.relationships:
             repr_out += u"\n    %s.%s -> %s.%s" % \
                 (r._child_dataframe_name, r._child_column_name,
-                 r._parent_dataframe_name, r._parent_column_id)
+                 r._parent_dataframe_name, r._parent_column_name)
 
         return repr_out
 
@@ -301,7 +301,7 @@ class EntitySet(object):
             msg = "Unable to add relationship because child column '{}' in '{}' is also its index"
             raise ValueError(msg.format(child_column, child_df.ww.name))
         parent_df = relationship.parent_dataframe
-        parent_column = relationship._parent_column_id
+        parent_column = relationship._parent_column_name
         if 'foreign_key' not in child_df.ww.semantic_tags[child_column]:
             child_df.ww.add_semantic_tags({child_column: 'foreign_key'})
 
@@ -1145,13 +1145,13 @@ class EntitySet(object):
     #     # Draw relationships
     #     for rel in self.relationships:
     #         # Display the key only once if is the same for both related entities
-    #         if rel._parent_column_id == rel._child_column_name:
-    #             label = rel._parent_column_id
+    #         if rel._parent_column_name == rel._child_column_name:
+    #             label = rel._parent_column_name
     #         else:
-    #             label = '%s -> %s' % (rel._parent_column_id,
+    #             label = '%s -> %s' % (rel._parent_column_name,
     #                                   rel._child_column_name)
 
-    #         graph.edge(rel._child_dataframe_name, rel._parent_column_id, xlabel=label)
+    #         graph.edge(rel._child_dataframe_name, rel._parent_column_name, xlabel=label)
 
     #     if to_file:
     #         save_graph(graph, to_file, format_)

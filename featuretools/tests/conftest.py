@@ -76,7 +76,7 @@ def ks_es(make_es):
         es.add_dataframe(df.ww.name, ks_df)
 
     for rel in make_es.relationships:
-        es.add_relationship(rel._parent_dataframe_name, rel._parent_column_id,
+        es.add_relationship(rel._parent_dataframe_name, rel._parent_column_name,
                             rel._child_dataframe_name, rel._child_column_name)
     return es
 
@@ -147,7 +147,7 @@ def dask_diamond_es(pd_diamond_es):
         dataframes[df.ww.name] = (dd_df,)
 
     relationships = [(rel._parent_dataframe_name,
-                      rel._parent_column_id,
+                      rel._parent_column_name,
                       rel._child_dataframe_name,
                       rel._child_column_name) for rel in pd_diamond_es.relationships]
 
@@ -164,7 +164,7 @@ def ks_diamond_es(pd_diamond_es):
         dataframes[df.ww.name] = (ks_df,)
 
     relationships = [(rel._parent_dataframe_name,
-                      rel._parent_column_id,
+                      rel._parent_column_name,
                       rel._child_dataframe_name,
                       rel._child_column_name) for rel in pd_diamond_es.relationships]
 
@@ -209,7 +209,7 @@ def dask_default_value_es(pd_default_value_es):
         dataframes[df.ww.name] = (dd_df,)
 
     relationships = [(rel._parent_dataframe_name,
-                      rel._parent_column_id,
+                      rel._parent_column_name,
                       rel._child_dataframe_name,
                       rel._child_column_name) for rel in pd_default_value_es.relationships]
 
@@ -226,7 +226,7 @@ def ks_default_value_es(pd_default_value_es):
         dataframes[df.ww.name] = (ks_df,)
 
     relationships = [(rel._parent_dataframe_name,
-                      rel._parent_column_id,
+                      rel._parent_column_name,
                       rel._child_dataframe_name,
                       rel._child_column_name) for rel in pd_default_value_es.relationships]
 
@@ -266,7 +266,7 @@ def dask_home_games_es(pd_home_games_es):
         dataframes[df.ww.name] = (dd_df,)
 
     relationships = [(rel._parent_dataframe_name,
-                      rel._parent_column_id,
+                      rel._parent_column_name,
                       rel._child_dataframe_name,
                       rel._child_column_name) for rel in pd_home_games_es.relationships]
 
@@ -283,7 +283,7 @@ def ks_home_games_es(pd_home_games_es):
         dataframes[df.ww.name] = (ks_df,)
 
     relationships = [(rel._parent_dataframe_name,
-                      rel._parent_column_id,
+                      rel._parent_column_name,
                       rel._child_dataframe_name,
                       rel._child_column_name) for rel in pd_home_games_es.relationships]
 

@@ -20,11 +20,11 @@ class Relationship(object):
         self.entityset = entityset
         self._parent_dataframe_name = parent_dataframe_id
         self._child_dataframe_name = child_dataframe_id
-        self._parent_column_id = parent_column_id
+        self._parent_column_name = parent_column_id
         self._child_column_name = child_column_id
 
         if (self.parent_dataframe.ww.index is not None and
-                self._parent_column_id != self.parent_dataframe.ww.index):
+                self._parent_column_name != self.parent_dataframe.ww.index):
             raise AttributeError(f"Parent column '{self.parent_column.name}' is not the index of "
                                  f"dataframe {self._parent_dataframe_name}")
 
@@ -39,7 +39,7 @@ class Relationship(object):
     def __repr__(self):
         ret = u"<Relationship: %s.%s -> %s.%s>" % \
             (self._child_dataframe_name, self._child_column_name,
-             self._parent_dataframe_name, self._parent_column_id)
+             self._parent_dataframe_name, self._parent_column_name)
 
         return ret
 
@@ -49,13 +49,13 @@ class Relationship(object):
 
         return self._parent_dataframe_name == other._parent_dataframe_name and \
             self._child_dataframe_name == other._child_dataframe_name and \
-            self._parent_column_id == other._parent_column_id and \
+            self._parent_column_name == other._parent_column_name and \
             self._child_column_name == other._child_column_name
 
     def __hash__(self):
         return hash((self._parent_dataframe_name,
                      self._child_dataframe_name,
-                     self._parent_column_id,
+                     self._parent_column_name,
                      self._child_column_name))
 
     @property
@@ -71,7 +71,7 @@ class Relationship(object):
     @property
     def parent_column(self):
         """Column in parent dataframe"""
-        return self.parent_dataframe.ww[self._parent_column_id]
+        return self.parent_dataframe.ww[self._parent_column_name]
 
     @property
     def child_column(self):
@@ -98,7 +98,7 @@ class Relationship(object):
         return {
             'parent_dataframe_id': self._parent_dataframe_name,
             'child_dataframe_id': self._child_dataframe_name,
-            'parent_column_id': self._parent_column_id,
+            'parent_column_id': self._parent_column_name,
             'child_column_id': self._child_column_name,
         }
 

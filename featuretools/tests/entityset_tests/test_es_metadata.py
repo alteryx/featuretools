@@ -16,7 +16,7 @@ def test_cannot_re_add_relationships_that_already_exists(es):
 
 def test_add_relationships_convert_type(es):
     for r in es.relationships:
-        assert r.parent_dataframe.ww.index == r._parent_column_id
+        assert r.parent_dataframe.ww.index == r._parent_column_name
         assert 'foreign_key' in r.child_column.ww.semantic_tags
         assert r.child_column.ww.logical_type == r.parent_column.ww.logical_type
 
@@ -132,8 +132,8 @@ def test_find_forward_paths_multiple_relationships(games_es):
 
     assert r1._child_column_name == 'home_team_id'
     assert r2._child_column_name == 'away_team_id'
-    assert r1._parent_column_id == 'id'
-    assert r2._parent_column_id == 'id'
+    assert r1._parent_column_name == 'id'
+    assert r2._parent_column_name == 'id'
 
 
 @pytest.fixture
@@ -216,8 +216,8 @@ def test_find_backward_paths_multiple_relationships(games_es):
 
     assert r1._child_column_name == 'home_team_id'
     assert r2._child_column_name == 'away_team_id'
-    assert r1._parent_column_id == 'id'
-    assert r2._parent_column_id == 'id'
+    assert r1._parent_column_name == 'id'
+    assert r2._parent_column_name == 'id'
 
 
 def test_has_unique_path(diamond_es):
