@@ -1,6 +1,7 @@
 pip>=20.0.2
 wheel>=0.35.0
 setuptools>=42.0.0
+packaging==20.4
 pytest==5.2.0
 pympler==0.8
 pytest-xdist==1.26.1

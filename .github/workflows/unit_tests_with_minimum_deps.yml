@@ -27,6 +27,8 @@ jobs:
           pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
           python -m pip install "$(cat featuretools/tests/requirement_files/minimum_test_requirements.txt | grep wheel)"
+          python -m pip install "$(cat featuretools/tests/requirement_files/minimum_test_requirements.txt | grep setuptools)"
+          python -m pip install "$(cat featuretools/tests/requirement_files/minimum_test_requirements.txt | grep packaging)"
           sudo apt update
           sudo apt install -y gcc
           sudo apt install -y make
