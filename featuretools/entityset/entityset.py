@@ -53,12 +53,12 @@ class EntitySet(object):
                                               dict[str -> str/Woodwork.LogicalType],
                                               dict[str->str/set],
                                               boolean)]): dictionary of DataFrames.
-                    Entries take the format dataframe id -> (dataframe, index column, time_index, logical_types, semantic_tags, make_index)}.
+                    Entries take the format dataframe name -> (dataframe, index column, time_index, logical_types, semantic_tags, make_index)}.
                     Note that only the dataframe is required. If a Woodwork DataFrame is supplied, any other parameters
                     will be ignored.
                 relationships (list[(str, str, str, str)]): List of relationships
                     between dataframes. List items are a tuple with the format
-                    (parent dataframe id, parent column, child dataframe id, child column).
+                    (parent dataframe name, parent column, child dataframe name, child column).
 
             Example:
 
@@ -122,11 +122,11 @@ class EntitySet(object):
     def __eq__(self, other, deep=False):
         if len(self.dataframe_dict) != len(other.dataframe_dict):
             return False
-        for df_id, df in self.dataframe_dict.items():
-            if df_id not in other.dataframe_dict:
+        for df_name, df in self.dataframe_dict.items():
+            if df_name not in other.dataframe_dict:
                 return False
             # --> WW bug: Waiting on deep behavior for WW equality
-            if not df.ww.__eq__(other[df_id].ww):
+            if not df.ww.__eq__(other[df_name].ww):
                 return False
         for r in self.relationships:
             if r not in other.relationships:
@@ -250,7 +250,7 @@ class EntitySet(object):
             relationships (list[tuple(str, str, str, str)] or list[Relationship]) : List of
                 new relationships to add. Relationships are specified either as a :class:`.Relationship`
                 object or a four element tuple identifying the parent and child columns:
-                (parent_dataframe_name, parent_column_id, child_dataframe_name, child_column_id)
+                (parent_dataframe_name, parent_column_name, child_dataframe_name, child_column_name)
         """
         for rel in relationships:
             if isinstance(rel, Relationship):
@@ -261,9 +261,9 @@ class EntitySet(object):
 
     def add_relationship(self,
                          parent_dataframe_name=None,
-                         parent_column_id=None,
+                         parent_column_name=None,
                          child_dataframe_name=None,
-                         child_column_id=None,
+                         child_column_name=None,
                          relationship=None):
         """Add a new relationship between dataframes in the entityset. Relationships can be specified
         by passing dataframe and columns ids or by passing a :class:`.Relationship` object.
@@ -271,22 +271,22 @@ class EntitySet(object):
         Args:
             parent_dataframe_name (str): Name of the parent dataframe in the EntitySet. Must be specified
                 if relationship is not.
-            parent_column_id (str): Name of the parent column. Must be specified if relationship is not.
+            parent_column_name (str): Name of the parent column. Must be specified if relationship is not.
             child_dataframe_name (str): Name of the child dataframe in the EntitySet. Must be specified
                 if relationship is not.
-            child_column_id (str): Name of the child column. Must be specified if relationship is not.
+            child_column_name (str): Name of the child column. Must be specified if relationship is not.
             relationship (Relationship): Instance of new relationship to be added. Must be specified
                 if dataframe and column ids are not supplied.
         """
-        if relationship and (parent_dataframe_name or parent_column_id or child_dataframe_name or child_column_id):
-            raise ValueError("Cannot specify dataframe and column id values and also supply a Relationship")
+        if relationship and (parent_dataframe_name or parent_column_name or child_dataframe_name or child_column_name):
+            raise ValueError("Cannot specify dataframe and column name values and also supply a Relationship")
 
         if not relationship:
             relationship = Relationship(self,
                                         parent_dataframe_name,
-                                        parent_column_id,
+                                        parent_column_name,
                                         child_dataframe_name,
-                                        child_column_id)
+                                        child_column_name)
         if relationship in self.relationships:
             warnings.warn(
                 "Not adding duplicate relationship: " + str(relationship))
@@ -331,7 +331,7 @@ class EntitySet(object):
 
     def set_secondary_time_index(self, dataframe_name, secondary_time_index):
         """
-        Set the secondary time index for a dataframe in the EntitySet using its dataframe id.
+        Set the secondary time index for a dataframe in the EntitySet using its dataframe name.
 
         Args:
             dataframe_name (str) : name of the dataframe for which to set the secondary time index.
@@ -652,7 +652,7 @@ class EntitySet(object):
 
             make_time_index (bool or str, optional): Create time index for new dataframe based
                 on time index in base_dataframe, optionally specifying which column in base_dataframe
-                to use for time_index. If specified as True without a specific column id,
+                to use for time_index. If specified as True without a specific column name,
                 uses the primary time index. Defaults to True if base dataframe has a time index.
 
             make_secondary_time_index (dict[str -> list[str]], optional): Create a secondary time index
@@ -911,8 +911,8 @@ class EntitySet(object):
                     continue
                 parents.add(df_name)
 
-                for parent_id, _ in self.get_forward_dataframes(df_name):
-                    parent_queue.append(parent_id)
+                for parent_name, _ in self.get_forward_dataframes(df_name):
+                    parent_queue.append(parent_name)
 
             queue = [self[p] for p in parents]
             to_explore = parents
@@ -1334,26 +1334,26 @@ class EntitySet(object):
             raise ValueError('Cannot set secondary time index on a DataFrame that has no primary time index.')
 
         for time_index, columns in secondary_time_index.items():
-            self._check_uniform_time_index(dataframe, column_id=time_index)
+            self._check_uniform_time_index(dataframe, column_name=time_index)
             if time_index not in columns:
                 columns.append(time_index)
 
-    def _check_uniform_time_index(self, dataframe, column_id=None):
-        column_id = column_id or dataframe.ww.time_index
-        if column_id is None:
+    def _check_uniform_time_index(self, dataframe, column_name=None):
+        column_name = column_name or dataframe.ww.time_index
+        if column_name is None:
             return
 
-        time_type = self._get_time_type(dataframe, column_id)
+        time_type = self._get_time_type(dataframe, column_name)
         if self.time_type is None:
             self.time_type = time_type
         elif self.time_type != time_type:
             info = "%s time index is %s type which differs from other entityset time indexes"
             raise TypeError(info % (dataframe.ww.name, time_type))
 
-    def _get_time_type(self, dataframe, column_id=None):
-        column_id = column_id or dataframe.ww.time_index
+    def _get_time_type(self, dataframe, column_name=None):
+        column_name = column_name or dataframe.ww.time_index
 
-        column_schema = dataframe.ww.columns[column_id]
+        column_schema = dataframe.ww.columns[column_name]
 
         time_type = None
         if column_schema.is_numeric:

@@ -221,7 +221,7 @@ def test_add_relationships_with_relationship_object(es):
 
 def test_add_relationship_error(es):
     relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
-    error_message = "Cannot specify dataframe and column id values and also supply a Relationship"
+    error_message = "Cannot specify dataframe and column name values and also supply a Relationship"
     with pytest.raises(ValueError, match=error_message):
         es.add_relationship(parent_dataframe_name="sessions", relationship=relationship)
 
