@@ -7,6 +7,7 @@ Future Release
     * Enhancements
     * Fixes
         * Update minimum pyyaml requirement to 5.4 (:pr:`1433`)
+        * Update minimum psutil requirement to 5.6.6 (:pr:`1438`)
     * Changes
     * Documentation Changes
         * Update nbsphinx version to fix docs build issue (:pr:`1436`)
@@ -16,7 +17,7 @@ Future Release
         * Add unit tests against minimum dependencies for python 3.7 on PRs and main (:pr:`1432`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 v0.24.0 Apr 30, 2021
 ====================
