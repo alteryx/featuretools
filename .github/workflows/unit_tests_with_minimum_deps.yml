@@ -39,7 +39,7 @@ jobs:
           python -m pip uninstall numpy -y
           python -m pip install $NUMPY_VERSION --no-build-isolation
       - if: ${{ matrix.libraries == 'core' }}
-        name: Install numpy version for core
+        name: Install numpy for core
         run: |
           NUMPY_VERSION=$(cat featuretools/tests/requirement_files/minimum_core_requirements.txt | grep numpy)
           python -m pip uninstall numpy -y
