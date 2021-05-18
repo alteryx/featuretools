@@ -1,5 +1,5 @@
 pip==19.0.2
-wheel==0.32.3
+wheel==0.33.0
 pytest==5.2.0
 pympler==0.8
 pytest-xdist==1.26.1
