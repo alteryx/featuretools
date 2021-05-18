@@ -14,7 +14,7 @@ Future Release
     * Testing Changes
         * Create separate worksflows for each CI job (:pr:`1422`)
         * Add minimum dependency checker to generate minimum requirement files (:pr:`1428`)
-        * Add unit tests against minimum dependencies for python 3.7 on PRs and main (:pr:`1432`)
+        * Add unit tests against minimum dependencies for python 3.7 on PRs and main (:pr:`1432`, :pr:`1445`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
