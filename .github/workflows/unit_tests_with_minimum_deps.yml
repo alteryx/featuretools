@@ -43,14 +43,14 @@ jobs:
           python -m pip install -r featuretools/tests/requirement_files/minimum_koalas_requirements.txt
           NUMPY_VERSION=$(cat featuretools/tests/requirement_files/minimum_koalas_requirements.txt | grep numpy)
           python -m pip uninstall numpy -y
-          python -m pip install $NUMPY_VERSION --no-binary :all:
+          python -m pip install $NUMPY_VERSION --no-build-isolation
       - if: ${{ matrix.libraries == 'core' }}
         name: Install featuretools - minimum core dependencies
         run: |
           python -m pip install -r featuretools/tests/requirement_files/minimum_core_requirements.txt
           NUMPY_VERSION=$(cat featuretools/tests/requirement_files/minimum_core_requirements.txt | grep numpy)
           python -m pip uninstall numpy -y
-          python -m pip install $NUMPY_VERSION --no-binary :all:
+          python -m pip install $NUMPY_VERSION --no-build-isolation
       - name: Run unit tests without code coverage
         run: |
           python -m pytest -x -n 2 featuretools/tests/
