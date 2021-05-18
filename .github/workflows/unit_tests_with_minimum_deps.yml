@@ -53,8 +53,6 @@ jobs:
           sudo apt install -y openjdk-11-jre-headless
           JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           python -m pip install -r featuretools/tests/requirement_files/minimum_koalas_requirements.txt
-          python -m pip uninstall numpy -y
-          python -m pip install $NUMPY_VERSION --no-build-isolation
       - if: ${{ matrix.libraries == 'core' }}
         name: Install featuretools - minimum core dependencies
         run: |
