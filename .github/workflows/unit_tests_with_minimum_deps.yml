@@ -36,14 +36,16 @@ jobs:
         name: Get numpy version for koalas
         run: |
           NUMPY_VERSION=$(cat featuretools/tests/requirement_files/minimum_koalas_requirements.txt | grep numpy)
+          python -m pip uninstall numpy -y
+          python -m pip install $NUMPY_VERSION --no-build-isolation
       - if: ${{ matrix.libraries == 'core' }}
         name: Get numpy version for core
         run: |
           NUMPY_VERSION=$(cat featuretools/tests/requirement_files/minimum_core_requirements.txt | grep numpy)
-      - name: Install featuretools - minimum tests dependencies
-        run: |
           python -m pip uninstall numpy -y
           python -m pip install $NUMPY_VERSION --no-build-isolation
+      - name: Install featuretools - minimum tests dependencies
+        run: |
           python -m pip install -r featuretools/tests/requirement_files/minimum_test_requirements.txt
       - if: ${{ matrix.libraries == 'koalas' }}
         name: Install featuretools - minimum koalas, core dependencies
