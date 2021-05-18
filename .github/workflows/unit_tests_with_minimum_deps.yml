@@ -34,18 +34,20 @@ jobs:
           python -m pip install -e . --no-dependencies
       - name: Install featuretools - minimum tests dependencies
         run: |
-          NUMPY_VERSION=$(cat featuretools/tests/requirement_files/minimum_core_requirements.txt | grep numpy)
-          python -m pip install $NUMPY_VERSION --no-build-isolation
           python -m pip install -r featuretools/tests/requirement_files/minimum_test_requirements.txt
       - if: ${{ matrix.libraries == 'koalas' }}
         name: Install featuretools - minimum koalas, core dependencies
         run: |
           sudo apt install -y openjdk-11-jre-headless
           JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+          NUMPY_VERSION=$(cat featuretools/tests/requirement_files/minimum_koalas_requirements.txt | grep numpy)
+          python -m pip install $NUMPY_VERSION --no-build-isolation
           python -m pip install -r featuretools/tests/requirement_files/minimum_koalas_requirements.txt
       - if: ${{ matrix.libraries == 'core' }}
         name: Install featuretools - minimum core dependencies
         run: |
+          NUMPY_VERSION=$(cat featuretools/tests/requirement_files/minimum_core_requirements.txt | grep numpy)
+          python -m pip install $NUMPY_VERSION --no-build-isolation
           python -m pip install -r featuretools/tests/requirement_files/minimum_core_requirements.txt
       - name: Run unit tests without code coverage
         run: |
