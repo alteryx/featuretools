@@ -266,7 +266,7 @@ class EntitySet(object):
                          child_column_name=None,
                          relationship=None):
         """Add a new relationship between dataframes in the entityset. Relationships can be specified
-        by passing dataframe and columns ids or by passing a :class:`.Relationship` object.
+        by passing dataframe and columns names or by passing a :class:`.Relationship` object.
 
         Args:
             parent_dataframe_name (str): Name of the parent dataframe in the EntitySet. Must be specified
@@ -276,7 +276,7 @@ class EntitySet(object):
                 if relationship is not.
             child_column_name (str): Name of the child column. Must be specified if relationship is not.
             relationship (Relationship): Instance of new relationship to be added. Must be specified
-                if dataframe and column ids are not supplied.
+                if dataframe and column names are not supplied.
         """
         if relationship and (parent_dataframe_name or parent_column_name or child_dataframe_name or child_column_name):
             raise ValueError("Cannot specify dataframe and column name values and also supply a Relationship")
@@ -309,7 +309,7 @@ class EntitySet(object):
             parent_df.ww.set_index(parent_column)
         # Empty dataframes (as a result of accessing Entity.metadata)
         # default to object dtypes for discrete variables, but
-        # indexes/ids default to ints. In this case, we convert
+        # indexes/foreign keys default to ints. In this case, we convert
         # the empty column's type to int
         # --> Implementation: is this still relevant?
         if isinstance(child_df, pd.DataFrame) and \
@@ -335,8 +335,9 @@ class EntitySet(object):
 
         Args:
             dataframe_name (str) : name of the dataframe for which to set the secondary time index.
-            secondary_time_index (dict[str-> list[str]]): Name of column
-                containing time data to use a second time index for the dataframe.
+            secondary_time_index (dict[str-> list[str]]): Name of column containing time data to
+                be used as a secondary time index mapped to a list of the columns in the dataframe
+                associated with that secondary time index.
         """
         dataframe = self[dataframe_name]
         self._set_secondary_time_index(dataframe, secondary_time_index)
@@ -388,7 +389,7 @@ class EntitySet(object):
 
     def _forward_dataframe_paths(self, start_dataframe_name, seen_dataframes=None):
         """
-        Generator which yields the ids of all dataframes connected through forward
+        Generator which yields the names of all dataframes connected through forward
         relationships, and the path taken to each. A dataframe will be yielded
         multiple times if there are multiple paths to it.
 
@@ -417,7 +418,7 @@ class EntitySet(object):
         Get dataframes that are in a forward relationship with dataframe
 
         Args:
-            dataframe_name (str): Name dataframe of dataframe to search from.
+            dataframe_name (str): Name of dataframe to search from.
             deep (bool): if True, recursively find forward dataframes.
 
         Yields a tuple of (descendent_name, path from dataframe_name to descendant).
@@ -437,7 +438,7 @@ class EntitySet(object):
         Get dataframes that are in a backward relationship with dataframe
 
         Args:
-            dataframe_name (str): Name dataframe of dataframe to search from.
+            dataframe_name (str): Name of dataframe to search from.
             deep (bool): if True, recursively find backward dataframes.
 
         Yields a tuple of (descendent_name, path from dataframe_name to descendant).
@@ -526,8 +527,9 @@ class EntitySet(object):
             time_index (str, optional): Name of the column containing
                 time data. Type must be numeric or datetime in nature.
 
-            secondary_time_index (dict[str -> list[str]]): Name of column
-                containing time data to use a second time index for the dataframe.
+            secondary_time_index (dict[str -> list[str]]): Name of column containing time data to
+                be used as a secondary time index mapped to a list of the columns in the dataframe
+                associated with that secondary time index.
 
             already_sorted (bool, optional) : If True, assumes that input dataframe
                 is already sorted by time. Defaults to False.
@@ -643,11 +645,11 @@ class EntitySet(object):
                 will be created across this column.
 
             additional_columns (list[str]):
-                List of column ids to remove from
+                List of column names to remove from
                 base_dataframe and move to new dataframe.
 
             copy_columns (list[str]): List of
-                column ids to copy from old dataframe
+                column names to copy from old dataframe
                 and move to new dataframe.
 
             make_time_index (bool or str, optional): Create time index for new dataframe based
@@ -656,9 +658,8 @@ class EntitySet(object):
                 uses the primary time index. Defaults to True if base dataframe has a time index.
 
             make_secondary_time_index (dict[str -> list[str]], optional): Create a secondary time index
-                from key. Values of dictionary
-                are the columns to associate with the secondary time index. Only one
-                secondary time index is allowed. If None, only associate the time index.
+                from key. Values of dictionary are the columns to associate with a secondary time index. 
+                Only one secondary time index is allowed. If None, only associate the time index.
 
             new_dataframe_time_index (str, optional): Rename new dataframe time index.
 
@@ -890,7 +891,7 @@ class EntitySet(object):
         an instance or children of that instance were observed).  Used when
         calculating features using training windows
         Args:
-            updated_dataframes (list[str]): List of dataframe ids to update last_time_index for
+            updated_dataframes (list[str]): List of dataframe names to update last_time_index for
                 (will update all parents of those dataframes as well)
         """
         # Generate graph of dataframes to find leaf dataframes
