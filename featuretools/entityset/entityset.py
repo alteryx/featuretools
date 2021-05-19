@@ -681,9 +681,9 @@ class EntitySet(object):
                 if col_name == index:
                     raise ValueError("Not adding {} as both index and column in {}".format(col_name, list_name))
 
-        for v in additional_columns:
-            if v == base_dataframe.ww.time_index:
-                raise ValueError("Not moving {} as it is the base time index column. Perhaps, move the column to the copy_columns.".format(v))
+        for col in additional_columns:
+            if col == base_dataframe.ww.time_index:
+                raise ValueError("Not moving {} as it is the base time index column. Perhaps, move the column to the copy_columns.".format(col))
 
         if isinstance(make_time_index, str):
             if make_time_index not in base_dataframe.columns:
@@ -728,13 +728,20 @@ class EntitySet(object):
             assert base_dataframe.ww.time_index is not None, \
                 "Base dataframe doesn't have time_index defined"
 
-            if base_time_index not in [v for v in additional_columns]:
+            if base_time_index not in [col for col in copy_columns]:
                 copy_columns.append(base_time_index)
 
-            transfer_types[new_dataframe_time_index] = (base_dataframe.ww.logical_types[base_dataframe.ww.time_index],
-                                                        base_dataframe.ww.semantic_tags[base_dataframe.ww.time_index],
-                                                        base_dataframe.ww.columns[base_dataframe.ww.time_index].metadata,
-                                                        base_dataframe.ww.columns[base_dataframe.ww.time_index].description)
+                time_index_types = (base_dataframe.ww.logical_types[base_dataframe.ww.time_index],
+                                    base_dataframe.ww.semantic_tags[base_dataframe.ww.time_index],
+                                    base_dataframe.ww.columns[base_dataframe.ww.time_index].metadata,  # --> not sure we want to maintain metadata here - first time index might be clunkly
+                                    base_dataframe.ww.columns[base_dataframe.ww.time_index].description)
+            else:
+                # If base_time_index is in copy_columns then we've already added the transfer types
+                # but since we're changing the name, we have to remove it
+                time_index_types = transfer_types[base_dataframe.ww.time_index]
+                del transfer_types[base_dataframe.ww.time_index]
+
+            transfer_types[new_dataframe_time_index] = time_index_types
 
         else:
             new_dataframe_time_index = None
@@ -744,8 +751,8 @@ class EntitySet(object):
             raise ValueError("time_index and index cannot be the same value, %s" % (new_dataframe_time_index))
 
         selected_columns = [index] +\
-            [v for v in additional_columns] +\
-            [v for v in copy_columns]
+            [col for col in additional_columns] +\
+            [col for col in copy_columns]
 
         new_dataframe2 = new_dataframe. \
             drop_duplicates(index, keep='first')[selected_columns]

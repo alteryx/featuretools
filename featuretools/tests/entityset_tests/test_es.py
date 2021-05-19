@@ -31,6 +31,46 @@ def test_normalize_time_index_as_additional_column(es):
                                copy_columns=[])
 
 
+def test_normalize_time_index_as_copy_column(es):
+    assert "signup_date" in es["customers"].columns
+    es.normalize_dataframe(base_dataframe_name='customers',
+                           new_dataframe_name='cancellations',
+                           index='cancel_reason',
+                           make_time_index='signup_date',
+                           additional_columns=[],
+                           copy_columns=['signup_date'])
+
+    assert 'signup_date' in es['cancellations'].columns
+    assert es['cancellations'].ww.time_index == 'signup_date'
+
+
+def test_normalize_time_index_as_copy_column_new_time_index(es):
+    assert "signup_date" in es["customers"].columns
+    es.normalize_dataframe(base_dataframe_name='customers',
+                           new_dataframe_name='cancellations',
+                           index='cancel_reason',
+                           make_time_index=True,
+                           additional_columns=[],
+                           copy_columns=['signup_date'])
+
+    assert 'first_customers_time' in es['cancellations'].columns
+    assert 'signup_date' not in es['cancellations'].columns
+    assert es['cancellations'].ww.time_index == 'first_customers_time'
+
+
+def test_normalize_time_index_as_copy_column_no_time_index(es):
+    assert "signup_date" in es["customers"].columns
+    es.normalize_dataframe(base_dataframe_name='customers',
+                           new_dataframe_name='cancellations',
+                           index='cancel_reason',
+                           make_time_index=False,
+                           additional_columns=[],
+                           copy_columns=['signup_date'])
+
+    assert 'signup_date' in es['cancellations'].columns
+    assert es['cancellations'].ww.time_index is None
+
+
 def test_cannot_re_add_relationships_that_already_exists(es):
     warn_text = "Not adding duplicate relationship: " + str(es.relationships[0])
     before_len = len(es.relationships)
