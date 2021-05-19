@@ -1136,6 +1136,20 @@ def test_normalize_dataframe(es):
     assert 'device_type' in es['device_types'].columns
 
 
+def test_normalize_dataframe_add_index_as_column(es):
+    error_text = "Not adding device_type as both index and column in additional_columns"
+    with pytest.raises(ValueError, match=error_text):
+        es.normalize_dataframe('sessions', 'device_types', 'device_type',
+                               additional_columns=['device_name', 'device_type'],
+                               make_time_index=False)
+
+    error_text = "Not adding device_type as both index and column in copy_columns"
+    with pytest.raises(ValueError, match=error_text):
+        es.normalize_dataframe('sessions', 'device_types', 'device_type',
+                               copy_columns=['device_name', 'device_type'],
+                               make_time_index=False)
+
+
 def test_normalize_dataframe_new_time_index_in_base_entity_error_check(es):
     error_text = "'make_time_index' must be a column in the base dataframe"
     with pytest.raises(ValueError, match=error_text):

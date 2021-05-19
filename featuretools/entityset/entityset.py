@@ -670,23 +670,16 @@ class EntitySet(object):
         additional_columns = additional_columns or []
         copy_columns = copy_columns or []
 
-        if not isinstance(additional_columns, list):
-            raise TypeError("'additional_columns' must be a list, but received type {}"
-                            .format(type(additional_columns)))
-
-        if len(additional_columns) != len(set(additional_columns)):
-            raise ValueError("'additional_columns' contains duplicate columns. All columns must be unique.")
-
-        if not isinstance(copy_columns, list):
-            raise TypeError("'copy_columns' must be a list, but received type {}"
-                            .format(type(copy_columns)))
-
-        if len(copy_columns) != len(set(copy_columns)):
-            raise ValueError("'copy_columns' contains duplicate columns. All columns must be unique.")
-
-        for v in additional_columns + copy_columns:
-            if v == index:
-                raise ValueError("Not copying {} as both index and column in copy_columns".format(v))
+        for list_name, col_list in {'copy_columns': copy_columns,
+                                    'additional_columns': additional_columns}.items():
+            if not isinstance(col_list, list):
+                raise TypeError("'{}' must be a list, but received type {}"
+                                .format(list_name, type(col_list)))
+            if len(col_list) != len(set(col_list)):
+                raise ValueError(f"'{list_name}' contains duplicate columns. All columns must be unique.")
+            for col_name in col_list:
+                if col_name == index:
+                    raise ValueError("Not adding {} as both index and column in {}".format(col_name, list_name))
 
         for v in additional_columns:
             if v == base_dataframe.ww.time_index:
