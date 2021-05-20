@@ -4,6 +4,7 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
+
 import woodwork as ww
 from woodwork.logical_types import (
     Categorical,

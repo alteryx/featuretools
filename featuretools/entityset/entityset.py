@@ -6,6 +6,7 @@ from collections import defaultdict
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
+
 import woodwork as ww
 
 # from featuretools.entityset import deserialize, serialize
@@ -658,7 +659,7 @@ class EntitySet(object):
                 uses the primary time index. Defaults to True if base dataframe has a time index.
 
             make_secondary_time_index (dict[str -> list[str]], optional): Create a secondary time index
-                from key. Values of dictionary are the columns to associate with a secondary time index. 
+                from key. Values of dictionary are the columns to associate with a secondary time index.
                 Only one secondary time index is allowed. If None, only associate the time index.
 
             new_dataframe_time_index (str, optional): Rename new dataframe time index.

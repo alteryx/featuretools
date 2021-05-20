@@ -2,8 +2,9 @@ import math
 import re
 
 import pandas as pd
-import woodwork as ww
 from tqdm import tqdm
+
+import woodwork as ww
 
 import featuretools as ft
 

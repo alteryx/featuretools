@@ -1,7 +1,8 @@
 import pandas as pd
-import woodwork as ww
 from numpy import random
 from numpy.random import choice
+
+import woodwork as ww
 
 import featuretools as ft
 
