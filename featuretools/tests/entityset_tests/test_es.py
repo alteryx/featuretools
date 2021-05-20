@@ -41,6 +41,8 @@ def test_normalize_time_index_as_copy_column(es):
                            additional_columns=[],
                            copy_columns=['signup_date'])
 
+    assert 'signup_date' in es['customers'].columns
+    assert es['customers'].ww.time_index == 'signup_date'
     assert 'signup_date' in es['cancellations'].columns
     assert es['cancellations'].ww.time_index == 'signup_date'
 
@@ -54,6 +56,8 @@ def test_normalize_time_index_as_copy_column_new_time_index(es):
                            additional_columns=[],
                            copy_columns=['signup_date'])
 
+    assert 'signup_date' in es['customers'].columns
+    assert es['customers'].ww.time_index == 'signup_date'
     assert 'first_customers_time' in es['cancellations'].columns
     assert 'signup_date' not in es['cancellations'].columns
     assert es['cancellations'].ww.time_index == 'first_customers_time'
@@ -68,6 +72,8 @@ def test_normalize_time_index_as_copy_column_no_time_index(es):
                            additional_columns=[],
                            copy_columns=['signup_date'])
 
+    assert 'signup_date' in es['customers'].columns
+    assert es['customers'].ww.time_index == 'signup_date'
     assert 'signup_date' in es['cancellations'].columns
     assert es['cancellations'].ww.time_index is None
 
