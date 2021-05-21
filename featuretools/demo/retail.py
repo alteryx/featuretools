@@ -74,7 +74,7 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
     if return_single_table:
         return df
 
-    es.add_dataframe("order_products",
+    es.add_dataframe(dataframe_name="order_products",
                      dataframe=df,
                      index="order_product_id",
                      make_index=True,

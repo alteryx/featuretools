@@ -99,8 +99,8 @@ def make_es(data):
                      'canceled': ww.logical_types.Boolean,
                      'diverted': ww.logical_types.Boolean}
 
-    es.add_dataframe('trip_logs',
-                     data,
+    es.add_dataframe(data,
+                     dataframe_name='trip_logs',
                      index='trip_log_id',
                      make_index=True,
                      time_index='date_scheduled',

@@ -817,7 +817,6 @@ class EntitySet(object):
                               )
 
         self.add_dataframe(
-            new_dataframe_name,
             new_dataframe,
             secondary_time_index=make_secondary_time_index
         )

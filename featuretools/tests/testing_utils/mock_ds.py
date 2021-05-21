@@ -40,8 +40,8 @@ def make_ecommerce_entityset(with_integer_time_index=False):
             ti_name = time_index['name']
             secondary = time_index['secondary']
         df = dataframes[df_name]
-        es.add_dataframe(df_name,
-                         df,
+        es.add_dataframe(df,
+                         dataframe_name=df_name,
                          index='id',
                          logical_types=logical_types[df_name],
                          semantic_tags=semantic_tags[df_name],
