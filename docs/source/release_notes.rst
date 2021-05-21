@@ -14,6 +14,7 @@ Future Release
         * Add auto assign bot on GitHub (:pr:`1380`)
         * Replaced ``Entity.update_data`` with ``EntitySet.update_dataframe`` (:pr:`1398`)
         * Move validation check for uniform time index to ``EntitySet`` (:pr:`1400`)
+        * Replace ``Entity`` objects in ``EntitySet`` with Woodwork dataframes (:pr:`1405`)
     * Documentation Changes
         * Improve formatting of release notes (:pr:`1396`)
     * Testing Changes
@@ -23,22 +24,49 @@ Future Release
         * Update boto3 and urllib3 version requirements (:pr:`1394`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 Breaking Changes
 ++++++++++++++++
 
 * ``Entity.add_interesting_values`` has been removed. To add interesting values for a single
-  entity, call ``EntitySet.add_interesting_values`` and pass the id of the entity for
-  which to add interesting values in the ``entity_id`` parameter.
+  entity, call ``EntitySet.add_interesting_values`` and pass the name of the dataframe for
+  which to add interesting values in the ``dataframe_name`` parameter.
 * ``Entity.set_secondary_time_index`` has been removed and replaced by ``EntitySet.set_secondary_time_index``
-  with an added ``entity`` parameter to specify the entity on which to set the secondary time index.
-* ``Relationship`` initialization has been updated to accept four id values for the parent dataframe,
+  with an added ``dataframe_name`` parameter to specify the dataframe on which to set the secondary time index.
+* ``Relationship`` initialization has been updated to accept four name values for the parent dataframe,
   parent column, child dataframe and child column instead of accepting two ``Variable`` objects.
-* ``EntitySet.add_relationship`` has been updated to accept dataframe and column id values or a
+* ``EntitySet.add_relationship`` has been updated to accept dataframe and column name values or a
   ``Relationship`` object. Adding a relationship from a ``Relationship`` object now requires passing
   the relationship as a keyword argument.
-* ``Entity.update_data`` has been removed. To update the dataframe, call ``EntitySet.update_dataframe`` and use the ``entity_id`` paramter.
+* ``Entity.update_data`` has been removed. To update the dataframe, call ``EntitySet.update_dataframe`` and use the ``dataframe_id`` paramter.
+* The data in an ``EntitySet`` is no longer stored in ``Entity`` objects. Instead, dataframes
+  with Woodwork typing information are used. Accordingly, most language referring to “entities”
+  will now refer to “dataframes”, references to “variables” will now refer to “columns”, and
+  “variable types” will use the Woodwork type system’s “logical types” and “semantic tags”
+* The dictionary of tuples passed to ``EntitySet.__init__`` has replaced the ``variable_types`` element
+  with separate ``logical_types`` and ``semantic_tags`` dictionaries.
+* ``EntitySet.entity_from_dataframe`` no longer exists. To add new tables to an entityset, use``EntitySet.add_dataframe``.
+* ``EntitySet.normalize_entity`` has been renamed to ``EntitySet.normalize_dataframe``
+* Instead of raising an error at ``EntitySet.add_relationship`` when the dtypes of parent and child columns
+  do not match, featuretools will now check whether the Woodwork logical type of the parent and child columns
+  match. If they do not match, there will now be a warning raised, and featuretools will attempt to update
+  the logical type of the child column to match the parent’s.
+* If no index is specified at ``EntitySet.add_dataframe``, the first column will only be used as index if
+  Woodwork has not been initialized on the DataFrame. When adding a dataframe that already has Woodwork
+  initialized, if there is no index set, an error will be raised.
+* Due to restrictions on Woodwork initialization, Koalas DataFrames can no longer use the make_index parameter.
+* Featuretools will no longer re-order columns in DataFrames so that the index column is the first column of the DataFrame. 
+* Type inference can now be performed on Dask and Koalas dataframes, though a warning will be issued 
+  indicating that this may be computationally intensive.
+* If ``make_index`` is False, an index column will no longer be created even if one is specified.
+  Instead, an error will be raised.
+* EntitySet.time_type is no longer stored as Variable objects. Instead, Woodwork typing is used, and a
+  numeric time type will be indicated by the ``'numeric'`` semantic tag string, and a datetime time type
+  will be indicated by the ``Datetime`` logical type.
+* ``last_time_index``, ``secondary_time_index``, and ``interesting_values`` are no longer attributes
+  of an entityset’s tables that can be accessed directly. Now they must be accessed through the metadata
+  of the Woodwork DataFrame, which is a dictionary.
 
 What's New in this Release
 ++++++++++++++++++++++++++
