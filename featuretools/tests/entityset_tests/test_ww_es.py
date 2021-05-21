@@ -299,6 +299,71 @@ def test_conflicting_dataframe_names(es):
     assert 'sessions' not in new_es.dataframe_dict
 
 
+# --> test with es not just pd
+def test_dataframe_without_name():
+    new_es = EntitySet()
+
+    new_df = pd.DataFrame()
+
+    assert new_df.ww.schema is None
+
+    error = 'Cannot add dataframe to EntitySet without a name. Please provide a value for the dataframe_name parameter.'
+    with pytest.raises(ValueError, match=error):
+        new_es.add_dataframe(new_df)
+
+
+def test_dataframe_with_name_parameter():
+    new_es = EntitySet()
+
+    new_df = pd.DataFrame({'id': [1, 2, 3]})
+
+    assert new_df.ww.schema is None
+
+    new_es.add_dataframe(new_df, dataframe_name='df_name', index='id')
+    assert new_es['df_name'].ww.name == 'df_name'
+
+
+def test_woodwork_dataframe_without_name():
+    new_es = EntitySet()
+
+    new_df = pd.DataFrame()
+    new_df.ww.init()
+
+    assert new_df.ww.schema is not None
+
+    error = 'Cannot add a Woodwork DataFrame to EntitySet without a name'
+    with pytest.raises(ValueError, match=error):
+        new_es.add_dataframe(new_df)
+
+
+def test_woodwork_dataframe_with_name():
+    new_es = EntitySet()
+
+    new_df = pd.DataFrame({'id': [1, 2, 3]})
+    new_df.ww.init(name='df_name', index='id')
+
+    assert new_df.ww.schema is not None
+
+    new_es.add_dataframe(new_df)
+
+    assert new_es['df_name'].ww.name == 'df_name'
+
+
+def test_woodwork_dataframe_ignore_name_parameter():
+    new_es = EntitySet()
+
+    new_df = pd.DataFrame({'id': [1, 2, 3]})
+    new_df.ww.init(name='df_name', index='id')
+
+    assert new_df.ww.schema is not None
+
+    warning = 'A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: dataframe_name'
+    with pytest.warns(UserWarning, match=warning):
+        new_es.add_dataframe(new_df, dataframe_name='conflicting_name')
+
+    assert new_es['df_name'].ww.name == 'df_name'
+
+
 def test_extra_woodwork_params(es):
     new_es = EntitySet()
 
