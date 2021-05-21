@@ -45,23 +45,19 @@ def test_create_entityset_with_mixed_dataframe_types(pd_es, dask_es):
                        "values": [1, 12, -34, 27]})
     dask_df = dd.from_pandas(df, npartitions=2)
 
-    # Test error is raised when trying to add Dask dataframe to entitset with existing pandas dataframes
     err_msg = "All dataframes must be of the same type. " \
               "Cannot add dataframe of type {} to an entityset with existing dataframes " \
-              "of type {}".format(type(dask_df), type(pd_es.dataframes[0]))
+              "of type {}"
 
-    with pytest.raises(ValueError, match=err_msg):
+    # Test error is raised when trying to add Dask dataframe to entitset with existing pandas dataframes
+    with pytest.raises(ValueError, match=err_msg.format(type(dask_df), type(pd_es.dataframes[0]))):
         pd_es.add_dataframe(
             dataframe_name="new_dataframe",
             dataframe=dask_df,
             index="id")
 
     # Test error is raised when trying to add pandas dataframe to entitset with existing dask dataframes
-    err_msg = "All dataframes must be of the same type. " \
-              "Cannot add dataframe of type {} to an entityset with existing dataframes " \
-              "of type {}".format(type(df), type(dask_es.dataframes[0]))
-
-    with pytest.raises(ValueError, match=err_msg):
+    with pytest.raises(ValueError, match=err_msg.format(type(df), type(dask_es.dataframes[0]))):
         dask_es.add_dataframe(
             dataframe_name="new_dataframe",
             dataframe=df,
