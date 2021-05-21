@@ -51,7 +51,6 @@ def df(request):
 
 def test_init_es_with_dataframe(df):
     es = EntitySet('es', dataframes={'table': (df,)})
-
     assert es.id == 'es'
     assert len(es.dataframe_dict) == 1
     assert es['table'] is df
@@ -62,8 +61,10 @@ def test_init_es_with_dataframe(df):
 
 
 def test_init_es_with_woodwork_table(df):
-    df.ww.init(index='id')
-    es = EntitySet('es', dataframes={'table': (df,)})
+    df.ww.init(index='id', name='table')
+    warning = 'A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: dataframe_name'
+    with pytest.warns(UserWarning, match=warning):
+        es = EntitySet('es', dataframes={'table': (df,)})
 
     assert es.id == 'es'
     assert len(es.dataframe_dict) == 1
@@ -114,22 +115,25 @@ def test_init_es_with_multiple_dataframes(pd_df):
 def test_add_dataframe_to_es(df):
     es1 = EntitySet('es')
     assert es1.dataframe_dict == {}
-    es1.add_dataframe('table', df, index='id', semantic_tags={'category': 'new_tag'})
+    es1.add_dataframe(df, dataframe_name='table', index='id', semantic_tags={'category': 'new_tag'})
     assert len(es1.dataframe_dict) == 1
 
     copy_df = df.ww.copy()
 
     es2 = EntitySet('es')
     assert es2.dataframe_dict == {}
-    es2.add_dataframe('table', copy_df)
+    es2.add_dataframe(copy_df)
     assert len(es2.dataframe_dict) == 1
 
     assert es1['table'].ww == es2['table'].ww
 
 
 def test_change_es_dataframe_schema(df):
-    df.ww.init(index='id')
-    es = EntitySet('es', dataframes={'table': (df,)})
+    df.ww.init(index='id', name='table')
+
+    warning = 'A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: dataframe_name'
+    with pytest.warns(UserWarning, match=warning):
+        es = EntitySet('es', dataframes={'table': (df,)})
 
     assert es['table'].ww.index == 'id'
 
@@ -170,29 +174,29 @@ def dates_df():
 
 
 def test_add_secondary_time_index(dates_df):
-    dates_df.ww.init(index='backwards_order', time_index='dates_backwards')
+    dates_df.ww.init(name='dates_table', index='backwards_order', time_index='dates_backwards')
     es = EntitySet('es')
-    es.add_dataframe('dates_table', dates_df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
+    es.add_dataframe(dates_df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
 
     assert dates_df.ww.metadata['secondary_time_index'] == {'repeating_dates': ['random_order', 'special', 'repeating_dates']}
 
 
 def test_time_type_check_order(dates_df):
-    dates_df.ww.init(index='backwards_order', time_index='random_order')
+    dates_df.ww.init(name='dates_table', index='backwards_order', time_index='random_order')
     es = EntitySet('es')
 
     error = 'dates_table time index is Datetime type which differs from other entityset time indexes'
     with pytest.raises(TypeError, match=error):
-        es.add_dataframe('dates_table', dates_df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
+        es.add_dataframe(dates_df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
 
     assert 'secondary_time_index' not in dates_df.ww.metadata
 
 
 def test_add_time_index_through_woodwork_different_type(dates_df):
-    dates_df.ww.init(index='backwards_order', time_index='dates_backwards')
+    dates_df.ww.init(name='dates_table', index='backwards_order', time_index='dates_backwards')
     es = EntitySet('es')
 
-    es.add_dataframe('dates_table', dates_df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
+    es.add_dataframe(dates_df, secondary_time_index={'repeating_dates': ['random_order', 'special']})
 
     assert dates_df.ww.metadata['secondary_time_index'] == {'repeating_dates': ['random_order', 'special', 'repeating_dates']}
     assert es.time_type == Datetime
@@ -208,26 +212,26 @@ def test_add_time_index_through_woodwork_different_type(dates_df):
 
 
 def test_init_with_mismatched_time_types(dates_df):
-    dates_df.ww.init(index='backwards_order', time_index='repeating_dates')
+    dates_df.ww.init(name='dates_table', index='backwards_order', time_index='repeating_dates')
     es = EntitySet('es')
-    es.add_dataframe('dates_table', dates_df, secondary_time_index={'special_dates': ['special']})
+    es.add_dataframe(dates_df, secondary_time_index={'special_dates': ['special']})
     assert es.time_type == Datetime
 
     nums_df = pd.DataFrame({'id': [1, 2, 3], 'times': [9, 8, 7]})
-    nums_df.ww.init(index='id', time_index='times')
+    nums_df.ww.init(name='numerics_table', index='id', time_index='times')
 
     error = 'numerics_table time index is numeric type which differs from other entityset time indexes'
     with pytest.raises(TypeError, match=error):
-        es.add_dataframe('numerics_table', nums_df)
+        es.add_dataframe(nums_df)
 
 
 def test_int_double_time_type(dates_df):
-    dates_df.ww.init(index='backwards_order', time_index='random_order',
+    dates_df.ww.init(name='dates_table', index='backwards_order', time_index='random_order',
                      logical_types={'random_order': 'Integer', 'special': 'Double'})
     es = EntitySet('es')
 
     # Both random_order and special are numeric, but they are different logical types
-    es.add_dataframe('dates_table', dates_df, secondary_time_index={'special': ['dates_backwards']})
+    es.add_dataframe(dates_df, secondary_time_index={'special': ['dates_backwards']})
 
     assert es['dates_table'].ww.logical_types['random_order'] == Integer
     assert es['dates_table'].ww.logical_types['special'] == Double
@@ -247,9 +251,9 @@ def test_normalize_dataframe():
         'is_registered': pd.Series([True, False, True, None], dtype='boolean'),
     })
 
-    df.ww.init(index='id', time_index='signup_date')
+    df.ww.init(name='first_table', index='id', time_index='signup_date')
     es = EntitySet('es')
-    es.add_dataframe('first_table', df)
+    es.add_dataframe(df)
     es.normalize_dataframe('first_table', 'second_table', 'age',
                            additional_columns=['phone_number', 'full_name'],
                            make_time_index=True)
@@ -268,9 +272,9 @@ def test_update_dataframe():
         'is_registered': pd.Series([True, False, True, None], dtype='boolean'),
     })
 
-    df.ww.init(index='id')
+    df.ww.init(name='table', index='id')
     es = EntitySet('es')
-    es.add_dataframe('table', df)
+    es.add_dataframe(df)
     original_schema = es['table'].ww.schema
 
     new_df = df.iloc[2:]
@@ -284,19 +288,6 @@ def test_add_last_time_indexes(es):
     es.add_last_time_indexes(['products'])
 
     assert 'last_time_index' in es['products'].ww.metadata
-
-
-def test_conflicting_dataframe_names(es):
-    new_es = EntitySet()
-
-    sessions_df = es['sessions'].ww.copy()
-
-    assert sessions_df.ww.name == 'sessions'
-
-    new_es.add_dataframe('different_name', sessions_df)
-    assert sessions_df.ww.name == 'different_name'
-    assert new_es['different_name'] is sessions_df
-    assert 'sessions' not in new_es.dataframe_dict
 
 
 def test_dataframe_without_name(es):
@@ -326,9 +317,9 @@ def test_woodwork_dataframe_without_name(es):
     new_es = EntitySet()
 
     new_df = es['sessions'].ww.copy()
-    new_df.ww._schema.name = 'df_name'
+    new_df.ww._schema.name = None
 
-    assert new_df.ww.name == 'df_name'
+    assert new_df.ww.name is None
 
     error = 'Cannot add a Woodwork DataFrame to EntitySet without a name'
     with pytest.raises(ValueError, match=error):
@@ -373,7 +364,7 @@ def test_extra_woodwork_params(es):
     assert sessions_df.ww.logical_types['id'] == Integer
 
     warning_msg = ('A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: '
-                   'index, make_index, time_index, logical_types, semantic_tags, already_sorted')
+                   'index, make_index, time_index, logical_types, semantic_tags, already_sorted, dataframe_name')
     with pytest.warns(UserWarning, match=warning_msg):
         new_es.add_dataframe(dataframe_name='sessions', dataframe=sessions_df,
                              index='filepath', time_index='customer_id',
@@ -519,9 +510,10 @@ def latlong_df(request):
 
 def test_update_dataframe_data_transformation(latlong_df):
     initial_df = latlong_df.copy()
-    initial_df.ww.init(index='string_tuple', logical_types={col_name: 'LatLong' for col_name in initial_df.columns})
+    initial_df.ww.init(name='latlongs', index='string_tuple',
+                       logical_types={col_name: 'LatLong' for col_name in initial_df.columns})
     es = EntitySet()
-    es.add_dataframe(dataframe_name='latlongs', dataframe=initial_df)
+    es.add_dataframe(dataframe=initial_df)
 
     df = to_pandas(es['latlongs'])
     expected_val = (1, 2)
@@ -667,8 +659,8 @@ def test_normalize_ww_init():
     df = pd.DataFrame({'id': [1, 2, 3, 4], 'col': ['a', 'b', 'c', 'd'],
                        'df2_id': [1, 1, 2, 2], 'df2_col': [True, False, True, True]})
 
-    df.ww.init(index='id')
-    es.add_dataframe(dataframe_name='test_name', dataframe=df)
+    df.ww.init(index='id', name='test_name')
+    es.add_dataframe(dataframe=df)
 
     assert es['test_name'].ww.name == 'test_name'
     assert es['test_name'].ww.schema.name == 'test_name'

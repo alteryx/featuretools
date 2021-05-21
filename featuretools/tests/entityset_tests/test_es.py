@@ -227,8 +227,9 @@ def test_add_relationship_different_compatible_dtypes(es):
 
 
 def test_add_relationship_errors_child_v_index(es):
-    es.add_dataframe(dataframe_name='log2',
-                     dataframe=es['log'].ww.copy())
+    new_df = es['log'].ww.copy()
+    new_df.ww._schema.name = 'log2'
+    es.add_dataframe(dataframe=new_df)
 
     to_match = "Unable to add relationship because child column 'id' in 'log2' is also its index"
     with pytest.raises(ValueError, match=to_match):
@@ -394,7 +395,7 @@ def test_check_columns_and_dataframe(df):
     logical_types = {'id': ltypes.Integer,
                      'category': ltypes.Categorical}
     es = EntitySet(id='test')
-    es.add_dataframe('test_dataframe', df, index='id',
+    es.add_dataframe(df, dataframe_name='test_dataframe', index='id',
                      logical_types=logical_types)
     assert es.dataframe_dict['test_dataframe'].ww.logical_types['category'] == ltypes.Categorical
     assert es.dataframe_dict['test_dataframe'].ww.semantic_tags['category'] == {'category'}
@@ -478,10 +479,10 @@ def test_none_index(df2):
     es = EntitySet(id='test')
 
     copy_df = df2.copy()
-    copy_df.ww.init()
+    copy_df.ww.init(name='test_dataframe')
     error_msg = 'Cannot add Woodwork DataFrame to EntitySet without index'
     with pytest.raises(ValueError, match=error_msg):
-        es.add_dataframe(dataframe_name='test_dataframe', dataframe=copy_df)
+        es.add_dataframe(dataframe=copy_df)
 
     warn_text = "Using first column as index. To change this, specify the index parameter"
     with pytest.warns(UserWarning, match=warn_text):
@@ -581,8 +582,8 @@ def test_converts_dtype_on_init(df4):
         logical_types['category'] = ltypes.Categorical
         logical_types['category_int'] = ltypes.Categorical
     es = EntitySet(id='test')
-    df4.ww.init(index='id', logical_types=logical_types)
-    es.add_dataframe(dataframe_name='test_dataframe', dataframe=df4)
+    df4.ww.init(name='test_dataframe', index='id', logical_types=logical_types)
+    es.add_dataframe(dataframe=df4)
 
     entity_df = es['test_dataframe']
     assert entity_df['ints'].dtype.name == 'int64'
@@ -745,7 +746,7 @@ def test_handles_datetime_mismatch():
     error_text = "Time index column must contain datetime or numeric values"
     with pytest.raises(TypeError, match=error_text):
         es = EntitySet(id='test')
-        es.add_dataframe('test_dataframe', df, 'id',
+        es.add_dataframe(df, dataframe_name='test_dataframe', index='id',
                          time_index='time', logical_types=logical_types)
 
 
@@ -768,7 +769,7 @@ def test_dataframe_init(es):
             'number': ltypes.Integer
         }
         logical_types.update(extra_logical_types)
-    es.add_dataframe('test_dataframe', df.copy(), index='id',
+    es.add_dataframe(df.copy(), dataframe_name='test_dataframe', index='id',
                      time_index='time', logical_types=logical_types)
     if isinstance(df, dd.DataFrame):
         df_shape = (df.shape[0].compute(), df.shape[1])
@@ -847,8 +848,8 @@ def test_already_sorted_parameter():
                                                          datetime(2016, 4, 9)]})
 
     es = EntitySet(id='test')
-    es.add_dataframe('t',
-                     transactions_df.copy(),
+    es.add_dataframe(transactions_df.copy(),
+                     dataframe_name='t',
                      index='id',
                      time_index="transaction_time",
                      already_sorted=True)
@@ -1035,8 +1036,8 @@ def test_sets_time_when_adding_entity(transactions_df):
     # assert it's not set
     assert getattr(es, "time_type", None) is None
     # add entity
-    es.add_dataframe("transactions",
-                     transactions_df,
+    es.add_dataframe(transactions_df,
+                     dataframe_name="transactions",
                      index="id",
                      time_index="transaction_time",
                      logical_types=transactions_logical_types)
@@ -1052,8 +1053,8 @@ def test_sets_time_when_adding_entity(transactions_df):
     # add wrong time type entity
     error_text = "accounts time index is Datetime type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
-        es.add_dataframe("accounts",
-                         accounts_df,
+        es.add_dataframe(accounts_df,
+                         dataframe_name="accounts",
                          index="id",
                          time_index="signup_date",
                          logical_types=accounts_logical_types)
@@ -1061,8 +1062,8 @@ def test_sets_time_when_adding_entity(transactions_df):
     if isinstance(transactions_df, pd.DataFrame):
         error_text = "Time index column must contain datetime or numeric values"
         with pytest.raises(TypeError, match=error_text):
-            es.add_dataframe("accounts",
-                             accounts_df_string,
+            es.add_dataframe(accounts_df_string,
+                             dataframe_name="accounts",
                              index="id",
                              time_index="signup_date")
 
@@ -1339,8 +1340,8 @@ def test_make_time_index_keeps_original_sorting():
     order = [i for i in range(1000)]
     df = pd.DataFrame.from_dict(trips)
     es = EntitySet('flights')
-    es.add_dataframe("trips",
-                     dataframe=df,
+    es.add_dataframe(dataframe=df,
+                     dataframe_name="trips",
                      index="trip_id",
                      time_index='flight_time')
     assert (es['trips']['trip_id'] == order).all()
