@@ -135,7 +135,8 @@ def test_add_relationship_instantiated_logical_types(es):
     assert es['products'].ww.logical_types['id'] == ltypes.Categorical
 
     warning_text = 'Logical type Categorical for child column product_id does not match parent '\
-        'column id logical type Categorical. Changing child logical type to match parent.'
+        'column id logical type Categorical. There is a conflict between the parameters. '\
+        'Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
         es.add_relationship(u'products', 'id', 'log2', 'product_id')
     assert es['log2'].ww.logical_types['product_id'] == ltypes.Categorical
@@ -1253,8 +1254,7 @@ def dd_normalize_es(pd_normalize_es):
     dd_df = dd.from_pandas(pd_normalize_es['data'], npartitions=2)
     dd_df.ww.init(schema=pd_normalize_es['data'].ww.schema)
 
-    es.add_dataframe(dataframe_name=dd_df.ww.name,
-                     dataframe=dd_df)
+    es.add_dataframe(dataframe=dd_df)
     return es
 
 
@@ -1264,8 +1264,7 @@ def ks_normalize_es(pd_normalize_es):
     es = ft.EntitySet(id=pd_normalize_es.id)
     ks_df = ks.from_pandas(pd_normalize_es['data'])
     ks_df.ww.init(schema=pd_normalize_es['data'].ww.schema)
-    es.add_dataframe(dataframe_name=ks_df.ww.name,
-                     dataframe=ks_df)
+    es.add_dataframe(dataframe=ks_df)
     return es
 
 

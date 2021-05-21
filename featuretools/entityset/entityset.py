@@ -320,8 +320,12 @@ class EntitySet(object):
         parent_ltype = parent_df.ww.logical_types[parent_column]
         child_ltype = child_df.ww.logical_types[child_column]
         if parent_ltype != child_ltype:
+            difference_msg = ''
+            if str(parent_ltype) == str(child_ltype):
+                difference_msg = "There is a conflict between the parameters. "
+
             warnings.warn(f'Logical type {child_ltype} for child column {child_column} does not match '
-                          f'parent column {parent_column} logical type {parent_ltype}. '
+                          f'parent column {parent_column} logical type {parent_ltype}. {difference_msg}'
                           'Changing child logical type to match parent.')
             child_df.ww.set_types(logical_types={child_column: parent_ltype})
 
