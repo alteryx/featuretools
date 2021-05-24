@@ -50,7 +50,7 @@ def df(request):
 
 
 def test_init_es_with_dataframe(df):
-    es = EntitySet('es', dataframes={'table': (df,)})
+    es = EntitySet('es', dataframes={'table': (df, 'id')})
     assert es.id == 'es'
     assert len(es.dataframe_dict) == 1
     assert es['table'] is df
@@ -60,11 +60,9 @@ def test_init_es_with_dataframe(df):
     assert es['table'].ww.logical_types['category'] == Categorical
 
 
-def test_init_es_with_woodwork_table(df):
+def test_init_es_with_woodwork_table_same_name(df):
     df.ww.init(index='id', name='table')
-    warning = 'A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: dataframe_name'
-    with pytest.warns(UserWarning, match=warning):
-        es = EntitySet('es', dataframes={'table': (df,)})
+    es = EntitySet('es', dataframes={'table': (df,)})
 
     assert es.id == 'es'
     assert len(es.dataframe_dict) == 1
@@ -77,6 +75,13 @@ def test_init_es_with_woodwork_table(df):
 
     assert es['table'].ww.logical_types['id'] == Integer
     assert es['table'].ww.logical_types['category'] == Categorical
+
+
+def test_init_es_with_woodwork_table_diff_name_error(df):
+    df.ww.init(index='id', name='table')
+    error = "Cannot add dataframe with conflicting dictionary key, diff_name, from dataframe name, table"
+    with pytest.raises(ValueError, match=error):
+        es = EntitySet('es', dataframes={'diff_name': (df,)})
 
 
 def test_init_es_with_dataframe_and_params(df):
@@ -130,10 +135,7 @@ def test_add_dataframe_to_es(df):
 
 def test_change_es_dataframe_schema(df):
     df.ww.init(index='id', name='table')
-
-    warning = 'A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: dataframe_name'
-    with pytest.warns(UserWarning, match=warning):
-        es = EntitySet('es', dataframes={'table': (df,)})
+    es = EntitySet('es', dataframes={'table': (df,)})
 
     assert es['table'].ww.index == 'id'
 
@@ -313,7 +315,7 @@ def test_dataframe_with_name_parameter(es):
     assert new_es['df_name'].ww.name == 'df_name'
 
 
-def test_woodwork_dataframe_without_name(es):
+def test_woodwork_dataframe_without_name_errors(es):
     new_es = EntitySet()
 
     new_df = es['sessions'].ww.copy()
@@ -339,7 +341,7 @@ def test_woodwork_dataframe_with_name(es):
     assert new_es['df_name'].ww.name == 'df_name'
 
 
-def test_woodwork_dataframe_ignore_name_parameter(es):
+def test_woodwork_dataframe_ignore_conflicting_name_parameter_warning(es):
     new_es = EntitySet()
 
     new_df = es['sessions'].ww.copy()
@@ -354,6 +356,19 @@ def test_woodwork_dataframe_ignore_name_parameter(es):
     assert new_es['df_name'].ww.name == 'df_name'
 
 
+def test_woodwork_dataframe_same_name_parameter(es):
+    new_es = EntitySet()
+
+    new_df = es['sessions'].ww.copy()
+    new_df.ww._schema.name = 'df_name'
+
+    assert new_df.ww.name == 'df_name'
+
+    new_es.add_dataframe(new_df, dataframe_name='df_name')
+
+    assert new_es['df_name'].ww.name == 'df_name'
+
+
 def test_extra_woodwork_params(es):
     new_es = EntitySet()
 
@@ -364,7 +379,7 @@ def test_extra_woodwork_params(es):
     assert sessions_df.ww.logical_types['id'] == Integer
 
     warning_msg = ('A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: '
-                   'index, make_index, time_index, logical_types, semantic_tags, already_sorted, dataframe_name')
+                   'index, make_index, time_index, logical_types, semantic_tags, already_sorted')
     with pytest.warns(UserWarning, match=warning_msg):
         new_es.add_dataframe(dataframe_name='sessions', dataframe=sessions_df,
                              index='filepath', time_index='customer_id',

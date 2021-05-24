@@ -82,6 +82,8 @@ class EntitySet(object):
         relationships = relationships or []
         for df_name in dataframes:
             df = dataframes[df_name][0]
+            if df.ww.schema is not None and df.ww.name != df_name:
+                raise ValueError(f'Cannot add dataframe with conflicting dictionary key, {df_name}, from dataframe name, {df.ww.name}')
 
             index_column = None
             time_index = None
@@ -620,7 +622,7 @@ class EntitySet(object):
                 extra_params.append('semantic_tags')
             if already_sorted:
                 extra_params.append('already_sorted')
-            if dataframe_name is not None:
+            if dataframe_name is not None and dataframe_name != dataframe.ww.name:
                 extra_params.append('dataframe_name')
             if extra_params:
                 warnings.warn("A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: " + ", ".join(extra_params))
