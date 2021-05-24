@@ -1,7 +1,7 @@
 import pandas as pd
+import woodwork as ww
 
 import featuretools as ft
-import featuretools.variable_types as vtypes
 
 
 def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
@@ -74,26 +74,26 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
     if return_single_table:
         return df
 
-    es.entity_from_dataframe("order_products",
-                             dataframe=df,
-                             index="order_product_id",
-                             make_index=True,
-                             time_index="order_date",
-                             variable_types={'description': vtypes.NaturalLanguage})
+    es.add_dataframe(dataframe_name="order_products",
+                     dataframe=df,
+                     index="order_product_id",
+                     make_index=True,
+                     time_index="order_date",
+                     logical_types={'description': ww.logical_types.NaturalLanguage})
 
-    es.normalize_entity(new_entity_id="products",
-                        base_entity_id="order_products",
-                        index="product_id",
-                        additional_variables=["description"])
+    es.normalize_dataframe(new_dataframe_name="products",
+                           base_dataframe_name="order_products",
+                           index="product_id",
+                           additional_columns=["description"])
 
-    es.normalize_entity(new_entity_id="orders",
-                        base_entity_id="order_products",
-                        index="order_id",
-                        additional_variables=["customer_name", "country", "cancelled"])
+    es.normalize_dataframe(new_dataframe_name="orders",
+                           base_dataframe_name="order_products",
+                           index="order_id",
+                           additional_columns=["customer_name", "country", "cancelled"])
 
-    es.normalize_entity(new_entity_id="customers",
-                        base_entity_id="orders",
-                        index="customer_name")
+    es.normalize_dataframe(new_dataframe_name="customers",
+                           base_dataframe_name="orders",
+                           index="customer_name")
     es.add_last_time_indexes()
 
     return es
