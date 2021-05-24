@@ -79,7 +79,7 @@ def test_init_es_with_woodwork_table_same_name(df):
 
 def test_init_es_with_woodwork_table_diff_name_error(df):
     df.ww.init(index='id', name='table')
-    error = "Cannot add dataframe with conflicting dictionary key, diff_name, from dataframe name, table"
+    error = "Naming conflict in dataframes dictionary: dictionary key 'diff_name' does not match dataframe name 'table'"
     with pytest.raises(ValueError, match=error):
         es = EntitySet('es', dataframes={'diff_name': (df,)})
 

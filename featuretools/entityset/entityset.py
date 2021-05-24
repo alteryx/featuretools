@@ -83,7 +83,7 @@ class EntitySet(object):
         for df_name in dataframes:
             df = dataframes[df_name][0]
             if df.ww.schema is not None and df.ww.name != df_name:
-                raise ValueError(f'Cannot add dataframe with conflicting dictionary key, {df_name}, from dataframe name, {df.ww.name}')
+                raise ValueError(f"Naming conflict in dataframes dictionary: dictionary key '{df_name}' does not match dataframe name '{df.ww.name}'")
 
             index_column = None
             time_index = None
