@@ -2,8 +2,19 @@
 
 Release Notes
 -------------
-Future Release
-==============
+
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.24.1 May 26, 2021
+====================
     * Enhancements
     * Fixes
         * Update minimum pyyaml requirement to 5.4 (:pr:`1433`)
