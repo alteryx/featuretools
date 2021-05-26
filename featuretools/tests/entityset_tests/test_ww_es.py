@@ -56,8 +56,8 @@ def test_init_es_with_dataframe(df):
     assert es['table'] is df
 
     assert es['table'].ww.schema is not None
-    assert es['table'].ww.logical_types['id'] == Integer
-    assert es['table'].ww.logical_types['category'] == Categorical
+    assert isinstance(es['table'].ww.logical_types['id'], Integer)
+    assert isinstance(es['table'].ww.logical_types['category'], Categorical)
 
 
 def test_init_es_with_woodwork_table_same_name(df):
@@ -73,8 +73,8 @@ def test_init_es_with_woodwork_table_same_name(df):
     assert es['table'].ww.index == 'id'
     assert es['table'].ww.time_index is None
 
-    assert es['table'].ww.logical_types['id'] == Integer
-    assert es['table'].ww.logical_types['category'] == Categorical
+    assert isinstance(es['table'].ww.logical_types['id'], Integer)
+    assert isinstance(es['table'].ww.logical_types['category'], Categorical)
 
 
 def test_init_es_with_woodwork_table_diff_name_error(df):
@@ -98,8 +98,8 @@ def test_init_es_with_dataframe_and_params(df):
     assert es['table'].ww.index == 'id'
     assert es['table'].ww.time_index is None
 
-    assert es['table'].ww.logical_types['id'] == NaturalLanguage
-    assert es['table'].ww.logical_types['category'] == NaturalLanguage
+    assert isinstance(es['table'].ww.logical_types['id'], NaturalLanguage)
+    assert isinstance(es['table'].ww.logical_types['category'], NaturalLanguage)
 
     assert es['table'].ww.semantic_tags['id'] == {'index'}
     assert es['table'].ww.semantic_tags['category'] == {'new_tag'}
@@ -235,8 +235,8 @@ def test_int_double_time_type(dates_df):
     # Both random_order and special are numeric, but they are different logical types
     es.add_dataframe(dates_df, secondary_time_index={'special': ['dates_backwards']})
 
-    assert es['dates_table'].ww.logical_types['random_order'] == Integer
-    assert es['dates_table'].ww.logical_types['special'] == Double
+    assert isinstance(es['dates_table'].ww.logical_types['random_order'], Integer)
+    assert isinstance(es['dates_table'].ww.logical_types['special'], Double)
 
     assert es['dates_table'].ww.time_index == 'random_order'
     assert 'special' in es['dates_table'].ww.metadata['secondary_time_index']
@@ -376,7 +376,7 @@ def test_extra_woodwork_params(es):
 
     assert sessions_df.ww.index == 'id'
     assert sessions_df.ww.time_index is None
-    assert sessions_df.ww.logical_types['id'] == Integer
+    assert isinstance(sessions_df.ww.logical_types['id'], Integer)
 
     warning_msg = ('A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: '
                    'index, make_index, time_index, logical_types, semantic_tags, already_sorted')
@@ -387,7 +387,7 @@ def test_extra_woodwork_params(es):
                              already_sorted=True, semantic_tags={'id': 'new_tag'})
     assert sessions_df.ww.index == 'id'
     assert sessions_df.ww.time_index is None
-    assert sessions_df.ww.logical_types['id'] == Integer
+    assert isinstance(sessions_df.ww.logical_types['id'], Integer)
     assert 'new_tag' not in sessions_df.ww.semantic_tags
 
 
@@ -476,7 +476,7 @@ def test_update_dataframe_different_dtypes(es):
     es.update_dataframe(dataframe_name='customers', df=float_dtype_df)
 
     assert es['customers']['age'].dtype == 'int64'
-    assert es['customers'].ww.logical_types['age'] == Integer
+    assert isinstance(es['customers'].ww.logical_types['age'], Integer)
 
     incompatible_dtype_df = es['customers'].copy()
     incompatible_list = ['hi', 'bye', 'bye']

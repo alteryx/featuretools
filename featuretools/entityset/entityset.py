@@ -1309,7 +1309,7 @@ class EntitySet(object):
         # Update the dtypes to match the original dataframe's and transform data if necessary
         for col_name in df.columns:
             series = df[col_name]
-            updated_series = ww.accessor_utils._update_column_dtype(series, self[dataframe_name].ww.logical_types[col_name])
+            updated_series = self[dataframe_name].ww.logical_types[col_name].transform(series)
             if updated_series is not series:
                 df[col_name] = updated_series
 
