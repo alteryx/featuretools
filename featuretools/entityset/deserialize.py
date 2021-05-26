@@ -3,72 +3,14 @@ import os
 import tarfile
 import tempfile
 
-import dask.dataframe as dd
-import numpy as np
 import pandas as pd
+import woodwork as ww
+from woodwork.deserialize import read_woodwork_table
 
 from featuretools.entityset.relationship import Relationship
-from featuretools.entityset.serialize import FORMATS
-from featuretools.utils.gen_utils import check_schema_version, import_or_raise
+from featuretools.utils.gen_utils import check_schema_version
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
 from featuretools.utils.wrangle import _is_local_tar, _is_s3, _is_url
-from featuretools.variable_types import LatLong, find_variable_types
-
-
-def description_to_variable(description, entity=None):
-    '''Deserialize variable from variable description.
-
-    Args:
-        description (dict) : Description of :class:`.Variable`.
-        entity (Entity) : Instance of :class:`.Entity` to add :class:`.Variable`. If entity is None, :class:`.Variable` will not be instantiated.
-
-    Returns:
-        variable (Variable) : Returns :class:`.Variable`.
-    '''
-    is_type_string = isinstance(description['type'], str)
-    variable = description['type'] if is_type_string else description['type'].pop('value')
-    if entity is not None:
-        variable_types = find_variable_types()
-        variable_class = variable_types.get(variable, variable_types.get('unknown'))
-        kwargs = {} if is_type_string else description['type']
-        variable = variable_class(description['id'], entity, **kwargs)
-        interesting_values = pd.read_json(description['properties']['interesting_values'], typ='series')
-        variable.interesting_values = interesting_values
-        variable_description = description['properties'].get('description')
-        if variable_description is not None and variable_description != 'the "{}"'.format(variable.name):
-            variable.description = variable_description
-
-    return variable
-
-
-def description_to_entity(description, entityset, path=None):
-    '''Deserialize entity from entity description and add to entityset.
-
-    Args:
-        description (dict) : Description of :class:`.Entity`.
-        entityset (EntitySet) : Instance of :class:`.EntitySet` to add :class:`.Entity`.
-        path (str) : Root directory to serialized entityset.
-    '''
-    if path:
-        dataframe = read_entity_data(description, path=path)
-    else:
-        dataframe = empty_dataframe(description)
-    variable_types = {variable['id']: (description_to_variable(variable), variable)
-                      for variable in description['variables']}
-    es = entityset.entity_from_dataframe(
-        description['id'],
-        dataframe,
-        index=description.get('index'),
-        time_index=description.get('time_index'),
-        secondary_time_index=description['properties'].get('secondary_time_index'),
-        variable_types={variable: variable_types[variable][0] for variable in variable_types})
-    for variable in es[description['id']].variables:
-        interesting_values = variable_types[variable.id][1]['properties']['interesting_values']
-        interesting_values = pd.read_json(interesting_values, typ="series")
-        variable.interesting_values = interesting_values
-        variable_description = variable_types[variable.id][1]['properties'].get('description')
-        if variable_description is not None and variable_description != 'the "{}"'.format(variable.name):
-            variable.description = variable_description
 
 
 def description_to_entityset(description, **kwargs):
@@ -90,12 +32,18 @@ def description_to_entityset(description, **kwargs):
     entityset = EntitySet(description['id'])
 
     last_time_index = []
-    for entity in description['entities'].values():
-        entity['loading_info']['params'].update(kwargs)
-        # If path is None, an empty dataframe will be created for entity.
-        description_to_entity(entity, entityset, path=path)
-        if entity['properties']['last_time_index']:
-            last_time_index.append(entity['id'])
+    for df in description['dataframes'].values():
+        if path is not None:
+            data_path = os.path.join(path, 'data', df['name'])
+            dataframe = read_woodwork_table(data_path, validate=False, **kwargs)
+        else:
+            dataframe = empty_dataframe(df)
+
+        entityset.add_dataframe(dataframe)
+
+        # description_to_dataframe(df, entityset, path=path)
+        # if entity['properties']['last_time_index']:
+        #     last_time_index.append(entity['id'])
 
     for relationship in description['relationships']:
         rel = Relationship.from_dictionary(relationship, entityset)
@@ -108,92 +56,66 @@ def description_to_entityset(description, **kwargs):
 
 
 def empty_dataframe(description):
-    '''Deserialize empty dataframe from entity description.
+    '''Deserialize empty dataframe from dataframe description.
 
     Args:
-        description (dict) : Description of :class:`.Entity`.
+        description (dict) : Description of dataframe.
 
     Returns:
-        df (DataFrame) : Empty dataframe for entity.
+        df (DataFrame) : Empty dataframe for entity with Woodwork initialized.
     '''
-    columns = [variable['id'] for variable in description['variables']]
-    dtypes = description['loading_info']['properties']['dtypes']
-    return pd.DataFrame(columns=columns).astype(dtypes)
+    # TODO: Can we update Woodwork to return an empty initialized dataframe from a description
+    # instead of using this function?
+    loading_info = description['loading_info']
+    table_type = loading_info.get('table_type', 'pandas')
+    logical_types = {}
+    semantic_tags = {}
+    column_descriptions = {}
+    column_metadata = {}
+    use_standard_tags = {}
+    category_dtypes = {}
+    columns = []
+    for col in description['column_typing_info']:
+        col_name = col['name']
+        columns.append(col_name)
 
+        ltype_metadata = col['logical_type']
+        ltype = ww.type_system.str_to_logical_type(ltype_metadata['type'], params=ltype_metadata['parameters'])
 
-def read_entity_data(description, path):
-    '''Read description data from disk.
+        tags = col['semantic_tags']
 
-    Args:
-        description (dict) : Description of :class:`.Entity`.
-        path (str): Location on disk to read entity data.
+        if 'index' in tags:
+            tags.remove('index')
+        elif 'time_index' in tags:
+            tags.remove('time_index')
 
-    Returns:
-        df (DataFrame) : Instance of dataframe.
-    '''
-    file = os.path.join(path, description['loading_info']['location'])
-    kwargs = description['loading_info'].get('params', {})
-    load_format = description['loading_info']['type']
-    entity_type = description['loading_info'].get('entity_type', 'pandas')
-    dtypes = description['loading_info'].get('properties', {}).get('dtypes')
-    read_kwargs = {}
-    if entity_type == 'dask':
-        lib = dd
-        read_kwargs['dtype'] = dtypes
-    elif entity_type == 'koalas':
-        import_error = 'Cannot load Koalas entityset - unable to import Koalas. ' \
-                       'Consider doing a pip install with featuretools[koalas] to install Koalas with pip'
-        lib = import_or_raise('databricks.koalas', import_error)
-        read_kwargs['multiline'] = True
-        kwargs['compression'] = str(kwargs['compression'])
-    else:
-        lib = pd
-    if load_format == 'csv':
-        dataframe = lib.read_csv(
-            file,
-            engine=kwargs['engine'],
-            compression=kwargs['compression'],
-            encoding=kwargs['encoding'],
-            **read_kwargs
-        )
-    elif load_format == 'parquet':
-        dataframe = lib.read_parquet(file, engine=kwargs['engine'])
-    elif load_format == 'pickle':
-        dataframe = pd.read_pickle(file, **kwargs)
-    else:
-        error = 'must be one of the following formats: {}'
-        raise ValueError(error.format(', '.join(FORMATS)))
-    if entity_type == 'koalas':
-        for col, dtype in dtypes.items():
-            if dtype == 'object':
-                dtypes[col] = 'str'
-            if dtype == 'datetime64[ns]':
-                dtypes[col] = np.datetime64
-    dataframe = dataframe.astype(dtypes)
+        logical_types[col_name] = ltype
+        semantic_tags[col_name] = tags
+        column_descriptions[col_name] = col['description']
+        column_metadata[col_name] = col['metadata']
+        use_standard_tags[col_name] = col['use_standard_tags']
 
-    if load_format in ['parquet', 'csv']:
-        latlongs = []
-        for var_description in description['variables']:
-            if var_description['type']['value'] == LatLong.type_string:
-                latlongs.append(var_description["id"])
-
-        def parse_latlong_tuple(x):
-            return tuple(float(y) for y in x[1:-1].split(","))
-
-        def parse_latlong_list(x):
-            return list(float(y) for y in x[1:-1].split(","))
-
-        for column in latlongs:
-            if entity_type == 'dask':
-                meta = (column, tuple([float, float]))
-                dataframe[column] = dataframe[column].apply(parse_latlong_tuple,
-                                                            meta=meta)
-            elif entity_type == 'koalas':
-                dataframe[column] = dataframe[column].apply(parse_latlong_list)
-
+        if col['physical_type']['type'] == 'category':
+            # Make sure categories are recreated properly
+            cat_values = col['physical_type']['cat_values']
+            cat_dtype = col['physical_type']['cat_dtype']
+            if table_type == 'pandas':
+                cat_object = pd.CategoricalDtype(pd.Index(cat_values, dtype=cat_dtype))
             else:
-                dataframe[column] = dataframe[column].apply(parse_latlong_tuple)
-
+                cat_object = pd.CategoricalDtype(pd.Series(cat_values))
+            category_dtypes[col_name] = cat_object
+    dataframe = pd.DataFrame(columns=columns)
+    dataframe.ww.init(
+        name=description.get('name'),
+        index=description.get('index'),
+        time_index=description.get('time_index'),
+        logical_types=logical_types,
+        semantic_tags=semantic_tags,
+        use_standard_tags=use_standard_tags,
+        table_metadata=description.get('table_metadata'),
+        column_metadata=column_metadata,
+        column_descriptions=column_descriptions,
+        validate=False)
     return dataframe
 
 
