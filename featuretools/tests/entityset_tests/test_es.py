@@ -99,11 +99,14 @@ def test_add_relationships_convert_type(es):
         assert str(parent_df[r.parent_column.name].dtype) == str(child_df[r.child_column.name].dtype)
 
 
-def test_add_relationship_instantiated_logical_types(es):
+def test_add_relationship_diff_param_logical_types(es):
+    ordinal_1 = ltypes.Ordinal(order=[0, 1, 2, 3, 4, 5, 6])
+    ordinal_2 = ltypes.Ordinal(order=[0, 1, 2, 3, 4, 5])
+    es['sessions'].ww.set_types(logical_types={'id': ordinal_1})
     log_2_df = es['log'].copy()
     log_logical_types = {
         'id': ltypes.Integer,
-        'session_id': ltypes.Integer,
+        'session_id': ordinal_2,
         'product_id': ltypes.Categorical(),
         'datetime': ltypes.Datetime,
         'value': ltypes.Double,
@@ -131,15 +134,15 @@ def test_add_relationship_instantiated_logical_types(es):
                      time_index='datetime')
     assert 'log2' in es.dataframe_dict
     assert es['log2'].ww.schema is not None
-    # --> see if we need to change this test to test something else now... not sure this will still fail :/
-    assert isinstance(es['log2'].ww.logical_types['product_id'], ltypes.Categorical)
-    assert isinstance(es['products'].ww.logical_types['id'], ltypes.Categorical)
+    assert isinstance(es['log2'].ww.logical_types['session_id'], ltypes.Ordinal)
+    assert isinstance(es['sessions'].ww.logical_types['id'], ltypes.Ordinal)
+    assert es['sessions'].ww.logical_types['id'] != es['log2'].ww.logical_types['session_id']
 
-    warning_text = 'Logical type Categorical for child column product_id does not match parent '\
-        'column id logical type Categorical. There is a conflict between the parameters. '\
+    warning_text = 'Logical type Ordinal for child column session_id does not match parent '\
+        'column id logical type Ordinal. There is a conflict between the parameters. '\
         'Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
-        es.add_relationship(u'products', 'id', 'log2', 'product_id')
+        es.add_relationship(u'sessions', 'id', 'log2', 'session_id')
     assert isinstance(es['log2'].ww.logical_types['product_id'], ltypes.Categorical)
     assert isinstance(es['products'].ww.logical_types['id'], ltypes.Categorical)
 
