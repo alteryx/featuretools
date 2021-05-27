@@ -15,6 +15,7 @@ Future Release
         * Replaced ``Entity.update_data`` with ``EntitySet.update_dataframe`` (:pr:`1398`)
         * Move validation check for uniform time index to ``EntitySet`` (:pr:`1400`)
         * Replace ``Entity`` objects in ``EntitySet`` with Woodwork dataframes (:pr:`1405`)
+        * Update Woodwork integration to use Woodwork ``0.4.0``
     * Documentation Changes
         * Improve formatting of release notes (:pr:`1396`)
     * Testing Changes
