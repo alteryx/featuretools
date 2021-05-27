@@ -58,7 +58,7 @@ def empty_dataframe(description):
         description (dict) : Description of dataframe.
 
     Returns:
-        df (DataFrame) : Empty dataframe for entity with Woodwork initialized.
+        df (DataFrame) : Empty dataframe with Woodwork initialized.
     '''
     # TODO: Can we update Woodwork to return an empty initialized dataframe from a description
     # instead of using this function?

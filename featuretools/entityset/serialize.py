@@ -42,7 +42,7 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
 
     Args:
         entityset (EntitySet) : Instance of :class:`.EntitySet`.
-        path (str) : Location on disk or S3 path to write `data_description.json` and entity data.
+        path (str) : Location on disk or S3 path to write `data_description.json` and dataframe data.
         profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
             Set to False to use an anonymous profile.
         kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.

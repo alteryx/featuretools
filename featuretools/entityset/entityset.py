@@ -553,10 +553,10 @@ class EntitySet(object):
                                                 "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s"),
                                                 "fraud": [True, False, True, False, True, True]})
                 es = ft.EntitySet("example")
-                es.add_dataframe(entity_id="transactions",
-                                         index="id",
-                                         time_index="transaction_time",
-                                         dataframe=transactions_df)
+                es.add_dataframe(dataframe_id="transactions",
+                                 index="id",
+                                 time_index="transaction_time",
+                                 dataframe=transactions_df)
 
                 es["transactions"]
                 es["transactions"].df
