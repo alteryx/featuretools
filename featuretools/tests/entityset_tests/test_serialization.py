@@ -7,8 +7,10 @@ from urllib.request import urlretrieve
 import boto3
 import pandas as pd
 import pytest
-from woodwork.logical_types import Datetime
+import woodwork as ww
+from woodwork.logical_types import Datetime, Ordinal
 from woodwork.serialize import typing_info_to_dict
+from woodwork.type_sys.utils import list_logical_types
 
 from featuretools.entityset import EntitySet, deserialize, serialize
 from featuretools.entityset.serialize import SCHEMA_VERSION
@@ -27,90 +29,43 @@ URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
 
 
-# def test_all_variable_descriptions():
-#     variable_types = find_variable_types()
-#     es = EntitySet()
-#     dataframe = pd.DataFrame(columns=list(variable_types))
-#     es.entity_from_dataframe(
-#         'variable_types',
-#         dataframe,
-#         index='index',
-#         time_index='datetime_time_index',
-#         variable_types=variable_types,
-#     )
-#     entity = es['variable_types']
-#     for variable in entity.variables:
-#         description = variable.to_data_description()
-#         _variable = deserialize.description_to_variable(description, entity=entity)
-#         assert variable.__eq__(_variable)
-
-
-# def test_custom_variable_descriptions():
-
-#     class ItemList(Categorical):
-#         type_string = "item_list"
-#         _default_pandas_dtype = list
-
-#     es = EntitySet()
-#     variables = {'item_list': ItemList, 'time_index': TimeIndex, 'index': Index}
-#     dataframe = pd.DataFrame(columns=list(variables))
-#     es.entity_from_dataframe(
-#         'custom_variable', dataframe, index='index',
-#         time_index='time_index', variable_types=variables)
-#     entity = es['custom_variable']
-#     for variable in entity.variables:
-#         description = variable.to_data_description()
-#         _variable = deserialize.description_to_variable(description, entity=entity)
-#         assert variable.__eq__(_variable)
-
-
-# def test_variable_descriptions(es):
-#     for entity in es.entities:
-#         for variable in entity.variables:
-#             description = variable.to_data_description()
-#             _variable = deserialize.description_to_variable(description, entity=entity)
-#             assert variable.__eq__(_variable)
-
-
-# def test_unknown_variable_description(es):
-#     description = {'type': 'some_unknown_type', 'id': 'some_unknown_id', 'properties': {'name': 'some_unknown_type', 'interesting_values': '{}'}}
-#     variable = deserialize.description_to_variable(description, entity=es.entities[0])
-#     assert(variable.dtype == 'unknown')
-
-
-# def test_custom_description_variable_description(es):
-#     for entity in es.entities:
-#         for variable in entity.variables:
-#             variable.description = 'a custom description'
-#             description = variable.to_data_description()
-#             _variable = deserialize.description_to_variable(description, entity=entity)
-#             assert _variable.description == 'a custom description'
-
-
-# def test_entity_descriptions(es):
-#     _es = EntitySet(es.id)
-#     for dataframe in es.dataframes:
-#         description = serialize.dataframe_to_description(dataframe)
-#         deserialize.description_to_entity(description, _es)
-#         _entity = _es[description['id']]
-#         _entity.last_time_index = entity.last_time_index
-#         assert entity.__eq__(_entity, deep=True)
-
-
-# def test_dask_entity_descriptions(dask_es):
-#     _es = EntitySet(dask_es.id)
-#     for entity in dask_es.metadata.entities:
-#         description = serialize.entity_to_description(entity)
-#         deserialize.description_to_entity(description, _es)
-#         _entity = _es[description['id']]
-#         _entity.last_time_index = entity.last_time_index
-#         assert entity.__eq__(_entity, deep=True)
-
-
 def test_entityset_description(es):
     description = serialize.entityset_to_description(es)
     _es = deserialize.description_to_entityset(description)
     assert es.metadata.__eq__(_es, deep=True)
+
+
+def test_all_ww_logical_types():
+    logical_types = list_logical_types()['type_string'].to_list()
+    dataframe = pd.DataFrame(columns=logical_types)
+    es = EntitySet()
+    ltype_dict = {ltype: ltype for ltype in logical_types}
+    ltype_dict['ordinal'] = Ordinal(order=[])
+    es.add_dataframe(dataframe=dataframe, dataframe_name='all_types', index='integer', logical_types=ltype_dict)
+    description = serialize.entityset_to_description(es)
+    _es = deserialize.description_to_entityset(description)
+    assert es.__eq__(_es, deep=True)
+
+
+# TODO: Add test that checks serialization with a custom WW logical type
+def test_with_custom_ww_logical_type():
+    class CustomLogicalType(ww.logical_types.LogicalType):
+        pass
+
+    ww.type_system.add_type(CustomLogicalType)
+    columns = ['integer', 'natural_language', 'custom_logical_type']
+    dataframe = pd.DataFrame(columns=columns)
+    es = EntitySet()
+    ltype_dict = {
+        'integer': 'integer',
+        'natural_language': 'natural_language',
+        'custom_logical_type': CustomLogicalType,
+    }
+    es.add_dataframe(dataframe=dataframe, dataframe_name='custom_type', index='integer', logical_types=ltype_dict)
+    description = serialize.entityset_to_description(es)
+    _es = deserialize.description_to_entityset(description)
+    assert isinstance(_es['custom_type'].ww.logical_types['custom_logical_type'], CustomLogicalType)
+    assert es.__eq__(_es, deep=True)
 
 
 # HANDLED BY WOODWORK - DO WE NEED THIS TEST??
