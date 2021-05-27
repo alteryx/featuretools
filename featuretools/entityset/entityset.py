@@ -934,6 +934,7 @@ class EntitySet(object):
         explored = set()
 
         for df in queue:
+            # --> should we also be putting a column in the df yet? probs not
             df.ww.metadata['last_time_index'] = None
 
         # We will explore children of dataframes on the queue,
@@ -961,6 +962,10 @@ class EntitySet(object):
                         # Cannot have a category dtype with nans when calculating last time index
                         lti = lti.astype('object')
                         lti[:] = None
+
+                # --> this isn't the final lti, right? so maybe wait until the end to store on the dataframe?
+                # maybe a bit weird to change whats stored on metadata, but as long as we're ok with temp having series, then we can
+                # probably takes longer to add to the whole df
                 dataframe.ww.metadata['last_time_index'] = lti
 
             if dataframe.ww.name in children:
@@ -1034,14 +1039,20 @@ class EntitySet(object):
                             lti_df['last_time_old'] = lti_df['last_time_old'].astype('datetime64[ns]')
                             lti_df = lti_df.fillna(pd.to_datetime('1800-01-01 00:00')).max(axis=1)
                             lti_df = lti_df.replace(pd.to_datetime('1800-01-01 00:00'), pd.NaT)
-                    # lti_df = lti_df.apply(lambda x: x.dropna().max(), axis=1)
 
                     dataframe.ww.metadata['last_time_index'] = lti_df
                     dataframe.ww.metadata.get('last_time_index').name = 'last_time'
 
             explored.add(dataframe.ww.name)
-        self.reset_data_description()
 
+        # Cannot store last time index in Woodwork metadata - move to dataframe
+        for df in self.dataframes:
+            lti = df.ww.metadata.get('last_time_index')
+            if lti is not None:
+                df.ww['last_time'] = lti
+                df.ww.add_semantic_tags({'last_time': 'last_time_index'})
+                df.ww.metadata['last_time_index'] = 'last_time'
+        self.reset_data_description()
     # ###########################################################################
     # #  Other ###############################################
     # ###########################################################################

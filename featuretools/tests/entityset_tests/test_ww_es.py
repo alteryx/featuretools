@@ -291,6 +291,14 @@ def test_add_last_time_indexes(es):
 
     assert 'last_time_index' in es['products'].ww.metadata
 
+    assert es['products'].ww.metadata['last_time_index'] == 'last_time'
+    assert 'last_time' in es['products']
+    assert 'last_time_index' in es['products'].ww.semantic_tags['last_time']
+    assert isinstance(es['products'].ww.logical_types['last_time'], Datetime)
+
+# --> add a test where there's already a last_time column and it gets replaced
+# --> add a test where we deep copy a ww dataframe with lti
+
 
 def test_dataframe_without_name(es):
     new_es = EntitySet()
