@@ -935,6 +935,7 @@ class EntitySet(object):
 
         for df in queue:
             # --> should we also be putting a column in the df yet? probs not
+            # --> maybbe need to drop a last_time column here to reset all ltis
             df.ww.metadata['last_time_index'] = None
 
         # We will explore children of dataframes on the queue,

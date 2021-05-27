@@ -299,6 +299,7 @@ def test_add_last_time_indexes(es):
 # --> add a test where there's already a last_time column and it gets replaced
 # --> add a test where we deep copy a ww dataframe with lti
 # --> test lti logical types matching time type
+# --> test lti with woodwork indices?
 
 
 def test_dataframe_without_name(es):
@@ -635,21 +636,28 @@ def test_update_dataframe_different_dataframe_types():
 
 def test_update_dataframe_last_time_index(es):
     # --> koalas currently fails bc we can't get the schema because it deepcopies
+    # --> broken because I havent yet figured out how to do this when ltis already exist
     es.add_last_time_indexes()
     df = es['customers'].copy()
-    original_last_time_index = to_pandas(es['customers'].ww.metadata['last_time_index'].copy())
+
+    lti_name = es['customers'].ww.metadata['last_time_index']
+    original_last_time_index = to_pandas(es['customers'][lti_name].copy()).sort_index()
 
     new_time_index = ['2012-04-06', '2012-04-08', '2012-04-09']
+
     if ks and isinstance(df, ks.DataFrame):
         df['signup_date'] = new_time_index
     else:
         df['signup_date'] = pd.Series(new_time_index)
 
-    es.update_dataframe('customers', df, recalculate_last_time_indexes=False)
-    assert original_last_time_index.equals(to_pandas(es['customers'].ww.metadata['last_time_index']))
+    es.update_dataframe('customers', df.copy(), recalculate_last_time_indexes=False)
+    assert original_last_time_index.equals(to_pandas(es['customers'][lti_name]))
 
-    es.update_dataframe('customers', df, recalculate_last_time_indexes=True)
-    assert not original_last_time_index.equals(to_pandas(es['customers'].ww.metadata['last_time_index']))
+    es.update_dataframe('customers', df.copy(), recalculate_last_time_indexes=True)
+    # --> not useful. doesn't test what it actually is....
+    assert not original_last_time_index.equals(to_pandas(es['customers'][lti_name]))
+
+# --> test_update with last time index for a df that has no last_time set
 
 
 def test_normalize_dataframe_loses_column_metadata(es):
