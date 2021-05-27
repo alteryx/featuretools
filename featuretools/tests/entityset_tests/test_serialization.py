@@ -68,15 +68,11 @@ def test_with_custom_ww_logical_type():
     assert es.__eq__(_es, deep=True)
 
 
-# HANDLED BY WOODWORK - DO WE NEED THIS TEST??
-def test_invalid_formats(es, tmpdir):
+def test_serialize_invalid_formats(es, tmpdir):
     error_text = 'must be one of the following formats: {}'
     error_text = error_text.format(', '.join(serialize.FORMATS))
     with pytest.raises(ValueError, match=error_text):
         serialize.write_data_description(es, path=str(tmpdir), format='')
-    # with pytest.raises(ValueError, match=error_text):
-    #     entity = {'loading_info': {'location': 'data', 'type': ''}}
-    #     deserialize.read_entity_data(entity, path='.')
 
 
 def test_empty_dataframe(es):
@@ -87,6 +83,7 @@ def test_empty_dataframe(es):
         assert all(dataframe.columns == df.columns)
 
 
+# TODO: Verify this works after WW Issue #950 is closed
 def test_to_csv(es, tmpdir):
     es.to_csv(str(tmpdir), encoding='utf-8', engine='python')
     new_es = deserialize.read_entityset(str(tmpdir))
@@ -105,6 +102,7 @@ def test_to_csv_interesting_values(pd_es, tmpdir):
     assert pd_es.__eq__(new_es, deep=True)
 
 
+# TODO: Verify this works after WW Issue #950 is closed
 def test_to_csv_manual_interesting_values(es, tmpdir):
     es.add_interesting_values(dataframe_name='log', values={'product_id': ['coke_zero']})
     es.to_csv(str(tmpdir))
@@ -331,7 +329,7 @@ def test_serialize_subdirs_not_removed(es, tmpdir):
     test_dir = write_path.mkdir("test_dir")
     with open(str(write_path.join('data_description.json')), 'w') as f:
         json.dump('__SAMPLE_TEXT__', f)
-    if ks and any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+    if ks and any(isinstance(df, ks.DataFrame) for df in es.dataframes):
         compression = 'none'
     else:
         compression = None
@@ -402,6 +400,8 @@ def test_operations_invalidate_metadata(es):
     assert new_es.metadata is not None
     assert new_es._data_description is not None
 
+    # This fails for Koalas due to deepcopy attempted on schema containing koalas series
+    # TODO Verify this works after moving last time indexes out of metadata
     new_es.add_last_time_indexes()
     assert new_es._data_description is None
     assert new_es.metadata is not None
