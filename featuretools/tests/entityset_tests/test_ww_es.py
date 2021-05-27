@@ -298,6 +298,7 @@ def test_add_last_time_indexes(es):
 
 # --> add a test where there's already a last_time column and it gets replaced
 # --> add a test where we deep copy a ww dataframe with lti
+# --> test lti logical types matching time type
 
 
 def test_dataframe_without_name(es):
