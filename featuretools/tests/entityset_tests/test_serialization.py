@@ -142,7 +142,23 @@ def test_to_csv(es, tmpdir):
     assert type(new_df['latlong'][0]) in (tuple, list)
 
 
-# Dask does not support to_pickle
+# Dask/Koalas don't support auto setting of interesting values with es.add_interesting_values()
+def test_to_csv_interesting_values(pd_es, tmpdir):
+    pd_es.add_interesting_values()
+    pd_es.to_csv(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert pd_es.__eq__(new_es, deep=True)
+
+
+def test_to_csv_manual_interesting_values(es, tmpdir):
+    es.add_interesting_values(dataframe_name='log', values={'product_id': ['coke_zero']})
+    es.to_csv(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert es.__eq__(new_es, deep=True)
+    assert new_es['log'].ww['product_id'].ww.metadata['interesting_values'] == ['coke_zero']
+
+
+# Dask/Koalas do not support to_pickle
 def test_to_pickle(pd_es, tmpdir):
     pd_es.to_pickle(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
@@ -157,7 +173,13 @@ def test_to_pickle_errors_dask(dask_es, tmpdir):
         dask_es.to_pickle(str(tmpdir))
 
 
-# Dask does not support to_pickle
+def test_to_pickle_errors_koalas(ks_es, tmpdir):
+    msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
+    with pytest.raises(ValueError, match=msg):
+        ks_es.to_pickle(str(tmpdir))
+
+
+# Dask/Koalas do not support to_pickle
 def test_to_pickle_interesting_values(pd_es, tmpdir):
     pd_es.add_interesting_values()
     pd_es.to_pickle(str(tmpdir))
@@ -165,12 +187,13 @@ def test_to_pickle_interesting_values(pd_es, tmpdir):
     assert pd_es.__eq__(new_es, deep=True)
 
 
-# Dask does not support to_pickle
+# Dask/Koalas do not support to_pickle
 def test_to_pickle_manual_interesting_values(pd_es, tmpdir):
     pd_es.add_interesting_values(dataframe_name='log', values={'product_id': ['coke_zero']})
     pd_es.to_pickle(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert pd_es.__eq__(new_es, deep=True)
+    assert new_es['log'].ww['product_id'].ww.metadata['interesting_values'] == ['coke_zero']
 
 
 def test_to_parquet(es, tmpdir):
@@ -188,17 +211,10 @@ def test_to_parquet_manual_interesting_values(es, tmpdir):
     es.to_parquet(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
+    assert new_es['log'].ww['product_id'].ww.metadata['interesting_values'] == ['coke_zero']
 
 
-# Dask does not support es.add_interesting_values
-def test_dask_to_parquet_manual_interesting_values(dask_es, tmpdir):
-    dask_es.add_interesting_values(dataframe_name='log', values={'product_id': ['coke_zero']})
-    dask_es.to_parquet(str(tmpdir))
-    new_es = deserialize.read_entityset(str(tmpdir))
-    assert dask_es.__eq__(new_es, deep=True)
-
-
-# Dask doesn't support es.add_interesting_values
+# Dask/Koalas don't support auto setting of interesting values with es.add_interesting_values()
 def test_to_parquet_interesting_values(pd_es, tmpdir):
     pd_es.add_interesting_values()
     pd_es.to_parquet(str(tmpdir))
@@ -206,7 +222,8 @@ def test_to_parquet_interesting_values(pd_es, tmpdir):
     assert pd_es.__eq__(new_es, deep=True)
 
 
-# TODO: Fix this test
+# TODO: Fix this test after last time index is stored on DataFrame
+# instead of as series in metadata
 # def test_to_parquet_with_lti(tmpdir, pd_mock_customer):
 #     es = pd_mock_customer
 #     es.to_parquet(str(tmpdir))
@@ -245,7 +262,7 @@ def make_public(s3_client, s3_bucket):
     s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
 
 
-# TODO: tmp file disappears after deserialize step, cannot check equality with Dask
+# TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
 def test_serialize_s3_csv(es, s3_client, s3_bucket):
     if not all(isinstance(df, pd.DataFrame) for df in es.dataframes):
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
@@ -283,7 +300,7 @@ def test_serialize_s3_anon_csv(es, s3_client, s3_bucket):
     assert es.__eq__(new_es, deep=True)
 
 
-# Dask does not support to_pickle
+# Dask/Koalas do not support to_pickle
 def test_serialize_s3_anon_pickle(pd_es, s3_client, s3_bucket):
     pd_es.to_pickle(TEST_S3_URL, profile_name=False)
     make_public(s3_client, s3_bucket)
@@ -291,7 +308,7 @@ def test_serialize_s3_anon_pickle(pd_es, s3_client, s3_bucket):
     assert pd_es.__eq__(new_es, deep=True)
 
 
-# TODO: tmp file disappears after deserialize step, cannot check equality with Dask
+# TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
 def test_serialize_s3_anon_parquet(es, s3_client, s3_bucket):
     if not all(isinstance(df, pd.DataFrame) for df in es.dataframes):
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
