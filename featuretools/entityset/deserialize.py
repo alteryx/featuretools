@@ -41,10 +41,6 @@ def description_to_entityset(description, **kwargs):
 
         entityset.add_dataframe(dataframe)
 
-        # description_to_dataframe(df, entityset, path=path)
-        # if entity['properties']['last_time_index']:
-        #     last_time_index.append(entity['id'])
-
     for relationship in description['relationships']:
         rel = Relationship.from_dictionary(relationship, entityset)
         entityset.add_relationship(relationship=rel)
