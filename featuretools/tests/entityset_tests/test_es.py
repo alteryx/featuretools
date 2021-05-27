@@ -99,11 +99,14 @@ def test_add_relationships_convert_type(es):
         assert str(parent_df[r.parent_column.name].dtype) == str(child_df[r.child_column.name].dtype)
 
 
-def test_add_relationship_instantiated_logical_types(es):
+def test_add_relationship_diff_param_logical_types(es):
+    ordinal_1 = ltypes.Ordinal(order=[0, 1, 2, 3, 4, 5, 6])
+    ordinal_2 = ltypes.Ordinal(order=[0, 1, 2, 3, 4, 5])
+    es['sessions'].ww.set_types(logical_types={'id': ordinal_1})
     log_2_df = es['log'].copy()
     log_logical_types = {
         'id': ltypes.Integer,
-        'session_id': ltypes.Integer,
+        'session_id': ordinal_2,
         'product_id': ltypes.Categorical(),
         'datetime': ltypes.Datetime,
         'value': ltypes.Double,
@@ -131,16 +134,17 @@ def test_add_relationship_instantiated_logical_types(es):
                      time_index='datetime')
     assert 'log2' in es.dataframe_dict
     assert es['log2'].ww.schema is not None
-    assert es['log2'].ww.logical_types['product_id'] == ltypes.Categorical()
-    assert es['products'].ww.logical_types['id'] == ltypes.Categorical
+    assert isinstance(es['log2'].ww.logical_types['session_id'], ltypes.Ordinal)
+    assert isinstance(es['sessions'].ww.logical_types['id'], ltypes.Ordinal)
+    assert es['sessions'].ww.logical_types['id'] != es['log2'].ww.logical_types['session_id']
 
-    warning_text = 'Logical type Categorical for child column product_id does not match parent '\
-        'column id logical type Categorical. There is a conflict between the parameters. '\
+    warning_text = 'Logical type Ordinal for child column session_id does not match parent '\
+        'column id logical type Ordinal. There is a conflict between the parameters. '\
         'Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
-        es.add_relationship(u'products', 'id', 'log2', 'product_id')
-    assert es['log2'].ww.logical_types['product_id'] == ltypes.Categorical
-    assert es['products'].ww.logical_types['id'] == ltypes.Categorical
+        es.add_relationship(u'sessions', 'id', 'log2', 'session_id')
+    assert isinstance(es['log2'].ww.logical_types['product_id'], ltypes.Categorical)
+    assert isinstance(es['products'].ww.logical_types['id'], ltypes.Categorical)
 
 
 def test_add_relationship_different_logical_types_same_dtype(es):
@@ -175,14 +179,14 @@ def test_add_relationship_different_logical_types_same_dtype(es):
                      time_index='datetime')
     assert 'log2' in es.dataframe_dict
     assert es['log2'].ww.schema is not None
-    assert es['log2'].ww.logical_types['product_id'] == ltypes.CountryCode
-    assert es['products'].ww.logical_types['id'] == ltypes.Categorical
+    assert isinstance(es['log2'].ww.logical_types['product_id'], ltypes.CountryCode)
+    assert isinstance(es['products'].ww.logical_types['id'], ltypes.Categorical)
 
     warning_text = 'Logical type CountryCode for child column product_id does not match parent column id logical type Categorical. Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
         es.add_relationship(u'products', 'id', 'log2', 'product_id')
-    assert es['log2'].ww.logical_types['product_id'] == ltypes.Categorical
-    assert es['products'].ww.logical_types['id'] == ltypes.Categorical
+    assert isinstance(es['log2'].ww.logical_types['product_id'], ltypes.Categorical)
+    assert isinstance(es['products'].ww.logical_types['id'], ltypes.Categorical)
 
 
 def test_add_relationship_different_compatible_dtypes(es):
@@ -217,14 +221,14 @@ def test_add_relationship_different_compatible_dtypes(es):
                      time_index='datetime')
     assert 'log2' in es.dataframe_dict
     assert es['log2'].ww.schema is not None
-    assert es['log2'].ww.logical_types['session_id'] == ltypes.Datetime
-    assert es['customers'].ww.logical_types['id'] == ltypes.Integer
+    assert isinstance(es['log2'].ww.logical_types['session_id'], ltypes.Datetime)
+    assert isinstance(es['customers'].ww.logical_types['id'], ltypes.Integer)
 
     warning_text = 'Logical type Datetime for child column session_id does not match parent column id logical type Integer. Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
         es.add_relationship(u'customers', 'id', 'log2', 'session_id')
-    assert es['log2'].ww.logical_types['session_id'] == ltypes.Integer
-    assert es['customers'].ww.logical_types['id'] == ltypes.Integer
+    assert isinstance(es['log2'].ww.logical_types['session_id'], ltypes.Integer)
+    assert isinstance(es['customers'].ww.logical_types['id'], ltypes.Integer)
 
 
 def test_add_relationship_errors_child_v_index(es):
@@ -398,7 +402,7 @@ def test_check_columns_and_dataframe(df):
     es = EntitySet(id='test')
     es.add_dataframe(df, dataframe_name='test_dataframe', index='id',
                      logical_types=logical_types)
-    assert es.dataframe_dict['test_dataframe'].ww.logical_types['category'] == ltypes.Categorical
+    assert isinstance(es.dataframe_dict['test_dataframe'].ww.logical_types['category'], ltypes.Categorical)
     assert es.dataframe_dict['test_dataframe'].ww.semantic_tags['category'] == {'category'}
 
 
@@ -492,7 +496,7 @@ def test_none_index(df2):
                          dataframe=df2)
     assert es['test_dataframe'].ww.index == 'category'
     assert es['test_dataframe'].ww.semantic_tags['category'] == {'index'}
-    assert es['test_dataframe'].ww.logical_types['category'] == ltypes.Categorical
+    assert isinstance(es['test_dataframe'].ww.logical_types['category'], ltypes.Categorical)
 
 
 @pytest.fixture
@@ -592,7 +596,7 @@ def test_converts_dtype_on_init(df4):
 
     # this is infer from pandas dtype
     df = es["test_dataframe"]
-    assert df.ww.logical_types['category_int'] == ltypes.Categorical
+    assert isinstance(df.ww.logical_types['category_int'], ltypes.Categorical)
 
 
 def test_converts_dtype_after_init(df4):
@@ -615,11 +619,11 @@ def test_converts_dtype_after_init(df4):
     df = es['test_dataframe']
 
     df.ww.set_types(logical_types={'ints': 'Integer'})
-    assert df.ww.logical_types['ints'] == ltypes.Integer
+    assert isinstance(df.ww.logical_types['ints'], ltypes.Integer)
     assert df['ints'].dtype == 'int64'
 
     df.ww.set_types(logical_types={'ints': 'Categorical'})
-    assert df.ww.logical_types['ints'] == ltypes.Categorical
+    assert isinstance(df.ww.logical_types['ints'], ltypes.Categorical)
     assert df['ints'].dtype == category_dtype
 
     df.ww.set_types(logical_types={'ints': ltypes.Ordinal(order=[1, 2, 3])})
@@ -627,7 +631,7 @@ def test_converts_dtype_after_init(df4):
     assert df['ints'].dtype == category_dtype
 
     df.ww.set_types(logical_types={'ints': 'NaturalLanguage'})
-    assert df.ww.logical_types['ints'] == ltypes.NaturalLanguage
+    assert isinstance(df.ww.logical_types['ints'], ltypes.NaturalLanguage)
     assert df['ints'].dtype == 'string'
 
 
@@ -1390,7 +1394,7 @@ def test_secondary_time_index(es):
                            new_dataframe_time_index="value_time",
                            new_dataframe_secondary_time_index='second_ti')
 
-    assert (es['values'].ww.logical_types['second_ti'] == ltypes.Datetime)
+    assert isinstance(es['values'].ww.logical_types['second_ti'], ltypes.Datetime)
     assert (es['values'].ww.semantic_tags['second_ti'] == set())
     assert (es['values'].ww.metadata['secondary_time_index'] == {
             'second_ti': ['comments', 'second_ti']})
@@ -1573,8 +1577,8 @@ def test_normalize_with_datetime_time_index(es):
                            make_time_index=False,
                            copy_columns=['signup_date', 'upgrade_date'])
 
-    assert es['cancel_reason'].ww.logical_types['signup_date'] == ltypes.Datetime
-    assert es['cancel_reason'].ww.logical_types['upgrade_date'] == ltypes.Datetime
+    assert isinstance(es['cancel_reason'].ww.logical_types['signup_date'], ltypes.Datetime)
+    assert isinstance(es['cancel_reason'].ww.logical_types['upgrade_date'], ltypes.Datetime)
 
 
 def test_normalize_with_numeric_time_index(int_es):
