@@ -154,45 +154,47 @@ def pd_simple_es():
     })
 
     es = ft.EntitySet('equal_test')
-    es.entity_from_dataframe('values', df, index='id')
+    es.add_dataframe('values', df, index='id')
 
     return es
 
 
 @pytest.fixture
 def dd_simple_es(pd_simple_es):
-    entities = {}
-    for entity in pd_simple_es.entities:
-        entities[entity.id] = (dd.from_pandas(entity.df.reset_index(drop=True), npartitions=4),
-                               entity.index,
+    dataframes = {}
+    for df in pd_simple_es.dataframes:
+        dataframes[df.name] = (dd.from_pandas(df.reset_index(drop=True), npartitions=4),
+                               df.ww.index,
                                None,
-                               entity.variable_types)
+                               df.ww.logical_types,
+                               df.ww.semantic_tags)
 
     relationships = [(rel.parent_dataframe.id,
                       rel.parent_column.name,
                       rel.child_dataframe.id,
                       rel.child_column.name) for rel in pd_simple_es.relationships]
 
-    return ft.EntitySet(id=pd_simple_es.id, entities=entities, relationships=relationships)
+    return ft.EntitySet(id=pd_simple_es.id, dataframes=dataframes, relationships=relationships)
 
 
 @pytest.fixture
 def ks_simple_es(pd_simple_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    entities = {}
-    for entity in pd_simple_es.entities:
-        cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
-        entities[entity.id] = (ks.from_pandas(cleaned_df),
-                               entity.index,
+    dataframes = {}
+    for df in pd_simple_es.dataframes:
+        cleaned_df = pd_to_ks_clean(df).reset_index(drop=True)
+        dataframes[df.name] = (ks.from_pandas(cleaned_df),
+                               df.ww.index,
                                None,
-                               entity.variable_types)
+                               df.ww.logical_typecs,
+                               df.ww.semantic_tags)
 
     relationships = [(rel.parent_dataframe.id,
                       rel.parent_column.name,
                       rel.child_dataframe.id,
                       rel.child_column.name) for rel in pd_simple_es.relationships]
 
-    return ft.EntitySet(id=pd_simple_es.id, entities=entities, relationships=relationships)
+    return ft.EntitySet(id=pd_simple_es.id, dataframes=dataframes, relationships=relationships)
 
 
 @pytest.fixture(params=['pd_simple_es', 'dd_simple_es', 'ks_simple_es'])
@@ -393,7 +395,7 @@ def test_compare_of_agg(es):
 
 
 def test_compare_all_nans(es):
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+    if not all(isinstance(df, pd.DataFrame) for df in es.dataframes):
         nan_feat = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=ft.primitives.Min)
         compare = nan_feat == 0.0
     else:
@@ -451,7 +453,7 @@ def test_arithmetic_of_identity(es):
                (MultiplyNumeric, [0, 10, 40, 90]),
                (DivideNumeric, [np.nan, 2.5, 2.5, 2.5])]
     # SubtractNumeric not supported for Koalas EntitySets
-    if ks and any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+    if ks and any(isinstance(df, ks.DataFrame) for df in es.dataframes):
         to_test = to_test[:1] + to_test[2:]
 
     features = []
@@ -481,7 +483,7 @@ def test_arithmetic_of_direct(es):
                (SubtractNumeric, [28, 29, 28.5, 28.5]),
                (MultiplyNumeric, [165, 132, 148.5, 148.5]),
                (DivideNumeric, [6.6, 8.25, 22. / 3, 22. / 3])]
-    if ks and any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+    if ks and any(isinstance(df, ks.DataFrame) for df in es.dataframes):
         to_test = to_test[:1] + to_test[2:]
 
     features = []
@@ -509,20 +511,20 @@ def pd_boolean_mult_es():
                        "bool": [True, False, True],
                        "numeric": [2, 3, np.nan]})
 
-    es.entity_from_dataframe(entity_id="test",
-                             dataframe=df,
-                             index="index")
+    es.add_dataframe(dataframe_name=="test",
+                     dataframe=df,
+                     index="index")
 
     return es
 
 
 @pytest.fixture
 def dask_boolean_mult_es(pd_boolean_mult_es):
-    entities = {}
-    for entity in pd_boolean_mult_es.entities:
-        entities[entity.id] = (dd.from_pandas(entity.df, npartitions=2), entity.index, None, entity.variable_types)
+    dataframes = {}
+    for df in pd_boolean_mult_es.dataframes:
+        dataframes[df.ww.name] = (dd.from_pandas(df, npartitions=2), df.ww.index, None, df.ww.logical_types, df.ww.semantic_tags)
 
-    return ft.EntitySet(id=pd_boolean_mult_es.id, entities=entities)
+    return ft.EntitySet(id=pd_boolean_mult_es.id, dataframes=dataframes)
 
 
 def test_boolean_multiply(boolean_mult_es):
@@ -551,7 +553,7 @@ def test_boolean_multiply(boolean_mult_es):
 
 # TODO: rework test to be Dask and Koalas compatible
 def test_arithmetic_of_transform(es):
-    if not all(isinstance(e.df, pd.DataFrame) for e in es.entities):
+    if not all(isinstance(df, pd.DataFrame) for df in es.dataframes):
         pytest.xfail("Test uses Diff which is not supported in Dask or Koalas")
     diff1 = ft.Feature([es['log']['value']], primitive=Diff)
     diff2 = ft.Feature([es['log']['value_2']], primitive=Diff)
@@ -594,7 +596,7 @@ def test_arithmetic_of_agg(es):
                (MultiplyNumeric, [9, 0]),
                (DivideNumeric, [1, 0])]
     # Skip SubtractNumeric for Koalas as it's unsupported
-    if ks and any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+    if ks and any(isinstance(df, ks.DataFrame) for df in es.dataframes):
         to_test = to_test[:1] + to_test[2:]
 
     features = []
@@ -638,12 +640,12 @@ def test_latlong(pd_es):
 
 
 def test_latlong_with_nan(pd_es):
-    df = pd_es['log'].df
+    df = pd_es['log']
     df['latlong'][0] = np.nan
     df['latlong'][1] = (10, np.nan)
     df['latlong'][2] = (np.nan, 4)
     df['latlong'][3] = (np.nan, np.nan)
-    pd_es.update_dataframe(entity_id='log', df=df)
+    pd_es.update_dataframe(dataframe_name='log', df=df)
     log_latlong_feat = pd_es['log']['latlong']
     latitude = ft.Feature(log_latlong_feat, primitive=Latitude)
     longitude = ft.Feature(log_latlong_feat, primitive=Longitude)
@@ -693,10 +695,10 @@ def test_haversine(pd_es):
 
 def test_haversine_with_nan(pd_es):
     # Check some `nan` values
-    df = pd_es['log'].df
+    df = pd_es['log']
     df['latlong'][0] = np.nan
     df['latlong'][1] = (10, np.nan)
-    pd_es.update_dataframe(entity_id='log', df=df)
+    pd_es.update_dataframe(dataframe_name='log', df=df)
     log_latlong_feat = pd_es['log']['latlong']
     log_latlong_feat2 = pd_es['log']['latlong2']
     haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
@@ -1161,7 +1163,7 @@ def test_override_multi_feature_names(pd_es):
 
 
 def test_time_since_primitive_matches_all_datetime_types(es):
-    if ks and any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+    if ks and any(isinstance(df, ks.DataFrame) for df in es.dataframes):
         pytest.xfail('TimeSince transform primitive is incompatible with Koalas')
     fm, fl = ft.dfs(
         target_entity="customers",

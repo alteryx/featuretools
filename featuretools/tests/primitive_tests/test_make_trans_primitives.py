@@ -15,7 +15,7 @@ def test_description_make_trans_primitives():
     TimeSince = make_trans_primitive(
         function=pd_time_since,
         input_types=[
-            [ColumnSchema(logical_type=Datetime, semantic_tabs={'time_index'})],
+            [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})],
             [ColumnSchema(logical_type=Datetime)]
         ],
         return_type=ColumnSchema(logical_type=Timedelta),
@@ -30,7 +30,7 @@ def test_description_make_trans_primitives():
     TimeSince2 = make_trans_primitive(
         function=pd_time_since,
         input_types=[
-            [ColumnSchema(logical_type=Datetime, semantic_tabs={'time_index'})],
+            [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})],
             [ColumnSchema(logical_type=Datetime)]
         ],
         return_type=ColumnSchema(logical_type=Timedelta),
@@ -41,7 +41,7 @@ def test_description_make_trans_primitives():
     TimeSince3 = make_trans_primitive(
         function=pd_time_since,
         input_types=[
-            [ColumnSchema(logical_type=Datetime, semantic_tabs={'time_index'})],
+            [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})],
             [ColumnSchema(logical_type=Datetime)]
         ],
         return_type=ColumnSchema(logical_type=Timedelta),

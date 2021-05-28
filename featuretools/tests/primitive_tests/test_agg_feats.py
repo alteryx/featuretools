@@ -332,7 +332,7 @@ def test_name_with_multiple_possible_paths(diamond_es):
 
 def test_copy(games_es):
     home_games = next(r for r in games_es.relationships
-                      if r.child_column.id == 'home_team_id')
+                      if r.child_column.name == 'home_team_id')
     path = RelationshipPath([(False, home_games)])
     feat = ft.AggregationFeature(games_es['games']['home_team_score'],
                                  games_es['teams'],
@@ -437,7 +437,7 @@ def test_agg_same_method_name(es):
         that we test here.
     """
     # TODO: Update to work with Dask and Koalas
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+    if not all(isinstance(df, pd.DataFrame) for df in es.dataframes):
         pytest.xfail("Cannot use primitives made with make_agg_primitives with Dask or Koalas EntitySets")
     # test with normally defined functions
 
@@ -584,7 +584,7 @@ def test_custom_primitive_default_kwargs(es):
 
 
 def test_makes_numtrue(es):
-    if ks and any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+    if ks and any(isinstance(df, ks.DataFrame) for df in es.dataframes):
         pytest.xfail('Koalas EntitySets do not support NumTrue primitive')
     dfs = DeepFeatureSynthesis(target_entity_id='sessions',
                                entityset=es,
