@@ -297,26 +297,27 @@ def test_add_last_time_indexes(es):
     assert isinstance(es['products'].ww.logical_types['last_time'], Datetime)
 
 
-def test_update_dataframe_and_lti(pd_es):
-    pd_es.add_last_time_indexes(['products'])
+def test_update_dataframe_and_lti(es):
+    # --> ks doesn't work because of index order and timedelta adding
+    es.add_last_time_indexes(['products'])
 
     # dfs_with_lti = [df.ww.metadata.get('last_time_index') is None for df in pd_es.dataframes]
 
-    original_time_index = pd_es['log']['datetime'].copy()
+    original_time_index = es['log']['datetime'].copy()
     new_time_index = original_time_index + pd.Timedelta(days=1)
-    new_dataframe = pd_es['log'].copy()
+    new_dataframe = es['log'].copy()
     new_dataframe['datetime'] = new_time_index
 
-    original_last_time_index = pd_es['products']['last_time'].copy()
+    original_last_time_index = es['products']['last_time'].copy()
     expected_last_time_index = original_last_time_index + pd.Timedelta(days=1)
 
-    pd_es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
+    es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
     # dfs_with_lti_after_update = [df.ww.metadata.get('last_time_index') is None for df in pd_es.dataframes]
 
     # assert dfs_with_lti == dfs_with_lti_after_update
 
-    assert pd_es['products']['last_time'].equals(expected_last_time_index)
-    assert pd_es['log']['last_time'].equals(new_time_index)
+    pd.testing.assert_series_equal(to_pandas(es['products']['last_time']), to_pandas(expected_last_time_index))
+    pd.testing.assert_series_equal(to_pandas(es['log']['last_time']), to_pandas(new_time_index), check_names=False)
 
 
 # --> add a test where there's already a last_time column and it gets replaced
@@ -659,7 +660,7 @@ def test_update_dataframe_different_dataframe_types():
 
 def test_update_dataframe_last_time_index(es):
     # --> koalas currently fails bc we can't get the schema because it deepcopies
-    # --> broken because I havent yet figured out how to do this when ltis already exist
+    # --> giving some bugs - something seems to have changed. need to check.
     es.add_last_time_indexes()
     df = es['customers'].copy()
 

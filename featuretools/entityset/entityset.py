@@ -937,7 +937,8 @@ class EntitySet(object):
         for df in self.dataframes:
             lti_col = df.ww.metadata.get('last_time_index')
             if lti_col is not None:
-                es_lti_dict[df.ww.name] = df[lti_col]
+                lti_col = df[lti_col]
+            es_lti_dict[df.ww.name] = lti_col
 
         for df in queue:
             # --> maybbe need to drop a last_time column here to reset all ltis if present
