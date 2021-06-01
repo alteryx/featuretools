@@ -296,6 +296,29 @@ def test_add_last_time_indexes(es):
     assert 'last_time_index' in es['products'].ww.semantic_tags['last_time']
     assert isinstance(es['products'].ww.logical_types['last_time'], Datetime)
 
+
+def test_update_dataframe_and_lti(pd_es):
+    pd_es.add_last_time_indexes(['products'])
+
+    # dfs_with_lti = [df.ww.metadata.get('last_time_index') is None for df in pd_es.dataframes]
+
+    original_time_index = pd_es['log']['datetime'].copy()
+    new_time_index = original_time_index + pd.Timedelta(days=1)
+    new_dataframe = pd_es['log'].copy()
+    new_dataframe['datetime'] = new_time_index
+
+    original_last_time_index = pd_es['products']['last_time'].copy()
+    expected_last_time_index = original_last_time_index + pd.Timedelta(days=1)
+
+    pd_es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
+    # dfs_with_lti_after_update = [df.ww.metadata.get('last_time_index') is None for df in pd_es.dataframes]
+
+    # assert dfs_with_lti == dfs_with_lti_after_update
+
+    assert pd_es['products']['last_time'].equals(expected_last_time_index)
+    assert pd_es['log']['last_time'].equals(new_time_index)
+
+
 # --> add a test where there's already a last_time column and it gets replaced
 # --> add a test where we deep copy a ww dataframe with lti
 # --> test lti logical types matching time type

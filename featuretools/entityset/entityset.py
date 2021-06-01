@@ -932,11 +932,18 @@ class EntitySet(object):
             queue = self.dataframes[:]
 
         explored = set()
+        # Store the last time indexes for the entire entityset in a dictionary to update
+        es_lti_dict = {}
+        for df in self.dataframes:
+            lti_col = df.ww.metadata.get('last_time_index')
+            if lti_col is not None:
+                es_lti_dict[df.ww.name] = df[lti_col]
 
         for df in queue:
-            # --> should we also be putting a column in the df yet? probs not
-            # --> maybbe need to drop a last_time column here to reset all ltis
-            df.ww.metadata['last_time_index'] = None
+            # --> maybbe need to drop a last_time column here to reset all ltis if present
+            # --> plus if creating a dict do ltis[df.ww.name] = None
+
+            es_lti_dict[df.ww.name] = None
 
         # We will explore children of dataframes on the queue,
         # which may not be in the to_explore set. Therefore,
@@ -945,7 +952,7 @@ class EntitySet(object):
         while not to_explore.issubset(explored):
             dataframe = queue.pop(0)
 
-            if dataframe.ww.metadata.get('last_time_index') is None:
+            if es_lti_dict[dataframe.ww.name] is None:
                 if dataframe.ww.time_index is not None:
                     lti = dataframe[dataframe.ww.time_index].copy()
                     if isinstance(dataframe, dd.DataFrame):
@@ -967,7 +974,7 @@ class EntitySet(object):
                 # --> this isn't the final lti, right? so maybe wait until the end to store on the dataframe?
                 # maybe a bit weird to change whats stored on metadata, but as long as we're ok with temp having series, then we can
                 # probably takes longer to add to the whole df
-                dataframe.ww.metadata['last_time_index'] = lti
+                es_lti_dict[dataframe.ww.name] = lti
 
             if dataframe.ww.name in children:
                 child_dataframes = children[dataframe.ww.name]
@@ -988,18 +995,19 @@ class EntitySet(object):
                 # updated last time from all children
                 for child_df in child_dataframes:
                     # TODO: Figure out if Dask code related to indexes is important for Koalas
-                    if child_df.ww.metadata.get('last_time_index') is None:
+                    if es_lti_dict[child_df.ww.name] is None:
                         continue
                     link_col = child_cols[dataframe.ww.name][child_df.ww.name].name
 
-                    lti_is_dask = isinstance(child_df.ww.metadata.get('last_time_index'), dd.Series)
-                    lti_is_koalas = is_instance(child_df.ww.metadata.get('last_time_index'), ks, 'Series')
+                    lti_is_dask = isinstance(es_lti_dict[child_df.ww.name], dd.Series)
+                    lti_is_koalas = is_instance(es_lti_dict[child_df.ww.name], ks, 'Series')
+
                     if lti_is_dask or lti_is_koalas:
                         to_join = child_df[link_col]
                         if lti_is_dask:
                             to_join.index = child_df[child_df.ww.index]
 
-                        lti_df = child_df.ww.metadata.get('last_time_index').to_frame(name='last_time').join(
+                        lti_df = es_lti_dict[child_df.ww.name].to_frame(name='last_time').join(
                             to_join.to_frame(name=dataframe.ww.index)
                         )
 
@@ -1009,10 +1017,10 @@ class EntitySet(object):
                             lti_df.index = new_index
                         lti_df = lti_df.groupby(lti_df[dataframe.ww.index]).agg('max')
 
-                        lti_df = dataframe.ww.metadata.get('last_time_index').to_frame(name='last_time_old').join(lti_df)
+                        lti_df = es_lti_dict[dataframe.ww.name].to_frame(name='last_time_old').join(lti_df)
 
                     else:
-                        lti_df = pd.DataFrame({'last_time': child_df.ww.metadata.get('last_time_index'),
+                        lti_df = pd.DataFrame({'last_time': es_lti_dict[child_df.ww.name],
                                                dataframe.ww.index: child_df[link_col]})
 
                         # sort by time and keep only the most recent
@@ -1024,8 +1032,9 @@ class EntitySet(object):
                                                inplace=True)
 
                         lti_df.set_index(dataframe.ww.index, inplace=True)
-                        lti_df = lti_df.reindex(dataframe.ww.metadata.get('last_time_index').index)
-                        lti_df['last_time_old'] = dataframe.ww.metadata.get('last_time_index')
+                        # --> shouldnt have to do astype object if we didn't before
+                        lti_df = lti_df.reindex(es_lti_dict[dataframe.ww.name].index).astype('object')
+                        lti_df['last_time_old'] = es_lti_dict[dataframe.ww.name]
                     if not (lti_is_dask or lti_is_koalas) and lti_df.empty:
                         # Pandas errors out if it tries to do fillna and then max on an empty dataframe
                         lti_df = pd.Series()
@@ -1041,14 +1050,14 @@ class EntitySet(object):
                             lti_df = lti_df.fillna(pd.to_datetime('1800-01-01 00:00')).max(axis=1)
                             lti_df = lti_df.replace(pd.to_datetime('1800-01-01 00:00'), pd.NaT)
 
-                    dataframe.ww.metadata['last_time_index'] = lti_df
-                    dataframe.ww.metadata.get('last_time_index').name = 'last_time'
+                    es_lti_dict[dataframe.ww.name] = lti_df
+                    es_lti_dict[dataframe.ww.name].name = 'last_time'
 
             explored.add(dataframe.ww.name)
 
-        # Cannot store last time index in Woodwork metadata - move to dataframe
+        # Store the last time index on the DataFrames
         for df in self.dataframes:
-            lti = df.ww.metadata.get('last_time_index')
+            lti = es_lti_dict[df.ww.name]
             if lti is not None:
                 # --> bug!!
                 # Dask will not reorder the indices, so if they do not match,
