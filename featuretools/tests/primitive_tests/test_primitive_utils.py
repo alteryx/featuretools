@@ -33,6 +33,7 @@ from featuretools.primitives.base import PrimitiveBase
 from featuretools.primitives.utils import (
     _get_descriptions,
     _get_names_valid_inputs,
+    get_valid_primitives,
     list_primitive_files,
     load_primitive_from_file
 )
@@ -133,3 +134,49 @@ def test_errors_no_primitive_in_file(bad_primitives_files_dir):
     with pytest.raises(RuntimeError) as excinfo:
         load_primitive_from_file(primitive_file)
     assert str(excinfo.value) == error_text
+
+
+def test_get_valid_primitives_selected_primitives(es):
+    agg_prims, trans_prims = get_valid_primitives(es, "log",
+                                                  selected_primitives=[Age, Count],
+                                                  max_depth=3)
+    assert set(agg_prims) == set(Count)
+    assert set(trans_prims) == set(Age)
+
+    agg_prims, trans_prims = get_valid_primitives(es, "log",
+                                                  selected_primitives=[Age],
+                                                  max_depth=2)
+    assert set(agg_prims) == set()
+    assert set(trans_prims) == set()
+
+
+def test_get_valid_primitives_all_primitives(es):
+    class ThreeMostCommonCat(AggregationPrimitive):
+        name = "n_most_common_categorical"
+        input_types = [Categorical]
+        return_type = Categorical
+        number_output_features = 3
+
+        def get_function(self, agg_type='pandas'):
+            def pd_top3(x):
+                array = np.array(x.value_counts()[:3].index)
+                if len(array) < 3:
+                    filler = np.full(3 - len(array), np.nan)
+                    array = np.append(array, filler)
+                return array
+            return pd_top3
+
+    available_aggs = get_aggregation_primitives()
+    assert ThreeMostCommonCat in available_aggs
+    available_trans = get_transform_primitives()
+    agg_prims, trans_prims = get_valid_primitives(es, "log")
+    assert set(available_aggs) == set(agg_prims)
+    assert set(available_trans) == set(trans_prims)
+
+
+def test_get_valid_primitives_single_table(transform_es):
+    available_trans = get_transform_primitives()
+   #TODO capture warnings to confirm there were none
+    agg_prims, trans_prims = get_valid_primitives(transform_es, "first")
+    assert set(agg_prims) == set()
+    assert IsIn in trans_prims
