@@ -354,7 +354,6 @@ class EntitySet(object):
             "Cannot set secondary time index if Woodwork is not initialized"
         self._check_secondary_time_index(dataframe, secondary_time_index)
         if secondary_time_index is not None:
-            # --> WW bug: series in Metadata can be problematic
             dataframe.ww.metadata['secondary_time_index'] = secondary_time_index
 
     ###########################################################################
@@ -744,7 +743,7 @@ class EntitySet(object):
 
                 time_index_types = (base_dataframe.ww.logical_types[base_dataframe.ww.time_index],
                                     base_dataframe.ww.semantic_tags[base_dataframe.ww.time_index],
-                                    base_dataframe.ww.columns[base_dataframe.ww.time_index].metadata,  # --> not sure we want to maintain metadata here - first time index might be clunkly
+                                    base_dataframe.ww.columns[base_dataframe.ww.time_index].metadata,
                                     base_dataframe.ww.columns[base_dataframe.ww.time_index].description)
             else:
                 # If base_time_index is in copy_columns then we've already added the transfer types
@@ -941,9 +940,6 @@ class EntitySet(object):
             es_lti_dict[df.ww.name] = lti_col
 
         for df in queue:
-            # --> maybbe need to drop a last_time column here to reset all ltis if present
-            # --> plus if creating a dict do ltis[df.ww.name] = None
-
             es_lti_dict[df.ww.name] = None
 
         # We will explore children of dataframes on the queue,
@@ -972,9 +968,6 @@ class EntitySet(object):
                         lti = lti.astype('object')
                         lti[:] = None
 
-                # --> this isn't the final lti, right? so maybe wait until the end to store on the dataframe?
-                # maybe a bit weird to change whats stored on metadata, but as long as we're ok with temp having series, then we can
-                # probably takes longer to add to the whole df
                 es_lti_dict[dataframe.ww.name] = lti
 
             if dataframe.ww.name in children:
