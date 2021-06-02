@@ -286,7 +286,7 @@ def test_update_dataframe():
     assert es['table'].ww.schema == original_schema
 
 
-def test_add_last_time_indexes(es):
+def test_add_last_time_index(es):
     es.add_last_time_indexes(['products'])
 
     assert 'last_time_index' in es['products'].ww.metadata
@@ -295,29 +295,6 @@ def test_add_last_time_indexes(es):
     assert 'last_time' in es['products']
     assert 'last_time_index' in es['products'].ww.semantic_tags['last_time']
     assert isinstance(es['products'].ww.logical_types['last_time'], Datetime)
-
-
-def test_update_dataframe_and_lti(es):
-    # --> ks doesn't work because of index order and timedelta adding
-    es.add_last_time_indexes(['products'])
-
-    # dfs_with_lti = [df.ww.metadata.get('last_time_index') is None for df in pd_es.dataframes]
-
-    original_time_index = es['log']['datetime'].copy()
-    new_time_index = original_time_index + pd.Timedelta(days=1)
-    new_dataframe = es['log'].copy()
-    new_dataframe['datetime'] = new_time_index
-
-    original_last_time_index = es['products']['last_time'].copy()
-    expected_last_time_index = original_last_time_index + pd.Timedelta(days=1)
-
-    es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
-    # dfs_with_lti_after_update = [df.ww.metadata.get('last_time_index') is None for df in pd_es.dataframes]
-
-    # assert dfs_with_lti == dfs_with_lti_after_update
-
-    pd.testing.assert_series_equal(to_pandas(es['products']['last_time']), to_pandas(expected_last_time_index))
-    pd.testing.assert_series_equal(to_pandas(es['log']['last_time']), to_pandas(new_time_index), check_names=False)
 
 
 # --> add a test where there's already a last_time column and it gets replaced
@@ -658,28 +635,67 @@ def test_update_dataframe_different_dataframe_types():
         dask_es.update_dataframe('sessions', sessions)
 
 
-def test_update_dataframe_last_time_index(es):
-    # --> koalas currently fails bc we can't get the schema because it deepcopies
+def test_update_dataframe_and_min_last_time_index(es):
+    # The exact same dataframes that have last time indexes will get updated after update_dataframe
+    es.add_last_time_indexes(['products'])
+
+    original_time_index = es['log']['datetime'].copy()
+    original_last_time_index = es['products']['last_time'].copy()
+
+    if ks and isinstance(original_time_index, ks.Series):
+        new_time_index = ks.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=1))
+        expected_last_time_index = ks.from_pandas(original_last_time_index.to_pandas() + pd.Timedelta(days=1))
+    else:
+        new_time_index = original_time_index + pd.Timedelta(days=1)
+        expected_last_time_index = original_last_time_index + pd.Timedelta(days=1)
+
+    new_dataframe = es['log'].copy()
+    new_dataframe['datetime'] = new_time_index
+
+    es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
+
+    # --> ks doesn't work because of index order and nans????
+    pd.testing.assert_series_equal(to_pandas(es['products']['last_time']), to_pandas(expected_last_time_index))
+    pd.testing.assert_series_equal(to_pandas(es['log']['last_time']), to_pandas(new_time_index), check_names=False)
+
+
+def test_update_dataframe_dont_recalculate_last_time_index(es):
     # --> giving some bugs - something seems to have changed. need to check.
     es.add_last_time_indexes()
-    df = es['customers'].copy()
 
-    lti_name = es['customers'].ww.metadata['last_time_index']
-    original_last_time_index = to_pandas(es['customers'][lti_name].copy()).sort_index()
+    original_time_index = es['customers']['signup_date'].copy()
+    original_last_time_index = es['customers']['last_time'].copy()
 
-    new_time_index = ['2012-04-06', '2012-04-08', '2012-04-09']
-
-    if ks and isinstance(df, ks.DataFrame):
-        df['signup_date'] = new_time_index
+    if ks and isinstance(original_time_index, ks.Series):
+        new_time_index = ks.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=10))
     else:
-        df['signup_date'] = pd.Series(new_time_index)
+        new_time_index = original_time_index + pd.Timedelta(days=10)
 
-    es.update_dataframe('customers', df.copy(), recalculate_last_time_indexes=False)
-    assert original_last_time_index.equals(to_pandas(es['customers'][lti_name]))
+    new_dataframe = es['customers'].copy()
+    new_dataframe['signup_date'] = new_time_index
 
-    es.update_dataframe('customers', df.copy(), recalculate_last_time_indexes=True)
-    # --> not useful. doesn't test what it actually is....
-    assert not original_last_time_index.equals(to_pandas(es['customers'][lti_name]))
+    es.update_dataframe('customers', new_dataframe, recalculate_last_time_indexes=False)
+    pd.testing.assert_series_equal(to_pandas(es['customers']['last_time']), to_pandas(original_last_time_index))
+
+
+def test_update_dataframe_recalculate_last_time_index(es):
+    es.add_last_time_indexes(['customers'])
+
+    original_time_index = es['customers']['signup_date'].copy()
+
+    if ks and isinstance(original_time_index, ks.Series):
+        new_time_index = ks.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=10))
+    else:
+        new_time_index = original_time_index + pd.Timedelta(days=10)
+
+    new_dataframe = es['customers'].copy()
+    new_dataframe['signup_date'] = new_time_index
+
+    # --> dask groupby fails
+    es.update_dataframe('customers', new_dataframe, recalculate_last_time_indexes=True)
+    pd.testing.assert_series_equal(to_pandas(es['customers']['last_time']), to_pandas(new_time_index), check_names=False)
+
+# --> update where time indexes don't change at all - confirm no ltis change
 
 # --> test_update with last time index for a df that has no last_time set
 
