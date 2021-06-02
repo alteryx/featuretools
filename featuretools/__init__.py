@@ -35,6 +35,13 @@ import traceback
 logger = logging.getLogger('featuretools')
 
 # Call functions registered by other libraries when featuretools is imported
+for entry_point in pkg_resources.iter_entry_points('featuretools_initialize'):
+    try:
+        method = entry_point.load()
+        if callable(method):
+            method()
+    except Exception:
+        pass
 for entry_point in pkg_resources.iter_entry_points('alteryx_open_src_initialize'):
     try:
         method = entry_point.load()
