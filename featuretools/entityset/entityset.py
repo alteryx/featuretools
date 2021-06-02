@@ -1,5 +1,6 @@
 import copy
 import logging
+from pdb import set_trace
 import warnings
 from collections import defaultdict
 
@@ -982,6 +983,8 @@ class EntitySet(object):
                     # so we didn't need this logic
                     for df in child_dataframes:
                         if df.ww.name not in explored and df.ww.name not in [q.ww.name for q in queue]:
+                            # must also reset last time index here
+                            es_lti_dict[df.ww.name] = None
                             queue.append(df)
                     queue.append(dataframe)
                     continue
@@ -1026,8 +1029,7 @@ class EntitySet(object):
                                                inplace=True)
 
                         lti_df.set_index(dataframe.ww.index, inplace=True)
-                        # --> shouldnt have to do astype object if we didn't before
-                        lti_df = lti_df.reindex(es_lti_dict[dataframe.ww.name].index).astype('object')
+                        lti_df = lti_df.reindex(es_lti_dict[dataframe.ww.name].index)
                         lti_df['last_time_old'] = es_lti_dict[dataframe.ww.name]
                     if not (lti_is_dask or lti_is_koalas) and lti_df.empty:
                         # Pandas errors out if it tries to do fillna and then max on an empty dataframe
@@ -1362,7 +1364,7 @@ class EntitySet(object):
         df_metadata = self[dataframe_name].ww.metadata
         self.set_secondary_time_index(dataframe_name, df_metadata.get('secondary_time_index'))
         if recalculate_last_time_indexes and df_metadata.get('last_time_index') is not None:
-            self.add_last_time_indexes(updated_dataframes=[self[dataframe_name].ww.name])
+            self.add_last_time_indexes(updated_dataframes=[dataframe_name])
         self.reset_data_description()
 
     def _check_time_indexes(self):

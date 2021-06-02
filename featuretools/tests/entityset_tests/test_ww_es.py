@@ -679,7 +679,7 @@ def test_update_dataframe_dont_recalculate_last_time_index(es):
 
 
 def test_update_dataframe_recalculate_last_time_index(es):
-    es.add_last_time_indexes(['customers'])
+    es.add_last_time_indexes()
 
     original_time_index = es['customers']['signup_date'].copy()
 
@@ -694,6 +694,16 @@ def test_update_dataframe_recalculate_last_time_index(es):
     # --> dask groupby fails
     es.update_dataframe('customers', new_dataframe, recalculate_last_time_indexes=True)
     pd.testing.assert_series_equal(to_pandas(es['customers']['last_time']), to_pandas(new_time_index), check_names=False)
+
+
+def test_repeat_lti_calls_working(pd_es):
+    pd_es.add_last_time_indexes(['products'])
+    pd_es.add_last_time_indexes(['products'])
+
+
+def test_repeat_lti_calls_broken(pd_es):
+    pd_es.add_last_time_indexes(['régions'])
+    pd_es.add_last_time_indexes(['régions'])
 
 # --> update where time indexes don't change at all - confirm no ltis change
 
