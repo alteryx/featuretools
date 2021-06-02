@@ -1054,9 +1054,6 @@ class EntitySet(object):
         for df in self.dataframes:
             lti = es_lti_dict[df.ww.name]
             if lti is not None:
-                # --> bug!!
-                # Dask will not reorder the indices, so if they do not match,
-                # values will be replaced with nans
                 df.ww['last_time'] = lti
                 df.ww.add_semantic_tags({'last_time': 'last_time_index'})
                 df.ww.metadata['last_time_index'] = 'last_time'
