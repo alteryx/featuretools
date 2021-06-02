@@ -42,6 +42,13 @@ for entry_point in pkg_resources.iter_entry_points('featuretools_initialize'):
             method()
     except Exception:
         pass
+for entry_point in pkg_resources.iter_entry_points('alteryx_open_src_initialize'):
+    try:
+        method = entry_point.load()
+        if callable(method):
+            method('featuretools')
+    except Exception:
+        pass
 
 # Load in submodules registered by other libraries into Featuretools namespace
 for entry_point in pkg_resources.iter_entry_points('featuretools_plugin'):
