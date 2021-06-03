@@ -387,10 +387,6 @@ class TestLastTimeIndex(object):
 
         lti_name = customers.ww.metadata.get('last_time_index')
         assert len(customers[lti_name]) == 3
-        if ks and isinstance(customers, ks.DataFrame):
-            # Koalas doesn't reorder indexes the same way
-            sorted_lti = to_pandas(customers).sort_values('id')[lti_name]
-        else:
-            sorted_lti = to_pandas(customers[lti_name]).sort_index()
+        sorted_lti = to_pandas(customers).sort_values('id')[lti_name]
         for v1, v2 in zip(sorted_lti, true_customers_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
