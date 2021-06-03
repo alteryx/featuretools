@@ -330,24 +330,24 @@ def test_lti_already_has_last_time_column(es):
 # --> add a test where we deep copy a ww dataframe with lti
 
 
-def test_numeric_es_last_time_index_logical_type(int_es):
-    assert int_es.time_type == 'numeric'
+# def test_numeric_es_last_time_index_logical_type(int_es):
+#     assert int_es.time_type == 'numeric'
 
-    int_es.add_last_time_indexes()
+#     int_es.add_last_time_indexes()
 
-    for df in int_es.dataframes:
-        assert isinstance(df.ww.logical_types['last_time'], IntegerNullable)
-        int_es._check_uniform_time_index(df, 'last_time')
+#     for df in int_es.dataframes:
+#         assert isinstance(df.ww.logical_types['last_time'], IntegerNullable)
+#         int_es._check_uniform_time_index(df, 'last_time')
 
 
-def test_datetime_es_last_time_index_logical_type(es):
-    assert es.time_type == Datetime
+# def test_datetime_es_last_time_index_logical_type(es):
+#     assert es.time_type == Datetime
 
-    es.add_last_time_indexes()
+#     es.add_last_time_indexes()
 
-    for df in es.dataframes:
-        assert isinstance(df.ww.logical_types['last_time'], Datetime)
-        es._check_uniform_time_index(df, 'last_time')
+#     for df in es.dataframes:
+#         assert isinstance(df.ww.logical_types['last_time'], Datetime)
+#         es._check_uniform_time_index(df, 'last_time')
 
 
 def test_dataframe_without_name(es):

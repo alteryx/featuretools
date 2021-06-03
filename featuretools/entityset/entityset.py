@@ -1068,9 +1068,12 @@ class EntitySet(object):
 
                 # Add the new column to the DataFrame
                 lti.name = 'last_time'
+                if 'last_time' in df.columns:
+                    df.pop('last_time')
                 if isinstance(df, dd.DataFrame):
                     new_df = df.merge(lti.reset_index(), on=df.ww.index)
                     new_df.ww.init(
+                        name=df.ww.name,
                         index=df.ww.index,
                         time_index=df.ww.time_index,
                         logical_types=df.ww.logical_types,
@@ -1079,6 +1082,7 @@ class EntitySet(object):
                         column_metadata={col_name: col_schema.metadata for col_name, col_schema in df.ww.columns.items()},
                         use_standard_tags=df.ww.use_standard_tags
                     )
+                    new_df.index = new_df[new_df.ww.index]
                     dfs_to_update[df.ww.name] = new_df
                 elif is_instance(df, ks, 'DataFrame'):
                     new_df = df.merge(lti, left_on=df.ww.index, right_index=True)
@@ -1103,6 +1107,7 @@ class EntitySet(object):
         for df in dfs_to_update.values():
             df.ww.add_semantic_tags({'last_time': 'last_time_index'})
             df.ww.metadata['last_time_index'] = 'last_time'
+            # --> note this means we have new dataframe objects
             self.dataframe_dict[df.ww.name] = df
 
         self.reset_data_description()
