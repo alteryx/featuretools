@@ -1055,7 +1055,6 @@ class EntitySet(object):
         for df in self.dataframes:
             lti = es_lti_dict[df.ww.name]
             if lti is not None:
-                # --> maybe do this conversaion after creating the df
                 if self.time_type == 'numeric':
                     # --> don't totally understand why this is necessary when we can do the conversion normally?
                     # --> need to make sure this works for dask and koalas
@@ -1398,7 +1397,6 @@ class EntitySet(object):
             if updated_series is not series:
                 df[col_name] = updated_series
 
-        # --> WW bug: if metadata has a series in it, cannot deepcopy
         df.ww.init(schema=self[dataframe_name].ww._schema)
         # Make sure column ordering matches original ordering
         df = df.ww[old_column_names]

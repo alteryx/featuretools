@@ -328,8 +328,6 @@ def test_lti_already_has_last_time_column(es):
     assert isinstance(es['customers'].ww.logical_types['last_time'], Datetime)
     assert es['customers'].ww.semantic_tags['last_time'] == {'last_time_index'}
 
-# --> add a test where we deep copy a ww dataframe with lti
-
 
 def test_numeric_es_last_time_index_logical_type(int_es):
     assert int_es.time_type == 'numeric'
@@ -739,8 +737,6 @@ def test_update_dataframe_recalculate_last_time_index(es):
 
     es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
     pd.testing.assert_series_equal(to_pandas(es['log']['datetime']).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
-
-# --> test koalas index reordering
 
 
 def test_normalize_dataframe_loses_column_metadata(es):
