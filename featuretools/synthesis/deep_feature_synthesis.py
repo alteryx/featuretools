@@ -2,8 +2,6 @@ import logging
 import warnings
 from collections import defaultdict
 
-from dask import dataframe as dd
-
 from featuretools import primitives, variable_types
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import (
@@ -24,10 +22,8 @@ from featuretools.primitives.options_utils import (
     generate_all_primitive_options,
     ignore_entity_for_primitive
 )
-from featuretools.utils.gen_utils import Library, import_or_none, is_instance
+from featuretools.synthesis.utils import get_entityset_type
 from featuretools.variable_types import Boolean, Discrete, Id, Numeric
-
-ks = import_or_none('databricks.koalas')
 
 logger = logging.getLogger('featuretools')
 
@@ -189,12 +185,7 @@ class DeepFeatureSynthesis(object):
         self.target_entity_id = target_entity_id
         self.es = entityset
 
-        if any(isinstance(entity.df, dd.DataFrame) for entity in self.es.entities):
-            entityset_type = Library.DASK
-        elif any(is_instance(entity.df, ks, 'DataFrame') for entity in self.es.entities):
-            entityset_type = Library.KOALAS
-        else:
-            entityset_type = Library.PANDAS
+        entityset_type = get_entityset_type(self.es)
 
         if agg_primitives is None:
             agg_primitives = [p for p in primitives.get_default_aggregation_primitives() if entityset_type in p.compatibility]

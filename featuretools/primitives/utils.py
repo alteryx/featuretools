@@ -39,28 +39,6 @@ def get_transform_primitives():
     return {prim.name.lower(): prim for prim in transform_primitives}
 
 
-def get_valid_primitives(entityset, target_entity, max_depth=2, selected_primitives=None):
-    """
-    Returns two lists of primitives (transform and aggregation) containing
-    primitives that can be applied to the specific target entity to create
-    features.  If the optional 'selected_primitives' parameter is not used,
-    all discoverable primitives will be considered.
-
-    Args:
-        entityset (EntitySet): An already initialized entityset
-        target_entity (str): Entity id of entity to create features for.
-        max_depth (int, optional): Maximum allowed depth of features.
-        selected_primitives(list[str or AggregationPrimitive/TransfrormPrimitive], optional):
-            list of primitives to consider when looking for valid primitives.
-            If None, all primitives will be considered
-    Returns:
-       list[AggregationPrimitive], list[TransformPrimitive]:
-           The list of valid aggregation primitives and the list of valid
-           transform primitives.
-    """
-    pass
-
-
 def list_primitives():
     trans_names, trans_primitives, valid_inputs, return_type = _get_names_primitives(get_transform_primitives)
     trans_dask = [Library.DASK in primitive.compatibility for primitive in trans_primitives]
