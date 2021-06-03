@@ -115,7 +115,7 @@ class EntitySet(object):
         self.reset_data_description()
 
     def __sizeof__(self):
-        return sum([df.__sizeof__() + df.ww.metadata.get('last_time_index').__sizeof__() for df in self.dataframes])
+        return sum([df.__sizeof__() for df in self.dataframes])
 
 # --> Add back later: needs to wait till serialization is implemented
     # def __dask_tokenize__(self):
