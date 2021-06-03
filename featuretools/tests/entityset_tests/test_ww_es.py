@@ -303,11 +303,12 @@ def test_add_last_time_non_numeric_index(pd_es, ks_es, dask_es):
     # --> might also be the case any non pandas non numeric bc it both cant replace and also won't match
     # koalas and dask don't set the underlying index to match the woodwork index
     pd_es.add_last_time_indexes(['products'])
-    dask_es.add_last_time_indexes(['products'])
+    # dask_es.add_last_time_indexes(['products'])
     ks_es.add_last_time_indexes(['products'])
 
     assert list(to_pandas(pd_es['products']['last_time'], sort_index=True)) == list(to_pandas(dask_es['products']['last_time'], sort_index=True))
     assert list(to_pandas(pd_es['products']['last_time'], sort_index=True)) == list(to_pandas(ks_es['products']['last_time'], sort_index=True))
+    # --> confirm schemas match as well
 
 
 def test_lti_already_has_last_time_column(es):

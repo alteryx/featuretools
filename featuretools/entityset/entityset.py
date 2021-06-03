@@ -1051,22 +1051,60 @@ class EntitySet(object):
             explored.add(dataframe.ww.name)
 
         # Store the last time index on the DataFrames
+        dfs_to_update = {}
         for df in self.dataframes:
             lti = es_lti_dict[df.ww.name]
             if lti is not None:
-                if self.time_type == 'numeric':
-                    # --> don't totally understand why this is necessary when we can do the conversion normally?
-                    # --> need to make sure this works for dask and koalas
-                    if lti.dtype == 'datetime64[ns]':
-                        lti = lti.apply(lambda x: x.value)
-                    # --> nullable shouldn't be necessary once we fix index issue
-                    lti = ww.init_series(lti, logical_type='IntegerNullable')
-                else:
-                    lti = ww.init_series(lti, logical_type='Datetime')
+                # # --> maybe do this conversaion after creating the df
+                # if self.time_type == 'numeric':
+                #     # --> don't totally understand why this is necessary when we can do the conversion normally?
+                #     # --> need to make sure this works for dask and koalas
+                #     if lti.dtype == 'datetime64[ns]':
+                #         lti = lti.apply(lambda x: x.value)
+                #     # --> nullable shouldn't be necessary once we fix index issue
+                #     lti = ww.init_series(lti, logical_type='IntegerNullable')
+                # else:
+                #     lti = ww.init_series(lti, logical_type='Datetime')
 
-                df.ww['last_time'] = lti
-                df.ww.add_semantic_tags({'last_time': 'last_time_index'})
-                df.ww.metadata['last_time_index'] = 'last_time'
+                # Add the new column to the DataFrame
+                lti.name = 'last_time'
+                if isinstance(df, dd.DataFrame):
+                    new_df = df.merge(lti.reset_index(), on=df.ww.index)
+                    new_df.ww.init(
+                        index=df.ww.index,
+                        time_index=df.ww.time_index,
+                        logical_types=df.ww.logical_types,
+                        semantic_tags={col_name: tags - {'index', 'time_index'} for col_name, tags in df.ww.semantic_tags.items()},
+                        table_metadata=df.ww.metadata,
+                        column_metadata={col_name: col_schema.metadata for col_name, col_schema in df.ww.columns.items()},
+                        use_standard_tags=df.ww.use_standard_tags
+                    )
+                    dfs_to_update[df.ww.name] = new_df
+                elif is_instance(df, ks, 'DataFrame'):
+                    new_df = df.merge(lti, left_on=df.ww.index, right_index=True)
+
+                    # --> this is bad and makes it easy to screw up
+                    new_df.ww.init(
+                        name=df.ww.name,
+                        index=df.ww.index,
+                        time_index=df.ww.time_index,
+                        logical_types=df.ww.logical_types,
+                        semantic_tags={col_name: tags - {'index', 'time_index'} for col_name, tags in df.ww.semantic_tags.items()},
+                        table_metadata=df.ww.metadata,
+                        column_metadata={col_name: col_schema.metadata for col_name, col_schema in df.ww.columns.items()},
+                        use_standard_tags=df.ww.use_standard_tags
+                    )
+                    dfs_to_update[df.ww.name] = new_df
+                else:
+                    df.ww['last_time'] = lti
+                    df.ww.add_semantic_tags({'last_time': 'last_time_index'})
+                    df.ww.metadata['last_time_index'] = 'last_time'
+
+        for df in dfs_to_update.values():
+            df.ww.add_semantic_tags({'last_time': 'last_time_index'})
+            df.ww.metadata['last_time_index'] = 'last_time'
+            self.dataframe_dict[df.ww.name] = df
+
         self.reset_data_description()
     # ###########################################################################
     # #  Other ###############################################
