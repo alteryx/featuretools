@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+       * Add ``get_valid_primitives`` function (:pr:`1462`)
     * Fixes
     * Changes
         * Upgrade minimum alteryx open source update checker to 2.0.0 (:pr:`1460`)
@@ -13,7 +14,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`rwedge`
 
 v0.24.1 May 26, 2021
 ====================
