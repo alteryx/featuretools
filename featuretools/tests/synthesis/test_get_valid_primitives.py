@@ -56,24 +56,12 @@ def test_get_valid_primitives_custom_primitives(pd_es):
         return_type = Categorical
         number_output_features = 3
 
-        def get_function(self, agg_type='pandas'):
-            def pd_top3(x):
-                array = np.array(x.value_counts()[:3].index)
-                if len(array) < 3:
-                    filler = np.full(3 - len(array), np.nan)
-                    array = np.append(array, filler)
-                return array
-            return pd_top3
-
     class AddThree(TransformPrimitive):
         name = 'add_three'
         input_types = [Numeric, Numeric, Numeric]
         return_type = Numeric
         commutative = True
         compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
-
-        def generate_name(self, base_feature_names):
-            return "%s + %s + %s" % (base_feature_names[0], base_feature_names[1], base_feature_names[2])
 
     agg_prims, trans_prims = get_valid_primitives(pd_es, "log")
     assert ThreeMostCommonCat not in agg_prims
