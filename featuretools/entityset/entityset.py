@@ -1055,16 +1055,15 @@ class EntitySet(object):
         for df in self.dataframes:
             lti = es_lti_dict[df.ww.name]
             if lti is not None:
-                # # --> maybe do this conversaion after creating the df
-                # if self.time_type == 'numeric':
-                #     # --> don't totally understand why this is necessary when we can do the conversion normally?
-                #     # --> need to make sure this works for dask and koalas
-                #     if lti.dtype == 'datetime64[ns]':
-                #         lti = lti.apply(lambda x: x.value)
-                #     # --> nullable shouldn't be necessary once we fix index issue
-                #     lti = ww.init_series(lti, logical_type='IntegerNullable')
-                # else:
-                #     lti = ww.init_series(lti, logical_type='Datetime')
+                # --> maybe do this conversaion after creating the df
+                if self.time_type == 'numeric':
+                    # --> don't totally understand why this is necessary when we can do the conversion normally?
+                    # --> need to make sure this works for dask and koalas
+                    if lti.dtype == 'datetime64[ns]':
+                        lti = lti.apply(lambda x: x.value)
+                    lti = ww.init_series(lti, logical_type='Double')
+                else:
+                    lti = ww.init_series(lti, logical_type='Datetime')
 
                 # Add the new column to the DataFrame
                 lti.name = 'last_time'
