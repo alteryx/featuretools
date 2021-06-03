@@ -312,22 +312,21 @@ def test_add_last_time_non_numeric_index(pd_es, ks_es, dask_es):
     assert pd_es['products'].ww.schema == ks_es['products'].ww.schema
 
 
-# --> handle later
-# def test_lti_already_has_last_time_column(es):
-    # col = es['customers'].ww.pop('loves_ice_cream')
-    # col.name = 'last_time'
+def test_lti_already_has_last_time_column(es):
+    col = es['customers'].ww.pop('loves_ice_cream')
+    col.name = 'last_time'
 
-    # es['customers'].ww['last_time'] = col
+    es['customers'].ww['last_time'] = col
 
-    # assert 'last_time' in es['customers'].columns
-    # assert isinstance(es['customers'].ww.logical_types['last_time'], Boolean)
+    assert 'last_time' in es['customers'].columns
+    assert isinstance(es['customers'].ww.logical_types['last_time'], Boolean)
 
-    # es.add_last_time_indexes(['customers'])
+    es.add_last_time_indexes(['customers'])
 
-    # # Current behavior will attempt to overwrite this column.
-    # assert es['customers'].ww.metadata['last_time_index'] == 'last_time'
-    # assert isinstance(es['customers'].ww.logical_types['last_time'], Datetime)
-    # assert es['customers'].ww.semantic_tags['last_time'] == {'last_time_index'}
+    # Current behavior will attempt to overwrite this column.
+    assert es['customers'].ww.metadata['last_time_index'] == 'last_time'
+    assert isinstance(es['customers'].ww.logical_types['last_time'], Datetime)
+    assert es['customers'].ww.semantic_tags['last_time'] == {'last_time_index'}
 
 # --> add a test where we deep copy a ww dataframe with lti
 

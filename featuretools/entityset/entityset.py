@@ -1065,10 +1065,12 @@ class EntitySet(object):
                 else:
                     lti = ww.init_series(lti, logical_type='Datetime')
 
-                # Add the new column to the DataFrame
+                # Remove any existing last_time column to prevent collisions
                 lti.name = 'last_time'
                 if 'last_time' in df.columns:
-                    df.pop('last_time')
+                    df.ww.pop('last_time')
+
+                # Add the new column to the DataFrame
                 if isinstance(df, dd.DataFrame):
                     new_df = df.merge(lti.reset_index(), on=df.ww.index)
                     new_df.ww.init(
@@ -1089,7 +1091,6 @@ class EntitySet(object):
                 elif is_instance(df, ks, 'DataFrame'):
                     new_df = df.merge(lti, left_on=df.ww.index, right_index=True)
 
-                    # --> this is bad and makes it easy to screw up
                     new_df.ww.init(
                         name=df.ww.name,
                         index=df.ww.index,
@@ -1109,7 +1110,6 @@ class EntitySet(object):
         for df in dfs_to_update.values():
             df.ww.add_semantic_tags({'last_time': 'last_time_index'})
             df.ww.metadata['last_time_index'] = 'last_time'
-            # --> note this means we have new dataframe objects
             self.dataframe_dict[df.ww.name] = df
 
         self.reset_data_description()
