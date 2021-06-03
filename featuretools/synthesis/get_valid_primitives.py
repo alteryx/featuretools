@@ -22,7 +22,7 @@ def get_valid_primitives(entityset, target_entity, max_depth=2, selected_primiti
         entityset (EntitySet): An already initialized entityset
         target_entity (str): Entity id of entity to create features for.
         max_depth (int, optional): Maximum allowed depth of features.
-        selected_primitives(list[str or AggregationPrimitive/TransfrormPrimitive], optional):
+        selected_primitives(list[str or AggregationPrimitive/TransformPrimitive], optional):
             list of primitives to consider when looking for valid primitives.
             If None, all primitives will be considered
     Returns:

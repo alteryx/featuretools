@@ -39,6 +39,11 @@ def test_get_valid_primitives_selected_primitives_strings(es):
     assert set(trans_prims) == set()
 
 
+def test_invalid_primitive_string(es):
+    with pytest.raises(ValueError, match="'foobar' is not a recognized primitive name"):
+        get_valid_primitives(es, target_entity='log', selected_primitives=['foobar'])
+
+
 def test_get_valid_primitives_custom_primitives(pd_es):
     class ThreeMostCommonCat(AggregationPrimitive):
         name = "n_most_common_categorical"
