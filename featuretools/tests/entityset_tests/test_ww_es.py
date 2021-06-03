@@ -6,10 +6,12 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from woodwork.logical_types import (
+    Boolean,
     Categorical,
     Datetime,
     Double,
     Integer,
+    IntegerNullable,
     NaturalLanguage
 )
 
@@ -308,10 +310,43 @@ def test_add_last_time_non_numeric_index(pd_es, ks_es, dask_es):
     assert list(to_pandas(pd_es['products']['last_time'], sort_index=True)) == list(to_pandas(ks_es['products']['last_time'], sort_index=True))
 
 
-# --> add a test where there's already a last_time column and it gets replaced
+def test_lti_already_has_last_time_column(es):
+    col = es['customers'].ww.pop('loves_ice_cream')
+    col.name = 'last_time'
+
+    es['customers'].ww['last_time'] = col
+
+    assert 'last_time' in es['customers'].columns
+    assert isinstance(es['customers'].ww.logical_types['last_time'], Boolean)
+
+    es.add_last_time_indexes(['customers'])
+
+    # Current behavior will attempt to overwrite this column.
+    assert es['customers'].ww.metadata['last_time_index'] == 'last_time'
+    assert isinstance(es['customers'].ww.logical_types['last_time'], Datetime)
+    assert es['customers'].ww.semantic_tags['last_time'] == {'last_time_index'}
+
 # --> add a test where we deep copy a ww dataframe with lti
-# --> test lti logical types matching time type
-# --> test lti with woodwork indices?
+
+
+def test_numeric_es_last_time_index_logical_type(int_es):
+    assert int_es.time_type == 'numeric'
+
+    int_es.add_last_time_indexes()
+
+    for df in int_es.dataframes:
+        assert isinstance(df.ww.logical_types['last_time'], IntegerNullable)
+        int_es._check_uniform_time_index(df, 'last_time')
+
+
+def test_datetime_es_last_time_index_logical_type(es):
+    assert es.time_type == Datetime
+
+    es.add_last_time_indexes()
+
+    for df in es.dataframes:
+        assert isinstance(df.ww.logical_types['last_time'], Datetime)
+        es._check_uniform_time_index(df, 'last_time')
 
 
 def test_dataframe_without_name(es):
@@ -704,9 +739,6 @@ def test_update_dataframe_recalculate_last_time_index(es):
     pd.testing.assert_series_equal(to_pandas(es['log']['datetime']).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
 
 # --> test koalas index reordering
-# --> update where time indexes don't change at all - confirm no ltis change
-
-# --> test_update with last time index for a df that has no last_time set
 
 
 def test_normalize_dataframe_loses_column_metadata(es):
