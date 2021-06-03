@@ -1082,7 +1082,10 @@ class EntitySet(object):
                         column_metadata={col_name: col_schema.metadata for col_name, col_schema in df.ww.columns.items()},
                         use_standard_tags=df.ww.use_standard_tags
                     )
-                    new_df.index = new_df[new_df.ww.index]
+
+                    new_idx = new_df[new_df.ww.index]
+                    new_idx.name = None
+                    new_df.index = new_idx
                     dfs_to_update[df.ww.name] = new_df
                 elif is_instance(df, ks, 'DataFrame'):
                     new_df = df.merge(lti, left_on=df.ww.index, right_index=True)
