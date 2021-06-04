@@ -45,7 +45,7 @@ def test_invalid_primitive(es):
         get_valid_primitives(es, target_entity='log', selected_primitives=['foobar'])
 
     msg = ("Selected primitive <class 'featuretools.variable_types.variable.Numeric'> "
-           "is not an AggergationPrimitive, TransformPrimitive, or str")
+           "is not an AggregationPrimitive, TransformPrimitive, or str")
     with pytest.raises(ValueError, match=msg):
         get_valid_primitives(es, target_entity='log', selected_primitives=[Numeric])
 

@@ -38,25 +38,29 @@ def get_valid_primitives(entityset, target_entity, max_depth=2, selected_primiti
 
     if selected_primitives:
         for prim in selected_primitives:
-            if not isinstance(prim, str) and not issubclass(prim, (AggregationPrimitive, TransformPrimitive)):
-                raise ValueError(f"Selected primitive {prim} is not an "
-                                 "AggergationPrimitive, TransformPrimitive, or str")
-            if not isinstance(prim, str) and issubclass(prim, AggregationPrimitive):
-                agg_primitives.append(prim)
-            elif not isinstance(prim, str) and issubclass(prim, TransformPrimitive):
-                trans_primitives.append(prim)
+            if not isinstance(prim, str):
+                if issubclass(prim, AggregationPrimitive):
+                    prim_list = agg_primitives
+                elif issubclass(prim, TransformPrimitive):
+                    prim_list = trans_primitives
+                else:
+                    raise ValueError(f"Selected primitive {prim} is not an "
+                                     "AggregationPrimitive, TransformPrimitive, or str")
             elif prim in available_aggs:
-                agg_primitives.append(available_aggs[prim])
+                prim = available_aggs[prim]
+                prim_list = agg_primitives
             elif prim in available_trans:
-                trans_primitives.append(available_trans[prim])
+                prim = available_trans[prim]
+                prim_list = trans_primitives
             else:
                 raise ValueError(f"'{prim}' is not a recognized primitive name")
+            if entityset_type in prim.compatibility:
+                prim_list.append(prim)
     else:
-        agg_primitives = list(available_aggs.values())
-        trans_primitives = list(available_trans.values())
-
-    agg_primitives = [agg for agg in agg_primitives if entityset_type in agg.compatibility]
-    trans_primitives = [trans for trans in trans_primitives if entityset_type in trans.compatibility]
+        agg_primitives = [agg for agg in available_aggs.values()
+                          if entityset_type in agg.compatibility]
+        trans_primitives = [trans for trans in available_trans.values()
+                            if entityset_type in trans.compatibility]
 
     dfs_object = DeepFeatureSynthesis(target_entity, entityset,
                                       agg_primitives=agg_primitives,
