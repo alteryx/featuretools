@@ -87,7 +87,7 @@ class TestLastTimeIndex(object):
         log = es['log']
         lti_name = log.ww.metadata.get('last_time_index')
 
-        assert lti_name == 'last_time'
+        assert lti_name == '_ft_last_time'
         assert len(log[lti_name]) == 17
 
         log_df = to_pandas(log)
@@ -100,9 +100,9 @@ class TestLastTimeIndex(object):
         stores = es['stores']
         true_lti = pd.Series([None for x in range(6)], dtype='datetime64[ns]')
 
-        assert len(true_lti) == len(stores['last_time'])
+        assert len(true_lti) == len(stores['_ft_last_time'])
 
-        stores_lti = to_pandas(stores['last_time'])
+        stores_lti = to_pandas(stores['_ft_last_time'])
 
         for v1, v2 in zip(stores_lti, true_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2

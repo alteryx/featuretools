@@ -903,6 +903,7 @@ class EntitySet(object):
             updated_dataframes (list[str]): List of dataframe names to update last_time_index for
                 (will update all parents of those dataframes as well)
         """
+        LTI_COLUMN_NAME = '_ft_last_time'
         # Generate graph of dataframes to find leaf dataframes
         children = defaultdict(list)  # parent --> child mapping
         child_cols = defaultdict(dict)
@@ -1063,10 +1064,15 @@ class EntitySet(object):
                 else:
                     lti = ww.init_series(lti, logical_type='Datetime')
 
-                # Remove any existing last_time column to prevent collisions
-                lti.name = 'last_time'
-                if 'last_time' in df.columns:
-                    df.ww.pop('last_time')
+                lti.name = LTI_COLUMN_NAME
+
+                if LTI_COLUMN_NAME in df.columns:
+                    if 'last_time_index' in df.ww.semantic_tags[LTI_COLUMN_NAME]:
+                        # Remove any previous last time index placed by featuretools
+                        df.ww.pop(LTI_COLUMN_NAME)
+                    else:
+                        raise ValueError("Cannot add a last time index on DataFrame with an existing "
+                                         f"'{LTI_COLUMN_NAME}' column. Please rename '{LTI_COLUMN_NAME}'.")
 
                 # Add the new column to the DataFrame
                 if isinstance(df, dd.DataFrame):
@@ -1101,13 +1107,13 @@ class EntitySet(object):
                     )
                     dfs_to_update[df.ww.name] = new_df
                 else:
-                    df.ww['last_time'] = lti
-                    df.ww.add_semantic_tags({'last_time': 'last_time_index'})
-                    df.ww.metadata['last_time_index'] = 'last_time'
+                    df.ww[LTI_COLUMN_NAME] = lti
+                    df.ww.add_semantic_tags({LTI_COLUMN_NAME: 'last_time_index'})
+                    df.ww.metadata['last_time_index'] = LTI_COLUMN_NAME
 
         for df in dfs_to_update.values():
-            df.ww.add_semantic_tags({'last_time': 'last_time_index'})
-            df.ww.metadata['last_time_index'] = 'last_time'
+            df.ww.add_semantic_tags({LTI_COLUMN_NAME: 'last_time_index'})
+            df.ww.metadata['last_time_index'] = LTI_COLUMN_NAME
             self.dataframe_dict[df.ww.name] = df
 
         self.reset_data_description()

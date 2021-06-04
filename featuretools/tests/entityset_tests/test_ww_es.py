@@ -292,10 +292,10 @@ def test_add_last_time_index(es):
 
     assert 'last_time_index' in es['products'].ww.metadata
 
-    assert es['products'].ww.metadata['last_time_index'] == 'last_time'
-    assert 'last_time' in es['products']
-    assert 'last_time_index' in es['products'].ww.semantic_tags['last_time']
-    assert isinstance(es['products'].ww.logical_types['last_time'], Datetime)
+    assert es['products'].ww.metadata['last_time_index'] == '_ft_last_time'
+    assert '_ft_last_time' in es['products']
+    assert 'last_time_index' in es['products'].ww.semantic_tags['_ft_last_time']
+    assert isinstance(es['products'].ww.logical_types['_ft_last_time'], Datetime)
 
 
 def test_add_last_time_non_numeric_index(pd_es, ks_es, dask_es):
@@ -303,28 +303,26 @@ def test_add_last_time_non_numeric_index(pd_es, ks_es, dask_es):
     dask_es.add_last_time_indexes(['products'])
     ks_es.add_last_time_indexes(['products'])
 
-    assert list(to_pandas(pd_es['products']['last_time']).sort_index()) == list(to_pandas(dask_es['products']['last_time']).sort_index())
-    assert list(to_pandas(pd_es['products']['last_time']).sort_index()) == list(to_pandas(ks_es['products']).sort_values('id')['last_time'])
+    assert list(to_pandas(pd_es['products']['_ft_last_time']).sort_index()) == list(to_pandas(dask_es['products']['_ft_last_time']).sort_index())
+    assert list(to_pandas(pd_es['products']['_ft_last_time']).sort_index()) == list(to_pandas(ks_es['products']).sort_values('id')['_ft_last_time'])
 
     assert pd_es['products'].ww.schema == dask_es['products'].ww.schema
     assert pd_es['products'].ww.schema == ks_es['products'].ww.schema
 
 
-def test_lti_already_has_last_time_column(es):
+def test_lti_already_has_last_time_column_name(es):
     col = es['customers'].ww.pop('loves_ice_cream')
-    col.name = 'last_time'
+    col.name = '_ft_last_time'
 
-    es['customers'].ww['last_time'] = col
+    es['customers'].ww['_ft_last_time'] = col
 
-    assert 'last_time' in es['customers'].columns
-    assert isinstance(es['customers'].ww.logical_types['last_time'], Boolean)
+    assert '_ft_last_time' in es['customers'].columns
+    assert isinstance(es['customers'].ww.logical_types['_ft_last_time'], Boolean)
 
-    es.add_last_time_indexes(['customers'])
-
-    # Current behavior will attempt to overwrite this column.
-    assert es['customers'].ww.metadata['last_time_index'] == 'last_time'
-    assert isinstance(es['customers'].ww.logical_types['last_time'], Datetime)
-    assert es['customers'].ww.semantic_tags['last_time'] == {'last_time_index'}
+    error = ("Cannot add a last time index on DataFrame with an existing "
+             f"'_ft_last_time' column. Please rename '_ft_last_time'.")
+    with pytest.raises(ValueError, match=error):
+        es.add_last_time_indexes(['customers'])
 
 
 def test_numeric_es_last_time_index_logical_type(int_es):
@@ -333,8 +331,8 @@ def test_numeric_es_last_time_index_logical_type(int_es):
     int_es.add_last_time_indexes()
 
     for df in int_es.dataframes:
-        assert isinstance(df.ww.logical_types['last_time'], Double)
-        int_es._check_uniform_time_index(df, 'last_time')
+        assert isinstance(df.ww.logical_types['_ft_last_time'], Double)
+        int_es._check_uniform_time_index(df, '_ft_last_time')
 
 
 def test_datetime_es_last_time_index_logical_type(es):
@@ -343,8 +341,8 @@ def test_datetime_es_last_time_index_logical_type(es):
     es.add_last_time_indexes()
 
     for df in es.dataframes:
-        assert isinstance(df.ww.logical_types['last_time'], Datetime)
-        es._check_uniform_time_index(df, 'last_time')
+        assert isinstance(df.ww.logical_types['_ft_last_time'], Datetime)
+        es._check_uniform_time_index(df, '_ft_last_time')
 
 
 def test_dataframe_without_name(es):
@@ -683,7 +681,7 @@ def test_update_dataframe_and_min_last_time_index(es):
     es.add_last_time_indexes(['products'])
 
     original_time_index = es['log']['datetime'].copy()
-    original_last_time_index = es['products']['last_time'].copy()
+    original_last_time_index = es['products']['_ft_last_time'].copy()
 
     if ks and isinstance(original_time_index, ks.Series):
         new_time_index = ks.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=1))
@@ -694,20 +692,20 @@ def test_update_dataframe_and_min_last_time_index(es):
 
     new_dataframe = es['log'].copy()
     new_dataframe['datetime'] = new_time_index
-    new_dataframe.pop('last_time')
+    new_dataframe.pop('_ft_last_time')
 
     es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
 
     # Koalas reorders indices during last time index, so we sort to confirm individual values are the same
-    pd.testing.assert_series_equal(to_pandas(es['products']['last_time']).sort_index(), to_pandas(expected_last_time_index).sort_index())
-    pd.testing.assert_series_equal(to_pandas(es['log']['last_time']).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
+    pd.testing.assert_series_equal(to_pandas(es['products']['_ft_last_time']).sort_index(), to_pandas(expected_last_time_index).sort_index())
+    pd.testing.assert_series_equal(to_pandas(es['log']['_ft_last_time']).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
 
 
 def test_update_dataframe_dont_recalculate_last_time_index_present(es):
     es.add_last_time_indexes()
 
     original_time_index = es['customers']['signup_date'].copy()
-    original_last_time_index = es['customers']['last_time'].copy()
+    original_last_time_index = es['customers']['_ft_last_time'].copy()
 
     if ks and isinstance(original_time_index, ks.Series):
         new_time_index = ks.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=10))
@@ -718,7 +716,7 @@ def test_update_dataframe_dont_recalculate_last_time_index_present(es):
     new_dataframe['signup_date'] = new_time_index
 
     es.update_dataframe('customers', new_dataframe, recalculate_last_time_indexes=False)
-    pd.testing.assert_series_equal(to_pandas(es['customers']['last_time'], sort_index=True), to_pandas(original_last_time_index, sort_index=True))
+    pd.testing.assert_series_equal(to_pandas(es['customers']['_ft_last_time'], sort_index=True), to_pandas(original_last_time_index, sort_index=True))
 
 
 def test_update_dataframe_dont_recalculate_last_time_index_not_present(es):
@@ -735,7 +733,7 @@ def test_update_dataframe_dont_recalculate_last_time_index_not_present(es):
 
     new_dataframe = es['customers'].copy()
     new_dataframe['signup_date'] = new_time_index
-    new_dataframe.pop('last_time')
+    new_dataframe.pop('_ft_last_time')
 
     es.update_dataframe('customers', new_dataframe, recalculate_last_time_indexes=False)
     assert 'last_time_index' not in es['customers'].ww.metadata
@@ -754,7 +752,7 @@ def test_update_dataframe_recalculate_last_time_index_not_present(es):
 
     new_dataframe = es['log'].copy()
     new_dataframe['datetime'] = new_time_index
-    new_dataframe.pop('last_time')
+    new_dataframe.pop('_ft_last_time')
 
     es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
     pd.testing.assert_series_equal(to_pandas(es['log']['datetime']).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
@@ -772,7 +770,7 @@ def test_update_dataframe_recalcuate_last_time_index_present(es):
 
     new_dataframe = es['log'].copy()
     new_dataframe['datetime'] = new_time_index
-    assert 'last_time' in new_dataframe.columns
+    assert '_ft_last_time' in new_dataframe.columns
 
     es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
     pd.testing.assert_series_equal(to_pandas(es['log']['datetime']).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
