@@ -1378,6 +1378,13 @@ class EntitySet(object):
         if not isinstance(df, type(self[dataframe_name])):
             raise TypeError('Incorrect DataFrame type used')
 
+        # If the original DataFrame has a last time index column and the new one doesnt
+        # remove the column and the reference to last time index from that dataframe
+        last_time_index_column = self[dataframe_name].ww.metadata.get('last_time_index')
+        if last_time_index_column is not None and last_time_index_column not in df.columns:
+            self[dataframe_name].ww.pop(last_time_index_column)
+            del self[dataframe_name].ww.metadata['last_time_index']
+
         old_column_names = list(self[dataframe_name].columns)
         if len(df.columns) != len(old_column_names):
             raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(df.columns),
@@ -1411,7 +1418,7 @@ class EntitySet(object):
 
         df_metadata = self[dataframe_name].ww.metadata
         self.set_secondary_time_index(dataframe_name, df_metadata.get('secondary_time_index'))
-        if recalculate_last_time_indexes and df_metadata.get('last_time_index') is not None:
+        if recalculate_last_time_indexes and last_time_index_column is not None:
             self.add_last_time_indexes(updated_dataframes=[dataframe_name])
         self.reset_data_description()
 

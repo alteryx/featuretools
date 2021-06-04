@@ -694,6 +694,7 @@ def test_update_dataframe_and_min_last_time_index(es):
 
     new_dataframe = es['log'].copy()
     new_dataframe['datetime'] = new_time_index
+    new_dataframe.pop('last_time')
 
     es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
 
@@ -702,7 +703,7 @@ def test_update_dataframe_and_min_last_time_index(es):
     pd.testing.assert_series_equal(to_pandas(es['log']['last_time']).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
 
 
-def test_update_dataframe_dont_recalculate_last_time_index(es):
+def test_update_dataframe_dont_recalculate_last_time_index_present(es):
     es.add_last_time_indexes()
 
     original_time_index = es['customers']['signup_date'].copy()
@@ -720,7 +721,28 @@ def test_update_dataframe_dont_recalculate_last_time_index(es):
     pd.testing.assert_series_equal(to_pandas(es['customers']['last_time'], sort_index=True), to_pandas(original_last_time_index, sort_index=True))
 
 
-def test_update_dataframe_recalculate_last_time_index(es):
+def test_update_dataframe_dont_recalculate_last_time_index_not_present(es):
+    es.add_last_time_indexes()
+    original_lti_name = es['customers'].ww.metadata.get('last_time_index')
+    assert original_lti_name is not None
+
+    original_time_index = es['customers']['signup_date'].copy()
+
+    if ks and isinstance(original_time_index, ks.Series):
+        new_time_index = ks.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=10))
+    else:
+        new_time_index = original_time_index + pd.Timedelta(days=10)
+
+    new_dataframe = es['customers'].copy()
+    new_dataframe['signup_date'] = new_time_index
+    new_dataframe.pop('last_time')
+
+    es.update_dataframe('customers', new_dataframe, recalculate_last_time_indexes=False)
+    assert 'last_time_index' not in es['customers'].ww.metadata
+    assert original_lti_name not in es['customers'].columns
+
+
+def test_update_dataframe_recalculate_last_time_index_not_present(es):
     es.add_last_time_indexes()
 
     original_time_index = es['log']['datetime'].copy()
@@ -732,6 +754,25 @@ def test_update_dataframe_recalculate_last_time_index(es):
 
     new_dataframe = es['log'].copy()
     new_dataframe['datetime'] = new_time_index
+    new_dataframe.pop('last_time')
+
+    es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
+    pd.testing.assert_series_equal(to_pandas(es['log']['datetime']).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
+
+
+def test_update_dataframe_recalcuate_last_time_index_present(es):
+    es.add_last_time_indexes()
+
+    original_time_index = es['log']['datetime'].copy()
+
+    if ks and isinstance(original_time_index, ks.Series):
+        new_time_index = ks.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=10))
+    else:
+        new_time_index = original_time_index + pd.Timedelta(days=10)
+
+    new_dataframe = es['log'].copy()
+    new_dataframe['datetime'] = new_time_index
+    assert 'last_time' in new_dataframe.columns
 
     es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
     pd.testing.assert_series_equal(to_pandas(es['log']['datetime']).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
