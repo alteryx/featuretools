@@ -1057,7 +1057,6 @@ class EntitySet(object):
             if lti is not None:
                 if self.time_type == 'numeric':
                     # --> don't totally understand why this is necessary when we can do the conversion normally?
-                    # --> need to make sure this works for dask and koalas
                     if lti.dtype == 'datetime64[ns]':
                         lti = lti.apply(lambda x: x.value)
                     lti = ww.init_series(lti, logical_type='Double')
