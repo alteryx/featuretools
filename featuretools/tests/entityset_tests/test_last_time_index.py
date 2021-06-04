@@ -5,6 +5,7 @@ import pytest
 import woodwork.logical_types as ltypes
 from dask import dataframe as dd
 
+from featuretools.entityset import LTI_COLUMN_NAME
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
 
@@ -87,7 +88,7 @@ class TestLastTimeIndex(object):
         log = es['log']
         lti_name = log.ww.metadata.get('last_time_index')
 
-        assert lti_name == '_ft_last_time'
+        assert lti_name == LTI_COLUMN_NAME
         assert len(log[lti_name]) == 17
 
         log_df = to_pandas(log)
@@ -100,9 +101,9 @@ class TestLastTimeIndex(object):
         stores = es['stores']
         true_lti = pd.Series([None for x in range(6)], dtype='datetime64[ns]')
 
-        assert len(true_lti) == len(stores['_ft_last_time'])
+        assert len(true_lti) == len(stores[LTI_COLUMN_NAME])
 
-        stores_lti = to_pandas(stores['_ft_last_time'])
+        stores_lti = to_pandas(stores[LTI_COLUMN_NAME])
 
         for v1, v2 in zip(stores_lti, true_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2

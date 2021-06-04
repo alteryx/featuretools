@@ -27,6 +27,8 @@ ks = import_or_none('databricks.koalas')
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
 
+LTI_COLUMN_NAME = '_ft_last_time'
+
 
 class EntitySet(object):
     """
@@ -904,7 +906,6 @@ class EntitySet(object):
             updated_dataframes (list[str]): List of dataframe names to update last_time_index for
                 (will update all parents of those dataframes as well)
         """
-        LTI_COLUMN_NAME = '_ft_last_time'
         # Generate graph of dataframes to find leaf dataframes
         children = defaultdict(list)  # parent --> child mapping
         child_cols = defaultdict(dict)
