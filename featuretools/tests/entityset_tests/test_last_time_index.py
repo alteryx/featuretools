@@ -5,7 +5,7 @@ import pytest
 import woodwork.logical_types as ltypes
 from dask import dataframe as dd
 
-from featuretools.entityset import LTI_COLUMN_NAME
+from featuretools.entityset.entityset import LTI_COLUMN_NAME
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
 

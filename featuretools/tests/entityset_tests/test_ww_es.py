@@ -14,7 +14,7 @@ from woodwork.logical_types import (
     NaturalLanguage
 )
 
-from featuretools.entityset import LTI_COLUMN_NAME, EntitySet
+from featuretools.entityset.entityset import LTI_COLUMN_NAME, EntitySet
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
 
