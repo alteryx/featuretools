@@ -758,9 +758,10 @@ def test_update_dataframe_recalculate_last_time_index_not_present(es):
 
     es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
     pd.testing.assert_series_equal(to_pandas(es['log']['datetime']).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
+    pd.testing.assert_series_equal(to_pandas(es['log'][LTI_COLUMN_NAME]).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
 
 
-def test_update_dataframe_recalcuate_last_time_index_present(es):
+def test_update_dataframe_recalculate_last_time_index_present(es):
     es.add_last_time_indexes()
 
     original_time_index = es['log']['datetime'].copy()
@@ -776,6 +777,7 @@ def test_update_dataframe_recalcuate_last_time_index_present(es):
 
     es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
     pd.testing.assert_series_equal(to_pandas(es['log']['datetime']).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
+    pd.testing.assert_series_equal(to_pandas(es['log'][LTI_COLUMN_NAME]).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
 
 
 def test_normalize_dataframe_loses_column_metadata(es):
