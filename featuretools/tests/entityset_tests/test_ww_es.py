@@ -829,16 +829,23 @@ def test_normalize_ww_init():
 
 
 def test_deepcopy_entityset(es):
-    for df in es.dataframes:
-        try:
-            copied_dataframe = copy.deepcopy(df.copy())
-            print('WORKED', df.ww.name)
-        except TypeError:
-            print('FAILED', df.ww.name)
-    assert copied_dataframe.ww == es['products'].ww
+    if ks and isinstance(es.dataframes[0], ks.DataFrame):
+        pytest.xfail('Cannot deepcopy Koalas DataFrames')
 
     copied_es = copy.deepcopy(es)
 
-    assert copied_es['products'].ww.schema == es['products'].ww.schema
-
+    # --> how is this not false with no relationships??????
     assert copied_es == es
+    assert copied_es is not es
+
+    assert copied_es.relationships == es.relationships
+
+    for df_name in es.dataframe_dict.keys():
+        original_df = es[df_name]
+        new_df = copied_es[df_name]
+
+        assert new_df.ww.schema == original_df.ww.schema
+        assert new_df.ww._schema is not original_df.ww._schema
+
+        pd.testing.assert_frame_equal(to_pandas(new_df), to_pandas(original_df))
+        assert new_df is not original_df

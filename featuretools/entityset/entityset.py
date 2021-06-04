@@ -155,6 +155,17 @@ class EntitySet(object):
         name = self.id or "entity set"
         raise KeyError('DataFrame %s does not exist in %s' % (dataframe_name, name))
 
+    def __deepcopy__(self, memo):
+        # --> id, relationships, time type???
+        new_es = EntitySet()
+        for df_name, df in self.dataframe_dict.items():
+            new_df = copy.deepcopy(df)
+            schema = copy.deepcopy(self.dataframe_dict[df_name].ww.schema)
+            new_df.ww.init(schema=schema)
+            new_es.add_dataframe(new_df)
+
+        return new_es
+
     @property
     def dataframes(self):
         return list(self.dataframe_dict.values())
