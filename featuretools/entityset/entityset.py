@@ -898,7 +898,8 @@ class EntitySet(object):
         """
         Calculates the last time index values for each dataframe (the last time
         an instance or children of that instance were observed).  Used when
-        calculating features using training windows
+        calculating features using training windows. Adds the last time index as
+        a series named _ft_last_time on the dataframe.
         Args:
             updated_dataframes (list[str]): List of dataframe names to update last_time_index for
                 (will update all parents of those dataframes as well)
