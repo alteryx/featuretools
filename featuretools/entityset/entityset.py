@@ -1056,8 +1056,8 @@ class EntitySet(object):
             lti = es_lti_dict[df.ww.name]
             if lti is not None:
                 if self.time_type == 'numeric':
-                    # --> don't totally understand why this is necessary when we can do the conversion normally?
                     if lti.dtype == 'datetime64[ns]':
+                        # Woodwork cannot convert from datetime to numeric
                         lti = lti.apply(lambda x: x.value)
                     lti = ww.init_series(lti, logical_type='Double')
                 else:
