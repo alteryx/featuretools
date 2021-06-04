@@ -1,4 +1,6 @@
+
 from datetime import datetime
+import copy
 
 import dask.dataframe as dd
 import numpy as np
@@ -824,3 +826,19 @@ def test_normalize_ww_init():
 
     assert es['new_df'].ww.name == 'new_df'
     assert es['new_df'].ww.schema.name == 'new_df'
+
+
+def test_deepcopy_entityset(es):
+    for df in es.dataframes:
+        try:
+            copied_dataframe = copy.deepcopy(df.copy())
+            print('WORKED', df.ww.name)
+        except TypeError:
+            print('FAILED', df.ww.name)
+    assert copied_dataframe.ww == es['products'].ww
+
+    copied_es = copy.deepcopy(es)
+
+    assert copied_es['products'].ww.schema == es['products'].ww.schema
+
+    assert copied_es == es
