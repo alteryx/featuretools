@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 
 from featuretools.primitives import (
@@ -5,6 +6,7 @@ from featuretools.primitives import (
     Count,
     Hour,
     IsIn,
+    TimeSincePrevious,
     TransformPrimitive
 )
 from featuretools.synthesis.get_valid_primitives import get_valid_primitives
@@ -46,6 +48,15 @@ def test_invalid_primitive(es):
            "is not an AggergationPrimitive, TransformPrimitive, or str")
     with pytest.raises(ValueError, match=msg):
         get_valid_primitives(es, target_entity='log', selected_primitives=[Numeric])
+
+
+def test_primitive_compatibility(es):
+    _, trans_prims = get_valid_primitives(es, "customers", selected_primitives=[TimeSincePrevious])
+
+    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+        assert len(trans_prims) == 0
+    else:
+        assert len(trans_prims) == 1
 
 
 def test_get_valid_primitives_custom_primitives(pd_es):

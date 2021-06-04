@@ -34,6 +34,8 @@ def get_valid_primitives(entityset, target_entity, max_depth=2, selected_primiti
     trans_primitives = []
     available_aggs = get_aggregation_primitives()
     available_trans = get_transform_primitives()
+    entityset_type = get_entityset_type(entityset)
+
     if selected_primitives:
         for prim in selected_primitives:
             if not isinstance(prim, str) and not issubclass(prim, (AggregationPrimitive, TransformPrimitive)):
@@ -50,11 +52,11 @@ def get_valid_primitives(entityset, target_entity, max_depth=2, selected_primiti
             else:
                 raise ValueError(f"'{prim}' is not a recognized primitive name")
     else:
-        entityset_type = get_entityset_type(entityset)
-        agg_primitives = [agg for agg in available_aggs.values()
-                          if entityset_type in agg.compatibility]
-        trans_primitives = [trans for trans in available_trans.values()
-                            if entityset_type in trans.compatibility]
+        agg_primitives = list(available_aggs.values())
+        trans_primitives = list(available_trans.values())
+
+    agg_primitives = [agg for agg in agg_primitives if entityset_type in agg.compatibility]
+    trans_primitives = [trans for trans in trans_primitives if entityset_type in trans.compatibility]
 
     dfs_object = DeepFeatureSynthesis(target_entity, entityset,
                                       agg_primitives=agg_primitives,
@@ -63,7 +65,7 @@ def get_valid_primitives(entityset, target_entity, max_depth=2, selected_primiti
 
     features = dfs_object.build_features()
 
-    trans, agg, groupby, where = _categorize_features(features)
+    trans, agg, _, _ = _categorize_features(features)
 
     trans_unused = get_unused_primitives(trans_primitives, trans)
     agg_unused = get_unused_primitives(agg_primitives, agg)
