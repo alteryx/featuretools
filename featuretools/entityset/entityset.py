@@ -124,7 +124,6 @@ class EntitySet(object):
     #     return (EntitySet, serialize.entityset_to_description(self.metadata))
 
     def __eq__(self, other, deep=False):
-        # --> add data_description to equality check???
         if self.id != other.id:
             return False
         if self.time_type != other.time_type:
@@ -168,7 +167,6 @@ class EntitySet(object):
         memo[id(self)] = result
         for k, v in self.__dict__.items():
             copied_attr = copy.deepcopy(v, memo)
-            # --> figure out how to handle data description....
             # Must initialize Woodwork on all the DataFrames
             if k == 'dataframe_dict':
                 for df_name, new_df in copied_attr.items():
