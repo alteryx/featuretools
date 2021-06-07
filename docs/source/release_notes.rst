@@ -6,6 +6,7 @@ Future Release
 ==============
     * Enhancements
         * Add support for creating EntitySets from Woodwork DataTables (:pr:`1277`)
+        * Add ``EntitySet.__deepcopy__` that retains Woodwork typing information (:pr:`1465`)
     * Fixes
     * Changes
         * Remove ``add_interesting_values`` from ``Entity`` (:pr:`1269`)
