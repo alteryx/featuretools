@@ -1747,6 +1747,31 @@ def test_entityset_equality(es):
 
     first_es.add_relationship('customers', 'id', 'sessions', 'customer_id')
     assert first_es != second_es
+    assert second_es != first_es
 
     second_es.add_relationship('customers', 'id', 'sessions', 'customer_id')
+    assert first_es == second_es
+
+
+def test_entityset_id_equality(es):
+    first_es = EntitySet(id='first')
+    fisrt_es_copy = EntitySet(id='first')
+    second_es = EntitySet(id='second')
+
+    assert first_es != second_es
+    assert first_es == fisrt_es_copy
+
+
+def test_entityset_time_type_equality(es):
+    first_es = EntitySet()
+    second_es = EntitySet()
+    assert first_es == second_es
+
+    first_es.time_type = 'numeric'
+    assert first_es != second_es
+
+    second_es.time_type = ltypes.Datetime
+    assert first_es != second_es
+
+    second_es.time_type = 'numeric'
     assert first_es == second_es

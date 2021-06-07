@@ -124,6 +124,10 @@ class EntitySet(object):
     #     return (EntitySet, serialize.entityset_to_description(self.metadata))
 
     def __eq__(self, other, deep=False):
+        if self.id != other.id:
+            return False
+        if self.time_type != other.time_type:
+            return False
         if len(self.dataframe_dict) != len(other.dataframe_dict):
             return False
         for df_name, df in self.dataframe_dict.items():
@@ -132,6 +136,8 @@ class EntitySet(object):
             # --> WW bug: Waiting on deep behavior for WW equality
             if not df.ww.__eq__(other[df_name].ww):
                 return False
+        if not len(self.relationships) == len(other.relationships):
+            return False
         for r in self.relationships:
             if r not in other.relationships:
                 return False
