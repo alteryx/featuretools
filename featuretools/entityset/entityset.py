@@ -11,15 +11,15 @@ import woodwork as ww
 # from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.relationship import Relationship, RelationshipPath
 from featuretools.utils.gen_utils import import_or_none, is_instance
-
-# import pandas.api.types as pdtypes
-
-
 from featuretools.utils.plot_utils import (
     check_graphviz,
     get_graphviz_format,
     save_graph
 )
+
+# import pandas.api.types as pdtypes
+
+
 # from featuretools.utils.wrangle import _check_timedelta
 
 ks = import_or_none('databricks.koalas')
