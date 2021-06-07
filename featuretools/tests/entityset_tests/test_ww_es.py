@@ -828,16 +828,34 @@ def test_normalize_ww_init():
     assert es['new_df'].ww.schema.name == 'new_df'
 
 
-def test_deepcopy_entityset(make_es):
-    # --> add dask fixture for this test
+@pytest.fixture(params=['make_es', 'dask_copy_es'])
+def copy_es(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def dask_copy_es(make_es):
+    es = EntitySet(id=make_es.id)
+    for df in make_es.dataframes:
+        dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
+        dd_df.ww.init(schema=df.ww.schema)
+        es.add_dataframe(dd_df)
+
+    for rel in make_es.relationships:
+        es.add_relationship(rel.parent_dataframe.ww.name, rel.parent_column.name,
+                            rel.child_dataframe.ww.name, rel.child_column.name)
+    return es
+
+
+def test_deepcopy_entityset(copy_es):
     # Uses make_es since the es fixture uses deepcopy
-    copied_es = copy.deepcopy(make_es)
+    copied_es = copy.deepcopy(copy_es)
 
-    assert copied_es == make_es
-    assert copied_es is not make_es
+    assert copied_es == copy_es
+    assert copied_es is not copy_es
 
-    for df_name in make_es.dataframe_dict.keys():
-        original_df = make_es[df_name]
+    for df_name in copy_es.dataframe_dict.keys():
+        original_df = copy_es[df_name]
         new_df = copied_es[df_name]
 
         assert new_df.ww.schema == original_df.ww.schema

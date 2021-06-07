@@ -85,30 +85,30 @@ def int_es(request):
 
 
 @pytest.fixture
-def dask_es(make_es):
-    es = ft.EntitySet(id=make_es.id)
-    for df in make_es.dataframes:
+def dask_es(pd_es):
+    es = ft.EntitySet(id=pd_es.id)
+    for df in pd_es.dataframes:
         dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
         dd_df.ww.init(schema=df.ww.schema)
         es.add_dataframe(dd_df)
 
-    for rel in make_es.relationships:
+    for rel in pd_es.relationships:
         es.add_relationship(rel.parent_dataframe.ww.name, rel.parent_column.name,
                             rel.child_dataframe.ww.name, rel.child_column.name)
     return es
 
 
 @pytest.fixture
-def ks_es(make_es):
+def ks_es(pd_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    es = ft.EntitySet(id=make_es.id)
-    for df in make_es.dataframes:
+    es = ft.EntitySet(id=pd_es.id)
+    for df in pd_es.dataframes:
         cleaned_df = pd_to_ks_clean(df).reset_index(drop=True)
         ks_df = ks.from_pandas(cleaned_df)
         ks_df.ww.init(schema=df.ww.schema)
         es.add_dataframe(ks_df)
 
-    for rel in make_es.relationships:
+    for rel in pd_es.relationships:
         es.add_relationship(rel._parent_dataframe_name, rel._parent_column_name,
                             rel._child_dataframe_name, rel._child_column_name)
     return es
