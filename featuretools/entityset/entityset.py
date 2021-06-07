@@ -15,11 +15,11 @@ from featuretools.utils.gen_utils import import_or_none, is_instance
 # import pandas.api.types as pdtypes
 
 
-# from featuretools.utils.plot_utils import (
-#     check_graphviz,
-#     get_graphviz_format,
-#     save_graph
-# )
+from featuretools.utils.plot_utils import (
+    check_graphviz,
+    get_graphviz_format,
+    save_graph
+)
 # from featuretools.utils.wrangle import _check_timedelta
 
 ks = import_or_none('databricks.koalas')
@@ -1121,52 +1121,53 @@ class EntitySet(object):
 
         self.reset_data_description()
 
-    # def plot(self, to_file=None):
-    #     """
-    #     Create a UML diagram-ish graph of the EntitySet.
+    def plot(self, to_file=None):
+        """
+        Create a UML diagram-ish graph of the EntitySet.
 
-    #     Args:
-    #         to_file (str, optional) : Path to where the plot should be saved.
-    #             If set to None (as by default), the plot will not be saved.
+        Args:
+            to_file (str, optional) : Path to where the plot should be saved.
+                If set to None (as by default), the plot will not be saved.
 
-    #     Returns:
-    #         graphviz.Digraph : Graph object that can directly be displayed in
-    #             Jupyter notebooks.
+        Returns:
+            graphviz.Digraph : Graph object that can directly be displayed in
+                Jupyter notebooks.
 
-    #     """
-    #     graphviz = check_graphviz()
-    #     format_ = get_graphviz_format(graphviz=graphviz,
-    #                                   to_file=to_file)
+        """
+        graphviz = check_graphviz()
+        format_ = get_graphviz_format(graphviz=graphviz,
+                                      to_file=to_file)
 
-    #     # Initialize a new directed graph
-    #     graph = graphviz.Digraph(self.id, format=format_,
-    #                              graph_attr={'splines': 'ortho'})
+        # Initialize a new directed graph
+        graph = graphviz.Digraph(self.id, format=format_,
+                                 graph_attr={'splines': 'ortho'})
 
-    #     # Draw entities
-    #     for entity in self.dataframes:
-    #         variables_string = '\l'.join([var.id + ' : ' + var.type_string  # noqa: W605
-    #                                       for var in entity.variables])
-    #         if isinstance(entity.df, dd.DataFrame):  # entity is a dask entity
-    #             label = '{%s |%s\l}' % (entity.id, variables_string)  # noqa: W605
-    #         else:
-    #             nrows = entity.shape[0]
-    #             label = '{%s (%d row%s)|%s\l}' % (entity.id, nrows, 's' * (nrows > 1), variables_string)  # noqa: W605
-    #         graph.node(entity.id, shape='record', label=label)
+        # Draw entities
+        for df in self.dataframes:
+            # --> need to finda nice way to show this
+            columns_string = '\l'.join([str(col_schema)  # noqa: W605
+                                          for col_schema in df.ww.columns])
+            if isinstance(df, dd.DataFrame):  # entity is a dask entity
+                label = '{%s |%s\l}' % (df.ww.name, columns_string)  # noqa: W605
+            else:
+                nrows = df.shape[0]
+                label = '{%s (%d row%s)|%s\l}' % (df.ww.name, nrows, 's' * (nrows > 1), columns_string)  # noqa: W605
+            graph.node(df.ww.name, shape='record', label=label)
 
-    #     # Draw relationships
-    #     for rel in self.relationships:
-    #         # Display the key only once if is the same for both related entities
-    #         if rel._parent_column_name == rel._child_column_name:
-    #             label = rel._parent_column_name
-    #         else:
-    #             label = '%s -> %s' % (rel._parent_column_name,
-    #                                   rel._child_column_name)
+        # Draw relationships
+        for rel in self.relationships:
+            # Display the key only once if is the same for both related entities
+            if rel._parent_column_name == rel._child_column_name:
+                label = rel._parent_column_name
+            else:
+                label = '%s -> %s' % (rel._parent_column_name,
+                                      rel._child_column_name)
 
-    #         graph.edge(rel._child_dataframe_name, rel._parent_column_name, xlabel=label)
+            graph.edge(rel._child_dataframe_name, rel._parent_dataframe_name, xlabel=label)
 
-    #     if to_file:
-    #         save_graph(graph, to_file, format_)
-    #     return graph
+        if to_file:
+            save_graph(graph, to_file, format_)
+        return graph
 
     # def _handle_time(self, entity_id, df, time_last=None, training_window=None, include_cutoff_time=True):
     #     """
