@@ -828,8 +828,26 @@ def test_normalize_ww_init():
     assert es['new_df'].ww.schema.name == 'new_df'
 
 
-def test_deepcopy_entityset(es):
-    # --> since the es fixture uses deepcopy, probably should use it to test here :(
+def test_deepcopy_entityset(make_es):
+    # --> add dask fixture for this test
+    # Uses make_es since the es fixture uses deepcopy
+    copied_es = copy.deepcopy(make_es)
+
+    assert copied_es == make_es
+    assert copied_es is not make_es
+
+    for df_name in make_es.dataframe_dict.keys():
+        original_df = make_es[df_name]
+        new_df = copied_es[df_name]
+
+        assert new_df.ww.schema == original_df.ww.schema
+        assert new_df.ww._schema is not original_df.ww._schema
+
+        pd.testing.assert_frame_equal(to_pandas(new_df), to_pandas(original_df))
+        assert new_df is not original_df
+
+
+def test_deepcopy_entityset_changes(es):
     if ks and isinstance(es.dataframes[0], ks.DataFrame):
         pytest.xfail('Cannot deepcopy Koalas DataFrames')
 
@@ -838,15 +856,6 @@ def test_deepcopy_entityset(es):
     assert copied_es == es
     assert copied_es is not es
 
-    assert copied_es.relationships == es.relationships
+    copied_es['products'].ww.add_semantic_tags({'id': 'new_tag'})
 
-    for df_name in es.dataframe_dict.keys():
-        original_df = es[df_name]
-        new_df = copied_es[df_name]
-
-        assert new_df.ww.schema == original_df.ww.schema
-        assert new_df.ww._schema is not original_df.ww._schema
-
-        pd.testing.assert_frame_equal(to_pandas(new_df), to_pandas(original_df))
-        assert new_df is not original_df
-    # --> test that changes to one at a deep level don't touch the other!!!!
+    assert copied_es != es

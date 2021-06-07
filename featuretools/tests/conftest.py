@@ -1,4 +1,4 @@
-# import copy
+import copy
 
 import composeml as cp
 import dask.dataframe as dd
@@ -41,14 +41,12 @@ def make_int_es():
 
 @pytest.fixture
 def pd_es(make_es):
-    # --> TODO temporary while waiting to implement deepcopy
-    return make_ecommerce_entityset()
+    return copy.deepcopy(make_es)
 
 
 @pytest.fixture
 def pd_int_es(make_int_es):
-    # --> TODO temporary while waiting to implement deepcopy
-    return make_ecommerce_entityset(with_integer_time_index=True)
+    return copy.deepcopy(make_int_es)
 
 
 @pytest.fixture

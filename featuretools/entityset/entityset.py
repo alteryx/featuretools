@@ -163,7 +163,6 @@ class EntitySet(object):
         raise KeyError('DataFrame %s does not exist in %s' % (dataframe_name, name))
 
     def __deepcopy__(self, memo):
-        # --> id, relationships, time type???
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
