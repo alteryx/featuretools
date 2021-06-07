@@ -289,7 +289,7 @@ def test_query_by_values_returns_rows_in_given_order():
     es = es.add_dataframe(dataframe=data, dataframe_name="test",
                           index="id", time_index="time",
                           logical_types={"value": "Categorical"})
-    query = es.query_by_values('test', ['b', 'a'], column_id='value')
+    query = es.query_by_values('test', ['b', 'a'], column_name='value')
     assert np.array_equal(query['id'], [1, 3, 4, 5])
 
 
@@ -323,7 +323,7 @@ def test_query_by_df(es):
 
 def test_query_by_id_with_time(es):
     df = es.query_by_values(
-        dataframe_id='log',
+        dataframe_name='log',
         instance_vals=[0, 1, 2, 3, 4],
         time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
     df = to_pandas(df)
@@ -336,8 +336,8 @@ def test_query_by_id_with_time(es):
 
 def test_query_by_variable_with_time(es):
     df = es.query_by_values(
-        dataframe_id='log',
-        instance_vals=[0, 1, 2], column_id='session_id',
+        dataframe_name='log',
+        instance_vals=[0, 1, 2], column_name='session_id',
         time_last=datetime(2011, 4, 9, 10, 50, 0))
     df = to_pandas(df)
 
@@ -353,8 +353,8 @@ def test_query_by_variable_with_time(es):
 
 def test_query_by_variable_with_training_window(es):
     df = es.query_by_values(
-        dataframe_id='log',
-        instance_vals=[0, 1, 2], column_id='session_id',
+        dataframe_name='log',
+        instance_vals=[0, 1, 2], column_name='session_id',
         time_last=datetime(2011, 4, 9, 10, 50, 0),
         training_window='15m')
     df = to_pandas(df)
@@ -365,9 +365,9 @@ def test_query_by_variable_with_training_window(es):
 
 def test_query_by_indexed_variable(es):
     df = es.query_by_values(
-        dataframe_id='log',
+        dataframe_name='log',
         instance_vals=['taco clock'],
-        column_id='product_id')
+        column_name='product_id')
     df = to_pandas(df)
 
     assert list(df['id'].values) == [15, 16]
