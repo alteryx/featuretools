@@ -1144,9 +1144,17 @@ class EntitySet(object):
 
         # Draw entities
         for df in self.dataframes:
-            # --> need to finda nice way to show this
-            columns_string = '\l'.join([col_name + ' : ' + str(col_schema.logical_type) + ', ' + str(list(col_schema.semantic_tags))  # noqa: W605
-                                          for col_name, col_schema in df.ww.columns.items()])
+            column_typing_info = []
+            for col_name, col_schema in df.ww.columns.items():
+                col_string = col_name + ' : ' + str(col_schema.logical_type)
+
+                tags = col_schema.semantic_tags - col_schema.logical_type.standard_tags
+                if tags:
+                    col_string += '; '
+                    col_string += ', '.join(tags)
+                column_typing_info.append(col_string)
+
+            columns_string = '\l'.join(column_typing_info)  # noqa: W605
             if isinstance(df, dd.DataFrame):  # entity is a dask entity
                 label = '{%s |%s\l}' % (df.ww.name, columns_string)  # noqa: W605
             else:
