@@ -1145,8 +1145,8 @@ class EntitySet(object):
         # Draw entities
         for df in self.dataframes:
             # --> need to finda nice way to show this
-            columns_string = '\l'.join([str(col_schema)  # noqa: W605
-                                          for col_schema in df.ww.columns])
+            columns_string = '\l'.join([col_name + ': ' + str(col_schema)[14:-1]  # noqa: W605
+                                          for col_name, col_schema in df.ww.columns.items()])
             if isinstance(df, dd.DataFrame):  # entity is a dask entity
                 label = '{%s |%s\l}' % (df.ww.name, columns_string)  # noqa: W605
             else:
