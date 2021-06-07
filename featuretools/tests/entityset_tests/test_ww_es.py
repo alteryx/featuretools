@@ -829,12 +829,12 @@ def test_normalize_ww_init():
 
 
 def test_deepcopy_entityset(es):
+    # --> since the es fixture uses deepcopy, probably should use it to test here :(
     if ks and isinstance(es.dataframes[0], ks.DataFrame):
         pytest.xfail('Cannot deepcopy Koalas DataFrames')
 
     copied_es = copy.deepcopy(es)
 
-    # --> how is this not false with no relationships??????
     assert copied_es == es
     assert copied_es is not es
 
@@ -849,3 +849,4 @@ def test_deepcopy_entityset(es):
 
         pd.testing.assert_frame_equal(to_pandas(new_df), to_pandas(original_df))
         assert new_df is not original_df
+    # --> test that changes to one at a deep level don't touch the other!!!!

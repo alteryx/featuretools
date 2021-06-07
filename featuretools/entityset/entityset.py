@@ -124,6 +124,7 @@ class EntitySet(object):
     #     return (EntitySet, serialize.entityset_to_description(self.metadata))
 
     def __eq__(self, other, deep=False):
+        # --> add data_description to equality check???
         if self.id != other.id:
             return False
         if self.time_type != other.time_type:
@@ -163,14 +164,19 @@ class EntitySet(object):
 
     def __deepcopy__(self, memo):
         # --> id, relationships, time type???
-        new_es = EntitySet()
-        for df_name, df in self.dataframe_dict.items():
-            new_df = copy.deepcopy(df)
-            schema = copy.deepcopy(self.dataframe_dict[df_name].ww.schema)
-            new_df.ww.init(schema=schema)
-            new_es.add_dataframe(new_df)
-
-        return new_es
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            copied_attr = copy.deepcopy(v, memo)
+            # --> figure out how to handle data description....
+            # Must initialize Woodwork on all the DataFrames
+            if k == 'dataframe_dict':
+                for df_name, new_df in copied_attr.items():
+                    schema = copy.deepcopy(self.dataframe_dict[df_name].ww.schema, memo=memo)
+                    new_df.ww.init(schema=schema)
+            setattr(result, k, copied_attr)
+        return result
 
     @property
     def dataframes(self):
