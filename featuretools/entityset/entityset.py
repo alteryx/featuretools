@@ -835,58 +835,58 @@ class EntitySet(object):
     # #  Data wrangling methods  ###############################################
     # ###########################################################################
 
-    def concat(self, other, inplace=False):
-        '''Combine entityset with another to create a new entityset with the
-        combined data of both entitysets.
-        '''
-        assert_string = "Entitysets must have the same entities, relationships"\
-            ", and variable_ids"
-        assert (self.__eq__(other) and
-                self.relationships == other.relationships), assert_string
+    # def concat(self, other, inplace=False):
+    #     '''Combine entityset with another to create a new entityset with the
+    #     combined data of both entitysets.
+    #     '''
+    #     assert_string = "Entitysets must have the same entities, relationships"\
+    #         ", and variable_ids"
+    #     assert (self.__eq__(other) and
+    #             self.relationships == other.relationships), assert_string
 
-        for entity in self.dataframes:
-            assert entity.id in other.dataframe_dict, assert_string
-            assert (len(self[entity.id].variables) ==
-                    len(other[entity.id].variables)), assert_string
-            other_variable_ids = [o_variable.id for o_variable in
-                                  other[entity.id].variables]
-            assert (all([variable.id in other_variable_ids
-                         for variable in self[entity.id].variables])), assert_string
+    #     for entity in self.dataframes:
+    #         assert entity.id in other.dataframe_dict, assert_string
+    #         assert (len(self[entity.id].variables) ==
+    #                 len(other[entity.id].variables)), assert_string
+    #         other_variable_ids = [o_variable.id for o_variable in
+    #                               other[entity.id].variables]
+    #         assert (all([variable.id in other_variable_ids
+    #                      for variable in self[entity.id].variables])), assert_string
 
-        if inplace:
-            combined_es = self
-        else:
-            combined_es = copy.deepcopy(self)
+    #     if inplace:
+    #         combined_es = self
+    #     else:
+    #         combined_es = copy.deepcopy(self)
 
-        has_last_time_index = []
-        for entity in self.dataframes:
-            self_df = entity.df
-            other_df = other[entity.id].df
-            combined_df = pd.concat([self_df, other_df])
-            if entity.created_index == entity.index:
-                columns = [col for col in combined_df.columns if
-                           col != entity.index or col != entity.time_index]
-            else:
-                columns = [entity.index]
-            combined_df.drop_duplicates(columns, inplace=True)
+    #     has_last_time_index = []
+    #     for entity in self.dataframes:
+    #         self_df = entity.df
+    #         other_df = other[entity.id].df
+    #         combined_df = pd.concat([self_df, other_df])
+    #         if entity.created_index == entity.index:
+    #             columns = [col for col in combined_df.columns if
+    #                        col != entity.index or col != entity.time_index]
+    #         else:
+    #             columns = [entity.index]
+    #         combined_df.drop_duplicates(columns, inplace=True)
 
-            if entity.time_index:
-                combined_df.sort_values([entity.time_index, entity.index], inplace=True)
-            else:
-                combined_df.sort_index(inplace=True)
-            if (entity.last_time_index is not None or
-                    other[entity.id].last_time_index is not None):
-                has_last_time_index.append(entity.id)
+    #         if entity.time_index:
+    #             combined_df.sort_values([entity.time_index, entity.index], inplace=True)
+    #         else:
+    #             combined_df.sort_index(inplace=True)
+    #         if (entity.last_time_index is not None or
+    #                 other[entity.id].last_time_index is not None):
+    #             has_last_time_index.append(entity.id)
 
-            combined_es.update_dataframe(
-                entity_id=entity.id,
-                df=combined_df,
-                recalculate_last_time_indexes=False,
-            )
+    #         combined_es.update_dataframe(
+    #             entity_id=entity.id,
+    #             df=combined_df,
+    #             recalculate_last_time_indexes=False,
+    #         )
 
-        combined_es.add_last_time_indexes(updated_dataframes=has_last_time_index)
-        self.reset_data_description()
-        return combined_es
+    #     combined_es.add_last_time_indexes(updated_dataframes=has_last_time_index)
+    #     self.reset_data_description()
+    #     return combined_es
 
     ###########################################################################
     #  Indexing methods  ###############################################
