@@ -11,15 +11,15 @@ import woodwork as ww
 # from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.relationship import Relationship, RelationshipPath
 from featuretools.utils.gen_utils import import_or_none, is_instance
+from featuretools.utils.plot_utils import (
+    check_graphviz,
+    get_graphviz_format,
+    save_graph
+)
 
 # import pandas.api.types as pdtypes
 
 
-# from featuretools.utils.plot_utils import (
-#     check_graphviz,
-#     get_graphviz_format,
-#     save_graph
-# )
 # from featuretools.utils.wrangle import _check_timedelta
 
 ks = import_or_none('databricks.koalas')
@@ -1121,52 +1121,66 @@ class EntitySet(object):
 
         self.reset_data_description()
 
-    # def plot(self, to_file=None):
-    #     """
-    #     Create a UML diagram-ish graph of the EntitySet.
+    def plot(self, to_file=None):
+        """
+        Create a UML diagram-ish graph of the EntitySet.
 
-    #     Args:
-    #         to_file (str, optional) : Path to where the plot should be saved.
-    #             If set to None (as by default), the plot will not be saved.
+        Args:
+            to_file (str, optional) : Path to where the plot should be saved.
+                If set to None (as by default), the plot will not be saved.
 
-    #     Returns:
-    #         graphviz.Digraph : Graph object that can directly be displayed in
-    #             Jupyter notebooks.
+        Returns:
+            graphviz.Digraph : Graph object that can directly be displayed in
+                Jupyter notebooks. Nodes of the graph correspond to the DataFrames
+                in the EntitySet, showing the typing information for each column.
 
-    #     """
-    #     graphviz = check_graphviz()
-    #     format_ = get_graphviz_format(graphviz=graphviz,
-    #                                   to_file=to_file)
+        Note:
+            The typing information displayed for each column is based off of the Woodwork
+            ColumnSchema for that column and is represented as ``LogicalType; semantic_tags``,
+            but the standard semantic tags have been removed for brevity.
+        """
+        graphviz = check_graphviz()
+        format_ = get_graphviz_format(graphviz=graphviz,
+                                      to_file=to_file)
 
-    #     # Initialize a new directed graph
-    #     graph = graphviz.Digraph(self.id, format=format_,
-    #                              graph_attr={'splines': 'ortho'})
+        # Initialize a new directed graph
+        graph = graphviz.Digraph(self.id, format=format_,
+                                 graph_attr={'splines': 'ortho'})
 
-    #     # Draw entities
-    #     for entity in self.dataframes:
-    #         variables_string = '\l'.join([var.id + ' : ' + var.type_string  # noqa: W605
-    #                                       for var in entity.variables])
-    #         if isinstance(entity.df, dd.DataFrame):  # entity is a dask entity
-    #             label = '{%s |%s\l}' % (entity.id, variables_string)  # noqa: W605
-    #         else:
-    #             nrows = entity.shape[0]
-    #             label = '{%s (%d row%s)|%s\l}' % (entity.id, nrows, 's' * (nrows > 1), variables_string)  # noqa: W605
-    #         graph.node(entity.id, shape='record', label=label)
+        # Draw entities
+        for df in self.dataframes:
+            column_typing_info = []
+            for col_name, col_schema in df.ww.columns.items():
+                col_string = col_name + ' : ' + str(col_schema.logical_type)
 
-    #     # Draw relationships
-    #     for rel in self.relationships:
-    #         # Display the key only once if is the same for both related entities
-    #         if rel._parent_column_name == rel._child_column_name:
-    #             label = rel._parent_column_name
-    #         else:
-    #             label = '%s -> %s' % (rel._parent_column_name,
-    #                                   rel._child_column_name)
+                tags = col_schema.semantic_tags - col_schema.logical_type.standard_tags
+                if tags:
+                    col_string += '; '
+                    col_string += ', '.join(tags)
+                column_typing_info.append(col_string)
 
-    #         graph.edge(rel._child_dataframe_name, rel._parent_column_name, xlabel=label)
+            columns_string = '\l'.join(column_typing_info)  # noqa: W605
+            if isinstance(df, dd.DataFrame):  # entity is a dask entity
+                label = '{%s |%s\l}' % (df.ww.name, columns_string)  # noqa: W605
+            else:
+                nrows = df.shape[0]
+                label = '{%s (%d row%s)|%s\l}' % (df.ww.name, nrows, 's' * (nrows > 1), columns_string)  # noqa: W605
+            graph.node(df.ww.name, shape='record', label=label)
 
-    #     if to_file:
-    #         save_graph(graph, to_file, format_)
-    #     return graph
+        # Draw relationships
+        for rel in self.relationships:
+            # Display the key only once if is the same for both related entities
+            if rel._parent_column_name == rel._child_column_name:
+                label = rel._parent_column_name
+            else:
+                label = '%s -> %s' % (rel._parent_column_name,
+                                      rel._child_column_name)
+
+            graph.edge(rel._child_dataframe_name, rel._parent_dataframe_name, xlabel=label)
+
+        if to_file:
+            save_graph(graph, to_file, format_)
+        return graph
 
     # def _handle_time(self, entity_id, df, time_last=None, training_window=None, include_cutoff_time=True):
     #     """
