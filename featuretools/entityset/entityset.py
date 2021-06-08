@@ -1197,7 +1197,7 @@ class EntitySet(object):
                     else:
                         warnings.warn(
                             "Using training_window but last_time_index is "
-                            "not set for dataframe %s" % (dt.id)
+                            "not set for dataframe %s" % (dt.ww.name)
                         )
 
                     df = df[mask]

@@ -352,11 +352,13 @@ def test_query_by_variable_with_time(es):
 
 
 def test_query_by_variable_with_training_window(es):
-    df = es.query_by_values(
-        dataframe_name='log',
-        instance_vals=[0, 1, 2], column_name='session_id',
-        time_last=datetime(2011, 4, 9, 10, 50, 0),
-        training_window='15m')
+    match = "Using training_window but last_time_index is not set for dataframe log"
+    with pytest.warns(UserWarning, match=match):
+        df = es.query_by_values(
+            dataframe_name='log',
+            instance_vals=[0, 1, 2], column_name='session_id',
+            time_last=datetime(2011, 4, 9, 10, 50, 0),
+            training_window='15m')
     df = to_pandas(df)
 
     assert list(df['id'].values) == [9]
