@@ -1170,23 +1170,24 @@ class EntitySet(object):
         If the dataframe does not have a time index, return the original
         dataframe.
         """
-        dt = self[dataframe_name]
+
+        schema = self[dataframe_name].ww.schema
         if is_instance(df, ks, 'DataFrame') and isinstance(time_last, np.datetime64):
             time_last = pd.to_datetime(time_last)
-        if dt.ww.time_index:
+        if schema.time_index:
             df_empty = df.empty if isinstance(df, pd.DataFrame) else False
             if time_last is not None and not df_empty:
                 if include_cutoff_time:
-                    df = df[df[dt.ww.time_index] <= time_last]
+                    df = df[df[schema.time_index] <= time_last]
                 else:
-                    df = df[df[dt.ww.time_index] < time_last]
+                    df = df[df[schema.time_index] < time_last]
                 if training_window is not None:
                     training_window = _check_timedelta(training_window)
                     if include_cutoff_time:
-                        mask = df[dt.ww.time_index] > time_last - training_window
+                        mask = df[schema.time_index] > time_last - training_window
                     else:
-                        mask = df[dt.ww.time_index] >= time_last - training_window
-                    dt_lti = dt.ww.metadata.get('last_time_index')
+                        mask = df[schema.time_index] >= time_last - training_window
+                    dt_lti = schema.metadata.get('last_time_index')
                     if dt_lti is not None:
                         lti_slice = dt_lti.reindex(df.index)
                         if include_cutoff_time:
@@ -1197,12 +1198,12 @@ class EntitySet(object):
                     else:
                         warnings.warn(
                             "Using training_window but last_time_index is "
-                            "not set for dataframe %s" % (dt.ww.name)
+                            "not set for dataframe %s" % (dataframe_name)
                         )
 
                     df = df[mask]
 
-        dt_secondary_time_index = dt.ww.metadata.get('secondary_time_index') or {}
+        dt_secondary_time_index = schema.metadata.get('secondary_time_index') or {}
         for secondary_time_index, columns in dt_secondary_time_index.items():
             # should we use ignore time last here?
             df_empty = df.empty if isinstance(df, pd.DataFrame) else False
