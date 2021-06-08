@@ -1405,7 +1405,6 @@ def test_sizeof(es):
     total_size = 0
     for df in es.dataframes:
         total_size += df.__sizeof__()
-        total_size += df.ww.metadata.get('last_time_index').__sizeof__()
 
     assert es.__sizeof__() == total_size
 

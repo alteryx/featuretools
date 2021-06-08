@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from woodwork.logical_types import (
+    Boolean,
     Categorical,
     Datetime,
     Double,
@@ -13,7 +14,7 @@ from woodwork.logical_types import (
     NaturalLanguage
 )
 
-from featuretools.entityset import EntitySet
+from featuretools.entityset.entityset import LTI_COLUMN_NAME, EntitySet
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
 
@@ -286,10 +287,64 @@ def test_update_dataframe():
     assert es['table'].ww.schema == original_schema
 
 
-def test_add_last_time_indexes(es):
+def test_add_last_time_index(es):
     es.add_last_time_indexes(['products'])
 
     assert 'last_time_index' in es['products'].ww.metadata
+
+    assert es['products'].ww.metadata['last_time_index'] == LTI_COLUMN_NAME
+    assert LTI_COLUMN_NAME in es['products']
+    assert 'last_time_index' in es['products'].ww.semantic_tags[LTI_COLUMN_NAME]
+    assert isinstance(es['products'].ww.logical_types[LTI_COLUMN_NAME], Datetime)
+
+
+def test_add_last_time_non_numeric_index(pd_es, ks_es, dask_es):
+    # Confirm that add_last_time_index works for indices that aren't numeric
+    # since numeric underlying indices can accidentally match the Woodwork index
+    pd_es.add_last_time_indexes(['products'])
+    dask_es.add_last_time_indexes(['products'])
+    ks_es.add_last_time_indexes(['products'])
+
+    assert list(to_pandas(pd_es['products'][LTI_COLUMN_NAME]).sort_index()) == list(to_pandas(dask_es['products'][LTI_COLUMN_NAME]).sort_index())
+    assert list(to_pandas(pd_es['products'][LTI_COLUMN_NAME]).sort_index()) == list(to_pandas(ks_es['products']).sort_values('id')[LTI_COLUMN_NAME])
+
+    assert pd_es['products'].ww.schema == dask_es['products'].ww.schema
+    assert pd_es['products'].ww.schema == ks_es['products'].ww.schema
+
+
+def test_lti_already_has_last_time_column_name(es):
+    col = es['customers'].ww.pop('loves_ice_cream')
+    col.name = LTI_COLUMN_NAME
+
+    es['customers'].ww[LTI_COLUMN_NAME] = col
+
+    assert LTI_COLUMN_NAME in es['customers'].columns
+    assert isinstance(es['customers'].ww.logical_types[LTI_COLUMN_NAME], Boolean)
+
+    error = ("Cannot add a last time index on DataFrame with an existing "
+             f"'{LTI_COLUMN_NAME}' column. Please rename '{LTI_COLUMN_NAME}'.")
+    with pytest.raises(ValueError, match=error):
+        es.add_last_time_indexes(['customers'])
+
+
+def test_numeric_es_last_time_index_logical_type(int_es):
+    assert int_es.time_type == 'numeric'
+
+    int_es.add_last_time_indexes()
+
+    for df in int_es.dataframes:
+        assert isinstance(df.ww.logical_types[LTI_COLUMN_NAME], Double)
+        int_es._check_uniform_time_index(df, LTI_COLUMN_NAME)
+
+
+def test_datetime_es_last_time_index_logical_type(es):
+    assert es.time_type == Datetime
+
+    es.add_last_time_indexes()
+
+    for df in es.dataframes:
+        assert isinstance(df.ww.logical_types[LTI_COLUMN_NAME], Datetime)
+        es._check_uniform_time_index(df, LTI_COLUMN_NAME)
 
 
 def test_dataframe_without_name(es):
@@ -624,23 +679,105 @@ def test_update_dataframe_different_dataframe_types():
         dask_es.update_dataframe('sessions', sessions)
 
 
-def test_update_dataframe_last_time_index(es):
-    # --> koalas currently fails bc we can't get the schema because it deepcopies
-    es.add_last_time_indexes()
-    df = es['customers'].copy()
-    original_last_time_index = to_pandas(es['customers'].ww.metadata['last_time_index'].copy())
+def test_update_dataframe_and_min_last_time_index(es):
+    es.add_last_time_indexes(['products'])
 
-    new_time_index = ['2012-04-06', '2012-04-08', '2012-04-09']
-    if ks and isinstance(df, ks.DataFrame):
-        df['signup_date'] = new_time_index
+    original_time_index = es['log']['datetime'].copy()
+    original_last_time_index = es['products'][LTI_COLUMN_NAME].copy()
+
+    if ks and isinstance(original_time_index, ks.Series):
+        new_time_index = ks.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=1))
+        expected_last_time_index = ks.from_pandas(original_last_time_index.to_pandas() + pd.Timedelta(days=1))
     else:
-        df['signup_date'] = pd.Series(new_time_index)
+        new_time_index = original_time_index + pd.Timedelta(days=1)
+        expected_last_time_index = original_last_time_index + pd.Timedelta(days=1)
 
-    es.update_dataframe('customers', df, recalculate_last_time_indexes=False)
-    assert original_last_time_index.equals(to_pandas(es['customers'].ww.metadata['last_time_index']))
+    new_dataframe = es['log'].copy()
+    new_dataframe['datetime'] = new_time_index
+    new_dataframe.pop(LTI_COLUMN_NAME)
 
-    es.update_dataframe('customers', df, recalculate_last_time_indexes=True)
-    assert not original_last_time_index.equals(to_pandas(es['customers'].ww.metadata['last_time_index']))
+    es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
+
+    # Koalas reorders indices during last time index, so we sort to confirm individual values are the same
+    pd.testing.assert_series_equal(to_pandas(es['products'][LTI_COLUMN_NAME]).sort_index(), to_pandas(expected_last_time_index).sort_index())
+    pd.testing.assert_series_equal(to_pandas(es['log'][LTI_COLUMN_NAME]).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
+
+
+def test_update_dataframe_dont_recalculate_last_time_index_present(es):
+    es.add_last_time_indexes()
+
+    original_time_index = es['customers']['signup_date'].copy()
+    original_last_time_index = es['customers'][LTI_COLUMN_NAME].copy()
+
+    if ks and isinstance(original_time_index, ks.Series):
+        new_time_index = ks.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=10))
+    else:
+        new_time_index = original_time_index + pd.Timedelta(days=10)
+
+    new_dataframe = es['customers'].copy()
+    new_dataframe['signup_date'] = new_time_index
+
+    es.update_dataframe('customers', new_dataframe, recalculate_last_time_indexes=False)
+    pd.testing.assert_series_equal(to_pandas(es['customers'][LTI_COLUMN_NAME], sort_index=True), to_pandas(original_last_time_index, sort_index=True))
+
+
+def test_update_dataframe_dont_recalculate_last_time_index_not_present(es):
+    es.add_last_time_indexes()
+    original_lti_name = es['customers'].ww.metadata.get('last_time_index')
+    assert original_lti_name is not None
+
+    original_time_index = es['customers']['signup_date'].copy()
+
+    if ks and isinstance(original_time_index, ks.Series):
+        new_time_index = ks.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=10))
+    else:
+        new_time_index = original_time_index + pd.Timedelta(days=10)
+
+    new_dataframe = es['customers'].copy()
+    new_dataframe['signup_date'] = new_time_index
+    new_dataframe.pop(LTI_COLUMN_NAME)
+
+    es.update_dataframe('customers', new_dataframe, recalculate_last_time_indexes=False)
+    assert 'last_time_index' not in es['customers'].ww.metadata
+    assert original_lti_name not in es['customers'].columns
+
+
+def test_update_dataframe_recalculate_last_time_index_not_present(es):
+    es.add_last_time_indexes()
+
+    original_time_index = es['log']['datetime'].copy()
+
+    if ks and isinstance(original_time_index, ks.Series):
+        new_time_index = ks.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=10))
+    else:
+        new_time_index = original_time_index + pd.Timedelta(days=10)
+
+    new_dataframe = es['log'].copy()
+    new_dataframe['datetime'] = new_time_index
+    new_dataframe.pop(LTI_COLUMN_NAME)
+
+    es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
+    pd.testing.assert_series_equal(to_pandas(es['log']['datetime']).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
+    pd.testing.assert_series_equal(to_pandas(es['log'][LTI_COLUMN_NAME]).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
+
+
+def test_update_dataframe_recalculate_last_time_index_present(es):
+    es.add_last_time_indexes()
+
+    original_time_index = es['log']['datetime'].copy()
+
+    if ks and isinstance(original_time_index, ks.Series):
+        new_time_index = ks.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=10))
+    else:
+        new_time_index = original_time_index + pd.Timedelta(days=10)
+
+    new_dataframe = es['log'].copy()
+    new_dataframe['datetime'] = new_time_index
+    assert LTI_COLUMN_NAME in new_dataframe.columns
+
+    es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
+    pd.testing.assert_series_equal(to_pandas(es['log']['datetime']).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
+    pd.testing.assert_series_equal(to_pandas(es['log'][LTI_COLUMN_NAME]).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
 
 
 def test_normalize_dataframe_loses_column_metadata(es):

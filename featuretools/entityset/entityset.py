@@ -27,6 +27,8 @@ ks = import_or_none('databricks.koalas')
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
 
+LTI_COLUMN_NAME = '_ft_last_time'
+
 
 class EntitySet(object):
     """
@@ -115,7 +117,7 @@ class EntitySet(object):
         self.reset_data_description()
 
     def __sizeof__(self):
-        return sum([df.__sizeof__() + df.ww.metadata.get('last_time_index').__sizeof__() for df in self.dataframes])
+        return sum([df.__sizeof__() for df in self.dataframes])
 
 # --> Add back later: needs to wait till serialization is implemented
     # def __dask_tokenize__(self):
@@ -354,7 +356,6 @@ class EntitySet(object):
             "Cannot set secondary time index if Woodwork is not initialized"
         self._check_secondary_time_index(dataframe, secondary_time_index)
         if secondary_time_index is not None:
-            # --> WW bug: series in Metadata can be problematic
             dataframe.ww.metadata['secondary_time_index'] = secondary_time_index
 
     ###########################################################################
@@ -744,7 +745,7 @@ class EntitySet(object):
 
                 time_index_types = (base_dataframe.ww.logical_types[base_dataframe.ww.time_index],
                                     base_dataframe.ww.semantic_tags[base_dataframe.ww.time_index],
-                                    base_dataframe.ww.columns[base_dataframe.ww.time_index].metadata,  # --> not sure we want to maintain metadata here - first time index might be clunkly
+                                    base_dataframe.ww.columns[base_dataframe.ww.time_index].metadata,
                                     base_dataframe.ww.columns[base_dataframe.ww.time_index].description)
             else:
                 # If base_time_index is in copy_columns then we've already added the transfer types
@@ -899,7 +900,8 @@ class EntitySet(object):
         """
         Calculates the last time index values for each dataframe (the last time
         an instance or children of that instance were observed).  Used when
-        calculating features using training windows
+        calculating features using training windows. Adds the last time index as
+        a series named _ft_last_time on the dataframe.
         Args:
             updated_dataframes (list[str]): List of dataframe names to update last_time_index for
                 (will update all parents of those dataframes as well)
@@ -932,9 +934,16 @@ class EntitySet(object):
             queue = self.dataframes[:]
 
         explored = set()
+        # Store the last time indexes for the entire entityset in a dictionary to update
+        es_lti_dict = {}
+        for df in self.dataframes:
+            lti_col = df.ww.metadata.get('last_time_index')
+            if lti_col is not None:
+                lti_col = df[lti_col]
+            es_lti_dict[df.ww.name] = lti_col
 
         for df in queue:
-            df.ww.metadata['last_time_index'] = None
+            es_lti_dict[df.ww.name] = None
 
         # We will explore children of dataframes on the queue,
         # which may not be in the to_explore set. Therefore,
@@ -943,7 +952,7 @@ class EntitySet(object):
         while not to_explore.issubset(explored):
             dataframe = queue.pop(0)
 
-            if dataframe.ww.metadata.get('last_time_index') is None:
+            if es_lti_dict[dataframe.ww.name] is None:
                 if dataframe.ww.time_index is not None:
                     lti = dataframe[dataframe.ww.time_index].copy()
                     if isinstance(dataframe, dd.DataFrame):
@@ -961,7 +970,8 @@ class EntitySet(object):
                         # Cannot have a category dtype with nans when calculating last time index
                         lti = lti.astype('object')
                         lti[:] = None
-                dataframe.ww.metadata['last_time_index'] = lti
+
+                es_lti_dict[dataframe.ww.name] = lti
 
             if dataframe.ww.name in children:
                 child_dataframes = children[dataframe.ww.name]
@@ -975,6 +985,8 @@ class EntitySet(object):
                     # so we didn't need this logic
                     for df in child_dataframes:
                         if df.ww.name not in explored and df.ww.name not in [q.ww.name for q in queue]:
+                            # must also reset last time index here
+                            es_lti_dict[df.ww.name] = None
                             queue.append(df)
                     queue.append(dataframe)
                     continue
@@ -982,18 +994,19 @@ class EntitySet(object):
                 # updated last time from all children
                 for child_df in child_dataframes:
                     # TODO: Figure out if Dask code related to indexes is important for Koalas
-                    if child_df.ww.metadata.get('last_time_index') is None:
+                    if es_lti_dict[child_df.ww.name] is None:
                         continue
                     link_col = child_cols[dataframe.ww.name][child_df.ww.name].name
 
-                    lti_is_dask = isinstance(child_df.ww.metadata.get('last_time_index'), dd.Series)
-                    lti_is_koalas = is_instance(child_df.ww.metadata.get('last_time_index'), ks, 'Series')
+                    lti_is_dask = isinstance(es_lti_dict[child_df.ww.name], dd.Series)
+                    lti_is_koalas = is_instance(es_lti_dict[child_df.ww.name], ks, 'Series')
+
                     if lti_is_dask or lti_is_koalas:
                         to_join = child_df[link_col]
                         if lti_is_dask:
                             to_join.index = child_df[child_df.ww.index]
 
-                        lti_df = child_df.ww.metadata.get('last_time_index').to_frame(name='last_time').join(
+                        lti_df = es_lti_dict[child_df.ww.name].to_frame(name='last_time').join(
                             to_join.to_frame(name=dataframe.ww.index)
                         )
 
@@ -1003,10 +1016,10 @@ class EntitySet(object):
                             lti_df.index = new_index
                         lti_df = lti_df.groupby(lti_df[dataframe.ww.index]).agg('max')
 
-                        lti_df = dataframe.ww.metadata.get('last_time_index').to_frame(name='last_time_old').join(lti_df)
+                        lti_df = es_lti_dict[dataframe.ww.name].to_frame(name='last_time_old').join(lti_df)
 
                     else:
-                        lti_df = pd.DataFrame({'last_time': child_df.ww.metadata.get('last_time_index'),
+                        lti_df = pd.DataFrame({'last_time': es_lti_dict[child_df.ww.name],
                                                dataframe.ww.index: child_df[link_col]})
 
                         # sort by time and keep only the most recent
@@ -1018,8 +1031,8 @@ class EntitySet(object):
                                                inplace=True)
 
                         lti_df.set_index(dataframe.ww.index, inplace=True)
-                        lti_df = lti_df.reindex(dataframe.ww.metadata.get('last_time_index').index)
-                        lti_df['last_time_old'] = dataframe.ww.metadata.get('last_time_index')
+                        lti_df = lti_df.reindex(es_lti_dict[dataframe.ww.name].index)
+                        lti_df['last_time_old'] = es_lti_dict[dataframe.ww.name]
                     if not (lti_is_dask or lti_is_koalas) and lti_df.empty:
                         # Pandas errors out if it tries to do fillna and then max on an empty dataframe
                         lti_df = pd.Series()
@@ -1034,14 +1047,78 @@ class EntitySet(object):
                             lti_df['last_time_old'] = lti_df['last_time_old'].astype('datetime64[ns]')
                             lti_df = lti_df.fillna(pd.to_datetime('1800-01-01 00:00')).max(axis=1)
                             lti_df = lti_df.replace(pd.to_datetime('1800-01-01 00:00'), pd.NaT)
-                    # lti_df = lti_df.apply(lambda x: x.dropna().max(), axis=1)
 
-                    dataframe.ww.metadata['last_time_index'] = lti_df
-                    dataframe.ww.metadata.get('last_time_index').name = 'last_time'
+                    es_lti_dict[dataframe.ww.name] = lti_df
+                    es_lti_dict[dataframe.ww.name].name = 'last_time'
 
             explored.add(dataframe.ww.name)
-        self.reset_data_description()
 
+        # Store the last time index on the DataFrames
+        dfs_to_update = {}
+        for df in self.dataframes:
+            lti = es_lti_dict[df.ww.name]
+            if lti is not None:
+                if self.time_type == 'numeric':
+                    if lti.dtype == 'datetime64[ns]':
+                        # Woodwork cannot convert from datetime to numeric
+                        lti = lti.apply(lambda x: x.value)
+                    lti = ww.init_series(lti, logical_type='Double')
+                else:
+                    lti = ww.init_series(lti, logical_type='Datetime')
+
+                lti.name = LTI_COLUMN_NAME
+
+                if LTI_COLUMN_NAME in df.columns:
+                    if 'last_time_index' in df.ww.semantic_tags[LTI_COLUMN_NAME]:
+                        # Remove any previous last time index placed by featuretools
+                        df.ww.pop(LTI_COLUMN_NAME)
+                    else:
+                        raise ValueError("Cannot add a last time index on DataFrame with an existing "
+                                         f"'{LTI_COLUMN_NAME}' column. Please rename '{LTI_COLUMN_NAME}'.")
+
+                # Add the new column to the DataFrame
+                if isinstance(df, dd.DataFrame):
+                    new_df = df.merge(lti.reset_index(), on=df.ww.index)
+                    new_df.ww.init(
+                        name=df.ww.name,
+                        index=df.ww.index,
+                        time_index=df.ww.time_index,
+                        logical_types=df.ww.logical_types,
+                        semantic_tags={col_name: tags - {'index', 'time_index'} for col_name, tags in df.ww.semantic_tags.items()},
+                        table_metadata=df.ww.metadata,
+                        column_metadata={col_name: col_schema.metadata for col_name, col_schema in df.ww.columns.items()},
+                        use_standard_tags=df.ww.use_standard_tags
+                    )
+
+                    new_idx = new_df[new_df.ww.index]
+                    new_idx.name = None
+                    new_df.index = new_idx
+                    dfs_to_update[df.ww.name] = new_df
+                elif is_instance(df, ks, 'DataFrame'):
+                    new_df = df.merge(lti, left_on=df.ww.index, right_index=True)
+
+                    new_df.ww.init(
+                        name=df.ww.name,
+                        index=df.ww.index,
+                        time_index=df.ww.time_index,
+                        logical_types=df.ww.logical_types,
+                        semantic_tags={col_name: tags - {'index', 'time_index'} for col_name, tags in df.ww.semantic_tags.items()},
+                        table_metadata=df.ww.metadata,
+                        column_metadata={col_name: col_schema.metadata for col_name, col_schema in df.ww.columns.items()},
+                        use_standard_tags=df.ww.use_standard_tags
+                    )
+                    dfs_to_update[df.ww.name] = new_df
+                else:
+                    df.ww[LTI_COLUMN_NAME] = lti
+                    df.ww.add_semantic_tags({LTI_COLUMN_NAME: 'last_time_index'})
+                    df.ww.metadata['last_time_index'] = LTI_COLUMN_NAME
+
+        for df in dfs_to_update.values():
+            df.ww.add_semantic_tags({LTI_COLUMN_NAME: 'last_time_index'})
+            df.ww.metadata['last_time_index'] = LTI_COLUMN_NAME
+            self.dataframe_dict[df.ww.name] = df
+
+        self.reset_data_description()
     # ###########################################################################
     # #  Other ###############################################
     # ###########################################################################
@@ -1309,6 +1386,13 @@ class EntitySet(object):
         if not isinstance(df, type(self[dataframe_name])):
             raise TypeError('Incorrect DataFrame type used')
 
+        # If the original DataFrame has a last time index column and the new one doesnt
+        # remove the column and the reference to last time index from that dataframe
+        last_time_index_column = self[dataframe_name].ww.metadata.get('last_time_index')
+        if last_time_index_column is not None and last_time_index_column not in df.columns:
+            self[dataframe_name].ww.pop(last_time_index_column)
+            del self[dataframe_name].ww.metadata['last_time_index']
+
         old_column_names = list(self[dataframe_name].columns)
         if len(df.columns) != len(old_column_names):
             raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(df.columns),
@@ -1327,7 +1411,6 @@ class EntitySet(object):
             if updated_series is not series:
                 df[col_name] = updated_series
 
-        # --> WW bug: if metadata has a series in it, cannot deepcopy
         df.ww.init(schema=self[dataframe_name].ww._schema)
         # Make sure column ordering matches original ordering
         df = df.ww[old_column_names]
@@ -1343,8 +1426,8 @@ class EntitySet(object):
 
         df_metadata = self[dataframe_name].ww.metadata
         self.set_secondary_time_index(dataframe_name, df_metadata.get('secondary_time_index'))
-        if recalculate_last_time_indexes and df_metadata.get('last_time_index') is not None:
-            self.add_last_time_indexes(updated_dataframes=[self[dataframe_name].ww.name])
+        if recalculate_last_time_indexes and last_time_index_column is not None:
+            self.add_last_time_indexes(updated_dataframes=[dataframe_name])
         self.reset_data_description()
 
     def _check_time_indexes(self):
