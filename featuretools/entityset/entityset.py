@@ -1131,8 +1131,13 @@ class EntitySet(object):
 
         Returns:
             graphviz.Digraph : Graph object that can directly be displayed in
-                Jupyter notebooks.
+                Jupyter notebooks. Nodes of the graph correspond to the DataFrames
+                in the EntitySet, showing the typing information for each column.
 
+        Note:
+            The typing information displayed for each column is based off of the Woodwork
+            ColumnSchema for that column and is represented as ``LogicalType; semantic_tags``,
+            but the standard semantic tags have been removed for brevity.
         """
         graphviz = check_graphviz()
         format_ = get_graphviz_format(graphviz=graphviz,
