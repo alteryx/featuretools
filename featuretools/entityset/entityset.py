@@ -1187,9 +1187,9 @@ class EntitySet(object):
                         mask = df[schema.time_index] > time_last - training_window
                     else:
                         mask = df[schema.time_index] >= time_last - training_window
-                    dt_lti = schema.metadata.get('last_time_index')
-                    if dt_lti is not None:
-                        lti_slice = dt_lti.reindex(df.index)
+                    lti = schema.metadata.get('last_time_index')
+                    if lti is not None:
+                        lti_slice = lti.reindex(df.index)
                         if include_cutoff_time:
                             lti_mask = lti_slice > time_last - training_window
                         else:
@@ -1203,8 +1203,8 @@ class EntitySet(object):
 
                     df = df[mask]
 
-        dt_secondary_time_index = schema.metadata.get('secondary_time_index') or {}
-        for secondary_time_index, columns in dt_secondary_time_index.items():
+        secondary_time_indexes = schema.metadata.get('secondary_time_index') or {}
+        for secondary_time_index, columns in secondary_time_indexes.items():
             # should we use ignore time last here?
             df_empty = df.empty if isinstance(df, pd.DataFrame) else False
             if time_last is not None and not df_empty:
