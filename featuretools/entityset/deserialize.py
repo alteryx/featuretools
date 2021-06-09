@@ -57,7 +57,7 @@ def empty_dataframe(description):
         df (DataFrame) : Empty dataframe with Woodwork initialized.
     '''
     # TODO: Can we update Woodwork to return an empty initialized dataframe from a description
-    # instead of using this function?
+    # instead of using this function? Or otherwise eliminate? Issue #1476
     logical_types = {}
     semantic_tags = {}
     column_descriptions = {}
