@@ -146,6 +146,7 @@ class EntitySet(object):
 
     @property
     def dataframe_type(self):
+        '''String specifying the library used for the entity dataframes. Null if no entities'''
         df_type = None
         if any(isinstance(entity.df, dd.DataFrame) for entity in self.entities):
             df_type = Library.DASK
