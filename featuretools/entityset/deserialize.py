@@ -31,7 +31,6 @@ def description_to_entityset(description, **kwargs):
     path = description.get('path')
     entityset = EntitySet(description['id'])
 
-    last_time_index = []
     for df in description['dataframes'].values():
         if path is not None:
             data_path = os.path.join(path, 'data', df['name'])
@@ -44,9 +43,6 @@ def description_to_entityset(description, **kwargs):
     for relationship in description['relationships']:
         rel = Relationship.from_dictionary(relationship, entityset)
         entityset.add_relationship(relationship=rel)
-
-    if len(last_time_index):
-        entityset.add_last_time_indexes(updated_entities=last_time_index)
 
     return entityset
 
@@ -62,14 +58,11 @@ def empty_dataframe(description):
     '''
     # TODO: Can we update Woodwork to return an empty initialized dataframe from a description
     # instead of using this function?
-    loading_info = description['loading_info']
-    table_type = loading_info.get('table_type', 'pandas')
     logical_types = {}
     semantic_tags = {}
     column_descriptions = {}
     column_metadata = {}
     use_standard_tags = {}
-    category_dtypes = {}
     columns = []
     for col in description['column_typing_info']:
         col_name = col['name']
@@ -91,15 +84,6 @@ def empty_dataframe(description):
         column_metadata[col_name] = col['metadata']
         use_standard_tags[col_name] = col['use_standard_tags']
 
-        if col['physical_type']['type'] == 'category':
-            # Make sure categories are recreated properly
-            cat_values = col['physical_type']['cat_values']
-            cat_dtype = col['physical_type']['cat_dtype']
-            if table_type == 'pandas':
-                cat_object = pd.CategoricalDtype(pd.Index(cat_values, dtype=cat_dtype))
-            else:
-                cat_object = pd.CategoricalDtype(pd.Series(cat_values))
-            category_dtypes[col_name] = cat_object
     dataframe = pd.DataFrame(columns=columns)
     dataframe.ww.init(
         name=description.get('name'),

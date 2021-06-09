@@ -47,7 +47,6 @@ def test_all_ww_logical_types():
     assert es.__eq__(_es, deep=True)
 
 
-# TODO: Add test that checks serialization with a custom WW logical type
 def test_with_custom_ww_logical_type():
     class CustomLogicalType(ww.logical_types.LogicalType):
         pass
@@ -83,7 +82,6 @@ def test_empty_dataframe(es):
         assert all(dataframe.columns == df.columns)
 
 
-# TODO: Verify this works after WW Issue #950 is closed
 def test_to_csv(es, tmpdir):
     es.to_csv(str(tmpdir), encoding='utf-8', engine='python')
     new_es = deserialize.read_entityset(str(tmpdir))
@@ -102,7 +100,6 @@ def test_to_csv_interesting_values(pd_es, tmpdir):
     assert pd_es.__eq__(new_es, deep=True)
 
 
-# TODO: Verify this works after WW Issue #950 is closed
 def test_to_csv_manual_interesting_values(es, tmpdir):
     es.add_interesting_values(dataframe_name='log', values={'product_id': ['coke_zero']})
     es.to_csv(str(tmpdir))
