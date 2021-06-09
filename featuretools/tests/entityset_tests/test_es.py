@@ -1455,3 +1455,12 @@ def test_entityset_equality(es):
 
     second_es.add_relationship(ft.Relationship(es['customers']['id'], es['sessions']['customer_id']))
     assert first_es == second_es
+
+
+def test_dataframe_type_empty_es():
+    es = EntitySet("test")
+    assert es.dataframe_type is None
+
+
+def test_dataframe_type_pandas_es(pd_es):
+    assert pd_es.dataframe_type == Library.PANDAS

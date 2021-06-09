@@ -3,7 +3,7 @@ import pytest
 
 import featuretools as ft
 from featuretools.entityset import EntitySet, Relationship
-from featuretools.utils.gen_utils import import_or_none
+from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
 
 ks = import_or_none('databricks.koalas')
@@ -145,3 +145,8 @@ def test_create_entity_with_make_index():
 
     expected_df = pd.DataFrame({"new_index": range(len(values)), "values": values})
     pd.testing.assert_frame_equal(expected_df, ks_es['new_entity'].df.to_pandas().sort_index())
+
+
+@pytest.mark.skipif('not ks')
+def test_dataframe_type_koalas(ks_es):
+    assert ks_es.dataframe_type == Library.KOALAS
