@@ -6,7 +6,7 @@ from featuretools.primitives.utils import (
 from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
 from featuretools.synthesis.utils import (
     _categorize_features,
-    get_entityset_type,
+    _get_entityset_type,
     get_unused_primitives
 )
 
@@ -40,7 +40,7 @@ def get_valid_primitives(entityset, target_entity, max_depth=2, selected_primiti
     trans_primitives = []
     available_aggs = get_aggregation_primitives()
     available_trans = get_transform_primitives()
-    entityset_type = get_entityset_type(entityset)
+    entityset_type = _get_entityset_type(entityset)
 
     if selected_primitives:
         for prim in selected_primitives:

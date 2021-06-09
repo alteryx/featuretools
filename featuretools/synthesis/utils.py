@@ -61,7 +61,7 @@ def get_unused_primitives(specified, used):
     return sorted(list(specified.difference(used)))
 
 
-def get_entityset_type(entityset):
+def _get_entityset_type(entityset):
     if any(isinstance(entity.df, dd.DataFrame) for entity in entityset.entities):
         entityset_type = Library.DASK
     elif any(is_instance(entity.df, ks, 'DataFrame') for entity in entityset.entities):

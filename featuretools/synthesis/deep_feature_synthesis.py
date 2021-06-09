@@ -22,7 +22,7 @@ from featuretools.primitives.options_utils import (
     generate_all_primitive_options,
     ignore_entity_for_primitive
 )
-from featuretools.synthesis.utils import get_entityset_type
+from featuretools.synthesis.utils import _get_entityset_type
 from featuretools.variable_types import Boolean, Discrete, Id, Numeric
 
 logger = logging.getLogger('featuretools')
@@ -185,7 +185,7 @@ class DeepFeatureSynthesis(object):
         self.target_entity_id = target_entity_id
         self.es = entityset
 
-        entityset_type = get_entityset_type(self.es)
+        entityset_type = _get_entityset_type(self.es)
 
         if agg_primitives is None:
             agg_primitives = [p for p in primitives.get_default_aggregation_primitives() if entityset_type in p.compatibility]
