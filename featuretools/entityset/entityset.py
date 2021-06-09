@@ -20,7 +20,7 @@ from featuretools.utils.plot_utils import (
 # import pandas.api.types as pdtypes
 
 
-# from featuretools.utils.wrangle import _check_timedelta
+from featuretools.utils.wrangle import _dataframes_equal
 
 ks = import_or_none('databricks.koalas')
 
@@ -133,9 +133,33 @@ class EntitySet(object):
         for df_name, df in self.dataframe_dict.items():
             if df_name not in other.dataframe_dict:
                 return False
-            # --> WW bug: Waiting on deep behavior for WW equality
-            if not df.ww.__eq__(other[df_name].ww):
+            if not df.ww.__eq__(other[df_name].ww, deep=deep):
                 return False
+        if not len(self.relationships) == len(other.relationships):
+            return False
+        for r in self.relationships:
+            if r not in other.relationships:
+                return False
+        return True
+
+# --> remove maybe!
+    def _eq_df(self, other, deep=False):
+        if self.id != other.id:
+            return False
+        if self.time_type != other.time_type:
+            return False
+        if len(self.dataframe_dict) != len(other.dataframe_dict):
+            return False
+        for df_name, df in self.dataframe_dict.items():
+            if df_name not in other.dataframe_dict:
+                return False
+            if df.ww.make_index != df.ww.make_index:
+                return False
+            if not df.ww._schema.__eq__(other[df_name].ww._schema, deep=deep):
+                return False
+            if deep and not _dataframes_equal(df, other[df_name]):
+                return False
+
         if not len(self.relationships) == len(other.relationships):
             return False
         for r in self.relationships:
