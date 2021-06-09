@@ -46,9 +46,44 @@ def pd_es(make_es):
 
 
 @pytest.fixture
-def int_es(make_int_es):
+def pd_int_es(make_int_es):
     # --> TODO temporary while waiting to implement deepcopy
     return make_ecommerce_entityset(with_integer_time_index=True)
+
+
+@pytest.fixture
+def dask_int_es(pd_int_es):
+    es = ft.EntitySet(id=pd_int_es.id)
+    for df in pd_int_es.dataframes:
+        dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
+        dd_df.ww.init(schema=df.ww.schema)
+        es.add_dataframe(dd_df)
+
+    for rel in pd_int_es.relationships:
+        es.add_relationship(rel.parent_dataframe.ww.name, rel.parent_column.name,
+                            rel.child_dataframe.ww.name, rel.child_column.name)
+    return es
+
+
+@pytest.fixture
+def ks_int_es(pd_int_es):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+    es = ft.EntitySet(id=pd_int_es.id)
+    for df in pd_int_es.dataframes:
+        cleaned_df = pd_to_ks_clean(df).reset_index(drop=True)
+        ks_df = ks.from_pandas(cleaned_df)
+        ks_df.ww.init(schema=df.ww.schema)
+        es.add_dataframe(ks_df)
+
+    for rel in pd_int_es.relationships:
+        es.add_relationship(rel._parent_dataframe_name, rel._parent_column_name,
+                            rel._child_dataframe_name, rel._child_column_name)
+    return es
+
+
+@pytest.fixture(params=['pd_int_es', 'dask_int_es', 'ks_int_es'])
+def int_es(request):
+    return request.getfixturevalue(request.param)
 
 
 @pytest.fixture

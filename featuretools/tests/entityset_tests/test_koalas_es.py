@@ -132,8 +132,11 @@ def test_add_last_time_indexes():
     pd_es.add_last_time_indexes()
     ks_es.add_last_time_indexes()
 
-    pd.testing.assert_series_equal(pd_es['sessions'].ww.metadata.get('last_time_index').sort_index(),
-                                   ks_es['sessions'].ww.metadata.get('last_time_index').to_pandas().sort_index(), check_names=False)
+    pd_lti_name = pd_es['sessions'].ww.metadata.get('last_time_index')
+    ks_lti_name = ks_es['sessions'].ww.metadata.get('last_time_index')
+    assert pd_lti_name == ks_lti_name
+    pd.testing.assert_series_equal(pd_es['sessions'][pd_lti_name].sort_index(),
+                                   ks_es['sessions'][ks_lti_name].to_pandas().sort_index(), check_names=False)
 
 
 @pytest.mark.skipif('not ks')
