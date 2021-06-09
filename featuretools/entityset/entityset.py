@@ -1278,13 +1278,12 @@ class EntitySet(object):
                         mask = df[schema.time_index] > time_last - training_window
                     else:
                         mask = df[schema.time_index] >= time_last - training_window
-                    lti = schema.metadata.get('last_time_index')
-                    if lti is not None:
-                        lti_slice = lti.reindex(df.index)
+                    lti_col = schema.metadata.get('last_time_index')
+                    if lti_col is not None:
                         if include_cutoff_time:
-                            lti_mask = lti_slice > time_last - training_window
+                            lti_mask = df[lti_col] > time_last - training_window
                         else:
-                            lti_mask = lti_slice >= time_last - training_window
+                            lti_mask = df[lti_col] >= time_last - training_window
                         mask = mask | lti_mask
                     else:
                         warnings.warn(
