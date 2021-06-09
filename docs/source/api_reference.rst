@@ -25,6 +25,7 @@ Deep Feature Synthesis
     :toctree: generated/
 
     dfs
+    get_valid_primitives
 
 
 Wrappers

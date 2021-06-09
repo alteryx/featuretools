@@ -431,3 +431,46 @@ def koalas_entities():
 @pytest.fixture
 def relationships():
     return [("cards", "id", "transactions", "card_id")]
+
+
+@pytest.fixture(params=['pd_transform_es', 'dask_transform_es', 'koalas_transform_es'])
+def transform_es(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def pd_transform_es():
+    # Create dataframe
+    df = pd.DataFrame({'a': [14, 12, 10], 'b': [False, False, True],
+                       'b1': [True, True, False], 'b12': [4, 5, 6],
+                       'P': [10, 15, 12]})
+    es = ft.EntitySet(id='test')
+    # Add dataframe to entityset
+    es.entity_from_dataframe(entity_id='first', dataframe=df,
+                             index='index',
+                             make_index=True)
+
+    return es
+
+
+@pytest.fixture
+def dask_transform_es(pd_transform_es):
+    es = ft.EntitySet(id=pd_transform_es.id)
+    for entity in pd_transform_es.entities:
+        es.entity_from_dataframe(entity_id=entity.id,
+                                 dataframe=dd.from_pandas(entity.df, npartitions=2),
+                                 index=entity.index,
+                                 variable_types=entity.variable_types)
+    return es
+
+
+@pytest.fixture
+def koalas_transform_es(pd_transform_es):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+    es = ft.EntitySet(id=pd_transform_es.id)
+    for entity in pd_transform_es.entities:
+        es.entity_from_dataframe(entity_id=entity.id,
+                                 dataframe=ks.from_pandas(entity.df),
+                                 index=entity.index,
+                                 variable_types=entity.variable_types)
+    return es
