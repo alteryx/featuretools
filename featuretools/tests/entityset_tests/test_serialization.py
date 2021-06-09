@@ -175,13 +175,11 @@ def test_to_parquet_interesting_values(pd_es, tmpdir):
     assert pd_es.__eq__(new_es, deep=True)
 
 
-# TODO: Fix this test after last time index is stored on DataFrame
-# instead of as series in metadata
-# def test_to_parquet_with_lti(tmpdir, pd_mock_customer):
-#     es = pd_mock_customer
-#     es.to_parquet(str(tmpdir))
-#     new_es = deserialize.read_entityset(str(tmpdir))
-#     assert es.__eq__(new_es, deep=True)
+def test_to_parquet_with_lti(tmpdir, pd_mock_customer):
+    es = pd_mock_customer
+    es.to_parquet(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert es.__eq__(new_es, deep=True)
 
 
 def test_to_pickle_id_none(tmpdir):
@@ -400,8 +398,6 @@ def test_operations_invalidate_metadata(es):
     assert new_es.metadata is not None
     assert new_es._data_description is not None
 
-    # This fails for Koalas due to deepcopy attempted on schema containing koalas series
-    # TODO Verify this works after moving last time indexes out of metadata
     new_es.add_last_time_indexes()
     assert new_es._data_description is None
     assert new_es.metadata is not None

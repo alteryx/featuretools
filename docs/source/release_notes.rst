@@ -17,6 +17,7 @@ Future Release
         * Replace ``Entity`` objects in ``EntitySet`` with Woodwork dataframes (:pr:`1405`)
         * Refactor ``EntitySet.plot`` to work with Woodwork dataframes (:pr:`1468`)
         * Move ``last_time_index`` to be a column on the DataFrame (:pr:`1456`)
+        * Update serialization/deserialization to work with Woodwork (:pr:`1452`)
     * Documentation Changes
         * Improve formatting of release notes (:pr:`1396`)
     * Testing Changes
