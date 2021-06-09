@@ -13,7 +13,7 @@ import featuretools.variable_types.variable as vtypes
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.entity import Entity
 from featuretools.entityset.relationship import Relationship, RelationshipPath
-from featuretools.utils.gen_utils import import_or_none, is_instance
+from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.utils.plot_utils import (
     check_graphviz,
     get_graphviz_format,
@@ -143,6 +143,18 @@ class EntitySet(object):
     @property
     def entities(self):
         return list(self.entity_dict.values())
+
+    @property
+    def dataframe_type(self):
+        df_type = None
+        if any(isinstance(entity.df, dd.DataFrame) for entity in self.entities):
+            df_type = Library.DASK
+        elif any(is_instance(entity.df, ks, 'DataFrame') for entity in self.entities):
+            df_type = Library.KOALAS
+        elif any(isinstance(entity.df, pd.DataFrame) for entity in self.entities):
+            df_type = Library.PANDAS
+
+        return df_type
 
     @property
     def metadata(self):
