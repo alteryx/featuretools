@@ -63,6 +63,7 @@ def empty_dataframe(description):
     column_descriptions = {}
     column_metadata = {}
     use_standard_tags = {}
+    category_dtypes = {}
     columns = []
     for col in description['column_typing_info']:
         col_name = col['name']
@@ -84,7 +85,14 @@ def empty_dataframe(description):
         column_metadata[col_name] = col['metadata']
         use_standard_tags[col_name] = col['use_standard_tags']
 
-    dataframe = pd.DataFrame(columns=columns)
+        if col['physical_type']['type'] == 'category':
+            # Make sure categories are recreated properly
+            cat_values = col['physical_type']['cat_values']
+            cat_dtype = col['physical_type']['cat_dtype']
+            cat_object = pd.CategoricalDtype(pd.Index(cat_values, dtype=cat_dtype))
+            category_dtypes[col_name] = cat_object
+    dataframe = pd.DataFrame(columns=columns).astype(category_dtypes)
+
     dataframe.ww.init(
         name=description.get('name'),
         index=description.get('index'),
