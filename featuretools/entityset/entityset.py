@@ -18,7 +18,6 @@ from featuretools.utils.plot_utils import (
 )
 from featuretools.utils.wrangle import _check_timedelta
 
-
 ks = import_or_none('databricks.koalas')
 
 pd.options.mode.chained_assignment = None  # default='warn'
