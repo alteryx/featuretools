@@ -1,4 +1,4 @@
-pip>=19.0.2
+pip>=21.1.2
 wheel>=0.33.1
 pytest>=5.2.0
 pympler>=0.8
