@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
        * Add ``get_valid_primitives`` function (:pr:`1462`)
+       * Add ``EntitySet.dataframe_type`` attribute (:pr:`1473`)
     * Fixes
     * Changes
         * Upgrade minimum alteryx open source update checker to 2.0.0 (:pr:`1460`)
