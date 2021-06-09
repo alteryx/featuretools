@@ -392,7 +392,7 @@ def test_compare_of_agg(es):
 
 
 def test_compare_all_nans(es):
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+    if es.dataframe_type != Library.PANDAS:
         nan_feat = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=ft.primitives.Min)
         compare = nan_feat == 0.0
     else:
@@ -550,7 +550,7 @@ def test_boolean_multiply(boolean_mult_es):
 
 # TODO: rework test to be Dask and Koalas compatible
 def test_arithmetic_of_transform(es):
-    if not all(isinstance(e.df, pd.DataFrame) for e in es.entities):
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Test uses Diff which is not supported in Dask or Koalas")
     diff1 = ft.Feature([es['log']['value']], primitive=Diff)
     diff2 = ft.Feature([es['log']['value_2']], primitive=Diff)

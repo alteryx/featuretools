@@ -10,7 +10,7 @@ import featuretools as ft
 from featuretools import variable_types
 from featuretools.entityset import EntitySet, Relationship
 from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import import_or_none
+from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
 
 ks = import_or_none('databricks.koalas')
@@ -1166,7 +1166,7 @@ def test_normalize_entity_same_index(es):
 
 # TODO: normalize entity fails with Dask, doesn't specify all vtypes when creating new entity
 def test_secondary_time_index(es):
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail('vtype error when attempting to normalize entity')
     es.normalize_entity('log', 'values', 'value',
                         make_time_index=True,

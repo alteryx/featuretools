@@ -7,7 +7,7 @@ from dask import dataframe as dd
 import featuretools as ft
 from featuretools import Relationship
 from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import import_or_none
+from featuretools.utils.gen_utils import Library, import_or_none
 
 ks = import_or_none('databricks.koalas')
 
@@ -102,7 +102,7 @@ class TestLastTimeIndex(object):
     # TODO: possible issue with either normalize_entity or add_last_time_indexes
     def test_parent(self, values_es, true_values_lti):
         # test entity with time index and all instances in child entity
-        if not all(isinstance(entity.df, pd.DataFrame) for entity in values_es.entities):
+        if values_es.dataframe_type != Library.PANDAS:
             pytest.xfail('possible issue with either normalize_entity or add_last_time_indexes')
         values_es.add_last_time_indexes()
         values = values_es['values']
@@ -114,7 +114,7 @@ class TestLastTimeIndex(object):
     # TODO: fails with Dask, tests needs to be reworked
     def test_parent_some_missing(self, values_es, true_values_lti):
         # test entity with time index and not all instances have children
-        if not all(isinstance(entity.df, pd.DataFrame) for entity in values_es.entities):
+        if values_es.dataframe_type != Library.PANDAS:
             pytest.xfail('fails with Dask, tests needs to be reworked')
         values = values_es['values']
 
