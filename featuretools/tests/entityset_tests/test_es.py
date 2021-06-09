@@ -1755,11 +1755,11 @@ def test_entityset_equality(es):
 
 def test_entityset_id_equality(es):
     first_es = EntitySet(id='first')
-    fisrt_es_copy = EntitySet(id='first')
+    first_es_copy = EntitySet(id='first')
     second_es = EntitySet(id='second')
 
     assert first_es != second_es
-    assert first_es == fisrt_es_copy
+    assert first_es == first_es_copy
 
 
 def test_entityset_time_type_equality(es):
