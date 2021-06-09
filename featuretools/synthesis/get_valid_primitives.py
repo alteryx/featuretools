@@ -18,6 +18,12 @@ def get_valid_primitives(entityset, target_entity, max_depth=2, selected_primiti
     features.  If the optional 'selected_primitives' parameter is not used,
     all discoverable primitives will be considered.
 
+    Note:
+        When using a ``max_depth`` greater than 1, some primitives returned by
+        this function may not create any features if passed to DFS alone.  These
+        primitives relied on features created by other primitives as input
+        (primitive stacking).
+
     Args:
         entityset (EntitySet): An already initialized entityset
         target_entity (str): Entity id of entity to create features for.
