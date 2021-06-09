@@ -148,12 +148,14 @@ class EntitySet(object):
     def dataframe_type(self):
         '''String specifying the library used for the entity dataframes. Null if no entities'''
         df_type = None
-        if any(isinstance(entity.df, dd.DataFrame) for entity in self.entities):
-            df_type = Library.DASK
-        elif any(is_instance(entity.df, ks, 'DataFrame') for entity in self.entities):
-            df_type = Library.KOALAS
-        elif any(isinstance(entity.df, pd.DataFrame) for entity in self.entities):
-            df_type = Library.PANDAS
+
+        if self.entities:
+            if isinstance(self.entities[0].df, pd.DataFrame):
+                df_type = Library.PANDAS
+            elif isinstance(self.entities[0].df, dd.DataFrame):
+                df_type = Library.DASK
+            elif is_instance(self.entities[0].df, ks, 'DataFrame'):
+                df_type = Library.KOALAS
 
         return df_type
 
