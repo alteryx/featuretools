@@ -3,6 +3,7 @@ import os
 
 import graphviz
 import pytest
+from woodwork import list_logical_types
 
 from featuretools import variable_types as v_types
 from featuretools.variable_types import (
@@ -30,13 +31,9 @@ def test_find_variable_types():
 
 
 def test_list_variables():
-    df = list_variable_types()
-    for v_name, v_type in find_variable_types().items():
-        assert v_type.__name__ in df['name'].values
-        assert v_type.__doc__ in df['description'].values
-        assert v_type.type_string in df['type_string'].values
-    assert 'text' not in df['type_string']
-    assert Text not in df['name']
+    vtypes = list_variable_types()
+    ltypes = list_logical_types()
+    assert vtypes.equals(ltypes)
 
 
 def test_returns_digraph_object():

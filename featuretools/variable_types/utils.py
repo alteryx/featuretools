@@ -1,4 +1,4 @@
-import pandas as pd
+from woodwork import list_logical_types
 
 from featuretools.utils.gen_utils import find_descendents
 from featuretools.utils.plot_utils import (
@@ -37,13 +37,7 @@ def list_variable_types():
         variable_types (pd.DataFrame): a DataFrame with column headers of
             name, type_strings, and description.
     """
-    v_types = list(find_variable_types().values())
-    v_type_strings = list(find_variable_types().keys())
-    v_names = [x.__name__ for x in v_types]
-    descriptions = [v.__doc__ for v in v_types]
-    return pd.DataFrame({'name': v_names,
-                         'type_string': v_type_strings,
-                         'description': descriptions})
+    return list_logical_types()
 
 
 def graph_variable_types(to_file=None):

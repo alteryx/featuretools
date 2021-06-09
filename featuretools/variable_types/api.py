@@ -2,6 +2,7 @@
 from .utils import (
     find_variable_types,
     graph_variable_types,
+    list_logical_types,
     list_variable_types
 )
 from .variable import *
