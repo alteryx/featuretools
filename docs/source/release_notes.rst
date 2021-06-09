@@ -12,6 +12,7 @@ Future Release
         * Upgrade minimum alteryx open source update checker to 2.0.0 (:pr:`1460`)
     * Documentation Changes
     * Testing Changes
+        * Upgrade minimum pip requirement for testing to 21.1.2 (:pr:`1475`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`
