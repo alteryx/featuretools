@@ -124,6 +124,10 @@ class EntitySet(object):
     #     return (EntitySet, serialize.entityset_to_description(self.metadata))
 
     def __eq__(self, other, deep=False):
+        if self.id != other.id:
+            return False
+        if self.time_type != other.time_type:
+            return False
         if len(self.dataframe_dict) != len(other.dataframe_dict):
             return False
         for df_name, df in self.dataframe_dict.items():
@@ -132,6 +136,8 @@ class EntitySet(object):
             # --> WW bug: Waiting on deep behavior for WW equality
             if not df.ww.__eq__(other[df_name].ww):
                 return False
+        if not len(self.relationships) == len(other.relationships):
+            return False
         for r in self.relationships:
             if r not in other.relationships:
                 return False
@@ -154,6 +160,20 @@ class EntitySet(object):
             return self.dataframe_dict[dataframe_name]
         name = self.id or "entity set"
         raise KeyError('DataFrame %s does not exist in %s' % (dataframe_name, name))
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            copied_attr = copy.deepcopy(v, memo)
+            # Must initialize Woodwork on all the DataFrames
+            if k == 'dataframe_dict':
+                for df_name, new_df in copied_attr.items():
+                    schema = copy.deepcopy(self.dataframe_dict[df_name].ww.schema, memo=memo)
+                    new_df.ww.init(schema=schema)
+            setattr(result, k, copied_attr)
+        return result
 
     @property
     def dataframes(self):
