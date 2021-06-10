@@ -1,3 +1,5 @@
+from warnings import warn
+
 from woodwork import list_logical_types
 
 from featuretools.utils.gen_utils import find_descendents
@@ -37,6 +39,8 @@ def list_variable_types():
         variable_types (pd.DataFrame): a DataFrame with column headers of
             name, type_strings, and description.
     """
+    message = 'list_variable_types has been deprecated. Please use featuretools.list_logical_types instead.'
+    warn(message=message, category=FutureWarning)
     return list_logical_types()
 
 
