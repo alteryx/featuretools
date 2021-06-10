@@ -32,6 +32,7 @@ import pkg_resources
 import sys
 import traceback
 import warnings
+from woodwork import list_logical_types
 
 logger = logging.getLogger('featuretools')
 
