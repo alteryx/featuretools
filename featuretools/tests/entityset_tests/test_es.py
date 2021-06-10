@@ -1,4 +1,4 @@
-# import copy
+import copy
 import logging
 import re
 from datetime import datetime
@@ -1746,6 +1746,98 @@ def test_entityset_equality(es):
 
     first_es.add_relationship('customers', 'id', 'sessions', 'customer_id')
     assert first_es != second_es
+    assert second_es != first_es
 
     second_es.add_relationship('customers', 'id', 'sessions', 'customer_id')
     assert first_es == second_es
+
+
+def test_entityset_id_equality(es):
+    first_es = EntitySet(id='first')
+    first_es_copy = EntitySet(id='first')
+    second_es = EntitySet(id='second')
+
+    assert first_es != second_es
+    assert first_es == first_es_copy
+
+
+def test_entityset_time_type_equality(es):
+    first_es = EntitySet()
+    second_es = EntitySet()
+    assert first_es == second_es
+
+    first_es.time_type = 'numeric'
+    assert first_es != second_es
+
+    second_es.time_type = ltypes.Datetime
+    assert first_es != second_es
+
+    second_es.time_type = 'numeric'
+    assert first_es == second_es
+
+
+@pytest.fixture(params=['make_es', 'dask_es_to_copy'])
+def es_to_copy(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def dask_es_to_copy(make_es):
+    es = EntitySet(id=make_es.id)
+    for df in make_es.dataframes:
+        dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
+        dd_df.ww.init(schema=df.ww.schema)
+        es.add_dataframe(dd_df)
+
+    for rel in make_es.relationships:
+        es.add_relationship(rel.parent_dataframe.ww.name, rel.parent_column.name,
+                            rel.child_dataframe.ww.name, rel.child_column.name)
+    return es
+
+
+def test_deepcopy_entityset(es_to_copy):
+    # Uses make_es since the es fixture uses deepcopy
+    copied_es = copy.deepcopy(es_to_copy)
+
+    assert copied_es == es_to_copy
+    assert copied_es is not es_to_copy
+
+    for df_name in es_to_copy.dataframe_dict.keys():
+        original_df = es_to_copy[df_name]
+        new_df = copied_es[df_name]
+
+        assert new_df.ww.schema == original_df.ww.schema
+        assert new_df.ww._schema is not original_df.ww._schema
+
+        pd.testing.assert_frame_equal(to_pandas(new_df), to_pandas(original_df))
+        assert new_df is not original_df
+
+
+def test_deepcopy_entityset_woodwork_changes(es):
+    if ks and isinstance(es.dataframes[0], ks.DataFrame):
+        pytest.xfail('Cannot deepcopy Koalas DataFrames')
+
+    copied_es = copy.deepcopy(es)
+
+    assert copied_es == es
+    assert copied_es is not es
+
+    copied_es['products'].ww.add_semantic_tags({'id': 'new_tag'})
+
+    assert copied_es['products'].ww.semantic_tags['id'] == {'index', 'new_tag'}
+    assert es['products'].ww.semantic_tags['id'] == {'index'}
+    assert copied_es != es
+
+
+def test_deepcopy_entityset_featuretools_changes(es):
+    if ks and isinstance(es.dataframes[0], ks.DataFrame):
+        pytest.xfail('Cannot deepcopy Koalas DataFrames')
+
+    copied_es = copy.deepcopy(es)
+
+    assert copied_es == es
+    assert copied_es is not es
+
+    copied_es.set_secondary_time_index('customers', {'upgrade_date': ['engagement_level']})
+    assert copied_es['customers'].ww.metadata['secondary_time_index'] == {'upgrade_date': ['engagement_level', 'upgrade_date']}
+    assert es['customers'].ww.metadata['secondary_time_index'] == {'cancel_date': ['cancel_reason', 'cancel_date']}
