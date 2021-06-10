@@ -70,8 +70,8 @@ Breaking Changes
 * ``last_time_index``, ``secondary_time_index``, and ``interesting_values`` are no longer attributes
   of an entityset’s tables that can be accessed directly. Now they must be accessed through the metadata
   of the Woodwork DataFrame, which is a dictionary.
-* The helper function ``list_variable_types`` has been replaced with ``list_logical_types``.
-  To help minimize breaking changes, ``list_variable_types`` will return the same output as ``list_logical_types``.
+* The helper function ``list_variable_types`` will be removed in a future release and replaced by ``list_logical_types``.
+  In the meantime, ``list_variable_types`` will return the same output as ``list_logical_types``.
 
 What's New in this Release
 ++++++++++++++++++++++++++
