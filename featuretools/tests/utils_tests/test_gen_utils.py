@@ -1,7 +1,9 @@
 import dask.dataframe as dd
 import pandas as pd
 import pytest
+import woodwork as ww
 
+import featuretools as ft
 from featuretools.utils.gen_utils import (
     import_or_none,
     import_or_raise,
@@ -54,3 +56,9 @@ def test_is_instance_none_module(df):
     assert not is_instance(df, None, 'DataFrame')
     assert is_instance(df, (None, pd), 'DataFrame')
     assert is_instance(df, (None, pd), ('Series', 'DataFrame'))
+
+
+def test_list_logical_types():
+    ft_ltypes = ft.list_logical_types()
+    ww_ltypes = ww.list_logical_types()
+    assert ft_ltypes.equals(ww_ltypes)
