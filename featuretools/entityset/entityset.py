@@ -142,31 +142,6 @@ class EntitySet(object):
                 return False
         return True
 
-# --> remove maybe!
-    def _eq_df(self, other, deep=False):
-        if self.id != other.id:
-            return False
-        if self.time_type != other.time_type:
-            return False
-        if len(self.dataframe_dict) != len(other.dataframe_dict):
-            return False
-        for df_name, df in self.dataframe_dict.items():
-            if df_name not in other.dataframe_dict:
-                return False
-            if df.ww.make_index != df.ww.make_index:
-                return False
-            if not df.ww._schema.__eq__(other[df_name].ww._schema, deep=deep):
-                return False
-            if deep and not _dataframes_equal(df, other[df_name]):
-                return False
-
-        if not len(self.relationships) == len(other.relationships):
-            return False
-        for r in self.relationships:
-            if r not in other.relationships:
-                return False
-        return True
-
     def __ne__(self, other, deep=False):
         return not self.__eq__(other, deep=deep)
 
