@@ -1753,7 +1753,7 @@ def test_entityset_equality(es):
     assert first_es == second_es
 
 
-def test_entityset_id_equality(es):
+def test_entityset_id_equality():
     first_es = EntitySet(id='first')
     first_es_copy = EntitySet(id='first')
     second_es = EntitySet(id='second')
@@ -1762,7 +1762,7 @@ def test_entityset_id_equality(es):
     assert first_es == first_es_copy
 
 
-def test_entityset_time_type_equality(es):
+def test_entityset_time_type_equality():
     first_es = EntitySet()
     second_es = EntitySet()
     assert first_es == second_es
@@ -1775,6 +1775,59 @@ def test_entityset_time_type_equality(es):
 
     second_es.time_type = 'numeric'
     assert first_es == second_es
+
+
+def test_entityset_deep_equality(es):
+    first_es = EntitySet()
+    second_es = EntitySet()
+
+    first_es.add_dataframe(dataframe_name='customers',
+                           dataframe=es['customers'].copy(),
+                           index='id',
+                           time_index='signup_date',
+                           logical_types=es['customers'].ww.logical_types,
+                           semantic_tags=get_df_tags(es['customers']))
+    first_es.add_dataframe(dataframe_name='sessions',
+                           dataframe=es['sessions'].copy(),
+                           index='id',
+                           logical_types=es['sessions'].ww.logical_types,
+                           semantic_tags=get_df_tags(es['sessions']))
+
+    second_es.add_dataframe(dataframe_name='sessions',
+                            dataframe=es['sessions'].copy(),
+                            index='id',
+                            logical_types=es['sessions'].ww.logical_types,
+                            semantic_tags=get_df_tags(es['sessions']))
+    second_es.add_dataframe(dataframe_name='customers',
+                            dataframe=es['customers'].copy(),
+                            index='id',
+                            time_index='signup_date',
+                            logical_types=es['customers'].ww.logical_types,
+                            semantic_tags=get_df_tags(es['customers']))
+
+    assert first_es.__eq__(second_es, deep=False)
+    assert first_es.__eq__(second_es, deep=True)
+
+    # Woodwork metadata only gets included in deep equality check
+    first_es['sessions'].ww.metadata['created_by'] = 'user0'
+
+    assert first_es.__eq__(second_es, deep=False)
+    assert not first_es.__eq__(second_es, deep=True)
+
+    second_es['sessions'].ww.metadata['created_by'] = 'user0'
+
+    assert first_es.__eq__(second_es, deep=False)
+    assert first_es.__eq__(second_es, deep=True)
+
+    updated_df = first_es['customers'].loc[[2, 0], :]
+    first_es.update_dataframe('customers', updated_df)
+
+    assert first_es.__eq__(second_es, deep=False)
+    # Uses woodwork equality which only looks at df content for pandas
+    if isinstance(updated_df, pd.DataFrame):
+        assert not first_es.__eq__(second_es, deep=True)
+    else:
+        assert first_es.__eq__(second_es, deep=True)
 
 
 @pytest.fixture(params=['make_es', 'dask_es_to_copy'])

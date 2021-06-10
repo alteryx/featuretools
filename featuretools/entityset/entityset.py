@@ -133,8 +133,7 @@ class EntitySet(object):
         for df_name, df in self.dataframe_dict.items():
             if df_name not in other.dataframe_dict:
                 return False
-            # --> WW bug: Waiting on deep behavior for WW equality
-            if not df.ww.__eq__(other[df_name].ww):
+            if not df.ww.__eq__(other[df_name].ww, deep=deep):
                 return False
         if not len(self.relationships) == len(other.relationships):
             return False
