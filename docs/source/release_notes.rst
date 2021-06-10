@@ -19,6 +19,7 @@ Future Release
         * Refactor ``EntitySet.plot`` to work with Woodwork dataframes (:pr:`1468`)
         * Move ``last_time_index`` to be a column on the DataFrame (:pr:`1456`)
         * Replace ``list_variable_types`` with ``list_logical_types`` (:pr:`1477`)
+        * Allow deep EntitySet equality check (:pr:`1480`)
     * Documentation Changes
         * Improve formatting of release notes (:pr:`1396`)
     * Testing Changes
