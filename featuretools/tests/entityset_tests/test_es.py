@@ -1787,18 +1787,17 @@ def test_entityset_deep_equality(es):
                            time_index='signup_date',
                            logical_types=es['customers'].ww.logical_types,
                            semantic_tags=get_df_tags(es['customers']))
+    first_es.add_dataframe(dataframe_name='sessions',
+                           dataframe=es['sessions'].copy(),
+                           index='id',
+                           logical_types=es['sessions'].ww.logical_types,
+                           semantic_tags=get_df_tags(es['sessions']))
 
     second_es.add_dataframe(dataframe_name='sessions',
                             dataframe=es['sessions'].copy(),
                             index='id',
                             logical_types=es['sessions'].ww.logical_types,
                             semantic_tags=get_df_tags(es['sessions']))
-
-    first_es.add_dataframe(dataframe_name='sessions',
-                           dataframe=es['sessions'].copy(),
-                           index='id',
-                           logical_types=es['sessions'].ww.logical_types,
-                           semantic_tags=get_df_tags(es['sessions']))
     second_es.add_dataframe(dataframe_name='customers',
                             dataframe=es['customers'].copy(),
                             index='id',
