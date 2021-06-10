@@ -17,16 +17,13 @@ from featuretools.entityset import (
 )
 from featuretools.entityset.serialize import SCHEMA_VERSION
 from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import Library, import_or_none
+from featuretools.utils.gen_utils import Library
 from featuretools.variable_types import (
     Categorical,
     Index,
     TimeIndex,
     find_variable_types
 )
-
-ks = import_or_none('databricks.koalas')
-
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"

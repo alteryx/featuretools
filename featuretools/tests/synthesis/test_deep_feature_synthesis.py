@@ -43,10 +43,8 @@ from featuretools.tests.testing_utils import (
     feature_with_name,
     make_ecommerce_entityset
 )
-from featuretools.utils.gen_utils import Library, import_or_none
+from featuretools.utils.gen_utils import Library
 from featuretools.variable_types import Datetime, Numeric
-
-ks = import_or_none('databricks.koalas')
 
 
 def test_makes_agg_features_from_str(es):

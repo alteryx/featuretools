@@ -46,9 +46,7 @@ from featuretools.tests.testing_utils import (
     get_mock_client_cluster,
     to_pandas
 )
-from featuretools.utils.gen_utils import Library, import_or_none
-
-ks = import_or_none('databricks.koalas')
+from featuretools.utils.gen_utils import Library
 
 
 def test_scatter_warning(caplog):

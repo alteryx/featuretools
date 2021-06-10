@@ -4,9 +4,6 @@ from featuretools.feature_base import (
     GroupByTransformFeature,
     TransformFeature
 )
-from featuretools.utils.gen_utils import import_or_none
-
-ks = import_or_none('databricks.koalas')
 
 
 def _categorize_features(features):

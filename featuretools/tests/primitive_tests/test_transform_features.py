@@ -59,11 +59,9 @@ from featuretools.primitives.utils import (
 )
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.tests.testing_utils import feature_with_name, to_pandas
-from featuretools.utils.gen_utils import Library, import_or_none
+from featuretools.utils.gen_utils import Library
 from featuretools.utils.koalas_utils import pd_to_ks_clean
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
-
-ks = import_or_none('databricks.koalas')
 
 
 def test_init_and_name(es):
