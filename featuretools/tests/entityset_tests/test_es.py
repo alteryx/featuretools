@@ -5,6 +5,7 @@ from datetime import datetime
 
 import dask.dataframe as dd
 import numpy as np
+from numpy.core.fromnumeric import sort
 import pandas as pd
 import pytest
 import woodwork as ww
@@ -361,8 +362,8 @@ def test_query_by_variable_with_no_lti_and_training_window(es):
             training_window='3d')
     df = to_pandas(df)
 
-    assert set(df['id'].values) == {1}
-    assert set(df['age'].values) == {25}
+    assert list(df['id'].values) == [1]
+    assert list(df['age'].values) == [25]
 
 
 def test_query_by_variable_with_lti_and_training_window(es):
@@ -372,10 +373,10 @@ def test_query_by_variable_with_lti_and_training_window(es):
         instance_vals=[0, 1, 2], column_name='cohort',
         time_last=datetime(2011, 4, 11),
         training_window='3d')
-    df = to_pandas(df)
-
-    assert set(df['id'].values) == {2, 0, 1}
-    assert set(df['age'].values) == {56, 33, 25}
+    # Account for different ordering between pandas and dask/koalas    
+    df = to_pandas(df).reset_index(drop=True).sort_values('id')
+    assert list(df['id'].values) == [0, 1, 2]
+    assert list(df['age'].values) == [33, 25, 56]
 
 
 def test_query_by_indexed_variable(es):
