@@ -73,9 +73,9 @@ def extra_session_df(es):
     row = pd.DataFrame(row_values, index=pd.Index([6], name='id'))
     df = to_pandas(es['sessions'].df)
     df = df.append(row, sort=True).sort_index()
-    if isinstance(es['sessions'].df, dd.DataFrame):
+    if es.dataframe_type == Library.DASK.value:
         df = dd.from_pandas(df, npartitions=3)
-    if es.dataframe_type == Library.KOALAS.value:
+    elif es.dataframe_type == Library.KOALAS.value:
         df = ks.from_pandas(df)
     return df
 

@@ -591,7 +591,7 @@ def test_entity_init(es):
         df_shape = (df.shape[0].compute(), df.shape[1])
     else:
         df_shape = df.shape
-    if isinstance(es['test_entity'].df, dd.DataFrame):
+    if es.dataframe_type == Library.DASK.value:
         es_df_shape = (es['test_entity'].df.shape[0].compute(), es['test_entity'].df.shape[1])
     else:
         es_df_shape = es['test_entity'].df.shape
@@ -875,7 +875,7 @@ def test_sets_time_when_adding_entity(transactions_df):
 
 def test_checks_time_type_setting_time_index(es):
     # set non time type as time index, Dask/Koalas and Pandas error differently
-    if isinstance(es['log'].df, pd.DataFrame):
+    if es.dataframe_type == Library.PANDAS.value:
         error_text = 'log time index not recognized as numeric or datetime'
     else:
         error_text = "log time index is %s type which differs from" \
