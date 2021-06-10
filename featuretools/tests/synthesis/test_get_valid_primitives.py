@@ -52,7 +52,7 @@ def test_invalid_primitive(es):
 def test_primitive_compatibility(es):
     _, trans_prims = get_valid_primitives(es, "customers", selected_primitives=[TimeSincePrevious])
 
-    if es.dataframe_type != Library.PANDAS:
+    if es.dataframe_type != Library.PANDAS.value:
         assert len(trans_prims) == 0
     else:
         assert len(trans_prims) == 1

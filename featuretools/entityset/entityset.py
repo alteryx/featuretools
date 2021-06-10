@@ -151,11 +151,11 @@ class EntitySet(object):
 
         if self.entities:
             if isinstance(self.entities[0].df, pd.DataFrame):
-                df_type = Library.PANDAS
+                df_type = Library.PANDAS.value
             elif isinstance(self.entities[0].df, dd.DataFrame):
-                df_type = Library.DASK
+                df_type = Library.DASK.value
             elif is_instance(self.entities[0].df, ks, 'DataFrame'):
-                df_type = Library.KOALAS
+                df_type = Library.KOALAS.value
 
         return df_type
 
@@ -211,7 +211,7 @@ class EntitySet(object):
                 compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         '''
-        if is_instance(self.entities[0].df, ks, 'DataFrame'):
+        if self.dataframe_type == Library.KOALAS.value:
             compression = str(compression)
         serialize.write_data_description(self, path, format='csv', index=False, sep=sep, encoding=encoding, engine=engine, compression=compression, profile_name=profile_name)
         return self

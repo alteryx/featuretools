@@ -48,7 +48,7 @@ def test_add_relationships_convert_type(es):
 
 # TODO: Koalas does not support categorical types
 def test_add_relationship_errors_on_dtype_mismatch(es):
-    if ks and isinstance(es['customers'].df, ks.DataFrame):
+    if es.dataframe_type == Library.KOALAS.value:
         pytest.xfail('Koalas does not support categorical types')
     log_2_df = es['log'].df.copy()
     log_variable_types = {
@@ -159,7 +159,7 @@ def test_query_by_id_with_time(es):
         instance_vals=[0, 1, 2, 3, 4],
         time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
     df = to_pandas(df)
-    if ks and isinstance(es['log'].df, ks.DataFrame):
+    if es.dataframe_type == Library.KOALAS.value:
         # Koalas doesn't maintain order
         df = df.sort_values('id')
 
@@ -175,7 +175,7 @@ def test_query_by_variable_with_time(es):
 
     true_values = [
         i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
-    if ks and isinstance(es['log'].df, ks.DataFrame):
+    if es.dataframe_type == Library.KOALAS.value:
         # Koalas doesn't maintain order
         df = df.sort_values('id')
 
@@ -572,9 +572,9 @@ def test_entity_init(es):
                                 for i in range(3)],
                        'category': ['a', 'b', 'a'],
                        'number': [4, 5, 6]})
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+    if es.dataframe_type == Library.DASK.value:
         df = dd.from_pandas(df, npartitions=2)
-    if ks and any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    elif es.dataframe_type == Library.KOALAS.value:
         df = ks.from_pandas(df)
 
     vtypes = {'time': variable_types.Datetime}
@@ -601,7 +601,7 @@ def test_entity_init(es):
     assert set([v.id for v in es['test_entity'].variables]) == set(df.columns)
 
     assert es['test_entity'].df['time'].dtype == df['time'].dtype
-    if ks and isinstance(es['test_entity'].df, ks.DataFrame):
+    if es.dataframe_type == Library.KOALAS.value:
         assert set(es['test_entity'].df['id'].to_list()) == set(df['id'].to_list())
     else:
         assert set(es['test_entity'].df['id']) == set(df['id'])
@@ -668,11 +668,11 @@ def test_already_sorted_parameter():
 # TODO: dask deepcopy
 def test_concat_entitysets(es):
     df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+    if es.dataframe_type == Library.DASK.value:
         pytest.xfail("Dask has no .equals method and issue with categoricals "
                      "and add_last_time_indexes")
 
-    if ks and any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if es.dataframe_type == Library.KOALAS.value:
         pytest.xfail("Koalas deepcopy fails")
 
     vtypes = {'id': variable_types.Categorical,
@@ -1166,7 +1166,7 @@ def test_normalize_entity_same_index(es):
 
 # TODO: normalize entity fails with Dask, doesn't specify all vtypes when creating new entity
 def test_secondary_time_index(es):
-    if es.dataframe_type != Library.PANDAS:
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('vtype error when attempting to normalize entity')
     es.normalize_entity('log', 'values', 'value',
                         make_time_index=True,
@@ -1463,4 +1463,4 @@ def test_dataframe_type_empty_es():
 
 
 def test_dataframe_type_pandas_es(pd_es):
-    assert pd_es.dataframe_type == Library.PANDAS
+    assert pd_es.dataframe_type == Library.PANDAS.value

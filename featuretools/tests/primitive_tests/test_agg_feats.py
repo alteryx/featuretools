@@ -1,7 +1,6 @@
 from datetime import datetime
 from math import isnan
 
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
@@ -228,9 +227,9 @@ def test_init_and_name(es):
     features = [ft.Feature(v) for v in log.variables]
     agg_primitives = get_aggregation_primitives().values()
     # If Dask EntitySet use only Dask compatible primitives
-    if isinstance(es['sessions'].df, dd.DataFrame):
+    if es.dataframe_type == Library.DASK.value:
         agg_primitives = [prim for prim in agg_primitives if Library.DASK in prim.compatibility]
-    if ks and isinstance(es['sessions'].df, ks.DataFrame):
+    if es.dataframe_type == Library.KOALAS.value:
         agg_primitives = [prim for prim in agg_primitives if Library.KOALAS in prim.compatibility]
 
     for agg_prim in agg_primitives:
@@ -583,7 +582,7 @@ def test_custom_primitive_default_kwargs(es):
 
 
 def test_makes_numtrue(es):
-    if ks and any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+    if es.dataframe_type == Library.KOALAS.value:
         pytest.xfail('Koalas EntitySets do not support NumTrue primitive')
     dfs = DeepFeatureSynthesis(target_entity_id='sessions',
                                entityset=es,

@@ -142,4 +142,4 @@ def test_create_entity_with_make_index():
 
 
 def test_dataframe_type_dask(dask_es):
-    assert dask_es.dataframe_type == Library.DASK
+    assert dask_es.dataframe_type == Library.DASK.value

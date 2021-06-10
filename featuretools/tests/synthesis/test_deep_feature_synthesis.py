@@ -1,6 +1,5 @@
 import copy
 
-import dask.dataframe as dd
 import pandas as pd
 import pytest
 
@@ -44,7 +43,7 @@ from featuretools.tests.testing_utils import (
     feature_with_name,
     make_ecommerce_entityset
 )
-from featuretools.utils.gen_utils import Library, import_or_none, is_instance
+from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.variable_types import Datetime, Numeric
 
 ks = import_or_none('databricks.koalas')
@@ -118,12 +117,7 @@ def test_errors_unsupported_primitives(es):
     bad_trans_prim = CumSum()
     bad_agg_prim = NumUnique()
     bad_trans_prim.compatibility, bad_agg_prim.compatibility = [], []
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
-        library = 'Dask'
-    elif any(is_instance(entity.df, ks, 'DataFrame') for entity in es.entities):
-        library = 'Koalas'
-    else:
-        library = 'pandas'
+    library = es.dataframe_type
     error_text = "Selected primitives are incompatible with {} EntitySets: cum_sum, num_unique".format(library)
     with pytest.raises(ValueError, match=error_text):
         DeepFeatureSynthesis(target_entity_id='sessions',

@@ -149,4 +149,4 @@ def test_create_entity_with_make_index():
 
 @pytest.mark.skipif('not ks')
 def test_dataframe_type_koalas(ks_es):
-    assert ks_es.dataframe_type == Library.KOALAS
+    assert ks_es.dataframe_type == Library.KOALAS.value

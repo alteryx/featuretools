@@ -7,6 +7,7 @@ import pytest
 from dask import dataframe as dd
 
 import featuretools as ft
+from featuretools.utils.gen_utils import Library
 
 
 @pytest.fixture
@@ -77,7 +78,7 @@ def test_multiple_rows(es):
     plot_ = es.plot()
     result = re.findall(r"\((\d+\srows?)\)", plot_.source)
     expected = ["{} rows".format(str(i.shape[0])) for i in es.entities]
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+    if es.dataframe_type == Library.DASK.value:
         # Dask does not list number of rows in plot
         assert result == []
     else:
@@ -88,7 +89,7 @@ def test_single_row(simple_es):
     plot_ = simple_es.plot()
     result = re.findall(r"\((\d+\srows?)\)", plot_.source)
     expected = ["1 row"]
-    if any(isinstance(entity.df, dd.DataFrame) for entity in simple_es.entities):
+    if simple_es.dataframe_type == Library.DASK.value:
         # Dask does not list number of rows in plot
         assert result == []
     else:
