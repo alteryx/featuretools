@@ -95,7 +95,7 @@ def make_es(data):
                         'taxi_in', 'taxi_out', 'air_time', 'dep_time']
 
     logical_types = {'flight_num': ww.logical_types.Categorical,
-                     'distance_group': ww.logical_types.Ordinal(order=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+                     'distance_group': ww.logical_types.Ordinal(order=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]),
                      'canceled': ww.logical_types.Boolean,
                      'diverted': ww.logical_types.Boolean}
 

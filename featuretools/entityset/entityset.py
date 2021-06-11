@@ -16,11 +16,7 @@ from featuretools.utils.plot_utils import (
     get_graphviz_format,
     save_graph
 )
-
-# import pandas.api.types as pdtypes
-
-
-# from featuretools.utils.wrangle import _check_timedelta
+from featuretools.utils.wrangle import _check_timedelta
 
 ks = import_or_none('databricks.koalas')
 
@@ -132,8 +128,7 @@ class EntitySet(object):
         for df_name, df in self.dataframe_dict.items():
             if df_name not in other.dataframe_dict:
                 return False
-            # --> WW bug: Waiting on deep behavior for WW equality
-            if not df.ww.__eq__(other[df_name].ww):
+            if not df.ww.__eq__(other[df_name].ww, deep=deep):
                 return False
         if not len(self.relationships) == len(other.relationships):
             return False
@@ -1276,124 +1271,127 @@ class EntitySet(object):
             save_graph(graph, to_file, format_)
         return graph
 
-    # def _handle_time(self, entity_id, df, time_last=None, training_window=None, include_cutoff_time=True):
-    #     """
-    #     Filter a dataframe for all instances before time_last.
-    #     If the DataTable does not have a time index, return the original
-    #     dataframe.
-    #     """
-    #     dt = self[entity_id]
-    #     if is_instance(df, ks, 'DataFrame') and isinstance(time_last, np.datetime64):
-    #         time_last = pd.to_datetime(time_last)
-    #     if dt.time_index:
-    #         df_empty = df.empty if isinstance(df, pd.DataFrame) else False
-    #         if time_last is not None and not df_empty:
-    #             if include_cutoff_time:
-    #                 df = df[df[dt.time_index] <= time_last]
-    #             else:
-    #                 df = df[df[dt.time_index] < time_last]
-    #             if training_window is not None:
-    #                 training_window = _check_timedelta(training_window)
-    #                 if include_cutoff_time:
-    #                     mask = df[dt.time_index] > time_last - training_window
-    #                 else:
-    #                     mask = df[dt.time_index] >= time_last - training_window
-    #                 if dt.last_time_index is not None:
-    #                     lti_slice = dt.last_time_index.reindex(df.index)
-    #                     if include_cutoff_time:
-    #                         lti_mask = lti_slice > time_last - training_window
-    #                     else:
-    #                         lti_mask = lti_slice >= time_last - training_window
-    #                     mask = mask | lti_mask
-    #                 else:
-    #                     warnings.warn(
-    #                         "Using training_window but last_time_index is "
-    #                         "not set on entity %s" % (dt.id)
-    #                     )
+    def _handle_time(self, dataframe_name, df, time_last=None, training_window=None, include_cutoff_time=True):
+        """
+        Filter a dataframe for all instances before time_last.
+        If the dataframe does not have a time index, return the original
+        dataframe.
+        """
 
-    #                 df = df[mask]
+        schema = self[dataframe_name].ww.schema
+        if is_instance(df, ks, 'DataFrame') and isinstance(time_last, np.datetime64):
+            time_last = pd.to_datetime(time_last)
+        if schema.time_index:
+            df_empty = df.empty if isinstance(df, pd.DataFrame) else False
+            if time_last is not None and not df_empty:
+                if include_cutoff_time:
+                    df = df[df[schema.time_index] <= time_last]
+                else:
+                    df = df[df[schema.time_index] < time_last]
+                if training_window is not None:
+                    training_window = _check_timedelta(training_window)
+                    if include_cutoff_time:
+                        mask = df[schema.time_index] > time_last - training_window
+                    else:
+                        mask = df[schema.time_index] >= time_last - training_window
+                    lti_col = schema.metadata.get('last_time_index')
+                    if lti_col is not None:
+                        if include_cutoff_time:
+                            lti_mask = df[lti_col] > time_last - training_window
+                        else:
+                            lti_mask = df[lti_col] >= time_last - training_window
+                        mask = mask | lti_mask
+                    else:
+                        warnings.warn(
+                            "Using training_window but last_time_index is "
+                            "not set for dataframe %s" % (dataframe_name)
+                        )
 
-    #     for secondary_time_index, columns in dt.secondary_time_index.items():
-    #         # should we use ignore time last here?
-    #         df_empty = df.empty if isinstance(df, pd.DataFrame) else False
-    #         if time_last is not None and not df_empty:
-    #             mask = df[secondary_time_index] >= time_last
-    #             if isinstance(df, dd.DataFrame):
-    #                 for col in columns:
-    #                     df[col] = df[col].mask(mask, np.nan)
-    #             elif is_instance(df, ks, 'DataFrame'):
-    #                 df.loc[mask, columns] = None
-    #             else:
-    #                 df.loc[mask, columns] = np.nan
+                    df = df[mask]
 
-    #     return df
+        secondary_time_indexes = schema.metadata.get('secondary_time_index') or {}
+        for secondary_time_index, columns in secondary_time_indexes.items():
+            # should we use ignore time last here?
+            df_empty = df.empty if isinstance(df, pd.DataFrame) else False
+            if time_last is not None and not df_empty:
+                mask = df[secondary_time_index] >= time_last
+                if isinstance(df, dd.DataFrame):
+                    for col in columns:
+                        df[col] = df[col].mask(mask, np.nan)
+                elif is_instance(df, ks, 'DataFrame'):
+                    df.loc[mask, columns] = None
+                else:
+                    df.loc[mask, columns] = np.nan
 
-    # def query_by_values(self, entity_id, instance_vals, variable_id=None, columns=None,
-    #                     time_last=None, training_window=None, include_cutoff_time=True):
-    #     """Query instances that have variable with given value
+        return df
 
-    #     Args:
-    #         entity_id (str): The id of the entity to query
-    #         instance_vals (pd.Dataframe, pd.Series, list[str] or str) :
-    #             Instance(s) to match.
-    #         variable_id (str) : Variable to query on. If None, query on index.
-    #         columns (list[str]) : Columns to return. Return all columns if None.
-    #         time_last (pd.TimeStamp) : Query data up to and including this
-    #             time. Only applies if entity has a time index.
-    #         training_window (Timedelta, optional):
-    #             Window defining how much time before the cutoff time data
-    #             can be used when calculating features. If None, all data before cutoff time is used.
-    #         include_cutoff_time (bool):
-    #             If True, data at cutoff time are included in calculating features
+    def query_by_values(self, dataframe_name, instance_vals, column_name=None, columns=None,
+                        time_last=None, training_window=None, include_cutoff_time=True):
+        """Query instances that have column with given value
 
-    #     Returns:
-    #         pd.DataFrame : instances that match constraints with ids in order of underlying dataframe
-    #     """
-    #     entity = self[entity_id]
-    #     if not variable_id:
-    #         variable_id = entity.index
+        Args:
+            dataframe_name (str): The id of the dataframe to query
+            instance_vals (pd.Dataframe, pd.Series, list[str] or str) :
+                Instance(s) to match.
+            column_name (str) : Column to query on. If None, query on index.
+            columns (list[str]) : Columns to return. Return all columns if None.
+            time_last (pd.TimeStamp) : Query data up to and including this
+                time. Only applies if entity has a time index.
+            training_window (Timedelta, optional):
+                Window defining how much time before the cutoff time data
+                can be used when calculating features. If None, all data before cutoff time is used.
+            include_cutoff_time (bool):
+                If True, data at cutoff time are included in calculating features
 
-    #     instance_vals = _vals_to_series(instance_vals, variable_id)
+        Returns:
+            pd.DataFrame : instances that match constraints with ids in order of underlying dataframe
+        """
+        dataframe = self[dataframe_name]
+        if not column_name:
+            column_name = dataframe.ww.index
 
-    #     training_window = _check_timedelta(training_window)
+        instance_vals = _vals_to_series(instance_vals, column_name)
 
-    #     if training_window is not None:
-    #         assert training_window.has_no_observations(), "Training window cannot be in observations"
+        training_window = _check_timedelta(training_window)
 
-    #     if instance_vals is None:
-    #         df = entity.df.copy()
+        if training_window is not None:
+            assert training_window.has_no_observations(), "Training window cannot be in observations"
 
-    #     elif isinstance(instance_vals, pd.Series) and instance_vals.empty:
-    #         df = entity.df.head(0)
+        if instance_vals is None:
+            df = dataframe.copy()
 
-    #     else:
-    #         if is_instance(instance_vals, (dd, ks), 'Series'):
-    #             df = entity.df.merge(instance_vals.to_frame(), how="inner", on=variable_id)
-    #         elif isinstance(instance_vals, pd.Series) and is_instance(entity.df, ks, 'DataFrame'):
-    #             df = entity.df.merge(ks.DataFrame({variable_id: instance_vals}), how="inner", on=variable_id)
-    #         else:
-    #             df = entity.df[entity.df[variable_id].isin(instance_vals)]
+        elif isinstance(instance_vals, pd.Series) and instance_vals.empty:
+            df = dataframe.head(0)
 
-    #         if isinstance(entity.df, pd.DataFrame):
-    #             df = df.set_index(entity.index, drop=False)
+        else:
+            if is_instance(instance_vals, (dd, ks), 'Series'):
+                df = dataframe.merge(instance_vals.to_frame(), how="inner", on=column_name)
+            elif isinstance(instance_vals, pd.Series) and is_instance(dataframe, ks, 'DataFrame'):
+                df = dataframe.merge(ks.DataFrame({column_name: instance_vals}), how="inner", on=column_name)
+            else:
+                df = dataframe[dataframe[column_name].isin(instance_vals)]
 
-    #         # ensure filtered df has same categories as original
-    #         # workaround for issue below
-    #         # github.com/pandas-dev/pandas/issues/22501#issuecomment-415982538
-    #         if pdtypes.is_categorical_dtype(entity.df[variable_id]):
-    #             categories = pd.api.types.CategoricalDtype(categories=entity.df[variable_id].cat.categories)
-    #             df[variable_id] = df[variable_id].astype(categories)
+            if isinstance(dataframe, pd.DataFrame):
+                df = df.set_index(dataframe.ww.index, drop=False)
 
-    #     df = self._handle_time(entity_id=entity_id,
-    #                            df=df,
-    #                            time_last=time_last,
-    #                            training_window=training_window,
-    #                            include_cutoff_time=include_cutoff_time)
+            # ensure filtered df has same categories as original
+            # workaround for issue below
+            # github.com/pandas-dev/pandas/issues/22501#issuecomment-415982538
+            # Note: Woodwork stores categorical columns with a `string` dtype for Koalas
+            if dataframe.ww.columns[column_name].is_categorical and not is_instance(df, ks, 'DataFrame'):
+                categories = pd.api.types.CategoricalDtype(categories=dataframe[column_name].cat.categories)
+                df[column_name] = df[column_name].astype(categories)
 
-    #     if columns is not None:
-    #         df = df[columns]
+        df = self._handle_time(dataframe_name=dataframe_name,
+                               df=df,
+                               time_last=time_last,
+                               training_window=training_window,
+                               include_cutoff_time=include_cutoff_time)
 
-    #     return df
+        if columns is not None:
+            df = df[columns]
+
+        return df
 
     def update_dataframe(self, dataframe_name, df, already_sorted=False, recalculate_last_time_indexes=True):
         '''Update the internal dataframe of an EntitySet table, keeping Woodwork typing information the same.
