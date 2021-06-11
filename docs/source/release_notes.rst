@@ -22,7 +22,7 @@ Future Release
         * Refactor ``EntitySet.query_by_values`` to work with Woodwork dataframes (:pr:`1467`)
         * Replace ``list_variable_types`` with ``list_logical_types`` (:pr:`1477`)
         * Allow deep EntitySet equality check (:pr:`1480`)
-        * Add function to list semantic tags (:pr:``)
+        * Add function to list semantic tags (:pr:`1486`)
     * Documentation Changes
         * Improve formatting of release notes (:pr:`1396`)
     * Testing Changes
