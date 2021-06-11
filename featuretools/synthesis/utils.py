@@ -1,14 +1,9 @@
-from dask import dataframe as dd
-
 from featuretools.feature_base import (
     AggregationFeature,
     FeatureOutputSlice,
     GroupByTransformFeature,
     TransformFeature
 )
-from featuretools.utils.gen_utils import Library, import_or_none, is_instance
-
-ks = import_or_none('databricks.koalas')
 
 
 def _categorize_features(features):
@@ -59,14 +54,3 @@ def get_unused_primitives(specified, used):
         return []
     specified = {primitive if isinstance(primitive, str) else primitive.name for primitive in specified}
     return sorted(list(specified.difference(used)))
-
-
-def _get_entityset_type(entityset):
-    if any(isinstance(entity.df, dd.DataFrame) for entity in entityset.entities):
-        entityset_type = Library.DASK
-    elif any(is_instance(entity.df, ks, 'DataFrame') for entity in entityset.entities):
-        entityset_type = Library.KOALAS
-    else:
-        entityset_type = Library.PANDAS
-
-    return entityset_type

@@ -13,7 +13,7 @@ import featuretools.variable_types.variable as vtypes
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.entity import Entity
 from featuretools.entityset.relationship import Relationship, RelationshipPath
-from featuretools.utils.gen_utils import import_or_none, is_instance
+from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.utils.plot_utils import (
     check_graphviz,
     get_graphviz_format,
@@ -145,6 +145,21 @@ class EntitySet(object):
         return list(self.entity_dict.values())
 
     @property
+    def dataframe_type(self):
+        '''String specifying the library used for the entity dataframes. Null if no entities'''
+        df_type = None
+
+        if self.entities:
+            if isinstance(self.entities[0].df, pd.DataFrame):
+                df_type = Library.PANDAS.value
+            elif isinstance(self.entities[0].df, dd.DataFrame):
+                df_type = Library.DASK.value
+            elif is_instance(self.entities[0].df, ks, 'DataFrame'):
+                df_type = Library.KOALAS.value
+
+        return df_type
+
+    @property
     def metadata(self):
         '''Returns the metadata for this EntitySet. The metadata will be recomputed if it does not exist.'''
         if self._data_description is None:
@@ -196,7 +211,7 @@ class EntitySet(object):
                 compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         '''
-        if is_instance(self.entities[0].df, ks, 'DataFrame'):
+        if self.dataframe_type == Library.KOALAS.value:
             compression = str(compression)
         serialize.write_data_description(self, path, format='csv', index=False, sep=sep, encoding=encoding, engine=engine, compression=compression, profile_name=profile_name)
         return self

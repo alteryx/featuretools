@@ -17,16 +17,13 @@ from featuretools.entityset import (
 )
 from featuretools.entityset.serialize import SCHEMA_VERSION
 from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import import_or_none
+from featuretools.utils.gen_utils import Library
 from featuretools.variable_types import (
     Categorical,
     Index,
     TimeIndex,
     find_variable_types
 )
-
-ks = import_or_none('databricks.koalas')
-
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
@@ -260,7 +257,7 @@ def make_public(s3_client, s3_bucket):
 
 # TODO: tmp file disappears after deserialize step, cannot check equality with Dask
 def test_serialize_s3_csv(es, s3_client, s3_bucket):
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
     es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python')
     make_public(s3_client, s3_bucket)
@@ -278,7 +275,7 @@ def test_serialize_s3_pickle(pd_es, s3_client, s3_bucket):
 
 # TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
 def test_serialize_s3_parquet(es, s3_client, s3_bucket):
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask or Koalas')
     es.to_parquet(TEST_S3_URL)
     make_public(s3_client, s3_bucket)
@@ -288,7 +285,7 @@ def test_serialize_s3_parquet(es, s3_client, s3_bucket):
 
 # TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
 def test_serialize_s3_anon_csv(es, s3_client, s3_bucket):
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask or Koalas')
     es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
     make_public(s3_client, s3_bucket)
@@ -306,7 +303,7 @@ def test_serialize_s3_anon_pickle(pd_es, s3_client, s3_bucket):
 
 # TODO: tmp file disappears after deserialize step, cannot check equality with Dask
 def test_serialize_s3_anon_parquet(es, s3_client, s3_bucket):
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
     es.to_parquet(TEST_S3_URL, profile_name=False)
     make_public(s3_client, s3_bucket)
@@ -353,7 +350,7 @@ def setup_test_profile(monkeypatch, tmpdir):
 
 
 def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
     es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name='test')
     make_public(s3_client, s3_bucket)
@@ -372,7 +369,7 @@ def test_serialize_subdirs_not_removed(es, tmpdir):
     test_dir = write_path.mkdir("test_dir")
     with open(str(write_path.join('data_description.json')), 'w') as f:
         json.dump('__SAMPLE_TEXT__', f)
-    if ks and any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+    if es.dataframe_type == Library.KOALAS.value:
         compression = 'none'
     else:
         compression = None
@@ -450,7 +447,7 @@ def test_operations_invalidate_metadata(es):
     assert new_es._data_description is not None
 
     # automatically adding interesting values not supported in Dask or Koalas
-    if any(isinstance(entity.df, pd.DataFrame) for entity in new_es.entities):
+    if new_es.dataframe_type == Library.PANDAS.value:
         new_es.add_interesting_values()
         assert new_es._data_description is None
         assert new_es.metadata is not None

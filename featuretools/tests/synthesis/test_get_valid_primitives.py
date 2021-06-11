@@ -1,4 +1,3 @@
-import pandas as pd
 import pytest
 
 from featuretools.primitives import (
@@ -53,7 +52,7 @@ def test_invalid_primitive(es):
 def test_primitive_compatibility(es):
     _, trans_prims = get_valid_primitives(es, "customers", selected_primitives=[TimeSincePrevious])
 
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+    if es.dataframe_type != Library.PANDAS.value:
         assert len(trans_prims) == 0
     else:
         assert len(trans_prims) == 1

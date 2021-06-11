@@ -7,7 +7,7 @@ from dask import dataframe as dd
 import featuretools as ft
 from featuretools import Relationship
 from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import import_or_none
+from featuretools.utils.gen_utils import Library, import_or_none
 
 ks = import_or_none('databricks.koalas')
 
@@ -73,9 +73,9 @@ def extra_session_df(es):
     row = pd.DataFrame(row_values, index=pd.Index([6], name='id'))
     df = to_pandas(es['sessions'].df)
     df = df.append(row, sort=True).sort_index()
-    if isinstance(es['sessions'].df, dd.DataFrame):
+    if es.dataframe_type == Library.DASK.value:
         df = dd.from_pandas(df, npartitions=3)
-    if ks and isinstance(es['sessions'].df, ks.DataFrame):
+    elif es.dataframe_type == Library.KOALAS.value:
         df = ks.from_pandas(df)
     return df
 
@@ -102,7 +102,7 @@ class TestLastTimeIndex(object):
     # TODO: possible issue with either normalize_entity or add_last_time_indexes
     def test_parent(self, values_es, true_values_lti):
         # test entity with time index and all instances in child entity
-        if not all(isinstance(entity.df, pd.DataFrame) for entity in values_es.entities):
+        if values_es.dataframe_type != Library.PANDAS.value:
             pytest.xfail('possible issue with either normalize_entity or add_last_time_indexes')
         values_es.add_last_time_indexes()
         values = values_es['values']
@@ -114,7 +114,7 @@ class TestLastTimeIndex(object):
     # TODO: fails with Dask, tests needs to be reworked
     def test_parent_some_missing(self, values_es, true_values_lti):
         # test entity with time index and not all instances have children
-        if not all(isinstance(entity.df, pd.DataFrame) for entity in values_es.entities):
+        if values_es.dataframe_type != Library.PANDAS.value:
             pytest.xfail('fails with Dask, tests needs to be reworked')
         values = values_es['values']
 
@@ -166,9 +166,9 @@ class TestLastTimeIndex(object):
     def test_multiple_children(self, es, wishlist_df,
                                true_sessions_lti):
         # test all instances in both children
-        if isinstance(es.entities[0].df, dd.DataFrame):
+        if es.dataframe_type == Library.DASK.value:
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
-        if ks and isinstance(es.entities[0].df, ks.DataFrame):
+        if es.dataframe_type == Library.KOALAS.value:
             wishlist_df = ks.from_pandas(wishlist_df)
         variable_types = {'id': ft.variable_types.variable.Index,
                           'session_id': ft.variable_types.variable.Numeric,
@@ -201,9 +201,9 @@ class TestLastTimeIndex(object):
 
         # drop wishlist instance related to id 3 so it's only in log
         wishlist_df.drop(4, inplace=True)
-        if isinstance(es.entities[0].df, dd.DataFrame):
+        if es.dataframe_type == Library.DASK.value:
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
-        if ks and isinstance(es.entities[0].df, ks.DataFrame):
+        if es.dataframe_type == Library.KOALAS.value:
             wishlist_df = ks.from_pandas(wishlist_df)
         variable_types = {'id': ft.variable_types.variable.Index,
                           'session_id': ft.variable_types.variable.Numeric,
@@ -242,9 +242,9 @@ class TestLastTimeIndex(object):
                       'product_id': 'toothpaste'}
         row = pd.DataFrame(row_values, index=pd.RangeIndex(start=7, stop=8))
         df = wishlist_df.append(row)
-        if isinstance(es.entities[0].df, dd.DataFrame):
+        if es.dataframe_type == Library.DASK.value:
             df = dd.from_pandas(df, npartitions=2)
-        if ks and isinstance(es.entities[0].df, ks.DataFrame):
+        if es.dataframe_type == Library.KOALAS.value:
             df = ks.from_pandas(df)
         variable_types = {'id': ft.variable_types.variable.Index,
                           'session_id': ft.variable_types.variable.Numeric,
@@ -288,9 +288,9 @@ class TestLastTimeIndex(object):
 
         # drop instance 4 so wishlist_log does not have session id 3 instance
         df.drop(4, inplace=True)
-        if isinstance(es.entities[0].df, dd.DataFrame):
+        if es.dataframe_type == Library.DASK.value:
             df = dd.from_pandas(df, npartitions=2)
-        if ks and isinstance(es.entities[0].df, ks.DataFrame):
+        if es.dataframe_type == Library.KOALAS.value:
             df = ks.from_pandas(df)
         variable_types = {'id': ft.variable_types.variable.Index,
                           'session_id': ft.variable_types.variable.Numeric,
@@ -321,9 +321,9 @@ class TestLastTimeIndex(object):
         # test all instances in neither child
         sessions = es['sessions']
 
-        if isinstance(es.entities[0].df, dd.DataFrame):
+        if es.dataframe_type == Library.DASK.value:
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
-        if ks and isinstance(es.entities[0].df, ks.DataFrame):
+        if es.dataframe_type == Library.KOALAS.value:
             wishlist_df = ks.from_pandas(wishlist_df)
 
         variable_types = {'id': ft.variable_types.variable.Index,
@@ -368,9 +368,9 @@ class TestLastTimeIndex(object):
         df = (df.set_index('datetime', append=True)
               .sort_index(level=[1, 0], kind="mergesort")
               .reset_index('datetime', drop=False))
-        if isinstance(log.df, dd.DataFrame):
+        if es.dataframe_type == Library.DASK.value:
             df = dd.from_pandas(df, npartitions=2)
-        if ks and isinstance(log.df, ks.DataFrame):
+        if es.dataframe_type == Library.KOALAS.value:
             df = ks.from_pandas(df)
         log.update_data(df)
         es.add_last_time_indexes()

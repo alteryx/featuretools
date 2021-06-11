@@ -4,6 +4,7 @@ import pytest
 
 import featuretools as ft
 from featuretools.entityset import EntitySet, Relationship
+from featuretools.utils.gen_utils import Library
 
 
 def test_create_entity_from_dask_df(pd_es):
@@ -138,3 +139,7 @@ def test_create_entity_with_make_index():
 
     expected_df = pd.DataFrame({"new_index": range(len(values)), "values": values})
     pd.testing.assert_frame_equal(expected_df, dask_es['new_entity'].df.compute())
+
+
+def test_dataframe_type_dask(dask_es):
+    assert dask_es.dataframe_type == Library.DASK.value

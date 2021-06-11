@@ -22,7 +22,7 @@ from featuretools.primitives.options_utils import (
     generate_all_primitive_options,
     ignore_entity_for_primitive
 )
-from featuretools.synthesis.utils import _get_entityset_type
+from featuretools.utils.gen_utils import Library
 from featuretools.variable_types import Boolean, Discrete, Id, Numeric
 
 logger = logging.getLogger('featuretools')
@@ -185,10 +185,13 @@ class DeepFeatureSynthesis(object):
         self.target_entity_id = target_entity_id
         self.es = entityset
 
-        entityset_type = _get_entityset_type(self.es)
+        for library in Library:
+            if library.value == self.es.dataframe_type:
+                df_library = library
+                break
 
         if agg_primitives is None:
-            agg_primitives = [p for p in primitives.get_default_aggregation_primitives() if entityset_type in p.compatibility]
+            agg_primitives = [p for p in primitives.get_default_aggregation_primitives() if df_library in p.compatibility]
         self.agg_primitives = []
         agg_prim_dict = primitives.get_aggregation_primitives()
         for a in agg_primitives:
@@ -206,7 +209,7 @@ class DeepFeatureSynthesis(object):
         self.agg_primitives.sort()
 
         if trans_primitives is None:
-            trans_primitives = [p for p in primitives.get_default_transform_primitives() if entityset_type in p.compatibility]
+            trans_primitives = [p for p in primitives.get_default_transform_primitives() if df_library in p.compatibility]
         self.trans_primitives = []
         for t in trans_primitives:
             t = check_trans_primitive(t)
@@ -240,10 +243,10 @@ class DeepFeatureSynthesis(object):
             primitive_options = {}
         all_primitives = self.trans_primitives + self.agg_primitives + \
             self.where_primitives + self.groupby_trans_primitives
-        bad_primitives = [prim.name for prim in all_primitives if entityset_type not in prim.compatibility]
+        bad_primitives = [prim.name for prim in all_primitives if df_library not in prim.compatibility]
         if bad_primitives:
             msg = 'Selected primitives are incompatible with {} EntitySets: {}'
-            raise ValueError(msg.format(entityset_type.value, ', '.join(bad_primitives)))
+            raise ValueError(msg.format(df_library.value, ', '.join(bad_primitives)))
 
         self.primitive_options, self.ignore_entities, self.ignore_variables =\
             generate_all_primitive_options(all_primitives,
