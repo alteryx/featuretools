@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import woodwork as ww
 
-# from featuretools.entityset import deserialize, serialize
+from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.relationship import Relationship, RelationshipPath
 from featuretools.utils.gen_utils import import_or_none, is_instance
 from featuretools.utils.plot_utils import (
@@ -115,9 +115,8 @@ class EntitySet(object):
     def __sizeof__(self):
         return sum([df.__sizeof__() for df in self.dataframes])
 
-# --> Add back later: needs to wait till serialization is implemented
-    # def __dask_tokenize__(self):
-    #     return (EntitySet, serialize.entityset_to_description(self.metadata))
+    def __dask_tokenize__(self):
+        return (EntitySet, serialize.entityset_to_description(self.metadata))
 
     def __eq__(self, other, deep=False):
         if self.id != other.id:
@@ -174,67 +173,65 @@ class EntitySet(object):
     def dataframes(self):
         return list(self.dataframe_dict.values())
 
-# --> Add back later: needs to wait till serialization is implemented
-    # @property
-    # def metadata(self):
-    #     '''Returns the metadata for this EntitySet. The metadata will be recomputed if it does not exist.'''
-    #     if self._data_description is None:
-    #         description = serialize.entityset_to_description(self)
-    #         self._data_description = deserialize.description_to_entityset(description)
+    @property
+    def metadata(self):
+        '''Returns the metadata for this EntitySet. The metadata will be recomputed if it does not exist.'''
+        if self._data_description is None:
+            description = serialize.entityset_to_description(self)
+            self._data_description = deserialize.description_to_entityset(description)
 
-    #     return self._data_description
+        return self._data_description
 
     def reset_data_description(self):
         self._data_description = None
 
-# --> Add back later: when updating serialization for Woodwork
-    # def to_pickle(self, path, compression=None, profile_name=None):
-    #     '''Write entityset in the pickle format, location specified by `path`.
-    #         Path could be a local path or a S3 path.
-    #         If writing to S3 a tar archive of files will be written.
+    def to_pickle(self, path, compression=None, profile_name=None):
+        '''Write entityset in the pickle format, location specified by `path`.
+            Path could be a local path or a S3 path.
+            If writing to S3 a tar archive of files will be written.
 
-    #         Args:
-    #             path (str): location on disk to write to (will be created as a directory)
-    #             compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
-    #             profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
-    #     '''
-    #     serialize.write_data_description(self, path, format='pickle', compression=compression, profile_name=profile_name)
-    #     return self
+            Args:
+                path (str): location on disk to write to (will be created as a directory)
+                compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
+                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
+        '''
+        serialize.write_data_description(self, path, format='pickle', compression=compression, profile_name=profile_name)
+        return self
 
-    # def to_parquet(self, path, engine='auto', compression=None, profile_name=None):
-    #     '''Write entityset to disk in the parquet format, location specified by `path`.
-    #         Path could be a local path or a S3 path.
-    #         If writing to S3 a tar archive of files will be written.
+    def to_parquet(self, path, engine='auto', compression=None, profile_name=None):
+        '''Write entityset to disk in the parquet format, location specified by `path`.
+            Path could be a local path or a S3 path.
+            If writing to S3 a tar archive of files will be written.
 
-    #         Args:
-    #             path (str): location on disk to write to (will be created as a directory)
-    #             engine (str) : Name of the engine to use. Possible values are: {'auto', 'pyarrow', 'fastparquet'}.
-    #             compression (str) : Name of the compression to use. Possible values are: {'snappy', 'gzip', 'brotli', None}.
-    #             profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
-    #     '''
-    #     serialize.write_data_description(self, path, format='parquet', engine=engine, compression=compression, profile_name=profile_name)
-    #     return self
+            Args:
+                path (str): location on disk to write to (will be created as a directory)
+                engine (str) : Name of the engine to use. Possible values are: {'auto', 'pyarrow', 'fastparquet'}.
+                compression (str) : Name of the compression to use. Possible values are: {'snappy', 'gzip', 'brotli', None}.
+                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
+        '''
+        serialize.write_data_description(self, path, format='parquet', engine=engine, compression=compression, profile_name=profile_name)
+        return self
 
-    # def to_csv(self, path, sep=',', encoding='utf-8', engine='python', compression=None, profile_name=None):
-    #     '''Write entityset to disk in the csv format, location specified by `path`.
-    #         Path could be a local path or a S3 path.
-    #         If writing to S3 a tar archive of files will be written.
+    def to_csv(self, path, sep=',', encoding='utf-8', engine='python', compression=None, profile_name=None):
+        '''Write entityset to disk in the csv format, location specified by `path`.
+            Path could be a local path or a S3 path.
+            If writing to S3 a tar archive of files will be written.
 
-    #         Args:
-    #             path (str) : Location on disk to write to (will be created as a directory)
-    #             sep (str) : String of length 1. Field delimiter for the output file.
-    #             encoding (str) : A string representing the encoding to use in the output file, defaults to 'utf-8'.
-    #             engine (str) : Name of the engine to use. Possible values are: {'c', 'python'}.
-    #             compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
-    #             profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
-    #     '''
-    #     if is_instance(self.dataframes[0], ks, 'DataFrame'):
-    #         compression = str(compression)
-    #     serialize.write_data_description(self, path, format='csv', index=False, sep=sep, encoding=encoding, engine=engine, compression=compression, profile_name=profile_name)
-    #     return self
+            Args:
+                path (str) : Location on disk to write to (will be created as a directory)
+                sep (str) : String of length 1. Field delimiter for the output file.
+                encoding (str) : A string representing the encoding to use in the output file, defaults to 'utf-8'.
+                engine (str) : Name of the engine to use. Possible values are: {'c', 'python'}.
+                compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
+                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
+        '''
+        if is_instance(self.dataframes[0], ks, 'DataFrame'):
+            compression = str(compression)
+        serialize.write_data_description(self, path, format='csv', index=False, sep=sep, encoding=encoding, engine=engine, compression=compression, profile_name=profile_name)
+        return self
 
-    # def to_dictionary(self):
-    #     return serialize.entityset_to_description(self)
+    def to_dictionary(self):
+        return serialize.entityset_to_description(self)
 
     ###########################################################################
     #   Public getter/setter methods  #########################################
@@ -572,10 +569,10 @@ class EntitySet(object):
                                                 "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s"),
                                                 "fraud": [True, False, True, False, True, True]})
                 es = ft.EntitySet("example")
-                es.add_dataframe(entity_id="transactions",
-                                         index="id",
-                                         time_index="transaction_time",
-                                         dataframe=transactions_df)
+                es.add_dataframe(dataframe_id="transactions",
+                                 index="id",
+                                 time_index="transaction_time",
+                                 dataframe=transactions_df)
 
                 es["transactions"]
                 es["transactions"].df

@@ -18,6 +18,7 @@ Future Release
         * Replace ``Entity`` objects in ``EntitySet`` with Woodwork dataframes (:pr:`1405`)
         * Refactor ``EntitySet.plot`` to work with Woodwork dataframes (:pr:`1468`)
         * Move ``last_time_index`` to be a column on the DataFrame (:pr:`1456`)
+        * Update serialization/deserialization to work with Woodwork (:pr:`1452`)
         * Refactor ``EntitySet.query_by_values`` to work with Woodwork dataframes (:pr:`1467`)
         * Replace ``list_variable_types`` with ``list_logical_types`` (:pr:`1477`)
         * Allow deep EntitySet equality check (:pr:`1480`)

@@ -1438,10 +1438,9 @@ def test_getitem_without_id():
         ft.EntitySet()['test']
 
 
-# --> wait till serialization implemented
-# def test_metadata_without_id():
-#     es = ft.EntitySet()
-#     assert es.metadata.id is None
+def test_metadata_without_id():
+    es = ft.EntitySet()
+    assert es.metadata.id is None
 
 
 @pytest.fixture
