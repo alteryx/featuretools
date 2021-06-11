@@ -1,4 +1,5 @@
 import copy
+from featuretools.entityset.entityset import LTI_COLUMN_NAME
 import logging
 import re
 from datetime import datetime
@@ -895,6 +896,7 @@ def test_concat_simple(es):
 
 
 def test_concat_inplace(es):
+    # --> find a better way to do this that doesn't need deepcopy
     copy_es = copy.copy(es)
     first_es = copy.copy(es)
     for df in first_es.dataframes:
@@ -911,97 +913,103 @@ def test_concat_errors():
     pass
 
 # # TODO: equality check fails, dask series have no .equals method; error computing lti if categorical index
-# # TODO: dask deepcopy
-# def test_concat_entitysets(es):
-#     df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
-#     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
-#         pytest.xfail("Dask has no .equals method and issue with categoricals "
-#                      "and add_last_time_indexes")
 
-#     if ks and any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
-#         pytest.xfail("Koalas deepcopy fails")
 
-#     vtypes = {'id': variable_types.Categorical,
-#               'category': variable_types.Categorical}
-#     es.entity_from_dataframe(entity_id='test_entity',
-#                              index='id1',
-#                              make_index=True,
-#                              variable_types=vtypes,
-#                              dataframe=df)
-#     es.add_last_time_indexes()
+def test_concat_entitysets(es):
+    df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
+    if any(isinstance(df, dd.DataFrame) for df in es.dataframes):
+        pytest.xfail("Dask has no .equals method and issue with categoricals "
+                     "and add_last_time_indexes")
 
-#     assert es.__eq__(es)
-#     es_1 = copy.deepcopy(es)
-#     es_2 = copy.deepcopy(es)
+    if ks and any(isinstance(df, ks.DataFrame) for df in es.dataframes):
+        pytest.xfail("Koalas deepcopy fails")
 
-#     # map of what rows to take from es_1 and es_2 for each entity
-#     emap = {
-#         'log': [list(range(10)) + [14, 15, 16], list(range(10, 14)) + [15, 16]],
-#         'sessions': [[0, 1, 2, 5], [1, 3, 4, 5]],
-#         'customers': [[0, 2], [1, 2]],
-#         'test_entity': [[0, 1], [0, 2]],
-#     }
+    logical_types = {'id': ltypes.Categorical,
+                     'category': ltypes.Categorical}
+    es.add_dataframe(dataframe=df,
+                     dataframe_name='test_entity',
+                     index='id1',
+                     make_index=True,
+                     logical_types=logical_types)
+    es.add_last_time_indexes()
 
-#     assert es.__eq__(es_1, deep=True)
-#     assert es.__eq__(es_2, deep=True)
+    assert es.__eq__(es)
+    es_1 = copy.deepcopy(es)
+    es_2 = copy.deepcopy(es)
 
-#     for i, _es in enumerate([es_1, es_2]):
-#         for entity, rows in emap.items():
-#             df = _es[entity].df
-#             _es.update_dataframe(entity_id=entity, df=df.loc[rows[i]])
+    # map of what rows to take from es_1 and es_2 for each entity
+    emap = {
+        'log': [list(range(10)) + [14, 15, 16], list(range(10, 14)) + [15, 16]],
+        'sessions': [[0, 1, 2, 5], [1, 3, 4, 5]],
+        'customers': [[0, 2], [1, 2]],
+        'test_entity': [[0, 1], [0, 2]],
+    }
 
-#     assert 10 not in es_1['log'].last_time_index.index
-#     assert 10 in es_2['log'].last_time_index.index
-#     assert 9 in es_1['log'].last_time_index.index
-#     assert 9 not in es_2['log'].last_time_index.index
-#     assert not es.__eq__(es_1, deep=True)
-#     assert not es.__eq__(es_2, deep=True)
+    assert es.__eq__(es_1, deep=True)
+    assert es.__eq__(es_2, deep=True)
 
-#     # make sure internal indexes work before concat
-#     regions = es_1.query_by_values('customers', ['United States'], variable_id=u'région_id')
-#     assert regions.index.isin(es_1['customers'].df.index).all()
+    for i, _es in enumerate([es_1, es_2]):
+        for df_name, rows in emap.items():
+            df = _es[df_name]
+            _es.update_dataframe(dataframe_name=df_name, df=df.loc[rows[i]])
 
-#     assert es_1.__eq__(es_2)
-#     assert not es_1.__eq__(es_2, deep=True)
+    assert 10 not in es_1['log'][LTI_COLUMN_NAME].index
+    assert 10 in es_2['log'][LTI_COLUMN_NAME].index
+    assert 9 in es_1['log'][LTI_COLUMN_NAME].index
+    assert 9 not in es_2['log'][LTI_COLUMN_NAME].index
+    assert not es.__eq__(es_1, deep=True)
+    assert not es.__eq__(es_2, deep=True)
 
-#     old_es_1 = copy.deepcopy(es_1)
-#     old_es_2 = copy.deepcopy(es_2)
-#     es_3 = es_1.concat(es_2)
+    # make sure internal indexes work before concat
+    regions = es_1.query_by_values('customers', ['United States'], column_name=u'région_id')
+    assert regions.index.isin(es_1['customers'].index).all()
 
-#     assert old_es_1.__eq__(es_1, deep=True)
-#     assert old_es_2.__eq__(es_2, deep=True)
+    assert es_1.__eq__(es_2)
+    assert not es_1.__eq__(es_2, deep=True)
 
-#     assert es_3.__eq__(es)
-#     for entity in es.entities:
-#         df = es[entity.id].df.sort_index()
-#         df_3 = es_3[entity.id].df.sort_index()
-#         for column in df:
-#             for x, y in zip(df[column], df_3[column]):
-#                 assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
-#         orig_lti = es[entity.id].last_time_index.sort_index()
-#         new_lti = es_3[entity.id].last_time_index.sort_index()
-#         for x, y in zip(orig_lti, new_lti):
-#             assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+# -- how did make index get passed down here??
+    old_es_1 = copy.deepcopy(es_1)
+    old_es_2 = copy.deepcopy(es_2)
+    # --> the lti for product is missing the first element in es_2 - must not get sorted or spearated correctoy?
+    es_3 = es_1.concat(es_2)
 
-#     es_1['stores'].last_time_index = None
-#     es_1['test_entity'].last_time_index = None
-#     es_2['test_entity'].last_time_index = None
-#     es_4 = es_1.concat(es_2)
-#     assert not es_4.__eq__(es, deep=True)
-#     for entity in es.entities:
-#         df = es[entity.id].df.sort_index()
-#         df_4 = es_4[entity.id].df.sort_index()
-#         for column in df:
-#             for x, y in zip(df[column], df_4[column]):
-#                 assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+    assert old_es_1.__eq__(es_1, deep=True)
+    assert old_es_2.__eq__(es_2, deep=True)
 
-#         if entity.id != 'test_entity':
-#             orig_lti = es[entity.id].last_time_index.sort_index()
-#             new_lti = es_4[entity.id].last_time_index.sort_index()
-#             for x, y in zip(orig_lti, new_lti):
-#                 assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
-#         else:
-#             assert es_4[entity.id].last_time_index is None
+    assert es_3.__eq__(es)
+    for df_name in es.dataframe_dict:
+        df = es[df_name].sort_index()
+        df_3 = es_3[df_name].sort_index()
+        for column in df:
+            for x, y in zip(df[column], df_3[column]):
+                assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+        orig_lti = es[df_name][LTI_COLUMN_NAME].sort_index()
+        new_lti = es_3[df_name][LTI_COLUMN_NAME].sort_index()
+        for x, y in zip(orig_lti, new_lti):
+            assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+
+    es_1['stores'].ww.pop(LTI_COLUMN_NAME)
+    es_1['stores'].ww.metadata.pop('last_time_index')
+    es_1['test_entity'].ww.pop(LTI_COLUMN_NAME)
+    es_1['test_entity'].ww.metadata.pop('last_time_index')
+    es_2['test_entity'].ww.pop(LTI_COLUMN_NAME)
+    es_2['test_entity'].ww.metadata.pop('last_time_index')
+    es_4 = es_1.concat(es_2)
+    assert not es_4.__eq__(es, deep=True)
+    for df_name in es.dataframe_dict:
+        df = es[df_name].sort_index()
+        df_4 = es_4[df_name].sort_index()
+        for column in df:
+            for x, y in zip(df[column], df_4[column]):
+                assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+
+        if df_name != 'test_entity':
+            orig_lti = es[df_name][LTI_COLUMN_NAME].sort_index()
+            new_lti = es_4[df_name][LTI_COLUMN_NAME].sort_index()
+            for x, y in zip(orig_lti, new_lti):
+                assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+        else:
+            assert es_4[df_name].ww.get('last_time_index') is None
 
 
 @pytest.fixture

@@ -165,7 +165,8 @@ class EntitySet(object):
             if k == 'dataframe_dict':
                 for df_name, new_df in copied_attr.items():
                     schema = copy.deepcopy(self.dataframe_dict[df_name].ww.schema, memo=memo)
-                    new_df.ww.init(schema=schema)
+                    new_df.ww.init(schema=schema, validate=False)
+                    new_df.ww.make_index = self.dataframe_dict[df_name].ww.make_index
             setattr(result, k, copied_attr)
         return result
 
@@ -887,7 +888,7 @@ class EntitySet(object):
             self_df = df
             other_df = other[df.ww.name]
             combined_df = lib.concat([self_df, other_df])
-            # --> not sure how to handle this
+            # --> not sure how to handle this - might be necessary for mismatched underlying indices??
             # if entity.created_index == df.ww.index:
             #     columns = [col for col in combined_df.columns if
             #                col != df.ww.index or col != df.ww.time_index]
