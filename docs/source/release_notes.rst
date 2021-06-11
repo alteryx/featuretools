@@ -3,15 +3,23 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.25.0 Jun 11, 2021
+====================
     * Enhancements
        * Add ``get_valid_primitives`` function (:pr:`1462`)
        * Add ``EntitySet.dataframe_type`` attribute (:pr:`1473`)
-    * Fixes
     * Changes
         * Upgrade minimum alteryx open source update checker to 2.0.0 (:pr:`1460`)
-    * Documentation Changes
     * Testing Changes
         * Upgrade minimum pip requirement for testing to 21.1.2 (:pr:`1475`)
 
