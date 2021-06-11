@@ -277,101 +277,115 @@ def test_add_relationship_error(es):
     with pytest.raises(ValueError, match=error_message):
         es.add_relationship(parent_dataframe_name="sessions", relationship=relationship)
 
-# --> needs to wait until query_by_values is implemented
-# def test_query_by_values_returns_rows_in_given_order():
-#     data = pd.DataFrame({
-#         "id": [1, 2, 3, 4, 5],
-#         "value": ["a", "c", "b", "a", "a"],
-#         "time": [1000, 2000, 3000, 4000, 5000]
-#     })
 
-#     es = ft.EntitySet()
-#     es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
-#                                   time_index="time", variable_types={
-#                                             "value": ft.variable_types.Categorical
-#                                   })
-#     query = es.query_by_values('test', ['b', 'a'], variable_id='value')
-#     assert np.array_equal(query['id'], [1, 3, 4, 5])
+def test_query_by_values_returns_rows_in_given_order():
+    data = pd.DataFrame({
+        "id": [1, 2, 3, 4, 5],
+        "value": ["a", "c", "b", "a", "a"],
+        "time": [1000, 2000, 3000, 4000, 5000]
+    })
 
-
-# def test_query_by_values_secondary_time_index(es):
-#     end = np.datetime64(datetime(2011, 10, 1))
-#     all_instances = [0, 1, 2]
-#     result = es.query_by_values('customers', all_instances, time_last=end)
-#     result = to_pandas(result, index='id')
-
-#     for col in ["cancel_date", "cancel_reason"]:
-#         nulls = result.loc[all_instances][col].isnull() == [False, True, True]
-#         assert nulls.all(), "Some instance has data it shouldn't for column %s" % col
+    es = ft.EntitySet()
+    es = es.add_dataframe(dataframe=data, dataframe_name="test",
+                          index="id", time_index="time",
+                          logical_types={"value": "Categorical"})
+    query = es.query_by_values('test', ['b', 'a'], column_name='value')
+    assert np.array_equal(query['id'], [1, 3, 4, 5])
 
 
-# def test_query_by_id(es):
-#     df = to_pandas(es.query_by_values('log', instance_vals=[0]))
-#     assert df['id'].values[0] == 0
+def test_query_by_values_secondary_time_index(es):
+    end = np.datetime64(datetime(2011, 10, 1))
+    all_instances = [0, 1, 2]
+    result = es.query_by_values('customers', all_instances, time_last=end)
+    result = to_pandas(result, index='id')
+
+    for col in ["cancel_date", "cancel_reason"]:
+        nulls = result.loc[all_instances][col].isnull() == [False, True, True]
+        assert nulls.all(), "Some instance has data it shouldn't for column %s" % col
 
 
-# def test_query_by_single_value(es):
-#     df = to_pandas(es.query_by_values('log', instance_vals=0))
-#     assert df['id'].values[0] == 0
+def test_query_by_id(es):
+    df = to_pandas(es.query_by_values('log', instance_vals=[0]))
+    assert df['id'].values[0] == 0
 
 
-# def test_query_by_df(es):
-#     instance_df = pd.DataFrame({'id': [1, 3], 'vals': [0, 1]})
-#     df = to_pandas(es.query_by_values('log', instance_vals=instance_df))
-
-#     assert np.array_equal(df['id'], [1, 3])
+def test_query_by_single_value(es):
+    df = to_pandas(es.query_by_values('log', instance_vals=0))
+    assert df['id'].values[0] == 0
 
 
-# def test_query_by_id_with_time(es):
-#     df = es.query_by_values(
-#         entity_id='log',
-#         instance_vals=[0, 1, 2, 3, 4],
-#         time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
-#     df = to_pandas(df)
-#     if ks and isinstance(es['log'].df, ks.DataFrame):
-#         # Koalas doesn't maintain order
-#         df = df.sort_values('id')
+def test_query_by_df(es):
+    instance_df = pd.DataFrame({'id': [1, 3], 'vals': [0, 1]})
+    df = to_pandas(es.query_by_values('log', instance_vals=instance_df))
 
-#     assert list(df['id'].values) == [0, 1, 2]
+    assert np.array_equal(df['id'], [1, 3])
 
 
-# def test_query_by_variable_with_time(es):
-#     df = es.query_by_values(
-#         entity_id='log',
-#         instance_vals=[0, 1, 2], variable_id='session_id',
-#         time_last=datetime(2011, 4, 9, 10, 50, 0))
-#     df = to_pandas(df)
+def test_query_by_id_with_time(es):
+    df = es.query_by_values(
+        dataframe_name='log',
+        instance_vals=[0, 1, 2, 3, 4],
+        time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
+    df = to_pandas(df)
+    if ks and isinstance(es['log'], ks.DataFrame):
+        # Koalas doesn't maintain order
+        df = df.sort_values('id')
 
-#     true_values = [
-#         i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
-#     if ks and isinstance(es['log'].df, ks.DataFrame):
-#         # Koalas doesn't maintain order
-#         df = df.sort_values('id')
-
-#     assert list(df['id'].values) == list(range(10))
-#     assert list(df['value'].values) == true_values
+    assert list(df['id'].values) == [0, 1, 2]
 
 
-# def test_query_by_variable_with_training_window(es):
-#     df = es.query_by_values(
-#         entity_id='log',
-#         instance_vals=[0, 1, 2], variable_id='session_id',
-#         time_last=datetime(2011, 4, 9, 10, 50, 0),
-#         training_window='15m')
-#     df = to_pandas(df)
+def test_query_by_variable_with_time(es):
+    df = es.query_by_values(
+        dataframe_name='log',
+        instance_vals=[0, 1, 2], column_name='session_id',
+        time_last=datetime(2011, 4, 9, 10, 50, 0))
+    df = to_pandas(df)
 
-#     assert list(df['id'].values) == [9]
-#     assert list(df['value'].values) == [0]
+    true_values = [
+        i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
+    if ks and isinstance(es['log'], ks.DataFrame):
+        # Koalas doesn't maintain order
+        df = df.sort_values('id')
+
+    assert list(df['id'].values) == list(range(10))
+    assert list(df['value'].values) == true_values
 
 
-# def test_query_by_indexed_variable(es):
-#     df = es.query_by_values(
-#         entity_id='log',
-#         instance_vals=['taco clock'],
-#         variable_id='product_id')
-#     df = to_pandas(df)
+def test_query_by_variable_with_no_lti_and_training_window(es):
+    match = "Using training_window but last_time_index is not set for dataframe customers"
+    with pytest.warns(UserWarning, match=match):
+        df = es.query_by_values(
+            dataframe_name='customers',
+            instance_vals=[0, 1, 2], column_name='cohort',
+            time_last=datetime(2011, 4, 11),
+            training_window='3d')
+    df = to_pandas(df)
 
-#     assert list(df['id'].values) == [15, 16]
+    assert list(df['id'].values) == [1]
+    assert list(df['age'].values) == [25]
+
+
+def test_query_by_variable_with_lti_and_training_window(es):
+    es.add_last_time_indexes()
+    df = es.query_by_values(
+        dataframe_name='customers',
+        instance_vals=[0, 1, 2], column_name='cohort',
+        time_last=datetime(2011, 4, 11),
+        training_window='3d')
+    # Account for different ordering between pandas and dask/koalas
+    df = to_pandas(df).reset_index(drop=True).sort_values('id')
+    assert list(df['id'].values) == [0, 1, 2]
+    assert list(df['age'].values) == [33, 25, 56]
+
+
+def test_query_by_indexed_variable(es):
+    df = es.query_by_values(
+        dataframe_name='log',
+        instance_vals=['taco clock'],
+        column_name='product_id')
+    df = to_pandas(df)
+
+    assert list(df['id'].values) == [15, 16]
 
 
 @pytest.fixture
