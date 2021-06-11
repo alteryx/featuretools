@@ -88,7 +88,7 @@ def test_direct_copy(games_es):
 
 def test_direct_of_multi_output_transform_feat(es):
     # TODO: Update to work with Dask and Koalas
-    if es.dataframe_type != Library.PANDAS:
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Custom primitive is not compabible with Dask or Koalas")
 
     class TestTime(TransformPrimitive):

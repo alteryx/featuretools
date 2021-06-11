@@ -166,7 +166,7 @@ def test_make_agg_feat_using_prev_time(es):
 
 
 def test_make_agg_feat_using_prev_n_events(es):
-    if es.dataframe_type != Library.PANDAS:
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('Distrubuted entitysets do not support use_previous')
     agg_feat_1 = ft.Feature(es['log']['value'],
                             parent_entity=es['sessions'],
@@ -205,7 +205,7 @@ def test_make_agg_feat_using_prev_n_events(es):
 
 
 def test_make_agg_feat_multiple_dtypes(es):
-    if es.dataframe_type != Library.PANDAS:
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('Currently no Dask or Koalas compatible agg prims that use multiple dtypes')
     compare_prod = IdentityFeature(es['log']['product_id']) == 'coke zero'
 
@@ -856,7 +856,7 @@ def test_with_features_built_from_es_metadata(es):
 
 # TODO: Fails with Dask and Koalas (conflicting aggregation primitives)
 def test_handles_primitive_function_name_uniqueness(es):
-    if es.dataframe_type != Library.PANDAS:
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Fails with Dask and Koalas due conflicting aggregation primitive names")
 
     class SumTimesN(AggregationPrimitive):
@@ -990,7 +990,7 @@ def test_calls_progress_callback(es):
     trans_full = ft.Feature(agg, primitive=CumSum)
     groupby_trans = ft.Feature(agg, primitive=CumSum, groupby=es["customers"]["cohort"])
 
-    if es.dataframe_type != Library.PANDAS:
+    if es.dataframe_type != Library.PANDAS.value:
         all_features = [identity, direct, agg, trans]
     else:
         all_features = [identity, direct, agg, agg_apply, trans, trans_full, groupby_trans]

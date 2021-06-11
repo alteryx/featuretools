@@ -257,7 +257,7 @@ def make_public(s3_client, s3_bucket):
 
 # TODO: tmp file disappears after deserialize step, cannot check equality with Dask
 def test_serialize_s3_csv(es, s3_client, s3_bucket):
-    if es.dataframe_type != Library.PANDAS:
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
     es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python')
     make_public(s3_client, s3_bucket)
@@ -275,7 +275,7 @@ def test_serialize_s3_pickle(pd_es, s3_client, s3_bucket):
 
 # TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
 def test_serialize_s3_parquet(es, s3_client, s3_bucket):
-    if es.dataframe_type != Library.PANDAS:
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask or Koalas')
     es.to_parquet(TEST_S3_URL)
     make_public(s3_client, s3_bucket)
@@ -285,7 +285,7 @@ def test_serialize_s3_parquet(es, s3_client, s3_bucket):
 
 # TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
 def test_serialize_s3_anon_csv(es, s3_client, s3_bucket):
-    if es.dataframe_type != Library.PANDAS:
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask or Koalas')
     es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
     make_public(s3_client, s3_bucket)
@@ -303,7 +303,7 @@ def test_serialize_s3_anon_pickle(pd_es, s3_client, s3_bucket):
 
 # TODO: tmp file disappears after deserialize step, cannot check equality with Dask
 def test_serialize_s3_anon_parquet(es, s3_client, s3_bucket):
-    if es.dataframe_type != Library.PANDAS:
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
     es.to_parquet(TEST_S3_URL, profile_name=False)
     make_public(s3_client, s3_bucket)

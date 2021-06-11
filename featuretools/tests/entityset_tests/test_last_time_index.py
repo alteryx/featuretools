@@ -102,7 +102,7 @@ class TestLastTimeIndex(object):
     # TODO: possible issue with either normalize_entity or add_last_time_indexes
     def test_parent(self, values_es, true_values_lti):
         # test entity with time index and all instances in child entity
-        if values_es.dataframe_type != Library.PANDAS:
+        if values_es.dataframe_type != Library.PANDAS.value:
             pytest.xfail('possible issue with either normalize_entity or add_last_time_indexes')
         values_es.add_last_time_indexes()
         values = values_es['values']
@@ -114,7 +114,7 @@ class TestLastTimeIndex(object):
     # TODO: fails with Dask, tests needs to be reworked
     def test_parent_some_missing(self, values_es, true_values_lti):
         # test entity with time index and not all instances have children
-        if values_es.dataframe_type != Library.PANDAS:
+        if values_es.dataframe_type != Library.PANDAS.value:
             pytest.xfail('fails with Dask, tests needs to be reworked')
         values = values_es['values']
 
