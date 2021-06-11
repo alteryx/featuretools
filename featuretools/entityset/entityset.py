@@ -852,58 +852,75 @@ class EntitySet(object):
     # #  Data wrangling methods  ###############################################
     # ###########################################################################
 
-    # def concat(self, other, inplace=False):
-    #     '''Combine entityset with another to create a new entityset with the
-    #     combined data of both entitysets.
-    #     '''
-    #     assert_string = "Entitysets must have the same entities, relationships"\
-    #         ", and variable_ids"
-    #     assert (self.__eq__(other) and
-    #             self.relationships == other.relationships), assert_string
+    def concat(self, other, inplace=False):
+        '''Combine entityset with another to create a new entityset with the
+        combined data of both entitysets.
+        '''
+        assert_string = "Entitysets must have the same dataframes, relationships"\
+            ", and column names"
+        assert (self.__eq__(other) and
+                self.relationships == other.relationships), assert_string
 
-    #     for entity in self.dataframes:
-    #         assert entity.id in other.dataframe_dict, assert_string
-    #         assert (len(self[entity.id].variables) ==
-    #                 len(other[entity.id].variables)), assert_string
-    #         other_variable_ids = [o_variable.id for o_variable in
-    #                               other[entity.id].variables]
-    #         assert (all([variable.id in other_variable_ids
-    #                      for variable in self[entity.id].variables])), assert_string
+        # --> maybe not necessary with shallow es equality check.....
+        # for df in self.dataframes:
+        #     assert df.ww.name in other.dataframe_dict, assert_string
+        #     assert (len(df.columns) ==
+        #             len(df.columns)), assert_string
+        #     other_variable_ids = [o_variable.id for o_variable in
+        #                           other[entity.id].variables]
+        #     assert (all([variable.id in other_variable_ids
+        #                  for variable in self[entity.id].variables])), assert_string
 
-    #     if inplace:
-    #         combined_es = self
-    #     else:
-    #         combined_es = copy.deepcopy(self)
+        if inplace:
+            combined_es = self
+        else:
+            combined_es = copy.deepcopy(self)
 
-    #     has_last_time_index = []
-    #     for entity in self.dataframes:
-    #         self_df = entity.df
-    #         other_df = other[entity.id].df
-    #         combined_df = pd.concat([self_df, other_df])
-    #         if entity.created_index == entity.index:
-    #             columns = [col for col in combined_df.columns if
-    #                        col != entity.index or col != entity.time_index]
-    #         else:
-    #             columns = [entity.index]
-    #         combined_df.drop_duplicates(columns, inplace=True)
+        # Determine which library to use for concat
+        # dd = import_or_none('dask.dataframe')
+        # ks = import_or_none('databricks.koalas')
 
-    #         if entity.time_index:
-    #             combined_df.sort_values([entity.time_index, entity.index], inplace=True)
-    #         else:
-    #             combined_df.sort_index(inplace=True)
-    #         if (entity.last_time_index is not None or
-    #                 other[entity.id].last_time_index is not None):
-    #             has_last_time_index.append(entity.id)
+        lib = pd
+        if ks and isinstance(self.dataframes[0], ks.DataFrame):
+            lib = ks
+        elif dd and isinstance(self.dataframes[0], dd.DataFrame):
+            lib = dd
 
-    #         combined_es.update_dataframe(
-    #             entity_id=entity.id,
-    #             df=combined_df,
-    #             recalculate_last_time_indexes=False,
-    #         )
+        has_last_time_index = []
+        for df in self.dataframes:
+            self_df = df
+            other_df = other[df.ww.name]
+            combined_df = lib.concat([self_df, other_df])
+            # --> not sure how to handle this
+            # if entity.created_index == df.ww.index:
+            #     columns = [col for col in combined_df.columns if
+            #                col != df.ww.index or col != df.ww.time_index]
+            # else:
+            columns = [df.ww.index]
+            combined_df.drop_duplicates(columns, inplace=True)
 
-    #     combined_es.add_last_time_indexes(updated_dataframes=has_last_time_index)
-    #     self.reset_data_description()
-    #     return combined_es
+            if isinstance(df, pd.DataFrame):
+                if df.ww.time_index:
+                    combined_df.sort_values([df.ww.time_index, df.ww.index], inplace=True)
+                else:
+                    combined_df.sort_index(inplace=True)
+
+            self_lti_col = df.ww.metadata.get('last_time_index')
+            other_lti_col = other[df.ww.name].ww.metadata.get('last_time_index')
+            if (self_lti_col is not None or
+                    other_lti_col is not None):
+                has_last_time_index.append(df.ww.name)
+
+            combined_es.update_dataframe(
+                dataframe_name=df.ww.name,
+                df=combined_df,
+                recalculate_last_time_indexes=False,
+            )
+
+        combined_es.add_last_time_indexes(updated_dataframes=has_last_time_index)
+        # --> only reset data description on combined es, right?????
+        combined_es.reset_data_description()
+        return combined_es
 
     ###########################################################################
     #  Indexing methods  ###############################################

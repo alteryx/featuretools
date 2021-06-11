@@ -878,6 +878,29 @@ def test_already_sorted_parameter():
     assert times == list(transactions_df.transaction_time)
 
 
+def test_concat_simple(es):
+    if ks and any(isinstance(df, ks.DataFrame) for df in es.dataframes):
+        pytest.xfail("Koalas deepcopy fails")
+
+    first_es = copy.deepcopy(es)
+    for df in first_es.dataframes:
+        df.ww.loc[[], :]
+
+    second_es = copy.deepcopy(es)
+
+    new_es = first_es.concat(second_es)
+
+    assert new_es == es
+
+
+def test_concat_errors():
+    pass
+
+
+def test_concat_inplace():
+    # --> can test koalas bc deepcopy not needed
+    pass
+
 # # TODO: equality check fails, dask series have no .equals method; error computing lti if categorical index
 # # TODO: dask deepcopy
 # def test_concat_entitysets(es):
