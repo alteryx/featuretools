@@ -166,6 +166,7 @@ class EntitySet(object):
                 for df_name, new_df in copied_attr.items():
                     schema = copy.deepcopy(self.dataframe_dict[df_name].ww.schema, memo=memo)
                     new_df.ww.init(schema=schema, validate=False)
+                    # --> woodwork bug that make index doesn't get past
                     new_df.ww.make_index = self.dataframe_dict[df_name].ww.make_index
             setattr(result, k, copied_attr)
         return result
@@ -1086,13 +1087,16 @@ class EntitySet(object):
         for df in self.dataframes:
             lti = es_lti_dict[df.ww.name]
             if lti is not None:
+                lti_ltype = None
                 if self.time_type == 'numeric':
                     if lti.dtype == 'datetime64[ns]':
                         # Woodwork cannot convert from datetime to numeric
                         lti = lti.apply(lambda x: x.value)
                     lti = ww.init_series(lti, logical_type='Double')
+                    lti_ltype = 'Double'
                 else:
                     lti = ww.init_series(lti, logical_type='Datetime')
+                    lti_ltype = 'Datetime'
 
                 lti.name = LTI_COLUMN_NAME
 
@@ -1111,7 +1115,7 @@ class EntitySet(object):
                         name=df.ww.name,
                         index=df.ww.index,
                         time_index=df.ww.time_index,
-                        logical_types=df.ww.logical_types,
+                        logical_types={**df.ww.logical_types, LTI_COLUMN_NAME: lti_ltype},
                         semantic_tags={col_name: tags - {'index', 'time_index'} for col_name, tags in df.ww.semantic_tags.items()},
                         table_metadata=df.ww.metadata,
                         column_metadata={col_name: col_schema.metadata for col_name, col_schema in df.ww.columns.items()},
@@ -1129,7 +1133,7 @@ class EntitySet(object):
                         name=df.ww.name,
                         index=df.ww.index,
                         time_index=df.ww.time_index,
-                        logical_types=df.ww.logical_types,
+                        logical_types={**df.ww.logical_types, LTI_COLUMN_NAME: lti_ltype},
                         semantic_tags={col_name: tags - {'index', 'time_index'} for col_name, tags in df.ww.semantic_tags.items()},
                         table_metadata=df.ww.metadata,
                         column_metadata={col_name: col_schema.metadata for col_name, col_schema in df.ww.columns.items()},
@@ -1442,11 +1446,14 @@ class EntitySet(object):
             if updated_series is not series:
                 df[col_name] = updated_series
 
+        make_index = self[dataframe_name].ww.make_index
         df.ww.init(schema=self[dataframe_name].ww._schema)
         # Make sure column ordering matches original ordering
         df = df.ww[old_column_names]
 
         self.dataframe_dict[dataframe_name] = df
+        # --> this is a woodwork bug because the getitem misses that info :/
+        df.ww.make_index = make_index
 
         # Sort the dataframe through Woodwork
         if self.dataframe_dict[dataframe_name].ww.time_index is not None:
