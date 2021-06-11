@@ -884,7 +884,8 @@ def test_concat_simple(es):
 
     first_es = copy.deepcopy(es)
     for df in first_es.dataframes:
-        df.ww.loc[[], :]
+        new_df = df.loc[[], :]
+        first_es.update_dataframe(df.ww.name, new_df)
 
     second_es = copy.deepcopy(es)
 
@@ -893,11 +894,19 @@ def test_concat_simple(es):
     assert new_es == es
 
 
+def test_concat_inplace(es):
+    copy_es = copy.copy(es)
+    first_es = copy.copy(es)
+    for df in first_es.dataframes:
+        new_df = df.loc[[], :]
+        first_es.update_dataframe(df.ww.name, new_df)
+
+    es.concat(first_es, inplace=True)
+
+    assert copy_es == es
+
+
 def test_concat_errors():
-    pass
-
-
-def test_concat_inplace():
     # --> can test koalas bc deepcopy not needed
     pass
 

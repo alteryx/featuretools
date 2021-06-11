@@ -876,10 +876,6 @@ class EntitySet(object):
         else:
             combined_es = copy.deepcopy(self)
 
-        # Determine which library to use for concat
-        # dd = import_or_none('dask.dataframe')
-        # ks = import_or_none('databricks.koalas')
-
         lib = pd
         if ks and isinstance(self.dataframes[0], ks.DataFrame):
             lib = ks
@@ -899,11 +895,12 @@ class EntitySet(object):
             columns = [df.ww.index]
             combined_df.drop_duplicates(columns, inplace=True)
 
-            if isinstance(df, pd.DataFrame):
-                if df.ww.time_index:
-                    combined_df.sort_values([df.ww.time_index, df.ww.index], inplace=True)
-                else:
-                    combined_df.sort_index(inplace=True)
+# --> I think update dataframe should take care of this
+            # if isinstance(df, pd.DataFrame):
+            #     if df.ww.time_index:
+            #         combined_df.sort_values([df.ww.time_index, df.ww.index], inplace=True)
+            #     else:
+            #         combined_df.sort_index(inplace=True)
 
             self_lti_col = df.ww.metadata.get('last_time_index')
             other_lti_col = other[df.ww.name].ww.metadata.get('last_time_index')
@@ -917,7 +914,8 @@ class EntitySet(object):
                 recalculate_last_time_indexes=False,
             )
 
-        combined_es.add_last_time_indexes(updated_dataframes=has_last_time_index)
+        if has_last_time_index:
+            combined_es.add_last_time_indexes(updated_dataframes=has_last_time_index)
         # --> only reset data description on combined es, right?????
         combined_es.reset_data_description()
         return combined_es
