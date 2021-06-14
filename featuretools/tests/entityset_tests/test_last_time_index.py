@@ -5,6 +5,7 @@ import pytest
 import woodwork.logical_types as ltypes
 from dask import dataframe as dd
 
+from featuretools.entityset.entityset import LTI_COLUMN_NAME
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
 
@@ -85,18 +86,25 @@ class TestLastTimeIndex(object):
     def test_leaf(self, es):
         es.add_last_time_indexes()
         log = es['log']
-        assert len(log.ww.metadata.get('last_time_index')) == 17
+        lti_name = log.ww.metadata.get('last_time_index')
+
+        assert lti_name == LTI_COLUMN_NAME
+        assert len(log[lti_name]) == 17
+
         log_df = to_pandas(log)
-        log_lti = to_pandas(log.ww.metadata.get('last_time_index'))
-        for v1, v2 in zip(log_lti, log_df['datetime']):
+
+        for v1, v2 in zip(log_df[lti_name], log_df['datetime']):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_leaf_no_time_index(self, es):
         es.add_last_time_indexes()
         stores = es['stores']
         true_lti = pd.Series([None for x in range(6)], dtype='datetime64[ns]')
-        assert len(true_lti) == len(stores.ww.metadata.get('last_time_index'))
-        stores_lti = to_pandas(stores.ww.metadata.get('last_time_index'))
+
+        assert len(true_lti) == len(stores[LTI_COLUMN_NAME])
+
+        stores_lti = to_pandas(stores[LTI_COLUMN_NAME])
+
         for v1, v2 in zip(stores_lti, true_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -107,8 +115,9 @@ class TestLastTimeIndex(object):
             pytest.xfail('possible issue with either normalize_dataframe or add_last_time_indexes')
         values_es.add_last_time_indexes()
         values = values_es['values']
-        assert len(values.ww.metadata.get('last_time_index')) == 11
-        sorted_lti = to_pandas(values.ww.metadata.get('last_time_index')).sort_index()
+        lti_name = values.ww.metadata.get('last_time_index')
+        assert len(values[lti_name]) == 11
+        sorted_lti = to_pandas(values[lti_name]).sort_index()
         for v1, v2 in zip(sorted_lti, true_values_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -136,8 +145,9 @@ class TestLastTimeIndex(object):
         true_values_lti[11] = pd.Timestamp("2011-04-10 11:10:03")
 
         values = values_es['values']
-        assert len(values.ww.metadata.get('last_time_index')) == 12
-        sorted_lti = values.ww.metadata.get('last_time_index').sort_index()
+        lti_name = values.ww.metadata.get('last_time_index')
+        assert len(values[lti_name]) == 12
+        sorted_lti = values[lti_name].sort_index()
         for v1, v2 in zip(sorted_lti, true_values_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -145,8 +155,9 @@ class TestLastTimeIndex(object):
         # test dataframe without time index and all instances have children
         es.add_last_time_indexes()
         sessions = es['sessions']
-        assert len(sessions.ww.metadata.get('last_time_index')) == 6
-        sorted_lti = to_pandas(sessions.ww.metadata.get('last_time_index')).sort_index()
+        lti_name = sessions.ww.metadata.get('last_time_index')
+        assert len(sessions[lti_name]) == 6
+        sorted_lti = to_pandas(sessions[lti_name]).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -161,8 +172,9 @@ class TestLastTimeIndex(object):
         true_sessions_lti[6] = pd.NaT
         sessions = es['sessions']
 
-        assert len(sessions.ww.metadata.get('last_time_index')) == 7
-        sorted_lti = to_pandas(sessions.ww.metadata.get('last_time_index')).sort_index()
+        lti_name = sessions.ww.metadata.get('last_time_index')
+        assert len(sessions[lti_name]) == 7
+        sorted_lti = to_pandas(sessions[lti_name]).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -189,8 +201,9 @@ class TestLastTimeIndex(object):
         true_sessions_lti[1] = pd.Timestamp("2011-4-9 10:31:30")
         true_sessions_lti[3] = pd.Timestamp("2011-4-10 10:41:00")
 
-        assert len(sessions.ww.metadata.get('last_time_index')) == 6
-        sorted_lti = to_pandas(sessions.ww.metadata.get('last_time_index')).sort_index()
+        lti_name = sessions.ww.metadata.get('last_time_index')
+        assert len(sessions[lti_name]) == 6
+        sorted_lti = to_pandas(sessions[lti_name]).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -199,7 +212,6 @@ class TestLastTimeIndex(object):
         if ks and isinstance(es.dataframes[0], ks.DataFrame):
             pytest.xfail('Cannot make index on a Koalas DataFrame')
         # test all instances in left child
-        sessions = es['sessions']
 
         # drop wishlist instance related to id 3 so it's only in log
         wishlist_df.drop(4, inplace=True)
@@ -216,12 +228,14 @@ class TestLastTimeIndex(object):
                          logical_types=logical_types)
         es.add_relationship('sessions', 'id', 'wishlist_log', 'session_id')
         es.add_last_time_indexes()
+        sessions = es['sessions']
 
         # now only session id 1 has newer event in wishlist_log
         true_sessions_lti[1] = pd.Timestamp("2011-4-9 10:31:30")
 
-        assert len(sessions.ww.metadata.get('last_time_index')) == 6
-        sorted_lti = to_pandas(sessions.ww.metadata.get('last_time_index')).sort_index()
+        lti_name = sessions.ww.metadata.get('last_time_index')
+        assert len(sessions[lti_name]) == 6
+        sorted_lti = to_pandas(sessions[lti_name]).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -261,8 +275,9 @@ class TestLastTimeIndex(object):
         true_sessions_lti[3] = pd.Timestamp("2011-4-10 10:41:00")
         true_sessions_lti[6] = pd.Timestamp("2011-04-11 11:11:11")
 
-        assert len(sessions.ww.metadata.get('last_time_index')) == 7
-        sorted_lti = to_pandas(sessions.ww.metadata.get('last_time_index')).sort_index()
+        lti_name = sessions.ww.metadata.get('last_time_index')
+        assert len(sessions[lti_name]) == 7
+        sorted_lti = to_pandas(sessions[lti_name]).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -304,8 +319,9 @@ class TestLastTimeIndex(object):
         true_sessions_lti[1] = pd.Timestamp("2011-4-9 10:31:30")
         true_sessions_lti[6] = pd.Timestamp("2011-04-11 11:11:11")
 
-        assert len(sessions.ww.metadata.get('last_time_index')) == 7
-        sorted_lti = to_pandas(sessions.ww.metadata.get('last_time_index')).sort_index()
+        lti_name = sessions.ww.metadata.get('last_time_index')
+        assert len(sessions[lti_name]) == 7
+        sorted_lti = to_pandas(sessions[lti_name]).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -340,15 +356,15 @@ class TestLastTimeIndex(object):
         true_sessions_lti[3] = pd.Timestamp("2011-4-10 10:41:00")
         true_sessions_lti[6] = pd.NaT
 
-        assert len(sessions.ww.metadata.get('last_time_index')) == 7
-        sorted_lti = to_pandas(sessions.ww.metadata.get('last_time_index')).sort_index()
+        lti_name = sessions.ww.metadata.get('last_time_index')
+        assert len(sessions[lti_name]) == 7
+        sorted_lti = to_pandas(sessions[lti_name]).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_grandparent(self, es):
         # test sorting by time works correctly across several generations
         log = es["log"]
-        customers = es["customers"]
 
         # For one user, change a log event to be newer than the user's normal
         # last time index. This event should be from a different session than
@@ -364,12 +380,14 @@ class TestLastTimeIndex(object):
             df = ks.from_pandas(df)
         es.update_dataframe(dataframe_name='log', df=df)
         es.add_last_time_indexes()
+        customers = es["customers"]
 
         true_customers_lti = pd.Series([datetime(2011, 4, 9, 10, 40, 1),
                                         datetime(2011, 4, 10, 10, 41, 6),
                                         datetime(2011, 4, 10, 11, 10, 3)])
 
-        assert len(customers.ww.metadata.get('last_time_index')) == 3
-        sorted_lti = to_pandas(customers.ww.metadata.get('last_time_index')).sort_index()
+        lti_name = customers.ww.metadata.get('last_time_index')
+        assert len(customers[lti_name]) == 3
+        sorted_lti = to_pandas(customers).sort_values('id')[lti_name]
         for v1, v2 in zip(sorted_lti, true_customers_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2

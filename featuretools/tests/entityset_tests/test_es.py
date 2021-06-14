@@ -1,4 +1,4 @@
-# import copy
+import copy
 import logging
 import re
 from datetime import datetime
@@ -277,101 +277,115 @@ def test_add_relationship_error(es):
     with pytest.raises(ValueError, match=error_message):
         es.add_relationship(parent_dataframe_name="sessions", relationship=relationship)
 
-# --> needs to wait until query_by_values is implemented
-# def test_query_by_values_returns_rows_in_given_order():
-#     data = pd.DataFrame({
-#         "id": [1, 2, 3, 4, 5],
-#         "value": ["a", "c", "b", "a", "a"],
-#         "time": [1000, 2000, 3000, 4000, 5000]
-#     })
 
-#     es = ft.EntitySet()
-#     es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
-#                                   time_index="time", variable_types={
-#                                             "value": ft.variable_types.Categorical
-#                                   })
-#     query = es.query_by_values('test', ['b', 'a'], variable_id='value')
-#     assert np.array_equal(query['id'], [1, 3, 4, 5])
+def test_query_by_values_returns_rows_in_given_order():
+    data = pd.DataFrame({
+        "id": [1, 2, 3, 4, 5],
+        "value": ["a", "c", "b", "a", "a"],
+        "time": [1000, 2000, 3000, 4000, 5000]
+    })
 
-
-# def test_query_by_values_secondary_time_index(es):
-#     end = np.datetime64(datetime(2011, 10, 1))
-#     all_instances = [0, 1, 2]
-#     result = es.query_by_values('customers', all_instances, time_last=end)
-#     result = to_pandas(result, index='id')
-
-#     for col in ["cancel_date", "cancel_reason"]:
-#         nulls = result.loc[all_instances][col].isnull() == [False, True, True]
-#         assert nulls.all(), "Some instance has data it shouldn't for column %s" % col
+    es = ft.EntitySet()
+    es = es.add_dataframe(dataframe=data, dataframe_name="test",
+                          index="id", time_index="time",
+                          logical_types={"value": "Categorical"})
+    query = es.query_by_values('test', ['b', 'a'], column_name='value')
+    assert np.array_equal(query['id'], [1, 3, 4, 5])
 
 
-# def test_query_by_id(es):
-#     df = to_pandas(es.query_by_values('log', instance_vals=[0]))
-#     assert df['id'].values[0] == 0
+def test_query_by_values_secondary_time_index(es):
+    end = np.datetime64(datetime(2011, 10, 1))
+    all_instances = [0, 1, 2]
+    result = es.query_by_values('customers', all_instances, time_last=end)
+    result = to_pandas(result, index='id')
+
+    for col in ["cancel_date", "cancel_reason"]:
+        nulls = result.loc[all_instances][col].isnull() == [False, True, True]
+        assert nulls.all(), "Some instance has data it shouldn't for column %s" % col
 
 
-# def test_query_by_single_value(es):
-#     df = to_pandas(es.query_by_values('log', instance_vals=0))
-#     assert df['id'].values[0] == 0
+def test_query_by_id(es):
+    df = to_pandas(es.query_by_values('log', instance_vals=[0]))
+    assert df['id'].values[0] == 0
 
 
-# def test_query_by_df(es):
-#     instance_df = pd.DataFrame({'id': [1, 3], 'vals': [0, 1]})
-#     df = to_pandas(es.query_by_values('log', instance_vals=instance_df))
-
-#     assert np.array_equal(df['id'], [1, 3])
+def test_query_by_single_value(es):
+    df = to_pandas(es.query_by_values('log', instance_vals=0))
+    assert df['id'].values[0] == 0
 
 
-# def test_query_by_id_with_time(es):
-#     df = es.query_by_values(
-#         entity_id='log',
-#         instance_vals=[0, 1, 2, 3, 4],
-#         time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
-#     df = to_pandas(df)
-#     if ks and isinstance(es['log'].df, ks.DataFrame):
-#         # Koalas doesn't maintain order
-#         df = df.sort_values('id')
+def test_query_by_df(es):
+    instance_df = pd.DataFrame({'id': [1, 3], 'vals': [0, 1]})
+    df = to_pandas(es.query_by_values('log', instance_vals=instance_df))
 
-#     assert list(df['id'].values) == [0, 1, 2]
+    assert np.array_equal(df['id'], [1, 3])
 
 
-# def test_query_by_variable_with_time(es):
-#     df = es.query_by_values(
-#         entity_id='log',
-#         instance_vals=[0, 1, 2], variable_id='session_id',
-#         time_last=datetime(2011, 4, 9, 10, 50, 0))
-#     df = to_pandas(df)
+def test_query_by_id_with_time(es):
+    df = es.query_by_values(
+        dataframe_name='log',
+        instance_vals=[0, 1, 2, 3, 4],
+        time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
+    df = to_pandas(df)
+    if ks and isinstance(es['log'], ks.DataFrame):
+        # Koalas doesn't maintain order
+        df = df.sort_values('id')
 
-#     true_values = [
-#         i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
-#     if ks and isinstance(es['log'].df, ks.DataFrame):
-#         # Koalas doesn't maintain order
-#         df = df.sort_values('id')
-
-#     assert list(df['id'].values) == list(range(10))
-#     assert list(df['value'].values) == true_values
+    assert list(df['id'].values) == [0, 1, 2]
 
 
-# def test_query_by_variable_with_training_window(es):
-#     df = es.query_by_values(
-#         entity_id='log',
-#         instance_vals=[0, 1, 2], variable_id='session_id',
-#         time_last=datetime(2011, 4, 9, 10, 50, 0),
-#         training_window='15m')
-#     df = to_pandas(df)
+def test_query_by_variable_with_time(es):
+    df = es.query_by_values(
+        dataframe_name='log',
+        instance_vals=[0, 1, 2], column_name='session_id',
+        time_last=datetime(2011, 4, 9, 10, 50, 0))
+    df = to_pandas(df)
 
-#     assert list(df['id'].values) == [9]
-#     assert list(df['value'].values) == [0]
+    true_values = [
+        i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
+    if ks and isinstance(es['log'], ks.DataFrame):
+        # Koalas doesn't maintain order
+        df = df.sort_values('id')
+
+    assert list(df['id'].values) == list(range(10))
+    assert list(df['value'].values) == true_values
 
 
-# def test_query_by_indexed_variable(es):
-#     df = es.query_by_values(
-#         entity_id='log',
-#         instance_vals=['taco clock'],
-#         variable_id='product_id')
-#     df = to_pandas(df)
+def test_query_by_variable_with_no_lti_and_training_window(es):
+    match = "Using training_window but last_time_index is not set for dataframe customers"
+    with pytest.warns(UserWarning, match=match):
+        df = es.query_by_values(
+            dataframe_name='customers',
+            instance_vals=[0, 1, 2], column_name='cohort',
+            time_last=datetime(2011, 4, 11),
+            training_window='3d')
+    df = to_pandas(df)
 
-#     assert list(df['id'].values) == [15, 16]
+    assert list(df['id'].values) == [1]
+    assert list(df['age'].values) == [25]
+
+
+def test_query_by_variable_with_lti_and_training_window(es):
+    es.add_last_time_indexes()
+    df = es.query_by_values(
+        dataframe_name='customers',
+        instance_vals=[0, 1, 2], column_name='cohort',
+        time_last=datetime(2011, 4, 11),
+        training_window='3d')
+    # Account for different ordering between pandas and dask/koalas
+    df = to_pandas(df).reset_index(drop=True).sort_values('id')
+    assert list(df['id'].values) == [0, 1, 2]
+    assert list(df['age'].values) == [33, 25, 56]
+
+
+def test_query_by_indexed_variable(es):
+    df = es.query_by_values(
+        dataframe_name='log',
+        instance_vals=['taco clock'],
+        column_name='product_id')
+    df = to_pandas(df)
+
+    assert list(df['id'].values) == [15, 16]
 
 
 @pytest.fixture
@@ -1405,7 +1419,6 @@ def test_sizeof(es):
     total_size = 0
     for df in es.dataframes:
         total_size += df.__sizeof__()
-        total_size += df.ww.metadata.get('last_time_index').__sizeof__()
 
     assert es.__sizeof__() == total_size
 
@@ -1425,10 +1438,9 @@ def test_getitem_without_id():
         ft.EntitySet()['test']
 
 
-# --> wait till serialization implemented
-# def test_metadata_without_id():
-#     es = ft.EntitySet()
-#     assert es.metadata.id is None
+def test_metadata_without_id():
+    es = ft.EntitySet()
+    assert es.metadata.id is None
 
 
 @pytest.fixture
@@ -1748,6 +1760,151 @@ def test_entityset_equality(es):
 
     first_es.add_relationship('customers', 'id', 'sessions', 'customer_id')
     assert first_es != second_es
+    assert second_es != first_es
 
     second_es.add_relationship('customers', 'id', 'sessions', 'customer_id')
     assert first_es == second_es
+
+
+def test_entityset_id_equality():
+    first_es = EntitySet(id='first')
+    first_es_copy = EntitySet(id='first')
+    second_es = EntitySet(id='second')
+
+    assert first_es != second_es
+    assert first_es == first_es_copy
+
+
+def test_entityset_time_type_equality():
+    first_es = EntitySet()
+    second_es = EntitySet()
+    assert first_es == second_es
+
+    first_es.time_type = 'numeric'
+    assert first_es != second_es
+
+    second_es.time_type = ltypes.Datetime
+    assert first_es != second_es
+
+    second_es.time_type = 'numeric'
+    assert first_es == second_es
+
+
+def test_entityset_deep_equality(es):
+    first_es = EntitySet()
+    second_es = EntitySet()
+
+    first_es.add_dataframe(dataframe_name='customers',
+                           dataframe=es['customers'].copy(),
+                           index='id',
+                           time_index='signup_date',
+                           logical_types=es['customers'].ww.logical_types,
+                           semantic_tags=get_df_tags(es['customers']))
+    first_es.add_dataframe(dataframe_name='sessions',
+                           dataframe=es['sessions'].copy(),
+                           index='id',
+                           logical_types=es['sessions'].ww.logical_types,
+                           semantic_tags=get_df_tags(es['sessions']))
+
+    second_es.add_dataframe(dataframe_name='sessions',
+                            dataframe=es['sessions'].copy(),
+                            index='id',
+                            logical_types=es['sessions'].ww.logical_types,
+                            semantic_tags=get_df_tags(es['sessions']))
+    second_es.add_dataframe(dataframe_name='customers',
+                            dataframe=es['customers'].copy(),
+                            index='id',
+                            time_index='signup_date',
+                            logical_types=es['customers'].ww.logical_types,
+                            semantic_tags=get_df_tags(es['customers']))
+
+    assert first_es.__eq__(second_es, deep=False)
+    assert first_es.__eq__(second_es, deep=True)
+
+    # Woodwork metadata only gets included in deep equality check
+    first_es['sessions'].ww.metadata['created_by'] = 'user0'
+
+    assert first_es.__eq__(second_es, deep=False)
+    assert not first_es.__eq__(second_es, deep=True)
+
+    second_es['sessions'].ww.metadata['created_by'] = 'user0'
+
+    assert first_es.__eq__(second_es, deep=False)
+    assert first_es.__eq__(second_es, deep=True)
+
+    updated_df = first_es['customers'].loc[[2, 0], :]
+    first_es.update_dataframe('customers', updated_df)
+
+    assert first_es.__eq__(second_es, deep=False)
+    # Uses woodwork equality which only looks at df content for pandas
+    if isinstance(updated_df, pd.DataFrame):
+        assert not first_es.__eq__(second_es, deep=True)
+    else:
+        assert first_es.__eq__(second_es, deep=True)
+
+
+@pytest.fixture(params=['make_es', 'dask_es_to_copy'])
+def es_to_copy(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def dask_es_to_copy(make_es):
+    es = EntitySet(id=make_es.id)
+    for df in make_es.dataframes:
+        dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
+        dd_df.ww.init(schema=df.ww.schema)
+        es.add_dataframe(dd_df)
+
+    for rel in make_es.relationships:
+        es.add_relationship(rel.parent_dataframe.ww.name, rel.parent_column.name,
+                            rel.child_dataframe.ww.name, rel.child_column.name)
+    return es
+
+
+def test_deepcopy_entityset(es_to_copy):
+    # Uses make_es since the es fixture uses deepcopy
+    copied_es = copy.deepcopy(es_to_copy)
+
+    assert copied_es == es_to_copy
+    assert copied_es is not es_to_copy
+
+    for df_name in es_to_copy.dataframe_dict.keys():
+        original_df = es_to_copy[df_name]
+        new_df = copied_es[df_name]
+
+        assert new_df.ww.schema == original_df.ww.schema
+        assert new_df.ww._schema is not original_df.ww._schema
+
+        pd.testing.assert_frame_equal(to_pandas(new_df), to_pandas(original_df))
+        assert new_df is not original_df
+
+
+def test_deepcopy_entityset_woodwork_changes(es):
+    if ks and isinstance(es.dataframes[0], ks.DataFrame):
+        pytest.xfail('Cannot deepcopy Koalas DataFrames')
+
+    copied_es = copy.deepcopy(es)
+
+    assert copied_es == es
+    assert copied_es is not es
+
+    copied_es['products'].ww.add_semantic_tags({'id': 'new_tag'})
+
+    assert copied_es['products'].ww.semantic_tags['id'] == {'index', 'new_tag'}
+    assert es['products'].ww.semantic_tags['id'] == {'index'}
+    assert copied_es != es
+
+
+def test_deepcopy_entityset_featuretools_changes(es):
+    if ks and isinstance(es.dataframes[0], ks.DataFrame):
+        pytest.xfail('Cannot deepcopy Koalas DataFrames')
+
+    copied_es = copy.deepcopy(es)
+
+    assert copied_es == es
+    assert copied_es is not es
+
+    copied_es.set_secondary_time_index('customers', {'upgrade_date': ['engagement_level']})
+    assert copied_es['customers'].ww.metadata['secondary_time_index'] == {'upgrade_date': ['engagement_level', 'upgrade_date']}
+    assert es['customers'].ww.metadata['secondary_time_index'] == {'cancel_date': ['cancel_reason', 'cancel_date']}

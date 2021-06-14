@@ -13,7 +13,7 @@ import featuretools as ft
 def pd_simple():
     es = ft.EntitySet("test")
     df = pd.DataFrame({"foo": [1]})
-    es.entity_from_dataframe("test", df)
+    es.add_dataframe(df, dataframe_name='test')
     return es
 
 
@@ -22,7 +22,7 @@ def dd_simple():
     es = ft.EntitySet("test")
     df = pd.DataFrame({"foo": [1]})
     df = dd.from_pandas(df, npartitions=2)
-    es.entity_from_dataframe("test", df)
+    es.add_dataframe(df, dataframe_name='test')
     return es
 
 
@@ -31,7 +31,7 @@ def ks_simple():
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     es = ft.EntitySet("test")
     df = ks.DataFrame({'foo': [1]})
-    es.entity_from_dataframe('test', df)
+    es.add_dataframe(df, dataframe_name='test')
     return es
 
 
@@ -76,8 +76,8 @@ def test_invalid_format(es):
 def test_multiple_rows(es):
     plot_ = es.plot()
     result = re.findall(r"\((\d+\srows?)\)", plot_.source)
-    expected = ["{} rows".format(str(i.shape[0])) for i in es.entities]
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+    expected = ["{} rows".format(str(i.shape[0])) for i in es.dataframes]
+    if any(isinstance(df, dd.DataFrame) for df in es.dataframes):
         # Dask does not list number of rows in plot
         assert result == []
     else:
@@ -88,7 +88,7 @@ def test_single_row(simple_es):
     plot_ = simple_es.plot()
     result = re.findall(r"\((\d+\srows?)\)", plot_.source)
     expected = ["1 row"]
-    if any(isinstance(entity.df, dd.DataFrame) for entity in simple_es.entities):
+    if any(isinstance(df, dd.DataFrame) for df in simple_es.dataframes):
         # Dask does not list number of rows in plot
         assert result == []
     else:

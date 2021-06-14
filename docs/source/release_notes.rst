@@ -6,6 +6,7 @@ Future Release
 ==============
     * Enhancements
         * Add support for creating EntitySets from Woodwork DataTables (:pr:`1277`)
+        * Add ``EntitySet.__deepcopy__` that retains Woodwork typing information (:pr:`1465`)
     * Fixes
     * Changes
         * Remove ``add_interesting_values`` from ``Entity`` (:pr:`1269`)
@@ -15,6 +16,12 @@ Future Release
         * Replaced ``Entity.update_data`` with ``EntitySet.update_dataframe`` (:pr:`1398`)
         * Move validation check for uniform time index to ``EntitySet`` (:pr:`1400`)
         * Replace ``Entity`` objects in ``EntitySet`` with Woodwork dataframes (:pr:`1405`)
+        * Refactor ``EntitySet.plot`` to work with Woodwork dataframes (:pr:`1468`)
+        * Move ``last_time_index`` to be a column on the DataFrame (:pr:`1456`)
+        * Update serialization/deserialization to work with Woodwork (:pr:`1452`)
+        * Refactor ``EntitySet.query_by_values`` to work with Woodwork dataframes (:pr:`1467`)
+        * Replace ``list_variable_types`` with ``list_logical_types`` (:pr:`1477`)
+        * Allow deep EntitySet equality check (:pr:`1480`)
     * Documentation Changes
         * Improve formatting of release notes (:pr:`1396`)
     * Testing Changes
@@ -67,6 +74,8 @@ Breaking Changes
 * ``last_time_index``, ``secondary_time_index``, and ``interesting_values`` are no longer attributes
   of an entityset’s tables that can be accessed directly. Now they must be accessed through the metadata
   of the Woodwork DataFrame, which is a dictionary.
+* The helper function ``list_variable_types`` will be removed in a future release and replaced by ``list_logical_types``.
+  In the meantime, ``list_variable_types`` will return the same output as ``list_logical_types``.
 
 What's New in this Release
 ++++++++++++++++++++++++++

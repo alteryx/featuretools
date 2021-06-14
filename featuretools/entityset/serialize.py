@@ -4,55 +4,16 @@ import os
 import tarfile
 import tempfile
 
-import dask.dataframe as dd
+from woodwork.serialize import typing_info_to_dict
 
-from featuretools.utils.gen_utils import import_or_none, is_instance
+from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
 
 ks = import_or_none('databricks.koalas')
 
 FORMATS = ['csv', 'pickle', 'parquet']
-SCHEMA_VERSION = "6.0.0"
-
-
-def entity_to_description(entity):
-    '''Serialize entity to data description.
-
-    Args:
-        entity (Entity) : Instance of :class:`.Entity`.
-
-    Returns:
-        dictionary (dict) : Description of :class:`.Entity`.
-    '''
-    index = entity.df.columns.isin([variable.id for variable in entity.variables])
-    indexer = entity.df.columns[index].to_list() if is_instance(entity.df, ks, 'DataFrame') else entity.df.columns[index]
-    dtypes = entity.df[indexer].dtypes.astype(str).to_dict()
-    if isinstance(entity.df, dd.DataFrame):
-        entity_type = 'dask'
-    elif is_instance(entity.df, ks, 'DataFrame'):
-        entity_type = 'koalas'
-    else:
-        entity_type = 'pandas'
-    description = {
-        "id": entity.id,
-        "index": entity.index,
-        "time_index": entity.time_index,
-        "properties": {
-            'secondary_time_index': entity.secondary_time_index,
-            'last_time_index': entity.last_time_index is not None,
-        },
-        "variables": [variable.to_data_description() for variable in entity.variables],
-        "loading_info": {
-            'entity_type': entity_type,
-            'params': {},
-            'properties': {
-                'dtypes': dtypes
-            }
-        }
-    }
-
-    return description
+SCHEMA_VERSION = "7.0.0"
 
 
 def entityset_to_description(entityset):
@@ -64,70 +25,16 @@ def entityset_to_description(entityset):
     Returns:
         description (dict) : Description of :class:`.EntitySet`.
     '''
-    entities = {entity.id: entity_to_description(entity) for entity in
-                sorted(entityset.entities, key=lambda entity: entity.id)}
+
+    dataframes = {dataframe.ww.name: typing_info_to_dict(dataframe) for dataframe in entityset.dataframes}
     relationships = [relationship.to_dictionary() for relationship in entityset.relationships]
     data_description = {
         'schema_version': SCHEMA_VERSION,
         'id': entityset.id,
-        'entities': entities,
+        'dataframes': dataframes,
         'relationships': relationships,
     }
     return data_description
-
-
-def write_entity_data(entity, path, format='csv', **kwargs):
-    '''Write entity data to disk or S3 path.
-
-    Args:
-        entity (Entity) : Instance of :class:`.Entity`.
-        path (str) : Location on disk to write entity data.
-        format (str) : Format to use for writing entity data. Defaults to csv.
-        kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
-
-    Returns:
-        loading_info (dict) : Information on storage location and format of entity data.
-    '''
-    format = format.lower()
-    if isinstance(entity.df, dd.DataFrame) and format == 'csv':
-        basename = "{}-*.{}".format(entity.id, format)
-    else:
-        basename = '.'.join([entity.id, format])
-    location = os.path.join('data', basename)
-    file = os.path.join(path, location)
-    df = entity.df
-
-    if format == 'csv':
-        if is_instance(df, ks, 'DataFrame'):
-            df = df.copy()
-            columns = list(df.select_dtypes('object').columns)
-            df[columns] = df[columns].astype(str)
-        df.to_csv(
-            file,
-            index=kwargs['index'],
-            sep=kwargs['sep'],
-            encoding=kwargs['encoding'],
-            compression=kwargs['compression'],
-        )
-    elif format == 'parquet':
-        # Serializing to parquet format raises an error when columns contain tuples.
-        # Columns containing tuples are mapped as dtype object.
-        # Issue is resolved by casting columns of dtype object to string.
-        df = df.copy()
-        columns = list(df.select_dtypes('object').columns)
-        df[columns] = df[columns].astype(str)
-        df.to_parquet(file, **kwargs)
-    elif format == 'pickle':
-        # Dask currently does not support to_pickle
-        if isinstance(df, dd.DataFrame):
-            msg = 'Cannot serialize Dask EntitySet to pickle'
-            raise ValueError(msg)
-        else:
-            df.to_pickle(file, **kwargs)
-    else:
-        error = 'must be one of the following formats: {}'
-        raise ValueError(error.format(', '.join(FORMATS)))
-    return {'location': location, 'type': format, 'params': kwargs}
 
 
 def write_data_description(entityset, path, profile_name=None, **kwargs):
@@ -135,7 +42,7 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
 
     Args:
         entityset (EntitySet) : Instance of :class:`.EntitySet`.
-        path (str) : Location on disk or S3 path to write `data_description.json` and entity data.
+        path (str) : Location on disk or S3 path to write `data_description.json` and dataframe data.
         profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
             Set to False to use an anonymous profile.
         kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
@@ -158,9 +65,10 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
 
 def dump_data_description(entityset, path, **kwargs):
     description = entityset_to_description(entityset)
-    for entity in entityset.entities:
-        loading_info = write_entity_data(entity, path, **kwargs)
-        description['entities'][entity.id]['loading_info'].update(loading_info)
+    for df in entityset.dataframes:
+        data_path = os.path.join(path, 'data', df.ww.name)
+        os.makedirs(os.path.join(data_path, 'data'), exist_ok=True)
+        df.ww.to_disk(data_path, **kwargs)
     file = os.path.join(path, 'data_description.json')
     with open(file, 'w') as file:
         json.dump(description, file)
