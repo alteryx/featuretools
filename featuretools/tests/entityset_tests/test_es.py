@@ -901,9 +901,8 @@ def test_concat_simple(es):
 
 
 def test_concat_inplace(es):
-    # --> find a better way to do this that doesn't need deepcopy
-    copy_es = copy.copy(es)
     first_es = copy.copy(es)
+    second_es = copy.copy(es)
     for df in first_es.dataframes:
         new_df = df.loc[[], :]
         first_es.update_dataframe(df.ww.name, new_df)
@@ -913,7 +912,7 @@ def test_concat_inplace(es):
 
     es.concat(first_es, inplace=True)
 
-    assert copy_es == es
+    assert second_es == es
     assert es._data_description is None
 
 
