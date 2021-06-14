@@ -1021,22 +1021,25 @@ def test_concat_entitysets(es):
     es_2['test_entity'].ww.pop(LTI_COLUMN_NAME)
     es_2['test_entity'].ww.metadata.pop('last_time_index')
 
-    # --> must also have the same lti now
     es_4 = es_1.concat(es_2)
 
     assert not es_4.__eq__(es, deep=True)
+    # test_entity will not have a last time index re-added because it has no relationships
     assert LTI_COLUMN_NAME not in es_4['test_entity']
-    # --> how does this have lti colmn????
+    # stores will get last time index re-added because it has children that will get lti calculated
     assert LTI_COLUMN_NAME in es_4['stores']
 
     for df_name in es.dataframe_dict:
         df = es[df_name].sort_index()
         df_4 = es_4[df_name].sort_index()
         for column in df:
-            # --> not sure this is correct - maybe df and df4 should both nave
             if column in df_4:
                 for x, y in zip(df[column], df_4[column]):
                     assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+            else:
+                # removing last time index means the column is no longer present on the DataFrame
+                assert df_name == 'test_entity'
+                assert column == LTI_COLUMN_NAME
 
         if df_name != 'test_entity':
             orig_lti = es[df_name][LTI_COLUMN_NAME].sort_index()
