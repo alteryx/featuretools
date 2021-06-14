@@ -508,8 +508,8 @@ class Not(TransformPrimitive):
         [False, False, True]
     """
     name = "not"
-    input_types = [ColumnSchema(logical_type=Boolean)]
-    return_type = ColumnSchema(logical_type=Boolean)
+    input_types = [ColumnSchema(logical_type=Boolean), ColumnSchema(logical_type=BooleanNullable)]
+    return_type = ColumnSchema(logical_type=BooleanNullable)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the negation of {}"
 

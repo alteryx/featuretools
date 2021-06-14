@@ -110,7 +110,7 @@ def test_count_null_and_make_agg_primitive(pd_es):
 
     Count = make_agg_primitive(
         count_func,
-        [[ColumnSchema(semantic_tags={'foreign_key', 'category'})], [ColumnSchema()]],
+        [[ColumnSchema(semantic_tags={'foreign_key'})], [ColumnSchema()]],
         ColumnSchema(semantic_tags={'numeric'}),
         name="count",
         stack_on_self=False,
