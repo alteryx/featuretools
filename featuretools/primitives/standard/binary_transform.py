@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean, Datetime, Ordinal
+from woodwork.logical_types import Boolean, BooleanNullable, Datetime, Ordinal
 
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
@@ -553,6 +553,8 @@ class MultiplyNumeric(TransformPrimitive):
         [ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(semantic_tags={'numeric'})],
         [ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(logical_type=Boolean)],
         [ColumnSchema(logical_type=Boolean), ColumnSchema(semantic_tags={'numeric'})],
+        [ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(logical_type=BooleanNullable)],
+        [ColumnSchema(logical_type=BooleanNullable), ColumnSchema(semantic_tags={'numeric'})],
     ]
     return_type = ColumnSchema(semantic_tags={'numeric'})
     commutative = True
