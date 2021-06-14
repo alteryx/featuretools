@@ -154,7 +154,7 @@ def pd_simple_es():
     })
 
     es = ft.EntitySet('equal_test')
-    es.add_dataframe('values', df, index='id')
+    es.add_dataframe(df, 'values', index='id')
 
     return es
 
