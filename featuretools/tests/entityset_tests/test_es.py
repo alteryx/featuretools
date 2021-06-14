@@ -937,11 +937,18 @@ def test_concat_with_lti(es):
     assert new_es == es
 
 
-# test different entitysets - dfs, relationships, column names within a df, typing?
-# test
-def test_concat_errors():
-    # --> can test koalas bc deepcopy not needed
-    pass
+def test_concat_errors(es):
+    if ks and any(isinstance(df, ks.DataFrame) for df in es.dataframes):
+        pytest.xfail("Koalas deepcopy fails")
+
+    # entitysets are not equal
+    copy_es = copy.deepcopy(es)
+    copy_es['customers'].ww.pop('phone_number')
+
+    error = "Entitysets must have the same dataframes, relationships"\
+        ", and column names"
+    with pytest.raises(ValueError, match=error):
+        es.concat(copy_es)
 
 
 def test_concat_sort_index_with_time_index(pd_es):
@@ -974,10 +981,6 @@ def test_concat_sort_index_without_time_index(pd_es):
     assert not combined_es_order_2.__eq__(combined_es_order_1, deep=True)
     assert not combined_es_order_1.__eq__(pd_es, deep=True)
     assert combined_es_order_1.__eq__(pd_es, deep=False)
-
-
-def test_concat_creates_invalid_schema(es):
-    pass
 
 
 def test_concat_entitysets(es):

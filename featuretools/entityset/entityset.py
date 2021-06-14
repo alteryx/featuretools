@@ -119,6 +119,8 @@ class EntitySet(object):
         return (EntitySet, serialize.entityset_to_description(self.metadata))
 
     def __eq__(self, other, deep=False):
+        # import pdb
+        # pdb.set_trace()
         if self.id != other.id:
             return False
         if self.time_type != other.time_type:
@@ -858,20 +860,9 @@ class EntitySet(object):
         '''Combine entityset with another to create a new entityset with the
         combined data of both entitysets.
         '''
-        assert_string = "Entitysets must have the same dataframes, relationships"\
-            ", and column names"
-        assert (self.__eq__(other) and
-                self.relationships == other.relationships), assert_string
-
-        # --> maybe not necessary with shallow es equality check.....
-        # for df in self.dataframes:
-        #     assert df.ww.name in other.dataframe_dict, assert_string
-        #     assert (len(df.columns) ==
-        #             len(df.columns)), assert_string
-        #     other_variable_ids = [o_variable.id for o_variable in
-        #                           other[entity.id].variables]
-        #     assert (all([variable.id in other_variable_ids
-        #                  for variable in self[entity.id].variables])), assert_string
+        if not self.__eq__(other):
+            raise ValueError("Entitysets must have the same dataframes, relationships"
+                             ", and column names")
 
         if inplace:
             combined_es = self
@@ -889,12 +880,13 @@ class EntitySet(object):
             self_df = df
             other_df = other[df.ww.name]
             combined_df = lib.concat([self_df, other_df])
-            # --> not sure how to handle this - might be necessary for mismatched underlying indices??
-            # if entity.created_index == df.ww.index:
-            #     columns = [col for col in combined_df.columns if
-            #                col != df.ww.index or col != df.ww.time_index]
-            # else:
-            columns = [df.ww.index]
+            # If both DataFrames have made indexes, there will likely
+            # be overlap in the index column, so we use the other values
+            if self_df.ww.make_index or other_df.ww.make_index:
+                columns = [col for col in combined_df.columns if
+                           col != df.ww.index or col != df.ww.time_index]
+            else:
+                columns = [df.ww.index]
             combined_df.drop_duplicates(columns, inplace=True)
 
             self_lti_col = df.ww.metadata.get('last_time_index')
