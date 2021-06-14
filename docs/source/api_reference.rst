@@ -376,6 +376,15 @@ Variable Utils Methods
     list_variable_types
     graph_variable_types
 
+Data Type Util Methods
+----------------------
+.. currentmodule:: featuretools
+.. autosummary::
+    :toctree: generated/
+
+    list_logical_types
+    list_semantic_tags
+
 Feature Selection
 ------------------
 .. currentmodule:: featuretools.selection
