@@ -1128,7 +1128,8 @@ class EntitySet(object):
                     dfs_to_update[df.ww.name] = new_df
                 else:
                     df.ww[LTI_COLUMN_NAME] = lti
-                    df.ww.add_semantic_tags({LTI_COLUMN_NAME: 'last_time_index'})
+                    if 'last_time_index' not in df.ww.semantic_tags[LTI_COLUMN_NAME]:
+                        df.ww.add_semantic_tags({LTI_COLUMN_NAME: 'last_time_index'})
                     df.ww.metadata['last_time_index'] = LTI_COLUMN_NAME
 
         for df in dfs_to_update.values():
