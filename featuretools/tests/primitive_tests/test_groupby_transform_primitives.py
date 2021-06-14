@@ -191,10 +191,10 @@ def test_cum_max(pd_es):
 def test_cum_sum_group_on_nan(pd_es):
     log_value_feat = pd_es['log']['value']
     pd_es['log']['product_id'] = (['coke zero'] * 3 + ['car'] * 2 +
-                                     ['toothpaste'] * 3 + ['brown bag'] * 2 +
-                                     ['shoes'] +
-                                     [np.nan] * 4 +
-                                     ['coke_zero'] * 2)
+                                  ['toothpaste'] * 3 + ['brown bag'] * 2 +
+                                  ['shoes'] +
+                                  [np.nan] * 4 +
+                                  ['coke_zero'] * 2)
     pd_es['log']['value'][16] = 10
     cum_sum = ft.Feature(log_value_feat, groupby=pd_es['log']['product_id'], primitive=CumSum)
     features = [cum_sum]
@@ -232,10 +232,10 @@ def test_cum_sum_numpy_group_on_nan(pd_es):
 
     log_value_feat = pd_es['log']['value']
     pd_es['log']['product_id'] = (['coke zero'] * 3 + ['car'] * 2 +
-                                     ['toothpaste'] * 3 + ['brown bag'] * 2 +
-                                     ['shoes'] +
-                                     [np.nan] * 4 +
-                                     ['coke_zero'] * 2)
+                                  ['toothpaste'] * 3 + ['brown bag'] * 2 +
+                                  ['shoes'] +
+                                  [np.nan] * 4 +
+                                  ['coke_zero'] * 2)
     pd_es['log']['value'][16] = 10
     cum_sum = ft.Feature(log_value_feat, groupby=pd_es['log']['product_id'], primitive=CumSumNumpy)
     assert cum_sum.get_name() == "CUM_SUM(value) by product_id"

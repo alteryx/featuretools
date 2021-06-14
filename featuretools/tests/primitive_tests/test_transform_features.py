@@ -511,7 +511,7 @@ def pd_boolean_mult_es():
                        "bool": [True, False, True],
                        "numeric": [2, 3, np.nan]})
 
-    es.add_dataframe(dataframe_name=="test",
+    es.add_dataframe(dataframe_name="test",
                      dataframe=df,
                      index="index")
 
