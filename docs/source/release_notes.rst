@@ -147,7 +147,7 @@ To update the dataframe for a single entity, call ``EntitySet.update_dataframe``
 
 **List Logical Types and Semantic Tags**
 
-Logical types and semantic tags will replace variable types for parsing and interpreting columns. You can list all the available logical types by calling ``featuretools.list_logical_types``.
+Logical types and semantic tags have replaced variable types to parse and interpret columns. You can list all the available logical types by calling ``featuretools.list_logical_types``.
 
 .. code-block:: python
 
