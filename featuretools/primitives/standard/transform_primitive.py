@@ -132,7 +132,7 @@ class Hour(TransformPrimitive):
     """
     name = "hour"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(logical_type=Ordinal)
+    return_type = ColumnSchema(logical_type=Ordinal(order=range(23)))
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = 'the hour value of {}'
 
@@ -156,7 +156,7 @@ class Second(TransformPrimitive):
     """
     name = "second"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    return_type = ColumnSchema(logical_type=Ordinal(range(59)))
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the seconds value of {}"
 
@@ -180,7 +180,7 @@ class Minute(TransformPrimitive):
     """
     name = "minute"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    return_type = ColumnSchema(logical_type=Ordinal(range(59)))
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the minutes value of {}"
 
@@ -209,7 +209,7 @@ class Week(TransformPrimitive):
         """
     name = "week"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(logical_type=Ordinal)
+    return_type = ColumnSchema(logical_type=Ordinal(order=range(1, 53)))
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the week of the year of {}"
 
@@ -238,7 +238,7 @@ class Month(TransformPrimitive):
     """
     name = "month"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(logical_type=Ordinal)
+    return_type = ColumnSchema(logical_type=Ordinal(order=range(1, 12)))
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the month of {}"
 
