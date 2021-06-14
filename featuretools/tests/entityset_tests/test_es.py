@@ -928,14 +928,19 @@ def test_concat_with_lti(es):
     assert new_es == es
 
 
+# test different entitysets - dfs, relationships, column names within a df, typing?
+# test
 def test_concat_errors():
     # --> can test koalas bc deepcopy not needed
     pass
 
-# # TODO: equality check fails, dask series have no .equals method; error computing lti if categorical index
+
+def test_concat_sort_index(es):
+    pass
 
 
 def test_concat_entitysets(es):
+    # TODO: equality check fails, dask series have no .equals method
     df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
     if any(isinstance(df, dd.DataFrame) for df in es.dataframes):
         pytest.xfail("Dask has no .equals method and issue with categoricals "
@@ -968,7 +973,7 @@ def test_concat_entitysets(es):
         'log': [list(range(10)) + [14, 15, 16], list(range(10, 14)) + [15, 16]],
         'sessions': [[0, 1, 2, 5], [1, 3, 4, 5]],
         'customers': [[0, 2], [1, 2]],
-        'test_entity': [[0, 1], [0, 2]],  # --> having a hard time storing make_index
+        'test_entity': [[0, 1], [0, 2]],
     }
 
     for i, _es in enumerate([es_1, es_2]):
