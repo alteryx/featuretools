@@ -897,13 +897,6 @@ class EntitySet(object):
             columns = [df.ww.index]
             combined_df.drop_duplicates(columns, inplace=True)
 
-            # --> I think update dataframe should take care of this
-            if isinstance(df, pd.DataFrame):
-                if df.ww.time_index:
-                    combined_df.sort_values([df.ww.time_index, df.ww.index], inplace=True)
-                else:
-                    combined_df.sort_index(inplace=True)
-
             self_lti_col = df.ww.metadata.get('last_time_index')
             other_lti_col = other[df.ww.name].ww.metadata.get('last_time_index')
             if (self_lti_col is not None or
@@ -914,6 +907,7 @@ class EntitySet(object):
                 dataframe_name=df.ww.name,
                 df=combined_df,
                 recalculate_last_time_indexes=False,
+                already_sorted=False
             )
 
         if has_last_time_index:

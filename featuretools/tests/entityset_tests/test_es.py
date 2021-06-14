@@ -890,9 +890,14 @@ def test_concat_simple(es):
 
     second_es = copy.deepcopy(es)
 
+    # set the data description
+    first_es.metadata
+
     new_es = first_es.concat(second_es)
 
     assert new_es == es
+    assert new_es._data_description is None
+    assert first_es._data_description is not None
 
 
 def test_concat_inplace(es):
@@ -903,9 +908,13 @@ def test_concat_inplace(es):
         new_df = df.loc[[], :]
         first_es.update_dataframe(df.ww.name, new_df)
 
+    # set the data description
+    es.metadata
+
     es.concat(first_es, inplace=True)
 
     assert copy_es == es
+    assert es._data_description is None
 
 
 def test_concat_with_lti(es):
@@ -935,7 +944,39 @@ def test_concat_errors():
     pass
 
 
-def test_concat_sort_index(es):
+def test_concat_sort_index_with_time_index(pd_es):
+    # only pandas dataframes sort on the index and time index
+    es1 = copy.deepcopy(pd_es)
+    es1.update_dataframe(dataframe_name='customers', df=pd_es['customers'].loc[[0, 1], :], already_sorted=True)
+    es2 = copy.deepcopy(pd_es)
+    es2.update_dataframe(dataframe_name='customers', df=pd_es['customers'].loc[[2], :], already_sorted=True)
+
+    combined_es_order_1 = es1.concat(es2)
+    combined_es_order_2 = es2.concat(es1)
+
+    assert combined_es_order_1.__eq__(pd_es, deep=True)
+    assert combined_es_order_2.__eq__(pd_es, deep=True)
+    assert combined_es_order_2.__eq__(combined_es_order_1, deep=True)
+
+
+def test_concat_sort_index_without_time_index(pd_es):
+    # Sorting is only performed on DataFrames with time indices
+    es1 = copy.deepcopy(pd_es)
+    es1.update_dataframe(dataframe_name='products', df=pd_es['products'].iloc[[0, 1, 2], :], already_sorted=True)
+    es2 = copy.deepcopy(pd_es)
+    es1.update_dataframe(dataframe_name='products', df=pd_es['products'].iloc[[3, 4, 5], :], already_sorted=True)
+
+    combined_es_order_1 = es1.concat(es2)
+    combined_es_order_2 = es2.concat(es1)
+
+    # order matters when we don't sort
+    assert combined_es_order_2.__eq__(pd_es, deep=True)
+    assert not combined_es_order_2.__eq__(combined_es_order_1, deep=True)
+    assert not combined_es_order_1.__eq__(pd_es, deep=True)
+    assert combined_es_order_1.__eq__(pd_es, deep=False)
+
+
+def test_concat_creates_invalid_schema(es):
     pass
 
 
