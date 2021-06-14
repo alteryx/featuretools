@@ -119,8 +119,6 @@ class EntitySet(object):
         return (EntitySet, serialize.entityset_to_description(self.metadata))
 
     def __eq__(self, other, deep=False):
-        # import pdb
-        # pdb.set_trace()
         if self.id != other.id:
             return False
         if self.time_type != other.time_type:
@@ -168,7 +166,6 @@ class EntitySet(object):
                 for df_name, new_df in copied_attr.items():
                     schema = copy.deepcopy(self.dataframe_dict[df_name].ww.schema, memo=memo)
                     new_df.ww.init(schema=schema, validate=False)
-                    # --> woodwork bug that make index doesn't get past
                     new_df.ww.make_index = self.dataframe_dict[df_name].ww.make_index
             setattr(result, k, copied_attr)
         return result
@@ -612,7 +609,7 @@ class EntitySet(object):
                               time_index=time_index,
                               logical_types=logical_types,
                               semantic_tags=semantic_tags,
-                              make_index=make_index,
+                              make_index=make_index,  # TODO: handle make index logic outside of Woodwork
                               already_sorted=already_sorted)
             # If no index column is specified, set the first column
             if dataframe.ww.index is None:
@@ -904,8 +901,9 @@ class EntitySet(object):
 
         if has_last_time_index:
             combined_es.add_last_time_indexes(updated_dataframes=has_last_time_index)
-        # --> only reset data description on combined es, right?????
+
         combined_es.reset_data_description()
+
         return combined_es
 
     ###########################################################################
@@ -1439,7 +1437,6 @@ class EntitySet(object):
         df = df.ww[old_column_names]
 
         self.dataframe_dict[dataframe_name] = df
-        # --> this is a woodwork bug because the getitem misses that info :/
         df.ww.make_index = make_index
 
         # Sort the dataframe through Woodwork
