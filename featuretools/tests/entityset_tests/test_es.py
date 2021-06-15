@@ -14,7 +14,7 @@ import featuretools as ft
 from featuretools.entityset import EntitySet
 from featuretools.entityset.entityset import LTI_COLUMN_NAME
 from featuretools.tests.testing_utils import get_df_tags, to_pandas
-from featuretools.utils.gen_utils import import_or_none
+from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
 
 ks = import_or_none('databricks.koalas')
@@ -328,7 +328,7 @@ def test_query_by_id_with_time(es):
         instance_vals=[0, 1, 2, 3, 4],
         time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
     df = to_pandas(df)
-    if ks and isinstance(es['log'], ks.DataFrame):
+    if es.dataframe_type == Library.KOALAS.value:
         # Koalas doesn't maintain order
         df = df.sort_values('id')
 
@@ -344,7 +344,7 @@ def test_query_by_variable_with_time(es):
 
     true_values = [
         i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
-    if ks and isinstance(es['log'], ks.DataFrame):
+    if es.dataframe_type == Library.KOALAS.value:
         # Koalas doesn't maintain order
         df = df.sort_values('id')
 
@@ -776,9 +776,9 @@ def test_dataframe_init(es):
                                 for i in range(3)],
                        'category': ['a', 'b', 'a'],
                        'number': [4, 5, 6]})
-    if any(isinstance(dataframe, dd.DataFrame) for dataframe in es.dataframes):
+    if es.dataframe_type == Library.DASK.value:
         df = dd.from_pandas(df, npartitions=2)
-    if ks and any(isinstance(dataframe, ks.DataFrame) for dataframe in es.dataframes):
+    elif es.dataframe_type == Library.KOALAS.value:
         df = ks.from_pandas(df)
 
     logical_types = {'time': ltypes.Datetime}
@@ -795,7 +795,7 @@ def test_dataframe_init(es):
         df_shape = (df.shape[0].compute(), df.shape[1])
     else:
         df_shape = df.shape
-    if isinstance(es['test_dataframe'], dd.DataFrame):
+    if es.dataframe_type == Library.DASK.value:
         es_df_shape = (es['test_dataframe'].shape[0].compute(), es['test_dataframe'].shape[1])
     else:
         es_df_shape = es['test_dataframe'].shape
@@ -805,7 +805,7 @@ def test_dataframe_init(es):
     assert set([v for v in es['test_dataframe'].ww.columns]) == set(df.columns)
 
     assert es['test_dataframe']['time'].dtype == df['time'].dtype
-    if ks and isinstance(es['test_dataframe'], ks.DataFrame):
+    if es.dataframe_type == Library.KOALAS.value:
         assert set(es['test_dataframe']['id'].to_list()) == set(df['id'].to_list())
     else:
         assert set(es['test_dataframe']['id']) == set(df['id'])
@@ -2034,3 +2034,12 @@ def test_deepcopy_entityset_featuretools_changes(es):
     copied_es.set_secondary_time_index('customers', {'upgrade_date': ['engagement_level']})
     assert copied_es['customers'].ww.metadata['secondary_time_index'] == {'upgrade_date': ['engagement_level', 'upgrade_date']}
     assert es['customers'].ww.metadata['secondary_time_index'] == {'cancel_date': ['cancel_reason', 'cancel_date']}
+
+
+def test_dataframe_type_empty_es():
+    es = EntitySet("test")
+    assert es.dataframe_type is None
+
+
+def test_dataframe_type_pandas_es(pd_es):
+    assert pd_es.dataframe_type == Library.PANDAS.value
