@@ -1,3 +1,2 @@
 pyspark>=3.0.0
 koalas>=1.1.0
-numpy<1.20  # remove when koalas supports 1.20

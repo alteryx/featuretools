@@ -144,6 +144,53 @@ To update the dataframe for a single entity, call ``EntitySet.update_dataframe``
 
     >>> es.update_dataframe(entity_id='log', df=df)
 
+v0.25.0 Jun 11, 2021
+====================
+    * Enhancements
+       * Add ``get_valid_primitives`` function (:pr:`1462`)
+       * Add ``EntitySet.dataframe_type`` attribute (:pr:`1473`)
+    * Changes
+        * Upgrade minimum alteryx open source update checker to 2.0.0 (:pr:`1460`)
+    * Testing Changes
+        * Upgrade minimum pip requirement for testing to 21.1.2 (:pr:`1475`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`rwedge`
+
+v0.24.1 May 26, 2021
+====================
+    * Fixes
+        * Update minimum pyyaml requirement to 5.4 (:pr:`1433`)
+        * Update minimum psutil requirement to 5.6.6 (:pr:`1438`)
+    * Documentation Changes
+        * Update nbsphinx version to fix docs build issue (:pr:`1436`)
+    * Testing Changes
+        * Create separate worksflows for each CI job (:pr:`1422`)
+        * Add minimum dependency checker to generate minimum requirement files (:pr:`1428`)
+        * Add unit tests against minimum dependencies for python 3.7 on PRs and main (:pr:`1432`, :pr:`1445`)
+        * Update minimum urllib3 requirement to 1.26.5 (:pr:`1457`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
+
+v0.24.0 Apr 30, 2021
+====================
+    * Changes
+        * Add auto assign bot on GitHub (:pr:`1380`)
+        * Reduce DFS max_depth to 1 if single entity in entityset (:pr:`1412`)
+        * Drop Python 3.6 support (:pr:`1413`)
+    * Documentation Changes
+        * Improve formatting of release notes (:pr:`1396`)
+    * Testing Changes
+        * Update Dask/Koalas test fixtures (:pr:`1382`)
+        * Update Spark config in test fixtures and docs (:pr:`1387`, :pr:`1389`)
+        * Don't cancel other CI jobs if one fails (:pr:`1386`)
+        * Update boto3 and urllib3 version requirements (:pr:`1394`)
+        * Update token for dependency checker PR creation (:pr:`1402`, :pr:`1407`, :pr:`1409`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
+
 v0.23.3 Mar 31, 2021
 ====================
     .. warning::

@@ -10,10 +10,8 @@ from featuretools.tests.testing_utils import (
     make_ecommerce_entityset,
     to_pandas
 )
-from featuretools.utils.gen_utils import import_or_none
+from featuretools.utils.gen_utils import Library
 from featuretools.variable_types import find_variable_types
-
-ks = import_or_none('databricks.koalas')
 
 
 def test_is_index_column(es):
@@ -97,7 +95,7 @@ def test_eq(es):
 
 def test_update_dataframe(es):
     df = es['customers'].df.copy()
-    if ks and isinstance(df, ks.DataFrame):
+    if es.dataframe_type == Library.KOALAS.value:
         df['new'] = [1, 2, 3]
     else:
         df['new'] = pd.Series([1, 2, 3])
@@ -116,7 +114,7 @@ def test_update_dataframe(es):
     updated_id.iloc[1] = 2
     updated_id.iloc[2] = 1
 
-    if ks and isinstance(df, ks.DataFrame):
+    if es.dataframe_type == Library.KOALAS.value:
         df["id"] = updated_id.to_list()
         df = df.sort_index()
     else:
@@ -133,7 +131,7 @@ def test_update_dataframe(es):
     updated_signup = to_pandas(df['signup_date'])
     updated_signup.iloc[0] = datetime(2011, 4, 11)
 
-    if ks and isinstance(df, ks.DataFrame):
+    if es.dataframe_type == Library.KOALAS.value:
         df['signup_date'] = updated_signup.to_list()
         df = df.sort_index()
     else:

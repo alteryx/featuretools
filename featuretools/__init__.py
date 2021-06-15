@@ -44,6 +44,13 @@ for entry_point in pkg_resources.iter_entry_points('featuretools_initialize'):
             method()
     except Exception:
         pass
+for entry_point in pkg_resources.iter_entry_points('alteryx_open_src_initialize'):
+    try:
+        method = entry_point.load()
+        if callable(method):
+            method('featuretools')
+    except Exception:
+        pass
 
 # Load in submodules registered by other libraries into Featuretools namespace
 for entry_point in pkg_resources.iter_entry_points('featuretools_plugin'):
@@ -54,9 +61,3 @@ for entry_point in pkg_resources.iter_entry_points('featuretools_plugin'):
         message += "For a full stack trace, set logging to debug."
         logger.warning(message.format(entry_point.name, entry_point.module_name))
         logger.debug(traceback.format_exc())
-
-if sys.version_info.major == 3 and sys.version_info.minor == 6:
-    warnings.warn(
-        "The next non-bugfix release of Featuretools will not support Python 3.6",
-        FutureWarning
-    )
