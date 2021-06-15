@@ -4,7 +4,7 @@ import woodwork.logical_types as ltypes
 
 from featuretools.entityset import EntitySet
 from featuretools.tests.testing_utils import get_df_tags
-from featuretools.utils.gen_utils import import_or_none
+from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
 
 ks = import_or_none('databricks.koalas')
@@ -150,3 +150,8 @@ def test_add_dataframe_with_make_index():
     error_msg = "Cannot make index on a Koalas DataFrame."
     with pytest.raises(TypeError, match=error_msg):
         ks_es.add_dataframe(dataframe_name="new_entity", dataframe=ks_df, make_index=True, index="new_index", logical_types=vtypes)
+
+
+@pytest.mark.skipif('not ks')
+def test_dataframe_type_koalas(ks_es):
+    assert ks_es.dataframe_type == Library.KOALAS.value

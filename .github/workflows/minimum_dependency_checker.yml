@@ -1,0 +1,77 @@
+name: Minimum Dependency Checker
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'requirements.txt'
+      - 'test-requirements.txt'
+      - 'koalas-requirements.txt'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Run min dep generator - test reqs
+        id: min_dep_gen_test
+        uses: alteryx/minimum-dependency-generator@v2
+        with:
+          requirements_paths: 'test-requirements.txt'
+      - name: Save min test deps and run diff
+        id: check_min_test
+        continue-on-error: true
+        run: |
+          mkdir /tmp/dependencies_updated_artifacts
+          printf "${{ steps.min_dep_gen_test.outputs.min_reqs }}" > /tmp/minimum_test_requirements.txt
+          diff /tmp/minimum_test_requirements.txt featuretools/tests/requirement_files/minimum_test_requirements.txt
+      - name: if min test deps have changed, write output file
+        if: steps.check_min_test.outcome != 'success'
+        run: |
+          printf "${{ steps.min_dep_gen_test.outputs.min_reqs }}" > featuretools/tests/requirement_files/minimum_test_requirements.txt
+      - name: Run min dep generator - core reqs
+        id: min_dep_gen_core
+        uses: alteryx/minimum-dependency-generator@v2
+        with:
+          requirements_paths: 'requirements.txt'
+      - name: Save min core deps and run diff
+        id: check_core_deps
+        continue-on-error: true
+        run: |
+          printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > /tmp/minimum_core_requirements.txt
+          diff /tmp/minimum_core_requirements.txt featuretools/tests/requirement_files/minimum_core_requirements.txt
+      - name: if min core deps have changed, write output file
+        if: steps.check_core_deps.outcome != 'success'
+        run: |
+          printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > featuretools/tests/requirement_files/minimum_core_requirements.txt
+      - name: Run min dep generator - koalas
+        id: min_dep_gen_koalas
+        uses: alteryx/minimum-dependency-generator@v2
+        with:
+          requirements_paths: 'koalas-requirements.txt requirements.txt'
+      - name: Save min koalas deps and run diff
+        id: check_koalas_deps
+        continue-on-error: true
+        run: |
+          printf "${{ steps.min_dep_gen_koalas.outputs.min_reqs }}" > /tmp/minimum_koalas_requirements.txt
+          diff /tmp/minimum_koalas_requirements.txt featuretools/tests/requirement_files/minimum_koalas_requirements.txt
+      - name: if min koalas deps have changed, write output file
+        if: steps.check_koalas_deps.outcome != 'success'
+        run: |
+          printf "${{ steps.min_dep_gen_koalas.outputs.min_reqs }}" > featuretools/tests/requirement_files/minimum_koalas_requirements.txt
+      - name: Create Pull Request
+        uses: FeatureLabs/create-pull-request@v3
+        with:
+          token: ${{ secrets.REPO_SCOPED_TOKEN }}
+          commit-message: Update minimum dependencies
+          title: Automated Minimum Dependency Updates
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          body: "This is an auto-generated PR with **minimum** dependency updates.
+                 Please do not delete the `min-dep-update` branch because it's needed by the auto-dependency bot."
+          branch: min-dep-update
+          branch-suffix: short-commit-hash
+          base: main
+          reviewers: thehomebrewnerd, tamargrey, jeff-hernandez
