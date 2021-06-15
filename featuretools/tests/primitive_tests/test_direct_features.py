@@ -24,6 +24,7 @@ from featuretools.primitives import (
 from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import to_pandas
+from featuretools.utils.gen_utils import Library
 
 
 def test_direct_from_identity(es):
@@ -88,7 +89,7 @@ def test_direct_copy(games_es):
 
 def test_direct_of_multi_output_transform_feat(es):
     # TODO: Update to work with Dask and Koalas
-    if not all(isinstance(df, pd.DataFrame) for df in es.dataframes):
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Custom primitive is not compabible with Dask or Koalas")
 
     class TestTime(TransformPrimitive):

@@ -47,9 +47,7 @@ from featuretools.tests.testing_utils import (
     get_mock_client_cluster,
     to_pandas
 )
-from featuretools.utils.gen_utils import Library, import_or_none
-
-ks = import_or_none('databricks.koalas')
+from featuretools.utils.gen_utils import Library
 
 
 def test_scatter_warning(caplog):
@@ -64,7 +62,7 @@ def test_scatter_warning(caplog):
 
 # TODO: final assert fails w/ Dask
 def test_calc_feature_matrix(es):
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('Distributed dataframe result not ordered')
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
                  [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
@@ -167,7 +165,7 @@ def test_cfm_compose(es, lt):
 
 
 def test_cfm_compose_approximate(es, lt):
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('dask does not support approximate')
 
     property_feature = ft.Feature(es['log']['value']) > 10
@@ -279,7 +277,7 @@ def test_cfm_no_cutoff_time_index(pd_es):
 # TODO: fails with dask entitysets
 # TODO: fails with koalas entitysets
 def test_cfm_duplicated_index_in_cutoff_time(es):
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('Distributed results not ordered, missing duplicates')
     times = [datetime(2011, 4, 1), datetime(2011, 5, 1),
              datetime(2011, 4, 1), datetime(2011, 5, 1)]
@@ -298,7 +296,7 @@ def test_cfm_duplicated_index_in_cutoff_time(es):
 
 # TODO: fails with Dask, Koalas
 def test_saveprogress(es, tmpdir):
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('saveprogress fails with distributed entitysets')
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
                  [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
@@ -1030,7 +1028,7 @@ def test_cutoff_time_naming(es):
 
 # TODO: order doesn't match, but output matches
 def test_cutoff_time_extra_columns(es):
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('Distributed result not ordered')
     agg_feat = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count)
     dfeat = DirectFeature(agg_feat, es['customers'])
@@ -1069,7 +1067,7 @@ def test_cutoff_time_extra_columns_approximate(pd_es):
 
 
 def test_cutoff_time_extra_columns_same_name(es):
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('Distributed result not ordered')
     agg_feat = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count)
     dfeat = DirectFeature(agg_feat, es['customers'])
@@ -1119,7 +1117,7 @@ def test_instances_after_cutoff_time_removed(es):
 
 # TODO: Dask and Koalas do not keep instance_id after cutoff
 def test_instances_with_id_kept_after_cutoff(es):
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('Distributed result not ordered, missing extra instances')
     property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
     cutoff_time = datetime(2011, 4, 8)
@@ -1138,7 +1136,7 @@ def test_instances_with_id_kept_after_cutoff(es):
 # TODO: Fails with Dask
 # TODO: Fails with Koalas
 def test_cfm_returns_original_time_indexes(es):
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('Distributed result not ordered, indexes are lost due to not multiindexing')
     agg_feat = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count)
     dfeat = DirectFeature(agg_feat, es['customers'])
@@ -1535,7 +1533,7 @@ def test_string_time_values_in_cutoff_time(es):
 # TODO: Dask version fails (feature matrix is empty)
 # TODO: Koalas version fails (koalas groupby agg doesn't support custom functions)
 def test_no_data_for_cutoff_time(mock_customer):
-    if not all(isinstance(entity.df, pd.DataFrame) for entity in mock_customer.entities):
+    if mock_customer.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Dask fails because returned feature matrix is empty; Koalas doesn't support custom agg functions")
     es = mock_customer
     cutoff_times = pd.DataFrame({"customer_id": [4],

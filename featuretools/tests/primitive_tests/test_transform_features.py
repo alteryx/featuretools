@@ -61,10 +61,8 @@ from featuretools.primitives.utils import (
 )
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.tests.testing_utils import feature_with_name, to_pandas
-from featuretools.utils.gen_utils import Library, import_or_none
+from featuretools.utils.gen_utils import Library
 from featuretools.utils.koalas_utils import pd_to_ks_clean
-
-ks = import_or_none('databricks.koalas')
 
 
 def test_init_and_name(es):
@@ -77,9 +75,9 @@ def test_init_and_name(es):
     customers_features = [ft.Feature(v) for v in es["customers"].variables]
     trans_primitives = get_transform_primitives().values()
     # If Dask EntitySet use only Dask compatible primitives
-    if isinstance(es['log'].df, dd.DataFrame):
+    if es.dataframe_type == Library.DASK.value:
         trans_primitives = [prim for prim in trans_primitives if Library.DASK in prim.compatibility]
-    if ks and isinstance(es['log'].df, ks.DataFrame):
+    if es.dataframe_type == Library.KOALAS.value:
         trans_primitives = [prim for prim in trans_primitives if Library.KOALAS in prim.compatibility]
     for transform_prim in trans_primitives:
         # skip automated testing if a few special cases
@@ -207,7 +205,7 @@ def test_equal_categorical(simple_es):
                     primitive=Equal)
 
     df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1])
-    if all(isinstance(e.df, (pd.DataFrame, dd.DataFrame)) for e in simple_es.entities):
+    if simple_es.dataframe_type != Library.KOALAS.value:
         # Koalas does not support categorical dtype
         assert set(simple_es['values'].df['value'].cat.categories) != \
             set(simple_es['values'].df['value2'].cat.categories)
@@ -233,7 +231,7 @@ def test_not_equal_categorical(simple_es):
 
     df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1])
 
-    if all(isinstance(e.df, (pd.DataFrame, dd.DataFrame)) for e in simple_es.entities):
+    if simple_es.dataframe_type != Library.KOALAS.value:
         # Koalas does not support categorical dtype
         assert set(simple_es['values'].df['value'].cat.categories) != \
             set(simple_es['values'].df['value2'].cat.categories)
@@ -395,7 +393,7 @@ def test_compare_of_agg(es):
 
 
 def test_compare_all_nans(es):
-    if not all(isinstance(df, pd.DataFrame) for df in es.dataframes):
+    if es.dataframe_type != Library.PANDAS.value:
         nan_feat = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=ft.primitives.Min)
         compare = nan_feat == 0.0
     else:
@@ -453,7 +451,7 @@ def test_arithmetic_of_identity(es):
                (MultiplyNumeric, [0, 10, 40, 90]),
                (DivideNumeric, [np.nan, 2.5, 2.5, 2.5])]
     # SubtractNumeric not supported for Koalas EntitySets
-    if ks and any(isinstance(df, ks.DataFrame) for df in es.dataframes):
+    if es.dataframe_type == Library.KOALAS.value:
         to_test = to_test[:1] + to_test[2:]
 
     features = []
@@ -483,7 +481,7 @@ def test_arithmetic_of_direct(es):
                (SubtractNumeric, [28, 29, 28.5, 28.5]),
                (MultiplyNumeric, [165, 132, 148.5, 148.5]),
                (DivideNumeric, [6.6, 8.25, 22. / 3, 22. / 3])]
-    if ks and any(isinstance(df, ks.DataFrame) for df in es.dataframes):
+    if es.dataframe_type == Library.KOALAS.value:
         to_test = to_test[:1] + to_test[2:]
 
     features = []
@@ -553,7 +551,7 @@ def test_boolean_multiply(boolean_mult_es):
 
 # TODO: rework test to be Dask and Koalas compatible
 def test_arithmetic_of_transform(es):
-    if not all(isinstance(df, pd.DataFrame) for df in es.dataframes):
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Test uses Diff which is not supported in Dask or Koalas")
     diff1 = ft.Feature([es['log']['value']], primitive=Diff)
     diff2 = ft.Feature([es['log']['value_2']], primitive=Diff)
@@ -596,7 +594,7 @@ def test_arithmetic_of_agg(es):
                (MultiplyNumeric, [9, 0]),
                (DivideNumeric, [1, 0])]
     # Skip SubtractNumeric for Koalas as it's unsupported
-    if ks and any(isinstance(df, ks.DataFrame) for df in es.dataframes):
+    if es.dataframe_type == Library.KOALAS.value:
         to_test = to_test[:1] + to_test[2:]
 
     features = []
@@ -1163,7 +1161,7 @@ def test_override_multi_feature_names(pd_es):
 
 
 def test_time_since_primitive_matches_all_datetime_types(es):
-    if ks and any(isinstance(df, ks.DataFrame) for df in es.dataframes):
+    if es.dataframe_type == Library.KOALAS.value:
         pytest.xfail('TimeSince transform primitive is incompatible with Koalas')
     fm, fl = ft.dfs(
         target_entity="customers",

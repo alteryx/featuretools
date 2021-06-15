@@ -22,10 +22,8 @@ from featuretools.primitives import (
 )
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import import_or_none
+from featuretools.utils.gen_utils import Library
 from featuretools.variable_types import find_variable_types
-
-ks = import_or_none('databricks.koalas')
 
 
 @pytest.fixture
@@ -278,7 +276,7 @@ def test_accepts_pd_dateoffset_training_window(datetime_es):
 
 
 def test_warns_with_unused_primitives(es):
-    if ks and any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+    if es.dataframe_type == Library.KOALAS.value:
         pytest.skip('Koalas throws extra warnings')
     trans_primitives = ['num_characters', 'num_words', 'add_numeric']
     agg_primitives = [Max, 'min']
@@ -321,7 +319,7 @@ def test_does_not_warn_with_stacking_feature(pd_es):
 
 
 def test_warns_with_unused_where_primitives(es):
-    if ks and any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+    if es.dataframe_type == Library.KOALAS.value:
         pytest.skip('Koalas throws extra warnings')
     warning_text = "Some specified primitives were not used during DFS:\n" + \
         "  where_primitives: ['count', 'sum']\n" + \
