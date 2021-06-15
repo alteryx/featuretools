@@ -160,13 +160,14 @@ class EntitySet(object):
         result = cls.__new__(cls)
         memo[id(self)] = result
         for k, v in self.__dict__.items():
-            copied_attr = copy.deepcopy(v, memo)
-            # Must initialize Woodwork on all the DataFrames
             if k == 'dataframe_dict':
-                for df_name, new_df in copied_attr.items():
-                    schema = copy.deepcopy(self.dataframe_dict[df_name].ww.schema, memo=memo)
-                    new_df.ww.init(schema=schema, validate=False)
-                    new_df.ww.make_index = self.dataframe_dict[df_name].ww.make_index
+                # Copy the DataFrames, retaining Woodwork typing information
+                copied_attr = copy.copy(v)
+                for df_name, df in copied_attr.items():
+                    copied_attr[df_name] = df.ww.copy()
+            else:
+                copied_attr = copy.deepcopy(v, memo)
+
             setattr(result, k, copied_attr)
         return result
 

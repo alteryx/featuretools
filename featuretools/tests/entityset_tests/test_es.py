@@ -879,10 +879,7 @@ def test_already_sorted_parameter():
     assert times == list(transactions_df.transaction_time)
 
 
-def test_concat_simple(es):
-    if es.dataframe_type == Library.KOALAS.value:
-        pytest.xfail("Koalas deepcopy fails")
-
+def test_concat_not_inplace(es):
     first_es = copy.deepcopy(es)
     for df in first_es.dataframes:
         new_df = df.loc[[], :]
@@ -901,8 +898,8 @@ def test_concat_simple(es):
 
 
 def test_concat_inplace(es):
-    first_es = copy.copy(es)
-    second_es = copy.copy(es)
+    first_es = copy.deepcopy(es)
+    second_es = copy.deepcopy(es)
     for df in first_es.dataframes:
         new_df = df.loc[[], :]
         first_es.update_dataframe(df.ww.name, new_df)
@@ -917,12 +914,13 @@ def test_concat_inplace(es):
 
 
 def test_concat_with_lti(es):
-    if es.dataframe_type == Library.KOALAS.value:
-        pytest.xfail("Koalas deepcopy fails")
-
     first_es = copy.deepcopy(es)
     for df in first_es.dataframes:
-        new_df = df.loc[[], :]
+        if first_es.dataframe_type == Library.KOALAS.value:
+            # Koalas cannot compute last time indexes on an empty Dataframe
+            new_df = df.head(1)
+        else:
+            new_df = df.loc[[], :]
         first_es.update_dataframe(df.ww.name, new_df)
 
     second_es = copy.deepcopy(es)
@@ -937,9 +935,6 @@ def test_concat_with_lti(es):
 
 
 def test_concat_errors(es):
-    if es.dataframe_type == Library.KOALAS.value:
-        pytest.xfail("Koalas deepcopy fails")
-
     # entitysets are not equal
     copy_es = copy.deepcopy(es)
     copy_es['customers'].ww.pop('phone_number')
@@ -2007,9 +2002,6 @@ def test_deepcopy_entityset(es_to_copy):
 
 
 def test_deepcopy_entityset_woodwork_changes(es):
-    if ks and isinstance(es.dataframes[0], ks.DataFrame):
-        pytest.xfail('Cannot deepcopy Koalas DataFrames')
-
     copied_es = copy.deepcopy(es)
 
     assert copied_es == es
@@ -2023,9 +2015,6 @@ def test_deepcopy_entityset_woodwork_changes(es):
 
 
 def test_deepcopy_entityset_featuretools_changes(es):
-    if ks and isinstance(es.dataframes[0], ks.DataFrame):
-        pytest.xfail('Cannot deepcopy Koalas DataFrames')
-
     copied_es = copy.deepcopy(es)
 
     assert copied_es == es
