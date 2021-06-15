@@ -993,20 +993,19 @@ def test_concat_sort_index_without_time_index(pd_es):
 
 
 def test_concat_entitysets(es):
-    # TODO: equality check fails, dask series have no .equals method
+    # TODO: figure out what's wrong with made index on dask dataframe and last time indexes
     df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
-    if any(isinstance(df, dd.DataFrame) for df in es.dataframes):
-        pytest.xfail("Dask has no .equals method and issue with categoricals "
-                     "and add_last_time_indexes")
+    if es.dataframe_type == Library.DASK.value:
+        pytest.xfail("Dask has issue with add_last_time_indexes")
 
     if es.dataframe_type == Library.KOALAS.value:
-        pytest.xfail("Koalas deepcopy fails")
+        pytest.xfail("Koalas cannot make index")
 
     # Create a new table in the EntitySet with a made index
     logical_types = {'id': ltypes.Categorical,
                      'category': ltypes.Categorical}
     es.add_dataframe(dataframe=df,
-                     dataframe_name='test_entity',
+                     dataframe_name='test_df',
                      index='id1',
                      make_index=True,
                      logical_types=logical_types)
@@ -1026,12 +1025,13 @@ def test_concat_entitysets(es):
         'log': [list(range(10)) + [14, 15, 16], list(range(10, 14)) + [15, 16]],
         'sessions': [[0, 1, 2, 5], [1, 3, 4, 5]],
         'customers': [[0, 2], [1, 2]],
-        'test_entity': [[0, 1], [0, 2]],
+        'test_df': [[0, 1], [0, 2]],
     }
 
     for i, _es in enumerate([es_1, es_2]):
         for df_name, rows in emap.items():
             df = _es[df_name]
+            # --> seems to have a bug or something wrong with dask lti not having the index column
             _es.update_dataframe(dataframe_name=df_name, df=df.loc[rows[i]])
 
     assert 10 not in es_1['log'][LTI_COLUMN_NAME].index
@@ -1074,16 +1074,16 @@ def test_concat_entitysets(es):
     es_2['stores'].ww.pop(LTI_COLUMN_NAME)
     es_2['stores'].ww.metadata.pop('last_time_index')
 
-    es_1['test_entity'].ww.pop(LTI_COLUMN_NAME)
-    es_1['test_entity'].ww.metadata.pop('last_time_index')
-    es_2['test_entity'].ww.pop(LTI_COLUMN_NAME)
-    es_2['test_entity'].ww.metadata.pop('last_time_index')
+    es_1['test_df'].ww.pop(LTI_COLUMN_NAME)
+    es_1['test_df'].ww.metadata.pop('last_time_index')
+    es_2['test_df'].ww.pop(LTI_COLUMN_NAME)
+    es_2['test_df'].ww.metadata.pop('last_time_index')
 
     es_4 = es_1.concat(es_2)
 
     assert not es_4.__eq__(es, deep=True)
     # test_entity will not have a last time index re-added because it has no relationships
-    assert LTI_COLUMN_NAME not in es_4['test_entity']
+    assert LTI_COLUMN_NAME not in es_4['test_df']
     # stores will get last time index re-added because it has children that will get lti calculated
     assert LTI_COLUMN_NAME in es_4['stores']
 
@@ -1096,10 +1096,10 @@ def test_concat_entitysets(es):
                     assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
             else:
                 # removing last time index means the column is no longer present on the DataFrame
-                assert df_name == 'test_entity'
+                assert df_name == 'test_df'
                 assert column == LTI_COLUMN_NAME
 
-        if df_name != 'test_entity':
+        if df_name != 'test_df':
             orig_lti = es[df_name][LTI_COLUMN_NAME].sort_index()
             new_lti = es_4[df_name][LTI_COLUMN_NAME].sort_index()
             for x, y in zip(orig_lti, new_lti):
