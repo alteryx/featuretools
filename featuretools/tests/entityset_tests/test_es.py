@@ -970,16 +970,16 @@ def test_concat_sort_index_without_time_index(pd_es):
     es1 = copy.deepcopy(pd_es)
     es1.update_dataframe(dataframe_name='products', df=pd_es['products'].iloc[[0, 1, 2], :], already_sorted=True)
     es2 = copy.deepcopy(pd_es)
-    es1.update_dataframe(dataframe_name='products', df=pd_es['products'].iloc[[3, 4, 5], :], already_sorted=True)
+    es2.update_dataframe(dataframe_name='products', df=pd_es['products'].iloc[[3, 4, 5], :], already_sorted=True)
 
     combined_es_order_1 = es1.concat(es2)
     combined_es_order_2 = es2.concat(es1)
 
     # order matters when we don't sort
-    assert combined_es_order_2.__eq__(pd_es, deep=True)
+    assert combined_es_order_1.__eq__(pd_es, deep=True)
+    assert not combined_es_order_2.__eq__(pd_es, deep=True)
+    assert combined_es_order_2.__eq__(pd_es, deep=False)
     assert not combined_es_order_2.__eq__(combined_es_order_1, deep=True)
-    assert not combined_es_order_1.__eq__(pd_es, deep=True)
-    assert combined_es_order_1.__eq__(pd_es, deep=False)
 
 
 def test_concat_entitysets(es):
