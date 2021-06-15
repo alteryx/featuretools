@@ -955,6 +955,8 @@ def test_concat_sort_index_with_time_index(pd_es):
     combined_es_order_1 = es1.concat(es2)
     combined_es_order_2 = es2.concat(es1)
 
+    assert list(combined_es_order_1['customers'].index) == [2, 0, 1]
+    assert list(combined_es_order_2['customers'].index) == [2, 0, 1]
     assert combined_es_order_1.__eq__(pd_es, deep=True)
     assert combined_es_order_2.__eq__(pd_es, deep=True)
     assert combined_es_order_2.__eq__(combined_es_order_1, deep=True)
@@ -971,6 +973,19 @@ def test_concat_sort_index_without_time_index(pd_es):
     combined_es_order_2 = es2.concat(es1)
 
     # order matters when we don't sort
+    assert list(combined_es_order_1['products'].index) == ['Haribo sugar-free gummy bears',
+                                                           'car',
+                                                           'toothpaste',
+                                                           'brown bag',
+                                                           'coke zero',
+                                                           'taco clock']
+    assert list(combined_es_order_2['products'].index) == ['brown bag',
+                                                           'coke zero',
+                                                           'taco clock',
+                                                           'Haribo sugar-free gummy bears',
+                                                           'car',
+                                                           'toothpaste'
+                                                           ]
     assert combined_es_order_1.__eq__(pd_es, deep=True)
     assert not combined_es_order_2.__eq__(pd_es, deep=True)
     assert combined_es_order_2.__eq__(pd_es, deep=False)
