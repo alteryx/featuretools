@@ -8,7 +8,7 @@ with open(path.join(dirname, 'README.md')) as f:
 
 extras_require = {
     'tsfresh': ['featuretools-tsfresh-primitives >= 0.1.0'],
-    'update_checker': ['featuretools-update-checker >= 1.0.0'],
+    'update_checker': ['alteryx-open-src-update-checker >= 2.0.0'],
     'categorical_encoding': ['categorical-encoding >= 0.2.0'],
     'nlp_primitives': ['nlp-primitives[complete] >= 1.0.0'],
     'autonormalize': ['autonormalize >= 1.0.0'],
@@ -19,7 +19,7 @@ extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
 setup(
     name='featuretools',
-    version='0.23.3',
+    version='0.25.0',
     packages=find_packages(),
     description='a framework for automated feature engineering',
     url='http://featuretools.com',
@@ -30,12 +30,11 @@ setup(
          'Development Status :: 3 - Alpha',
          'Intended Audience :: Developers',
          'Programming Language :: Python :: 3',
-         'Programming Language :: Python :: 3.6',
          'Programming Language :: Python :: 3.7',
          'Programming Language :: Python :: 3.8'
     ],
     install_requires=open('requirements.txt').readlines(),
-    python_requires='>=3.6, <4',
+    python_requires='>=3.7, <4',
     extras_require=extras_require,
     keywords='feature engineering data science machine learning',
     include_package_data=True,

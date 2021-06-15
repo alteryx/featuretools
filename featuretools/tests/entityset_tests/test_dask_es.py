@@ -5,6 +5,7 @@ import woodwork.logical_types as ltypes
 
 from featuretools.entityset import EntitySet
 from featuretools.tests.testing_utils import get_df_tags
+from featuretools.utils.gen_utils import Library
 
 
 def test_add_dataframe(pd_es):
@@ -143,3 +144,7 @@ def test_add_dataframe_with_make_index():
 
     expected_df = pd.DataFrame({"values": values, "new_index": range(len(values))})
     pd.testing.assert_frame_equal(expected_df, dask_es['new_entity'].compute())
+
+
+def test_dataframe_type_dask(dask_es):
+    assert dask_es.dataframe_type == Library.DASK.value
