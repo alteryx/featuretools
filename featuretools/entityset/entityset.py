@@ -882,9 +882,9 @@ class EntitySet(object):
             combined_es = copy.deepcopy(self)
 
         lib = pd
-        if ks and isinstance(self.dataframes[0], ks.DataFrame):
+        if self.dataframe_type == Library.KOALAS.value:
             lib = ks
-        elif dd and isinstance(self.dataframes[0], dd.DataFrame):
+        elif self.dataframe_type == Library.DASK.value:
             lib = dd
 
         has_last_time_index = []

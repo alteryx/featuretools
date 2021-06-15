@@ -880,7 +880,7 @@ def test_already_sorted_parameter():
 
 
 def test_concat_simple(es):
-    if ks and any(isinstance(df, ks.DataFrame) for df in es.dataframes):
+    if es.dataframe_type == Library.KOALAS.value:
         pytest.xfail("Koalas deepcopy fails")
 
     first_es = copy.deepcopy(es)
@@ -917,7 +917,7 @@ def test_concat_inplace(es):
 
 
 def test_concat_with_lti(es):
-    if ks and any(isinstance(df, ks.DataFrame) for df in es.dataframes):
+    if es.dataframe_type == Library.KOALAS.value:
         pytest.xfail("Koalas deepcopy fails")
 
     first_es = copy.deepcopy(es)
@@ -937,7 +937,7 @@ def test_concat_with_lti(es):
 
 
 def test_concat_errors(es):
-    if ks and any(isinstance(df, ks.DataFrame) for df in es.dataframes):
+    if es.dataframe_type == Library.KOALAS.value:
         pytest.xfail("Koalas deepcopy fails")
 
     # entitysets are not equal
@@ -989,7 +989,7 @@ def test_concat_entitysets(es):
         pytest.xfail("Dask has no .equals method and issue with categoricals "
                      "and add_last_time_indexes")
 
-    if ks and any(isinstance(df, ks.DataFrame) for df in es.dataframes):
+    if es.dataframe_type == Library.KOALAS.value:
         pytest.xfail("Koalas deepcopy fails")
 
     # Create a new table in the EntitySet with a made index
