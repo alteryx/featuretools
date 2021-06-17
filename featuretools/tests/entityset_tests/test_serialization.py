@@ -185,6 +185,7 @@ def test_to_pickle_manual_interesting_values(pd_es, tmpdir):
 
 
 def test_to_parquet(es, tmpdir):
+    # --> erroring here locally
     es.to_parquet(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
