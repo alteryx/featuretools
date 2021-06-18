@@ -9,9 +9,11 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Prevent logging on build (:pr:`1498`)
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`frances-h`
 
 v0.25.0 Jun 11, 2021
 ====================
