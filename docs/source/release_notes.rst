@@ -11,9 +11,10 @@ Future Release
     * Documentation Changes
         * Prevent logging on build (:pr:`1498`)
     * Testing Changes
+        * Test featuretools on pandas 1.3.0 release candidate and make fixes (:pr:`1492`)
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`
+    :user:`frances-h`, :user:`tamargrey`
 
 v0.25.0 Jun 11, 2021
 ====================
