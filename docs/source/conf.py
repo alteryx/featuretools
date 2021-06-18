@@ -15,6 +15,8 @@
 import os
 import subprocess
 import sys
+import shutil
+from pathlib import Path
 
 import featuretools
 
@@ -348,4 +350,9 @@ napoleon_use_param = True
 napoleon_use_rtype = True
 
 def setup(app):
+    home_dir = os.environ.get('HOME', '/')
+    ipython_p = Path(home_dir + "/.ipython/profile_default/startup")
+    ipython_p.mkdir(parents=True, exist_ok=True)
+    file_p = os.path.abspath(os.path.dirname(__file__))
+    shutil.copy(file_p + "/set-headers.py", home_dir + "/.ipython/profile_default/startup")
     app.add_css_file("style.css")
