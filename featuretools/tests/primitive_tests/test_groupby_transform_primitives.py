@@ -152,8 +152,8 @@ class TestCumMin:
 
 
 def test_cum_sum(pd_es):
-    log_value_feat = pd_es['log']['value']
-    dfeat = ft.Feature(pd_es['sessions']['device_type'], entity=pd_es['log'])
+    log_value_feat = ft.IdentityFeature(pd_es, 'log', 'value')
+    dfeat = ft.Feature(ft.Identityfeature(pd_es, 'sessions', 'device_type'), dataframe_name='log')
     cum_sum = ft.Feature(log_value_feat, groupby=dfeat, primitive=CumSum)
     features = [cum_sum]
     df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(15))
@@ -165,8 +165,8 @@ def test_cum_sum(pd_es):
 
 
 def test_cum_min(pd_es):
-    log_value_feat = pd_es['log']['value']
-    cum_min = ft.Feature(log_value_feat, groupby=pd_es['log']['session_id'], primitive=CumMin)
+    log_value_feat = ft.IdentityFeature(pd_es, 'log', 'value')
+    cum_min = ft.Feature(log_value_feat, groupby=IdentityFeature(pd_es, 'log', 'session_id'), primitive=CumMin)
     features = [cum_min]
     df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(15))
     cvalues = df[cum_min.get_name()].values
@@ -177,8 +177,8 @@ def test_cum_min(pd_es):
 
 
 def test_cum_max(pd_es):
-    log_value_feat = pd_es['log']['value']
-    cum_max = ft.Feature(log_value_feat, groupby=pd_es['log']['session_id'], primitive=CumMax)
+    log_value_feat = ft.IdentityFeature(pd_es, 'log', 'value')
+    cum_max = ft.Feature(log_value_feat, groupby=IdentityFeature(pd_es, 'log', 'session_id'), primitive=CumMax)
     features = [cum_max]
     df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(15))
     cvalues = df[cum_max.get_name()].values
@@ -189,7 +189,7 @@ def test_cum_max(pd_es):
 
 
 def test_cum_sum_group_on_nan(pd_es):
-    log_value_feat = pd_es['log']['value']
+    log_value_feat = ft.IdentityFeature(pd_es, 'log', 'value')
     pd_es['log']['product_id'] = (['coke zero'] * 3 + ['car'] * 2 +
                                   ['toothpaste'] * 3 + ['brown bag'] * 2 +
                                   ['shoes'] +
@@ -230,7 +230,7 @@ def test_cum_sum_numpy_group_on_nan(pd_es):
                 return values.cumsum().values
             return cum_sum
 
-    log_value_feat = pd_es['log']['value']
+    log_value_feat = ft.IdentityFeature(pd_es, 'log', 'value')
     pd_es['log']['product_id'] = (['coke zero'] * 3 + ['car'] * 2 +
                                   ['toothpaste'] * 3 + ['brown bag'] * 2 +
                                   ['shoes'] +
@@ -269,14 +269,14 @@ def test_cum_handles_uses_full_entity(pd_es):
         assert (df_2.loc[2] == df_1.loc[2]).all()
 
     for primitive in [CumSum, CumMean, CumMax, CumMin]:
-        check(ft.Feature(pd_es['log']['value'], groupby=pd_es['log']['session_id'], primitive=primitive))
+        check(ft.Feature(pd_es['log']['value'], groupby=IdentityFeature(pd_es, 'log', 'session_id'), primitive=primitive))
 
-    check(ft.Feature(pd_es['log']['session_id'], groupby=pd_es['log']['session_id'], primitive=CumCount))
+    check(ft.Feature(IdentityFeature(pd_es, 'log', 'session_id'), groupby=IdentityFeature(pd_es, 'log', 'session_id'), primitive=CumCount))
 
 
 def test_cum_mean(pd_es):
-    log_value_feat = pd_es['log']['value']
-    cum_mean = ft.Feature(log_value_feat, groupby=pd_es['log']['session_id'], primitive=CumMean)
+    log_value_feat = ft.IdentityFeature(pd_es, 'log', 'value')
+    cum_mean = ft.Feature(log_value_feat, groupby=IdentityFeature(pd_es, 'log', 'session_id'), primitive=CumMean)
     features = [cum_mean]
     df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(15))
     cvalues = df[cum_mean.get_name()].values
@@ -287,8 +287,8 @@ def test_cum_mean(pd_es):
 
 
 def test_cum_count(pd_es):
-    cum_count = ft.Feature(pd_es['log']['session_id'],
-                           groupby=pd_es['log']['session_id'],
+    cum_count = ft.Feature(IdentityFeature(pd_es, 'log', 'session_id'),
+                           groupby=IdentityFeature(pd_es, 'log', 'session_id'),
                            primitive=CumCount)
     features = [cum_count]
     df = ft.calculate_feature_matrix(entityset=pd_es,
@@ -302,22 +302,22 @@ def test_cum_count(pd_es):
 
 
 def test_rename(pd_es):
-    cum_count = ft.Feature(pd_es['log']['session_id'],
-                           groupby=pd_es['log']['session_id'],
+    cum_count = ft.Feature(ft.IdentityFeature(pd_es, 'log', 'session_id'),
+                           groupby=ft.IdentityFeature(pd_es, 'log', 'session_id'),
                            primitive=CumCount)
     copy_feat = cum_count.rename("rename_test")
     assert cum_count.unique_name() != copy_feat.unique_name()
     assert cum_count.get_name() != copy_feat.get_name()
     assert all([x.generate_name() == y.generate_name() for x, y
                 in zip(cum_count.base_features, copy_feat.base_features)])
-    assert cum_count.entity == copy_feat.entity
+    assert cum_count.dataframe_name == copy_feat.dataframe_name
 
 
 def test_groupby_no_data(pd_es):
-    cum_count = ft.Feature(pd_es['log']['session_id'],
-                           groupby=pd_es['log']['session_id'],
+    cum_count = ft.Feature(IdentityFeature(pd_es, 'log', 'session_id'),
+                           groupby=IdentityFeature(pd_es, 'log', 'session_id'),
                            primitive=CumCount)
-    last_feat = ft.Feature(cum_count, parent_entity=pd_es['customers'], primitive=Last)
+    last_feat = ft.Feature(cum_count, parent_dataframe_name='customers', primitive=Last)
     df = ft.calculate_feature_matrix(entityset=pd_es,
                                      features=[last_feat],
                                      cutoff_time=pd.Timestamp("2011-04-08"))
@@ -367,7 +367,7 @@ def test_groupby_multi_output_stacking(pd_es):
 
     fl = dfs(
         entityset=pd_es,
-        target_entity="sessions",
+        target_dataframe="sessions",
         agg_primitives=['sum'],
         groupby_trans_primitives=[TestTime],
         features_only=True,
@@ -380,8 +380,8 @@ def test_groupby_multi_output_stacking(pd_es):
 
 
 def test_serialization(pd_es):
-    value = ft.IdentityFeature(pd_es['log']['value'])
-    zipcode = ft.IdentityFeature(pd_es['log']['zipcode'])
+    value = ft.IdentityFeature(pd_es, 'log', 'value')
+    zipcode = ft.IdentityFeature(pd_es, 'log', 'zipcode')
     primitive = CumSum()
     groupby = ft.feature_base.GroupByTransformFeature(value, primitive, zipcode)
 

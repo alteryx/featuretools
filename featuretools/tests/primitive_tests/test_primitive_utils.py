@@ -61,11 +61,11 @@ def test_list_primitives_order():
 
 def test_valid_input_types():
     actual = _get_unique_input_types(Haversine.input_types)
-    assert actual == {'<ColumnSchema (Logcal Type = LatLong)>'}
+    assert actual == {'<ColumnSchema (Logical Type = LatLong)>'}
     actual = _get_unique_input_types(GreaterThan.input_types)
-    assert actual == {'<ColumnSchema (Logcal Type = Datetime)>',
+    assert actual == {'<ColumnSchema (Logical Type = Datetime)>',
                       "<ColumnSchema (Semantic Tags = ['numeric'])>",
-                      '<ColumnSchema (Logcal Type = Ordinal)>'}
+                      '<ColumnSchema (Logical Type = Ordinal)>'}
     actual = _get_unique_input_types(Sum.input_types)
     assert actual == {"<ColumnSchema (Semantic Tags = ['numeric'])>"}
 

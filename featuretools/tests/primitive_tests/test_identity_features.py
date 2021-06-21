@@ -3,17 +3,17 @@ from featuretools.primitives.utils import PrimitivesDeserializer
 
 
 def test_relationship_path(es):
-    value = ft.IdentityFeature(es['log']['value'])
+    value = ft.IdentityFeature(es, 'log', 'value')
     assert len(value.relationship_path) == 0
 
 
 def test_serialization(es):
-    value = ft.IdentityFeature(es['log']['value'])
+    value = ft.IdentityFeature(es, 'log', 'value')
 
     dictionary = {
         'name': None,
-        'entity_id': 'log',
-        'variable_id': 'value',
+        'column_name': 'value',
+        'dataframe_name': 'log',
     }
 
     assert dictionary == value.get_arguments()

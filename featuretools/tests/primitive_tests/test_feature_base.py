@@ -23,13 +23,13 @@ from featuretools.tests.testing_utils import check_rename
 
 
 def test_copy_features_does_not_copy_entityset(es):
-    agg = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum)
-    agg_where = ft.Feature(es['log']['value'], parent_entity=es['sessions'],
-                           where=IdentityFeature(es['log']['value']) == 2, primitive=Sum)
-    agg_use_previous = ft.Feature(es['log']['value'], parent_entity=es['sessions'],
+    agg = ft.Feature(es, 'log', 'value', parent_dataframe_name='sessions', primitive=Sum)
+    agg_where = ft.Feature(es, 'log', 'value', parent_dataframe_name='sessions',
+                           where=IdentityFeature(es, 'log', 'value') == 2, primitive=Sum)
+    agg_use_previous = ft.Feature(es, 'log', 'value', parent_dataframe_name='sessions',
                                   use_previous='4 days', primitive=Sum)
-    agg_use_previous_where = ft.Feature(es['log']['value'], parent_entity=es['sessions'],
-                                        where=IdentityFeature(es['log']['value']) == 2,
+    agg_use_previous_where = ft.Feature(es, 'log', 'value', parent_dataframe_name='sessions',
+                                        where=IdentityFeature(es, 'log', 'value') == 2,
                                         use_previous='4 days', primitive=Sum)
     features = [agg, agg_where, agg_use_previous, agg_use_previous_where]
     in_memory_size = asizeof(locals())
@@ -39,10 +39,10 @@ def test_copy_features_does_not_copy_entityset(es):
 
 
 def test_get_dependencies(es):
-    f = ft.Feature(es['log']['value'])
-    agg1 = ft.Feature(f, parent_entity=es['sessions'], primitive=Sum)
-    agg2 = ft.Feature(agg1, parent_entity=es['customers'], primitive=Sum)
-    d1 = ft.Feature(agg2, es['sessions'])
+    f = ft.Feature(es, 'log', 'value')
+    agg1 = ft.Feature(f, parent_dataframe_name='sessions', primitive=Sum)
+    agg2 = ft.Feature(agg1, parent_dataframe_name='customers', primitive=Sum)
+    d1 = ft.Feature(agg2, 'sessions')
     shallow = d1.get_dependencies(deep=False, ignored=None)
     deep = d1.get_dependencies(deep=True, ignored=None)
     ignored = set([agg1.unique_name()])
@@ -53,12 +53,12 @@ def test_get_dependencies(es):
 
 
 def test_get_depth(es):
-    f = ft.Feature(es['log']['value'])
-    g = ft.Feature(es['log']['value'])
-    agg1 = ft.Feature(f, parent_entity=es['sessions'], primitive=Last)
-    agg2 = ft.Feature(agg1, parent_entity=es['customers'], primitive=Last)
-    d1 = ft.Feature(agg2, es['sessions'])
-    d2 = ft.Feature(d1, es['log'])
+    f = ft.Feature(es, 'log', 'value')
+    g = ft.Feature(es, 'log', 'value')
+    agg1 = ft.Feature(f, parent_dataframe_name='sessions', primitive=Last)
+    agg2 = ft.Feature(agg1, parent_dataframe_name='customers', primitive=Last)
+    d1 = ft.Feature(agg2, 'sessions')
+    d2 = ft.Feature(d1, 'log')
     assert d2.get_depth() == 4
     # Make sure this works if we pass in two of the same
     # feature. This came up when user supplied duplicates
@@ -72,21 +72,21 @@ def test_get_depth(es):
 
 
 def test_squared(es):
-    feature = ft.Feature(es['log']['value'])
+    feature = ft.Feature(es, 'log', 'value')
     squared = feature * feature
     assert len(squared.base_features) == 2
     assert squared.base_features[0].unique_name() == squared.base_features[1].unique_name()
 
 
 def test_return_type_inference(es):
-    mode = ft.Feature(es["log"]["priority_level"], parent_entity=es["customers"], primitive=Mode)
-    assert mode.variable_type == es["log"]["priority_level"].__class__
+    mode = ft.Feature(es, "log", "priority_level", parent_dataframe_name="customers", primitive=Mode)
+    assert mode.column_schema == IdentityFeature(es, "log", "priority_level").column_schema
 
 
 def test_return_type_inference_direct_feature(es):
-    mode = ft.Feature(es["log"]["priority_level"], parent_entity=es["customers"], primitive=Mode)
-    mode_session = ft.Feature(mode, es["sessions"])
-    assert mode_session.variable_type == es["log"]["priority_level"].__class__
+    mode = ft.Feature(es, "log", "priority_level", parent_dataframe_name="customers", primitive=Mode)
+    mode_session = ft.Feature(mode, "sessions")
+    assert mode_session.column_schema == IdentityFeature(es, "log", "priority_level").column_schema
 
 
 def test_return_type_inference_index(es):
@@ -151,50 +151,49 @@ def test_set_data_path(es):
 
 
 def test_to_dictionary_direct(es):
-    direct_feature = ft.Feature(es["sessions"]["customer_id"], es["log"])
+    actual = ft.Feature(IdentityFeature(es, "sessions", "customer_id"), "log").to_dictionary()
 
     expected = {
         'type': 'DirectFeature',
         'dependencies': ['sessions: customer_id'],
         'arguments': {'name': None,
                       'base_feature': 'sessions: customer_id',
-                      'relationship': {'parent_dataframe_id': 'sessions',
-                                       'child_dataframe_id': 'log',
-                                       'parent_column_id': 'id',
-                                       'child_column_id': 'session_id'}
+                      'relationship': {'parent_dataframe_name': 'sessions',
+                                       'child_dataframe_name': 'log',
+                                       'parent_column_name': 'id',
+                                       'child_column_name': 'session_id'}
                       }
     }
 
-    assert expected == direct_feature.to_dictionary()
+    assert expected == actual
 
 
 def test_to_dictionary_identity(es):
-    identity_feature = ft.Feature(es["sessions"]["customer_id"])
+    actual = ft.Feature(es, "sessions", "customer_id").to_dictionary()
 
     expected = {
         'type': 'IdentityFeature',
         'dependencies': [],
         'arguments': {'name': None,
-                      'variable_id': 'customer_id',
-                      'entity_id': 'sessions'}
+                      'column_name': 'customer_id',
+                      'dataframe_name': 'sessions'}
     }
 
-    assert expected == identity_feature.to_dictionary()
+    assert expected == actual
 
 
 def test_to_dictionary_agg(es):
-    agg_feature = ft.Feature(es["customers"]["age"],
-                             primitive=Sum, parent_entity=es['cohorts'])
+    actual = ft.Feature(es, "customers", "age", primitive=Sum, parent_dataframe_name='cohorts').to_dictionary()
 
     expected = {
         'type': 'AggregationFeature',
         'dependencies': ['customers: age'],
         'arguments': {'name': None,
                       'base_features': ['customers: age'],
-                      'relationship_path': [{'parent_dataframe_id': 'cohorts',
-                                             'child_dataframe_id': 'customers',
-                                             'parent_column_id': 'cohort',
-                                             'child_column_id': 'cohort'}],
+                      'relationship_path': [{'parent_dataframe_name': 'cohorts',
+                                             'child_dataframe_name': 'customers',
+                                             'parent_column_name': 'cohort',
+                                             'child_column_name': 'cohort'}],
                       'primitive': {'type': 'Sum',
                                     'module': 'featuretools.primitives.standard.aggregation_primitives',
                                     'arguments': {}},
@@ -202,22 +201,22 @@ def test_to_dictionary_agg(es):
                       'use_previous': None}
     }
 
-    assert expected == agg_feature.to_dictionary()
+    assert expected == actual
 
 
 def test_to_dictionary_where(es):
-    agg_where = ft.Feature(es['log']['value'], parent_entity=es['sessions'],
-                           where=ft.IdentityFeature(es['log']['value']) == 2, primitive=Sum)
+    actual = ft.Feature(es, 'log', 'value', parent_dataframe_name='sessions',
+                           where=ft.IdentityFeature(es, 'log', 'value') == 2, primitive=Sum).to_dictionary()
 
     expected = {
         'type': 'AggregationFeature',
         'dependencies': ['log: value', 'log: value = 2'],
         'arguments': {'name': None,
                       'base_features': ['log: value'],
-                      'relationship_path': [{'parent_dataframe_id': 'sessions',
-                                             'child_dataframe_id': 'log',
-                                             'parent_column_id': 'id',
-                                             'child_column_id': 'session_id'}],
+                      'relationship_path': [{'parent_dataframe_name': 'sessions',
+                                             'child_dataframe_name': 'log',
+                                             'parent_column_name': 'id',
+                                             'child_column_name': 'session_id'}],
                       'primitive': {'type': 'Sum',
                                     'module': 'featuretools.primitives.standard.aggregation_primitives',
                                     'arguments': {}},
@@ -225,11 +224,11 @@ def test_to_dictionary_where(es):
                       'use_previous': None}
     }
 
-    assert expected == agg_where.to_dictionary()
+    assert expected == actual
 
 
 def test_to_dictionary_trans(es):
-    trans_feature = ft.Feature(es["customers"]["age"], primitive=Negate)
+    trans_feature = ft.Feature(es, "customers", "age", primitive=Negate)
 
     expected = {
         'type': 'TransformFeature',
@@ -244,8 +243,9 @@ def test_to_dictionary_trans(es):
     assert expected == trans_feature.to_dictionary()
 
 
-def test_to_dictionary_grouby_trans(es):
-    groupby_feature = ft.Feature(es['log']['value'], primitive=Negate, groupby=es['log']['product_id'])
+def test_to_dictionary_groupby_trans(es):
+    id_feat = ft.Feature(es, 'log', 'product_id')
+    groupby_feature = ft.Feature(es, 'log', 'value', primitive=Negate, groupby=id_feat)
 
     expected = {
         'type': 'GroupByTransformFeature',
@@ -262,7 +262,7 @@ def test_to_dictionary_grouby_trans(es):
 
 
 def test_to_dictionary_multi_slice(es):
-    slice_feature = ft.Feature(es['log']['product_id'], parent_entity=es['customers'], primitive=NMostCommon(n=2))[0]
+    slice_feature = ft.Feature(es, 'log', 'product_id', parent_dataframe_name='customers', primitive=NMostCommon(n=2))[0]
 
     expected = {
         'type': 'FeatureOutputSlice',
@@ -277,10 +277,10 @@ def test_to_dictionary_multi_slice(es):
 
 def test_multi_output_base_error_agg(es):
     three_common = NMostCommon(3)
-    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=three_common)
+    tc = ft.Feature(es, 'log', 'product_id', parent_dataframe_name="sessions", primitive=three_common)
     error_text = "Cannot stack on whole multi-output feature."
     with pytest.raises(ValueError, match=error_text):
-        ft.Feature(tc, parent_entity=es['customers'], primitive=NumUnique)
+        ft.Feature(tc, parent_dataframe_name='customers', primitive=NumUnique)
 
 
 def test_multi_output_base_error_trans(es):
@@ -290,7 +290,7 @@ def test_multi_output_base_error_trans(es):
         return_type = ColumnSchema(semantic_tags={'numeric'})
         number_output_features = 6
 
-    tc = ft.Feature(es['customers']['date_of_birth'], primitive=TestTime)
+    tc = ft.Feature(es, 'customers', 'date_of_birth', primitive=TestTime)
 
     error_text = "Cannot stack on whole multi-output feature."
     with pytest.raises(ValueError, match=error_text):
@@ -298,7 +298,7 @@ def test_multi_output_base_error_trans(es):
 
 
 def test_multi_output_attributes(es):
-    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=NMostCommon)
+    tc = ft.Feature(es, 'log', 'product_id', parent_dataframe_name="sessions", primitive=NMostCommon)
 
     assert tc.generate_name() == 'N_MOST_COMMON(log.product_id)'
     assert tc.number_output_features == 3
@@ -312,13 +312,13 @@ def test_multi_output_attributes(es):
 
 def test_multi_output_index_error(es):
     error_text = "can only access slice of multi-output feature"
-    three_common = ft.Feature(es['log']['product_id'],
-                              parent_entity=es["sessions"],
+    three_common = ft.Feature(es, 'log', 'product_id',
+                              parent_dataframe_name="sessions",
                               primitive=NMostCommon)
 
     with pytest.raises(AssertionError, match=error_text):
-        single = ft.Feature(es['log']['product_id'],
-                            parent_entity=es["sessions"],
+        single = ft.Feature(es, 'log', 'product_id',
+                            parent_dataframe_name="sessions",
                             primitive=NumUnique)
         single[0]
 
@@ -332,15 +332,15 @@ def test_multi_output_index_error(es):
 
 
 def test_rename(es):
-    feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
+    feat = ft.Feature(es, 'log', 'id', parent_dataframe_name='sessions', primitive=Count)
     new_name = 'session_test'
     new_names = ['session_test']
     check_rename(feat, new_name, new_names)
 
 
 def test_rename_multioutput(es):
-    feat = ft.Feature(es['log']['product_id'],
-                      parent_entity=es['customers'],
+    feat = ft.Feature(es, 'log', 'product_id',
+                      parent_dataframe_name='customers',
                       primitive=NMostCommon(n=2))
     new_name = 'session_test'
     new_names = ['session_test[0]', 'session_test[1]']
@@ -348,8 +348,8 @@ def test_rename_multioutput(es):
 
 
 def test_rename_featureoutputslice(es):
-    multi_output_feat = ft.Feature(es['log']['product_id'],
-                                   parent_entity=es['customers'],
+    multi_output_feat = ft.Feature(es, 'log', 'product_id',
+                                   parent_dataframe_name='customers',
                                    primitive=NMostCommon(n=2))
     feat = ft.feature_base.FeatureOutputSlice(multi_output_feat, 0)
     new_name = 'session_test'

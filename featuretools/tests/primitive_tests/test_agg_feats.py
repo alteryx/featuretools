@@ -57,16 +57,16 @@ def test_primitive():
 
 
 def test_get_depth(es):
-    log_id_feat = es['log']['id']
-    customer_id_feat = es['customers']['id']
-    count_logs = ft.Feature(log_id_feat, parent_entity=es['sessions'], primitive=Count)
-    sum_count_logs = ft.Feature(count_logs, parent_entity=es['customers'], primitive=Sum)
+    log_id_feat = ft.IdentityFeature(es, 'log', 'id')
+    customer_id_feat = ft.IdentityFeature(es, 'customers', 'id')
+    count_logs = ft.Feature(log_id_feat, parent_dataframe_name='sessions', primitive=Count)
+    sum_count_logs = ft.Feature(count_logs, parent_dataframe_name='customers', primitive=Sum)
     num_logs_greater_than_5 = sum_count_logs > 5
     count_customers = ft.Feature(customer_id_feat,
-                                 parent_entity=es[u'régions'],
+                                 parent_dataframe_name=u'régions',
                                  where=num_logs_greater_than_5,
                                  primitive=Count)
-    num_customers_region = ft.Feature(count_customers, entity=es["customers"])
+    num_customers_region = ft.Feature(count_customers, dataframe_name="customers")
 
     depth = num_customers_region.get_depth()
     assert depth == 5
@@ -113,19 +113,19 @@ def test_count_null_and_make_agg_primitive(pd_es):
         stack_on_self=False,
         cls_attributes={"generate_name": count_generate_name}
     )
-    count_null = ft.Feature(pd_es['log']['value'], parent_entity=pd_es['sessions'], primitive=Count(count_null=True))
+    count_null = ft.Feature(pd_es, 'log', 'value', parent_dataframe_name='sessions', primitive=Count(count_null=True))
     feature_matrix = ft.calculate_feature_matrix([count_null], entityset=pd_es)
     values = [5, 4, 1, 2, 3, 2]
     assert (values == feature_matrix[count_null.get_name()]).all()
 
 
 def test_check_input_types(es):
-    count = ft.Feature(es["sessions"]["id"], parent_entity=es["customers"], primitive=Count)
-    mean = ft.Feature(count, parent_entity=es[u"régions"], primitive=Mean)
+    count = ft.Feature(es, "sessions", "id", parent_dataframe_name="customers", primitive=Count)
+    mean = ft.Feature(count, parent_dataframe_name=u"régions", primitive=Mean)
     assert mean._check_input_types()
 
     boolean = count > 3
-    mean = ft.Feature(count, parent_entity=es[u"régions"], where=boolean, primitive=Mean)
+    mean = ft.Feature(count, parent_dataframe_name=u"régions", where=boolean, primitive=Mean)
     assert mean._check_input_types()
 
 
@@ -147,22 +147,22 @@ def test_mean_nan(es):
     assert isnan(mean_func_nans_true(array_nans))
 
     # test naming
-    default_feat = ft.Feature(es["log"]["value"],
-                              parent_entity=es["customers"],
+    default_feat = ft.Feature(es, "log", "value",
+                              parent_dataframe_name="customers",
                               primitive=Mean)
     assert default_feat.get_name() == "MEAN(log.value)"
-    ignore_nan_feat = ft.Feature(es["log"]["value"],
-                                 parent_entity=es["customers"],
+    ignore_nan_feat = ft.Feature(es, "log", "value",
+                                 parent_dataframe_name="customers",
                                  primitive=Mean(skipna=True))
     assert ignore_nan_feat.get_name() == "MEAN(log.value)"
-    include_nan_feat = ft.Feature(es["log"]["value"],
-                                  parent_entity=es["customers"],
+    include_nan_feat = ft.Feature(es, "log", "value",
+                                  parent_dataframe_name="customers",
                                   primitive=Mean(skipna=False))
     assert include_nan_feat.get_name() == "MEAN(log.value, skipna=False)"
 
 
 def test_base_of_and_stack_on_heuristic(es, test_primitive):
-    child = ft.Feature(es["sessions"]["id"], parent_entity=es["customers"], primitive=Count)
+    child = ft.Feature(es, "sessions", "id", parent_dataframe_name="customers", primitive=Count)
     test_primitive.stack_on = []
     child.primitive.base_of = []
     assert not check_stacking(test_primitive(), [child])
@@ -202,7 +202,7 @@ def test_base_of_and_stack_on_heuristic(es, test_primitive):
 
 def test_stack_on_self(es, test_primitive):
     # test stacks on self
-    child = ft.Feature(es['log']['value'], parent_entity=es[u'régions'], primitive=test_primitive)
+    child = ft.Feature(es, 'log', 'value', parent_dataframe_name=u'régions', primitive=test_primitive)
     test_primitive.stack_on = []
     child.primitive.base_of = []
     test_primitive.stack_on_self = False
@@ -221,7 +221,7 @@ def test_init_and_name(es):
     session = es['sessions']
     log = es['log']
 
-    features = [ft.Feature(v) for v in log.variables]
+    features = [ft.Feature(es, 'log', col) for col in log.columns]
     agg_primitives = get_aggregation_primitives().values()
     # If Dask EntitySet use only Dask compatible primitives
     if es.dataframe_type == Library.DASK.value:
@@ -241,7 +241,7 @@ def test_init_and_name(es):
             if len(matching_types) == 0:
                 raise Exception("Agg Primitive %s not tested" % agg_prim.name)
             for t in matching_types:
-                instance = ft.Feature(t, parent_entity=session, primitive=agg_prim)
+                instance = ft.Feature(t, parent_dataframe_name=session, primitive=agg_prim)
 
                 # try to get name and calculate
                 instance.get_name()
@@ -252,16 +252,16 @@ def test_invalid_init_args(diamond_es):
     error_text = 'parent_entity must match first relationship in path'
     with pytest.raises(AssertionError, match=error_text):
         path = backward_path(diamond_es, ['stores', 'transactions'])
-        ft.AggregationFeature(diamond_es['transactions']['amount'],
-                              diamond_es['customers'],
+        ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'transactions', 'amount'),
+                              'customers',
                               ft.primitives.Mean,
                               relationship_path=path)
 
-    error_text = 'Base feature must be defined on the entity at the end of relationship_path'
+    error_text = 'Base feature must be defined on the dataframe at the end of relationship_path'
     with pytest.raises(AssertionError, match=error_text):
         path = backward_path(diamond_es, ['regions', 'stores'])
-        ft.AggregationFeature(diamond_es['transactions']['amount'],
-                              diamond_es['regions'],
+        ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'transactions', 'amount'),
+                              'regions',
                               ft.primitives.Mean,
                               relationship_path=path)
 
@@ -270,24 +270,24 @@ def test_invalid_init_args(diamond_es):
         backward = backward_path(diamond_es, ['customers', 'transactions'])
         forward = RelationshipPath([(True, r) for _, r in backward])
         path = RelationshipPath(list(forward) + list(backward))
-        ft.AggregationFeature(diamond_es['transactions']['amount'],
-                              diamond_es['transactions'],
+        ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'transactions', 'amount'),
+                              'transactions',
                               ft.primitives.Mean,
                               relationship_path=path)
 
 
 def test_init_with_multiple_possible_paths(diamond_es):
-    error_text = "There are multiple possible paths to the base entity. " \
+    error_text = "There are multiple possible paths to the base dataframe. " \
                  "You must specify a relationship path."
     with pytest.raises(RuntimeError, match=error_text):
-        ft.AggregationFeature(diamond_es['transactions']['amount'],
-                              diamond_es['regions'],
+        ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'transactions', 'amount'),
+                              'regions',
                               ft.primitives.Mean)
 
     # Does not raise if path specified.
     path = backward_path(diamond_es, ['regions', 'customers', 'transactions'])
-    ft.AggregationFeature(diamond_es['transactions']['amount'],
-                          diamond_es['regions'],
+    ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'transactions', 'amount'),
+                          'regions',
                           ft.primitives.Mean,
                           relationship_path=path)
 
@@ -295,8 +295,8 @@ def test_init_with_multiple_possible_paths(diamond_es):
 def test_init_with_single_possible_path(diamond_es):
     # This uses diamond_es to test that there being a cycle somewhere in the
     # graph doesn't cause an error.
-    feat = ft.AggregationFeature(diamond_es['transactions']['amount'],
-                                 diamond_es['customers'],
+    feat = ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'transactions', 'amount'),
+                                 'customers',
                                  ft.primitives.Mean)
     expected_path = backward_path(diamond_es, ['customers', 'transactions'])
     assert feat.relationship_path == expected_path
@@ -305,21 +305,21 @@ def test_init_with_single_possible_path(diamond_es):
 def test_init_with_no_path(diamond_es):
     error_text = 'No backward path from "transactions" to "customers" found.'
     with pytest.raises(RuntimeError, match=error_text):
-        ft.AggregationFeature(diamond_es['customers']['name'],
-                              diamond_es['transactions'],
+        ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'customers', 'name'),
+                              'transactions',
                               ft.primitives.Count)
 
     error_text = 'No backward path from "transactions" to "transactions" found.'
     with pytest.raises(RuntimeError, match=error_text):
-        ft.AggregationFeature(diamond_es['transactions']['amount'],
-                              diamond_es['transactions'],
+        ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'transactions', 'amount'),
+                              'transactions',
                               ft.primitives.Mean)
 
 
 def test_name_with_multiple_possible_paths(diamond_es):
     path = backward_path(diamond_es, ['regions', 'customers', 'transactions'])
-    feat = ft.AggregationFeature(diamond_es['transactions']['amount'],
-                                 diamond_es['regions'],
+    feat = ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'transactions', 'amount'),
+                                 'regions',
                                  ft.primitives.Mean,
                                  relationship_path=path)
 
@@ -331,12 +331,12 @@ def test_copy(games_es):
     home_games = next(r for r in games_es.relationships
                       if r.child_column.name == 'home_team_id')
     path = RelationshipPath([(False, home_games)])
-    feat = ft.AggregationFeature(games_es['games']['home_team_score'],
-                                 games_es['teams'],
+    feat = ft.AggregationFeature(ft.IdentityFeature(games_es, 'games', 'home_team_score'),
+                                 'teams',
                                  relationship_path=path,
                                  primitive=ft.primitives.Mean)
     copied = feat.copy()
-    assert copied.entity == feat.entity
+    assert copied.entityset == feat.entityset
     assert copied.base_features == feat.base_features
     assert copied.relationship_path == feat.relationship_path
     assert copied.primitive == feat.primitive
@@ -344,9 +344,9 @@ def test_copy(games_es):
 
 def test_serialization(es):
     primitives_deserializer = PrimitivesDeserializer()
-    value = ft.IdentityFeature(es['log']['value'])
+    value = ft.IdentityFeature(es, 'log', 'value')
     primitive = ft.primitives.Max()
-    max1 = ft.AggregationFeature(value, es['customers'], primitive)
+    max1 = ft.AggregationFeature(value, 'customers', primitive)
 
     path = next(es.find_backward_paths('customers', 'log'))
     dictionary = {
@@ -365,9 +365,9 @@ def test_serialization(es):
                                                          primitives_deserializer)
     _assert_agg_feats_equal(max1, deserialized)
 
-    is_purchased = ft.IdentityFeature(es['log']['purchased'])
+    is_purchased = ft.IdentityFeature(es, 'log', 'purchased')
     use_previous = ft.Timedelta(3, 'd')
-    max2 = ft.AggregationFeature(value, es['customers'], primitive,
+    max2 = ft.AggregationFeature(value, 'customers', primitive,
                                  where=is_purchased, use_previous=use_previous)
 
     dictionary = {
@@ -392,7 +392,7 @@ def test_serialization(es):
 
 
 def test_time_since_last(pd_es):
-    f = ft.Feature(pd_es["log"]["datetime"], parent_entity=pd_es["customers"], primitive=TimeSinceLast)
+    f = ft.Feature(pd_es, "log", "datetime", parent_dataframe_name="customers", primitive=TimeSinceLast)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=pd_es,
                                      instance_ids=[0, 1, 2],
@@ -404,7 +404,7 @@ def test_time_since_last(pd_es):
 
 
 def test_time_since_first(pd_es):
-    f = ft.Feature(pd_es["log"]["datetime"], parent_entity=pd_es["customers"], primitive=TimeSinceFirst)
+    f = ft.Feature(pd_es, "log", "datetime", parent_dataframe_name="customers", primitive=TimeSinceFirst)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=pd_es,
                                      instance_ids=[0, 1, 2],
@@ -416,7 +416,7 @@ def test_time_since_first(pd_es):
 
 
 def test_median(pd_es):
-    f = ft.Feature(pd_es["log"]["value_many_nans"], parent_entity=pd_es["customers"], primitive=Median)
+    f = ft.Feature(pd_es, "log", "value_many_nans", parent_dataframe_name="customers", primitive=Median)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=pd_es,
                                      instance_ids=[0, 1, 2],
@@ -450,8 +450,8 @@ def test_agg_same_method_name(es):
     Max = make_agg_primitive(custom_primitive, input_types=[ColumnSchema(semantic_tags={'numeric'})],
                              return_type=ColumnSchema(semantic_tags={'numeric'}), name="max")
 
-    f_sum = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Sum)
-    f_max = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Max)
+    f_sum = ft.Feature(es, "log", "value", parent_dataframe_name="customers", primitive=Sum)
+    f_max = ft.Feature(es, "log", "value", parent_dataframe_name="customers", primitive=Max)
 
     fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
@@ -462,8 +462,8 @@ def test_agg_same_method_name(es):
     Max = make_agg_primitive(lambda x: x.max(), input_types=[ColumnSchema(semantic_tags={'numeric'})],
                              return_type=ColumnSchema(semantic_tags={'numeric'}), name="max")
 
-    f_sum = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Sum)
-    f_max = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Max)
+    f_sum = ft.Feature(es, "log", "value", parent_dataframe_name="customers", primitive=Sum)
+    f_max = ft.Feature(es, "log", "value", parent_dataframe_name="customers", primitive=Max)
     fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
 
@@ -478,7 +478,7 @@ def test_time_since_last_custom(pd_es):
                                        ColumnSchema(semantic_tags={'numeric'}),
                                        name="time_since_last",
                                        uses_calc_time=True)
-    f = ft.Feature(pd_es["log"]["datetime"], parent_entity=pd_es["customers"], primitive=TimeSinceLast)
+    f = ft.Feature(pd_es, "log", "datetime", parent_dataframe_name="customers", primitive=TimeSinceLast)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=pd_es,
                                      instance_ids=[0, 1, 2],
@@ -506,7 +506,7 @@ def test_custom_primitive_time_as_arg(pd_es):
                                        ColumnSchema(semantic_tags={'numeric'}),
                                        uses_calc_time=True)
     assert TimeSinceLast.name == "time_since_last"
-    f = ft.Feature(pd_es["log"]["datetime"], parent_entity=pd_es["customers"], primitive=TimeSinceLast)
+    f = ft.Feature(pd_es, "log", "datetime", parent_dataframe_name="customers", primitive=TimeSinceLast)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=pd_es,
                                      instance_ids=[0, 1, 2],
@@ -569,11 +569,11 @@ def test_custom_primitive_default_kwargs(es):
                                    return_type=ColumnSchema(semantic_tags={'numeric'}))
 
     sum_n_1_n = 1
-    sum_n_1_base_f = ft.Feature(es['log']['value'])
-    sum_n_1 = ft.Feature([sum_n_1_base_f], parent_entity=es['sessions'], primitive=SumNTimes(n=sum_n_1_n))
+    sum_n_1_base_f = ft.Feature(es, 'log', 'value')
+    sum_n_1 = ft.Feature([sum_n_1_base_f], parent_dataframe_name='sessions', primitive=SumNTimes(n=sum_n_1_n))
     sum_n_2_n = 2
-    sum_n_2_base_f = ft.Feature(es['log']['value_2'])
-    sum_n_2 = ft.Feature([sum_n_2_base_f], parent_entity=es['sessions'], primitive=SumNTimes(n=sum_n_2_n))
+    sum_n_2_base_f = ft.Feature(es, 'log', 'value_2')
+    sum_n_2 = ft.Feature([sum_n_2_base_f], parent_dataframe_name='sessions', primitive=SumNTimes(n=sum_n_2_n))
     assert sum_n_1_base_f == sum_n_1.base_features[0]
     assert sum_n_1_n == sum_n_1.primitive.kwargs['n']
     assert sum_n_2_base_f == sum_n_2.base_features[0]
@@ -622,11 +622,11 @@ def test_make_three_most_common(pd_es):
 
 def test_stacking_multi(pd_es):
     threecommon = NMostCommon(3)
-    tc = ft.Feature(pd_es['log']['product_id'], parent_entity=pd_es["sessions"], primitive=threecommon)
+    tc = ft.Feature(pd_es, 'log', 'product_id', parent_dataframe_name="sessions", primitive=threecommon)
 
     stacked = []
     for i in range(3):
-        stacked.append(ft.Feature(tc[i], parent_entity=pd_es['customers'], primitive=NumUnique))
+        stacked.append(ft.Feature(tc[i], parent_dataframe_name='customers', primitive=NumUnique))
 
     fm = ft.calculate_feature_matrix(stacked, entityset=pd_es, instance_ids=[0, 1, 2])
 
@@ -643,8 +643,8 @@ def test_stacking_multi(pd_es):
 
 
 def test_use_previous_pd_dateoffset(es):
-    total_events_pd = ft.Feature(es["log"]["id"],
-                                 parent_entity=es["customers"],
+    total_events_pd = ft.Feature(es, "log", "id",
+                                 parent_dataframe_name="customers",
                                  use_previous=pd.DateOffset(hours=47, minutes=60),
                                  primitive=Count)
 
@@ -658,8 +658,8 @@ def test_use_previous_pd_dateoffset(es):
 
 def _assert_agg_feats_equal(f1, f2):
     assert f1.unique_name() == f2.unique_name()
-    assert f1.child_entity.id == f2.child_entity.id
-    assert f1.parent_entity.id == f2.parent_entity.id
+    assert f1.child_dataframe_name == f2.child_dataframe_name
+    assert f1.parent_dataframe_name == f2.parent_dataframe_name
     assert f1.relationship_path == f2.relationship_path
     assert f1.use_previous == f2.use_previous
 
