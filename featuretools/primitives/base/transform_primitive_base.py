@@ -36,9 +36,9 @@ def make_trans_primitive(function, input_types, return_type, name=None,
         function (function): Function that takes in a series and applies some
             transformation to it.
 
-        input_types (list[Variable]): Variable types of the inputs.
+        input_types (list[ColumnSchema]): ColumnSchema of the inputs.
 
-        return_type (Variable): Variable type of return.
+        return_type (ColumnSchema): ColumnSchema of returned feature.
 
         name (str): Name of the primitive. If no name is provided, the name
             of `function` will be used.
@@ -62,7 +62,8 @@ def make_trans_primitive(function, input_types, return_type, name=None,
         .. ipython :: python
 
             from featuretools.primitives import make_trans_primitive
-            from featuretools.variable_types import Variable, Boolean
+            from woodwork.column_schema import ColumnSchema
+            from woodwork.logical_types import Boolean
 
             def pd_is_in(array, list_of_outputs=None):
                 if list_of_outputs is None:
@@ -75,8 +76,8 @@ def make_trans_primitive(function, input_types, return_type, name=None,
 
             IsIn = make_trans_primitive(
                 function=pd_is_in,
-                input_types=[Variable],
-                return_type=Boolean,
+                input_types=[ColumnSchema()],
+                return_type=ColumnSchema(logical_type=Boolean),
                 name="is_in",
                 description="For each value of the base feature, checks "
                 "whether it is in a list that provided.",
