@@ -22,6 +22,8 @@ Future Release
         * Refactor ``EntitySet.query_by_values`` to work with Woodwork dataframes (:pr:`1467`)
         * Replace ``list_variable_types`` with ``list_logical_types`` (:pr:`1477`)
         * Allow deep EntitySet equality check (:pr:`1480`)
+        * Update ``EntitySet.concat`` to work with Woodwork DataFrames (:pr:`1490`)
+        * Add function to list semantic tags (:pr:`1486`)
     * Documentation Changes
         * Improve formatting of release notes (:pr:`1396`)
     * Testing Changes
@@ -143,6 +145,20 @@ To update the dataframe for a single entity, call ``EntitySet.update_dataframe``
 .. code-block:: python
 
     >>> es.update_dataframe(entity_id='log', df=df)
+
+**List Logical Types and Semantic Tags**
+
+Logical types and semantic tags have replaced variable types to parse and interpret columns. You can list all the available logical types by calling ``featuretools.list_logical_types``.
+
+.. code-block:: python
+
+    >>> ft.list_logical_types()
+
+You can list all the available semantic tags by calling ``featuretools.list_semantic_tags``.
+
+.. code-block:: python
+
+    >>> ft.list_semantic_tags()
 
 v0.25.0 Jun 11, 2021
 ====================

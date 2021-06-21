@@ -12,6 +12,7 @@ import woodwork.logical_types as ltypes
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
+from featuretools.entityset.entityset import LTI_COLUMN_NAME
 from featuretools.tests.testing_utils import get_df_tags, to_pandas
 from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
@@ -878,98 +879,183 @@ def test_already_sorted_parameter():
     assert times == list(transactions_df.transaction_time)
 
 
-# # TODO: equality check fails, dask series have no .equals method; error computing lti if categorical index
-# # TODO: dask deepcopy
-# def test_concat_entitysets(es):
-#     df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
-#     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
-#         pytest.xfail("Dask has no .equals method and issue with categoricals "
-#                      "and add_last_time_indexes")
+def test_concat_not_inplace(es):
+    first_es = copy.deepcopy(es)
+    for df in first_es.dataframes:
+        new_df = df.loc[[], :]
+        first_es.update_dataframe(df.ww.name, new_df)
 
-#     if ks and any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
-#         pytest.xfail("Koalas deepcopy fails")
+    second_es = copy.deepcopy(es)
 
-#     vtypes = {'id': variable_types.Categorical,
-#               'category': variable_types.Categorical}
-#     es.entity_from_dataframe(entity_id='test_entity',
-#                              index='id1',
-#                              make_index=True,
-#                              variable_types=vtypes,
-#                              dataframe=df)
-#     es.add_last_time_indexes()
+    # set the data description
+    first_es.metadata
 
-#     assert es.__eq__(es)
-#     es_1 = copy.deepcopy(es)
-#     es_2 = copy.deepcopy(es)
+    new_es = first_es.concat(second_es)
 
-#     # map of what rows to take from es_1 and es_2 for each entity
-#     emap = {
-#         'log': [list(range(10)) + [14, 15, 16], list(range(10, 14)) + [15, 16]],
-#         'sessions': [[0, 1, 2, 5], [1, 3, 4, 5]],
-#         'customers': [[0, 2], [1, 2]],
-#         'test_entity': [[0, 1], [0, 2]],
-#     }
+    assert new_es == es
+    assert new_es._data_description is None
+    assert first_es._data_description is not None
 
-#     assert es.__eq__(es_1, deep=True)
-#     assert es.__eq__(es_2, deep=True)
 
-#     for i, _es in enumerate([es_1, es_2]):
-#         for entity, rows in emap.items():
-#             df = _es[entity].df
-#             _es.update_dataframe(entity_id=entity, df=df.loc[rows[i]])
+def test_concat_inplace(es):
+    first_es = copy.deepcopy(es)
+    second_es = copy.deepcopy(es)
+    for df in first_es.dataframes:
+        new_df = df.loc[[], :]
+        first_es.update_dataframe(df.ww.name, new_df)
 
-#     assert 10 not in es_1['log'].last_time_index.index
-#     assert 10 in es_2['log'].last_time_index.index
-#     assert 9 in es_1['log'].last_time_index.index
-#     assert 9 not in es_2['log'].last_time_index.index
-#     assert not es.__eq__(es_1, deep=True)
-#     assert not es.__eq__(es_2, deep=True)
+    # set the data description
+    es.metadata
 
-#     # make sure internal indexes work before concat
-#     regions = es_1.query_by_values('customers', ['United States'], variable_id=u'région_id')
-#     assert regions.index.isin(es_1['customers'].df.index).all()
+    es.concat(first_es, inplace=True)
 
-#     assert es_1.__eq__(es_2)
-#     assert not es_1.__eq__(es_2, deep=True)
+    assert second_es == es
+    assert es._data_description is None
 
-#     old_es_1 = copy.deepcopy(es_1)
-#     old_es_2 = copy.deepcopy(es_2)
-#     es_3 = es_1.concat(es_2)
 
-#     assert old_es_1.__eq__(es_1, deep=True)
-#     assert old_es_2.__eq__(es_2, deep=True)
+def test_concat_with_lti(es):
+    first_es = copy.deepcopy(es)
+    for df in first_es.dataframes:
+        if first_es.dataframe_type == Library.KOALAS.value:
+            # Koalas cannot compute last time indexes on an empty Dataframe
+            new_df = df.head(1)
+        else:
+            new_df = df.loc[[], :]
+        first_es.update_dataframe(df.ww.name, new_df)
 
-#     assert es_3.__eq__(es)
-#     for entity in es.entities:
-#         df = es[entity.id].df.sort_index()
-#         df_3 = es_3[entity.id].df.sort_index()
-#         for column in df:
-#             for x, y in zip(df[column], df_3[column]):
-#                 assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
-#         orig_lti = es[entity.id].last_time_index.sort_index()
-#         new_lti = es_3[entity.id].last_time_index.sort_index()
-#         for x, y in zip(orig_lti, new_lti):
-#             assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+    second_es = copy.deepcopy(es)
 
-#     es_1['stores'].last_time_index = None
-#     es_1['test_entity'].last_time_index = None
-#     es_2['test_entity'].last_time_index = None
-#     es_4 = es_1.concat(es_2)
-#     assert not es_4.__eq__(es, deep=True)
-#     for entity in es.entities:
-#         df = es[entity.id].df.sort_index()
-#         df_4 = es_4[entity.id].df.sort_index()
-#         for column in df:
-#             for x, y in zip(df[column], df_4[column]):
-#                 assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+    first_es.add_last_time_indexes()
+    second_es.add_last_time_indexes()
+    es.add_last_time_indexes()
 
-#         if entity.id != 'test_entity':
-#             orig_lti = es[entity.id].last_time_index.sort_index()
-#             new_lti = es_4[entity.id].last_time_index.sort_index()
-#             for x, y in zip(orig_lti, new_lti):
-#                 assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
-#         else:
-#             assert es_4[entity.id].last_time_index is None
+    new_es = first_es.concat(second_es)
+
+    assert new_es == es
+
+    first_es['stores'].ww.pop(LTI_COLUMN_NAME)
+    first_es['stores'].ww.metadata.pop('last_time_index')
+    second_es['stores'].ww.pop(LTI_COLUMN_NAME)
+    second_es['stores'].ww.metadata.pop('last_time_index')
+
+    assert not first_es.__eq__(es, deep=False)
+    assert not second_es.__eq__(es, deep=False)
+    assert LTI_COLUMN_NAME not in first_es['stores']
+    assert LTI_COLUMN_NAME not in second_es['stores']
+
+    new_es = first_es.concat(second_es)
+
+    assert new_es.__eq__(es, deep=True)
+    # stores will get last time index re-added because it has children that will get lti calculated
+    assert LTI_COLUMN_NAME in new_es['stores']
+
+
+def test_concat_errors(es):
+    # entitysets are not equal
+    copy_es = copy.deepcopy(es)
+    copy_es['customers'].ww.pop('phone_number')
+
+    error = "Entitysets must have the same dataframes, relationships"\
+        ", and column names"
+    with pytest.raises(ValueError, match=error):
+        es.concat(copy_es)
+
+
+def test_concat_sort_index_with_time_index(pd_es):
+    # only pandas dataframes sort on the index and time index
+    es1 = copy.deepcopy(pd_es)
+    es1.update_dataframe(dataframe_name='customers', df=pd_es['customers'].loc[[0, 1], :], already_sorted=True)
+    es2 = copy.deepcopy(pd_es)
+    es2.update_dataframe(dataframe_name='customers', df=pd_es['customers'].loc[[2], :], already_sorted=True)
+
+    combined_es_order_1 = es1.concat(es2)
+    combined_es_order_2 = es2.concat(es1)
+
+    assert list(combined_es_order_1['customers'].index) == [2, 0, 1]
+    assert list(combined_es_order_2['customers'].index) == [2, 0, 1]
+    assert combined_es_order_1.__eq__(pd_es, deep=True)
+    assert combined_es_order_2.__eq__(pd_es, deep=True)
+    assert combined_es_order_2.__eq__(combined_es_order_1, deep=True)
+
+
+def test_concat_sort_index_without_time_index(pd_es):
+    # Sorting is only performed on DataFrames with time indices
+    es1 = copy.deepcopy(pd_es)
+    es1.update_dataframe(dataframe_name='products', df=pd_es['products'].iloc[[0, 1, 2], :], already_sorted=True)
+    es2 = copy.deepcopy(pd_es)
+    es2.update_dataframe(dataframe_name='products', df=pd_es['products'].iloc[[3, 4, 5], :], already_sorted=True)
+
+    combined_es_order_1 = es1.concat(es2)
+    combined_es_order_2 = es2.concat(es1)
+
+    # order matters when we don't sort
+    assert list(combined_es_order_1['products'].index) == ['Haribo sugar-free gummy bears',
+                                                           'car',
+                                                           'toothpaste',
+                                                           'brown bag',
+                                                           'coke zero',
+                                                           'taco clock']
+    assert list(combined_es_order_2['products'].index) == ['brown bag',
+                                                           'coke zero',
+                                                           'taco clock',
+                                                           'Haribo sugar-free gummy bears',
+                                                           'car',
+                                                           'toothpaste'
+                                                           ]
+    assert combined_es_order_1.__eq__(pd_es, deep=True)
+    assert not combined_es_order_2.__eq__(pd_es, deep=True)
+    assert combined_es_order_2.__eq__(pd_es, deep=False)
+    assert not combined_es_order_2.__eq__(combined_es_order_1, deep=True)
+
+
+def test_concat_with_make_index(es):
+    if es.dataframe_type == Library.KOALAS.value:
+        pytest.xfail("Koalas cannot make index")
+
+    df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
+    if es.dataframe_type == Library.DASK.value:
+        df = dd.from_pandas(df, npartitions=2)
+    logical_types = {'id': ltypes.Categorical,
+                     'category': ltypes.Categorical}
+    es.add_dataframe(dataframe=df,
+                     dataframe_name='test_df',
+                     index='id1',
+                     make_index=True,
+                     logical_types=logical_types)
+
+    es_1 = copy.deepcopy(es)
+    es_2 = copy.deepcopy(es)
+
+    assert es.__eq__(es_1, deep=True)
+    assert es.__eq__(es_2, deep=True)
+
+    # map of what rows to take from es_1 and es_2 for each entity
+    emap = {
+        'log': [list(range(10)) + [14, 15, 16], list(range(10, 14)) + [15, 16]],
+        'sessions': [[0, 1, 2], [1, 3, 4, 5]],
+        'customers': [[0, 2], [1, 2]],
+        'test_df': [[0, 1], [0, 2]],
+    }
+
+    for i, _es in enumerate([es_1, es_2]):
+        for df_name, rows in emap.items():
+            df = _es[df_name]
+            _es.update_dataframe(dataframe_name=df_name, df=df.loc[rows[i]])
+
+    assert es.__eq__(es_1, deep=False)
+    assert es.__eq__(es_2, deep=False)
+    if es.dataframe_type == Library.PANDAS.value:
+        assert not es.__eq__(es_1, deep=True)
+        assert not es.__eq__(es_2, deep=True)
+
+    old_es_1 = copy.deepcopy(es_1)
+    old_es_2 = copy.deepcopy(es_2)
+    es_3 = es_1.concat(es_2)
+
+    assert old_es_1.__eq__(es_1, deep=True)
+    assert old_es_2.__eq__(es_2, deep=True)
+
+    assert es_3.__eq__(es, deep=True)
 
 
 @pytest.fixture
@@ -1881,9 +1967,6 @@ def test_deepcopy_entityset(es_to_copy):
 
 
 def test_deepcopy_entityset_woodwork_changes(es):
-    if ks and isinstance(es.dataframes[0], ks.DataFrame):
-        pytest.xfail('Cannot deepcopy Koalas DataFrames')
-
     copied_es = copy.deepcopy(es)
 
     assert copied_es == es
@@ -1897,9 +1980,6 @@ def test_deepcopy_entityset_woodwork_changes(es):
 
 
 def test_deepcopy_entityset_featuretools_changes(es):
-    if ks and isinstance(es.dataframes[0], ks.DataFrame):
-        pytest.xfail('Cannot deepcopy Koalas DataFrames')
-
     copied_es = copy.deepcopy(es)
 
     assert copied_es == es

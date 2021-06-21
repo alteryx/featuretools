@@ -15,7 +15,7 @@ from woodwork.type_sys.utils import list_logical_types
 from featuretools.entityset import EntitySet, deserialize, serialize
 from featuretools.entityset.serialize import SCHEMA_VERSION
 from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import Library, import_or_none
+from featuretools.utils.gen_utils import Library
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"

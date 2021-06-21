@@ -160,12 +160,14 @@ class EntitySet(object):
         result = cls.__new__(cls)
         memo[id(self)] = result
         for k, v in self.__dict__.items():
-            copied_attr = copy.deepcopy(v, memo)
-            # Must initialize Woodwork on all the DataFrames
             if k == 'dataframe_dict':
-                for df_name, new_df in copied_attr.items():
-                    schema = copy.deepcopy(self.dataframe_dict[df_name].ww.schema, memo=memo)
-                    new_df.ww.init(schema=schema)
+                # Copy the DataFrames, retaining Woodwork typing information
+                copied_attr = copy.copy(v)
+                for df_name, df in copied_attr.items():
+                    copied_attr[df_name] = df.ww.copy()
+            else:
+                copied_attr = copy.deepcopy(v, memo)
+
             setattr(result, k, copied_attr)
         return result
 
@@ -623,7 +625,7 @@ class EntitySet(object):
                               time_index=time_index,
                               logical_types=logical_types,
                               semantic_tags=semantic_tags,
-                              make_index=make_index,
+                              make_index=make_index,  # TODO: handle make index logic outside of Woodwork
                               already_sorted=already_sorted)
             # If no index column is specified, set the first column
             if dataframe.ww.index is None:
@@ -867,58 +869,58 @@ class EntitySet(object):
     # #  Data wrangling methods  ###############################################
     # ###########################################################################
 
-    # def concat(self, other, inplace=False):
-    #     '''Combine entityset with another to create a new entityset with the
-    #     combined data of both entitysets.
-    #     '''
-    #     assert_string = "Entitysets must have the same entities, relationships"\
-    #         ", and variable_ids"
-    #     assert (self.__eq__(other) and
-    #             self.relationships == other.relationships), assert_string
+    def concat(self, other, inplace=False):
+        '''Combine entityset with another to create a new entityset with the
+        combined data of both entitysets.
+        '''
+        if not self.__eq__(other):
+            raise ValueError("Entitysets must have the same dataframes, relationships"
+                             ", and column names")
 
-    #     for entity in self.dataframes:
-    #         assert entity.id in other.dataframe_dict, assert_string
-    #         assert (len(self[entity.id].variables) ==
-    #                 len(other[entity.id].variables)), assert_string
-    #         other_variable_ids = [o_variable.id for o_variable in
-    #                               other[entity.id].variables]
-    #         assert (all([variable.id in other_variable_ids
-    #                      for variable in self[entity.id].variables])), assert_string
+        if inplace:
+            combined_es = self
+        else:
+            combined_es = copy.deepcopy(self)
 
-    #     if inplace:
-    #         combined_es = self
-    #     else:
-    #         combined_es = copy.deepcopy(self)
+        lib = pd
+        if self.dataframe_type == Library.KOALAS.value:
+            lib = ks
+        elif self.dataframe_type == Library.DASK.value:
+            lib = dd
 
-    #     has_last_time_index = []
-    #     for entity in self.dataframes:
-    #         self_df = entity.df
-    #         other_df = other[entity.id].df
-    #         combined_df = pd.concat([self_df, other_df])
-    #         if entity.created_index == entity.index:
-    #             columns = [col for col in combined_df.columns if
-    #                        col != entity.index or col != entity.time_index]
-    #         else:
-    #             columns = [entity.index]
-    #         combined_df.drop_duplicates(columns, inplace=True)
+        has_last_time_index = []
+        for df in self.dataframes:
+            self_df = df
+            other_df = other[df.ww.name]
+            combined_df = lib.concat([self_df, other_df])
+            # If both DataFrames have made indexes, there will likely
+            # be overlap in the index column, so we use the other values
+            if self_df.ww.make_index or other_df.ww.make_index:
+                columns = [col for col in combined_df.columns if
+                           col != df.ww.index or col != df.ww.time_index]
+            else:
+                columns = [df.ww.index]
+            combined_df.drop_duplicates(columns, inplace=True)
 
-    #         if entity.time_index:
-    #             combined_df.sort_values([entity.time_index, entity.index], inplace=True)
-    #         else:
-    #             combined_df.sort_index(inplace=True)
-    #         if (entity.last_time_index is not None or
-    #                 other[entity.id].last_time_index is not None):
-    #             has_last_time_index.append(entity.id)
+            self_lti_col = df.ww.metadata.get('last_time_index')
+            other_lti_col = other[df.ww.name].ww.metadata.get('last_time_index')
+            if (self_lti_col is not None or
+                    other_lti_col is not None):
+                has_last_time_index.append(df.ww.name)
 
-    #         combined_es.update_dataframe(
-    #             entity_id=entity.id,
-    #             df=combined_df,
-    #             recalculate_last_time_indexes=False,
-    #         )
+            combined_es.update_dataframe(
+                dataframe_name=df.ww.name,
+                df=combined_df,
+                recalculate_last_time_indexes=False,
+                already_sorted=False
+            )
 
-    #     combined_es.add_last_time_indexes(updated_dataframes=has_last_time_index)
-    #     self.reset_data_description()
-    #     return combined_es
+        if has_last_time_index:
+            combined_es.add_last_time_indexes(updated_dataframes=has_last_time_index)
+
+        combined_es.reset_data_description()
+
+        return combined_es
 
     ###########################################################################
     #  Indexing methods  ###############################################
@@ -1085,13 +1087,16 @@ class EntitySet(object):
         for df in self.dataframes:
             lti = es_lti_dict[df.ww.name]
             if lti is not None:
+                lti_ltype = None
                 if self.time_type == 'numeric':
                     if lti.dtype == 'datetime64[ns]':
                         # Woodwork cannot convert from datetime to numeric
                         lti = lti.apply(lambda x: x.value)
                     lti = ww.init_series(lti, logical_type='Double')
+                    lti_ltype = 'Double'
                 else:
                     lti = ww.init_series(lti, logical_type='Datetime')
+                    lti_ltype = 'Datetime'
 
                 lti.name = LTI_COLUMN_NAME
 
@@ -1110,7 +1115,7 @@ class EntitySet(object):
                         name=df.ww.name,
                         index=df.ww.index,
                         time_index=df.ww.time_index,
-                        logical_types=df.ww.logical_types,
+                        logical_types={**df.ww.logical_types, LTI_COLUMN_NAME: lti_ltype},
                         semantic_tags={col_name: tags - {'index', 'time_index'} for col_name, tags in df.ww.semantic_tags.items()},
                         table_metadata=df.ww.metadata,
                         column_metadata={col_name: col_schema.metadata for col_name, col_schema in df.ww.columns.items()},
@@ -1128,7 +1133,7 @@ class EntitySet(object):
                         name=df.ww.name,
                         index=df.ww.index,
                         time_index=df.ww.time_index,
-                        logical_types=df.ww.logical_types,
+                        logical_types={**df.ww.logical_types, LTI_COLUMN_NAME: lti_ltype},
                         semantic_tags={col_name: tags - {'index', 'time_index'} for col_name, tags in df.ww.semantic_tags.items()},
                         table_metadata=df.ww.metadata,
                         column_metadata={col_name: col_schema.metadata for col_name, col_schema in df.ww.columns.items()},
@@ -1137,7 +1142,8 @@ class EntitySet(object):
                     dfs_to_update[df.ww.name] = new_df
                 else:
                     df.ww[LTI_COLUMN_NAME] = lti
-                    df.ww.add_semantic_tags({LTI_COLUMN_NAME: 'last_time_index'})
+                    if 'last_time_index' not in df.ww.semantic_tags[LTI_COLUMN_NAME]:
+                        df.ww.add_semantic_tags({LTI_COLUMN_NAME: 'last_time_index'})
                     df.ww.metadata['last_time_index'] = LTI_COLUMN_NAME
 
         for df in dfs_to_update.values():
@@ -1441,11 +1447,13 @@ class EntitySet(object):
             if updated_series is not series:
                 df[col_name] = updated_series
 
+        make_index = self[dataframe_name].ww.make_index
         df.ww.init(schema=self[dataframe_name].ww._schema)
         # Make sure column ordering matches original ordering
         df = df.ww[old_column_names]
 
         self.dataframe_dict[dataframe_name] = df
+        df.ww.make_index = make_index
 
         # Sort the dataframe through Woodwork
         if self.dataframe_dict[dataframe_name].ww.time_index is not None:
