@@ -1886,10 +1886,10 @@ def test_no_relationships(entities):
 
 
 def test_cfm_with_invalid_time_index(es):
+    # TODO: does _check_uniform_time_index occur at CFM runtime?
     features = ft.dfs(entityset=es, target_entity="customers", features_only=True)
-    es['customers'].convert_variable_type('signup_date', ft.variable_types.Numeric)
+    es['customers'].set_types(logical_types={'signup_date': 'integer'})
     match = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> "
     match += "type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=match):
         calculate_feature_matrix(features=features, entityset=es)
-    es['customers'].convert_variable_type('signup_date', ft.variable_types.DatetimeTimeIndex)

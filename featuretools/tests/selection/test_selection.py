@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
 import pytest
+from woodwork.logical_types import NaturalLanguage
 
 import featuretools as ft
 from featuretools import Feature
 from featuretools.tests.testing_utils import make_ecommerce_entityset
-from featuretools.variable_types.variable import NaturalLanguage
 
 
 @pytest.fixture

@@ -1,3 +1,6 @@
+from woodwork import logical_types as ltypes
+from woodwork.column_schema import ColumnSchema
+
 from featuretools import Relationship, Timedelta, primitives
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.primitives.base import (
@@ -9,18 +12,6 @@ from featuretools.primitives.utils import serialize_primitive
 from featuretools.utils.wrangle import (
     _check_time_against_column,
     _check_timedelta
-)
-from featuretools.variable_types import (
-    Boolean,
-    Categorical,
-    Datetime,
-    DatetimeTimeIndex,
-    Discrete,
-    Id,
-    Index,
-    Numeric,
-    NumericTimeIndex,
-    Variable
 )
 
 
@@ -185,17 +176,18 @@ class FeatureBase(object):
 
             # only the original time index should exist
             # so make this feature's return type just a Datetime
-            if variable_type == DatetimeTimeIndex:
-                variable_type = Datetime
-            elif variable_type == NumericTimeIndex:
-                variable_type = Numeric
-            elif variable_type == Index:
-                variable_type = Categorical
+            if 'time_index' in column_schema.semantic_tags:
+                column_schema = ColumnSchema(logical_type=column_schema.logical_type,
+                                             semantic_tags=column_schema.semantic_tags - {"time_index"})
+            elif 'index' in column_schema.semantic_tags:
+                column_schema = ColumnSchema(logical_type=column_schema.logical_type,
+                                             semantic_tags=column_schema.semantic_tags - {"index"})
 
             # direct features should keep the Id return type, but all other features should get
             # converted to Categorical
-            if not isinstance(feature, DirectFeature) and variable_type == Id:
-                variable_type = Categorical
+            if not isinstance(feature, DirectFeature) and 'foreign_key' in column_schema.semantic_tags:
+                column_schema = ColumnSchema(logical_type=column_schema.logical_type,
+                                             semantic_tags=column_schema.semantic_tags - {"foreign_key"})
 
             feature = base_feature
 
@@ -275,7 +267,8 @@ class FeatureBase(object):
     def __mul__(self, other):
         """Multiply by other"""
         if isinstance(other, FeatureBase):
-            if self.variable_type == Boolean and other.variable_type == Boolean:
+            if (self.column_schema.logical_type == ltypes.Boolean and
+                    other.column_schema.logical_type == ltypes.Boolean):
                 return Feature([self, other], primitive=primitives.MultiplyBoolean)
         return self._handle_binary_comparision(other, primitives.MultiplyNumeric, primitives.MultiplyNumericScalar)
 
@@ -384,7 +377,7 @@ class IdentityFeature(FeatureBase):
 class DirectFeature(FeatureBase):
     """Feature for child entity that inherits
         a feature value from a parent entity"""
-    input_types = [Variable]
+    input_types = [ColumnSchema()]
     return_type = None
 
     def __init__(self, base_feature, child_entity, relationship=None, name=None):
@@ -685,7 +678,7 @@ class GroupByTransformFeature(TransformFeature):
     def __init__(self, base_features, primitive, groupby, name=None):
         if not isinstance(groupby, FeatureBase):
             groupby = IdentityFeature(groupby)
-        assert issubclass(groupby.variable_type, Discrete)
+        assert len({"category", "foreign_key"} - groupby.column_schema.semantic_tags) < 2
         self.groupby = groupby
 
         if hasattr(base_features, '__iter__'):
@@ -821,9 +814,12 @@ class FeatureOutputSlice(FeatureBase):
 
 
 def _check_feature(feature):
-    if isinstance(feature, Variable):
-        return IdentityFeature(feature)
-    elif isinstance(feature, FeatureBase):
+    # TODO: revisit if we change how to declare features
+    # if isinstance(feature, Variable):
+    #     return IdentityFeature(feature)
+    # elif isinstance(feature, FeatureBase):
+    #     return feature
+    if isinstance(feature, FeatureBase):
         return feature
 
     raise Exception("Not a feature")

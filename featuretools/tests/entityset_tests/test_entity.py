@@ -1,17 +1,16 @@
 from datetime import datetime
 
-import numpy as np
+# import numpy as np
 import pandas as pd
 import pytest
 
 import featuretools as ft
-from featuretools.entityset import Entity, EntitySet
+# from featuretools.entityset import Entity, EntitySet
 from featuretools.tests.testing_utils import (
     make_ecommerce_entityset,
     to_pandas
 )
 from featuretools.utils.gen_utils import Library
-from featuretools.variable_types import find_variable_types
 
 
 def test_is_index_column(es):
@@ -169,90 +168,71 @@ def test_delete_variables_string_input(es):
     assert 'age' in entity.df.columns
 
 
-def test_variable_types_unmodified():
-    df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
-                       "transaction_time": [10, 12, 13, 20, 21, 20],
-                       "fraud": [True, False, False, False, True, True]})
+# def test_variable_types_unmodified():
+#     df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+#                        "transaction_time": [10, 12, 13, 20, 21, 20],
+#                        "fraud": [True, False, False, False, True, True]})
 
-    es = ft.EntitySet()
-    variable_types = {'fraud': ft.variable_types.Boolean}
-    old_variable_types = variable_types.copy()
-    es.entity_from_dataframe(entity_id="transactions",
-                             dataframe=df,
-                             index='id',
-                             time_index='transaction_time',
-                             variable_types=variable_types)
-    assert old_variable_types == variable_types
-
-
-def test_passing_strings_to_variable_types_entity_init():
-    variable_types = find_variable_types()
-    reversed_variable_types = {str(v): k for k, v in variable_types.items()}
-    reversed_variable_types['unknown variable'] = 'some unknown type string'
-
-    es = EntitySet()
-    dataframe = pd.DataFrame(columns=list(reversed_variable_types))
-    with pytest.warns(UserWarning, match='Variable type {} was unrecognized, Unknown variable type was used instead'.format('some unknown type string')):
-        entity = Entity('reversed_variable_types', dataframe, es,
-                        variable_types=reversed_variable_types,
-                        index="<class 'featuretools.variable_types.variable.Index'>",
-                        time_index="<class 'featuretools.variable_types.variable.NumericTimeIndex'>",
-                        )
-
-    reversed_variable_types["unknown variable"] = "unknown"
-    for variable in entity.variables:
-        variable_class = variable.__class__
-        assert variable_class.type_string == reversed_variable_types[variable.id]
+#     es = ft.EntitySet()
+#     variable_types = {'fraud': ft.variable_types.Boolean}
+#     old_variable_types = variable_types.copy()
+#     es.entity_from_dataframe(entity_id="transactions",
+#                              dataframe=df,
+#                              index='id',
+#                              time_index='transaction_time',
+#                              variable_types=variable_types)
+#     assert old_variable_types == variable_types
 
 
-def test_passing_strings_to_variable_types_from_dataframe():
-    variable_types = find_variable_types()
-    reversed_variable_types = {str(v): k for k, v in variable_types.items()}
-    reversed_variable_types['unknown variable'] = 'some unknown type string'
+# def test_passing_strings_to_variable_types_entity_init():
+#     raise NotImplementedError("refactor or delete")  # TODO
+#     variable_types = dict()
+#     reversed_variable_types = {str(v): k for k, v in variable_types.items()}
+#     reversed_variable_types['unknown variable'] = 'some unknown type string'
 
-    es = EntitySet()
-    dataframe = pd.DataFrame(columns=list(reversed_variable_types))
-    with pytest.warns(UserWarning, match='Variable type {} was unrecognized, Unknown variable type was used instead'.format('some unknown type string')):
-        es.entity_from_dataframe(
-            entity_id="reversed_variable_types",
-            dataframe=dataframe,
-            index="<class 'featuretools.variable_types.variable.Index'>",
-            time_index="<class 'featuretools.variable_types.variable.NumericTimeIndex'>",
-            variable_types=reversed_variable_types)
+#     es = EntitySet()
+#     dataframe = pd.DataFrame(columns=list(reversed_variable_types))
+#     with pytest.warns(UserWarning, match='Variable type {} was unrecognized, Unknown variable type was used instead'.format('some unknown type string')):
+#         entity = Entity('reversed_variable_types', dataframe, es,
+#                         variable_types=reversed_variable_types,
+#                         index="<class 'featuretools.variable_types.variable.Index'>",
+#                         time_index="<class 'featuretools.variable_types.variable.NumericTimeIndex'>",
+#                         )
 
-    entity = es["reversed_variable_types"]
-    reversed_variable_types["unknown variable"] = "unknown"
-    for variable in entity.variables:
-        variable_class = variable.__class__
-        assert variable_class.type_string == reversed_variable_types[variable.id]
-
-
-def test_replace_latlong_nan_during_entity_creation(pd_es):
-    nan_es = ft.EntitySet("latlong_nan")
-    df = pd_es['log'].df.copy()
-    df['latlong'][0] = np.nan
-
-    with pytest.warns(UserWarning, match="LatLong columns should contain only tuples. All single 'NaN' values in column 'latlong' have been replaced with '\\(NaN, NaN\\)'."):
-        entity = ft.Entity(id="nan_latlong_entity", df=df, entityset=nan_es, variable_types=pd_es['log'].variable_types)
-    assert entity.df['latlong'][0] == (np.nan, np.nan)
+#     reversed_variable_types["unknown variable"] = "unknown"
+#     for variable in entity.variables:
+#         variable_class = variable.__class__
+#         assert variable_class.type_string == reversed_variable_types[variable.id]
 
 
-def test_text_deprecation_warning():
-    data = pd.DataFrame({
-        "id": [1, 2, 3, 4, 5],
-        "value": ["a", "c", "b", "a", "a"]
-    })
+# def test_passing_strings_to_variable_types_from_dataframe():
+#     raise NotImplementedError("refactor or delete")  # TODO
+#     variable_types = dict()
+#     reversed_variable_types = {str(v): k for k, v in variable_types.items()}
+#     reversed_variable_types['unknown variable'] = 'some unknown type string'
 
-    for text_repr in ['text', ft.variable_types.Text]:
-        es = ft.EntitySet()
-        match = "Text has been deprecated. Please use NaturalLanguage instead."
-        with pytest.warns(FutureWarning, match=match):
-            es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
-                                          variable_types={"value": text_repr})
+#     es = EntitySet()
+#     dataframe = pd.DataFrame(columns=list(reversed_variable_types))
+#     with pytest.warns(UserWarning, match='Variable type {} was unrecognized, Unknown variable type was used instead'.format('some unknown type string')):
+#         es.entity_from_dataframe(
+#             entity_id="reversed_variable_types",
+#             dataframe=dataframe,
+#             index="<class 'featuretools.variable_types.variable.Index'>",
+#             time_index="<class 'featuretools.variable_types.variable.NumericTimeIndex'>",
+#             variable_types=reversed_variable_types)
 
-    for nl_repr in ['natural_language', ft.variable_types.NaturalLanguage]:
-        es = ft.EntitySet()
-        with pytest.warns(None) as record:
-            es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
-                                          variable_types={"value": nl_repr})
-        assert len(record) == 0
+#     entity = es["reversed_variable_types"]
+#     reversed_variable_types["unknown variable"] = "unknown"
+#     for variable in entity.variables:
+#         variable_class = variable.__class__
+#         assert variable_class.type_string == reversed_variable_types[variable.id]
+
+
+# def test_replace_latlong_nan_during_entity_creation(pd_es):
+#     nan_es = ft.EntitySet("latlong_nan")
+#     df = pd_es['log'].df.copy()
+#     df['latlong'][0] = np.nan
+
+#     with pytest.warns(UserWarning, match="LatLong columns should contain only tuples. All single 'NaN' values in column 'latlong' have been replaced with '\\(NaN, NaN\\)'."):
+#         entity = ft.Entity(id="nan_latlong_entity", df=df, entityset=nan_es, variable_types=pd_es['log'].variable_types)
+#     assert entity.df['latlong'][0] == (np.nan, np.nan)

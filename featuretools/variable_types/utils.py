@@ -2,30 +2,6 @@ from warnings import warn
 
 from woodwork import list_logical_types
 
-from featuretools.utils.gen_utils import find_descendents
-from featuretools.utils.plot_utils import (
-    check_graphviz,
-    get_graphviz_format,
-    save_graph
-)
-from featuretools.variable_types.variable import Text, Variable
-
-
-def find_variable_types():
-    """
-    Retrieves all Variable types as a dictionary where key is type_string
-        of Variable, and value is a Variable object.
-
-    Args:
-        None
-
-    Returns:
-        variable_types (dict):
-
-    """
-    return {vtype.type_string: vtype for vtype in find_descendents(Variable)
-            if vtype != Variable and vtype != Text}
-
 
 def list_variable_types():
     """
@@ -44,34 +20,35 @@ def list_variable_types():
     return list_logical_types()
 
 
-def graph_variable_types(to_file=None):
-    """
-    Create a UML diagram-ish graph of all the Variables.
+# TODO: decide if this should be adapted for woodwork
+# def graph_variable_types(to_file=None):
+#     """
+#     Create a UML diagram-ish graph of all the Variables.
 
-    Args:
-        to_file (str, optional) : Path to where the plot should be saved.
-            If set to None (as by default), the plot will not be saved.
+#     Args:
+#         to_file (str, optional) : Path to where the plot should be saved.
+#             If set to None (as by default), the plot will not be saved.
 
-    Returns:
-        graphviz.Digraph : Graph object that can directly be displayed in
-            Jupyter notebooks.
-    """
-    graphviz = check_graphviz()
-    format_ = get_graphviz_format(graphviz=graphviz,
-                                  to_file=to_file)
+#     Returns:
+#         graphviz.Digraph : Graph object that can directly be displayed in
+#             Jupyter notebooks.
+#     """
+#     graphviz = check_graphviz()
+#     format_ = get_graphviz_format(graphviz=graphviz,
+#                                   to_file=to_file)
 
-    # Initialize a new directed graph
-    graph = graphviz.Digraph('variables', format=format_)
-    graph.attr(rankdir="LR")
-    graph.node(Variable.__name__, shape='Mdiamond')
+#     # Initialize a new directed graph
+#     graph = graphviz.Digraph('variables', format=format_)
+#     graph.attr(rankdir="LR")
+#     graph.node(Variable.__name__, shape='Mdiamond')
 
-    all_variables_types = list(find_variable_types().values())
-    all_variables_types.sort(key=lambda x: x.__name__)
+#     all_variables_types = list(find_variable_types().values())
+#     all_variables_types.sort(key=lambda x: x.__name__)
 
-    for node in all_variables_types:
-        for parent in node.__bases__:
-            graph.edge(parent.__name__, node.__name__)
+#     for node in all_variables_types:
+#         for parent in node.__bases__:
+#             graph.edge(parent.__name__, node.__name__)
 
-    if to_file:
-        save_graph(graph, to_file, format_)
-    return graph
+#     if to_file:
+#         save_graph(graph, to_file, format_)
+#     return graph

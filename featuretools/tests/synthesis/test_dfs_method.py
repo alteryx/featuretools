@@ -23,7 +23,6 @@ from featuretools.primitives import (
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
-from featuretools.variable_types import find_variable_types
 
 
 @pytest.fixture
@@ -52,7 +51,8 @@ def datetime_es():
 
 
 def test_passing_strings_to_variable_types_dfs():
-    variable_types = find_variable_types()
+    raise NotImplementedError("refactor or remove")  # TODO
+    variable_types = dict()
     teams = pd.DataFrame({
         'id': range(3),
         'name': ['Breakers', 'Spirit', 'Thorns']

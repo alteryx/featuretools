@@ -8,7 +8,7 @@ from numpy.testing import assert_array_equal
 from woodwork.column_schema import ColumnSchema
 
 import featuretools as ft
-from featuretools import Timedelta, variable_types
+from featuretools import Timedelta
 from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
     FeatureSetCalculator
@@ -39,7 +39,6 @@ from featuretools.primitives.base import AggregationPrimitive
 from featuretools.tests.testing_utils import backward_path, to_pandas
 from featuretools.utils import Trie
 from featuretools.utils.gen_utils import Library
-from featuretools.variable_types import Numeric
 
 
 def test_make_identity(es):
@@ -459,17 +458,17 @@ def test_make_3_stacked_agg_feats(df):
     if isinstance(df, dd.DataFrame):
         pytest.xfail('normalize_entity fails with dask DataFrame')
     es = ft.EntitySet()
-    vtypes = {
-        'id': variable_types.Index,
-        'e1': variable_types.Categorical,
-        'e2': variable_types.Categorical,
-        'e3': variable_types.Categorical,
-        'val': variable_types.Numeric
+    tags = {
+        'id': 'index',
+        'e1': 'category',
+        'e2': 'category',
+        'e3': 'category',
+        'val': 'numeric'
     }
-    es.entity_from_dataframe(dataframe=df,
-                             index="id",
-                             entity_id="e0",
-                             variable_types=vtypes)
+    es.add_dataframe(dataframe=df,
+                     index="id",
+                     dataframe_name="e0",
+                     semantic_tags=tags)
 
     es.normalize_entity(base_entity_id="e0",
                         new_entity_id="e1",
@@ -762,29 +761,29 @@ def parent_child(request):
 def test_empty_child_dataframe(parent_child):
     parent_df, child_df = parent_child
     if not isinstance(parent_df, pd.DataFrame):
-        parent_vtypes = {
-            'id': variable_types.Index
+        parent_tags = {
+            'id': 'index'
         }
-        child_vtypes = {
-            'id': variable_types.Index,
-            'parent_id': variable_types.Numeric,
-            'time_index': variable_types.Datetime,
-            'value': variable_types.Numeric,
-            'cat': variable_types.Categorical
+        child_tags = {
+            'id': 'index',
+            'parent_id': 'numeric',
+            'time_index': 'datetime',
+            'value': 'numeric',
+            'cat': 'category'
         }
     else:
-        parent_vtypes = None
-        child_vtypes = None
+        parent_tags = None
+        child_tags = None
     es = ft.EntitySet(id="blah")
-    es.entity_from_dataframe(entity_id="parent",
-                             dataframe=parent_df,
-                             index="id",
-                             variable_types=parent_vtypes)
-    es.entity_from_dataframe(entity_id="child",
-                             dataframe=child_df,
-                             index="id",
-                             time_index="time_index",
-                             variable_types=child_vtypes)
+    es.add_dataframe(dataframe_name="parent",
+                     dataframe=parent_df,
+                     index="id",
+                     semantic_tags=parent_tags)
+    es.add_dataframe(dataframe_name="child",
+                     dataframe=child_df,
+                     index="id",
+                     time_index="time_index",
+                     semantic_tags=child_tags)
     es.add_relationship("parent", "id", "child", "parent_id")
 
     # create regular agg

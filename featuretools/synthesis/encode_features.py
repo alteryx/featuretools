@@ -3,7 +3,6 @@ import logging
 import pandas as pd
 
 from featuretools.utils.gen_utils import make_tqdm_iterator
-from featuretools.variable_types.variable import Discrete
 
 logger = logging.getLogger('featuretools')
 
@@ -106,7 +105,7 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
     for f in iterator:
         # TODO: features with multiple columns are not encoded by this method,
         # which can cause an "encoded" matrix with non-numeric vlaues
-        is_discrete = issubclass(f.variable_type, Discrete)
+        is_discrete = 'category' in f.column_schema.semantic_tags
         if (f.number_output_features > 1 or not is_discrete):
             if f.number_output_features > 1:
                 logger.warning("Feature %s has multiple columns and will not "

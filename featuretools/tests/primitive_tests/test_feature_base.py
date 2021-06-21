@@ -3,7 +3,7 @@ import os.path
 import pytest
 from pympler.asizeof import asizeof
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Datetime
+from woodwork.logical_types import Datetime, Integer
 
 import featuretools as ft
 from featuretools import config
@@ -20,7 +20,6 @@ from featuretools.primitives import (
     TransformPrimitive
 )
 from featuretools.tests.testing_utils import check_rename
-from featuretools.variable_types import Categorical, Id, Numeric
 
 
 def test_copy_features_does_not_copy_entityset(es):
@@ -91,32 +90,34 @@ def test_return_type_inference_direct_feature(es):
 
 
 def test_return_type_inference_index(es):
-    last = ft.Feature(es["log"]["id"], parent_entity=es["customers"], primitive=Last)
-    assert last.variable_type == Categorical
+    last = ft.Feature(es, "log", "id", parent_dataframe_name="customers", primitive=Last)
+    assert "index" not in last.column_schema.semantic_tags
 
 
 def test_return_type_inference_datetime_time_index(es):
-    last = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=Last)
-    assert last.variable_type == Datetime
+    last = ft.Feature(es, "log", "datetime", parent_dataframe_name="customers", primitive=Last)
+    assert isinstance(last.column_schema.logical_type, Datetime)
 
 
 def test_return_type_inference_numeric_time_index(int_es):
-    last = ft.Feature(int_es["log"]["datetime"], parent_entity=int_es["customers"], primitive=Last)
-    assert last.variable_type == Numeric
+    last = ft.Feature(int_es, "log", "datetime", parent_dataframe_name="customers", primitive=Last)
+    assert "numeric" in last.column_schema.semantic_tags
 
 
 def test_return_type_inference_id(es):
     # direct features should keep Id variable type
-    direct_id_feature = ft.Feature(es["sessions"]["customer_id"], es["log"])
-    assert direct_id_feature.variable_type == Id
+    direct_id_feature = ft.Feature(es, "sessions", "customer_id", "log")
+    assert "foreign_key" in direct_id_feature.column_schema.semantic_tags
 
     # aggregations of Id variable types should get converted
-    mode = ft.Feature(es["log"]["session_id"], parent_entity=es["customers"], primitive=Mode)
-    assert mode.variable_type == Categorical
+    last_feat = ft.Feature(es, "log", "session_id", parent_dataframe_name="customers", primitive=Last)
+    assert "foreign_key" not in last_feat.column_schema.semantic_tags
+    assert isinstance(last_feat.column_schema.logical_type, Integer)
 
     # also test direct feature of aggregation
-    mode_direct = ft.Feature(mode, es["sessions"])
-    assert mode_direct.variable_type == Categorical
+    last_direct = ft.Feature(last_feat, "sessions")
+    assert "foreign_key" not in last_direct.column_schema.semantic_tags
+    assert isinstance(last_direct.column_schema.logical_type, Integer)
 
 
 def test_set_data_path(es):

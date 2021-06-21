@@ -25,10 +25,10 @@ def test_single_table_ks_entityset():
                                    ""]})
     values_dd = ks.from_pandas(df)
     vtypes = {
-        "id": ft.variable_types.Id,
-        "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.NaturalLanguage
+        "id": "Id",
+        "values": "Numeric",
+        "dates": "Datetime",
+        "strings": "NaturalLanguage"
     }
     ks_es.entity_from_dataframe(entity_id="data",
                                 dataframe=values_dd,
@@ -43,7 +43,7 @@ def test_single_table_ks_entityset():
     pd_es.entity_from_dataframe(entity_id="data",
                                 dataframe=df,
                                 index="id",
-                                variable_types={"strings": ft.variable_types.NaturalLanguage})
+                                variable_types={"strings": "NaturalLanguage"})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -71,10 +71,10 @@ def test_single_table_ks_entityset_ids_not_sorted():
                                    ""]})
     values_dd = ks.from_pandas(df)
     vtypes = {
-        "id": ft.variable_types.Id,
-        "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.NaturalLanguage
+        "id": "Id",
+        "values": "Numeric",
+        "dates": "Datetime",
+        "strings": "NaturalLanguage"
     }
     ks_es.entity_from_dataframe(entity_id="data",
                                 dataframe=values_dd,
@@ -89,7 +89,7 @@ def test_single_table_ks_entityset_ids_not_sorted():
     pd_es.entity_from_dataframe(entity_id="data",
                                 dataframe=df,
                                 index="id",
-                                variable_types={"strings": ft.variable_types.NaturalLanguage})
+                                variable_types={"strings": "NaturalLanguage"})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -118,10 +118,10 @@ def test_single_table_ks_entityset_with_instance_ids():
 
     values_dd = ks.from_pandas(df)
     vtypes = {
-        "id": ft.variable_types.Id,
-        "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.NaturalLanguage
+        "id": "Id",
+        "values": "Numeric",
+        "dates": "Datetime",
+        "strings": "NaturalLanguage"
     }
     ks_es.entity_from_dataframe(entity_id="data",
                                 dataframe=values_dd,
@@ -137,7 +137,7 @@ def test_single_table_ks_entityset_with_instance_ids():
     pd_es.entity_from_dataframe(entity_id="data",
                                 dataframe=df,
                                 index="id",
-                                variable_types={"strings": ft.variable_types.NaturalLanguage})
+                                variable_types={"strings": "NaturalLanguage"})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -165,10 +165,10 @@ def test_single_table_ks_entityset_single_cutoff_time():
                                    ""]})
     values_dd = ks.from_pandas(df)
     vtypes = {
-        "id": ft.variable_types.Id,
-        "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.NaturalLanguage
+        "id": "Id",
+        "values": "Numeric",
+        "dates": "Datetime",
+        "strings": "NaturalLanguage"
     }
     ks_es.entity_from_dataframe(entity_id="data",
                                 dataframe=values_dd,
@@ -184,7 +184,7 @@ def test_single_table_ks_entityset_single_cutoff_time():
     pd_es.entity_from_dataframe(entity_id="data",
                                 dataframe=df,
                                 index="id",
-                                variable_types={"strings": ft.variable_types.NaturalLanguage})
+                                variable_types={"strings": "NaturalLanguage"})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -210,10 +210,10 @@ def test_single_table_ks_entityset_cutoff_time_df():
                                    "abcdef ghijk"]})
     values_dd = ks.from_pandas(df)
     vtypes = {
-        "id": ft.variable_types.Id,
-        "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.NaturalLanguage
+        "id": "Id",
+        "values": "Numeric",
+        "dates": "Datetime",
+        "strings": "NaturalLanguage"
     }
     ks_es.entity_from_dataframe(entity_id="data",
                                 dataframe=values_dd,
@@ -238,7 +238,7 @@ def test_single_table_ks_entityset_cutoff_time_df():
                                 dataframe=df,
                                 index="id",
                                 time_index="dates",
-                                variable_types={"strings": ft.variable_types.NaturalLanguage})
+                                variable_types={"strings": "NaturalLanguage"})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -265,9 +265,9 @@ def test_single_table_ks_entityset_dates_not_sorted():
     primitives_list = ['absolute', 'is_weekend', 'year', 'day']
     values_dd = ks.from_pandas(df)
     vtypes = {
-        "id": ft.variable_types.Id,
-        "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.Datetime,
+        "id": "Id",
+        "values": "Numeric",
+        "dates": "Datetime",
     }
     ks_es.entity_from_dataframe(entity_id="data",
                                 dataframe=values_dd,
@@ -335,12 +335,12 @@ def test_ks_entityset_secondary_time_index():
                                     'arrival_time': ['departure_time', 'delay']})
 
     log_vtypes = {
-        "id": ft.variable_types.Id,
-        "scheduled_time": ft.variable_types.DatetimeTimeIndex,
-        "departure_time": ft.variable_types.DatetimeTimeIndex,
-        "arrival_time": ft.variable_types.DatetimeTimeIndex,
-        "delay": ft.variable_types.Numeric,
-        "flight_id": ft.variable_types.Id
+        "id": "Id",
+        "scheduled_time": "Datetime",
+        "departure_time": "Datetime",
+        "arrival_time": "Datetime",
+        "delay": "Numeric",
+        "flight_id": "Id"
     }
     ks_es.entity_from_dataframe(entity_id='logs',
                                 dataframe=log_ks,

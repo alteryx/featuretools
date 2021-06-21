@@ -4,9 +4,9 @@ import composeml as cp
 import dask.dataframe as dd
 import pandas as pd
 import pytest
+from woodwork import logical_types as ltypes
 
 import featuretools as ft
-from featuretools import variable_types as vtypes
 from featuretools.tests.testing_utils import (
     make_ecommerce_entityset,
     to_pandas
@@ -425,19 +425,19 @@ def dask_entities():
     cards_df = dd.from_pandas(cards_df, npartitions=2)
     transactions_df = dd.from_pandas(transactions_df, npartitions=2)
 
-    cards_vtypes = {
-        'id': vtypes.Index
+    cards_ltypes = {
+        'id': ltypes.Integer
     }
-    transactions_vtypes = {
-        'id': vtypes.Index,
-        'card_id': vtypes.Id,
-        'transaction_time': vtypes.NumericTimeIndex,
-        'fraud': vtypes.Boolean
+    transactions_ltypes = {
+        'id': ltypes.Integer,
+        'card_id': ltypes.Integer,
+        'transaction_time': ltypes.Integer,
+        'fraud': ltypes.Boolean
     }
 
     entities = {
-        "cards": (cards_df, "id", None, cards_vtypes),
-        "transactions": (transactions_df, "id", "transaction_time", transactions_vtypes)
+        "cards": (cards_df, "id", None, cards_ltypes),
+        "transactions": (transactions_df, "id", "transaction_time", transactions_ltypes)
     }
     return entities
 
@@ -450,19 +450,19 @@ def koalas_entities():
                                     "card_id": [1, 2, 1, 3, 4, 5],
                                     "transaction_time": [10, 12, 13, 20, 21, 20],
                                     "fraud": [True, False, False, False, True, True]})
-    cards_vtypes = {
-        'id': vtypes.Index
+    cards_ltypes = {
+        'id': ltypes.Integer
     }
-    transactions_vtypes = {
-        'id': vtypes.Index,
-        'card_id': vtypes.Id,
-        'transaction_time': vtypes.NumericTimeIndex,
-        'fraud': vtypes.Boolean
+    transactions_ltypes = {
+        'id': ltypes.Integer,
+        'card_id': ltypes.Integer,
+        'transaction_time': ltypes.Integer,
+        'fraud': ltypes.Boolean
     }
 
     entities = {
-        "cards": (cards_df, "id", None, cards_vtypes),
-        "transactions": (transactions_df, "id", "transaction_time", transactions_vtypes)
+        "cards": (cards_df, "id", None, cards_ltypes),
+        "transactions": (transactions_df, "id", "transaction_time", transactions_ltypes)
     }
     return entities
 

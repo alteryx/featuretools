@@ -1,8 +1,9 @@
 import logging
 import warnings
 from collections import defaultdict
+from woodwork.column_schema import ColumnSchema
 
-from featuretools import primitives, variable_types
+from featuretools import primitives
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import (
     AggregationFeature,
@@ -23,7 +24,6 @@ from featuretools.primitives.options_utils import (
     ignore_entity_for_primitive
 )
 from featuretools.utils.gen_utils import Library
-from featuretools.variable_types import Boolean, Discrete, Id, Numeric
 
 logger = logging.getLogger('featuretools')
 
@@ -281,7 +281,9 @@ class DeepFeatureSynthesis(object):
         self.where_clauses = defaultdict(set)
 
         if return_variable_types is None:
-            return_variable_types = [Numeric, Discrete, Boolean]
+            return_variable_types = [ColumnSchema(semantic_tags=['numeric']),
+                                     ColumnSchema(semantic_tags=['categorical']),
+                                     ColumnSchema(logical_type='boolean')]
         elif return_variable_types == 'all':
             pass
         else:
@@ -612,9 +614,10 @@ class DeepFeatureSynthesis(object):
             # get columns to use as groupbys, use IDs as default unless other groupbys specified
             if any(['include_groupby_variables' in option and entity.id in
                     option['include_groupby_variables'] for option in current_options]):
-                default_type = variable_types.PandasTypes._all
+                raise NotImplementedError()
+                # default_type = variable_types.PandasTypes._all
             else:
-                default_type = set([Id])
+                default_type = set([ColumnSchema(semantic_tags=['foreign_key'])])
             groupby_matches = self._features_by_type(all_features=all_features,
                                                      entity=entity,
                                                      max_depth=new_max_depth,
@@ -647,11 +650,14 @@ class DeepFeatureSynthesis(object):
         child_entity = relationship.child_dataframe
         parent_entity = relationship.parent_dataframe
 
-        features = self._features_by_type(
-            all_features=all_features,
-            entity=parent_entity,
-            max_depth=max_depth,
-            variable_type=variable_types.PandasTypes._all)
+        raise NotImplementedError()
+        # TODO: update
+        # features = self._features_by_type(
+        #     all_features=all_features,
+        #     entity=parent_entity,
+        #     max_depth=max_depth,
+        #     variable_type=variable_types.PandasTypes._all)
+        features = []
 
         for f in features:
             if self._feature_in_relationship_path(relationship_path, f):
@@ -767,11 +773,13 @@ class DeepFeatureSynthesis(object):
 
         for feat in entity_features:
             f = entity_features[feat]
-            if (variable_type == variable_types.PandasTypes._all or
-                    f.variable_type == variable_type or
-                    any(issubclass(f.variable_type, vt) for vt in variable_type)):
-                if max_depth is None or f.get_depth(stop_at=self.seed_features) <= max_depth:
-                    selected_features.append(f)
+            raise NotImplementedError()
+            # TODO: update
+            # if (variable_type == variable_types.PandasTypes._all or
+            #         f.variable_type == variable_type or
+            #         any(issubclass(f.variable_type, vt) for vt in variable_type)):
+            #     if max_depth is None or f.get_depth(stop_at=self.seed_features) <= max_depth:
+            #         selected_features.append(f)
 
         return selected_features
 

@@ -1171,7 +1171,7 @@ def test_time_since_primitive_matches_all_datetime_types(es):
         max_depth=1
     )
 
-    customers_datetime_vars = [id for id, t in es['customers'].variable_types.items() if issubclass(t, Datetime)]
+    customers_datetime_vars = [id for id, t in es['customers'].logical_types.items() if isinstance(t, Datetime)]
     expected_names = [f"TIME_SINCE({v})" for v in customers_datetime_vars]
 
     for name in expected_names:
