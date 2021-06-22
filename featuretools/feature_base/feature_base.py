@@ -328,7 +328,7 @@ class FeatureBase(object):
         return self.NOT()
 
     def unique_name(self):
-        return u"%s: %s" % (self.entity_id, self.get_name())
+        return u"%s: %s" % (self.dataframe_name, self.get_name())
 
     def relationship_path_name(self):
         return self.relationship_path.name
@@ -373,8 +373,8 @@ class IdentityFeature(FeatureBase):
         }
 
     @property
-    def variable_type(self):
-        return type(self.variable)
+    def column_schema(self):
+        return self.return_type
 
 
 class DirectFeature(FeatureBase):
