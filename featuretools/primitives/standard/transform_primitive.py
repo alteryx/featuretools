@@ -109,7 +109,7 @@ class Day(TransformPrimitive):
     """
     name = "day"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(logical_type=Ordinal)
+    return_type = ColumnSchema(logical_type=Ordinal, semantic_tags={'category'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the day of the month of {}"
 
@@ -133,7 +133,7 @@ class Hour(TransformPrimitive):
     """
     name = "hour"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(logical_type=Ordinal(order=range(23)))
+    return_type = ColumnSchema(logical_type=Ordinal(order=range(23)), semantic_tags={'category'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = 'the hour value of {}'
 
@@ -157,7 +157,7 @@ class Second(TransformPrimitive):
     """
     name = "second"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(logical_type=Ordinal(range(59)))
+    return_type = ColumnSchema(logical_type=Ordinal(range(59)), semantic_tags={'category'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the seconds value of {}"
 
@@ -181,7 +181,7 @@ class Minute(TransformPrimitive):
     """
     name = "minute"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(logical_type=Ordinal(range(59)))
+    return_type = ColumnSchema(logical_type=Ordinal(range(59)), semantic_tags={'category'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the minutes value of {}"
 
@@ -210,7 +210,7 @@ class Week(TransformPrimitive):
         """
     name = "week"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(logical_type=Ordinal(order=range(1, 53)))
+    return_type = ColumnSchema(logical_type=Ordinal(order=range(1, 53)), semantic_tags={'category'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the week of the year of {}"
 
@@ -239,7 +239,7 @@ class Month(TransformPrimitive):
     """
     name = "month"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(logical_type=Ordinal(order=range(1, 12)))
+    return_type = ColumnSchema(logical_type=Ordinal(order=range(1, 12)), semantic_tags={'category'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the month of {}"
 
@@ -263,7 +263,7 @@ class Year(TransformPrimitive):
     """
     name = "year"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(logical_type=Ordinal)
+    return_type = ColumnSchema(logical_type=Ordinal, semantic_tags={'category'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the year of {}"
 
@@ -315,7 +315,7 @@ class Weekday(TransformPrimitive):
     """
     name = "weekday"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(logical_type=Ordinal)
+    return_type = ColumnSchema(logical_type=Ordinal, semantic_tags={'category'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the day of the week of {}"
 
