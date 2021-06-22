@@ -7,6 +7,7 @@ from dask import dataframe as dd
 from numpy.testing import assert_array_equal
 
 import featuretools as ft
+import woodwork as ww
 from featuretools import Timedelta, variable_types
 from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
@@ -458,17 +459,17 @@ def test_make_3_stacked_agg_feats(df):
     if isinstance(df, dd.DataFrame):
         pytest.xfail('normalize_entity fails with dask DataFrame')
     es = ft.EntitySet()
-    vtypes = {
-        'id': variable_types.Index,
-        'e1': variable_types.Categorical,
-        'e2': variable_types.Categorical,
-        'e3': variable_types.Categorical,
-        'val': variable_types.Numeric
+    ltypes = {
+        # 'id': variable_types.Index,
+        'e1': ww.logical_types.Categorical,
+        'e2': ww.logical_types.Categorical,
+        'e3': ww.logical_types.Categorical,
+        'val': ww.logical_types.Double
     }
     es.add_dataframe(dataframe=df,
                              index="id",
                              dataframe_name="e0",
-                             variable_types=vtypes)
+                             logical_types=ltypes)
 
     es.normalize_entity(base_entity_id="e0",
                         new_entity_id="e1",

@@ -499,7 +499,7 @@ def dask_transform_es(pd_transform_es):
         es.add_dataframe(dataframe_name=entity.id,
                                  dataframe=dd.from_pandas(entity.df, npartitions=2),
                                  index=entity.index,
-                                 variable_types=entity.variable_types)
+                                 logical_types=entity.variable_types)
     return es
 
 
@@ -511,5 +511,5 @@ def koalas_transform_es(pd_transform_es):
         es.add_dataframe(dataframe_name=entity.id,
                                  dataframe=ks.from_pandas(entity.df),
                                  index=entity.index,
-                                 variable_types=entity.variable_types)
+                                 logical_types=entity.variable_types)
     return es
