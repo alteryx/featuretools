@@ -266,6 +266,7 @@ def make_logical_types(with_integer_time_index=False):
         'email': ltypes.EmailAddress,
         'phone_number': ltypes.PhoneNumber,
         'date_of_birth': ltypes.Datetime,
+        'cohort_name': ltypes.Categorical,
     }
 
     session_logical_types = {
