@@ -249,7 +249,7 @@ def test_init_and_name(es):
 
 
 def test_invalid_init_args(diamond_es):
-    error_text = 'parent_entity must match first relationship in path'
+    error_text = 'parent_dataframe must match first relationship in path'
     with pytest.raises(AssertionError, match=error_text):
         path = backward_path(diamond_es, ['stores', 'transactions'])
         ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'transactions', 'amount'),

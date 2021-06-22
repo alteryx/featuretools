@@ -153,7 +153,7 @@ class TestCumMin:
 
 def test_cum_sum(pd_es):
     log_value_feat = ft.IdentityFeature(pd_es, 'log', 'value')
-    dfeat = ft.Feature(ft.Identityfeature(pd_es, 'sessions', 'device_type'), dataframe_name='log')
+    dfeat = ft.Feature(ft.IdentityFeature(pd_es, 'sessions', 'device_type'), dataframe_name='log')
     cum_sum = ft.Feature(log_value_feat, groupby=dfeat, primitive=CumSum)
     features = [cum_sum]
     df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(15))
@@ -166,7 +166,7 @@ def test_cum_sum(pd_es):
 
 def test_cum_min(pd_es):
     log_value_feat = ft.IdentityFeature(pd_es, 'log', 'value')
-    cum_min = ft.Feature(log_value_feat, groupby=IdentityFeature(pd_es, 'log', 'session_id'), primitive=CumMin)
+    cum_min = ft.Feature(log_value_feat, groupby=ft.IdentityFeature(pd_es, 'log', 'session_id'), primitive=CumMin)
     features = [cum_min]
     df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(15))
     cvalues = df[cum_min.get_name()].values
@@ -178,7 +178,7 @@ def test_cum_min(pd_es):
 
 def test_cum_max(pd_es):
     log_value_feat = ft.IdentityFeature(pd_es, 'log', 'value')
-    cum_max = ft.Feature(log_value_feat, groupby=IdentityFeature(pd_es, 'log', 'session_id'), primitive=CumMax)
+    cum_max = ft.Feature(log_value_feat, groupby=ft.IdentityFeature(pd_es, 'log', 'session_id'), primitive=CumMax)
     features = [cum_max]
     df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(15))
     cvalues = df[cum_max.get_name()].values
@@ -196,7 +196,7 @@ def test_cum_sum_group_on_nan(pd_es):
                                   [np.nan] * 4 +
                                   ['coke_zero'] * 2)
     pd_es['log']['value'][16] = 10
-    cum_sum = ft.Feature(log_value_feat, groupby=pd_es['log']['product_id'], primitive=CumSum)
+    cum_sum = ft.Feature(log_value_feat, groupby=ft.IdentityFeature(pd_es, 'log', 'product_id'), primitive=CumSum)
     features = [cum_sum]
     df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(17))
     cvalues = df[cum_sum.get_name()].values
@@ -237,7 +237,7 @@ def test_cum_sum_numpy_group_on_nan(pd_es):
                                   [np.nan] * 4 +
                                   ['coke_zero'] * 2)
     pd_es['log']['value'][16] = 10
-    cum_sum = ft.Feature(log_value_feat, groupby=pd_es['log']['product_id'], primitive=CumSumNumpy)
+    cum_sum = ft.Feature(log_value_feat, groupby=ft.IdentityFeature(pd_es, 'log', 'product_id'), primitive=CumSumNumpy)
     assert cum_sum.get_name() == "CUM_SUM(value) by product_id"
     features = [cum_sum]
     df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(17))
@@ -269,14 +269,14 @@ def test_cum_handles_uses_full_entity(pd_es):
         assert (df_2.loc[2] == df_1.loc[2]).all()
 
     for primitive in [CumSum, CumMean, CumMax, CumMin]:
-        check(ft.Feature(pd_es['log']['value'], groupby=IdentityFeature(pd_es, 'log', 'session_id'), primitive=primitive))
+        check(ft.Feature(pd_es, 'log', 'value', groupby=ft.IdentityFeature(pd_es, 'log', 'session_id'), primitive=primitive))
 
-    check(ft.Feature(IdentityFeature(pd_es, 'log', 'session_id'), groupby=IdentityFeature(pd_es, 'log', 'session_id'), primitive=CumCount))
+    check(ft.Feature(ft.IdentityFeature(pd_es, 'log', 'session_id'), groupby=ft.IdentityFeature(pd_es, 'log', 'session_id'), primitive=CumCount))
 
 
 def test_cum_mean(pd_es):
     log_value_feat = ft.IdentityFeature(pd_es, 'log', 'value')
-    cum_mean = ft.Feature(log_value_feat, groupby=IdentityFeature(pd_es, 'log', 'session_id'), primitive=CumMean)
+    cum_mean = ft.Feature(log_value_feat, groupby=ft.IdentityFeature(pd_es, 'log', 'session_id'), primitive=CumMean)
     features = [cum_mean]
     df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(15))
     cvalues = df[cum_mean.get_name()].values
@@ -287,8 +287,8 @@ def test_cum_mean(pd_es):
 
 
 def test_cum_count(pd_es):
-    cum_count = ft.Feature(IdentityFeature(pd_es, 'log', 'session_id'),
-                           groupby=IdentityFeature(pd_es, 'log', 'session_id'),
+    cum_count = ft.Feature(ft.IdentityFeature(pd_es, 'log', 'session_id'),
+                           groupby=ft.IdentityFeature(pd_es, 'log', 'session_id'),
                            primitive=CumCount)
     features = [cum_count]
     df = ft.calculate_feature_matrix(entityset=pd_es,
@@ -314,8 +314,8 @@ def test_rename(pd_es):
 
 
 def test_groupby_no_data(pd_es):
-    cum_count = ft.Feature(IdentityFeature(pd_es, 'log', 'session_id'),
-                           groupby=IdentityFeature(pd_es, 'log', 'session_id'),
+    cum_count = ft.Feature(ft.IdentityFeature(pd_es, 'log', 'session_id'),
+                           groupby=ft.IdentityFeature(pd_es, 'log', 'session_id'),
                            primitive=CumCount)
     last_feat = ft.Feature(cum_count, parent_dataframe_name='customers', primitive=Last)
     df = ft.calculate_feature_matrix(entityset=pd_es,
@@ -343,9 +343,12 @@ def test_groupby_uses_calc_time(pd_es):
         def get_function(self):
             return projected_amount_left
 
-    time_since_product = ft.Feature([pd_es['log']['value'], pd_es['log']['datetime']],
-                                    groupby=pd_es['log']['product_id'],
-                                    primitive=ProjectedAmountRemaining)
+    time_since_product = ft.GroupByTransformFeature(
+        [ft.IdentityFeature(pd_es, 'log', 'value'),
+         ft.IdentityFeature(pd_es, 'log', 'datetime')],
+        groupby=ft.IdentityFeature(pd_es, 'log', 'product_id'),
+        primitive=ProjectedAmountRemaining
+    )
     df = ft.calculate_feature_matrix(entityset=pd_es,
                                      features=[time_since_product],
                                      cutoff_time=pd.Timestamp("2011-04-10 11:10:30"))

@@ -55,8 +55,8 @@ def test_direct_from_variable(es):
 
 def test_direct_rename_multioutput(es):
     n_common = Feature(es, 'log', 'product_id',
-                          parent_dataframe_name='customers',
-                          primitive=NMostCommon(n=2))
+                       parent_dataframe_name='customers',
+                       primitive=NMostCommon(n=2))
     feat = DirectFeature(n_common, 'sessions')
     copy_feat = feat.rename("session_test")
     assert feat.unique_name() != copy_feat.unique_name()
@@ -188,7 +188,7 @@ def test_direct_with_invalid_init_args(diamond_es):
     error_text = 'child_dataframe must be the relationship child dataframe'
     with pytest.raises(AssertionError, match=error_text):
         DirectFeature(IdentityFeature(diamond_es, 'regions', 'name'), 'stores',
-                         relationship=customer_to_region)
+                      relationship=customer_to_region)
 
     transaction_relationships = diamond_es.get_forward_relationships('transactions')
     transaction_to_store = next(r for r in transaction_relationships
@@ -196,7 +196,7 @@ def test_direct_with_invalid_init_args(diamond_es):
     error_text = 'Base feature must be defined on the relationship parent dataframe'
     with pytest.raises(AssertionError, match=error_text):
         DirectFeature(IdentityFeature(diamond_es, 'regions', 'name'), 'transactions',
-                         relationship=transaction_to_store)
+                      relationship=transaction_to_store)
 
 
 def test_direct_with_multiple_possible_paths(games_es):
@@ -209,7 +209,7 @@ def test_direct_with_multiple_possible_paths(games_es):
     relationship = next(r for r in games_es.get_forward_relationships('games')
                         if r.child_column.name == 'home_team_id')
     feat = DirectFeature(IdentityFeature(games_es, 'teams', 'name'), 'games',
-                            relationship=relationship)
+                         relationship=relationship)
     assert feat.relationship_path_name() == 'teams[home_team_id]'
     assert feat.get_name() == 'teams[home_team_id].name'
 
@@ -245,5 +245,5 @@ def test_serialization(es):
     assert dictionary == direct.get_arguments()
     assert direct == \
         DirectFeature.from_dictionary(dictionary, es,
-                                         {value.unique_name(): value},
-                                         PrimitivesDeserializer())
+                                      {value.unique_name(): value},
+                                      PrimitivesDeserializer())
