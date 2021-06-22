@@ -37,7 +37,7 @@ class Count(AggregationPrimitive):
         return pd.Series.count
 
     def generate_name(self, base_feature_names, relationship_path_name,
-                      parent_entity_id, where_str, use_prev_str):
+                      parent_dataframe_name, where_str, use_prev_str):
         return u"COUNT(%s%s%s)" % (relationship_path_name,
                                    where_str, use_prev_str)
 
