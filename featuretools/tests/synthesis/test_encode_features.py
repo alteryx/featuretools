@@ -135,7 +135,7 @@ def test_encode_unknown_features():
     df = pd.DataFrame({'category': ['unknown', 'b', 'c', 'd', 'e']})
 
     pd_es = EntitySet('test')
-    pd_es.entity_from_dataframe(entity_id='a', dataframe=df, index='index', make_index=True)
+    pd_es.add_dataframe(dataframe_name='a', dataframe=df, index='index', make_index=True)
     features, feature_defs = dfs(entityset=pd_es, target_entity='a')
 
     # Specify unknown token for replacement
@@ -165,7 +165,7 @@ def test_encode_features_topn(pd_es):
 def test_encode_features_drop_first():
     df = pd.DataFrame({'category': ['ao', 'b', 'c', 'd', 'e']})
     pd_es = EntitySet('test')
-    pd_es.entity_from_dataframe(entity_id='a', dataframe=df, index='index', make_index=True)
+    pd_es.add_dataframe(dataframe_name='a', dataframe=df, index='index', make_index=True)
     features, feature_defs = dfs(entityset=pd_es, target_entity='a')
     features_enc, feature_defs_enc = encode_features(features, feature_defs,
                                                      drop_first=True, include_unknown=False)
@@ -220,8 +220,7 @@ def test_encode_features_matches_calculate_feature_matrix():
     df = pd.DataFrame({'category': ['b', 'c', 'd', 'e']})
 
     pd_es = EntitySet('test')
-    pd_es.entity_from_dataframe(
-        entity_id='a', dataframe=df, index='index', make_index=True)
+    pd_es.add_dataframe(dataframe_name='a', dataframe=df, index='index', make_index=True)
     features, feature_defs = dfs(entityset=pd_es, target_entity='a')
 
     features_enc, feature_defs_enc = encode_features(features, feature_defs, to_encode=['category'])
