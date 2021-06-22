@@ -26,20 +26,22 @@ def test_single_table_dask_entityset():
         "dates": ft.variable_types.Datetime,
         "strings": ft.variable_types.NaturalLanguage
     }
-    dask_es.entity_from_dataframe(entity_id="data",
-                                  dataframe=values_dd,
-                                  index="id",
-                                  variable_types=vtypes)
+    dask_es.add_dataframe(
+        dataframe_name="data",
+        dataframe=values_dd,
+        index="id",
+        variable_types=vtypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="data",
                         trans_primitives=primitives_list)
 
     pd_es = ft.EntitySet(id="pd_es")
-    pd_es.entity_from_dataframe(entity_id="data",
-                                dataframe=df,
-                                index="id",
-                                variable_types={"strings": ft.variable_types.NaturalLanguage})
+    pd_es.add_dataframe(
+        dataframe_name="data",
+        dataframe=df,
+        index="id",
+        variable_types={"strings": ft.variable_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -71,20 +73,22 @@ def test_single_table_dask_entityset_ids_not_sorted():
         "dates": ft.variable_types.Datetime,
         "strings": ft.variable_types.NaturalLanguage
     }
-    dask_es.entity_from_dataframe(entity_id="data",
-                                  dataframe=values_dd,
-                                  index="id",
-                                  variable_types=vtypes)
+    dask_es.add_dataframe(
+        dataframe_name="data",
+        dataframe=values_dd,
+        index="id",
+        variable_types=vtypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="data",
                         trans_primitives=primitives_list)
 
     pd_es = ft.EntitySet(id="pd_es")
-    pd_es.entity_from_dataframe(entity_id="data",
-                                dataframe=df,
-                                index="id",
-                                variable_types={"strings": ft.variable_types.NaturalLanguage})
+    pd_es.add_dataframe(
+        dataframe_name="data",
+        dataframe=df,
+        index="id",
+        variable_types={"strings": ft.variable_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -117,10 +121,11 @@ def test_single_table_dask_entityset_with_instance_ids():
         "dates": ft.variable_types.Datetime,
         "strings": ft.variable_types.NaturalLanguage
     }
-    dask_es.entity_from_dataframe(entity_id="data",
-                                  dataframe=values_dd,
-                                  index="id",
-                                  variable_types=vtypes)
+    dask_es.add_dataframe(
+        dataframe_name="data",
+        dataframe=values_dd,
+        index="id",
+        variable_types=vtypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="data",
@@ -128,10 +133,11 @@ def test_single_table_dask_entityset_with_instance_ids():
                         instance_ids=instance_ids)
 
     pd_es = ft.EntitySet(id="pd_es")
-    pd_es.entity_from_dataframe(entity_id="data",
-                                dataframe=df,
-                                index="id",
-                                variable_types={"strings": ft.variable_types.NaturalLanguage})
+    pd_es.add_dataframe(
+        dataframe_name="data",
+        dataframe=df,
+        index="id",
+        variable_types={"strings": ft.variable_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",

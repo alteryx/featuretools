@@ -203,7 +203,7 @@ def test_cfm_approximate_correct_ordering():
     }
     df = pd.DataFrame.from_dict(trips)
     es = EntitySet('flights')
-    es.entity_from_dataframe("trips",
+    es.add_dataframe(dataframe_name="trips",
                              dataframe=df,
                              index="trip_id",
                              time_index='flight_time')
