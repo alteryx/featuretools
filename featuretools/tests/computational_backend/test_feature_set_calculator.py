@@ -465,9 +465,9 @@ def test_make_3_stacked_agg_feats(df):
         'e3': variable_types.Categorical,
         'val': variable_types.Numeric
     }
-    es.entity_from_dataframe(dataframe=df,
+    es.add_dataframe(dataframe=df,
                              index="id",
-                             entity_id="e0",
+                             dataframe_name="e0",
                              variable_types=vtypes)
 
     es.normalize_entity(base_entity_id="e0",
@@ -775,11 +775,11 @@ def test_empty_child_dataframe(parent_child):
         parent_vtypes = None
         child_vtypes = None
     es = ft.EntitySet(id="blah")
-    es.entity_from_dataframe(entity_id="parent",
+    es.add_dataframe(dataframe_name="parent",
                              dataframe=parent_df,
                              index="id",
                              variable_types=parent_vtypes)
-    es.entity_from_dataframe(entity_id="child",
+    es.add_dataframe(dataframe_name="child",
                              dataframe=child_df,
                              index="id",
                              time_index="time_index",
