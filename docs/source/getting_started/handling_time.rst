@@ -273,12 +273,13 @@ In Featuretools, when creating the entity, we set the secondary time index to be
                         'late_aircraft_delay', 'canceled', 'diverted',
                         'taxi_in', 'taxi_out', 'air_time', 'dep_time']
 
-    es.entity_from_dataframe('trip_logs',
-                             data,
-                             index='trip_log_id',
-                             make_index=True,
-                             time_index='date_scheduled',
-                             secondary_time_index={'arr_time': arr_time_columns})
+    es.add_dataframe(
+        dataframe_name='trip_logs',
+        dataframe=data,
+        index='trip_log_id',
+        make_index=True,
+        time_index='date_scheduled',
+        secondary_time_index={'arr_time': arr_time_columns})
 
 By setting a secondary time index, we can still use the delay information from a row, but only when it becomes known.
 

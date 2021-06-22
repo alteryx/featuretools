@@ -25,16 +25,17 @@ For this example, we will create a very small pandas dataframe and then convert 
     dask_df
 
 
-Now that we have our Dask dataframe, we can start to create the ``EntitySet``. The current implementation does not support variable type inference for Dask entities, so we must pass a dictionary of variable types using the ``variable_types`` parameter when calling ``es.entity_from_dataframe()``. Aside from needing to supply the variable types, the rest of the process of creating an ``EntitySet`` is the same as if we were using pandas dataframes.
+Now that we have our Dask dataframe, we can start to create the ``EntitySet``. The current implementation does not support variable type inference for Dask entities, so we must pass a dictionary of variable types using the ``variable_types`` parameter when calling ``es.add_dataframe()``. Aside from needing to supply the variable types, the rest of the process of creating an ``EntitySet`` is the same as if we were using pandas dataframes.
 
 .. ipython:: python
 
     es = ft.EntitySet(id="dask_es")
-    es = es.entity_from_dataframe(entity_id="dask_entity",
-                                  dataframe=dask_df,
-                                  index="id",
-                                  variable_types={"id": ft.variable_types.Id,
-                                                  "values": ft.variable_types.Numeric})
+    es = es.add_dataframe(
+        dataframe_name="dask_entity",
+        dataframe=dask_df,
+        index="id",
+        variable_types={"id": ft.variable_types.Id, "values": ft.variable_types.Numeric})
+
     es
 
 

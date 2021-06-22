@@ -29,16 +29,17 @@ Koalas ``EntitySets`` require Koalas and PySpark. Both can be installed directly
     koalas_df
 
 
-Now that we have our Koalas dataframe, we can start to create the ``EntitySet``. The current implementation does not support variable type inference for Koalas entities, so we must pass a dictionary of variable types using the ``variable_types`` parameter when calling ``es.entity_from_dataframe()``. Aside from needing to supply the variable types, the rest of the process of creating an ``EntitySet`` is the same as if we were using pandas dataframes.
+Now that we have our Koalas dataframe, we can start to create the ``EntitySet``. The current implementation does not support variable type inference for Koalas entities, so we must pass a dictionary of variable types using the ``variable_types`` parameter when calling ``es.add_dataframe()``. Aside from needing to supply the variable types, the rest of the process of creating an ``EntitySet`` is the same as if we were using pandas dataframes.
 
 .. ipython:: python
 
     es = ft.EntitySet(id="koalas_es")
-    es = es.entity_from_dataframe(entity_id="koalas_entity",
-                                  dataframe=koalas_df,
-                                  index="id",
-                                  variable_types={"id": ft.variable_types.Id,
-                                                  "values": ft.variable_types.Numeric})
+    es = es.add_dataframe(
+        dataframe_name="koalas_entity",
+        dataframe=koalas_df,
+        index="id",
+        variable_types={"id": ft.variable_types.Id, "values": ft.variable_types.Numeric})
+
     es
 
 
