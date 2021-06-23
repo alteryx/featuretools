@@ -38,7 +38,7 @@ Now that we have our Koalas dataframe, we can start to create the ``EntitySet``.
         dataframe_name="koalas_entity",
         dataframe=koalas_df,
         index="id",
-        variable_types={"id": ft.variable_types.Id, "values": ft.variable_types.Numeric})
+        logical_types={"values": ww.logical_types.Double})
 
     es
 
