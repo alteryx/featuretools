@@ -4,6 +4,7 @@ import warnings
 from functools import wraps
 
 import dask.dataframe as dd
+import numpy as np
 import pandas as pd
 import psutil
 
@@ -274,3 +275,17 @@ def _check_cutoff_time_type(cutoff_time, es_time_type):
     if es_time_type == DatetimeTimeIndex and not is_datetime:
         raise TypeError("cutoff_time times must be datetime type: try casting "
                         "via pd.to_datetime()")
+
+
+def replace_inf_values(feature_matrix, replacement_value=np.nan):
+    """Replace all `np.inf` values in a feature matrix with the specified replacement value.
+
+        Args:
+            feature_matrix (DataFrame): DataFrame whose columns are feature names and rows are instances
+            replacement_value (int, float, str, optional): Value with which `np.inf` values will be replaced
+
+        Returns:
+            feature_matrix
+
+    """
+    return feature_matrix.replace([np.inf, -np.inf], replacement_value)
