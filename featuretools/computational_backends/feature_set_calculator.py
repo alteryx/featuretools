@@ -748,10 +748,8 @@ class FeatureSetCalculator(object):
         # We have to keep all Id columns because we don't know what forward
         # relationships will come from this node.
         df = self.entityset[dataframe_name]
-        index_columns = {col.name for col in df.columns
-                         if (df.ww.index == col.name or
-                             'foreign_key' in col.ww.semantic_tags or
-                             df.ww.time_index == col.name)}
+        index_columns = {col for col in df.columns
+                         if {'index', 'foreign_key', 'time_index'} & df[col].ww.semantic_tags}
         features = (self.feature_set.features_by_name[name]
                     for name in feature_names)
         feature_columns = {f.variable.id for f in features
