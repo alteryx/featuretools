@@ -3,6 +3,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 import featuretools as ft
 from featuretools.entityset import Entity, EntitySet
@@ -173,14 +174,14 @@ def test_variable_types_unmodified():
                        "fraud": [True, False, False, False, True, True]})
 
     es = ft.EntitySet()
-    variable_types = {'fraud': ft.variable_types.Boolean}
-    old_variable_types = variable_types.copy()
+    logical_types = {'fraud': ww.logical_types.Boolean}
+    old_logical_types = logical_types.copy()
     es.add_dataframe(dataframe_name="transactions",
-                             dataframe=df,
-                             index='id',
-                             time_index='transaction_time',
-                             variable_types=variable_types)
-    assert old_variable_types == variable_types
+                     dataframe=df,
+                     index='id',
+                     time_index='transaction_time',
+                     logical_types=logical_types)
+    assert old_logical_types == logical_types
 
 
 def test_passing_strings_to_variable_types_entity_init():
@@ -246,11 +247,11 @@ def test_text_deprecation_warning():
         match = "Text has been deprecated. Please use NaturalLanguage instead."
         with pytest.warns(FutureWarning, match=match):
             es = es.add_dataframe(dataframe_name="test", dataframe=data, index="id",
-                                          variable_types={"value": text_repr})
+                                  variable_types={"value": text_repr})
 
     for nl_repr in ['natural_language', ft.variable_types.NaturalLanguage]:
         es = ft.EntitySet()
         with pytest.warns(None) as record:
             es = es.add_dataframe(dataframe_name="test", dataframe=data, index="id",
-                                          variable_types={"value": nl_repr})
+                                  variable_types={"value": nl_repr})
         assert len(record) == 0

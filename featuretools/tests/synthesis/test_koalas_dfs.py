@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+import woodwork as ww
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
@@ -25,16 +26,15 @@ def test_single_table_ks_entityset():
                                    ""]})
     values_dd = ks.from_pandas(df)
     vtypes = {
-        "id": ft.variable_types.Id,
-        "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.NaturalLanguage
+        "values": ww.logical_types.Double,
+        "dates": ww.logical_types.Datetime,
+        "strings": ww.logical_types.NaturalLanguage
     }
     ks_es.add_dataframe(
         dataframe_name="data",
         dataframe=values_dd,
         index="id",
-        variable_types=vtypes)
+        logical_types=vtypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
                       target_entity="data",
@@ -45,7 +45,7 @@ def test_single_table_ks_entityset():
         dataframe_name="data",
         dataframe=df,
         index="id",
-        variable_types={"strings": ft.variable_types.NaturalLanguage})
+        logical_types={"strings": ww.logical_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -73,16 +73,15 @@ def test_single_table_ks_entityset_ids_not_sorted():
                                    ""]})
     values_dd = ks.from_pandas(df)
     vtypes = {
-        "id": ft.variable_types.Id,
-        "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.NaturalLanguage
+        "values": ww.logical_types.Double,
+        "dates": ww.logical_types.Datetime,
+        "strings": ww.logical_types.NaturalLanguage,
     }
     ks_es.add_dataframe(
         dataframe_name="data",
         dataframe=values_dd,
         index="id",
-        variable_types=vtypes)
+        logical_types=vtypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
                       target_entity="data",
@@ -93,7 +92,7 @@ def test_single_table_ks_entityset_ids_not_sorted():
         dataframe_name="data",
         dataframe=df,
         index="id",
-        variable_types={"strings": ft.variable_types.NaturalLanguage})
+        logical_types={"strings": ww.logical_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -122,16 +121,15 @@ def test_single_table_ks_entityset_with_instance_ids():
 
     values_dd = ks.from_pandas(df)
     vtypes = {
-        "id": ft.variable_types.Id,
-        "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.NaturalLanguage
+        "values": ww.logical_types.Double,
+        "dates": ww.logical_types.Datetime,
+        "strings": ww.logical_types.NaturalLanguage
     }
     ks_es.add_dataframe(
         dataframe_name="data",
         dataframe=values_dd,
         index="id",
-        variable_types=vtypes)
+        logical_types=vtypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
                       target_entity="data",
@@ -143,7 +141,7 @@ def test_single_table_ks_entityset_with_instance_ids():
         dataframe_name="data",
         dataframe=df,
         index="id",
-        variable_types={"strings": ft.variable_types.NaturalLanguage})
+        logical_types={"strings": ww.logical_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -171,16 +169,15 @@ def test_single_table_ks_entityset_single_cutoff_time():
                                    ""]})
     values_dd = ks.from_pandas(df)
     vtypes = {
-        "id": ft.variable_types.Id,
-        "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.NaturalLanguage
+        "values": ww.logical_types.Double,
+        "dates": ww.logical_types.Datetime,
+        "strings": ww.logical_types.NaturalLanguage
     }
     ks_es.add_dataframe(
         dataframe_name="data",
         dataframe=values_dd,
         index="id",
-        variable_types=vtypes)
+        logical_types=vtypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
                       target_entity="data",
@@ -192,7 +189,7 @@ def test_single_table_ks_entityset_single_cutoff_time():
         dataframe_name="data",
         dataframe=df,
         index="id",
-        variable_types={"strings": ft.variable_types.NaturalLanguage})
+        logical_types={"strings": ww.logical_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -218,17 +215,16 @@ def test_single_table_ks_entityset_cutoff_time_df():
                                    "abcdef ghijk"]})
     values_dd = ks.from_pandas(df)
     vtypes = {
-        "id": ft.variable_types.Id,
-        "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.NaturalLanguage
+        "values": ww.logical_types.Numeric,
+        "dates": ww.logical_types.Datetime,
+        "strings": ww.logical_types.NaturalLanguage
     }
     ks_es.add_dataframe(
         dataframe_name="data",
         dataframe=values_dd,
         index="id",
         time_index="dates",
-        variable_types=vtypes)
+        logical_types=vtypes)
 
     ids = [0, 1, 2, 0]
     times = [pd.Timestamp("2019-01-05 04:00"),
@@ -249,7 +245,7 @@ def test_single_table_ks_entityset_cutoff_time_df():
         dataframe=df,
         index="id",
         time_index="dates",
-        variable_types={"strings": ft.variable_types.NaturalLanguage})
+        logical_types={"strings": ww.logical_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -276,16 +272,15 @@ def test_single_table_ks_entityset_dates_not_sorted():
     primitives_list = ['absolute', 'is_weekend', 'year', 'day']
     values_dd = ks.from_pandas(df)
     vtypes = {
-        "id": ft.variable_types.Id,
-        "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.Datetime,
+        "values": ww.logical_types.Double,
+        "dates": ww.logical_types.Datetime,
     }
     ks_es.add_dataframe(
         dataframe_name="data",
         dataframe=values_dd,
         index="id",
         time_index="dates",
-        variable_types=vtypes)
+        logical_types=vtypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
                       target_entity="data",
@@ -348,18 +343,17 @@ def test_ks_entityset_secondary_time_index():
         secondary_time_index={'arrival_time': ['departure_time', 'delay']})
 
     log_vtypes = {
-        "id": ft.variable_types.Id,
-        "scheduled_time": ft.variable_types.DatetimeTimeIndex,
-        "departure_time": ft.variable_types.DatetimeTimeIndex,
-        "arrival_time": ft.variable_types.DatetimeTimeIndex,
-        "delay": ft.variable_types.Numeric,
-        "flight_id": ft.variable_types.Id
+        "scheduled_time": ww.logical_types.Datetime,
+        "departure_time": ww.logical_types.Datetime,
+        "arrival_time": ww.logical_types.Datetime,
+        "delay": ww.logical_types.Double,
     }
     ks_es.add_dataframe(
         dataframe_name='logs',
         dataframe=log_ks,
         index="id",
-        variable_types=log_vtypes,
+        logical_types=log_vtypes,
+        semantic_tags={'flight_id': 'foreign_key'},
         time_index="scheduled_time",
         secondary_time_index={'arrival_time': ['departure_time', 'delay']})
 

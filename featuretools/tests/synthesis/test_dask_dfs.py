@@ -1,5 +1,6 @@
 import dask.dataframe as dd
 import pandas as pd
+import woodwork as ww
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
@@ -21,16 +22,15 @@ def test_single_table_dask_entityset():
                                    ""]})
     values_dd = dd.from_pandas(df, npartitions=2)
     vtypes = {
-        "id": ft.variable_types.Id,
-        "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.NaturalLanguage
+        "values": ww.logical_types.Double,
+        "dates": ww.logical_types.Datetime,
+        "strings": ww.logical_types.NaturalLanguage
     }
     dask_es.add_dataframe(
         dataframe_name="data",
         dataframe=values_dd,
         index="id",
-        variable_types=vtypes)
+        logical_types=vtypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="data",
@@ -41,7 +41,7 @@ def test_single_table_dask_entityset():
         dataframe_name="data",
         dataframe=df,
         index="id",
-        variable_types={"strings": ft.variable_types.NaturalLanguage})
+        variable_types={"strings": ww.logical_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -68,10 +68,9 @@ def test_single_table_dask_entityset_ids_not_sorted():
                                    ""]})
     values_dd = dd.from_pandas(df, npartitions=2)
     vtypes = {
-        "id": ft.variable_types.Id,
-        "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.NaturalLanguage
+        "values": ww.logical_types.Double,
+        "dates": ww.logical_types.Datetime,
+        "strings": ww.logical_types.NaturalLanguage
     }
     dask_es.add_dataframe(
         dataframe_name="data",
@@ -88,7 +87,7 @@ def test_single_table_dask_entityset_ids_not_sorted():
         dataframe_name="data",
         dataframe=df,
         index="id",
-        variable_types={"strings": ft.variable_types.NaturalLanguage})
+        variable_types={"strings": ww.logical_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -116,10 +115,9 @@ def test_single_table_dask_entityset_with_instance_ids():
 
     values_dd = dd.from_pandas(df, npartitions=2)
     vtypes = {
-        "id": ft.variable_types.Id,
-        "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.NaturalLanguage
+        "values": ww.logical_types.Double,
+        "dates": ww.logical_types.Datetime,
+        "strings": ww.logical_types.NaturalLanguage
     }
     dask_es.add_dataframe(
         dataframe_name="data",
@@ -137,7 +135,7 @@ def test_single_table_dask_entityset_with_instance_ids():
         dataframe_name="data",
         dataframe=df,
         index="id",
-        variable_types={"strings": ft.variable_types.NaturalLanguage})
+        variable_types={"strings": ww.logical_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -164,10 +162,9 @@ def test_single_table_dask_entityset_single_cutoff_time():
                                    ""]})
     values_dd = dd.from_pandas(df, npartitions=2)
     vtypes = {
-        "id": ft.variable_types.Id,
-        "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.NaturalLanguage
+        "values": ww.logical_types.Numeric,
+        "dates": ww.logical_types.Datetime,
+        "strings": ww.logical_types.NaturalLanguage
     }
     dask_es.add_dataframe(
         dataframe_name="data",
@@ -185,7 +182,7 @@ def test_single_table_dask_entityset_single_cutoff_time():
         dataframe_name="data",
         dataframe=df,
         index="id",
-        variable_types={"strings": ft.variable_types.NaturalLanguage})
+        variable_types={"strings": ww.logical_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -210,10 +207,9 @@ def test_single_table_dask_entityset_cutoff_time_df():
                                    "abcdef ghijk"]})
     values_dd = dd.from_pandas(df, npartitions=2)
     vtypes = {
-        "id": ft.variable_types.Id,
-        "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.DatetimeTimeIndex,
-        "strings": ft.variable_types.NaturalLanguage
+        "values": ww.logical_types.Numeric,
+        "dates": ww.logical_types.DatetimeTimeIndex,
+        "strings": ww.logical_types.NaturalLanguage
     }
     dask_es.add_dataframe(
         dataframe_name="data",
@@ -241,7 +237,7 @@ def test_single_table_dask_entityset_cutoff_time_df():
         dataframe=df,
         index="id",
         time_index="dates",
-        variable_types={"strings": ft.variable_types.NaturalLanguage})
+        variable_types={"strings": ww.logical_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -267,9 +263,8 @@ def test_single_table_dask_entityset_dates_not_sorted():
     primitives_list = ['absolute', 'is_weekend', 'year', 'day']
     values_dd = dd.from_pandas(df, npartitions=1)
     vtypes = {
-        "id": ft.variable_types.Id,
-        "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.Datetime,
+        "values": ww.logical_types.Numeric,
+        "dates": ww.logical_types.Datetime,
     }
     dask_es.add_dataframe(
         dataframe_name="data",
@@ -338,18 +333,17 @@ def test_dask_entityset_secondary_time_index():
         secondary_time_index={'arrival_time': ['departure_time', 'delay']})
 
     log_vtypes = {
-        "id": ft.variable_types.Id,
-        "scheduled_time": ft.variable_types.DatetimeTimeIndex,
-        "departure_time": ft.variable_types.DatetimeTimeIndex,
-        "arrival_time": ft.variable_types.DatetimeTimeIndex,
-        "delay": ft.variable_types.Numeric,
-        "flight_id": ft.variable_types.Id
+        "scheduled_time": ww.logical_types.Datetime,
+        "departure_time": ww.logical_types.Datetime,
+        "arrival_time": ww.logical_types.Datetime,
+        "delay": ww.logical_types.Double,
     }
     dask_es.add_dataframe(
         dataframe_name='logs',
         dataframe=log_dask,
         index="id",
-        variable_types=log_vtypes,
+        logical_types=log_vtypes,
+        semantic_tags={'flight_id': 'foreign_key'},
         time_index="scheduled_time",
         secondary_time_index={'arrival_time': ['departure_time', 'delay']})
 

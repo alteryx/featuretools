@@ -223,11 +223,11 @@ def pd_default_value_es():
 
     es = ft.EntitySet()
     es.add_dataframe(dataframe_name="transactions",
-                             dataframe=transactions,
-                             index="id")
+                     dataframe=transactions,
+                     index="id")
     es.add_dataframe(dataframe_name="sessions",
-                             dataframe=sessions,
-                             index="id")
+                     dataframe=sessions,
+                     index="id")
 
     es.add_relationship("sessions", "id", "transactions", "session_id")
     return es
@@ -486,8 +486,8 @@ def pd_transform_es():
     es = ft.EntitySet(id='test')
     # Add dataframe to entityset
     es.add_dataframe(dataframe_name='first', dataframe=df,
-                             index='index',
-                             make_index=True)
+                     index='index',
+                     make_index=True)
 
     return es
 
@@ -497,9 +497,9 @@ def dask_transform_es(pd_transform_es):
     es = ft.EntitySet(id=pd_transform_es.id)
     for entity in pd_transform_es.entities:
         es.add_dataframe(dataframe_name=entity.id,
-                                 dataframe=dd.from_pandas(entity.df, npartitions=2),
-                                 index=entity.index,
-                                 logical_types=entity.variable_types)
+                         dataframe=dd.from_pandas(entity.df, npartitions=2),
+                         index=entity.index,
+                         logical_types=entity.variable_types)
     return es
 
 
@@ -509,7 +509,7 @@ def koalas_transform_es(pd_transform_es):
     es = ft.EntitySet(id=pd_transform_es.id)
     for entity in pd_transform_es.entities:
         es.add_dataframe(dataframe_name=entity.id,
-                                 dataframe=ks.from_pandas(entity.df),
-                                 index=entity.index,
-                                 logical_types=entity.variable_types)
+                         dataframe=ks.from_pandas(entity.df),
+                         index=entity.index,
+                         logical_types=entity.variable_types)
     return es
