@@ -460,7 +460,6 @@ def test_make_3_stacked_agg_feats(df):
         pytest.xfail('normalize_entity fails with dask DataFrame')
     es = ft.EntitySet()
     ltypes = {
-        # 'id': variable_types.Index,
         'e1': ww.logical_types.Categorical,
         'e2': ww.logical_types.Categorical,
         'e3': ww.logical_types.Categorical,
@@ -763,7 +762,7 @@ def test_empty_child_dataframe(parent_child):
     parent_df, child_df = parent_child
     if not isinstance(parent_df, pd.DataFrame):
         child_vtypes = {
-            'parent_id': ww.list_logical_types.Double,
+            'parent_id': ww.list_logical_types.Integer,
             'time_index': ww.list_logical_types.Datetime,
             'value': ww.list_logical_types.Double,
             'cat': ww.list_logical_types.Categorical
