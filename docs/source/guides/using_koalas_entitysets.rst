@@ -29,7 +29,7 @@ Koalas ``EntitySets`` require Koalas and PySpark. Both can be installed directly
     koalas_df
 
 
-Now that we have our Koalas dataframe, we can start to create the ``EntitySet``. The current implementation does not support variable type inference for Koalas entities, so we must pass a dictionary of variable types using the ``variable_types`` parameter when calling ``es.add_dataframe()``. Aside from needing to supply the variable types, the rest of the process of creating an ``EntitySet`` is the same as if we were using pandas dataframes.
+Now that we have our Koalas dataframe, we can start to create the ``EntitySet``. The current implementation does not support logical type inference for Koalas entities, so we must pass a dictionary of logical types using the ``logical_types`` parameter when calling ``es.add_dataframe()``. Aside from needing to supply the logical types, the rest of the process of creating an ``EntitySet`` is the same as if we were using pandas dataframes.
 
 .. ipython:: python
 
@@ -88,7 +88,7 @@ At this time, custom primitives created with ``featuretools.primitives.make_tran
 
 Entity Limitations
 ******************
-When creating a Featuretools ``Entity`` from Koalas dataframes, variable type inference is not performed as it is when creating entities from pandas dataframes. This is done to improve speed as sampling the data to infer the variable types could require expensive computation on the underlying Koalas dataframe. As a consequence, users must define the variable types for each column in the supplied Dataframe. This step is needed so that the deep feature synthesis process can build the proper features based on the column types. A list of available variable types can be obtained by running ``featuretools.variable_types.find_variable_types()``.
+When creating a Featuretools ``Entity`` from Koalas dataframes, logical type inference is not performed as it is when creating entities from pandas dataframes. This is done to improve speed as sampling the data to infer the logical types could require expensive computation on the underlying Koalas dataframe. As a consequence, users must define the logical types for each column in the supplied Dataframe. This step is needed so that the deep feature synthesis process can build the proper features based on the column types. A list of available logical types can be obtained by running ``featuretools.list_logical_types()``.
 
 By default, Featuretools checks that entities created from pandas dataframes have unique index values. Because performing this same check with Koalas could be computationally expensive, this check is not performed when creating an entity from a Koalas dataframe. When using Koalas dataframes, users must ensure that the supplied index values are unique.
 
