@@ -70,7 +70,7 @@ In the call to ``add_dataframe``, we specified three important parameters
 
 * The ``index`` parameter specifies the column that uniquely identifies rows in the dataframe
 * The ``time_index`` parameter tells Featuretools when the data was created.
-* The ``variable_types`` parameter indicates that "product_id" should be interpreted as a Categorical variable, even though it just an integer in the underlying data.
+* The ``logical_types`` parameter indicates that "product_id" should be interpreted as a Categorical variable, even though it just an integer in the underlying data.
 
 
 Now, we can do that same thing with our products dataframe
