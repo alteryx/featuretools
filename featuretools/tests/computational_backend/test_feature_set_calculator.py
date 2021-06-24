@@ -772,14 +772,12 @@ def test_empty_child_dataframe(parent_child):
     es = ft.EntitySet(id="blah")
     es.add_dataframe(dataframe_name="parent",
                      dataframe=parent_df,
-                     index="id",
-                     semantic_tags={'id': 'index'})
+                     index="id")
     es.add_dataframe(dataframe_name="child",
                      dataframe=child_df,
                      index="id",
                      time_index="time_index",
-                     logical_types=child_vtypes,
-                     semantic_tags={'id': 'index'})
+                     logical_types=child_vtypes)
     es.add_relationship("parent", "id", "child", "parent_id")
 
     # create regular agg
