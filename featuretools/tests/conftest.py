@@ -484,9 +484,9 @@ def divide_by_zero_es(request):
 @pytest.fixture
 def divide_by_zero_es_pd():
     df = pd.DataFrame({
-        'id': [0, 1, 2],
-        'col1': [1, 0, -3],
-        'col2': [0, 0, 0],
+        'id': [0, 1, 2, 3],
+        'col1': [1, 0, -3, 4],
+        'col2': [0, 0, 0, 4],
     })
     return ft.EntitySet("data", {'zero': (df, 'id', None)})
 

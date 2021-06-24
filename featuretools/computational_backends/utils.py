@@ -277,15 +277,21 @@ def _check_cutoff_time_type(cutoff_time, es_time_type):
                         "via pd.to_datetime()")
 
 
-def replace_inf_values(feature_matrix, replacement_value=np.nan):
+def replace_inf_values(feature_matrix, replacement_value=np.nan, columns=None):
     """Replace all ``np.inf`` values in a feature matrix with the specified replacement value.
 
         Args:
             feature_matrix (DataFrame): DataFrame whose columns are feature names and rows are instances
             replacement_value (int, float, str, optional): Value with which ``np.inf`` values will be replaced
+            columns (list[str], optional): A list specifying which columns should have values replaced. If None,
+                values will be replaced for all columns.
 
         Returns:
             feature_matrix
 
     """
-    return feature_matrix.replace([np.inf, -np.inf], replacement_value)
+    if columns is None:
+        feature_matrix = feature_matrix.replace([np.inf, -np.inf], replacement_value)
+    else:
+        feature_matrix[columns] = feature_matrix[columns].replace([np.inf, -np.inf], replacement_value)
+    return feature_matrix

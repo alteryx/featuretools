@@ -262,8 +262,8 @@ Feature Selection
     remove_highly_null_features
     remove_single_value_features
 
-Feature utils
-~~~~~~~~~~~~~
+Feature Matrix utils
+~~~~~~~~~~~~~~~~~~~~
 .. currentmodule:: featuretools.computational_backends
 .. autosummary::
     :toctree: generated/
