@@ -92,7 +92,7 @@ At this time, custom primitives created with ``featuretools.primitives.make_tran
 
 Entity Limitations
 ******************
-When creating a Featuretools ``Entity`` from Dask dataframes, variable type inference is not performed as it is when creating entities from pandas dataframes. This is done to improve speed as sampling the data to infer the variable types would require an expensive compute operation on the underlying Dask dataframe. As a consequence, users must define the variable types for each column in the supplied Dataframe. This step is needed so that the deep feature synthesis process can build the proper features based on the column types. A list of available variable types can be obtained by running ``featuretools.variable_types.find_variable_types()``.
+When creating a Featuretools ``Entity`` from Dask dataframes, logical type inference is not performed as it is when creating entities from pandas dataframes. This is done to improve speed as sampling the data to infer the logical types would require an expensive compute operation on the underlying Dask dataframe. As a consequence, users must define the logical types for each column in the supplied Dataframe. This step is needed so that the deep feature synthesis process can build the proper features based on the column types. A list of available logical types can be obtained by running ``featuretools.list_logical_types()``.
 
 By default, Featuretools checks that entities created from pandas dataframes have unique index values. Because performing this same check with Dask would require an expensive compute operation, this check is not performed when creating an entity from a Dask dataframe. When using Dask dataframes, users must ensure that the supplied index values are unique.
 
