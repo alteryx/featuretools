@@ -30,8 +30,8 @@ def test_replace_inf_values(divide_by_zero_es):
 def test_replace_inf_values_specify_cols(divide_by_zero_es):
     div_by_scalar = DivideNumericScalar(value=0)
     fm, _ = ft.dfs(entityset=divide_by_zero_es,
-                    target_entity='zero',
-                    trans_primitives=[div_by_scalar])
+                   target_entity='zero',
+                   trans_primitives=[div_by_scalar])
 
     assert np.inf in to_pandas(fm['col1 / 0']).values
     replaced_fm = replace_inf_values(fm, columns=['col1 / 0'])
