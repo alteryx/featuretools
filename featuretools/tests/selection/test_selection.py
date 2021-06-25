@@ -22,7 +22,7 @@ def feature_matrix():
 
 @pytest.fixture
 def test_es(pd_es, feature_matrix):
-    pd_es.entity_from_dataframe('test', feature_matrix, index='test')
+    pd_es.add_dataframe(dataframe_name='test', dataframe=feature_matrix, index='test')
     return pd_es
 
 

@@ -37,14 +37,17 @@ def datetime_es():
                                     "fraud": [True, False, False, False, True]})
 
     datetime_es = EntitySet(id="fraud_data")
-    datetime_es = datetime_es.entity_from_dataframe(entity_id="transactions",
-                                                    dataframe=transactions_df,
-                                                    index="id",
-                                                    time_index="transaction_time")
+    datetime_es = datetime_es.add_dataframe(
+        dataframe_name="transactions",
+        dataframe=transactions_df,
+        index="id",
+        time_index="transaction_time")
 
-    datetime_es = datetime_es.entity_from_dataframe(entity_id="cards",
-                                                    dataframe=cards_df,
-                                                    index="id")
+    datetime_es = datetime_es.add_dataframe(
+        dataframe_name="cards",
+        dataframe=cards_df,
+        index="id")
+
     datetime_es = datetime_es.add_relationship("cards", "id", "transactions", "card_id")
     datetime_es.add_last_time_indexes()
     return datetime_es

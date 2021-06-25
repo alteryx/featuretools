@@ -1,14 +1,9 @@
 import pandas as pd
 import pytest
+import woodwork as ww
 
 import featuretools as ft
-from featuretools.variable_types import (
-    Categorical,
-    Datetime,
-    NaturalLanguage,
-    Text,
-    Timedelta
-)
+from featuretools.variable_types import Categorical, Datetime, Timedelta
 
 
 def test_enforces_variable_id_is_str(es):
@@ -35,10 +30,18 @@ def test_text_depreciation():
     es = ft.EntitySet()
     match = "Text has been deprecated. Please use NaturalLanguage instead"
     with pytest.warns(FutureWarning, match=match):
-        es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
-                                 variable_types={"text_column": Text})
+        es.add_dataframe(
+            dataframe_name="test",
+            dataframe=data,
+            index="id",
+            logical_types={"text_column": ww.logical_types.NaturalLanguage})
+
     es = ft.EntitySet()
     with pytest.warns(None) as record:
-        es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
-                                 variable_types={"text_column": NaturalLanguage})
+        es.add_dataframe(
+            dataframe_name="test",
+            dataframe=data,
+            index="id",
+            variable_types={"text_column": ww.logical_types.NaturalLanguage})
+
         assert len(record) == 0

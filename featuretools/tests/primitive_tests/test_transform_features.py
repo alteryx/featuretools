@@ -151,7 +151,7 @@ def pd_simple_es():
     })
 
     es = ft.EntitySet('equal_test')
-    es.entity_from_dataframe('values', df, index='id')
+    es.add_dataframe(dataframe_name='values', dataframe=df, index='id')
 
     return es
 
@@ -506,9 +506,9 @@ def pd_boolean_mult_es():
                        "bool": [True, False, True],
                        "numeric": [2, 3, np.nan]})
 
-    es.entity_from_dataframe(entity_id="test",
-                             dataframe=df,
-                             index="index")
+    es.add_dataframe(dataframe_name="test",
+                     dataframe=df,
+                     index="index")
 
     return es
 
