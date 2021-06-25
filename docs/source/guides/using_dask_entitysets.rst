@@ -34,7 +34,7 @@ Now that we have our Dask dataframe, we can start to create the ``EntitySet``. T
         dataframe_name="dask_entity",
         dataframe=dask_df,
         index="id",
-        logical_types={"values": ww.logical_types.Double})
+        logical_types={"id": ww.logical_types.Integer, "values": ww.logical_types.Double})
 
     es
 
