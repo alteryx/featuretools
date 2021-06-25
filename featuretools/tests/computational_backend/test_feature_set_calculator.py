@@ -761,14 +761,14 @@ def parent_child(request):
 def test_empty_child_dataframe(parent_child):
     parent_df, child_df = parent_child
     if not isinstance(parent_df, pd.DataFrame):
-        child_vtypes = {
+        child_ltypes = {
             'parent_id': ww.list_logical_types.Integer,
             'time_index': ww.list_logical_types.Datetime,
             'value': ww.list_logical_types.Double,
             'cat': ww.list_logical_types.Categorical
         }
     else:
-        child_vtypes = None
+        child_ltypes = None
     es = ft.EntitySet(id="blah")
     es.add_dataframe(dataframe_name="parent",
                      dataframe=parent_df,
@@ -777,7 +777,7 @@ def test_empty_child_dataframe(parent_child):
                      dataframe=child_df,
                      index="id",
                      time_index="time_index",
-                     logical_types=child_vtypes)
+                     logical_types=child_ltypes)
     es.add_relationship("parent", "id", "child", "parent_id")
 
     # create regular agg
