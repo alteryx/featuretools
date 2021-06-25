@@ -25,7 +25,7 @@ def test_single_table_ks_entityset():
                                    "abcdef ghijk",
                                    ""]})
     values_dd = ks.from_pandas(df)
-    vtypes = {
+    ltypes = {
         "values": ww.logical_types.Double,
         "dates": ww.logical_types.Datetime,
         "strings": ww.logical_types.NaturalLanguage
@@ -34,7 +34,7 @@ def test_single_table_ks_entityset():
         dataframe_name="data",
         dataframe=values_dd,
         index="id",
-        logical_types=vtypes)
+        logical_types=ltypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
                       target_entity="data",
@@ -72,7 +72,7 @@ def test_single_table_ks_entityset_ids_not_sorted():
                                    "abcdef ghijk",
                                    ""]})
     values_dd = ks.from_pandas(df)
-    vtypes = {
+    ltypes = {
         "values": ww.logical_types.Double,
         "dates": ww.logical_types.Datetime,
         "strings": ww.logical_types.NaturalLanguage,
@@ -81,7 +81,7 @@ def test_single_table_ks_entityset_ids_not_sorted():
         dataframe_name="data",
         dataframe=values_dd,
         index="id",
-        logical_types=vtypes)
+        logical_types=ltypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
                       target_entity="data",
@@ -120,7 +120,7 @@ def test_single_table_ks_entityset_with_instance_ids():
                                    ""]})
 
     values_dd = ks.from_pandas(df)
-    vtypes = {
+    ltypes = {
         "values": ww.logical_types.Double,
         "dates": ww.logical_types.Datetime,
         "strings": ww.logical_types.NaturalLanguage
@@ -129,7 +129,7 @@ def test_single_table_ks_entityset_with_instance_ids():
         dataframe_name="data",
         dataframe=values_dd,
         index="id",
-        logical_types=vtypes)
+        logical_types=ltypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
                       target_entity="data",
@@ -168,7 +168,7 @@ def test_single_table_ks_entityset_single_cutoff_time():
                                    "abcdef ghijk",
                                    ""]})
     values_dd = ks.from_pandas(df)
-    vtypes = {
+    ltypes = {
         "values": ww.logical_types.Double,
         "dates": ww.logical_types.Datetime,
         "strings": ww.logical_types.NaturalLanguage
@@ -177,7 +177,7 @@ def test_single_table_ks_entityset_single_cutoff_time():
         dataframe_name="data",
         dataframe=values_dd,
         index="id",
-        logical_types=vtypes)
+        logical_types=ltypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
                       target_entity="data",
@@ -214,7 +214,7 @@ def test_single_table_ks_entityset_cutoff_time_df():
                                    "23",
                                    "abcdef ghijk"]})
     values_dd = ks.from_pandas(df)
-    vtypes = {
+    ltypes = {
         "values": ww.logical_types.Numeric,
         "dates": ww.logical_types.Datetime,
         "strings": ww.logical_types.NaturalLanguage
@@ -224,7 +224,7 @@ def test_single_table_ks_entityset_cutoff_time_df():
         dataframe=values_dd,
         index="id",
         time_index="dates",
-        logical_types=vtypes)
+        logical_types=ltypes)
 
     ids = [0, 1, 2, 0]
     times = [pd.Timestamp("2019-01-05 04:00"),
@@ -271,7 +271,7 @@ def test_single_table_ks_entityset_dates_not_sorted():
 
     primitives_list = ['absolute', 'is_weekend', 'year', 'day']
     values_dd = ks.from_pandas(df)
-    vtypes = {
+    ltypes = {
         "values": ww.logical_types.Double,
         "dates": ww.logical_types.Datetime,
     }
@@ -280,7 +280,7 @@ def test_single_table_ks_entityset_dates_not_sorted():
         dataframe=values_dd,
         index="id",
         time_index="dates",
-        logical_types=vtypes)
+        logical_types=ltypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
                       target_entity="data",
@@ -342,7 +342,7 @@ def test_ks_entityset_secondary_time_index():
         time_index="scheduled_time",
         secondary_time_index={'arrival_time': ['departure_time', 'delay']})
 
-    log_vtypes = {
+    log_ltypes = {
         "scheduled_time": ww.logical_types.Datetime,
         "departure_time": ww.logical_types.Datetime,
         "arrival_time": ww.logical_types.Datetime,
@@ -352,14 +352,14 @@ def test_ks_entityset_secondary_time_index():
         dataframe_name='logs',
         dataframe=log_ks,
         index="id",
-        logical_types=log_vtypes,
+        logical_types=log_ltypes,
         semantic_tags={'flight_id': 'foreign_key'},
         time_index="scheduled_time",
         secondary_time_index={'arrival_time': ['departure_time', 'delay']})
 
     pd_es.add_dataframe(dataframe_name='flights', dataframe=flights_df, index="id")
-    flights_vtypes = pd_es['flights'].variable_types
-    ks_es.add_dataframe(dataframe_name='flights', dataframe=flights_ks, index="id", variable_types=flights_vtypes)
+    flights_ltypes = pd_es['flights'].variable_types
+    ks_es.add_dataframe(dataframe_name='flights', dataframe=flights_ks, index="id", logical_types=flights_ltypes)
 
     pd_es.add_relationship('flights', 'id', 'logs', 'flight_id')
     ks_es.add_relationship('flights', 'id', 'logs', 'flight_id')
