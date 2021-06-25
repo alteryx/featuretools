@@ -366,7 +366,7 @@ def test_groupby_multi_output_stacking(pd_es):
 
     fl = dfs(
         entityset=pd_es,
-        target_entity="sessions",
+        target_dataframe="sessions",
         agg_primitives=['sum'],
         groupby_trans_primitives=[TestTime],
         features_only=True,
@@ -413,7 +413,7 @@ def test_groupby_with_multioutput_primitive(pd_es):
                                        number_output_features=num_features)
 
     fm, _ = dfs(entityset=pd_es,
-                target_entity='customers',
+                target_dataframe='customers',
                 trans_primitives=[],
                 agg_primitives=[],
                 groupby_trans_primitives=[MultiCumSum, CumSum, CumMax, CumMin])
@@ -421,7 +421,7 @@ def test_groupby_with_multioutput_primitive(pd_es):
     # Calculate output in a separate DFS call to make sure the multi-output code
     # does not alter any values
     fm2, _ = dfs(entityset=pd_es,
-                 target_entity='customers',
+                 target_dataframe='customers',
                  trans_primitives=[],
                  agg_primitives=[],
                  groupby_trans_primitives=[CumSum, CumMax, CumMin])
@@ -465,7 +465,7 @@ def test_groupby_with_multioutput_primitive_custom_names(pd_es):
                                        cls_attributes={"generate_names": gen_custom_names})
 
     fm, _ = dfs(entityset=pd_es,
-                target_entity='customers',
+                target_dataframe='customers',
                 trans_primitives=[],
                 agg_primitives=[],
                 groupby_trans_primitives=[MultiCumSum, CumSum, CumMax, CumMin])

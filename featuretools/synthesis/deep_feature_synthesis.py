@@ -29,10 +29,10 @@ logger = logging.getLogger('featuretools')
 
 
 class DeepFeatureSynthesis(object):
-    """Automatically produce features for a target entity in an Entityset.
+    """Automatically produce features for a target dataframe in an Entityset.
 
         Args:
-            target_entity_id (str): Id of entity for which to build features.
+            target_dataframe_name (str): Id of entity for which to build features.
 
             entityset (EntitySet): Entityset for which to build features.
 
@@ -121,7 +121,7 @@ class DeepFeatureSynthesis(object):
         """
 
     def __init__(self,
-                 target_entity_id,
+                 target_dataframe_name,
                  entityset,
                  agg_primitives=None,
                  trans_primitives=None,
@@ -138,9 +138,9 @@ class DeepFeatureSynthesis(object):
                  drop_exact=None,
                  where_stacking_limit=1):
 
-        if target_entity_id not in entityset.entity_dict:
+        if target_dataframe_name not in entityset.entity_dict:
             es_name = entityset.id or 'entity set'
-            msg = 'Provided target entity %s does not exist in %s' % (target_entity_id, es_name)
+            msg = 'Provided target dataframe %s does not exist in %s' % (target_dataframe_name, es_name)
             raise KeyError(msg)
 
         # need to change max_depth to None because DFs terminates when  <0
@@ -168,8 +168,8 @@ class DeepFeatureSynthesis(object):
         else:
             if not isinstance(ignore_entities, list):
                 raise TypeError('ignore_entities must be a list')
-            assert target_entity_id not in ignore_entities,\
-                "Can't ignore target_entity!"
+            assert target_dataframe_name not in ignore_entities,\
+                "Can't ignore target_dataframe!"
             self.ignore_entities = set(ignore_entities)
 
         self.ignore_variables = defaultdict(set)
@@ -182,7 +182,7 @@ class DeepFeatureSynthesis(object):
                 raise TypeError('list values should be of type str')
             for eid, vars in ignore_variables.items():
                 self.ignore_variables[eid] = set(vars)
-        self.target_entity_id = target_entity_id
+        self.target_dataframe_name = target_dataframe_name
         self.es = entityset
 
         for library in Library:
@@ -273,7 +273,7 @@ class DeepFeatureSynthesis(object):
 
         Returns:
             list[BaseFeature]: Returns a list of
-                features for target entity, sorted by feature depth
+                features for target dataframe, sorted by feature depth
                 (shallow first).
         """
         all_features = {}
@@ -288,16 +288,16 @@ class DeepFeatureSynthesis(object):
             msg = "return_variable_types must be a list, or 'all'"
             assert isinstance(return_variable_types, list), msg
 
-        self._run_dfs(self.es[self.target_entity_id], RelationshipPath([]),
+        self._run_dfs(self.es[self.target_dataframe_name], RelationshipPath([]),
                       all_features, max_depth=self.max_depth)
 
-        new_features = list(all_features[self.target_entity_id].values())
+        new_features = list(all_features[self.target_dataframe_name].values())
 
         def filt(f):
-            # remove identity features of the ID field of the target entity
+            # remove identity features of the ID field of the target dataframe
             if (isinstance(f, IdentityFeature) and
-                    f.entity.id == self.target_entity_id and
-                    f.variable.id == self.es[self.target_entity_id].index):
+                    f.entity.id == self.target_dataframe_name and
+                    f.variable.id == self.es[self.target_dataframe_name].index):
                 return False
 
             return True

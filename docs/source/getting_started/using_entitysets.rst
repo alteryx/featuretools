@@ -153,7 +153,7 @@ Finally, we are ready to use this EntitySet with any functionality within Featur
 .. ipython:: python
 
     feature_matrix, feature_defs = ft.dfs(entityset=es,
-                                          target_entity="products")
+                                          target_dataframe="products")
     feature_matrix
 
 As we can see, the features from DFS use the relational structure of our entity set. Therefore it is important to think carefully about the entities that we create.

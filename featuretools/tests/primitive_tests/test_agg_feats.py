@@ -79,7 +79,7 @@ def test_get_depth(es):
 
 
 def test_makes_count(es):
-    dfs = DeepFeatureSynthesis(target_entity_id='sessions',
+    dfs = DeepFeatureSynthesis(target_dataframe_name='sessions',
                                entityset=es,
                                agg_primitives=[Count],
                                trans_primitives=[])
@@ -539,7 +539,7 @@ def test_custom_primitive_multiple_inputs(pd_es):
                                     return_type=Numeric)
 
     fm, features = ft.dfs(entityset=pd_es,
-                          target_entity="sessions",
+                          target_dataframe="sessions",
                           agg_primitives=[MeanSunday],
                           trans_primitives=[])
     mean_sunday_value = pd.Series([None, None, None, 2.5, 7, None])
@@ -550,7 +550,7 @@ def test_custom_primitive_multiple_inputs(pd_es):
     pd_es.add_interesting_values()
     mean_sunday_value_priority_0 = pd.Series([None, None, None, 2.5, 0, None])
     fm, features = ft.dfs(entityset=pd_es,
-                          target_entity="sessions",
+                          target_dataframe="sessions",
                           agg_primitives=[MeanSunday],
                           trans_primitives=[],
                           where_primitives=[MeanSunday])
@@ -582,7 +582,7 @@ def test_custom_primitive_default_kwargs(es):
 def test_makes_numtrue(es):
     if es.dataframe_type == Library.KOALAS.value:
         pytest.xfail('Koalas EntitySets do not support NumTrue primitive')
-    dfs = DeepFeatureSynthesis(target_entity_id='sessions',
+    dfs = DeepFeatureSynthesis(target_dataframe_name='sessions',
                                entityset=es,
                                agg_primitives=[NumTrue],
                                trans_primitives=[])
@@ -605,7 +605,7 @@ def test_make_three_most_common(pd_es):
                                        number_output_features=3)
 
     fm, features = ft.dfs(entityset=pd_es,
-                          target_entity="customers",
+                          target_dataframe="customers",
                           instance_ids=[0, 1, 2],
                           agg_primitives=[NMostCommoner],
                           trans_primitives=[])
@@ -684,7 +684,7 @@ def test_override_multi_feature_names(pd_es):
                                        cls_attributes={"generate_names": gen_custom_names})
 
     fm, features = ft.dfs(entityset=pd_es,
-                          target_entity="products",
+                          target_dataframe="products",
                           instance_ids=[0, 1, 2],
                           agg_primitives=[NMostCommoner],
                           trans_primitives=[])

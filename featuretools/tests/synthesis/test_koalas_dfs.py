@@ -36,7 +36,7 @@ def test_single_table_ks_entityset():
                                 variable_types=vtypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
-                      target_entity="data",
+                      target_dataframe="data",
                       trans_primitives=primitives_list)
 
     pd_es = ft.EntitySet(id="pd_es")
@@ -46,7 +46,7 @@ def test_single_table_ks_entityset():
                                 variable_types={"strings": ft.variable_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="data",
+                   target_dataframe="data",
                    trans_primitives=primitives_list)
 
     ks_computed_fm = ks_fm.to_pandas().set_index('id').loc[fm.index][fm.columns]
@@ -82,7 +82,7 @@ def test_single_table_ks_entityset_ids_not_sorted():
                                 variable_types=vtypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
-                      target_entity="data",
+                      target_dataframe="data",
                       trans_primitives=primitives_list)
 
     pd_es = ft.EntitySet(id="pd_es")
@@ -92,7 +92,7 @@ def test_single_table_ks_entityset_ids_not_sorted():
                                 variable_types={"strings": ft.variable_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="data",
+                   target_dataframe="data",
                    trans_primitives=primitives_list)
 
     # Make sure both indexes are sorted the same
@@ -129,7 +129,7 @@ def test_single_table_ks_entityset_with_instance_ids():
                                 variable_types=vtypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
-                      target_entity="data",
+                      target_dataframe="data",
                       trans_primitives=primitives_list,
                       instance_ids=instance_ids)
 
@@ -140,7 +140,7 @@ def test_single_table_ks_entityset_with_instance_ids():
                                 variable_types={"strings": ft.variable_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="data",
+                   target_dataframe="data",
                    trans_primitives=primitives_list,
                    instance_ids=instance_ids)
 
@@ -176,7 +176,7 @@ def test_single_table_ks_entityset_single_cutoff_time():
                                 variable_types=vtypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
-                      target_entity="data",
+                      target_dataframe="data",
                       trans_primitives=primitives_list,
                       cutoff_time=pd.Timestamp("2019-01-05 04:00"))
 
@@ -187,7 +187,7 @@ def test_single_table_ks_entityset_single_cutoff_time():
                                 variable_types={"strings": ft.variable_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="data",
+                   target_dataframe="data",
                    trans_primitives=primitives_list,
                    cutoff_time=pd.Timestamp("2019-01-05 04:00"))
 
@@ -229,7 +229,7 @@ def test_single_table_ks_entityset_cutoff_time_df():
     cutoff_times = pd.DataFrame({"id": ids, "time": times, "labels": labels}, columns=["id", "time", "labels"])
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
-                      target_entity="data",
+                      target_dataframe="data",
                       trans_primitives=primitives_list,
                       cutoff_time=cutoff_times)
 
@@ -241,7 +241,7 @@ def test_single_table_ks_entityset_cutoff_time_df():
                                 variable_types={"strings": ft.variable_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="data",
+                   target_dataframe="data",
                    trans_primitives=primitives_list,
                    cutoff_time=cutoff_times)
     # Because row ordering with koalas is not guaranteed, `we need to sort on two columns to make sure that values
@@ -276,7 +276,7 @@ def test_single_table_ks_entityset_dates_not_sorted():
                                 variable_types=vtypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
-                      target_entity="data",
+                      target_dataframe="data",
                       trans_primitives=primitives_list,
                       max_depth=1)
 
@@ -287,7 +287,7 @@ def test_single_table_ks_entityset_dates_not_sorted():
                                 time_index="dates")
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="data",
+                   target_dataframe="data",
                    trans_primitives=primitives_list,
                    max_depth=1)
 
@@ -362,13 +362,13 @@ def test_ks_entityset_secondary_time_index():
     cutoff_df['time'] = pd.to_datetime(['2019-02-02', '2019-02-02', '2019-02-20'])
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="logs",
+                   target_dataframe="logs",
                    cutoff_time=cutoff_df,
                    agg_primitives=["max"],
                    trans_primitives=["month"])
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
-                      target_entity="logs",
+                      target_dataframe="logs",
                       cutoff_time=cutoff_df,
                       agg_primitives=["max"],
                       trans_primitives=["month"])

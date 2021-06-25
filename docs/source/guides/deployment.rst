@@ -28,7 +28,7 @@ Now let's build some features definitions using DFS. Because we have categorical
 .. ipython:: python
 
     feature_matrix, feature_defs = ft.dfs(entityset=es_train,
-                                          target_entity="customers")
+                                          target_dataframe="customers")
 
     feature_matrix_enc, features_enc = ft.encode_features(feature_matrix, feature_defs)
     feature_matrix_enc

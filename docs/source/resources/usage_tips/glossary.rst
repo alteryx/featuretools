@@ -29,7 +29,7 @@ Glossary
     instance
         Equivalent to a row in a relational database. Each entity has many instances, and each instance has a value for each variable and feature defined on the entity.
 
-    target entity
+    target dataframe
         The entity on which we will be making a features for.
 
     parent entity

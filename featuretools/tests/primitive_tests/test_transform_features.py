@@ -1069,7 +1069,7 @@ def test_make_transform_multiple_output_features(pd_es):
                     ft.Feature(pd_es["log"]["datetime"], primitive=Second)]
     fm, fl = ft.dfs(
         entityset=pd_es,
-        target_entity="log",
+        target_dataframe="log",
         agg_primitives=['sum'],
         trans_primitives=[TestTime, Year, Month, Day, Hour, Minute, Second, Diff],
         max_depth=5)
@@ -1120,7 +1120,7 @@ def test_get_filepath(es):
     assert df["MOD4(value)"][14] == 2
 
     fm, fl = ft.dfs(entityset=es,
-                    target_entity="log",
+                    target_dataframe="log",
                     agg_primitives=[],
                     trans_primitives=[Mod4])
     fm = to_pandas(fm, index='id')
@@ -1146,7 +1146,7 @@ def test_override_multi_feature_names(pd_es):
                                      cls_attributes={"generate_names": gen_custom_names})
 
     fm, features = ft.dfs(entityset=pd_es,
-                          target_entity="customers",
+                          target_dataframe="customers",
                           instance_ids=[0, 1, 2],
                           agg_primitives=[],
                           trans_primitives=[IsGreater])
@@ -1161,7 +1161,7 @@ def test_time_since_primitive_matches_all_datetime_types(es):
     if es.dataframe_type == Library.KOALAS.value:
         pytest.xfail('TimeSince transform primitive is incompatible with Koalas')
     fm, fl = ft.dfs(
-        target_entity="customers",
+        target_dataframe="customers",
         entityset=es,
         trans_primitives=[TimeSince],
         agg_primitives=[],
