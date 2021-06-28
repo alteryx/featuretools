@@ -180,9 +180,9 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                 cutoff_time = datetime.now()
 
         if instance_ids is None:
-            index_var = target_dataframe.index
-            df = entityset._handle_time(entity_id=target_dataframe.id,
-                                        df=target_dataframe.df,
+            index_var = target_dataframe.ww.index
+            df = entityset._handle_time(dataframe_name=target_dataframe.ww.name,
+                                        df=target_dataframe,
                                         time_last=cutoff_time,
                                         training_window=training_window,
                                         include_cutoff_time=include_cutoff_time)
