@@ -40,7 +40,6 @@ from featuretools.primitives.base import AggregationPrimitive
 from featuretools.tests.testing_utils import backward_path, to_pandas
 from featuretools.utils import Trie
 from featuretools.utils.gen_utils import Library
-from featuretools.variable_types import Numeric
 
 
 def test_make_identity(es):
