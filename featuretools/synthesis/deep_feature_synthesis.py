@@ -138,7 +138,7 @@ class DeepFeatureSynthesis(object):
                  drop_exact=None,
                  where_stacking_limit=1):
 
-        if target_dataframe_name not in entityset.entity_dict:
+        if target_dataframe_name not in entityset.dataframe_dict:
             es_name = entityset.id or 'entity set'
             msg = 'Provided target dataframe %s does not exist in %s' % (target_dataframe_name, es_name)
             raise KeyError(msg)
