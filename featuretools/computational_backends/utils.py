@@ -221,26 +221,26 @@ def _validate_cutoff_time(cutoff_time, target_dataframe):
         cutoff_time = cutoff_time.reset_index(drop=True)
 
         if "instance_id" not in cutoff_time.columns:
-            if target_dataframe.index not in cutoff_time.columns:
+            if target_dataframe.ww.index not in cutoff_time.columns:
                 raise AttributeError('Cutoff time DataFrame must contain a column with either the same name'
                                      ' as the target dataframe index or a column named "instance_id"')
             # rename to instance_id
-            cutoff_time.rename(columns={target_dataframe.index: "instance_id"}, inplace=True)
+            cutoff_time.rename(columns={target_dataframe.ww.index: "instance_id"}, inplace=True)
 
         if "time" not in cutoff_time.columns:
-            if target_dataframe.time_index and target_dataframe.time_index not in cutoff_time.columns:
+            if target_dataframe.ww.time_index and target_dataframe.ww.time_index not in cutoff_time.columns:
                 raise AttributeError('Cutoff time DataFrame must contain a column with either the same name'
                                      ' as the target dataframe time_index or a column named "time"')
             # rename to time
-            cutoff_time.rename(columns={target_dataframe.time_index: "time"}, inplace=True)
+            cutoff_time.rename(columns={target_dataframe.ww.time_index: "time"}, inplace=True)
 
         # Make sure user supplies only one valid name for instance id and time columns
-        if "instance_id" in cutoff_time.columns and target_dataframe.index in cutoff_time.columns and \
-                "instance_id" != target_dataframe.index:
+        if "instance_id" in cutoff_time.columns and target_dataframe.ww.index in cutoff_time.columns and \
+                "instance_id" != target_dataframe.ww.index:
             raise AttributeError('Cutoff time DataFrame cannot contain both a column named "instance_id" and a column'
                                  ' with the same name as the target dataframe index')
-        if "time" in cutoff_time.columns and target_dataframe.time_index in cutoff_time.columns and \
-                "time" != target_dataframe.time_index:
+        if "time" in cutoff_time.columns and target_dataframe.ww.time_index in cutoff_time.columns and \
+                "time" != target_dataframe.ww.time_index:
             raise AttributeError('Cutoff time DataFrame cannot contain both a column named "time" and a column'
                                  ' with the same name as the target dataframe time index')
 
