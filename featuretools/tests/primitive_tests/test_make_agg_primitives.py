@@ -56,7 +56,7 @@ def test_default_value_make_agg_primitive(pd_mock_customer):
     )
 
     feature_matrix, features = ft.dfs(entityset=pd_mock_customer,
-                                      target_entity="sessions",
+                                      target_dataframe="sessions",
                                       agg_primitives=[MeanSunday],
                                       trans_primitives=[],
                                       max_depth=1)
@@ -69,7 +69,7 @@ def test_default_value_make_agg_primitive(pd_mock_customer):
     )
 
     feature_matrix2, features = ft.dfs(entityset=pd_mock_customer,
-                                       target_entity="sessions",
+                                       target_dataframe="sessions",
                                        agg_primitives=[MeanSundayDefault],
                                        trans_primitives=[],
                                        max_depth=1)

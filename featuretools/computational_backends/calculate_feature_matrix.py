@@ -63,9 +63,9 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             the features for each instance. The resulting feature matrix will use data
             up to and including the cutoff_time. Can either be a DataFrame or a single
             value. If a DataFrame is passed the instance ids for which to calculate features
-            must be in a column with the same name as the target entity index or a column
+            must be in a column with the same name as the target dataframe index or a column
             named `instance_id`. The cutoff time values in the DataFrame must be in a column with
-            the same name as the target entity time index or a column named `time`. If the
+            the same name as the target dataframe time index or a column named `time`. If the
             DataFrame has more than two columns, any additional columns will be added to the
             resulting feature matrix. If a single value is passed, this value will be used for
             all instances.
@@ -156,9 +156,9 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             msg = "Using training_window is not supported with Dask Entities"
             raise ValueError(msg)
 
-    target_entity = entityset[features[0].entity.id]
+    target_dataframe = entityset[features[0].entity.id]
 
-    cutoff_time = _validate_cutoff_time(cutoff_time, target_entity)
+    cutoff_time = _validate_cutoff_time(cutoff_time, target_dataframe)
     entityset._check_time_indexes()
 
     if isinstance(cutoff_time, pd.DataFrame):
@@ -168,8 +168,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         pass_columns = [col for col in cutoff_time.columns if col not in ['instance_id', 'time']]
         # make sure dtype of instance_id in cutoff time
         # is same as column it references
-        target_entity = features[0].entity
-        dtype = entityset[target_entity.id].df[target_entity.index].dtype
+        target_dataframe = features[0].entity
+        dtype = entityset[target_dataframe.ww.name].df[target_dataframe.ww.index].dtype
         cutoff_time["instance_id"] = cutoff_time["instance_id"].astype(dtype)
     else:
         pass_columns = []
@@ -180,9 +180,9 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                 cutoff_time = datetime.now()
 
         if instance_ids is None:
-            index_var = target_entity.index
-            df = entityset._handle_time(entity_id=target_entity.id,
-                                        df=target_entity.df,
+            index_var = target_dataframe.ww.index
+            df = entityset._handle_time(dataframe_name=target_dataframe.ww.name,
+                                        df=target_dataframe,
                                         time_last=cutoff_time,
                                         training_window=training_window,
                                         include_cutoff_time=include_cutoff_time)
@@ -500,7 +500,7 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
 
 
     ..note:: this only approximates DirectFeatures of AggregationFeatures, on
-        the target entity. In future versions, it may also be possible to
+        the target dataframe. In future versions, it may also be possible to
         approximate these features on other top-level entities
 
     Args:
@@ -692,7 +692,7 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
     return feature_matrix
 
 
-def _add_approx_entity_index_var(es, target_entity_id, cutoffs, path):
+def _add_approx_entity_index_var(es, target_dataframe_name, cutoffs, path):
     """
     Add a variable to the cutoff df linking it to the entity at the end of the
     path.
@@ -701,7 +701,7 @@ def _add_approx_entity_index_var(es, target_entity_id, cutoffs, path):
     consist of the variables which were joined through.
     """
     last_child_var = 'instance_id'
-    last_parent_var = es[target_entity_id].index
+    last_parent_var = es[target_dataframe_name].index
 
     for _, relationship in path:
         child_vars = [last_parent_var, relationship.child_column.id]

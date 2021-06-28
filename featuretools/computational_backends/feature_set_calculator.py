@@ -79,7 +79,7 @@ class FeatureSetCalculator(object):
             the features and store the resulting dataframe in the dataframe
             trie (so that its values can be used by features which depend on
             these features). See _calculate_features_for_entity.
-        4. Get the dataframe at the root of the trie (for the target entity) and
+        4. Get the dataframe at the root of the trie (for the target dataframe) and
             return the columns corresponding to the requested features.
 
         Args:
@@ -107,18 +107,18 @@ class FeatureSetCalculator(object):
         df_trie = Trie(path_constructor=RelationshipPath)
         full_entity_df_trie = Trie(path_constructor=RelationshipPath)
 
-        target_entity = self.entityset[self.feature_set.target_eid]
+        target_dataframe = self.entityset[self.feature_set.target_eid]
         self._calculate_features_for_entity(entity_id=self.feature_set.target_eid,
                                             feature_trie=feature_trie,
                                             df_trie=df_trie,
                                             full_entity_df_trie=full_entity_df_trie,
                                             precalculated_trie=self.precalculated_features,
-                                            filter_variable=target_entity.index,
+                                            filter_variable=target_dataframe.ww.index,
                                             filter_values=instance_ids,
                                             progress_callback=progress_callback,
                                             include_cutoff_time=include_cutoff_time)
 
-        # The dataframe for the target entity should be stored at the root of
+        # The dataframe for the target dataframe should be stored at the root of
         # df_trie.
         df = df_trie.value
 
@@ -130,7 +130,7 @@ class FeatureSetCalculator(object):
                 return self.generate_default_df(instance_ids=instance_ids)
 
             missing_ids = [i for i in instance_ids if i not in
-                           df[target_entity.index]]
+                           df[target_dataframe.ww.index]]
             if missing_ids:
                 default_df = self.generate_default_df(instance_ids=missing_ids,
                                                       extra_columns=df.columns)
@@ -154,7 +154,7 @@ class FeatureSetCalculator(object):
             column_list.extend(feat.get_feature_names())
 
         if is_instance(df, (dd, ks), 'DataFrame'):
-            column_list.extend([target_entity.index])
+            column_list.extend([target_dataframe.ww.index])
 
         return df[column_list]
 

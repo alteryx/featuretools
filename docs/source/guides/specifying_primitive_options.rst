@@ -19,7 +19,7 @@ enabling greater control over features and less run time overhead.
     es = make_ecommerce_entityset()
 
     feature_matrix, features_list = ft.dfs(entityset=es,
-                                           target_entity='customers',
+                                           target_dataframe='customers',
                                            agg_primitives=['mode'],
                                            trans_primitives=['weekday'])
     features_list
@@ -36,7 +36,7 @@ shouldn't be included in the DFS run.
     # ignore the 'log' and 'cohorts' entities entirely
     # ignore the 'date_of_birth' variable in 'customers' and the 'device_name' variable in 'sessions'
     feature_matrix, features_list = ft.dfs(entityset=es,
-                                           target_entity='customers',
+                                           target_dataframe='customers',
                                            agg_primitives=['mode'],
                                            trans_primitives=['weekday'],
                                            ignore_entities=['log', 'cohorts'],
@@ -71,7 +71,7 @@ No variables from any excluded entity will be used to generate features with the
     # ignore the 'cohorts' and 'log' entities, but only for the primitive 'mode'
     # include only the 'customers' entity for the primitives 'weekday' and 'day'
     feature_matrix, features_list = ft.dfs(entityset=es,
-                                           target_entity='customers',
+                                           target_dataframe='customers',
                                            agg_primitives=['mode'],
                                            trans_primitives=['weekday', 'day'],
                                            primitive_options={
@@ -94,7 +94,7 @@ ignore is set by the ``ignore_variables`` option, while variables to include is 
     # Include the variables 'product_id' and 'zipcode', 'device_type', and 'cancel_reason' for 'mean'
     # Ignore the variables 'signup_date' and 'cancel_date' for 'weekday'
     feature_matrix, features_list = ft.dfs(entityset=es,
-                                           target_entity='customers',
+                                           target_dataframe='customers',
                                            agg_primitives=['mode'],
                                            trans_primitives=['weekday'],
                                            primitive_options={
@@ -124,7 +124,7 @@ non-ID columns to group by, the included columns must also be a discrete type.
 .. ipython:: python
 
     feature_matrix, features_list = ft.dfs(entityset=es,
-                                           target_entity='log',
+                                           target_dataframe='log',
                                            agg_primitives=[],
                                            trans_primitives=[],
                                            groupby_trans_primitives=['cum_sum',
@@ -141,7 +141,7 @@ We ignore ``'product_id'`` as a groupby for ``cum_sum`` but still use any other 
 ``'priority_level'`` because it's not an ID column, but we explicitly include it for ``cum_count``. Finally, note that specifying
 groupby options doesn't affect what features the primitive is applied to. For example, ``cum_count`` ignores the entity ``sessions`` 
 for groupbys, but the feature ``<Feature: CUM_COUNT(sessions.customer_id) by product_id>`` is still made. The groupby is from
-the target entity ``log``, so the feature is valid given the associated options. To ignore the sessions entity for ``cum_count``, 
+the target dataframe ``log``, so the feature is valid given the associated options. To ignore the sessions entity for ``cum_count``, 
 the ``ignore_entities`` option for ``cum_count`` would need to include ``sessions``.
 
 
@@ -154,7 +154,7 @@ must match the number of inputs the primitive takes.
 .. ipython:: python
 
     feature_matrix, features_list = ft.dfs(entityset=es,
-                                           target_entity='customers',
+                                           target_dataframe='customers',
                                            agg_primitives=['trend'],
                                            trans_primitives=[],
                                            primitive_options={

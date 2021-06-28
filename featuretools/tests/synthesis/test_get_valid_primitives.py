@@ -41,12 +41,12 @@ def test_get_valid_primitives_selected_primitives_strings(es):
 
 def test_invalid_primitive(es):
     with pytest.raises(ValueError, match="'foobar' is not a recognized primitive name"):
-        get_valid_primitives(es, target_entity='log', selected_primitives=['foobar'])
+        get_valid_primitives(es, target_dataframe='log', selected_primitives=['foobar'])
 
     msg = ("Selected primitive <class 'featuretools.variable_types.variable.Numeric'> "
            "is not an AggregationPrimitive, TransformPrimitive, or str")
     with pytest.raises(ValueError, match=msg):
-        get_valid_primitives(es, target_entity='log', selected_primitives=[Numeric])
+        get_valid_primitives(es, target_dataframe='log', selected_primitives=[Numeric])
 
 
 def test_primitive_compatibility(es):

@@ -206,7 +206,7 @@ def get_client_cluster():
     return Client, LocalCluster
 
 
-def _validate_cutoff_time(cutoff_time, target_entity):
+def _validate_cutoff_time(cutoff_time, target_dataframe):
     """
     Verify that the cutoff time is a single value or a pandas dataframe with the proper columns
     containing no duplicate rows
@@ -221,28 +221,28 @@ def _validate_cutoff_time(cutoff_time, target_entity):
         cutoff_time = cutoff_time.reset_index(drop=True)
 
         if "instance_id" not in cutoff_time.columns:
-            if target_entity.index not in cutoff_time.columns:
+            if target_dataframe.ww.index not in cutoff_time.columns:
                 raise AttributeError('Cutoff time DataFrame must contain a column with either the same name'
-                                     ' as the target entity index or a column named "instance_id"')
+                                     ' as the target dataframe index or a column named "instance_id"')
             # rename to instance_id
-            cutoff_time.rename(columns={target_entity.index: "instance_id"}, inplace=True)
+            cutoff_time.rename(columns={target_dataframe.ww.index: "instance_id"}, inplace=True)
 
         if "time" not in cutoff_time.columns:
-            if target_entity.time_index and target_entity.time_index not in cutoff_time.columns:
+            if target_dataframe.ww.time_index and target_dataframe.ww.time_index not in cutoff_time.columns:
                 raise AttributeError('Cutoff time DataFrame must contain a column with either the same name'
-                                     ' as the target entity time_index or a column named "time"')
+                                     ' as the target dataframe time_index or a column named "time"')
             # rename to time
-            cutoff_time.rename(columns={target_entity.time_index: "time"}, inplace=True)
+            cutoff_time.rename(columns={target_dataframe.ww.time_index: "time"}, inplace=True)
 
         # Make sure user supplies only one valid name for instance id and time columns
-        if "instance_id" in cutoff_time.columns and target_entity.index in cutoff_time.columns and \
-                "instance_id" != target_entity.index:
+        if "instance_id" in cutoff_time.columns and target_dataframe.ww.index in cutoff_time.columns and \
+                "instance_id" != target_dataframe.ww.index:
             raise AttributeError('Cutoff time DataFrame cannot contain both a column named "instance_id" and a column'
-                                 ' with the same name as the target entity index')
-        if "time" in cutoff_time.columns and target_entity.time_index in cutoff_time.columns and \
-                "time" != target_entity.time_index:
+                                 ' with the same name as the target dataframe index')
+        if "time" in cutoff_time.columns and target_dataframe.ww.time_index in cutoff_time.columns and \
+                "time" != target_dataframe.ww.time_index:
             raise AttributeError('Cutoff time DataFrame cannot contain both a column named "time" and a column'
-                                 ' with the same name as the target entity time index')
+                                 ' with the same name as the target dataframe time index')
 
         assert (cutoff_time[['instance_id', 'time']].duplicated().sum() == 0), \
             "Duplicated rows in cutoff time dataframe."

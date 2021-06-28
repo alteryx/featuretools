@@ -3,12 +3,13 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from dask import dataframe as dd
 from numpy.testing import assert_array_equal
 from woodwork.column_schema import ColumnSchema
 
 import featuretools as ft
-from featuretools import Timedelta, variable_types
+from featuretools import Timedelta
 from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
     FeatureSetCalculator
@@ -459,17 +460,16 @@ def test_make_3_stacked_agg_feats(df):
     if isinstance(df, dd.DataFrame):
         pytest.xfail('normalize_entity fails with dask DataFrame')
     es = ft.EntitySet()
-    vtypes = {
-        'id': variable_types.Index,
-        'e1': variable_types.Categorical,
-        'e2': variable_types.Categorical,
-        'e3': variable_types.Categorical,
-        'val': variable_types.Numeric
+    ltypes = {
+        'e1': ww.logical_types.Categorical,
+        'e2': ww.logical_types.Categorical,
+        'e3': ww.logical_types.Categorical,
+        'val': ww.logical_types.Double
     }
-    es.entity_from_dataframe(dataframe=df,
-                             index="id",
-                             entity_id="e0",
-                             variable_types=vtypes)
+    es.add_dataframe(dataframe=df,
+                     index="id",
+                     dataframe_name="e0",
+                     logical_types=ltypes)
 
     es.normalize_entity(base_entity_id="e0",
                         new_entity_id="e1",
@@ -762,29 +762,23 @@ def parent_child(request):
 def test_empty_child_dataframe(parent_child):
     parent_df, child_df = parent_child
     if not isinstance(parent_df, pd.DataFrame):
-        parent_vtypes = {
-            'id': variable_types.Index
-        }
-        child_vtypes = {
-            'id': variable_types.Index,
-            'parent_id': variable_types.Numeric,
-            'time_index': variable_types.Datetime,
-            'value': variable_types.Numeric,
-            'cat': variable_types.Categorical
+        child_ltypes = {
+            'parent_id': ww.list_logical_types.Integer,
+            'time_index': ww.list_logical_types.Datetime,
+            'value': ww.list_logical_types.Double,
+            'cat': ww.list_logical_types.Categorical
         }
     else:
-        parent_vtypes = None
-        child_vtypes = None
+        child_ltypes = None
     es = ft.EntitySet(id="blah")
-    es.entity_from_dataframe(entity_id="parent",
-                             dataframe=parent_df,
-                             index="id",
-                             variable_types=parent_vtypes)
-    es.entity_from_dataframe(entity_id="child",
-                             dataframe=child_df,
-                             index="id",
-                             time_index="time_index",
-                             variable_types=child_vtypes)
+    es.add_dataframe(dataframe_name="parent",
+                     dataframe=parent_df,
+                     index="id")
+    es.add_dataframe(dataframe_name="child",
+                     dataframe=child_df,
+                     index="id",
+                     time_index="time_index",
+                     logical_types=child_ltypes)
     es.add_relationship("parent", "id", "child", "parent_id")
 
     # create regular agg

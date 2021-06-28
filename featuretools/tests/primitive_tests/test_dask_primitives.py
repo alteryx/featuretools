@@ -23,14 +23,14 @@ def test_transform(pd_es, dask_es):
     # Run DFS using each entity as a target and confirm results match
     for df in pd_es.dataframes:
         features = ft.dfs(entityset=pd_es,
-                          target_entity=df.ww.name,
+                          target_dataframe=df.ww.name,
                           trans_primitives=trans_primitives,
                           agg_primitives=agg_primitives,
                           max_depth=2,
                           features_only=True)
 
         dask_features = ft.dfs(entityset=dask_es,
-                               target_entity=df.ww.name,
+                               target_dataframe=df.ww.name,
                                trans_primitives=trans_primitives,
                                agg_primitives=agg_primitives,
                                max_depth=2,
@@ -58,14 +58,14 @@ def test_aggregation(pd_es, dask_es):
     # Run DFS using each entity as a target and confirm results match
     for df in pd_es.dataframes:
         fm, _ = ft.dfs(entityset=pd_es,
-                       target_entity=df.ww.name,
+                       target_dataframe=df.ww.name,
                        trans_primitives=trans_primitives,
                        agg_primitives=agg_primitives,
                        cutoff_time=pd.Timestamp("2019-01-05 04:00"),
                        max_depth=2)
 
         dask_fm, _ = ft.dfs(entityset=dask_es,
-                            target_entity=df.ww.name,
+                            target_dataframe=df.ww.name,
                             trans_primitives=trans_primitives,
                             agg_primitives=agg_primitives,
                             cutoff_time=pd.Timestamp("2019-01-05 04:00"),

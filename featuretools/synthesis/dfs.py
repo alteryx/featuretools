@@ -15,7 +15,7 @@ from featuretools.utils import entry_point
 def dfs(entities=None,
         relationships=None,
         entityset=None,
-        target_entity=None,
+        target_dataframe=None,
         cutoff_time=None,
         instance_ids=None,
         agg_primitives=None,
@@ -60,15 +60,15 @@ def dfs(entities=None,
         entityset (EntitySet): An already initialized entityset. Required if
             entities and relationships are not defined.
 
-        target_entity (str): Entity id of entity on which to make predictions.
+        target_dataframe (str): Entity id of entity on which to make predictions.
 
         cutoff_time (pd.DataFrame or Datetime): Specifies times at which to calculate
             the features for each instance. The resulting feature matrix will use data
             up to and including the cutoff_time. Can either be a DataFrame or a single
             value. If a DataFrame is passed the instance ids for which to calculate features
-            must be in a column with the same name as the target entity index or a column
+            must be in a column with the same name as the target dataframe index or a column
             named `instance_id`. The cutoff time values in the DataFrame must be in a column with
-            the same name as the target entity time index or a column named `time`. If the
+            the same name as the target dataframe time index or a column named `time`. If the
             DataFrame has more than two columns, any additional columns will be added to the
             resulting feature matrix. If a single value is passed, this value will be used for
             all instances.
@@ -229,19 +229,19 @@ def dfs(entities=None,
             relationships = [("sessions", "id", "transactions", "session_id")]
             feature_matrix, features = dfs(entities=entities,
                                            relationships=relationships,
-                                           target_entity="transactions",
+                                           target_dataframe="transactions",
                                            cutoff_time=cutoff_times)
             feature_matrix
 
             features = dfs(entities=entities,
                            relationships=relationships,
-                           target_entity="transactions",
+                           target_dataframe="transactions",
                            features_only=True)
     '''
     if not isinstance(entityset, EntitySet):
         entityset = EntitySet("dfs", entities, relationships)
 
-    dfs_object = DeepFeatureSynthesis(target_entity, entityset,
+    dfs_object = DeepFeatureSynthesis(target_dataframe, entityset,
                                       agg_primitives=agg_primitives,
                                       trans_primitives=trans_primitives,
                                       groupby_trans_primitives=groupby_trans_primitives,
