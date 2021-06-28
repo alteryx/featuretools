@@ -474,3 +474,41 @@ def koalas_transform_es(pd_transform_es):
                                  index=entity.index,
                                  variable_types=entity.variable_types)
     return es
+
+
+@pytest.fixture(params=['divide_by_zero_es_pd', 'divide_by_zero_es_dask', 'divide_by_zero_es_koalas'])
+def divide_by_zero_es(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def divide_by_zero_es_pd():
+    df = pd.DataFrame({
+        'id': [0, 1, 2, 3],
+        'col1': [1, 0, -3, 4],
+        'col2': [0, 0, 0, 4],
+    })
+    return ft.EntitySet("data", {'zero': (df, 'id', None)})
+
+
+@pytest.fixture
+def divide_by_zero_es_dask(divide_by_zero_es_pd):
+    es = ft.EntitySet(id=divide_by_zero_es_pd.id)
+    for entity in divide_by_zero_es_pd.entities:
+        es.entity_from_dataframe(entity_id=entity.id,
+                                 dataframe=dd.from_pandas(entity.df, npartitions=2),
+                                 index=entity.index,
+                                 variable_types=entity.variable_types)
+    return es
+
+
+@pytest.fixture
+def divide_by_zero_es_koalas(divide_by_zero_es_pd):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+    es = ft.EntitySet(id=divide_by_zero_es_pd.id)
+    for entity in divide_by_zero_es_pd.entities:
+        es.entity_from_dataframe(entity_id=entity.id,
+                                 dataframe=ks.from_pandas(entity.df),
+                                 index=entity.index,
+                                 variable_types=entity.variable_types)
+    return es
