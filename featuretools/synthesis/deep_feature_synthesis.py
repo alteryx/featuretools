@@ -32,7 +32,7 @@ class DeepFeatureSynthesis(object):
     """Automatically produce features for a target dataframe in an Entityset.
 
         Args:
-            target_dataframe_name (str): Id of entity for which to build features.
+            target_dataframe_name (str): Name of dataframe for which to build features.
 
             entityset (EntitySet): Entityset for which to build features.
 
