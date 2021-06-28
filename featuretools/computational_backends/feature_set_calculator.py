@@ -113,7 +113,7 @@ class FeatureSetCalculator(object):
                                             df_trie=df_trie,
                                             full_entity_df_trie=full_entity_df_trie,
                                             precalculated_trie=self.precalculated_features,
-                                            filter_variable=target_dataframe.index,
+                                            filter_variable=target_dataframe.ww.index,
                                             filter_values=instance_ids,
                                             progress_callback=progress_callback,
                                             include_cutoff_time=include_cutoff_time)
@@ -130,7 +130,7 @@ class FeatureSetCalculator(object):
                 return self.generate_default_df(instance_ids=instance_ids)
 
             missing_ids = [i for i in instance_ids if i not in
-                           df[target_dataframe.index]]
+                           df[target_dataframe.ww.index]]
             if missing_ids:
                 default_df = self.generate_default_df(instance_ids=missing_ids,
                                                       extra_columns=df.columns)
@@ -154,7 +154,7 @@ class FeatureSetCalculator(object):
             column_list.extend(feat.get_feature_names())
 
         if is_instance(df, (dd, ks), 'DataFrame'):
-            column_list.extend([target_dataframe.index])
+            column_list.extend([target_dataframe.ww.index])
 
         return df[column_list]
 
