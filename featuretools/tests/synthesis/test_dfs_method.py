@@ -69,7 +69,7 @@ def test_passing_strings_to_variable_types_dfs():
     entities = {'teams': (teams, 'id', None, {'name': 'natural_language'}), 'games': (games, 'id')}
     relationships = [('teams', 'id', 'games', 'home_team_id')]
 
-    features = dfs(entities, relationships, target_entity="teams", features_only=True)
+    features = dfs(entities, relationships, target_dataframe="teams", features_only=True)
     name_class = features[0].entity['name'].__class__
     assert name_class == variable_types['natural_language']
 
@@ -79,7 +79,7 @@ def test_accepts_cutoff_time_df(entities, relationships):
                                     "time": [10, 12, 15]})
     feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
-                                   target_entity="transactions",
+                                   target_dataframe="transactions",
                                    cutoff_time=cutoff_times_df)
     feature_matrix = to_pandas(feature_matrix, index='id', sort_index=True)
     assert len(feature_matrix.index) == 3
@@ -95,7 +95,7 @@ def test_warns_cutoff_time_dask(entities, relationships):
     with pytest.warns(UserWarning, match=match):
         feature_matrix, features = dfs(entities=entities,
                                        relationships=relationships,
-                                       target_entity="transactions",
+                                       target_dataframe="transactions",
                                        cutoff_time=cutoff_times_df)
 
 
@@ -122,7 +122,7 @@ def test_accepts_cutoff_time_compose(entities, relationships):
 
     feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
-                                   target_entity="cards",
+                                   target_dataframe="cards",
                                    cutoff_time=labels)
     feature_matrix = to_pandas(feature_matrix, index='id')
     assert len(feature_matrix.index) == 6
@@ -132,7 +132,7 @@ def test_accepts_cutoff_time_compose(entities, relationships):
 def test_accepts_single_cutoff_time(entities, relationships):
     feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
-                                   target_entity="transactions",
+                                   target_dataframe="transactions",
                                    cutoff_time=20)
     feature_matrix = to_pandas(feature_matrix, index='id')
     assert len(feature_matrix.index) == 5
@@ -142,7 +142,7 @@ def test_accepts_single_cutoff_time(entities, relationships):
 def test_accepts_no_cutoff_time(entities, relationships):
     feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
-                                   target_entity="transactions",
+                                   target_dataframe="transactions",
                                    instance_ids=[1, 2, 3, 5, 6])
     feature_matrix = to_pandas(feature_matrix, index='id')
     assert len(feature_matrix.index) == 5
@@ -155,7 +155,7 @@ def test_ignores_instance_ids_if_cutoff_df(entities, relationships):
     instance_ids = [1, 2, 3, 4, 5]
     feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
-                                   target_entity="transactions",
+                                   target_dataframe="transactions",
                                    cutoff_time=cutoff_times_df,
                                    instance_ids=instance_ids)
     feature_matrix = to_pandas(feature_matrix, index='id')
@@ -169,7 +169,7 @@ def test_approximate_features(pd_entities, relationships):
                                     "time": [11, 16, 16, 26, 17, 22]})
     feature_matrix, features = dfs(entities=pd_entities,
                                    relationships=relationships,
-                                   target_entity="transactions",
+                                   target_dataframe="transactions",
                                    cutoff_time=cutoff_times_df,
                                    approximate=5,
                                    cutoff_time_in_index=True)
@@ -188,7 +188,7 @@ def test_all_variables(pd_entities, relationships):
     instance_ids = [1, 2, 3, 4, 5]
     feature_matrix, features = dfs(entities=pd_entities,
                                    relationships=relationships,
-                                   target_entity="transactions",
+                                   target_dataframe="transactions",
                                    cutoff_time=cutoff_times_df,
                                    instance_ids=instance_ids,
                                    agg_primitives=[Max, Mean, Min, Sum],
@@ -206,7 +206,7 @@ def test_all_variables(pd_entities, relationships):
 def test_features_only(entities, relationships):
     features = dfs(entities=entities,
                    relationships=relationships,
-                   target_entity="transactions",
+                   target_dataframe="transactions",
                    features_only=True)
     assert len(features) > 0
 
@@ -214,19 +214,19 @@ def test_features_only(entities, relationships):
 def test_accepts_relative_training_window(datetime_es):
     # TODO: Update to use Dask entities when issue #882 is closed
     feature_matrix, features = dfs(entityset=datetime_es,
-                                   target_entity="transactions")
+                                   target_dataframe="transactions")
 
     feature_matrix_2, features_2 = dfs(entityset=datetime_es,
-                                       target_entity="transactions",
+                                       target_dataframe="transactions",
                                        cutoff_time=pd.Timestamp("2012-4-1 04:00"))
 
     feature_matrix_3, features_3 = dfs(entityset=datetime_es,
-                                       target_entity="transactions",
+                                       target_dataframe="transactions",
                                        cutoff_time=pd.Timestamp("2012-4-1 04:00"),
                                        training_window=Timedelta("3 months"))
 
     feature_matrix_4, features_4 = dfs(entityset=datetime_es,
-                                       target_entity="transactions",
+                                       target_dataframe="transactions",
                                        cutoff_time=pd.Timestamp("2012-4-1 04:00"),
                                        training_window="3 months")
 
@@ -237,14 +237,14 @@ def test_accepts_relative_training_window(datetime_es):
 
     # Test case for leap years
     feature_matrix_5, features_5 = dfs(entityset=datetime_es,
-                                       target_entity="transactions",
+                                       target_dataframe="transactions",
                                        cutoff_time=pd.Timestamp("2012-2-29 04:00"),
                                        training_window=Timedelta("1 year"),
                                        include_cutoff_time=True)
     assert (feature_matrix_5.index == [2]).all()
 
     feature_matrix_5, features_5 = dfs(entityset=datetime_es,
-                                       target_entity="transactions",
+                                       target_dataframe="transactions",
                                        cutoff_time=pd.Timestamp("2012-2-29 04:00"),
                                        training_window=Timedelta("1 year"),
                                        include_cutoff_time=False)
@@ -254,7 +254,7 @@ def test_accepts_relative_training_window(datetime_es):
 def test_accepts_pd_timedelta_training_window(datetime_es):
     # TODO: Update to use Dask entities when issue #882 is closed
     feature_matrix, features = dfs(entityset=datetime_es,
-                                   target_entity="transactions",
+                                   target_dataframe="transactions",
                                    cutoff_time=pd.Timestamp("2012-3-31 04:00"),
                                    training_window=pd.Timedelta(61, "D"))
 
@@ -264,12 +264,12 @@ def test_accepts_pd_timedelta_training_window(datetime_es):
 def test_accepts_pd_dateoffset_training_window(datetime_es):
     # TODO: Update to use Dask entities when issue #882 is closed
     feature_matrix, features = dfs(entityset=datetime_es,
-                                   target_entity="transactions",
+                                   target_dataframe="transactions",
                                    cutoff_time=pd.Timestamp("2012-3-31 04:00"),
                                    training_window=pd.DateOffset(months=2))
 
     feature_matrix_2, features_2 = dfs(entityset=datetime_es,
-                                       target_entity="transactions",
+                                       target_dataframe="transactions",
                                        cutoff_time=pd.Timestamp("2012-3-31 04:00"),
                                        training_window=pd.offsets.BDay(44))
 
@@ -290,7 +290,7 @@ def test_warns_with_unused_primitives(es):
 
     with pytest.warns(UnusedPrimitiveWarning) as record:
         dfs(entityset=es,
-            target_entity='customers',
+            target_dataframe='customers',
             trans_primitives=trans_primitives,
             agg_primitives=agg_primitives,
             max_depth=1)
@@ -300,7 +300,7 @@ def test_warns_with_unused_primitives(es):
     # Should not raise a warning
     with pytest.warns(None) as record:
         dfs(entityset=es,
-            target_entity='customers',
+            target_dataframe='customers',
             trans_primitives=trans_primitives,
             agg_primitives=agg_primitives,
             max_depth=2)
@@ -311,7 +311,7 @@ def test_warns_with_unused_primitives(es):
 def test_does_not_warn_with_stacking_feature(pd_es):
     with pytest.warns(None) as record:
         dfs(entityset=pd_es,
-            target_entity='régions',
+            target_dataframe='régions',
             agg_primitives=['percent_true'],
             trans_primitives=[GreaterThanScalar(5)],
             primitive_options={'greater_than_scalar': {'include_entities': ['stores']}},
@@ -330,7 +330,7 @@ def test_warns_with_unused_where_primitives(es):
 
     with pytest.warns(UnusedPrimitiveWarning) as record:
         dfs(entityset=es,
-            target_entity='customers',
+            target_dataframe='customers',
             agg_primitives=['count'],
             where_primitives=['sum', 'count'],
             max_depth=1)
@@ -346,7 +346,7 @@ def test_warns_with_unused_groupby_primitives(pd_es):
 
     with pytest.warns(UnusedPrimitiveWarning) as record:
         dfs(entityset=pd_es,
-            target_entity='sessions',
+            target_dataframe='sessions',
             groupby_trans_primitives=['cum_sum'],
             max_depth=1)
 
@@ -355,7 +355,7 @@ def test_warns_with_unused_groupby_primitives(pd_es):
     # Should not raise a warning
     with pytest.warns(None) as record:
         dfs(entityset=pd_es,
-            target_entity='customers',
+            target_dataframe='customers',
             groupby_trans_primitives=['cum_sum'],
             max_depth=1)
 
@@ -379,7 +379,7 @@ def test_warns_with_unused_custom_primitives(pd_es):
 
     with pytest.warns(UnusedPrimitiveWarning) as record:
         dfs(entityset=pd_es,
-            target_entity='sessions',
+            target_dataframe='sessions',
             trans_primitives=trans_primitives,
             max_depth=1)
 
@@ -388,7 +388,7 @@ def test_warns_with_unused_custom_primitives(pd_es):
     # Should not raise a warning
     with pytest.warns(None) as record:
         dfs(entityset=pd_es,
-            target_entity='customers',
+            target_dataframe='customers',
             trans_primitives=trans_primitives,
             max_depth=1)
 
@@ -408,7 +408,7 @@ def test_warns_with_unused_custom_primitives(pd_es):
 
     with pytest.warns(UnusedPrimitiveWarning) as record:
         dfs(entityset=pd_es,
-            target_entity='stores',
+            target_dataframe='stores',
             agg_primitives=agg_primitives,
             max_depth=1)
 
@@ -417,7 +417,7 @@ def test_warns_with_unused_custom_primitives(pd_es):
     # Should not raise a warning
     with pytest.warns(None) as record:
         dfs(entityset=pd_es,
-            target_entity='sessions',
+            target_dataframe='sessions',
             agg_primitives=agg_primitives,
             max_depth=1)
 
@@ -438,7 +438,7 @@ def test_calls_progress_callback(entities, relationships):
 
     feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
-                                   target_entity="transactions",
+                                   target_dataframe="transactions",
                                    progress_callback=mock_progress_callback)
 
     # second to last entry is the last update from feature calculation
@@ -465,7 +465,7 @@ def test_calls_progress_callback_cluster(pd_entities, relationships):
         dkwargs = {'cluster': scheduler['address']}
         feature_matrix, features = dfs(entities=pd_entities,
                                        relationships=relationships,
-                                       target_entity="transactions",
+                                       target_dataframe="transactions",
                                        progress_callback=mock_progress_callback,
                                        dask_kwargs=dkwargs)
 
@@ -478,14 +478,14 @@ def test_dask_kwargs(pd_entities, relationships):
                                     "time": [10, 12, 15]})
     feature_matrix, features = dfs(entities=pd_entities,
                                    relationships=relationships,
-                                   target_entity="transactions",
+                                   target_dataframe="transactions",
                                    cutoff_time=cutoff_times_df)
 
     with cluster() as (scheduler, [a, b]):
         dask_kwargs = {'cluster': scheduler['address']}
         feature_matrix_2, features_2 = dfs(entities=pd_entities,
                                            relationships=relationships,
-                                           target_entity="transactions",
+                                           target_dataframe="transactions",
                                            cutoff_time=cutoff_times_df,
                                            dask_kwargs=dask_kwargs)
 

@@ -61,9 +61,9 @@ def test_entry_point(es, monkeypatch):
     monkeypatch.setitem(dfs.__globals__['entry_point'].__globals__,
                         "pkg_resources",
                         MockPkgResources(entry_point))
-    fm, fl = dfs(entityset=es, target_entity='customers')
+    fm, fl = dfs(entityset=es, target_dataframe='customers')
     assert "entityset" in entry_point.kwargs.keys()
-    assert "target_entity" in entry_point.kwargs.keys()
+    assert "target_dataframe" in entry_point.kwargs.keys()
     assert (fm, fl) == entry_point.return_value
 
 
@@ -73,7 +73,7 @@ def test_entry_point_error(es, monkeypatch):
                         "pkg_resources",
                         MockPkgResources(entry_point))
     with pytest.raises(KeyError):
-        dfs(entityset=es, target_entity='missing_entity')
+        dfs(entityset=es, target_dataframe='missing_entity')
 
     assert isinstance(entry_point.error, KeyError)
 
@@ -99,7 +99,7 @@ def test_entry_point_detect_arg(monkeypatch, entry_points_dfs):
                         MockPkgResources(entry_point))
     fm, fl = dfs(entities,
                  relationships,
-                 target_entity='cards')
+                 target_dataframe='cards')
     assert "entities" in entry_point.kwargs.keys()
     assert "relationships" in entry_point.kwargs.keys()
-    assert "target_entity" in entry_point.kwargs.keys()
+    assert "target_dataframe" in entry_point.kwargs.keys()

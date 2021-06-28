@@ -51,7 +51,7 @@ We can pass the ``EntitySet`` we created above to ``featuretools.dfs`` in order 
 .. ipython:: python
 
     feature_matrix, features = ft.dfs(entityset=es,
-                                      target_entity="koalas_entity",
+                                      target_dataframe="koalas_entity",
                                       trans_primitives=["negate"],
                                       max_depth=1)
     feature_matrix

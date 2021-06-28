@@ -53,7 +53,7 @@ def test_remove_highly_null_features():
 
     es = ft.EntitySet("data", {'nulls': (nulls_df, 'id')})
     fm, features = ft.dfs(entityset=es,
-                          target_entity="nulls",
+                          target_dataframe="nulls",
                           trans_primitives=['is_null'],
                           max_depth=2)
 
@@ -97,7 +97,7 @@ def test_remove_single_value_features():
 
     es = ft.EntitySet("data", {'single_vals': (same_vals_df, 'id')})
     fm, features = ft.dfs(entityset=es,
-                          target_entity="single_vals",
+                          target_dataframe="single_vals",
                           trans_primitives=['is_null'],
                           max_depth=2)
 
@@ -133,7 +133,7 @@ def test_remove_highly_correlated_features():
 
     es = ft.EntitySet("data", {'correlated': (correlated_df, 'id', None, {'words': NaturalLanguage})})
     fm, _ = ft.dfs(entityset=es,
-                   target_entity="correlated",
+                   target_dataframe="correlated",
                    trans_primitives=['num_characters'],
                    max_depth=2)
 
@@ -187,7 +187,7 @@ def test_multi_output_selection():
     es = ft.EntitySet("data", entities, relationships=relationships)
 
     fm, features = ft.dfs(entityset=es,
-                          target_entity="first",
+                          target_dataframe="first",
                           trans_primitives=[],
                           agg_primitives=['n_most_common'],
                           max_depth=2)
@@ -199,7 +199,7 @@ def test_multi_output_selection():
 
     es = make_ecommerce_entityset()
     fm, features = ft.dfs(entityset=es,
-                          target_entity="régions",
+                          target_dataframe="régions",
                           trans_primitives=[],
                           agg_primitives=['n_most_common'],
                           max_depth=2)

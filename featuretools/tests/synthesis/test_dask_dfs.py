@@ -33,7 +33,7 @@ def test_single_table_dask_entityset():
         logical_types=ltypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_entity="data",
+                        target_dataframe="data",
                         trans_primitives=primitives_list)
 
     pd_es = ft.EntitySet(id="pd_es")
@@ -44,7 +44,7 @@ def test_single_table_dask_entityset():
         logical_types={"strings": ww.logical_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="data",
+                   target_dataframe="data",
                    trans_primitives=primitives_list)
 
     # Use the same columns and make sure both indexes are sorted the same
@@ -79,7 +79,7 @@ def test_single_table_dask_entityset_ids_not_sorted():
         logical_types=ltypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_entity="data",
+                        target_dataframe="data",
                         trans_primitives=primitives_list)
 
     pd_es = ft.EntitySet(id="pd_es")
@@ -90,7 +90,7 @@ def test_single_table_dask_entityset_ids_not_sorted():
         logical_types={"strings": ww.logical_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="data",
+                   target_dataframe="data",
                    trans_primitives=primitives_list)
 
     # Make sure both indexes are sorted the same
@@ -126,7 +126,7 @@ def test_single_table_dask_entityset_with_instance_ids():
         logical_types=ltypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_entity="data",
+                        target_dataframe="data",
                         trans_primitives=primitives_list,
                         instance_ids=instance_ids)
 
@@ -138,7 +138,7 @@ def test_single_table_dask_entityset_with_instance_ids():
         logical_types={"strings": ww.logical_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="data",
+                   target_dataframe="data",
                    trans_primitives=primitives_list,
                    instance_ids=instance_ids)
 
@@ -173,7 +173,7 @@ def test_single_table_dask_entityset_single_cutoff_time():
         logical_types=ltypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_entity="data",
+                        target_dataframe="data",
                         trans_primitives=primitives_list,
                         cutoff_time=pd.Timestamp("2019-01-05 04:00"))
 
@@ -185,7 +185,7 @@ def test_single_table_dask_entityset_single_cutoff_time():
         logical_types={"strings": ww.logical_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="data",
+                   target_dataframe="data",
                    trans_primitives=primitives_list,
                    cutoff_time=pd.Timestamp("2019-01-05 04:00"))
 
@@ -227,7 +227,7 @@ def test_single_table_dask_entityset_cutoff_time_df():
     cutoff_times = pd.DataFrame({"id": ids, "time": times, "labels": labels}, columns=["id", "time", "labels"])
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_entity="data",
+                        target_dataframe="data",
                         trans_primitives=primitives_list,
                         cutoff_time=cutoff_times)
 
@@ -240,7 +240,7 @@ def test_single_table_dask_entityset_cutoff_time_df():
         logical_types={"strings": ww.logical_types.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="data",
+                   target_dataframe="data",
                    trans_primitives=primitives_list,
                    cutoff_time=cutoff_times)
     # Because row ordering with Dask is not guaranteed, we need to sort on two columns to make sure that values
@@ -274,7 +274,7 @@ def test_single_table_dask_entityset_dates_not_sorted():
         logical_types=ltypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_entity="data",
+                        target_dataframe="data",
                         trans_primitives=primitives_list,
                         max_depth=1)
 
@@ -286,7 +286,7 @@ def test_single_table_dask_entityset_dates_not_sorted():
         time_index="dates")
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="data",
+                   target_dataframe="data",
                    trans_primitives=primitives_list,
                    max_depth=1)
 
@@ -359,13 +359,13 @@ def test_dask_entityset_secondary_time_index():
     cutoff_df['time'] = pd.to_datetime(['2019-02-02', '2019-02-02', '2019-02-20'])
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="logs",
+                   target_dataframe="logs",
                    cutoff_time=cutoff_df,
                    agg_primitives=["max"],
                    trans_primitives=["month"])
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_entity="logs",
+                        target_dataframe="logs",
                         cutoff_time=cutoff_df,
                         agg_primitives=["max"],
                         trans_primitives=["month"])

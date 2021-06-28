@@ -23,7 +23,7 @@ class FeatureSet(object):
     def __init__(self, features, approximate_feature_trie=None):
         """
         Args:
-            features (list[Feature]): Features of the target entity.
+            features (list[Feature]): Features of the target dataframe.
             approximate_feature_trie (Trie[RelationshipPath, set[str]], optional): Dependency
                 features to ignore because they have already been approximated. For example, if
                 one of the target features is a direct feature of a feature A and A is included in
