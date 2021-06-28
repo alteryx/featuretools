@@ -169,7 +169,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         # make sure dtype of instance_id in cutoff time
         # is same as column it references
         target_dataframe = features[0].entity
-        dtype = entityset[target_dataframe.id].df[target_dataframe.index].dtype
+        dtype = entityset[target_dataframe.ww.name].df[target_dataframe.ww.index].dtype
         cutoff_time["instance_id"] = cutoff_time["instance_id"].astype(dtype)
     else:
         pass_columns = []
