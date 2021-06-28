@@ -11,7 +11,7 @@ from featuretools.synthesis.utils import (
 from featuretools.utils.gen_utils import Library
 
 
-def get_valid_primitives(entityset, target_dataframe, max_depth=2, selected_primitives=None):
+def get_valid_primitives(entityset, target_dataframe_name, max_depth=2, selected_primitives=None):
     """
     Returns two lists of primitives (transform and aggregation) containing
     primitives that can be applied to the specific target dataframe to create
@@ -26,7 +26,7 @@ def get_valid_primitives(entityset, target_dataframe, max_depth=2, selected_prim
 
     Args:
         entityset (EntitySet): An already initialized entityset
-        target_dataframe (str): Entity id of entity to create features for.
+        target_dataframe_name (str): Name of dataframe to create features for.
         max_depth (int, optional): Maximum allowed depth of features.
         selected_primitives(list[str or AggregationPrimitive/TransformPrimitive], optional):
             list of primitives to consider when looking for valid primitives.
@@ -72,7 +72,7 @@ def get_valid_primitives(entityset, target_dataframe, max_depth=2, selected_prim
         trans_primitives = [trans for trans in available_trans.values()
                             if df_library in trans.compatibility]
 
-    dfs_object = DeepFeatureSynthesis(target_dataframe, entityset,
+    dfs_object = DeepFeatureSynthesis(target_dataframe_name, entityset,
                                       agg_primitives=agg_primitives,
                                       trans_primitives=trans_primitives,
                                       max_depth=max_depth)
