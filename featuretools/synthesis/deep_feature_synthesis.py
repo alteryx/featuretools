@@ -297,7 +297,7 @@ class DeepFeatureSynthesis(object):
             # remove identity features of the ID field of the target dataframe
             if (isinstance(f, IdentityFeature) and
                     f.entity.id == self.target_dataframe_name and
-                    f.variable.id == self.es[self.target_dataframe_name].index):
+                    f.variable.id == self.es[self.target_dataframe_name].ww.index):
                 return False
 
             return True
