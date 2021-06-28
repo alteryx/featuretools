@@ -642,6 +642,8 @@ class EntitySet(object):
                 extra_params.append('time_index')
             if logical_types:
                 extra_params.append('logical_types')
+            if make_index:
+                extra_params.append('make_index')
             if semantic_tags:
                 extra_params.append('semantic_tags')
             if already_sorted:
