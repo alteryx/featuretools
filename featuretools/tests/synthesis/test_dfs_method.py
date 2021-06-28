@@ -104,7 +104,7 @@ def test_accepts_cutoff_time_compose(entities, relationships):
         return df['fraud'].any()
 
     lm = cp.LabelMaker(
-        target_dataframe='card_id',
+        target_entity='card_id',
         time_index='transaction_time',
         labeling_function=fraud_occured,
         window_size=1

@@ -380,7 +380,7 @@ def lt(es):
         return df['value'].sum() > 10
 
     lm = cp.LabelMaker(
-        target_dataframe='id',
+        target_entity='id',
         time_index='datetime',
         labeling_function=label_func,
         window_size='1m'
