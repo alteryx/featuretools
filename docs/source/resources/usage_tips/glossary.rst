@@ -30,7 +30,7 @@ Glossary
         Equivalent to a row in a relational database. Each entity has many instances, and each instance has a value for each variable and feature defined on the entity.
 
     target dataframe
-        The dataframe on which we will be making a features for.
+        The dataframe for which we will be making features
 
     parent entity
         An entity that is referenced by another entity via relationship. The "one" in a one-to-many relationship.
