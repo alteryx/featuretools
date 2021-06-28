@@ -625,7 +625,6 @@ class EntitySet(object):
                               time_index=time_index,
                               logical_types=logical_types,
                               semantic_tags=semantic_tags,
-                              make_index=make_index,  # TODO: handle make index logic outside of Woodwork
                               already_sorted=already_sorted)
             # If no index column is specified, set the first column
             if dataframe.ww.index is None:
@@ -642,8 +641,6 @@ class EntitySet(object):
             extra_params = []
             if index is not None:
                 extra_params.append('index')
-            if make_index:
-                extra_params.append('make_index')
             if time_index is not None:
                 extra_params.append('time_index')
             if logical_types:
