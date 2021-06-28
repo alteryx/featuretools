@@ -37,7 +37,7 @@ def description_to_entityset(description, **kwargs):
             dataframe = read_woodwork_table(data_path, validate=False, **kwargs)
         else:
             dataframe = empty_dataframe(df)
-
+        
         entityset.add_dataframe(dataframe)
 
     for relationship in description['relationships']:

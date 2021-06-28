@@ -145,11 +145,11 @@ def test_add_dataframe_with_make_index():
     df = pd.DataFrame({"values": values})
     ks_df = ks.from_pandas(df)
     ks_es = EntitySet(id="ks_es")
-    vtypes = {"values": ltypes.Integer}
+    ltypes = {"values": "Integer"}
+    ks_es.add_dataframe(dataframe_name="new_entity", dataframe=ks_df, make_index=True, index="new_index", logical_types=ltypes)
 
-    error_msg = "Cannot make index on a Koalas DataFrame."
-    with pytest.raises(TypeError, match=error_msg):
-        ks_es.add_dataframe(dataframe_name="new_entity", dataframe=ks_df, make_index=True, index="new_index", logical_types=vtypes)
+    expected_df = pd.DataFrame({"values": values, "new_index": range(len(values))})
+    pd.testing.assert_frame_equal(expected_df, ks_es['new_entity'].to_pandas())
 
 
 @pytest.mark.skipif('not ks')

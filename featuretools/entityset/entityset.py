@@ -620,18 +620,15 @@ class EntitySet(object):
                 warnings.warn('Performing type inference on Dask or Koalas DataFrames may be computationally intensive. '
                               'Specify logical types for each column to speed up EntitySet initialization.')
 
+            created_index, index, dataframe = _create_index(index, make_index, dataframe)
+
             dataframe.ww.init(name=dataframe_name,
                               index=index,
                               time_index=time_index,
                               logical_types=logical_types,
                               semantic_tags=semantic_tags,
-                              already_sorted=already_sorted)
-            # If no index column is specified, set the first column
-            if dataframe.ww.index is None:
-                warnings.warn(("Using first column as index. "
-                               "To change this, specify the index parameter"))
-                dataframe.ww.set_index(dataframe.columns[0])
-
+                              already_sorted=already_sorted,
+                              table_metadata={'created_index': created_index})
         else:
             if dataframe.ww.name is None:
                 raise ValueError('Cannot add a Woodwork DataFrame to EntitySet without a name')
@@ -892,7 +889,7 @@ class EntitySet(object):
             combined_df = lib.concat([self_df, other_df])
             # If both DataFrames have made indexes, there will likely
             # be overlap in the index column, so we use the other values
-            if self_df.ww.make_index or other_df.ww.make_index:
+            if self_df.ww.metadata.get('created_index') or other_df.ww.metadata.get('created_index'):
                 columns = [col for col in combined_df.columns if
                            col != df.ww.index or col != df.ww.time_index]
             else:
@@ -1444,13 +1441,11 @@ class EntitySet(object):
             if updated_series is not series:
                 df[col_name] = updated_series
 
-        make_index = self[dataframe_name].ww.make_index
         df.ww.init(schema=self[dataframe_name].ww._schema)
         # Make sure column ordering matches original ordering
         df = df.ww[old_column_names]
 
         self.dataframe_dict[dataframe_name] = df
-        df.ww.make_index = make_index
 
         # Sort the dataframe through Woodwork
         if self.dataframe_dict[dataframe_name].ww.time_index is not None:
@@ -1537,3 +1532,37 @@ def _vals_to_series(instance_vals, variable_id):
     out_vals.index.name = None
 
     return out_vals
+
+
+def _create_index(index, make_index, df):
+    '''Handles index creation logic base on user input'''
+    created_index = None
+
+    if index is None:
+        # Case 1: user wanted to make index but did not specify column name
+        assert not make_index, "Must specify an index name if make_index is True"
+        # Case 2: make_index not specified but no index supplied, use first column
+        warnings.warn(("Using first column as index. "
+                       "To change this, specify the index parameter"))
+        index = df.columns[0]
+    elif make_index and index in df.columns:
+        # Case 3: user wanted to make index but column already exists
+        raise RuntimeError(f"Cannot make index: column with name {index} already present")
+    elif index not in df.columns:
+        if not make_index:
+            # Case 4: user names index, it is not in df. does not specify
+            # make_index.  Make new index column and warn
+            warnings.warn("index {} not found in dataframe, creating new "
+                          "integer column".format(index))
+        # Case 5: make_index with no errors or warnings
+        # (Case 4 also uses this code path)
+        if isinstance(df, dd.DataFrame):
+            df[index] = 1
+            df[index] = df[index].cumsum() - 1
+        elif is_instance(df, ks, 'DataFrame'):
+            df = df.koalas.attach_id_column('distributed-sequence', index)
+        else:
+            df.insert(0, index, range(len(df)))
+        created_index = index
+    # Case 6: user specified index, which is already in df. No action needed.
+    return created_index, index, df
