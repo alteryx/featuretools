@@ -9,6 +9,7 @@ from featuretools.utils import convert_time_units
 from featuretools.utils.entity_utils import replace_latlong_nan
 from featuretools.utils.gen_utils import Library
 from featuretools.variable_types import (
+    URL,
     Boolean,
     Categorical,
     DateOfBirth,
@@ -18,8 +19,7 @@ from featuretools.variable_types import (
     NaturalLanguage,
     Numeric,
     Ordinal,
-    Variable,
-    URL
+    Variable
 )
 
 

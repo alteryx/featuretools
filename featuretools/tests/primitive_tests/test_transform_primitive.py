@@ -4,7 +4,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from featuretools.primitives import Age, TimeSince, Week, URLToDomain, URLToProtocol
+from featuretools.primitives import (
+    Age,
+    TimeSince,
+    URLToDomain,
+    URLToProtocol,
+    Week
+)
 
 
 def test_time_since():
