@@ -45,11 +45,11 @@ def test_base_features_in_list(es):
 
 
 def test_multi_output_features(es):
-    value = ft.IdentityFeature(es, 'log', 'product_id')
+    product_id = ft.IdentityFeature(es, 'log', 'product_id')
     threecommon = ft.primitives.NMostCommon()
-    tc = ft.Feature(ft.IdentityFeature(es, 'log', 'product_id'), parent_dataframe_name="sessions", primitive=threecommon)
+    tc = ft.Feature(product_id, parent_dataframe_name="sessions", primitive=threecommon)
 
-    features = [tc, value]
+    features = [tc, product_id]
     for i in range(3):
         features.append(ft.Feature(tc[i],
                                    parent_dataframe_name='customers',
