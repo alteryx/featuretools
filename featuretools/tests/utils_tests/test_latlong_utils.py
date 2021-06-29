@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from featuretools.utils.entity_utils import replace_latlong_nan
+from featuretools.utils.latlong_utils import replace_latlong_nan
 
 
 def test_replace_latlong_nan():
