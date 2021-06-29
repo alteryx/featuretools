@@ -336,7 +336,7 @@ def test_copy(games_es):
                                  relationship_path=path,
                                  primitive=ft.primitives.Mean)
     copied = feat.copy()
-    assert copied.entityset == feat.entityset
+    assert copied.dataframe_name == feat.dataframe_name
     assert copied.base_features == feat.base_features
     assert copied.relationship_path == feat.relationship_path
     assert copied.primitive == feat.primitive
