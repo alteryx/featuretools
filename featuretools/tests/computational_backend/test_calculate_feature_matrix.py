@@ -204,15 +204,15 @@ def test_cfm_approximate_correct_ordering():
     }
     df = pd.DataFrame.from_dict(trips)
     es = EntitySet('flights')
-    es.entity_from_dataframe("trips",
-                             dataframe=df,
-                             index="trip_id",
-                             time_index='flight_time')
+    es.add_dataframe(dataframe_name="trips",
+                     dataframe=df,
+                     index="trip_id",
+                     time_index='flight_time')
     es.normalize_entity(base_entity_id="trips",
                         new_entity_id="flights",
                         index="flight_id",
                         make_time_index=True)
-    features = dfs(entityset=es, target_entity='trips', features_only=True)
+    features = dfs(entityset=es, target_dataframe='trips', features_only=True)
     flight_features = [feature for feature in features
                        if isinstance(feature, DirectFeature) and
                        isinstance(feature.base_features[0],
@@ -411,7 +411,7 @@ def test_cutoff_time_df_redundant_column_names(es):
                                 'dummy_col': [True, False, False],
                                 'time': times})
     err_msg = 'Cutoff time DataFrame cannot contain both a column named "instance_id" and a column' \
-              ' with the same name as the target entity index'
+              ' with the same name as the target dataframe index'
     with pytest.raises(AttributeError, match=err_msg):
         calculate_feature_matrix([property_feature],
                                  es,
@@ -422,7 +422,7 @@ def test_cutoff_time_df_redundant_column_names(es):
                                 'dummy_col': [True, False, False],
                                 'time': times})
     err_msg = 'Cutoff time DataFrame cannot contain both a column named "time" and a column' \
-              ' with the same name as the target entity time index'
+              ' with the same name as the target dataframe time index'
     with pytest.raises(AttributeError, match=err_msg):
         calculate_feature_matrix([property_feature],
                                  es,
@@ -1016,12 +1016,12 @@ def test_cutoff_time_naming(es):
     assert all((fm1 == fm2.values).values)
 
     error_text = 'Cutoff time DataFrame must contain a column with either the same name' \
-                 ' as the target entity index or a column named "instance_id"'
+                 ' as the target dataframe index or a column named "instance_id"'
     with pytest.raises(AttributeError, match=error_text):
         calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df_wrong_index_name)
 
     time_error_text = 'Cutoff time DataFrame must contain a column with either the same name' \
-                      ' as the target entity time_index or a column named "time"'
+                      ' as the target dataframe time_index or a column named "time"'
     with pytest.raises(AttributeError, match=time_error_text):
         calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df_wrong_time_name)
 
@@ -1617,7 +1617,7 @@ def test_some_instances_not_in_data(pd_es):
 
 def test_missing_instances_with_categorical_index(pd_es):
     instance_ids = [0, 1, 3, 2]
-    features = ft.dfs(entityset=pd_es, target_entity='customers', features_only=True)
+    features = ft.dfs(entityset=pd_es, target_dataframe='customers', features_only=True)
     fm = calculate_feature_matrix(entityset=pd_es,
                                   features=features,
                                   instance_ids=instance_ids)
@@ -1775,7 +1775,7 @@ def test_closes_tqdm(es):
 
 def test_approximate_with_single_cutoff_warns(pd_es):
     features = dfs(entityset=pd_es,
-                   target_entity='customers',
+                   target_dataframe='customers',
                    features_only=True,
                    ignore_entities=['cohorts'],
                    agg_primitives=['sum'])
@@ -1847,7 +1847,7 @@ def test_calculate_feature_matrix_returns_default_values(default_value_es):
 def test_entities_relationships(entities, relationships):
     fm_1, features = ft.dfs(entities=entities,
                             relationships=relationships,
-                            target_entity="transactions")
+                            target_dataframe="transactions")
 
     fm_2 = calculate_feature_matrix(features=features,
                                     entities=entities,
@@ -1861,7 +1861,7 @@ def test_entities_relationships(entities, relationships):
 def test_no_entities(entities, relationships):
     features = ft.dfs(entities=entities,
                       relationships=relationships,
-                      target_entity="transactions",
+                      target_dataframe="transactions",
                       features_only=True)
 
     msg = "No entities or valid EntitySet provided"
@@ -1874,7 +1874,7 @@ def test_no_entities(entities, relationships):
 def test_no_relationships(entities):
     fm_1, features = ft.dfs(entities=entities,
                             relationships=None,
-                            target_entity="transactions")
+                            target_dataframe="transactions")
 
     fm_2 = calculate_feature_matrix(features=features,
                                     entities=entities,
@@ -1887,8 +1887,8 @@ def test_no_relationships(entities):
 
 def test_cfm_with_invalid_time_index(es):
     # TODO: does _check_uniform_time_index occur at CFM runtime?
-    features = ft.dfs(entityset=es, target_entity="customers", features_only=True)
-    es['customers'].set_types(logical_types={'signup_date': 'integer'})
+    features = ft.dfs(entityset=es, target_dataframe="customers", features_only=True)
+    es['customers'].convert_variable_type('signup_date', ft.variable_types.Numeric)
     match = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> "
     match += "type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=match):

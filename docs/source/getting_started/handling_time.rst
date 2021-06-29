@@ -55,7 +55,7 @@ We pass the cutoff time to :func:`featuretools.dfs` or :func:`featuretools.calcu
 .. ipython:: python
 
     fm, features = ft.dfs(entityset=es,
-                          target_entity='customers',
+                          target_dataframe='customers',
                           cutoff_time=pd.Timestamp("2014-1-1 04:00"),
                           instance_ids=[1,2,3],
                           cutoff_time_in_index=True)
@@ -67,9 +67,9 @@ Even though the entityset contains the complete transaction history for each cus
 Using a Cutoff Time DataFrame
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Oftentimes, the training examples for machine learning will come from different points in time. To specify a unique cutoff time for each row of the resulting feature matrix, we can pass a dataframe which includes one column for the instance id and another column for the corresponding cutoff time. These columns can be in any order, but they must be named properly. The column with the instance ids must either be named ``instance_id`` or have the same name as the target entity ``index``. The column with the cutoff time values must either be named ``time`` or have the same name as the target entity ``time_index``.
+Oftentimes, the training examples for machine learning will come from different points in time. To specify a unique cutoff time for each row of the resulting feature matrix, we can pass a dataframe which includes one column for the instance id and another column for the corresponding cutoff time. These columns can be in any order, but they must be named properly. The column with the instance ids must either be named ``instance_id`` or have the same name as the target dataframe ``index``. The column with the cutoff time values must either be named ``time`` or have the same name as the target dataframe ``time_index``.
 
-The column names for the instance ids and the cutoff time values should be unambiguous. Passing a dataframe that contains both a column with the same name as the target entity ``index`` and a column named ``instance_id`` will result in an error. Similarly, if the cutoff time dataframe contains both a column with the same name as the target entity ``time_index`` and a column named ``time`` an error will be raised.
+The column names for the instance ids and the cutoff time values should be unambiguous. Passing a dataframe that contains both a column with the same name as the target dataframe ``index`` and a column named ``instance_id`` will result in an error. Similarly, if the cutoff time dataframe contains both a column with the same name as the target dataframe ``time_index`` and a column named ``time`` an error will be raised.
 
 .. note::
 
@@ -86,7 +86,7 @@ The column names for the instance ids and the cutoff time values should be unamb
     cutoff_times['label'] = [True, True, False, True]
     cutoff_times
     fm, features = ft.dfs(entityset=es,
-                          target_entity='customers',
+                          target_dataframe='customers',
                           cutoff_time=cutoff_times,
                           cutoff_time_in_index=True)
     fm
@@ -103,7 +103,7 @@ Here's an example of using a two hour training window:
 .. ipython:: python
 
     window_fm, window_features = ft.dfs(entityset=es,
-                                        target_entity="customers",
+                                        target_dataframe="customers",
                                         cutoff_time=cutoff_times,
                                         cutoff_time_in_index=True,
                                         training_window="2 hour")
@@ -273,12 +273,13 @@ In Featuretools, when creating the entity, we set the secondary time index to be
                         'late_aircraft_delay', 'canceled', 'diverted',
                         'taxi_in', 'taxi_out', 'air_time', 'dep_time']
 
-    es.entity_from_dataframe('trip_logs',
-                             data,
-                             index='trip_log_id',
-                             make_index=True,
-                             time_index='date_scheduled',
-                             secondary_time_index={'arr_time': arr_time_columns})
+    es.add_dataframe(
+        dataframe_name='trip_logs',
+        dataframe=data,
+        index='trip_log_id',
+        make_index=True,
+        time_index='date_scheduled',
+        secondary_time_index={'arr_time': arr_time_columns})
 
 By setting a secondary time index, we can still use the delay information from a row, but only when it becomes known.
 
@@ -317,7 +318,7 @@ Now, let's calculate the feature matrix:
 .. ipython:: python
 
     fm, features = ft.dfs(entityset=es_flight,
-                          target_entity='trip_logs',
+                          target_dataframe='trip_logs',
                           cutoff_time=ct_flight,
                           cutoff_time_in_index=True,
                           agg_primitives=["max"],
@@ -368,7 +369,7 @@ Then passing in ``window_size='1h'`` and ``num_windows=2`` makes one row an hour
                                                 num_windows=2)
     temporal_cutoffs
     fm, features = ft.dfs(entityset=es,
-                          target_entity='customers',
+                          target_dataframe='customers',
                           cutoff_time=temporal_cutoffs,
                           cutoff_time_in_index=True)
     fm

@@ -25,16 +25,17 @@ For this example, we will create a very small pandas dataframe and then convert 
     dask_df
 
 
-Now that we have our Dask dataframe, we can start to create the ``EntitySet``. The current implementation does not support variable type inference for Dask entities, so we must pass a dictionary of variable types using the ``variable_types`` parameter when calling ``es.entity_from_dataframe()``. Aside from needing to supply the variable types, the rest of the process of creating an ``EntitySet`` is the same as if we were using pandas dataframes.
+Now that we have our Dask dataframe, we can start to create the ``EntitySet``. The current implementation does not support logical type inference for Dask entities, so we must pass a dictionary of logical types using the ``logical_types`` parameter when calling ``es.add_dataframe()``. Aside from needing to supply the logical types, the rest of the process of creating an ``EntitySet`` is the same as if we were using pandas dataframes.
 
 .. ipython:: python
 
     es = ft.EntitySet(id="dask_es")
-    es = es.entity_from_dataframe(entity_id="dask_entity",
-                                  dataframe=dask_df,
-                                  index="id",
-                                  variable_types={"id": ft.variable_types.Id,
-                                                  "values": ft.variable_types.Numeric})
+    es = es.add_dataframe(
+        dataframe_name="dask_entity",
+        dataframe=dask_df,
+        index="id",
+        logical_types={"id": ww.logical_types.Integer, "values": ww.logical_types.Double})
+
     es
 
 
@@ -48,7 +49,7 @@ We can pass the ``EntitySet`` we created above to ``featuretools.dfs`` in order 
 .. ipython:: python
 
     feature_matrix, features = ft.dfs(entityset=es,
-                                      target_entity="dask_entity",
+                                      target_dataframe="dask_entity",
                                       trans_primitives=["negate"],
                                       max_depth=1)
     feature_matrix
@@ -91,7 +92,7 @@ At this time, custom primitives created with ``featuretools.primitives.make_tran
 
 Entity Limitations
 ******************
-When creating a Featuretools ``Entity`` from Dask dataframes, variable type inference is not performed as it is when creating entities from pandas dataframes. This is done to improve speed as sampling the data to infer the variable types would require an expensive compute operation on the underlying Dask dataframe. As a consequence, users must define the variable types for each column in the supplied Dataframe. This step is needed so that the deep feature synthesis process can build the proper features based on the column types. A list of available variable types can be obtained by running ``featuretools.variable_types.find_variable_types()``.
+When creating a Featuretools ``Entity`` from Dask dataframes, logical type inference is not performed as it is when creating entities from pandas dataframes. This is done to improve speed as sampling the data to infer the logical types would require an expensive compute operation on the underlying Dask dataframe. As a consequence, users must define the logical types for each column in the supplied Dataframe. This step is needed so that the deep feature synthesis process can build the proper features based on the column types. A list of available logical types can be obtained by running ``featuretools.list_logical_types()``.
 
 By default, Featuretools checks that entities created from pandas dataframes have unique index values. Because performing this same check with Dask would require an expensive compute operation, this check is not performed when creating an entity from a Dask dataframe. When using Dask dataframes, users must ensure that the supplied index values are unique.
 

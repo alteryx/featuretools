@@ -135,8 +135,8 @@ def test_encode_unknown_features():
     df = pd.DataFrame({'category': ['unknown', 'b', 'c', 'd', 'e']})
 
     pd_es = EntitySet('test')
-    pd_es.entity_from_dataframe(entity_id='a', dataframe=df, index='index', make_index=True)
-    features, feature_defs = dfs(entityset=pd_es, target_entity='a')
+    pd_es.add_dataframe(dataframe_name='a', dataframe=df, index='index', make_index=True)
+    features, feature_defs = dfs(entityset=pd_es, target_dataframe='a')
 
     # Specify unknown token for replacement
     features_enc, feature_defs_enc = encode_features(features, feature_defs,
@@ -151,7 +151,7 @@ def test_encode_features_topn(pd_es):
                    primitive=NMostCommon(n=3))
     features, feature_defs = dfs(entityset=pd_es,
                                  instance_ids=[0, 1, 2],
-                                 target_entity="customers",
+                                 target_dataframe="customers",
                                  agg_primitives=[NMostCommon(n=3)])
     features_enc, feature_defs_enc = encode_features(features,
                                                      feature_defs,
@@ -165,8 +165,8 @@ def test_encode_features_topn(pd_es):
 def test_encode_features_drop_first():
     df = pd.DataFrame({'category': ['ao', 'b', 'c', 'd', 'e']})
     pd_es = EntitySet('test')
-    pd_es.entity_from_dataframe(entity_id='a', dataframe=df, index='index', make_index=True)
-    features, feature_defs = dfs(entityset=pd_es, target_entity='a')
+    pd_es.add_dataframe(dataframe_name='a', dataframe=df, index='index', make_index=True)
+    features, feature_defs = dfs(entityset=pd_es, target_dataframe='a')
     features_enc, feature_defs_enc = encode_features(features, feature_defs,
                                                      drop_first=True, include_unknown=False)
     assert len(features_enc.columns) == 4
@@ -220,9 +220,8 @@ def test_encode_features_matches_calculate_feature_matrix():
     df = pd.DataFrame({'category': ['b', 'c', 'd', 'e']})
 
     pd_es = EntitySet('test')
-    pd_es.entity_from_dataframe(
-        entity_id='a', dataframe=df, index='index', make_index=True)
-    features, feature_defs = dfs(entityset=pd_es, target_entity='a')
+    pd_es.add_dataframe(dataframe_name='a', dataframe=df, index='index', make_index=True)
+    features, feature_defs = dfs(entityset=pd_es, target_dataframe='a')
 
     features_enc, feature_defs_enc = encode_features(features, feature_defs, to_encode=['category'])
 

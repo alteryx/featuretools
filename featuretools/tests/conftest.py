@@ -222,12 +222,12 @@ def pd_default_value_es():
     })
 
     es = ft.EntitySet()
-    es.entity_from_dataframe(entity_id="transactions",
-                             dataframe=transactions,
-                             index="id")
-    es.entity_from_dataframe(entity_id="sessions",
-                             dataframe=sessions,
-                             index="id")
+    es.add_dataframe(dataframe_name="transactions",
+                     dataframe=transactions,
+                     index="id")
+    es.add_dataframe(dataframe_name="sessions",
+                     dataframe=sessions,
+                     index="id")
 
     es.add_relationship("sessions", "id", "transactions", "session_id")
     return es
@@ -485,9 +485,9 @@ def pd_transform_es():
                        'P': [10, 15, 12]})
     es = ft.EntitySet(id='test')
     # Add dataframe to entityset
-    es.entity_from_dataframe(entity_id='first', dataframe=df,
-                             index='index',
-                             make_index=True)
+    es.add_dataframe(dataframe_name='first', dataframe=df,
+                     index='index',
+                     make_index=True)
 
     return es
 
@@ -496,10 +496,10 @@ def pd_transform_es():
 def dask_transform_es(pd_transform_es):
     es = ft.EntitySet(id=pd_transform_es.id)
     for entity in pd_transform_es.entities:
-        es.entity_from_dataframe(entity_id=entity.id,
-                                 dataframe=dd.from_pandas(entity.df, npartitions=2),
-                                 index=entity.index,
-                                 variable_types=entity.variable_types)
+        es.add_dataframe(dataframe_name=entity.id,
+                         dataframe=dd.from_pandas(entity.df, npartitions=2),
+                         index=entity.index,
+                         logical_types=entity.variable_types)
     return es
 
 
@@ -508,8 +508,8 @@ def koalas_transform_es(pd_transform_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     es = ft.EntitySet(id=pd_transform_es.id)
     for entity in pd_transform_es.entities:
-        es.entity_from_dataframe(entity_id=entity.id,
-                                 dataframe=ks.from_pandas(entity.df),
-                                 index=entity.index,
-                                 variable_types=entity.variable_types)
+        es.add_dataframe(dataframe_name=entity.id,
+                         dataframe=ks.from_pandas(entity.df),
+                         index=entity.index,
+                         logical_types=entity.variable_types)
     return es

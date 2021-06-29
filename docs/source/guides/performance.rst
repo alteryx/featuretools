@@ -50,7 +50,7 @@ By setting ``chunk_size``, we can limit the maximum number of rows in each group
 
     # use maximum  100 rows per chunk
     feature_matrix, features_list = ft.dfs(entityset=es,
-                                           target_entity="customers",
+                                           target_dataframe="customers",
                                            chunk_size=100)
 
 
@@ -58,7 +58,7 @@ We can also set chunk size to be a percentage of total rows::
 
     # use maximum 5% of all rows per chunk
     feature_matrix, features_list = ft.dfs(entityset=es,
-                                           target_entity="customers",
+                                           target_dataframe="customers",
                                            chunk_size=.05)
 
 Using persistent cluster

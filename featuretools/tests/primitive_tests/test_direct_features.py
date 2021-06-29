@@ -115,7 +115,7 @@ def test_direct_of_multi_output_transform_feat(es):
                     Feature(base_feature, primitive=Second)]
     fm, fl = dfs(
         entityset=es,
-        target_entity="sessions",
+        target_dataframe="sessions",
         trans_primitives=[TestTime, Year, Month, Day, Hour, Minute, Second])
 
     # Get column names of for multi feature and normal features
@@ -144,7 +144,7 @@ def test_direct_features_of_multi_output_agg_primitives(pd_es):
             return pd_top3
 
     fm, fl = dfs(entityset=pd_es,
-                 target_entity="log",
+                 target_dataframe="log",
                  agg_primitives=[ThreeMostCommonCat],
                  trans_primitives=[],
                  max_depth=3)

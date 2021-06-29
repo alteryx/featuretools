@@ -9,7 +9,7 @@ As features become more complicated, their names can become harder to understand
     es = ft.demo.load_mock_customer(return_entityset=True)
 
     feature_defs = ft.dfs(entityset=es,
-                          target_entity="customers",
+                          target_dataframe="customers",
                           agg_primitives=["mean", "sum", "mode", "n_most_common"],
                           trans_primitives=["month", "hour"],
                           max_depth=2,

@@ -45,12 +45,15 @@ To get started, we load the transactions dataframe as an entity.
 
 .. ipython:: python
 
-    es = es.entity_from_dataframe(entity_id="transactions",
-                                  dataframe=transactions_df,
-                                  index="transaction_id",
-                                  time_index="transaction_time",
-                                  variable_types={"product_id": ft.variable_types.Categorical,
-                                                  "zip_code": ft.variable_types.ZIPCode})
+    es = es.add_dataframe(
+        dataframe_name="transactions",
+        dataframe=transactions_df,
+        index="transaction_id",
+        time_index="transaction_time",
+        logical_types={
+            "product_id": ww.logical_types.Categorical,
+            "zip_code": ww.logical_types.PostalCode
+        })
     es
 
 .. note ::
@@ -63,20 +66,21 @@ This method loads each column in the dataframe in as a variable. We can see the 
 
     es["transactions"].variables
 
-In the call to ``entity_from_dataframe``, we specified three important parameters
+In the call to ``add_dataframe``, we specified three important parameters
 
 * The ``index`` parameter specifies the column that uniquely identifies rows in the dataframe
 * The ``time_index`` parameter tells Featuretools when the data was created.
-* The ``variable_types`` parameter indicates that "product_id" should be interpreted as a Categorical variable, even though it just an integer in the underlying data.
+* The ``logical_types`` parameter indicates that "product_id" should be interpreted as a Categorical variable, even though it just an integer in the underlying data.
 
 
 Now, we can do that same thing with our products dataframe
 
 .. ipython:: python
 
-    es = es.entity_from_dataframe(entity_id="products",
-                                  dataframe=products_df,
-                                  index="product_id")
+    es = es.add_dataframe(
+        dataframe_name="products",
+        dataframe=products_df,
+        index="product_id")
 
     es
 
@@ -153,7 +157,7 @@ Finally, we are ready to use this EntitySet with any functionality within Featur
 .. ipython:: python
 
     feature_matrix, feature_defs = ft.dfs(entityset=es,
-                                          target_entity="products")
+                                          target_dataframe="products")
     feature_matrix
 
 As we can see, the features from DFS use the relational structure of our entity set. Therefore it is important to think carefully about the entities that we create.

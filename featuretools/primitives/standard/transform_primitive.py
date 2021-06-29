@@ -315,7 +315,7 @@ class Weekday(TransformPrimitive):
     """
     name = "weekday"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(logical_type=Ordinal, semantic_tags={'category'})
+    return_type = ColumnSchema(logical_type=Ordinal(order=range(7)), semantic_tags={'category'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the day of the week of {}"
 

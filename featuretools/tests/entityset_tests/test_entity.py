@@ -3,6 +3,7 @@ from datetime import datetime
 # import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 import featuretools as ft
 # from featuretools.entityset import Entity, EntitySet
@@ -21,9 +22,7 @@ def test_reorders_index():
     es = ft.EntitySet('test')
     df = pd.DataFrame({'id': [1, 2, 3], 'other': [4, 5, 6]})
     df.columns = ['other', 'id']
-    es.entity_from_dataframe('test',
-                             df,
-                             index='id')
+    es.add_dataframe(dataframe_name='test', dataframe=df, index='id')
     assert es['test'].variables[0].id == 'id'
     assert es['test'].variables[0].id == es['test'].index
     assert [v.id for v in es['test'].variables] == list(es['test'].df.columns)
@@ -174,15 +173,14 @@ def test_delete_variables_string_input(es):
 #                        "fraud": [True, False, False, False, True, True]})
 
 #     es = ft.EntitySet()
-#     variable_types = {'fraud': ft.variable_types.Boolean}
-#     old_variable_types = variable_types.copy()
-#     es.entity_from_dataframe(entity_id="transactions",
-#                              dataframe=df,
-#                              index='id',
-#                              time_index='transaction_time',
-#                              variable_types=variable_types)
-#     assert old_variable_types == variable_types
-
+#     logical_types = {'fraud': ww.logical_types.Boolean}
+#     old_logical_types = logical_types.copy()
+#     es.add_dataframe(dataframe_name="transactions",
+#                      dataframe=df,
+#                      index='id',
+#                      time_index='transaction_time',
+#                      logical_types=logical_types)
+#     assert old_logical_types == logical_types
 
 # def test_passing_strings_to_variable_types_entity_init():
 #     raise NotImplementedError("refactor or delete")  # TODO
@@ -214,8 +212,8 @@ def test_delete_variables_string_input(es):
 #     es = EntitySet()
 #     dataframe = pd.DataFrame(columns=list(reversed_variable_types))
 #     with pytest.warns(UserWarning, match='Variable type {} was unrecognized, Unknown variable type was used instead'.format('some unknown type string')):
-#         es.entity_from_dataframe(
-#             entity_id="reversed_variable_types",
+#         es.add_dataframe(
+#             dataframe_name="reversed_variable_types",
 #             dataframe=dataframe,
 #             index="<class 'featuretools.variable_types.variable.Index'>",
 #             time_index="<class 'featuretools.variable_types.variable.NumericTimeIndex'>",

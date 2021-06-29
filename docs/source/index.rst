@@ -90,7 +90,7 @@ In this dataset we have two relationships
 Run Deep Feature Synthesis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A minimal input to DFS is a set of entities, a list of relationships, and the "target_entity" to calculate features for. The ouput of DFS is a feature matrix and the corresponding list of feature definitions.
+A minimal input to DFS is a set of entities, a list of relationships, and the "target_dataframe" to calculate features for. The ouput of DFS is a feature matrix and the corresponding list of feature definitions.
 
 Let's first create a feature matrix for each customer in the data
 
@@ -98,14 +98,14 @@ Let's first create a feature matrix for each customer in the data
 
     feature_matrix_customers, features_defs = ft.dfs(entities=entities,
                                                      relationships=relationships,
-                                                     target_entity="customers")
+                                                     target_dataframe="customers")
     feature_matrix_customers
 
 We now have dozens of new features to describe a customer's behavior.
 
 
-Change target entity
-~~~~~~~~~~~~~~~~~~~~
+Change target dataframe
+~~~~~~~~~~~~~~~~~~~~~~~
 One of the reasons DFS is so powerful is that it can create a feature matrix for *any* entity in our data. For example, if we wanted to build features for sessions.
 
 
@@ -113,7 +113,7 @@ One of the reasons DFS is so powerful is that it can create a feature matrix for
 
     feature_matrix_sessions, features_defs = ft.dfs(entities=entities,
                                                     relationships=relationships,
-                                                    target_entity="sessions")
+                                                    target_dataframe="sessions")
     feature_matrix_sessions.head(5)
 
 

@@ -3,6 +3,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from dask import dataframe as dd
 from numpy.testing import assert_array_equal
 from woodwork.column_schema import ColumnSchema
@@ -458,17 +459,16 @@ def test_make_3_stacked_agg_feats(df):
     if isinstance(df, dd.DataFrame):
         pytest.xfail('normalize_entity fails with dask DataFrame')
     es = ft.EntitySet()
-    tags = {
-        'id': 'index',
-        'e1': 'category',
-        'e2': 'category',
-        'e3': 'category',
-        'val': 'numeric'
+    ltypes = {
+        'e1': ww.logical_types.Categorical,
+        'e2': ww.logical_types.Categorical,
+        'e3': ww.logical_types.Categorical,
+        'val': ww.logical_types.Double
     }
     es.add_dataframe(dataframe=df,
                      index="id",
                      dataframe_name="e0",
-                     semantic_tags=tags)
+                     logical_types=ltypes)
 
     es.normalize_entity(base_entity_id="e0",
                         new_entity_id="e1",
@@ -761,29 +761,23 @@ def parent_child(request):
 def test_empty_child_dataframe(parent_child):
     parent_df, child_df = parent_child
     if not isinstance(parent_df, pd.DataFrame):
-        parent_tags = {
-            'id': 'index'
-        }
-        child_tags = {
-            'id': 'index',
-            'parent_id': 'numeric',
-            'time_index': 'datetime',
-            'value': 'numeric',
-            'cat': 'category'
+        child_ltypes = {
+            'parent_id': ww.list_logical_types.Integer,
+            'time_index': ww.list_logical_types.Datetime,
+            'value': ww.list_logical_types.Double,
+            'cat': ww.list_logical_types.Categorical
         }
     else:
-        parent_tags = None
-        child_tags = None
+        child_ltypes = None
     es = ft.EntitySet(id="blah")
     es.add_dataframe(dataframe_name="parent",
                      dataframe=parent_df,
-                     index="id",
-                     semantic_tags=parent_tags)
+                     index="id")
     es.add_dataframe(dataframe_name="child",
                      dataframe=child_df,
                      index="id",
                      time_index="time_index",
-                     semantic_tags=child_tags)
+                     logical_types=child_ltypes)
     es.add_relationship("parent", "id", "child", "parent_id")
 
     # create regular agg
