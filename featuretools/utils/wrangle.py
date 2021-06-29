@@ -86,17 +86,18 @@ def _check_time_against_column(time, time_column):
     if time is None:
         return True
     elif isinstance(time, (int, float)):
-        return 'numeric' in time_column.ww.semantic_tags
+        return time_column.ww.column_schema.is_numeric
     elif isinstance(time, (pd.Timestamp, datetime, pd.DateOffset)):
-        return isinstance(time_column.ww.logical_type, ltypes.Datetime)
+        return time_column.ww.column_schema.is_datetime
     elif isinstance(time, Timedelta):
-        return (isinstance(time_column.ww.logical_type, ltypes.Datetime) or
-                ((isinstance(time_column.ww.logical_type, ltypes.Ordinal) or
-                 'numeric' in time_column.ww.semantic_tags or
-                  'time_index' in time_column.ww.semantic_tags) and
-                 time.unit not in Timedelta._time_units))
-    else:
-        return False
+        if time_column.ww.column_schema.is_datetime:
+            return True
+        elif time.unit not in Timedelta._time_units:
+            if (isinstance(time_column.ww.logical_type, ltypes.Ordinal) or
+                'numeric' in time_column.ww.semantic_tags or
+                'time_index' in time_column.ww.semantic_tags):
+                return True
+    return False
 
 
 # --> TODO possibly remove this or convert to Woodwork
