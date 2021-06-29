@@ -430,7 +430,7 @@ def test_make_index_any_location(df):
                      make_index=True,
                      logical_types=logical_types,
                      dataframe=df)
-    if not isinstance(df, pd.DataFrame):
+    if es.dataframe_type != Library.PANDAS.value:
         assert es.dataframe_dict['test_dataframe'].columns[-1] == 'id1'
     else:
         assert es.dataframe_dict['test_dataframe'].columns[0] == 'id1'
