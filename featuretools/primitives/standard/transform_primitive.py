@@ -10,6 +10,7 @@ from featuretools.utils.entity_utils import replace_latlong_nan
 from featuretools.utils.gen_utils import Library
 from featuretools.variable_types import (
     Boolean,
+    Categorical,
     DateOfBirth,
     Datetime,
     DatetimeTimeIndex,
@@ -17,7 +18,8 @@ from featuretools.variable_types import (
     NaturalLanguage,
     Numeric,
     Ordinal,
-    Variable
+    Variable,
+    URL
 )
 
 
@@ -693,3 +695,56 @@ class Age(TransformPrimitive):
         def age(x, time=None):
             return (time - x).dt.days / 365
         return age
+
+
+class URLToDomain(TransformPrimitive):
+    """Determines the domain of a url.
+
+    Description:
+        Calculates the label to identify the network domain of a URL. Supports
+        urls with or without protocol as well as international country domains.
+
+    Examples:
+        >>> url_to_domain = URLToDomain()
+        >>> urls =  ['https://play.google.com',
+        ...          'http://www.google.co.in',
+        ...          'www.facebook.com']
+        >>> url_to_domain(urls).tolist()
+        ['play.google.com', 'google.co.in', 'facebook.com']
+    """
+    name = "url_to_domain"
+    input_types = [URL]
+    return_type = Categorical
+
+    def get_function(self):
+        def url_to_domain(x):
+            p = r'^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/?\n]+)'
+            return x.str.extract(p, expand=False)
+        return url_to_domain
+
+
+class URLToProtocol(TransformPrimitive):
+    """Determines the protocol (http or https) of a url.
+
+    Description:
+        Extract the protocol of a url using regex.
+        It will be either https or http. Returns nan if
+        the url doesn't contain a protocol.
+
+    Examples:
+        >>> url_to_protocol = URLToProtocol()
+        >>> urls =  ['https://play.google.com',
+        ...          'http://www.google.co.in',
+        ...          'www.facebook.com']
+        >>> url_to_protocol(urls).to_list()
+        ['https', 'http', nan]
+    """
+    name = "url_to_protocol"
+    input_types = [URL]
+    return_type = Categorical
+
+    def get_function(self):
+        def url_to_protocol(x):
+            p = r'^(https|http)(?:\:)'
+            return x.str.extract(p, expand=False)
+        return url_to_protocol

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from featuretools.primitives import Age, TimeSince, Week
+from featuretools.primitives import Age, TimeSince, Week, URLToDomain, URLToProtocol
 
 
 def test_time_since():
@@ -94,3 +94,108 @@ def test_week_no_deprecation_message():
         week = Week()
         week(dates).tolist()
     assert not record
+
+
+def test_url_to_domain_urls():
+    url_to_domain = URLToDomain()
+    urls = pd.Series(['https://play.google.com/store/apps/details?id=com.skgames.trafficracer%22',
+                      'http://mplay.google.co.in/sadfask/asdkfals?dk=10',
+                      'http://lplay.google.co.in/sadfask/asdkfals?dk=10',
+                      'http://play.google.co.in/sadfask/asdkfals?dk=10',
+                      'http://tplay.google.co.in/sadfask/asdkfals?dk=10',
+                      'http://www.google.co.in/sadfask/asdkfals?dk=10',
+                      'www.google.co.in/sadfask/asdkfals?dk=10',
+                      'http://user:pass@google.com/?a=b#asdd',
+                      'https://www.compzets.com?asd=10',
+                      'www.compzets.com?asd=10',
+                      'facebook.com',
+                      'https://www.compzets.net?asd=10',
+                      'http://www.featuretools.org'])
+    correct_urls = ['play.google.com',
+                    'mplay.google.co.in',
+                    'lplay.google.co.in',
+                    'play.google.co.in',
+                    'tplay.google.co.in',
+                    'google.co.in',
+                    'google.co.in',
+                    'google.com',
+                    'compzets.com',
+                    'compzets.com',
+                    'facebook.com',
+                    'compzets.net',
+                    'featuretools.org']
+    np.testing.assert_array_equal(url_to_domain(urls), correct_urls)
+
+
+def test_url_to_domain_long_url():
+    url_to_domain = URLToDomain()
+    urls = pd.Series(["http://chart.apis.google.com/chart?chs=500x500&chma=0,0,100, \
+                        100&cht=p&chco=FF0000%2CFFFF00%7CFF8000%2C00FF00%7C00FF00%2C0 \
+                        000FF&chd=t%3A122%2C42%2C17%2C10%2C8%2C7%2C7%2C7%2C7%2C6%2C6% \
+                        2C6%2C6%2C5%2C5&chl=122%7C42%7C17%7C10%7C8%7C7%7C7%7C7%7C7%7C \
+                        6%7C6%7C6%7C6%7C5%7C5&chdl=android%7Cjava%7Cstack-trace%7Cbro \
+                        adcastreceiver%7Candroid-ndk%7Cuser-agent%7Candroid-webview%7 \
+                        Cwebview%7Cbackground%7Cmultithreading%7Candroid-source%7Csms \
+                        %7Cadb%7Csollections%7Cactivity|Chart"])
+    correct_urls = ['chart.apis.google.com']
+    results = url_to_domain(urls)
+    np.testing.assert_array_equal(results, correct_urls)
+
+
+def test_url_to_domain_nan():
+    url_to_domain = URLToDomain()
+    urls = pd.Series(['www.featuretools.com', np.nan], dtype='object')
+    correct_urls = pd.Series(['featuretools.com', np.nan], dtype='object')
+    results = url_to_domain(urls)
+    pd.testing.assert_series_equal(results, correct_urls)
+
+
+def test_url_to_protocol_urls():
+    url_to_protocol = URLToProtocol()
+    urls = pd.Series(['https://play.google.com/store/apps/details?id=com.skgames.trafficracer%22',
+                      'http://mplay.google.co.in/sadfask/asdkfals?dk=10',
+                      'http://lplay.google.co.in/sadfask/asdkfals?dk=10',
+                      'www.google.co.in/sadfask/asdkfals?dk=10',
+                      'http://user:pass@google.com/?a=b#asdd',
+                      'https://www.compzets.com?asd=10',
+                      'www.compzets.com?asd=10',
+                      'facebook.com',
+                      'https://www.compzets.net?asd=10',
+                      'http://www.featuretools.org',
+                      'https://featuretools.com'])
+    correct_urls = pd.Series(['https',
+                              'http',
+                              'http',
+                              np.nan,
+                              'http',
+                              'https',
+                              np.nan,
+                              np.nan,
+                              'https',
+                              'http',
+                              'https'])
+    results = url_to_protocol(urls)
+    pd.testing.assert_series_equal(results, correct_urls)
+
+
+def test_url_to_protocol_long_url():
+    url_to_protocol = URLToProtocol()
+    urls = pd.Series(["http://chart.apis.google.com/chart?chs=500x500&chma=0,0,100, \
+                        100&cht=p&chco=FF0000%2CFFFF00%7CFF8000%2C00FF00%7C00FF00%2C0 \
+                        000FF&chd=t%3A122%2C42%2C17%2C10%2C8%2C7%2C7%2C7%2C7%2C6%2C6% \
+                        2C6%2C6%2C5%2C5&chl=122%7C42%7C17%7C10%7C8%7C7%7C7%7C7%7C7%7C \
+                        6%7C6%7C6%7C6%7C5%7C5&chdl=android%7Cjava%7Cstack-trace%7Cbro \
+                        adcastreceiver%7Candroid-ndk%7Cuser-agent%7Candroid-webview%7 \
+                        Cwebview%7Cbackground%7Cmultithreading%7Candroid-source%7Csms \
+                        %7Cadb%7Csollections%7Cactivity|Chart"])
+    correct_urls = ['http']
+    results = url_to_protocol(urls)
+    np.testing.assert_array_equal(results, correct_urls)
+
+
+def test_url_to_protocol_nan():
+    url_to_protocol = URLToProtocol()
+    urls = pd.Series(['www.featuretools.com', np.nan, ''], dtype='object')
+    correct_urls = pd.Series([np.nan, np.nan, np.nan], dtype='object')
+    results = url_to_protocol(urls)
+    pd.testing.assert_series_equal(results, correct_urls)
