@@ -14,8 +14,7 @@ from woodwork.logical_types import (
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
 )
-from featuretools.utils import convert_time_units
-from featuretools.utils.entity_utils import replace_latlong_nan
+from featuretools.utils import convert_time_units, replace_latlong_nan
 from featuretools.utils.gen_utils import Library
 
 
