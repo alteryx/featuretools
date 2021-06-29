@@ -824,3 +824,28 @@ def test_normalize_ww_init():
 
     assert es['new_df'].ww.name == 'new_df'
     assert es['new_df'].ww.schema.name == 'new_df'
+
+
+def test_update_dataframe_schema():
+    before = pd.DataFrame({
+        'index': [0, 1, 2],
+        'boolean': [True, False, True],
+        'latlong': [(1.0, 2.0), (3.0, 4.0), np.nan],
+    })
+
+    before.ww.init(index='index', logical_types={
+        'boolean': ww.logical_types.Boolean,
+        'latlong': ww.logical_types.LatLong,
+    })
+
+    es = EntitySet()
+    es.add_dataframe(dataframe_name='data', df=before)
+
+    after = pd.DataFrame({
+        'index': [0, 1, 2],
+        'boolean': [0, 1, 0],
+        'latlong': [[5, 6], '7, 8', [np.nan, np.nan]],
+    })
+
+    es.update_dataframe(dataframe_name='data', df=after)
+    assert after.ww.schema == before.ww.schema
