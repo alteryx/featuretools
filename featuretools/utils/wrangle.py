@@ -94,8 +94,8 @@ def _check_time_against_column(time, time_column):
             return True
         elif time.unit not in Timedelta._time_units:
             if (isinstance(time_column.ww.logical_type, ltypes.Ordinal) or
-                'numeric' in time_column.ww.semantic_tags or
-                'time_index' in time_column.ww.semantic_tags):
+                    'numeric' in time_column.ww.semantic_tags or
+                    'time_index' in time_column.ww.semantic_tags):
                 return True
     return False
 
