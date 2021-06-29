@@ -4,6 +4,7 @@ import boto3
 import pytest
 from pympler.asizeof import asizeof
 from smart_open import open
+from woodwork.column_schema import ColumnSchema
 
 import featuretools as ft
 from featuretools.feature_base.features_deserializer import (
@@ -33,7 +34,6 @@ from featuretools.primitives import (
     make_agg_primitive
 )
 from featuretools.tests.testing_utils import check_names
-from featuretools.variable_types import Numeric
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
@@ -83,8 +83,8 @@ def test_pickle_features_with_custom_primitive(pd_es, tmpdir):
     NewMax = make_agg_primitive(
         lambda x: max(x),
         name="NewMax",
-        input_types=[Numeric],
-        return_type=Numeric,
+        input_types=[ColumnSchema(semantic_tags={'numeric'})],
+        return_type=ColumnSchema(semantic_tags={'numeric'}),
         description="Calculate means ignoring nan values")
 
     features_original = ft.dfs(target_dataframe='sessions', entityset=pd_es,

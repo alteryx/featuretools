@@ -2,6 +2,8 @@ import copy
 
 import pandas as pd
 import pytest
+from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import Datetime
 
 import featuretools as ft
 from featuretools.feature_base import (
@@ -44,7 +46,6 @@ from featuretools.tests.testing_utils import (
     make_ecommerce_entityset
 )
 from featuretools.utils.gen_utils import Library
-from featuretools.variable_types import Datetime, Numeric
 
 
 def test_makes_agg_features_from_str(es):
@@ -923,8 +924,8 @@ def test_stacks_multioutput_features(es):
 
     class TestTime(TransformPrimitive):
         name = "test_time"
-        input_types = [Datetime]
-        return_type = Numeric
+        input_types = [ColumnSchema(logical_type=Datetime)]
+        return_type = ColumnSchema(semantic_tabs={'numeric'})
         number_output_features = 6
 
         def get_function(self):
@@ -1393,8 +1394,10 @@ def test_primitive_options_instantiated_primitive(es):
 def test_primitive_options_commutative(es):
     class AddThree(TransformPrimitive):
         name = 'add_three'
-        input_types = [Numeric, Numeric, Numeric]
-        return_type = Numeric
+        input_types = [ColumnSchema(semantic_tabs={'numeric'}),
+                       ColumnSchema(semantic_tabs={'numeric'}),
+                       ColumnSchema(semantic_tabs={'numeric'})]
+        return_type = ColumnSchema(semantic_tabs={'numeric'})
         commutative = True
         compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 

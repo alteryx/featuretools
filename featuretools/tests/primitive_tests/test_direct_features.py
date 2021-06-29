@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
+from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import Datetime
 
 import featuretools as ft
 from featuretools.computational_backends.feature_set import FeatureSet
@@ -23,7 +25,6 @@ from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
-from featuretools.variable_types import Categorical, Datetime, Numeric
 
 
 def test_direct_from_identity(es):
@@ -77,7 +78,7 @@ def test_direct_rename(es):
 
 def test_direct_copy(games_es):
     home_team = next(r for r in games_es.relationships
-                     if r.child_column.id == 'home_team_id')
+                     if r.child_column.name == 'home_team_id')
     feat = DirectFeature(games_es['teams']['name'], games_es['games'],
                          relationship=home_team)
     copied = feat.copy()
@@ -93,8 +94,8 @@ def test_direct_of_multi_output_transform_feat(es):
 
     class TestTime(TransformPrimitive):
         name = "test_time"
-        input_types = [Datetime]
-        return_type = Numeric
+        input_types = [ColumnSchema(logical_types=Datetime)]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
         number_output_features = 6
 
         def get_function(self):
@@ -129,8 +130,8 @@ def test_direct_of_multi_output_transform_feat(es):
 def test_direct_features_of_multi_output_agg_primitives(pd_es):
     class ThreeMostCommonCat(AggregationPrimitive):
         name = "n_most_common_categorical"
-        input_types = [Categorical]
-        return_type = Categorical
+        input_types = [ColumnSchema(semantic_tags={'category'})]
+        return_type = ColumnSchema(semantic_tags={'category'})
         number_output_features = 3
 
         def get_function(self, agg_type='pandas'):
@@ -191,7 +192,7 @@ def test_direct_with_invalid_init_args(diamond_es):
 
     transaction_relationships = diamond_es.get_forward_relationships('transactions')
     transaction_to_store = next(r for r in transaction_relationships
-                                if r.parent_dataframe.id == 'stores')
+                                if r.parent_dataframe.name == 'stores')
     error_text = 'Base feature must be defined on the relationship parent entity'
     with pytest.raises(AssertionError, match=error_text):
         ft.DirectFeature(diamond_es['regions']['name'], diamond_es['transactions'],
@@ -206,7 +207,7 @@ def test_direct_with_multiple_possible_paths(games_es):
 
     # Does not raise if path specified.
     relationship = next(r for r in games_es.get_forward_relationships('games')
-                        if r.child_column.id == 'home_team_id')
+                        if r.child_column.name == 'home_team_id')
     feat = ft.DirectFeature(games_es['teams']['name'], games_es['games'],
                             relationship=relationship)
     assert feat.relationship_path_name() == 'teams[home_team_id]'
@@ -234,7 +235,7 @@ def test_serialization(es):
     direct = ft.DirectFeature(value, es['log'])
 
     log_to_products = next(r for r in es.get_forward_relationships('log')
-                           if r.parent_dataframe.id == 'products')
+                           if r.parent_dataframe.name == 'products')
     dictionary = {
         'name': None,
         'base_feature': value.unique_name(),

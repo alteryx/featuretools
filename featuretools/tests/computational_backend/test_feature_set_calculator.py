@@ -6,6 +6,7 @@ import pytest
 import woodwork as ww
 from dask import dataframe as dd
 from numpy.testing import assert_array_equal
+from woodwork.column_schema import ColumnSchema
 
 import featuretools as ft
 from featuretools import Timedelta
@@ -39,7 +40,6 @@ from featuretools.primitives.base import AggregationPrimitive
 from featuretools.tests.testing_utils import backward_path, to_pandas
 from featuretools.utils import Trie
 from featuretools.utils.gen_utils import Library
-from featuretools.variable_types import Numeric
 
 
 def test_make_identity(es):
@@ -855,8 +855,8 @@ def test_handles_primitive_function_name_uniqueness(es):
 
     class SumTimesN(AggregationPrimitive):
         name = "sum_times_n"
-        input_types = [Numeric]
-        return_type = Numeric
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
 
         def __init__(self, n):
             self.n = n
@@ -911,8 +911,8 @@ def test_handles_primitive_function_name_uniqueness(es):
     class Sum1(AggregationPrimitive):
         """Sums elements of a numeric or boolean feature."""
         name = "sum1"
-        input_types = [Numeric]
-        return_type = Numeric
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
         stack_on_self = False
         stack_on_exclude = [Count]
         default_value = 0
@@ -923,8 +923,8 @@ def test_handles_primitive_function_name_uniqueness(es):
     class Sum2(AggregationPrimitive):
         """Sums elements of a numeric or boolean feature."""
         name = "sum2"
-        input_types = [Numeric]
-        return_type = Numeric
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
         stack_on_self = False
         stack_on_exclude = [Count]
         default_value = 0
@@ -935,8 +935,8 @@ def test_handles_primitive_function_name_uniqueness(es):
     class Sum3(AggregationPrimitive):
         """Sums elements of a numeric or boolean feature."""
         name = "sum3"
-        input_types = [Numeric]
-        return_type = Numeric
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
         stack_on_self = False
         stack_on_exclude = [Count]
         default_value = 0
@@ -1027,8 +1027,8 @@ def test_precalculated_features(pd_es):
     class ErrorPrim(AggregationPrimitive):
         """A primitive whose function raises an error."""
         name = "error_prim"
-        input_types = [Numeric]
-        return_type = Numeric
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
 
         def get_function(self, agg_type='pandas'):
             def error(s):

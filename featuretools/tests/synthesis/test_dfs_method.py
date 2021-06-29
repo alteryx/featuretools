@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 from dask import dataframe as dd
 from distributed.utils_test import cluster
+from woodwork.column_schema import ColumnSchema
 
 from featuretools.computational_backends.calculate_feature_matrix import (
     FEATURE_CALCULATION_PERCENTAGE
@@ -22,7 +23,7 @@ from featuretools.primitives import (
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
-from featuretools.variable_types import Numeric, find_variable_types
+from featuretools.variable_types import find_variable_types
 
 
 @pytest.fixture
@@ -367,8 +368,8 @@ def test_warns_with_unused_custom_primitives(pd_es):
         return column > 10
 
     AboveTen = make_trans_primitive(function=above_ten,
-                                    input_types=[Numeric],
-                                    return_type=Numeric)
+                                    input_types=[ColumnSchema(semantic_tags={'numeric'})],
+                                    return_type=ColumnSchema(semantic_tags={'numeric'}))
 
     trans_primitives = [AboveTen]
 
@@ -396,8 +397,8 @@ def test_warns_with_unused_custom_primitives(pd_es):
         return max(column) > 10
 
     MaxAboveTen = make_agg_primitive(function=max_above_ten,
-                                     input_types=[Numeric],
-                                     return_type=Numeric)
+                                     input_types=[ColumnSchema(semantic_tags={'numeric'})],
+                                     return_type=ColumnSchema(semantic_tags={'numeric'}))
 
     agg_primitives = [MaxAboveTen]
 

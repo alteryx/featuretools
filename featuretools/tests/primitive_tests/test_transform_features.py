@@ -2,6 +2,8 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
+from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import Boolean, Datetime
 
 import featuretools as ft
 from featuretools.computational_backends.feature_set import FeatureSet
@@ -61,7 +63,6 @@ from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.tests.testing_utils import feature_with_name, to_pandas
 from featuretools.utils.gen_utils import Library
 from featuretools.utils.koalas_utils import pd_to_ks_clean
-from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 
 def test_init_and_name(es):
@@ -158,38 +159,40 @@ def pd_simple_es():
 
 @pytest.fixture
 def dd_simple_es(pd_simple_es):
-    entities = {}
-    for entity in pd_simple_es.entities:
-        entities[entity.id] = (dd.from_pandas(entity.df.reset_index(drop=True), npartitions=4),
-                               entity.index,
+    dataframes = {}
+    for df in pd_simple_es.dataframes:
+        dataframes[df.name] = (dd.from_pandas(df.reset_index(drop=True), npartitions=4),
+                               df.ww.index,
                                None,
-                               entity.variable_types)
+                               df.ww.logical_types,
+                               df.ww.semantic_tags)
 
     relationships = [(rel.parent_dataframe.id,
                       rel.parent_column.name,
                       rel.child_dataframe.id,
                       rel.child_column.name) for rel in pd_simple_es.relationships]
 
-    return ft.EntitySet(id=pd_simple_es.id, entities=entities, relationships=relationships)
+    return ft.EntitySet(id=pd_simple_es.id, dataframes=dataframes, relationships=relationships)
 
 
 @pytest.fixture
 def ks_simple_es(pd_simple_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    entities = {}
-    for entity in pd_simple_es.entities:
-        cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
-        entities[entity.id] = (ks.from_pandas(cleaned_df),
-                               entity.index,
+    dataframes = {}
+    for df in pd_simple_es.dataframes:
+        cleaned_df = pd_to_ks_clean(df).reset_index(drop=True)
+        dataframes[df.name] = (ks.from_pandas(cleaned_df),
+                               df.ww.index,
                                None,
-                               entity.variable_types)
+                               df.ww.logical_typecs,
+                               df.ww.semantic_tags)
 
     relationships = [(rel.parent_dataframe.id,
                       rel.parent_column.name,
                       rel.child_dataframe.id,
                       rel.child_column.name) for rel in pd_simple_es.relationships]
 
-    return ft.EntitySet(id=pd_simple_es.id, entities=entities, relationships=relationships)
+    return ft.EntitySet(id=pd_simple_es.id, dataframes=dataframes, relationships=relationships)
 
 
 @pytest.fixture(params=['pd_simple_es', 'dd_simple_es', 'ks_simple_es'])
@@ -515,11 +518,11 @@ def pd_boolean_mult_es():
 
 @pytest.fixture
 def dask_boolean_mult_es(pd_boolean_mult_es):
-    entities = {}
-    for entity in pd_boolean_mult_es.entities:
-        entities[entity.id] = (dd.from_pandas(entity.df, npartitions=2), entity.index, None, entity.variable_types)
+    dataframes = {}
+    for df in pd_boolean_mult_es.dataframes:
+        dataframes[df.ww.name] = (dd.from_pandas(df, npartitions=2), df.ww.index, None, df.ww.logical_types, df.ww.semantic_tags)
 
-    return ft.EntitySet(id=pd_boolean_mult_es.id, entities=entities)
+    return ft.EntitySet(id=pd_boolean_mult_es.id, dataframes=dataframes)
 
 
 def test_boolean_multiply(boolean_mult_es):
@@ -635,12 +638,12 @@ def test_latlong(pd_es):
 
 
 def test_latlong_with_nan(pd_es):
-    df = pd_es['log'].df
+    df = pd_es['log']
     df['latlong'][0] = np.nan
     df['latlong'][1] = (10, np.nan)
     df['latlong'][2] = (np.nan, 4)
     df['latlong'][3] = (np.nan, np.nan)
-    pd_es.update_dataframe(entity_id='log', df=df)
+    pd_es.update_dataframe(dataframe_name='log', df=df)
     log_latlong_feat = pd_es['log']['latlong']
     latitude = ft.Feature(log_latlong_feat, primitive=Latitude)
     longitude = ft.Feature(log_latlong_feat, primitive=Longitude)
@@ -690,10 +693,10 @@ def test_haversine(pd_es):
 
 def test_haversine_with_nan(pd_es):
     # Check some `nan` values
-    df = pd_es['log'].df
+    df = pd_es['log']
     df['latlong'][0] = np.nan
     df['latlong'][1] = (10, np.nan)
-    pd_es.update_dataframe(entity_id='log', df=df)
+    pd_es.update_dataframe(dataframe_name='log', df=df)
     log_latlong_feat = pd_es['log']['latlong']
     log_latlong_feat2 = pd_es['log']['latlong2']
     haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
@@ -793,8 +796,8 @@ def test_isin_feat_custom(es):
 
     IsIn = make_trans_primitive(
         pd_is_in,
-        [Variable],
-        Boolean,
+        [ColumnSchema()],
+        ColumnSchema(logical_type=Boolean),
         name="is_in",
         description="For each value of the base feature, checks whether it is "
         "in a list that is provided.",
@@ -975,8 +978,8 @@ def test_two_kinds_of_dependents(pd_es):
 def test_make_transform_restricts_time_keyword():
     make_trans_primitive(
         lambda x, time=False: x,
-        [Datetime],
-        Numeric,
+        [ColumnSchema(logical_type=Datetime)],
+        ColumnSchema(semantic_tags={'numeric'}),
         name="AllowedPrimitive",
         description="This primitive should be accepted",
         uses_calc_time=True)
@@ -985,8 +988,8 @@ def test_make_transform_restricts_time_keyword():
     with pytest.raises(ValueError, match=error_text):
         make_trans_primitive(
             lambda x, time=False: x,
-            [Datetime],
-            Numeric,
+            [ColumnSchema(logical_type=Datetime)],
+            ColumnSchema(semantic_tags={'numeric'}),
             name="BadPrimitive",
             description="This primitive should error")
 
@@ -994,8 +997,8 @@ def test_make_transform_restricts_time_keyword():
 def test_make_transform_restricts_time_arg():
     make_trans_primitive(
         lambda time: time,
-        [Datetime],
-        Numeric,
+        [ColumnSchema(logical_type=Datetime)],
+        ColumnSchema(semantic_tags={'numeric'}),
         name="AllowedPrimitive",
         description="This primitive should be accepted",
         uses_calc_time=True)
@@ -1004,8 +1007,8 @@ def test_make_transform_restricts_time_arg():
     with pytest.raises(ValueError, match=error_text):
         make_trans_primitive(
             lambda time: time,
-            [Datetime],
-            Numeric,
+            [ColumnSchema(logical_type=Datetime)],
+            ColumnSchema(semantic_tags={'numeric'}),
             name="BadPrimitive",
             description="This primitive should erorr")
 
@@ -1022,8 +1025,8 @@ def test_make_transform_sets_kwargs_correctly(es):
 
     IsIn = make_trans_primitive(
         pd_is_in,
-        [Variable],
-        Boolean,
+        [ColumnSchema()],
+        ColumnSchema(logical_type=Boolean),
         name="is_in",
         description="For each value of the base feature, checks whether it is "
         "in a list that is provided.",
@@ -1054,8 +1057,8 @@ def test_make_transform_multiple_output_features(pd_es):
 
     TestTime = make_trans_primitive(
         function=test_time,
-        input_types=[Datetime],
-        return_type=Numeric,
+        input_types=[ColumnSchema(logical_type=Datetime)],
+        return_type=ColumnSchema(semantic_tags={'numeric'}),
         number_output_features=6,
         cls_attributes={"get_feature_names": gen_feat_names},
     )
@@ -1094,8 +1097,8 @@ def test_get_filepath(es):
     class Mod4(TransformPrimitive):
         '''Return base feature modulo 4'''
         name = "mod4"
-        input_types = [Numeric]
-        return_type = Numeric
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
         compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
         def get_function(self):
@@ -1140,8 +1143,8 @@ def test_override_multi_feature_names(pd_es):
 
     num_features = 3
     IsGreater = make_trans_primitive(function=is_greater,
-                                     input_types=[Numeric],
-                                     return_type=Numeric,
+                                     input_types=[ColumnSchema(semantic_tags={'numeric'})],
+                                     return_type=ColumnSchema(semantic_tags={'numeric'}),
                                      number_output_features=num_features,
                                      cls_attributes={"generate_names": gen_custom_names})
 

@@ -4,6 +4,8 @@ from math import isnan
 import numpy as np
 import pandas as pd
 import pytest
+from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import Datetime
 
 import featuretools as ft
 from featuretools.entityset.relationship import RelationshipPath
@@ -38,22 +40,14 @@ from featuretools.tests.testing_utils import (
     to_pandas
 )
 from featuretools.utils.gen_utils import Library
-from featuretools.variable_types import (
-    Datetime,
-    DatetimeTimeIndex,
-    Discrete,
-    Index,
-    Numeric,
-    Variable
-)
 
 
 @pytest.fixture
 def test_primitive():
     class TestAgg(AggregationPrimitive):
         name = "test"
-        input_types = [Numeric]
-        return_type = Numeric
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
         stack_on = []
 
         def get_function(self, agg_type='pandas'):
@@ -111,9 +105,14 @@ def test_count_null_and_make_agg_primitive(pd_es):
                                    where_str,
                                    use_prev_str)
 
-    Count = make_agg_primitive(count_func, [[Index], [Variable]], Numeric,
-                               name="count", stack_on_self=False,
-                               cls_attributes={"generate_name": count_generate_name})
+    Count = make_agg_primitive(
+        count_func,
+        [[ColumnSchema(semantic_tags={'foreign_key'})], [ColumnSchema()]],
+        ColumnSchema(semantic_tags={'numeric'}),
+        name="count",
+        stack_on_self=False,
+        cls_attributes={"generate_name": count_generate_name}
+    )
     count_null = ft.Feature(pd_es['log']['value'], parent_entity=pd_es['sessions'], primitive=Count(count_null=True))
     feature_matrix = ft.calculate_feature_matrix([count_null], entityset=pd_es)
     values = [5, 4, 1, 2, 3, 2]
@@ -330,7 +329,7 @@ def test_name_with_multiple_possible_paths(diamond_es):
 
 def test_copy(games_es):
     home_games = next(r for r in games_es.relationships
-                      if r.child_column.id == 'home_team_id')
+                      if r.child_column.name == 'home_team_id')
     path = RelationshipPath([(False, home_games)])
     feat = ft.AggregationFeature(games_es['games']['home_team_score'],
                                  games_es['teams'],
@@ -442,14 +441,14 @@ def test_agg_same_method_name(es):
     def custom_primitive(x):
         return x.sum()
 
-    Sum = make_agg_primitive(custom_primitive, input_types=[Numeric],
-                             return_type=Numeric, name="sum")
+    Sum = make_agg_primitive(custom_primitive, input_types=[ColumnSchema(semantic_tags={'numeric'})],
+                             return_type=ColumnSchema(semantic_tags={'numeric'}), name="sum")
 
     def custom_primitive(x):
         return x.max()
 
-    Max = make_agg_primitive(custom_primitive, input_types=[Numeric],
-                             return_type=Numeric, name="max")
+    Max = make_agg_primitive(custom_primitive, input_types=[ColumnSchema(semantic_tags={'numeric'})],
+                             return_type=ColumnSchema(semantic_tags={'numeric'}), name="max")
 
     f_sum = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Sum)
     f_max = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Max)
@@ -458,10 +457,10 @@ def test_agg_same_method_name(es):
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
 
     # test with lambdas
-    Sum = make_agg_primitive(lambda x: x.sum(), input_types=[Numeric],
-                             return_type=Numeric, name="sum")
-    Max = make_agg_primitive(lambda x: x.max(), input_types=[Numeric],
-                             return_type=Numeric, name="max")
+    Sum = make_agg_primitive(lambda x: x.sum(), input_types=[ColumnSchema(semantic_tags={'numeric'})],
+                             return_type=ColumnSchema(semantic_tags={'numeric'}), name="sum")
+    Max = make_agg_primitive(lambda x: x.max(), input_types=[ColumnSchema(semantic_tags={'numeric'})],
+                             return_type=ColumnSchema(semantic_tags={'numeric'}), name="max")
 
     f_sum = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Sum)
     f_max = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Max)
@@ -475,8 +474,8 @@ def test_time_since_last_custom(pd_es):
         return time_since.total_seconds()
 
     TimeSinceLast = make_agg_primitive(time_since_last,
-                                       [DatetimeTimeIndex],
-                                       Numeric,
+                                       [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})],
+                                       ColumnSchema(semantic_tags={'numeric'}),
                                        name="time_since_last",
                                        uses_calc_time=True)
     f = ft.Feature(pd_es["log"]["datetime"], parent_entity=pd_es["customers"], primitive=TimeSinceLast)
@@ -492,8 +491,8 @@ def test_time_since_last_custom(pd_es):
     error_text = "'time' is a restricted keyword.  Please use a different keyword."
     with pytest.raises(ValueError, match=error_text):
         TimeSinceLast = make_agg_primitive(time_since_last,
-                                           [DatetimeTimeIndex],
-                                           Numeric,
+                                           [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})],
+                                           ColumnSchema(semantic_tags={'numeric'}),
                                            uses_calc_time=False)
 
 
@@ -503,8 +502,8 @@ def test_custom_primitive_time_as_arg(pd_es):
         return time_since.total_seconds()
 
     TimeSinceLast = make_agg_primitive(time_since_last,
-                                       [DatetimeTimeIndex],
-                                       Numeric,
+                                       [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})],
+                                       ColumnSchema(semantic_tags={'numeric'}),
                                        uses_calc_time=True)
     assert TimeSinceLast.name == "time_since_last"
     f = ft.Feature(pd_es["log"]["datetime"], parent_entity=pd_es["customers"], primitive=TimeSinceLast)
@@ -520,8 +519,8 @@ def test_custom_primitive_time_as_arg(pd_es):
     error_text = "'time' is a restricted keyword.  Please use a different keyword."
     with pytest.raises(ValueError, match=error_text):
         make_agg_primitive(time_since_last,
-                           [DatetimeTimeIndex],
-                           Numeric,
+                           [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})],
+                           ColumnSchema(semantic_tags={'numeric'}),
                            uses_calc_time=False)
 
 
@@ -534,9 +533,11 @@ def test_custom_primitive_multiple_inputs(pd_es):
         df = pd.DataFrame({'numeric': numeric, 'time': days})
         return df[df['time'] == 6]['numeric'].mean()
 
-    MeanSunday = make_agg_primitive(function=mean_sunday,
-                                    input_types=[Numeric, Datetime],
-                                    return_type=Numeric)
+    MeanSunday = make_agg_primitive(
+        function=mean_sunday,
+        input_types=[ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(logical_type=Datetime)],
+        return_type=ColumnSchema(semantic_tags={'numeric'})
+    )
 
     fm, features = ft.dfs(entityset=pd_es,
                           target_dataframe="sessions",
@@ -564,8 +565,8 @@ def test_custom_primitive_default_kwargs(es):
         return np.nan_to_num(numeric).sum(dtype=np.float) * n
 
     SumNTimes = make_agg_primitive(function=sum_n_times,
-                                   input_types=[Numeric],
-                                   return_type=Numeric)
+                                   input_types=[ColumnSchema(semantic_tags={'numeric'})],
+                                   return_type=ColumnSchema(semantic_tags={'numeric'}))
 
     sum_n_1_n = 1
     sum_n_1_base_f = ft.Feature(es['log']['value'])
@@ -600,8 +601,8 @@ def test_make_three_most_common(pd_es):
         return array
 
     NMostCommoner = make_agg_primitive(function=pd_top3,
-                                       input_types=[Discrete],
-                                       return_type=Discrete,
+                                       input_types=[ColumnSchema(semantic_tags={'category'})],
+                                       return_type=ColumnSchema(semantic_tags={'category'}),
                                        number_output_features=3)
 
     fm, features = ft.dfs(entityset=pd_es,
@@ -678,8 +679,8 @@ def test_override_multi_feature_names(pd_es):
 
     num_features = 3
     NMostCommoner = make_agg_primitive(function=pd_top3,
-                                       input_types=[Numeric],
-                                       return_type=Discrete,
+                                       input_types=[ColumnSchema(semantic_tags={'numeric'})],
+                                       return_type=ColumnSchema(semantic_tags={'category'}),
                                        number_output_features=num_features,
                                        cls_attributes={"generate_names": gen_custom_names})
 
