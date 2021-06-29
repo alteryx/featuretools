@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ``replace_inf_values`` utility function for replacing ``inf`` values in a feature matrix (:pr:`1505`)
     * Fixes
     * Changes
     * Documentation Changes
@@ -14,7 +15,7 @@ Future Release
         * Test featuretools on pandas 1.3.0 release candidate and make fixes (:pr:`1492`)
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`tamargrey`
+    :user:`frances-h`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 v0.25.0 Jun 11, 2021
 ====================
