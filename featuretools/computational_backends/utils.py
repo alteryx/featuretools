@@ -261,7 +261,7 @@ def _check_cutoff_time_type(cutoff_time, es_time_type):
     else:
         raise NotImplementedError()
         cutoff_time_dtype = cutoff_time['time'].dtype.name
-        # TODO: refactor for woodwork columns
+        # TODO: refactor for woodwork columns, maybe use ww is_datetime and is_numeric?
         is_numeric = cutoff_time_dtype in PandasTypes._pandas_numerics
         is_datetime = cutoff_time_dtype in PandasTypes._pandas_datetimes
 
