@@ -92,6 +92,7 @@ def test_return_type_inference_direct_feature(es):
 def test_return_type_inference_index(es):
     last = ft.Feature(es, "log", "id", parent_dataframe_name="customers", primitive=Last)
     assert "index" not in last.column_schema.semantic_tags
+    assert isinstance(last.column_schema.logical_type, Integer)
 
 
 def test_return_type_inference_datetime_time_index(es):
