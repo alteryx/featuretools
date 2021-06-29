@@ -434,7 +434,7 @@ def test_extra_woodwork_params(es):
     assert isinstance(sessions_df.ww.logical_types['id'], Integer)
 
     warning_msg = ('A Woodwork-initialized DataFrame was provided, so the following parameters were ignored: '
-                   'index, time_index, logical_types, semantic_tags, already_sorted')
+                   'index, time_index, logical_types, make_index, semantic_tags, already_sorted')
     with pytest.warns(UserWarning, match=warning_msg):
         new_es.add_dataframe(dataframe_name='sessions', dataframe=sessions_df,
                              index='filepath', time_index='customer_id',

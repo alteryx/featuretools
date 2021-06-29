@@ -620,15 +620,17 @@ class EntitySet(object):
                 warnings.warn('Performing type inference on Dask or Koalas DataFrames may be computationally intensive. '
                               'Specify logical types for each column to speed up EntitySet initialization.')
 
-            created_index, index, dataframe = _create_index(index, make_index, dataframe)
+            index_was_created, index, dataframe = _get_or_create_index(index, make_index, dataframe)
 
             dataframe.ww.init(name=dataframe_name,
                               index=index,
                               time_index=time_index,
                               logical_types=logical_types,
                               semantic_tags=semantic_tags,
-                              already_sorted=already_sorted,
-                              table_metadata={'created_index': created_index})
+                              already_sorted=already_sorted)
+            if index_was_created:
+                dataframe.ww.metadata['created_index'] = index
+
         else:
             if dataframe.ww.name is None:
                 raise ValueError('Cannot add a Woodwork DataFrame to EntitySet without a name')
@@ -1536,9 +1538,9 @@ def _vals_to_series(instance_vals, variable_id):
     return out_vals
 
 
-def _create_index(index, make_index, df):
+def _get_or_create_index(index, make_index, df):
     '''Handles index creation logic base on user input'''
-    created_index = None
+    index_was_created = False
 
     if index is None:
         # Case 1: user wanted to make index but did not specify column name
@@ -1565,6 +1567,6 @@ def _create_index(index, make_index, df):
             df = df.koalas.attach_id_column('distributed-sequence', index)
         else:
             df.insert(0, index, range(len(df)))
-        created_index = index
+        index_was_created = True
     # Case 6: user specified index, which is already in df. No action needed.
-    return created_index, index, df
+    return index_was_created, index, df
