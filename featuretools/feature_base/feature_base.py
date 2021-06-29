@@ -269,8 +269,8 @@ class FeatureBase(object):
     def __mul__(self, other):
         """Multiply by other"""
         if isinstance(other, FeatureBase):
-            if (self.column_schema.logical_type == ltypes.Boolean and
-                    other.column_schema.logical_type == ltypes.Boolean):
+            if all([isinstance(f.column_schema.logical_type, ltypes.Boolean)
+                    for f in (self, other)]):
                 return Feature([self, other], primitive=primitives.MultiplyBoolean)
         return self._handle_binary_comparision(other, primitives.MultiplyNumeric, primitives.MultiplyNumericScalar)
 

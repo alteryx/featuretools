@@ -541,7 +541,7 @@ def test_boolean_multiply(boolean_mult_es):
     ]
     features = []
     for row in to_test:
-        features.append(ft.Feature(es["test"][row[0]]) * ft.Feature(es["test"][row[1]]))
+        features.append(ft.Feature(es, "test", row[0]) * ft.Feature(es, "test", row[1]))
 
     fm = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features))
 
