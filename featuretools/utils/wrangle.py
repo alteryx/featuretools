@@ -4,8 +4,8 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+from woodwork import logical_types as ltypes
 
-from featuretools import variable_types
 from featuretools.entityset.timedelta import Timedelta
 
 
@@ -86,17 +86,18 @@ def _check_time_against_column(time, time_column):
     if time is None:
         return True
     elif isinstance(time, (int, float)):
-        return isinstance(time_column,
-                          variable_types.Numeric)
+        return time_column.ww.schema.is_numeric
     elif isinstance(time, (pd.Timestamp, datetime, pd.DateOffset)):
-        return isinstance(time_column,
-                          variable_types.Datetime)
+        return time_column.ww.schema.is_datetime
     elif isinstance(time, Timedelta):
-        return (isinstance(time_column, (variable_types.Datetime, variable_types.DatetimeTimeIndex)) or
-                (isinstance(time_column, (variable_types.Ordinal, variable_types.Numeric, variable_types.TimeIndex)) and
-                 time.unit not in Timedelta._time_units))
-    else:
-        return False
+        if time_column.ww.schema.is_datetime:
+            return True
+        elif time.unit not in Timedelta._time_units:
+            if (isinstance(time_column.ww.logical_type, ltypes.Ordinal) or
+                    'numeric' in time_column.ww.semantic_tags or
+                    'time_index' in time_column.ww.semantic_tags):
+                return True
+    return False
 
 
 # --> TODO possibly remove this or convert to Woodwork
@@ -107,9 +108,9 @@ def _check_time_type(time):
     '''
     time_type = None
     if isinstance(time, (datetime, np.datetime64)):
-        time_type = variable_types.DatetimeTimeIndex
+        time_type = "datetime_time_index"
     elif isinstance(time, (int, float)) or np.issubdtype(time, np.integer) or np.issubdtype(time, np.floating):
-        time_type = variable_types.NumericTimeIndex
+        time_type = "numeric_time_index"
     return time_type
 
 

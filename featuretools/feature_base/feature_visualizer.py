@@ -18,7 +18,7 @@ TARGET_COLOR = '#D9EAD3'
 TABLE_TEMPLATE = '''<
 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
     <TR>
-        <TD colspan="1" bgcolor="#A9A9A9"><B>{entity_name}</B></TD>
+        <TD colspan="1" bgcolor="#A9A9A9"><B>{dataframe_name}</B></TD>
     </TR>{table_cols}
 </TABLE>>'''
 COL_TEMPLATE = '''<TR><TD ALIGN="LEFT" port="{}">{}</TD></TR>'''
@@ -52,19 +52,19 @@ def graph_feature(feature, to_file=None, description=False, **kwargs):
     graph = graphviz.Digraph(feature.get_name(), format=format_,
                              graph_attr={'rankdir': 'LR'})
 
-    entities = {}
+    dataframes = {}
     edges = ([], [])
     primitives = []
     groupbys = []
 
-    _, max_depth = get_feature_data(feature, entities, groupbys, edges, primitives, layer=0)
-    entities[feature.entity.id]['targets'].add(feature.get_name())
+    _, max_depth = get_feature_data(feature, dataframes, groupbys, edges, primitives, layer=0)
+    dataframes[feature.dataframe_name]['targets'].add(feature.get_name())
 
-    for entity in entities:
-        entity_name = '\u2605 {} (target)'.format(entity) if entity == feature.entity.id else entity
-        entity_table = get_entity_table(entity_name, entities[entity])
+    for df_name in dataframes:
+        dataframe_name = '\u2605 {} (target)'.format(df_name) if df_name == feature.dataframe_name else df_name
+        dataframe_table = get_dataframe_table(dataframe_name, dataframes[df_name])
         graph.attr('node', shape='plaintext')
-        graph.node(entity, entity_table)
+        graph.node(df_name, dataframe_table)
 
     graph.attr('node', shape='diamond')
     num_primitives = len(primitives)
@@ -109,22 +109,22 @@ def graph_feature(feature, to_file=None, description=False, **kwargs):
     return graph
 
 
-def get_feature_data(feat, entities, groupbys, edges, primitives, layer=0):
-    # 1) add feature to entities tables:
+def get_feature_data(feat, dataframes, groupbys, edges, primitives, layer=0):
+    # 1) add feature to dataframes tables:
     feat_name = feat.get_name()
-    if feat.entity.id not in entities:
-        add_entity(feat.entity, entities)
-    entity_dict = entities[feat.entity.id]
+    if feat.dataframe_name not in dataframes:
+        add_dataframe(feat.dataframe, dataframes)
+    dataframe_dict = dataframes[feat.dataframe_name]
 
     # if we've already explored this feat, continue
-    feat_node = "{}:{}".format(feat.entity.id, feat_name)
-    if feat_name in entity_dict['vars'] or feat_name in entity_dict['feats']:
+    feat_node = "{}:{}".format(feat.dataframe_name, feat_name)
+    if feat_name in dataframe_dict['columns'] or feat_name in dataframe_dict['feats']:
         return feat_node, layer
 
     if isinstance(feat, IdentityFeature):
-        entity_dict['vars'].add(feat_name)
+        dataframe_dict['columns'].add(feat_name)
     else:
-        entity_dict['feats'].add(feat_name)
+        dataframe_dict['feats'].add(feat_name)
     base_node = feat_node
 
     # 2) if multi-output, convert feature to generic base
@@ -150,16 +150,16 @@ def get_feature_data(feat, entities, groupbys, edges, primitives, layer=0):
     dependencies = [(dep.hash(), dep) for dep in feat.get_dependencies()]
     for is_forward, r in feat.relationship_path:
         if is_forward:
-            if r.child_dataframe.id not in entities:
-                add_entity(r.child_dataframe, entities)
-            entities[r.child_dataframe.id]['vars'].add(r.child_column.name)
-            child_node = '{}:{}'.format(r.child_dataframe.id, r.child_column.name)
+            if r.child_dataframe.ww.name not in dataframes:
+                add_dataframe(r.child_dataframe, dataframes)
+            dataframes[r.child_dataframe.ww.name]['columns'].add(r.child_column.name)
+            child_node = '{}:{}'.format(r.child_dataframe.ww.name, r.child_column.name)
             edges[0].append([base_node, child_node])
         else:
-            if r.child_dataframe.id not in entities:
-                add_entity(r.child_dataframe, entities)
-            entities[r.child_dataframe.id]['vars'].add(r.child_column.name)
-            child_node = '{}:{}'.format(r.child_dataframe.id, r.child_column.name)
+            if r.child_dataframe.ww.name not in dataframes:
+                add_dataframe(r.child_dataframe, dataframes)
+            dataframes[r.child_dataframe.ww.name]['columns'].add(r.child_column.name)
+            child_node = '{}:{}'.format(r.child_dataframe.ww.name, r.child_column.name)
             child_name = child_node.replace(':', '--')
             groupby_node = "{}_groupby_{}".format(feat_name, child_name)
             groupby_name = 'group by\n{}'.format(r.child_column.name)
@@ -170,16 +170,16 @@ def get_feature_data(feat, entities, groupbys, edges, primitives, layer=0):
 
     if hasattr(feat, 'groupby'):
         groupby = feat.groupby
-        _ = get_feature_data(groupby, entities, groupbys, edges, primitives, layer + 1)
+        _ = get_feature_data(groupby, dataframes, groupbys, edges, primitives, layer + 1)
         dependencies.remove((groupby.hash(), groupby))
 
         groupby_name = groupby.get_name()
         if isinstance(groupby, IdentityFeature):
-            entities[groupby.entity.id]['vars'].add(groupby_name)
+            dataframes[groupby.dataframe_name]['columns'].add(groupby_name)
         else:
-            entities[groupby.entity.id]['feats'].add(groupby_name)
+            dataframes[groupby.dataframe_name]['feats'].add(groupby_name)
 
-        child_node = '{}:{}'.format(groupby.entity.id, groupby_name)
+        child_node = '{}:{}'.format(groupby.dataframe_name, groupby_name)
         child_name = child_node.replace(':', '--')
         groupby_node = "{}_groupby_{}".format(feat_name, child_name)
         groupby_name = 'group by\n{}'.format(groupby_name)
@@ -191,7 +191,7 @@ def get_feature_data(feat, entities, groupbys, edges, primitives, layer=0):
     # 5) recurse over dependents
     max_depth = layer
     for _, f in dependencies:
-        dependent_node, depth = get_feature_data(f, entities, groupbys, edges, primitives, layer + 1)
+        dependent_node, depth = get_feature_data(f, dataframes, groupbys, edges, primitives, layer + 1)
         edges[1].append([dependent_node, base_node])
 
         max_depth = max(depth, max_depth)
@@ -199,36 +199,36 @@ def get_feature_data(feat, entities, groupbys, edges, primitives, layer=0):
     return feat_node, max_depth
 
 
-def add_entity(entity, entity_dict):
-    entity_dict[entity.id] = {
-        'index': entity.index,
+def add_dataframe(dataframe, dataframe_dict):
+    dataframe_dict[dataframe.ww.name] = {
+        'index': dataframe.ww.index,
         'targets': set(),
-        'vars': set(),
+        'columns': set(),
         'feats': set()
     }
 
 
-def get_entity_table(entity_name, entity_dict):
+def get_dataframe_table(dataframe_name, dataframe_dict):
     '''
-    given a dict of vars and feats, construct the html table for it
+    given a dict of columns and feats, construct the html table for it
     '''
-    index = entity_dict['index']
-    targets = entity_dict['targets']
-    variables = entity_dict['vars'].difference(targets)
-    feats = entity_dict['feats'].difference(targets)
+    index = dataframe_dict['index']
+    targets = dataframe_dict['targets']
+    columns = dataframe_dict['columns'].difference(targets)
+    feats = dataframe_dict['feats'].difference(targets)
 
     # If the index is used, make sure it's the first element in the table
     clean_index = html.escape(index)
-    if index in variables:
+    if index in columns:
         rows = [COL_TEMPLATE.format(clean_index, clean_index + " (index)")]
-        variables.discard(index)
+        columns.discard(index)
     elif index in targets:
         rows = [TARGET_TEMPLATE.format(clean_index, clean_index + " (index)")]
         targets.discard(index)
     else:
         rows = []
 
-    for var in list(variables) + list(feats) + list(targets):
+    for var in list(columns) + list(feats) + list(targets):
         template = COL_TEMPLATE
         if var in targets:
             template = TARGET_TEMPLATE
@@ -236,6 +236,6 @@ def get_entity_table(entity_name, entity_dict):
         var = html.escape(var)
         rows.append(template.format(var, var))
 
-    table = TABLE_TEMPLATE.format(entity_name=entity_name,
+    table = TABLE_TEMPLATE.format(dataframe_name=dataframe_name,
                                   table_cols="\n".join(rows))
     return table

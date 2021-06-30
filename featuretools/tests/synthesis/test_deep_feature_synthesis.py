@@ -838,9 +838,9 @@ def test_return_variable_types(es):
                                    agg_primitives=[Count, NMostCommon],
                                    trans_primitives=[Absolute, Hour, IsIn])
 
-    discrete = ft.variable_types.Discrete
-    numeric = ft.variable_types.Numeric
-    datetime = ft.variable_types.Datetime
+    discrete = ColumnSchema(semantic_tags={"category"})
+    numeric = ColumnSchema(semantic_tags={"numeric"})
+    datetime = ColumnSchema(logical_type=Datetime)
 
     f1 = dfs_obj.build_features(return_variable_types=None)
     f2 = dfs_obj.build_features(return_variable_types=[discrete])

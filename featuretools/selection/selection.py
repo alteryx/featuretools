@@ -1,4 +1,4 @@
-from featuretools import variable_types as vtypes
+from woodwork.logical_types import Boolean, BooleanNullable
 
 
 def remove_low_information_features(feature_matrix, features=None):
@@ -121,11 +121,8 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
     if features_to_keep is None:
         features_to_keep = []
 
-    boolean = ['bool']
-    numeric_and_boolean_dtypes = vtypes.PandasTypes._pandas_numerics + boolean
-
-    fm_to_check = (feature_matrix[features_to_check]).select_dtypes(
-        include=numeric_and_boolean_dtypes)
+    to_select = ['numeric', Boolean, BooleanNullable]
+    fm_to_check = feature_matrix[features_to_check].ww.select(include=to_select)
 
     dropped = set()
     columns_to_check = fm_to_check.columns

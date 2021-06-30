@@ -67,12 +67,12 @@ from featuretools.utils.koalas_utils import pd_to_ks_clean
 
 def test_init_and_name(es):
     log = es['log']
-    rating = ft.Feature(es["products"]["rating"], es["log"])
-    log_features = [ft.Feature(v) for v in log.variables] +\
+    rating = ft.Feature(ft.IdentityFeature(es, "products", "rating"), "log")
+    log_features = [ft.Feature(es, 'log', col) for col in log.columns] +\
         [ft.Feature(rating, primitive=GreaterThanScalar(2.5))]
     # Add Timedelta feature
     # features.append(pd.Timestamp.now() - ft.Feature(log['datetime']))
-    customers_features = [ft.Feature(v) for v in es["customers"].variables]
+    customers_features = [ft.Feature(es, "customers", col) for col in es["customers"].columns]
     trans_primitives = get_transform_primitives().values()
     # If Dask EntitySet use only Dask compatible primitives
     if es.dataframe_type == Library.DASK.value:
@@ -129,7 +129,7 @@ def test_serialization(es):
 
 
 def test_make_trans_feat(es):
-    f = ft.Feature(es['log']['datetime'], primitive=Hour)
+    f = ft.Feature(es, 'log', 'datetime', primitive=Hour)
 
     feature_set = FeatureSet([f])
     calculator = FeatureSetCalculator(es, feature_set=feature_set)
@@ -201,7 +201,8 @@ def simple_es(request):
 
 
 def test_equal_categorical(simple_es):
-    f1 = ft.Feature([simple_es['values']['value'], simple_es['values']['value2']],
+    f1 = ft.Feature([ft.IdentityFeature(simple_es, 'values', 'value'),
+                     ft.IdentityFeature(simple_es, 'values', 'value2')],
                     primitive=Equal)
 
     df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1])
@@ -213,9 +214,11 @@ def test_equal_categorical(simple_es):
 
 
 def test_equal_different_dtypes(simple_es):
-    f1 = ft.Feature([simple_es['values']['object'], simple_es['values']['datetime']],
+    f1 = ft.Feature([ft.IdentityFeature(simple_es, 'values', 'object'),
+                     ft.IdentityFeature(simple_es, 'values', 'datetime')],
                     primitive=Equal)
-    f2 = ft.Feature([simple_es['values']['datetime'], simple_es['values']['object']],
+    f2 = ft.Feature([ft.IdentityFeature(simple_es, 'values', 'datetime'),
+                     ft.IdentityFeature(simple_es, 'values', 'object')],
                     primitive=Equal)
 
     # verify that equals works for different dtypes regardless of order
@@ -226,7 +229,8 @@ def test_equal_different_dtypes(simple_es):
 
 
 def test_not_equal_categorical(simple_es):
-    f1 = ft.Feature([simple_es['values']['value'], simple_es['values']['value2']],
+    f1 = ft.Feature([ft.IdentityFeature(simple_es, 'values', 'value'),
+                     ft.IdentityFeature(simple_es, 'values', 'value2')],
                     primitive=NotEqual)
 
     df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1])
@@ -239,9 +243,11 @@ def test_not_equal_categorical(simple_es):
 
 
 def test_not_equal_different_dtypes(simple_es):
-    f1 = ft.Feature([simple_es['values']['object'], simple_es['values']['datetime']],
+    f1 = ft.Feature([ft.IdentityFeature(simple_es, 'values', 'object'),
+                     ft.IdentityFeature(simple_es, 'values', 'datetime')],
                     primitive=NotEqual)
-    f2 = ft.Feature([simple_es['values']['datetime'], simple_es['values']['object']],
+    f2 = ft.Feature([ft.IdentityFeature(simple_es, 'values', 'datetime'),
+                     ft.IdentityFeature(simple_es, 'values', 'object')],
                     primitive=NotEqual)
 
     # verify that equals works for different dtypes regardless of order
@@ -350,7 +356,7 @@ def test_compare_of_direct(es):
 
 
 def test_compare_of_transform(es):
-    day = ft.Feature(es['log']['datetime'], primitive=Day)
+    day = ft.Feature(es, 'log', 'datetime', primitive=Day)
     to_test = [(EqualScalar, [False, True]),
                (NotEqualScalar, [True, False]),
                (LessThanScalar, [True, False]),
@@ -535,7 +541,7 @@ def test_boolean_multiply(boolean_mult_es):
     ]
     features = []
     for row in to_test:
-        features.append(ft.Feature(es["test"][row[0]]) * ft.Feature(es["test"][row[1]]))
+        features.append(ft.Feature(es, "test", row[0]) * ft.Feature(es, "test", row[1]))
 
     fm = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features))
 
@@ -975,75 +981,6 @@ def test_two_kinds_of_dependents(pd_es):
     assert df[g.get_name()].tolist() == [15, 26]
 
 
-def test_make_transform_restricts_time_keyword():
-    make_trans_primitive(
-        lambda x, time=False: x,
-        [ColumnSchema(logical_type=Datetime)],
-        ColumnSchema(semantic_tags={'numeric'}),
-        name="AllowedPrimitive",
-        description="This primitive should be accepted",
-        uses_calc_time=True)
-
-    error_text = "'time' is a restricted keyword.  Please use a different keyword."
-    with pytest.raises(ValueError, match=error_text):
-        make_trans_primitive(
-            lambda x, time=False: x,
-            [ColumnSchema(logical_type=Datetime)],
-            ColumnSchema(semantic_tags={'numeric'}),
-            name="BadPrimitive",
-            description="This primitive should error")
-
-
-def test_make_transform_restricts_time_arg():
-    make_trans_primitive(
-        lambda time: time,
-        [ColumnSchema(logical_type=Datetime)],
-        ColumnSchema(semantic_tags={'numeric'}),
-        name="AllowedPrimitive",
-        description="This primitive should be accepted",
-        uses_calc_time=True)
-
-    error_text = "'time' is a restricted keyword.  Please use a different keyword."
-    with pytest.raises(ValueError, match=error_text):
-        make_trans_primitive(
-            lambda time: time,
-            [ColumnSchema(logical_type=Datetime)],
-            ColumnSchema(semantic_tags={'numeric'}),
-            name="BadPrimitive",
-            description="This primitive should erorr")
-
-
-def test_make_transform_sets_kwargs_correctly(es):
-    def pd_is_in(array, list_of_outputs=None):
-        if list_of_outputs is None:
-            list_of_outputs = []
-        return pd.Series(array).isin(list_of_outputs)
-
-    def isin_generate_name(self, base_feature_names):
-        return u"%s.isin(%s)" % (base_feature_names[0],
-                                 str(self.kwargs['list_of_outputs']))
-
-    IsIn = make_trans_primitive(
-        pd_is_in,
-        [ColumnSchema()],
-        ColumnSchema(logical_type=Boolean),
-        name="is_in",
-        description="For each value of the base feature, checks whether it is "
-        "in a list that is provided.",
-        cls_attributes={"generate_name": isin_generate_name})
-
-    isin_1_list = ["toothpaste", "coke_zero"]
-    isin_1_base_f = ft.Feature(es['log']['product_id'])
-    isin_1 = ft.Feature(isin_1_base_f, primitive=IsIn(list_of_outputs=isin_1_list))
-    isin_2_list = ["coke_zero"]
-    isin_2_base_f = ft.Feature(es['log']['session_id'])
-    isin_2 = ft.Feature(isin_2_base_f, primitive=IsIn(list_of_outputs=isin_2_list))
-    assert isin_1_base_f == isin_1.base_features[0]
-    assert isin_1_list == isin_1.primitive.kwargs['list_of_outputs']
-    assert isin_2_base_f == isin_2.base_features[0]
-    assert isin_2_list == isin_2.primitive.kwargs['list_of_outputs']
-
-
 def test_make_transform_multiple_output_features(pd_es):
     def test_time(x):
         times = pd.Series(x)
@@ -1171,7 +1108,7 @@ def test_time_since_primitive_matches_all_datetime_types(es):
         max_depth=1
     )
 
-    customers_datetime_vars = [id for id, t in es['customers'].variable_types.items() if issubclass(t, Datetime)]
+    customers_datetime_vars = [id for id, t in es['customers'].logical_types.items() if isinstance(t, Datetime)]
     expected_names = [f"TIME_SINCE({v})" for v in customers_datetime_vars]
 
     for name in expected_names:

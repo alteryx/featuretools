@@ -11,11 +11,6 @@ from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, DirectFeature
 from featuretools.utils import Trie
 from featuretools.utils.wrangle import _check_time_type, _check_timedelta
-from featuretools.variable_types import (
-    DatetimeTimeIndex,
-    NumericTimeIndex,
-    PandasTypes
-)
 
 logger = logging.getLogger('featuretools.computational_backend')
 
@@ -261,16 +256,18 @@ def _check_cutoff_time_type(cutoff_time, es_time_type):
     if isinstance(cutoff_time, tuple):
         cutoff_time_value = cutoff_time[0]
         time_type = _check_time_type(cutoff_time_value)
-        is_numeric = time_type == NumericTimeIndex
-        is_datetime = time_type == DatetimeTimeIndex
+        is_numeric = time_type == 'numeric_time_index'
+        is_datetime = time_type == 'datetime_time_index'
     else:
+        raise NotImplementedError()
         cutoff_time_dtype = cutoff_time['time'].dtype.name
+        # TODO: refactor for woodwork columns, maybe use ww is_datetime and is_numeric?
         is_numeric = cutoff_time_dtype in PandasTypes._pandas_numerics
         is_datetime = cutoff_time_dtype in PandasTypes._pandas_datetimes
 
-    if es_time_type == NumericTimeIndex and not is_numeric:
+    if es_time_type == "numeric_time_index" and not is_numeric:
         raise TypeError("cutoff_time times must be numeric: try casting "
                         "via pd.to_numeric()")
-    if es_time_type == DatetimeTimeIndex and not is_datetime:
+    if es_time_type == "datetime_time_index" and not is_datetime:
         raise TypeError("cutoff_time times must be datetime type: try casting "
                         "via pd.to_datetime()")

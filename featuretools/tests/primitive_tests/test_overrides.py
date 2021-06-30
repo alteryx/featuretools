@@ -33,8 +33,8 @@ from featuretools.tests.testing_utils import to_pandas
 
 
 def test_overrides(es):
-    value = ft.Feature(es['log']['value'])
-    value2 = ft.Feature(es['log']['value_2'])
+    value = ft.Feature(es, 'log', 'value')
+    value2 = ft.Feature(es, 'log', 'value_2')
 
     feats = [AddNumeric, SubtractNumeric, MultiplyNumeric, DivideNumeric,
              ModuloNumeric, GreaterThan, LessThan, Equal, NotEqual,
@@ -76,7 +76,7 @@ def test_overrides(es):
 
 
 def test_override_boolean(es):
-    count = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
+    count = ft.Feature(es, 'log', 'id', parent_dataframe_name='sessions', primitive=Count)
     count_lo = ft.Feature(count, primitive=GreaterThanScalar(1))
     count_hi = ft.Feature(count, primitive=LessThanScalar(10))
 
@@ -97,7 +97,7 @@ def test_override_boolean(es):
 
 
 def test_scalar_overrides(es):
-    value = ft.Feature(es['log']['value'])
+    value = ft.Feature(es, 'log', 'value')
 
     feats = [
         AddNumericScalar, SubtractNumericScalar, MultiplyNumericScalar,
@@ -125,7 +125,7 @@ def test_scalar_overrides(es):
         o = overrides.pop(0)
         assert o.unique_name() == f.unique_name()
 
-    value2 = ft.Feature(es['log']['value_2'])
+    value2 = ft.Feature(es, 'log', 'value_2')
 
     reverse_feats = [
         AddNumericScalar, ScalarSubtractNumericFeature, MultiplyNumericScalar,
@@ -153,7 +153,7 @@ def test_scalar_overrides(es):
 
 
 def test_override_cmp_from_variable(es):
-    count_lo = ft.Feature(es['log']['value']) > 1
+    count_lo = ft.Feature(es, 'log', 'value') > 1
 
     to_test = [False, True, True]
 
@@ -168,8 +168,8 @@ def test_override_cmp_from_variable(es):
 
 
 def test_override_cmp(es):
-    count = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
-    _sum = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum)
+    count = ft.Feature(es, 'log', 'id', parent_dataframe_name='sessions', primitive=Count)
+    _sum = ft.Feature(es, 'log', 'value', parent_dataframe_name='sessions', primitive=Sum)
     gt_lo = count > 1
     gt_other = count > _sum
     ge_lo = count >= 1

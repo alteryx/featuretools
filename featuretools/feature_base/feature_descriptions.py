@@ -39,9 +39,9 @@ def generate_description(feature, feature_descriptions, primitive_templates):
 
     # Check if identity feature:
     if isinstance(feature, ft.IdentityFeature):
-        description = feature.variable.description
+        description = feature.column_schema.description
         if description is None:
-            description = 'the "{}"'.format(feature.variable.name)
+            description = 'the "{}"'.format(feature.column_name)
         return description
 
     # Handle direct features
@@ -90,15 +90,15 @@ def generate_description(feature, feature_descriptions, primitive_templates):
             groupby_description = groupby_description[4:]
         groupby = "for each {}".format(groupby_description)
 
-    # Generate aggregation entity phrase with use_previous
-    entity_description = ''
+    # Generate aggregation dataframe phrase with use_previous
+    dataframe_description = ''
     if isinstance(feature, ft.AggregationFeature):
         if feature.use_previous:
-            entity_description = "of the previous {} of ".format(
+            dataframe_description = "of the previous {} of ".format(
                 feature.use_previous.get_name().lower())
         else:
-            entity_description = "of all instances of "
-        entity_description += '"{}"'.format(feature.relationship_path[-1][1].child_dataframe.id)
+            dataframe_description = "of all instances of "
+        dataframe_description += '"{}"'.format(feature.relationship_path[-1][1].child_dataframe.ww.name)
 
     # Generate where phrase
     where = ''
@@ -109,7 +109,7 @@ def generate_description(feature, feature_descriptions, primitive_templates):
         where = 'where {} is {}'.format(where_col, feature.where.primitive.value)
 
     # Join all parts of template
-    description_template = [primitive_description, entity_description, where, groupby]
+    description_template = [primitive_description, dataframe_description, where, groupby]
     description = " ".join([phrase for phrase in description_template if phrase != ''])
 
     return description
@@ -117,14 +117,14 @@ def generate_description(feature, feature_descriptions, primitive_templates):
 
 def get_direct_description(feature):
     direct_description = ' the instance of "{}" associated with this ' \
-        'instance of "{}"'.format(feature.relationship_path[-1][1].parent_dataframe.id,
-                                  feature.entity_id)
+        'instance of "{}"'.format(feature.relationship_path[-1][1].parent_dataframe.ww.name,
+                                  feature.dataframe_name)
     base_features = feature.base_features
     # shortens stacked direct features to make it easier to understand
     while isinstance(base_features[0], ft.DirectFeature):
         base_feat = base_features[0]
         base_feat_description = ' the instance of "{}" associated ' \
-            'with'.format(base_feat.relationship_path[-1][1].parent_dataframe.id)
+            'with'.format(base_feat.relationship_path[-1][1].parent_dataframe.ww.name)
         direct_description = base_feat_description + direct_description
         base_features = base_feat.base_features
     direct_description = ' for' + direct_description
@@ -135,13 +135,13 @@ def get_direct_description(feature):
 def get_aggregation_groupby(feature, feature_descriptions=None):
     if feature_descriptions is None:
         feature_descriptions = {}
-    groupby_name = feature.entity.index
-    groupby = ft.IdentityFeature(feature.entity[groupby_name])
+    groupby_name = feature.dataframe.ww.index
+    groupby = ft.IdentityFeature(feature.entityset, feature.dataframe_name, groupby_name)
     if groupby in feature_descriptions or groupby.unique_name() in feature_descriptions:
         return (feature_descriptions.get(groupby) or
                 feature_descriptions.get(groupby.unique_name()))
     else:
-        return '"{}" in "{}"'.format(groupby_name, feature.entity.id)
+        return '"{}" in "{}"'.format(groupby_name, feature.dataframe_name)
 
 
 def parse_json_metadata(file):

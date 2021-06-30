@@ -33,7 +33,6 @@ from featuretools.utils.gen_utils import (
     is_instance,
     make_tqdm_iterator
 )
-from featuretools.variable_types import NumericTimeIndex
 
 ks = import_or_none('databricks.koalas')
 
@@ -174,7 +173,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     else:
         pass_columns = []
         if cutoff_time is None:
-            if entityset.time_type == NumericTimeIndex:
+            if entityset.time_type == 'numeric_time_index':
                 cutoff_time = np.inf
             else:
                 cutoff_time = datetime.now()
@@ -339,7 +338,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
     feature_matrix = []
     if no_unapproximated_aggs and approximate is not None:
-        if entityset.time_type == NumericTimeIndex:
+        if entityset.time_type == 'numeric_time_index':
             group_time = np.inf
         else:
             group_time = datetime.now()
