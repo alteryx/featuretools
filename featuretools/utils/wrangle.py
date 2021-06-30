@@ -86,11 +86,11 @@ def _check_time_against_column(time, time_column):
     if time is None:
         return True
     elif isinstance(time, (int, float)):
-        return time_column.ww.column_schema.is_numeric
+        return time_column.ww.schema.is_numeric
     elif isinstance(time, (pd.Timestamp, datetime, pd.DateOffset)):
-        return time_column.ww.column_schema.is_datetime
+        return time_column.ww.schema.is_datetime
     elif isinstance(time, Timedelta):
-        if time_column.ww.column_schema.is_datetime:
+        if time_column.ww.schema.is_datetime:
             return True
         elif time.unit not in Timedelta._time_units:
             if (isinstance(time_column.ww.logical_type, ltypes.Ordinal) or
