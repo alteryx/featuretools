@@ -849,5 +849,5 @@ def test_update_dataframe_schema():
 
     assert not after.dtypes.equals(before.dtypes)
     es.update_dataframe(dataframe_name='data', df=after)
-    assert after.ww.schema == before.ww.schema
-    assert after.dtypes.equals(before.dtypes)
+    assert es['data'].ww.schema == before.ww.schema
+    assert es['data'].dtypes.equals(before.dtypes)
