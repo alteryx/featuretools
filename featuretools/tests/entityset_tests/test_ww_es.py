@@ -847,7 +847,7 @@ def test_update_dataframe_schema():
         'latlong': [[5, 6], '7, 8', [np.nan, np.nan]],
     }).astype({'boolean': int, 'latlong': str})
 
-    assert not after.dtypes.equals(before.dtypes)
+    assert not after.dtypes.equals(es['data'].dtypes)
     es.update_dataframe(dataframe_name='data', df=after)
     assert es['data'].ww.schema == before.ww.schema
     assert es['data'].dtypes.equals(before.dtypes)
