@@ -7,7 +7,6 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 import woodwork.logical_types as ltypes
 
 import featuretools as ft
@@ -422,8 +421,6 @@ def test_check_columns_and_dataframe(df):
 
 
 def test_make_index_any_location(df):
-    if ks and isinstance(df, ks.DataFrame):
-        pytest.xfail('Woodwork does not support make_index on Koalas DataFrames')
     logical_types = {'id': ltypes.Integer,
                      'category': ltypes.Categorical}
 
@@ -433,7 +430,7 @@ def test_make_index_any_location(df):
                      make_index=True,
                      logical_types=logical_types,
                      dataframe=df)
-    if dd and isinstance(df, dd.DataFrame):
+    if es.dataframe_type != Library.PANDAS.value:
         assert es.dataframe_dict['test_dataframe'].columns[-1] == 'id1'
     else:
         assert es.dataframe_dict['test_dataframe'].columns[0] == 'id1'
@@ -536,18 +533,21 @@ def df3(request):
 
 
 def test_unknown_index(df3):
-    error_message = 'Specified index column `id` not found in dataframe. To create a new index column, set make_index to True.'
+    warn_text = "index id not found in dataframe, creating new integer column"
     es = EntitySet(id='test')
-    with pytest.raises(ww.exceptions.ColumnNotPresentError, match=error_message):
+    with pytest.warns(UserWarning, match=warn_text):
         es.add_dataframe(dataframe_name='test_dataframe',
+                         dataframe=df3,
                          index='id',
-                         logical_types={'category': 'Categorical'}, dataframe=df3)
+                         logical_types={'category': 'Categorical'})
+    assert es['test_dataframe'].ww.index == 'id'
+    assert list(to_pandas(es['test_dataframe']['id'], sort_index=True)) == list(range(3))
 
 
 def test_doesnt_remake_index(df):
     logical_types = {'id': 'Integer', 'category': 'Categorical'}
-    error_text = "When setting make_index to True, the name specified for index cannot match an existing column name"
-    with pytest.raises(IndexError, match=error_text):
+    error_text = "Cannot make index: column with name id already present"
+    with pytest.raises(RuntimeError, match=error_text):
         es = EntitySet(id='test')
         es.add_dataframe(dataframe_name='test_dataframe',
                          index='id',
@@ -1009,12 +1009,11 @@ def test_concat_sort_index_without_time_index(pd_es):
 
 
 def test_concat_with_make_index(es):
-    if es.dataframe_type == Library.KOALAS.value:
-        pytest.xfail("Koalas cannot make index")
-
     df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
     if es.dataframe_type == Library.DASK.value:
         df = dd.from_pandas(df, npartitions=2)
+    elif es.dataframe_type == Library.KOALAS.value:
+        df = ks.from_pandas(df)
     logical_types = {'id': ltypes.Categorical,
                      'category': ltypes.Categorical}
     es.add_dataframe(dataframe=df,
