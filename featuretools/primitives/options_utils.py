@@ -198,8 +198,8 @@ def ignore_entity_for_primitive(options, entity, groupby=False):
                     return True
         if 'include_variables' in option and entity.id in option['include_variables']:
             return False
-        elif 'include_entities' in option and entity.id not in option['include_entities']:
-            return True
+        elif 'include_entities' in option:
+            return entity.id not in option['include_entities']
         elif entity.id in option['ignore_entities']:
             return True
         else:
