@@ -178,9 +178,8 @@ def variable_filter(f, options, groupby=False):
             if ignore_vars in options and base_f.entity.id in options[ignore_vars]:
                 if base_f.get_name() in options[ignore_vars][base_f.entity.id]:
                     return False  # ignore this feature
-        if include_entities in options and \
-                base_f.entity.id not in options[include_entities]:
-            return False  # not an included entity
+        if include_entities in options:
+            return base_f.entity.id in options[include_entities]
         elif ignore_entities in options and \
                 base_f.entity.id in options[ignore_entities]:
             return False  # ignore the entity
