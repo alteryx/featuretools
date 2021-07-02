@@ -1,6 +1,8 @@
 import warnings
 
 import numpy as np
+import re
+import pandas as pd
 
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
@@ -15,6 +17,7 @@ from featuretools.variable_types import (
     DateOfBirth,
     Datetime,
     DatetimeTimeIndex,
+    EmailAddress,
     LatLong,
     NaturalLanguage,
     Numeric,
@@ -748,3 +751,127 @@ class URLToProtocol(TransformPrimitive):
             p = r'^(https|http)(?:\:)'
             return x.str.extract(p, expand=False)
         return url_to_protocol
+
+
+class URLToTLD(TransformPrimitive):
+    """Determines the top level domain of a url.
+    Description:
+        Extract the top level domain of a url, using regex,
+        and a list of common top level domains. Returns nan if
+        the url is invalid or null.
+        Common top level domains were pulled from this list:
+        https://www.hayksaakian.com/most-popular-tlds/
+    Examples:
+        >>> url_to_tld = URLToTLD()
+        >>> urls = ['https://www.google.com', 'http://www.google.co.in',
+        ...         'www.facebook.com']
+        >>> url_to_tld(urls).to_list()
+        ['com', 'co.in', 'com']
+    """
+    name = "url_to_tld"
+    input_types = [URL]
+    return_type = Categorical
+    filename = 'common_tlds.txt'
+
+    def get_function(self):
+        with open(self.get_filepath(self.filename), 'r') as f:
+            tlds = f.read().splitlines()
+        # put longer TLDs first to avoid catching a small part of a longer TLD
+        tlds = sorted(tlds, key=len, reverse=True)
+        # escape periods
+        tlds = [re.escape(t) for t in tlds]
+        # build regex pattern
+        self.tlds_pattern = r'(?:\.({}))'.format('|'.join(tlds))
+
+        def url_to_domain(x):
+            p = r'^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/?\n]+)'
+            return x.str.extract(p, expand=False)
+
+        def url_to_tld(x):
+            domains = url_to_domain(x)
+            df = domains.str.extractall(self.tlds_pattern)
+            matches = df.groupby(level=0).last()[0]
+            return matches.reindex(x.index)
+        return url_to_tld
+
+class IsFreeEmailDomain(TransformPrimitive):
+    """Determines if an email address is from a free email domain.
+    Description:
+        EmailAddress input should be a string. Will return Nan
+        if an invalid email address is provided, or if the input is
+        not a string. The list of free email domains used in this primitive
+        was obtained from https://gist.github.com/tbrianjones/5992856.
+    Examples:
+        >>> is_free_email_domain = IsFreeEmailDomain()
+        >>> is_free_email_domain(['name@gmail.com', 'name@featuretools.com']).tolist()
+        [True, False]
+    """
+    name = "is_free_email_domain"
+    input_types = [EmailAddress]
+    return_type = Boolean
+
+    filename = "free_email_provider_domains.txt"
+
+    def get_function(self):
+        file_path = self.get_filepath(self.filename)
+
+        free_domains = pd.read_csv(file_path, header=None, names=['domain'])
+        free_domains['domain'] = free_domains.domain.str.strip()
+
+        def is_free_email_domain(emails):
+            # if the input is empty return an empty Series
+            if len(emails) == 0:
+                return pd.Series([])
+
+            emails_df = pd.DataFrame({'email': emails})
+
+            # if all emails are NaN expand won't propogate NaNs and will fail on indexing
+            if emails_df['email'].isnull().all():
+                emails_df['domain'] = np.nan
+            else:
+                # .str.strip() and .str.split() return NaN for NaN values and propogate NaNs into new columns
+                emails_df['domain'] = emails_df['email'].str.strip().str.split('@', expand=True)[1]
+
+            emails_df['is_free'] = emails_df['domain'].isin(free_domains['domain'])
+
+            # if there are any NaN domain values, change the series type to allow for
+            # both bools and NaN values and set is_free to NaN for the NaN domains
+            if emails_df['domain'].isnull().values.any():
+                emails_df['is_free'] = emails_df['is_free'].astype(np.object)
+                emails_df.loc[emails_df['domain'].isnull(), 'is_free'] = np.nan
+            return emails_df.is_free.values
+        return is_free_email_domain
+
+
+class EmailAddressToDomain(TransformPrimitive):
+    """Determines the domain of an email
+    Description:
+        EmailAddress input should be a string. Will return Nan
+        if an invalid email address is provided, or if the input is
+        not a string.
+    Examples:
+        >>> email_address_to_domain = EmailAddressToDomain()
+        >>> email_address_to_domain(['name@gmail.com', 'name@featuretools.com']).tolist()
+        [gmail.com, featuretools.com]
+    """
+    input_types = [EmailAddress]
+    return_type = Categorical
+
+    def get_function(self):
+        def is_free_email_domain(emails):
+            # if the input is empty return an empty Series
+            if len(emails) == 0:
+                return pd.Series([])
+
+            emails_df = pd.DataFrame({'email': emails})
+
+            # if all emails are NaN expand won't propogate NaNs and will fail on indexing
+            if emails_df['email'].isnull().all():
+                emails_df['domain'] = np.nan
+                emails_df['domain'] = emails_df['domain'].astype(object)
+            else:
+                # .str.strip() and .str.split() return NaN for NaN values and propogate NaNs into new columns
+                emails_df['domain'] = emails_df['email'].str.strip().str.split('@', expand=True)[1]
+            return emails_df.domain.values
+        return is_free_email_domain
+                
