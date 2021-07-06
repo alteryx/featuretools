@@ -1,12 +1,12 @@
 from datetime import datetime
 
-# import numpy as np
+
 import pandas as pd
 import pytest
 import woodwork as ww
 
 import featuretools as ft
-# from featuretools.entityset import Entity, EntitySet
+
 from featuretools.tests.testing_utils import (
     make_ecommerce_entityset,
     to_pandas
