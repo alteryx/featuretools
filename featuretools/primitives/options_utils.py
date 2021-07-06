@@ -159,7 +159,7 @@ def _init_option_dict(key, option_dict, es):
 
 
 def variable_filter(f, options, groupby=False):
-    if groupby and 'category' not in f.column_schema.semantic_tags:
+    if groupby and not f.column_schema.semantic_tags.intersection({'category', 'foreign_key'}):
         return False
     include_vars = 'include_groupby_variables' if groupby else 'include_variables'
     ignore_vars = 'ignore_groupby_variables' if groupby else 'ignore_variables'

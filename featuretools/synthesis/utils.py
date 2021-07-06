@@ -1,4 +1,3 @@
-from woodwork.logical_types import Boolean
 from featuretools.feature_base import (
     AggregationFeature,
     FeatureOutputSlice,

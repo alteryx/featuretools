@@ -1,9 +1,10 @@
 import logging
 import warnings
 from collections import defaultdict
+from woodwork import logical_types
 
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean
+from woodwork.logical_types import Boolean, Ordinal
 
 from featuretools import primitives
 from featuretools.entityset.relationship import RelationshipPath
@@ -285,7 +286,7 @@ class DeepFeatureSynthesis(object):
 
         if return_variable_types is None:
             return_variable_types = [ColumnSchema(semantic_tags=['numeric']),
-                                     ColumnSchema(semantic_tags=['categorical']),
+                                     ColumnSchema(semantic_tags=['category']),
                                      ColumnSchema(logical_type=Boolean)]
         elif return_variable_types == 'all':
             pass
@@ -311,8 +312,7 @@ class DeepFeatureSynthesis(object):
         if return_variable_types != 'all':
             new_features = [
                 f for f in new_features
-                if any(f.column_schema == schema for schema in return_variable_types)]
-
+                if any(_schemas_equal(f.column_schema, schema) for schema in return_variable_types)]
         new_features = list(filter(filt, new_features))
 
         new_features.sort(key=lambda f: f.get_depth())
@@ -389,7 +389,7 @@ class DeepFeatureSynthesis(object):
             new_max_depth = None
             if max_depth is not None:
                 new_max_depth = max_depth - 1
-            self._run_dfs(entity=self.es[b_dataframe_id],
+            self._run_dfs(dataframe=self.es[b_dataframe_id],
                           relationship_path=new_path,
                           all_features=all_features,
                           max_depth=new_max_depth)
@@ -537,19 +537,18 @@ class DeepFeatureSynthesis(object):
           dataframe (DataFrame): DataFrame to calculate features for.
         """
         features = [f for f in all_features[dataframe.ww.name].values()
-                    if getattr(f, "variable", None)]
+                    if getattr(f, "column_name", None)]
 
         for feat in features:
             # Get interesting_values from the EntitySet that was passed, which
             # is assumed to be the most recent version of the EntitySet.
             # Features can contain a stale EntitySet reference without
             # interesting_values
-            variable = self.es[feat.variable.entity.id][feat.variable.id]
-            if variable.interesting_values.empty:
-                continue
-
-            for val in variable.interesting_values:
-                self.where_clauses[entity.id].add(feat == val)
+            metadata = self.es[feat.dataframe_name].ww.columns[feat.column_name].metadata
+            interesting_values = metadata.get('interesting_values')
+            if interesting_values:
+                for val in interesting_values:
+                    self.where_clauses[dataframe.ww.name].add(feat == val)
 
     def _build_transform_features(self, all_features, dataframe, max_depth=0,
                                   require_direct_input=False):
@@ -562,6 +561,7 @@ class DeepFeatureSynthesis(object):
 
           dataframe (DataFrame): DataFrame to calculate features for.
         """
+
         new_max_depth = None
         if max_depth is not None:
             new_max_depth = max_depth - 1
@@ -616,13 +616,13 @@ class DeepFeatureSynthesis(object):
             # get columns to use as groupbys, use IDs as default unless other groupbys specified
             if any(['include_groupby_variables' in option and dataframe.ww.name in
                     option['include_groupby_variables'] for option in current_options]):
-                default_type = 'all'
+                column_schemas = 'all'
             else:
-                default_type = set([ColumnSchema(semantic_tags=['foreign_key'])])
+                column_schemas = [ColumnSchema(semantic_tags=['foreign_key'])]
             groupby_matches = self._features_by_type(all_features=all_features,
                                                      dataframe=dataframe,
                                                      max_depth=new_max_depth,
-                                                     variable_type=default_type)
+                                                     column_schemas=column_schemas)
             groupby_matches = filter_groupby_matches_by_options(groupby_matches, current_options)
 
             # If require_direct_input, require a DirectFeature in input or as a
@@ -742,7 +742,7 @@ class DeepFeatureSynthesis(object):
                         continue
 
                     new_f = AggregationFeature(matching_input,
-                                               parent_dataframe=parent_dataframe,
+                                               parent_dataframe_name=parent_dataframe.ww.name,
                                                relationship_path=relationship_path,
                                                where=where,
                                                primitive=agg_prim)
@@ -811,6 +811,7 @@ class DeepFeatureSynthesis(object):
         matching_inputs = match(input_types, features,
                                 commutative=primitive.commutative,
                                 require_direct_input=require_direct_input)
+
         if require_direct_input:
             # Don't create trans features of inputs which are all direct
             # features with the same relationship_path.

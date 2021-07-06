@@ -828,7 +828,7 @@ def bad_df(request):
 
 # Skip for Koalas, automatically converts non-str column names to str
 def test_nonstr_column_names(bad_df):
-    if dd and isinstance(bad_df, dd.DataFrame):
+    if isinstance(bad_df, dd.DataFrame):
         pytest.xfail('Dask DataFrames cannot handle integer column names')
 
     es = ft.EntitySet(id='Failure')

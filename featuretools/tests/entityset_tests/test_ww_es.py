@@ -477,7 +477,7 @@ def test_update_dataframe_already_sorted(es):
     if ks and isinstance(df, ks.DataFrame):
         df["id"] = updated_id.to_list()
         df = df.sort_index()
-    elif dd and isinstance(df, dd.DataFrame):
+    elif isinstance(df, dd.DataFrame):
         df["id"] = updated_id
 
     es.update_dataframe(dataframe_name='sessions', df=df.copy(), already_sorted=False)
@@ -640,7 +640,7 @@ def test_update_dataframe_different_woodwork_initialized(es):
     with pytest.warns(UserWarning, match=warning):
         es.update_dataframe('customers', df, already_sorted=True)
 
-    if dd and isinstance(df, dd.DataFrame):
+    if isinstance(df, dd.DataFrame):
         assert all(to_pandas(es['customers']['age']) == [1, 2, 3])
     else:
         assert all(to_pandas(es['customers']['age']) == [3, 1, 2])

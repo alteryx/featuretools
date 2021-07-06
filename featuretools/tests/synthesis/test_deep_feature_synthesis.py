@@ -174,7 +174,7 @@ def test_ignores_entities(es):
     features = dfs_obj.build_features()
     for f in features:
         deps = f.get_dependencies(deep=True)
-        entities = [d.entity.id for d in deps]
+        entities = [d.dataframe_name for d in deps]
         assert 'log' not in entities
 
 
@@ -189,9 +189,9 @@ def test_ignores_variables(es):
         deps = f.get_dependencies(deep=True)
         identities = [d for d in deps
                       if isinstance(d, IdentityFeature)]
-        variables = [d.variable.id for d in identities
-                     if d.entity.id == 'log']
-        assert 'value' not in variables
+        columns = [d.column_name for d in identities
+                     if d.dataframe_name == 'log']
+        assert 'value' not in columns
 
 
 def test_ignore_variables_input_type(es):
@@ -266,6 +266,7 @@ def test_handles_time_since_previous_entity_groupby(pd_es):
 
     features = dfs_obj.build_features()
     assert (feature_with_name(features, 'TIME_SINCE_PREVIOUS(datetime) by session_id'))
+
 
 # M TODO
 # def test_handles_cumsum_entity_groupby(pd_es):
