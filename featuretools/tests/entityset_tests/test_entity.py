@@ -14,10 +14,6 @@ from featuretools.tests.testing_utils import (
 from featuretools.utils.gen_utils import Library
 
 
-def test_is_index_column(es):
-    assert es['cohorts'].index == 'cohort'
-
-
 def test_reorders_index():
     es = ft.EntitySet('test')
     df = pd.DataFrame({'id': [1, 2, 3], 'other': [4, 5, 6]})
@@ -26,11 +22,6 @@ def test_reorders_index():
     assert es['test'].variables[0].id == 'id'
     assert es['test'].variables[0].id == es['test'].index
     assert [v.id for v in es['test'].variables] == list(es['test'].df.columns)
-
-
-def test_index_at_beginning(es):
-    for e in es.entity_dict.values():
-        assert e.index == e.variables[0].id
 
 
 def test_eq(es):
