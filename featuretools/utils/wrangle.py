@@ -100,20 +100,6 @@ def _check_time_against_column(time, time_column):
     return False
 
 
-# --> TODO possibly remove this or convert to Woodwork
-def _check_time_type(time):
-    '''
-    Checks if `time` is an instance of common int, float, or datetime types.
-    Returns "numeric", "datetime", or "unknown" based on results
-    '''
-    time_type = None
-    if isinstance(time, (datetime, np.datetime64)):
-        time_type = "datetime_time_index"
-    elif isinstance(time, (int, float)) or np.issubdtype(time, np.integer) or np.issubdtype(time, np.floating):
-        time_type = "numeric_time_index"
-    return time_type
-
-
 def _dataframes_equal(df1, df2):
     # ^ means XOR
     df1_empty = bool(len(df1))
