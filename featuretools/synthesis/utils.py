@@ -1,3 +1,4 @@
+from woodwork.logical_types import Boolean
 from featuretools.feature_base import (
     AggregationFeature,
     FeatureOutputSlice,
@@ -54,3 +55,14 @@ def get_unused_primitives(specified, used):
         return []
     specified = {primitive if isinstance(primitive, str) else primitive.name for primitive in specified}
     return sorted(list(specified.difference(used)))
+
+
+def _schemas_equal(feature_schema, primitive_schema):
+    """Checks if a primitive schema matches a feature schema"""
+    if primitive_schema.logical_type and \
+            primitive_schema.logical_type != feature_schema.logical_type:
+        return False
+    if primitive_schema.semantic_tags and \
+            not primitive_schema.semantic_tags.issubset(feature_schema.semantic_tags):
+        return False
+    return True

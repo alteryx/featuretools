@@ -204,12 +204,12 @@ def test_all_variables(pd_entities, relationships):
     assert len(feature_matrix.columns) == len(features)
 
 
-def test_features_only(entities, relationships):
-    features = dfs(entities=entities,
+def test_features_only(dataframes, relationships):
+    features = dfs(dataframes=dataframes,
                    relationships=relationships,
-                   target_dataframe="transactions",
+                   target_dataframe_name="transactions",
                    features_only=True)
-    assert len(features) > 0
+    assert len(features) == 11
 
 
 def test_accepts_relative_training_window(datetime_es):

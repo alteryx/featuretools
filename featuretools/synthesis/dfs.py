@@ -12,10 +12,10 @@ from featuretools.utils import entry_point
 
 
 @entry_point('featuretools_dfs')
-def dfs(entities=None,
+def dfs(dataframes=None,
         relationships=None,
         entityset=None,
-        target_dataframe=None,
+        target_dataframe_name=None,
         cutoff_time=None,
         instance_ids=None,
         agg_primitives=None,
@@ -43,22 +43,25 @@ def dfs(entities=None,
         return_variable_types=None,
         progress_callback=None,
         include_cutoff_time=True):
-    '''Calculates a feature matrix and features given a dictionary of entities
+    '''Calculates a feature matrix and features given a dictionary of dataframes
     and a list of relationships.
 
 
     Args:
-        entities (dict[str -> tuple(pd.DataFrame, str, str, dict[str -> Variable])]): dictionary of
-            entities. Entries take the format
-            {entity id -> (dataframe, id column, (time_column), (variable_types))}.
-            Note that time_column and variable_types are optional.
+        dataframes (dict[str -> tuple(DataFrame, str, str,
+                                      dict[str -> str/Woodwork.LogicalType],
+                                      dict[str->str/set],
+                                      boolean)]): dictionary of DataFrames.
+            Entries take the format dataframe name -> (dataframe, index column, time_index, logical_types, semantic_tags, make_index)}.
+            Note that only the dataframe is required. If a Woodwork DataFrame is supplied, any other parameters
+            will be ignored.
 
         relationships (list[(str, str, str, str)]): List of relationships
-            between entities. List items are a tuple with the format
-            (parent entity id, parent variable, child entity id, child variable).
+            between dataframes. List items are a tuple with the format
+            (parent dataframe name, parent column, child dataframe name, child column).
 
         entityset (EntitySet): An already initialized entityset. Required if
-            entities and relationships are not defined.
+            dataframes and relationships are not defined.
 
         target_dataframe (str): Entity id of entity on which to make predictions.
 
@@ -239,9 +242,9 @@ def dfs(entities=None,
                            features_only=True)
     '''
     if not isinstance(entityset, EntitySet):
-        entityset = EntitySet("dfs", entities, relationships)
+        entityset = EntitySet("dfs", dataframes, relationships)
 
-    dfs_object = DeepFeatureSynthesis(target_dataframe, entityset,
+    dfs_object = DeepFeatureSynthesis(target_dataframe_name, entityset,
                                       agg_primitives=agg_primitives,
                                       trans_primitives=trans_primitives,
                                       groupby_trans_primitives=groupby_trans_primitives,

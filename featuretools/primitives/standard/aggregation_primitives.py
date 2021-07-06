@@ -234,7 +234,7 @@ class NumTrue(AggregationPrimitive):
         3
     """
     name = "num_true"
-    input_types = [ColumnSchema(logical_type=Boolean), ColumnSchema(logical_type=BooleanNullable)]
+    input_types = [[ColumnSchema(logical_type=Boolean)], [ColumnSchema(logical_type=BooleanNullable)]]
     return_type = ColumnSchema(semantic_tags={'numeric'})
     default_value = 0
     stack_on = []
@@ -273,7 +273,7 @@ class PercentTrue(AggregationPrimitive):
         0.6
     """
     name = "percent_true"
-    input_types = [ColumnSchema(logical_type=Boolean), ColumnSchema(logical_type=BooleanNullable)]
+    input_types = [[ColumnSchema(logical_type=Boolean)], [ColumnSchema(logical_type=BooleanNullable)]]
     return_type = ColumnSchema(semantic_tags={'numeric'})
     stack_on = []
     stack_on_exclude = []
@@ -539,7 +539,7 @@ class Any(AggregationPrimitive):
         True
     """
     name = "any"
-    input_types = [ColumnSchema(logical_type=Boolean), ColumnSchema(logical_type=BooleanNullable)]
+    input_types = [[ColumnSchema(logical_type=Boolean)], [ColumnSchema(logical_type=BooleanNullable)]]
     return_type = ColumnSchema(logical_type=Boolean)
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK]
@@ -571,7 +571,7 @@ class All(AggregationPrimitive):
         False
     """
     name = "all"
-    input_types = [ColumnSchema(logical_type=Boolean), ColumnSchema(logical_type=BooleanNullable)]
+    input_types = [[ColumnSchema(logical_type=Boolean)], [ColumnSchema(logical_type=BooleanNullable)]]
     return_type = ColumnSchema(logical_type=Boolean)
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK]
@@ -710,7 +710,7 @@ class Trend(AggregationPrimitive):
         -0.053
     """
     name = "trend"
-    input_types = [ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
+    input_types = [[ColumnSchema(semantic_tags={'numeric'})], [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]]
     return_type = ColumnSchema(semantic_tags={'numeric'})
     description_template = "the linear trend of {} over time"
 

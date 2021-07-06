@@ -49,8 +49,8 @@ def generate_all_primitive_options(all_primitives,
                                    ignore_entities,
                                    ignore_variables,
                                    es):
-    entityset_dict = {entity.id: [variable.id for variable in entity.variables]
-                      for entity in es.entities}
+    entityset_dict = {dataframe.ww.name: [col for col in dataframe.columns]
+                      for dataframe in es.dataframes}
     primitive_options = _init_primitive_options(primitive_options, entityset_dict)
     global_ignore_entities = ignore_entities
     global_ignore_variables = ignore_variables.copy()
@@ -169,41 +169,41 @@ def variable_filter(f, options, groupby=False):
     dependencies = f.get_dependencies(deep=True) + [f]
     for base_f in dependencies:
         if isinstance(base_f, IdentityFeature):
-            if include_vars in options and base_f.entity.id in options[include_vars]:
-                if base_f.get_name() in options[include_vars][base_f.entity.id]:
+            if include_vars in options and base_f.dataframe_name in options[include_vars]:
+                if base_f.get_name() in options[include_vars][base_f.dataframe_name]:
                     continue  # this is a valid feature, go to next
                 else:
                     return False  # this is not an included feature
-            if ignore_vars in options and base_f.entity.id in options[ignore_vars]:
-                if base_f.get_name() in options[ignore_vars][base_f.entity.id]:
+            if ignore_vars in options and base_f.dataframe_name in options[ignore_vars]:
+                if base_f.get_name() in options[ignore_vars][base_f.dataframe_name]:
                     return False  # ignore this feature
         if include_entities in options and \
-                base_f.entity.id not in options[include_entities]:
+                base_f.dataframe_name not in options[include_entities]:
             return False  # not an included entity
         elif ignore_entities in options and \
-                base_f.entity.id in options[ignore_entities]:
+                base_f.dataframe_name in options[ignore_entities]:
             return False  # ignore the entity
     return True
 
 
-def ignore_entity_for_primitive(options, entity, groupby=False):
+def ignore_dataframe_for_primitive(options, dataframe, groupby=False):
     # This logic handles whether given options ignore an entity or not
-    def should_ignore_entity(option):
+    def should_ignore_dataframe(option):
         if groupby:
-            if 'include_groupby_variables' not in option or entity.id not in option['include_groupby_variables']:
-                if 'include_groupby_entities' in option and entity.id not in option['include_groupby_entities']:
+            if 'include_groupby_variables' not in option or dataframe.ww.name not in option['include_groupby_variables']:
+                if 'include_groupby_entities' in option and dataframe.ww.name not in option['include_groupby_entities']:
                     return True
-                elif 'ignore_groupby_entities' in option and entity.id in option['ignore_groupby_entities']:
+                elif 'ignore_groupby_entities' in option and dataframe.ww.name in option['ignore_groupby_entities']:
                     return True
-        if 'include_variables' in option and entity.id in option['include_variables']:
+        if 'include_variables' in option and dataframe.ww.name in option['include_variables']:
             return False
-        elif 'include_entities' in option and entity.id not in option['include_entities']:
+        elif 'include_entities' in option and dataframe.ww.name not in option['include_entities']:
             return True
-        elif entity.id in option['ignore_entities']:
+        elif dataframe.ww.name in option['ignore_entities']:
             return True
         else:
             return False
-    return any([should_ignore_entity(option) for option in options])
+    return any([should_ignore_dataframe(option) for option in options])
 
 
 def filter_groupby_matches_by_options(groupby_matches, options):
