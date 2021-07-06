@@ -1238,7 +1238,7 @@ def test_datetime64_conversion(datetime3):
     if ks and isinstance(df, ks.DataFrame):
         df['time'] = df['time'].astype(np.datetime64)
     else:
-        df["time"] = df["time"].astype("datetime64[ns, UTC]")
+        df["time"] = df["time"].dt.tz_localize("UTC")
 
     if not isinstance(df, pd.DataFrame):
         vtypes = {
