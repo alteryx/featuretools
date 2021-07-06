@@ -33,11 +33,6 @@ def test_index_at_beginning(es):
         assert e.index == e.variables[0].id
 
 
-def test_variable_ordering_matches_column_ordering(es):
-    for e in es.entity_dict.values():
-        assert [v.id for v in e.variables] == list(e.df.columns)
-
-
 def test_eq(es):
     other_es = make_ecommerce_entityset()
     latlong = es['log'].df['latlong'].copy()
