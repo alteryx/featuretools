@@ -14,16 +14,6 @@ from featuretools.tests.testing_utils import (
 from featuretools.utils.gen_utils import Library
 
 
-def test_reorders_index():
-    es = ft.EntitySet('test')
-    df = pd.DataFrame({'id': [1, 2, 3], 'other': [4, 5, 6]})
-    df.columns = ['other', 'id']
-    es.add_dataframe(dataframe_name='test', dataframe=df, index='id')
-    assert es['test'].variables[0].id == 'id'
-    assert es['test'].variables[0].id == es['test'].index
-    assert [v.id for v in es['test'].variables] == list(es['test'].df.columns)
-
-
 def test_eq(es):
     other_es = make_ecommerce_entityset()
     latlong = es['log'].df['latlong'].copy()
