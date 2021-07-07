@@ -10,6 +10,7 @@ from featuretools.primitives.base.transform_primitive_base import (
 from featuretools.utils import convert_time_units
 from featuretools.utils.entity_utils import replace_latlong_nan
 from featuretools.utils.gen_utils import Library
+from featuretools.utils.common_tld_utils import COMMON_TLDS
 from featuretools.variable_types import (
     URL,
     Boolean,
@@ -755,12 +756,14 @@ class URLToProtocol(TransformPrimitive):
 
 class URLToTLD(TransformPrimitive):
     """Determines the top level domain of a url.
+
     Description:
         Extract the top level domain of a url, using regex,
         and a list of common top level domains. Returns nan if
         the url is invalid or null.
         Common top level domains were pulled from this list:
         https://www.hayksaakian.com/most-popular-tlds/
+
     Examples:
         >>> url_to_tld = URLToTLD()
         >>> urls = ['https://www.google.com', 'http://www.google.co.in',
@@ -771,17 +774,9 @@ class URLToTLD(TransformPrimitive):
     name = "url_to_tld"
     input_types = [URL]
     return_type = Categorical
-    filename = 'common_tlds.txt'
 
     def get_function(self):
-        with open(self.get_filepath(self.filename), 'r') as f:
-            tlds = f.read().splitlines()
-        # put longer TLDs first to avoid catching a small part of a longer TLD
-        tlds = sorted(tlds, key=len, reverse=True)
-        # escape periods
-        tlds = [re.escape(t) for t in tlds]
-        # build regex pattern
-        self.tlds_pattern = r'(?:\.({}))'.format('|'.join(tlds))
+        self.tlds_pattern = r'(?:\.({}))'.format('|'.join(COMMON_TLDS))
 
         def url_to_domain(x):
             p = r'^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/?\n]+)'
@@ -796,11 +791,13 @@ class URLToTLD(TransformPrimitive):
 
 class IsFreeEmailDomain(TransformPrimitive):
     """Determines if an email address is from a free email domain.
+
     Description:
         EmailAddress input should be a string. Will return Nan
         if an invalid email address is provided, or if the input is
         not a string. The list of free email domains used in this primitive
         was obtained from https://gist.github.com/tbrianjones/5992856.
+
     Examples:
         >>> is_free_email_domain = IsFreeEmailDomain()
         >>> is_free_email_domain(['name@gmail.com', 'name@featuretools.com']).tolist()
@@ -843,12 +840,15 @@ class IsFreeEmailDomain(TransformPrimitive):
         return is_free_email_domain
 
 
+
 class EmailAddressToDomain(TransformPrimitive):
     """Determines the domain of an email
+
     Description:
         EmailAddress input should be a string. Will return Nan
         if an invalid email address is provided, or if the input is
         not a string.
+
     Examples:
         >>> email_address_to_domain = EmailAddressToDomain()
         >>> email_address_to_domain(['name@gmail.com', 'name@featuretools.com']).tolist()
