@@ -48,7 +48,7 @@ Breaking Changes
 * ``EntitySet.add_relationship`` has been updated to accept dataframe and column name values or a
   ``Relationship`` object. Adding a relationship from a ``Relationship`` object now requires passing
   the relationship as a keyword argument.
-* ``Entity.update_data`` has been removed. To update the dataframe, call ``EntitySet.update_dataframe`` and use the ``dataframe_id`` paramter.
+* ``Entity.update_data`` has been removed. To update the dataframe, call ``EntitySet.update_dataframe`` and use the ``dataframe_name`` paramter.
 * The data in an ``EntitySet`` is no longer stored in ``Entity`` objects. Instead, dataframes
   with Woodwork typing information are used. Accordingly, most language referring to “entities”
   will now refer to “dataframes”, references to “variables” will now refer to “columns”, and
@@ -58,18 +58,15 @@ Breaking Changes
 * ``EntitySet.entity_from_dataframe`` no longer exists. To add new tables to an entityset, use``EntitySet.add_dataframe``.
 * ``EntitySet.normalize_entity`` has been renamed to ``EntitySet.normalize_dataframe``
 * Instead of raising an error at ``EntitySet.add_relationship`` when the dtypes of parent and child columns
-  do not match, featuretools will now check whether the Woodwork logical type of the parent and child columns
-  match. If they do not match, there will now be a warning raised, and featuretools will attempt to update
+  do not match, Featuretools will now check whether the Woodwork logical type of the parent and child columns
+  match. If they do not match, there will now be a warning raised, and Featuretools will attempt to update
   the logical type of the child column to match the parent’s.
 * If no index is specified at ``EntitySet.add_dataframe``, the first column will only be used as index if
   Woodwork has not been initialized on the DataFrame. When adding a dataframe that already has Woodwork
   initialized, if there is no index set, an error will be raised.
-* Due to restrictions on Woodwork initialization, Koalas DataFrames can no longer use the make_index parameter.
 * Featuretools will no longer re-order columns in DataFrames so that the index column is the first column of the DataFrame. 
 * Type inference can now be performed on Dask and Koalas dataframes, though a warning will be issued 
   indicating that this may be computationally intensive.
-* If ``make_index`` is False, an index column will no longer be created even if one is specified.
-  Instead, an error will be raised.
 * EntitySet.time_type is no longer stored as Variable objects. Instead, Woodwork typing is used, and a
   numeric time type will be indicated by the ``'numeric'`` semantic tag string, and a datetime time type
   will be indicated by the ``Datetime`` logical type.
@@ -112,23 +109,23 @@ is optional.
 
     >>> new_relationship = Relationship(
     ...     entityset=es,
-    ...     parent_dataframe_id='customers',
-    ...     parent_column_id='id',
-    ...     child_dataframe_id='sessions',
-    ...     child_column_id='customer_id'
+    ...     parent_dataframe_name='customers',
+    ...     parent_column_name='id',
+    ...     child_dataframe_name='sessions',
+    ...     child_column_name='customer_id'
     ... )
 
 Relationships can now be added to EntitySets in one of two ways. The first approach is to pass in
-id values for the parent dataframe, parent column, child dataframe and child column. Specifying
+name values for the parent dataframe, parent column, child dataframe and child column. Specifying
 parameter names is optional with this approach.
 
 .. code-block:: python
 
     >>> es.add_relationship(
-    ...     parent_dataframe_id='customers',
-    ...     parent_column_id='id',
-    ...     child_dataframe_id='sessions',
-    ...     child_column_id='customer_id'
+    ...     parent_dataframe_name='customers',
+    ...     parent_column_name='id',
+    ...     child_dataframe_name='sessions',
+    ...     child_column_name='customer_id'
     ... )
 
 Relationships can also be added by passing in a previously created ``Relationship`` object. When using
@@ -140,11 +137,11 @@ this approach the ``relationship`` parameter name must be included.
 
 **Update DataFrame**
 
-To update the dataframe for a single entity, call ``EntitySet.update_dataframe`` and pass in the id of the entity for which dataframe should be updated.
+To update a dataframe in an EntitySet, call ``EntitySet.update_dataframe`` and pass in the name of the dataframe to update along with the new data.
 
 .. code-block:: python
 
-    >>> es.update_dataframe(entity_id='log', df=df)
+    >>> es.update_dataframe(dataframe_name='log', df=df)
 
 **List Logical Types and Semantic Tags**
 
