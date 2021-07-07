@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Add ``replace_inf_values`` utility function for replacing ``inf`` values in a feature matrix (:pr:`1505`)
-        * Add URLToProtocol and URLToDomain as transform primitives for URL variable type (:pr:`1508`)
+        * Add URLToProtocol, URLToDomain, URLToTLD, EmailAddressToDomain, IsFreeEmailDomain as transform primitives (:pr:`1508`)
     * Fixes
     * Changes
     * Documentation Changes
