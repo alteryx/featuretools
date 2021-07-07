@@ -313,6 +313,7 @@ class DeepFeatureSynthesis(object):
             new_features = [
                 f for f in new_features
                 if any(_schemas_equal(f.column_schema, schema) for schema in return_variable_types)]
+
         new_features = list(filter(filt, new_features))
 
         new_features.sort(key=lambda f: f.get_depth())

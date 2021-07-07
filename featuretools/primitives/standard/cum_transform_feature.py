@@ -50,7 +50,7 @@ class CumCount(TransformPrimitive):
     name = "cum_count"
     input_types = [[ColumnSchema(semantic_tags={'foreign_key'})],
                    [ColumnSchema(semantic_tags={'category'})]]
-    return_type = ColumnSchema(logical_type=ltypes.Integer)
+    return_type = ColumnSchema(logical_type=ltypes.Integer, semantic_tags={'numeric'})
     uses_full_entity = True
     description_template = "the cumulative count of {}"
 

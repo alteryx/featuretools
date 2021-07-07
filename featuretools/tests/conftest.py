@@ -495,11 +495,11 @@ def pd_transform_es():
 @pytest.fixture
 def dask_transform_es(pd_transform_es):
     es = ft.EntitySet(id=pd_transform_es.id)
-    for entity in pd_transform_es.entities:
-        es.add_dataframe(dataframe_name=entity.id,
-                         dataframe=dd.from_pandas(entity.df, npartitions=2),
-                         index=entity.index,
-                         logical_types=entity.variable_types)
+    for df in pd_transform_es.dataframes:
+        es.add_dataframe(dataframe_name=df.ww.name,
+                         dataframe=dd.from_pandas(df, npartitions=2),
+                         index=df.ww.index,
+                         logical_types=df.ww.logical_types)
     return es
 
 
@@ -507,9 +507,9 @@ def dask_transform_es(pd_transform_es):
 def koalas_transform_es(pd_transform_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     es = ft.EntitySet(id=pd_transform_es.id)
-    for entity in pd_transform_es.entities:
-        es.add_dataframe(dataframe_name=entity.id,
-                         dataframe=ks.from_pandas(entity.df),
-                         index=entity.index,
-                         logical_types=entity.variable_types)
+    for df in pd_transform_es.dataframes:
+        es.add_dataframe(dataframe_name=df.ww.name,
+                         dataframe=ks.from_pandas(df),
+                         index=df.ww.index,
+                         logical_types=df.ww.logical_types)
     return es
