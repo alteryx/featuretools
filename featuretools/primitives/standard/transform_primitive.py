@@ -1,16 +1,15 @@
 import warnings
 
 import numpy as np
-import re
 import pandas as pd
 
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
 )
 from featuretools.utils import convert_time_units
+from featuretools.utils.common_tld_utils import COMMON_TLDS
 from featuretools.utils.entity_utils import replace_latlong_nan
 from featuretools.utils.gen_utils import Library
-from featuretools.utils.common_tld_utils import COMMON_TLDS
 from featuretools.variable_types import (
     URL,
     Boolean,
@@ -789,6 +788,7 @@ class URLToTLD(TransformPrimitive):
             return matches.reindex(x.index)
         return url_to_tld
 
+
 class IsFreeEmailDomain(TransformPrimitive):
     """Determines if an email address is from a free email domain.
 
@@ -840,7 +840,6 @@ class IsFreeEmailDomain(TransformPrimitive):
         return is_free_email_domain
 
 
-
 class EmailAddressToDomain(TransformPrimitive):
     """Determines the domain of an email
 
@@ -874,4 +873,4 @@ class EmailAddressToDomain(TransformPrimitive):
                 emails_df['domain'] = emails_df['email'].str.strip().str.split('@', expand=True)[1]
             return emails_df.domain.values
         return is_free_email_domain
-                
+

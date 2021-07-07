@@ -7,11 +7,11 @@ import pytest
 from featuretools.primitives import (
     Age,
     EmailAddressToDomain,
+    IsFreeEmailDomain,
     TimeSince,
     URLToDomain,
     URLToProtocol,
     URLToTLD,
-    IsFreeEmailDomain,
     Week
 )
 
@@ -213,18 +213,18 @@ def test_url_to_protocol_nan():
 def test_url_to_tld_urls():
     url_to_tld = URLToTLD()
     urls = pd.Series(['https://play.google.com/store/apps/details?id=com.skgames.trafficracer%22',
-                        'http://mplay.google.co.in/sadfask/asdkfals?dk=10',
-                        'http://lplay.google.co.in/sadfask/asdkfals?dk=10',
-                        'http://play.google.co.in/sadfask/asdkfals?dk=10',
-                        'http://tplay.google.co.in/sadfask/asdkfals?dk=10',
-                        'http://www.google.co.in/sadfask/asdkfals?dk=10',
-                        'www.google.co.in/sadfask/asdkfals?dk=10',
-                        'http://user:pass@google.com/?a=b#asdd',
-                        'https://www.compzets.dev?asd=10',
-                        'www.compzets.com?asd=10',
-                        'https://www.compzets.net?asd=10',
-                        'http://www.featuretools.org',
-                        'featuretools.org'])
+                      'http://mplay.google.co.in/sadfask/asdkfals?dk=10',
+                      'http://lplay.google.co.in/sadfask/asdkfals?dk=10',
+                      'http://play.google.co.in/sadfask/asdkfals?dk=10',
+                      'http://tplay.google.co.in/sadfask/asdkfals?dk=10',
+                      'http://www.google.co.in/sadfask/asdkfals?dk=10',
+                      'www.google.co.in/sadfask/asdkfals?dk=10',
+                      'http://user:pass@google.com/?a=b#asdd',
+                      'https://www.compzets.dev?asd=10',
+                      'www.compzets.com?asd=10',
+                      'https://www.compzets.net?asd=10',
+                      'http://www.featuretools.org',
+                      'featuretools.org'])
     correct_urls = ['com',
                     'co.in',
                     'co.in',
@@ -254,6 +254,7 @@ def test_url_to_tld_long_url():
     correct_urls = ['com']
     np.testing.assert_array_equal(url_to_tld(urls), correct_urls)
 
+
 def test_url_to_tld_nan():
     url_to_tld = URLToTLD()
     urls = pd.Series(['www.featuretools.com', np.nan, 'featuretools', ''], dtype='object')
@@ -263,11 +264,11 @@ def test_url_to_tld_nan():
 
 
 def test_is_free_email_domain_valid_addresses():
-        is_free_email_domain = IsFreeEmailDomain()
-        array = pd.Series(['test@hotmail.com', 'name@featuretools.com', 'nobody@yahoo.com', 'free@gmail.com'])
-        answers = pd.Series(is_free_email_domain(array))
-        correct_answers = pd.Series([True, False, True, True])
-        pd.testing.assert_series_equal(answers, correct_answers)
+    is_free_email_domain = IsFreeEmailDomain()
+    array = pd.Series(['test@hotmail.com', 'name@featuretools.com', 'nobody@yahoo.com', 'free@gmail.com'])
+    answers = pd.Series(is_free_email_domain(array))
+    correct_answers = pd.Series([True, False, True, True])
+    pd.testing.assert_series_equal(answers, correct_answers)
 
 
 def test_is_free_email_domain_valid_addresses_whitespace():
