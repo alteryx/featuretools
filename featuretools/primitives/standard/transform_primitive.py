@@ -873,4 +873,3 @@ class EmailAddressToDomain(TransformPrimitive):
                 emails_df['domain'] = emails_df['email'].str.strip().str.split('@', expand=True)[1]
             return emails_df.domain.values
         return is_free_email_domain
-
