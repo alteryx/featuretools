@@ -57,7 +57,7 @@ def get_unused_primitives(specified, used):
 
 
 def _schemas_equal(feature_schema, primitive_schema):
-    """Checks if a primitive schema matches a feature schema"""
+    """Checks if a feature schema matches a primitive schema"""
     if primitive_schema.logical_type and \
             primitive_schema.logical_type != feature_schema.logical_type:
         return False

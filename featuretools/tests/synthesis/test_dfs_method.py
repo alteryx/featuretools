@@ -111,7 +111,7 @@ def test_accepts_cutoff_time_compose(dataframes, relationships):
         window_size=1
     )
 
-    transactions_df = to_pandas(entities['transactions'][0])
+    transactions_df = to_pandas(dataframes['transactions'][0])
 
     labels = lm.search(
         transactions_df,
@@ -477,7 +477,7 @@ def test_calls_progress_callback_cluster(pd_dataframes, relationships):
 
     with cluster() as (scheduler, [a, b]):
         dkwargs = {'cluster': scheduler['address']}
-        feature_matrix, features = dfs(entities=pd_entities,
+        feature_matrix, features = dfs(entities=pd_dataframes,
                                        relationships=relationships,
                                        target_dataframe_name="transactions",
                                        progress_callback=mock_progress_callback,
@@ -490,14 +490,14 @@ def test_calls_progress_callback_cluster(pd_dataframes, relationships):
 def test_dask_kwargs(pd_dataframes, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
                                     "time": [10, 12, 15]})
-    feature_matrix, features = dfs(entities=pd_entities,
+    feature_matrix, features = dfs(entities=pd_dataframes,
                                    relationships=relationships,
                                    target_dataframe_name="transactions",
                                    cutoff_time=cutoff_times_df)
 
     with cluster() as (scheduler, [a, b]):
         dask_kwargs = {'cluster': scheduler['address']}
-        feature_matrix_2, features_2 = dfs(entities=pd_entities,
+        feature_matrix_2, features_2 = dfs(entities=pd_dataframes,
                                            relationships=relationships,
                                            target_dataframe_name="transactions",
                                            cutoff_time=cutoff_times_df,

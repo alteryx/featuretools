@@ -1,8 +1,7 @@
 from pytest import warns
 from woodwork import list_logical_types
 
-from featuretools.variable_types import (
-    # graph_variable_types,
+from featuretools.variable_types import (  # graph_variable_types,
     list_variable_types
 )
 

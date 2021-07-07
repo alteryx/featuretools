@@ -1,5 +1,5 @@
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Double, Integer, Ordinal
+from woodwork.logical_types import Double, Integer
 
 from featuretools.synthesis.utils import _schemas_equal
 

@@ -1,4 +1,5 @@
 import copy
+from featuretools.tests.conftest import dataframes
 
 import pandas as pd
 import pytest
@@ -41,6 +42,7 @@ from featuretools.primitives import (
     Year
 )
 from featuretools.synthesis import DeepFeatureSynthesis
+from featuretools.synthesis.utils import _schemas_equal
 from featuretools.tests.testing_utils import (
     feature_with_name,
     make_ecommerce_entityset
@@ -190,7 +192,7 @@ def test_ignores_variables(es):
         identities = [d for d in deps
                       if isinstance(d, IdentityFeature)]
         columns = [d.column_name for d in identities
-                     if d.dataframe_name == 'log']
+                   if d.dataframe_name == 'log']
         assert 'value' not in columns
 
 
@@ -491,9 +493,9 @@ def test_drop_exact(es):
 
 
 def test_seed_features(es):
-    seed_feature_sessions = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count) > 2
-    seed_feature_log = ft.Feature(es['log']['comments'], primitive=NumCharacters)
-    session_agg = ft.Feature(seed_feature_log, parent_entity=es['sessions'], primitive=Mean)
+    seed_feature_sessions = ft.Feature(es, 'log', 'id', parent_dataframe_name='sessions', primitive=Count) > 2
+    seed_feature_log = ft.Feature(es, 'log', 'comments', primitive=NumCharacters)
+    session_agg = ft.Feature(seed_feature_log, parent_dataframe_name='sessions', primitive=Mean)
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='sessions',
                                    entityset=es,
                                    agg_primitives=[Mean],
@@ -512,7 +514,7 @@ def test_does_not_make_agg_of_direct_of_target_dataframe(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Dask EntitySets do not support the Last primitive")
 
-    count_sessions = ft.Feature(es['sessions']['id'], parent_entity=es['customers'], primitive=Count)
+    count_sessions = ft.Feature(es, 'sessions', 'id', parent_dataframe_name='customers', primitive=Count)
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='customers',
                                    entityset=es,
                                    agg_primitives=[Last],
@@ -531,14 +533,14 @@ def test_dfs_builds_on_seed_features_more_than_max_depth(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Dask EntitySets do not support the Last and Mode primitives")
 
-    seed_feature_sessions = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
-    seed_feature_log = ft.Feature(es['log']['datetime'], primitive=Hour)
-    session_agg = ft.Feature(seed_feature_log, parent_entity=es['sessions'], primitive=Last)
+    seed_feature_sessions = ft.Feature(es, 'log', 'id', parent_dataframe_name='sessions', primitive=Count)
+    seed_feature_log = ft.Feature(es, 'log', 'datetime', primitive=Hour)
+    session_agg = ft.Feature(seed_feature_log, parent_dataframe_name='sessions', primitive=Last)
 
     # Depth of this feat is 2 relative to session_agg, the seed feature,
     # which is greater than max_depth so it shouldn't be built
-    session_agg_trans = DirectFeature(ft.Feature(session_agg, parent_entity=es['customers'], primitive=Mode),
-                                      es['sessions'])
+    session_agg_trans = DirectFeature(ft.Feature(session_agg, parent_dataframe_name='customers', primitive=Mode),
+                                      'sessions')
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='sessions',
                                    entityset=es,
                                    agg_primitives=[Last, Count],
@@ -555,8 +557,8 @@ def test_dfs_builds_on_seed_features_more_than_max_depth(es):
 
 
 def test_dfs_includes_seed_features_greater_than_max_depth(es):
-    session_agg = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum)
-    customer_agg = ft.Feature(session_agg, parent_entity=es["customers"], primitive=Mean)
+    session_agg = ft.Feature(es, 'log', 'value', parent_dataframe_name='sessions', primitive=Sum)
+    customer_agg = ft.Feature(session_agg, parent_dataframe_name='customers', primitive=Mean)
     assert customer_agg.get_depth() == 2
 
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='customers',
@@ -586,8 +588,8 @@ def test_allowed_paths(es):
     features_unconstrained = dfs_unconstrained.build_features()
 
     unconstrained_names = [f.get_name() for f in features_unconstrained]
-    customers_session_feat = ft.Feature(es['sessions']['device_type'], parent_entity=es['customers'], primitive=Last)
-    customers_session_log_feat = ft.Feature(es['log']['value'], parent_entity=es['customers'], primitive=Last)
+    customers_session_feat = ft.Feature(es, 'sessions', 'device_type', parent_dataframe_name='customers', primitive=Last)
+    customers_session_log_feat = ft.Feature(es, 'log', 'value', parent_dataframe_name='customers', primitive=Last)
     assert customers_session_feat.get_name() in unconstrained_names
     assert customers_session_log_feat.get_name() in unconstrained_names
 
@@ -621,7 +623,7 @@ def test_max_features(es):
 
 
 def test_where_primitives(es):
-    es['sessions']['device_type'].interesting_values = [0]
+    es.add_interesting_values(dataframe_name='sessions', values={'device_type': [0]})
     kwargs = dict(
         target_dataframe_name='customers',
         entityset=es,
@@ -660,8 +662,8 @@ def test_stacking_where_primitives(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Dask and Koalas EntitySets do not support the Last primitive")
     es = copy.deepcopy(es)
-    es['sessions']['device_type'].interesting_values = [0]
-    es['log']['product_id'].interesting_values = ["coke_zero"]
+    es.add_interesting_values(dataframe_name='sessions', values={'device_type': [0]})
+    es.add_interesting_values(dataframe_name='log', values={'product_id': ['coke_zero']})
     kwargs = dict(
         target_dataframe_name='customers',
         entityset=es,
@@ -711,7 +713,7 @@ def test_stacking_where_primitives(es):
 
 
 def test_where_different_base_feats(es):
-    es['sessions']['device_type'].interesting_values = [0]
+    es.add_interesting_values(dataframe_name='sessions', values={'device_type': [0]})
 
     kwargs = dict(
         target_dataframe_name='customers',
@@ -776,7 +778,8 @@ def test_transform_consistency(transform_es):
     # Generate features
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='first',
                                    entityset=transform_es,
-                                   trans_primitives=['and', 'add_numeric', 'or'])
+                                   trans_primitives=['and', 'add_numeric', 'or'],
+                                   max_depth=1)
     feature_defs = dfs_obj.build_features()
 
     # Check for correct ordering of features
@@ -785,6 +788,7 @@ def test_transform_consistency(transform_es):
     assert feature_with_name(feature_defs, 'b1')
     assert feature_with_name(feature_defs, 'b12')
     assert feature_with_name(feature_defs, 'P')
+
     assert feature_with_name(feature_defs, 'AND(b, b1)')
     assert not feature_with_name(feature_defs, 'AND(b1, b)')  # make sure it doesn't exist the other way
     assert feature_with_name(feature_defs, 'a + P')
@@ -807,7 +811,7 @@ def test_transform_no_stack_agg(es):
     assert not feature_with_name(feature_defs, 'id != N_MOST_COMMON(sessions.device_type)')
 
 
-def test_intialized_trans_prim(es):
+def test_initialized_trans_prim(es):
     prim = IsIn(list_of_outputs=['coke zero'])
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='log',
                                    entityset=es,
@@ -815,6 +819,7 @@ def test_intialized_trans_prim(es):
                                    trans_primitives=[prim])
 
     features = dfs_obj.build_features()
+
     assert (feature_with_name(features, "product_id.isin(['coke zero'])"))
 
 
@@ -849,26 +854,26 @@ def test_return_variable_types(es):
     f3 = dfs_obj.build_features(return_variable_types="all")
     f4 = dfs_obj.build_features(return_variable_types=[datetime])
 
-    f1_types = set([f.variable_type for f in f1])
-    f2_types = set([f.variable_type for f in f2])
-    f3_types = set([f.variable_type for f in f3])
-    f4_types = set([f.variable_type for f in f4])
+    f1_types = [f.column_schema for f in f1]
+    f2_types = [f.column_schema for f in f2]
+    f3_types = [f.column_schema for f in f3]
+    f4_types = [f.column_schema for f in f4]
 
-    assert(discrete in f1_types)
-    assert(numeric in f1_types)
-    assert(datetime not in f2_types)
+    assert any([_schemas_equal(schema, discrete) for schema in f1_types])
+    assert any([_schemas_equal(schema, numeric) for schema in f1_types])
+    assert not any([_schemas_equal(schema, datetime) for schema in f1_types])
 
-    assert(discrete in f2_types)
-    assert(numeric not in f2_types)
-    assert(datetime not in f2_types)
+    assert any([_schemas_equal(schema, discrete) for schema in f2_types])
+    assert not any([_schemas_equal(schema, numeric) for schema in f2_types])
+    assert not any([_schemas_equal(schema, datetime) for schema in f2_types])
 
-    assert(discrete in f3_types)
-    assert(numeric in f3_types)
-    assert(datetime in f3_types)
+    assert any([_schemas_equal(schema, discrete) for schema in f3_types])
+    assert any([_schemas_equal(schema, numeric) for schema in f3_types])
+    assert any([_schemas_equal(schema, datetime) for schema in f3_types])
 
-    assert(discrete not in f4_types)
-    assert(numeric not in f4_types)
-    assert(datetime in f4_types)
+    assert not any([_schemas_equal(schema, discrete) for schema in f4_types])
+    assert not any([_schemas_equal(schema, numeric) for schema in f4_types])
+    assert any([_schemas_equal(schema, datetime) for schema in f4_types])
 
 
 def test_checks_primitives_correct_type(es):
@@ -927,7 +932,7 @@ def test_stacks_multioutput_features(es):
     class TestTime(TransformPrimitive):
         name = "test_time"
         input_types = [ColumnSchema(logical_type=Datetime)]
-        return_type = ColumnSchema(semantic_tabs={'numeric'})
+        return_type = ColumnSchema(semantic_tags={'numeric'})
         number_output_features = 6
 
         def get_function(self):
@@ -954,7 +959,7 @@ def test_seed_multi_output_feature_stacking(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Dask EntitySets do not support the NMostCommon and NumUnique primitives")
     threecommon = NMostCommon(3)
-    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
+    tc = ft.Feature(es, 'log', 'product_id', parent_dataframe_name="sessions", primitive=threecommon)
 
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='customers',
                                    entityset=es,
@@ -1006,10 +1011,10 @@ def test_makes_trans_of_multiple_direct_features(diamond_es):
     # Make trans of direct and non-direct
     assert feature_with_name(features, 'amount = stores.MEAN(transactions.amount)')
 
-    # Make trans of direct features on different entities
+    # Make trans of direct features on different dataframes
     assert feature_with_name(features, 'customers.MEAN(transactions.amount) = stores.square_ft')
 
-    # Make trans of direct features on same entity with different paths.
+    # Make trans of direct features on same dataframe with different paths.
     assert feature_with_name(features, 'customers.regions.name = stores.regions.name')
 
     # Don't make trans of direct features with same path.
@@ -1106,19 +1111,19 @@ def test_primitive_options(es):
     features = dfs_obj.build_features()
     for f in features:
         deps = f.get_dependencies(deep=True)
-        entities = [d.entity.id for d in deps]
+        df_names = [d.dataframe_name for d in deps]
         variables = [d for d in deps if isinstance(d, IdentityFeature)]
         if isinstance(f.primitive, Sum):
             for identity_base in variables:
-                if identity_base.entity.id == 'customers':
+                if identity_base.dataframe_name == 'customers':
                     assert identity_base.get_name() == 'age'
         if isinstance(f.primitive, Mean):
-            assert all([entity in ['customers'] for entity in entities])
+            assert all([df_name in ['customers'] for df_name in df_names])
         if isinstance(f.primitive, Mode):
-            assert 'sessions' not in entities
+            assert 'sessions' not in df_names
         if isinstance(f.primitive, NumUnique):
             for identity_base in variables:
-                assert not (identity_base.entity.id == 'customers' and
+                assert not (identity_base.dataframe_name == 'customers' and
                             identity_base.get_name() == 'engagement_level')
 
     options = {'month': {'ignore_variables': {'customers': ['date_of_birth']}},
@@ -1134,19 +1139,19 @@ def test_primitive_options(es):
     assert not any([isinstance(f, NumCharacters) for f in features])
     for f in features:
         deps = f.get_dependencies(deep=True)
-        entities = [d.entity.id for d in deps]
+        df_names = [d.dataframe_name for d in deps]
         variables = [d for d in deps if isinstance(d, IdentityFeature)]
         if isinstance(f.primitive, Month):
             for identity_base in variables:
-                assert not (identity_base.entity.id == 'customers' and
+                assert not (identity_base.dataframe_name == 'customers' and
                             identity_base.get_name() == 'date_of_birth')
         if isinstance(f.primitive, Day):
             for identity_base in variables:
-                if identity_base.entity.id == 'customers':
+                if identity_base.dataframe_name == 'customers':
                     assert identity_base.get_name() == 'signup_date' or \
                         identity_base.get_name() == 'upgrade_date'
         if isinstance(f.primitive, Year):
-            assert all([entity in ['customers'] for entity in entities])
+            assert all([df_name in ['customers'] for df_name in df_names])
 
 
 def test_primitive_options_with_globals(es):
@@ -1159,10 +1164,10 @@ def test_primitive_options_with_globals(es):
     features = dfs_obj.build_features()
     for f in features:
         deps = f.get_dependencies(deep=True)
-        entities = [d.entity.id for d in deps]
-        assert u'régions' not in entities
+        df_names = [d.dataframe_name for d in deps]
+        assert u'régions' not in df_names
         if isinstance(f.primitive, Mode):
-            assert 'sessions' not in entities
+            assert 'sessions' not in df_names
 
     # non-overlapping ignore_variables
     options = {'num_unique': {'ignore_variables': {'customers': ['engagement_level']}}}
@@ -1173,14 +1178,13 @@ def test_primitive_options_with_globals(es):
     features = dfs_obj.build_features()
     for f in features:
         deps = f.get_dependencies(deep=True)
-        entities = [d.entity.id for d in deps]
         variables = [d for d in deps if isinstance(d, IdentityFeature)]
         for identity_base in variables:
-            assert not (identity_base.entity.id == 'customers' and
+            assert not (identity_base.dataframe_name == 'customers' and
                         identity_base.get_name() == u'région_id')
         if isinstance(f.primitive, NumUnique):
             for identity_base in variables:
-                assert not (identity_base.entity.id == 'customers' and
+                assert not (identity_base.dataframe_name == 'customers' and
                             identity_base.get_name() == 'engagement_level')
 
     # Overlapping globals/options with ignore_entities
@@ -1202,24 +1206,24 @@ def test_primitive_options_with_globals(es):
         assert not isinstance(f.primitive, Month)
 
         deps = f.get_dependencies(deep=True)
-        entities = [d.entity.id for d in deps]
+        df_names = [d.dataframe_name for d in deps]
         variables = [d for d in deps if isinstance(d, IdentityFeature)]
         if isinstance(f.primitive, Mode):
-            assert [all([entity in ['sessions', 'customers'] for entity in entities])]
+            assert [all([df_name in ['sessions', 'customers'] for df_name in df_names])]
             for identity_base in variables:
-                assert not (identity_base.entity.id == 'customers' and
+                assert not (identity_base.dataframe_name == 'customers' and
                             (identity_base.get_name() == 'age' or
                              identity_base.get_name() == u'région_id'))
         elif isinstance(f.primitive, NumUnique):
-            assert [all([entity in ['sessions', 'customers'] for entity in entities])]
+            assert [all([df_name in ['sessions', 'customers'] for df_name in df_names])]
             for identity_base in variables:
-                if identity_base.entity.id == 'sessions':
+                if identity_base.dataframe_name == 'sessions':
                     assert identity_base.get_name() == 'device_type'
         # All other primitives ignore 'sessions' and 'age'
         else:
-            assert 'sessions' not in entities
+            assert 'sessions' not in df_names
             for identity_base in variables:
-                assert not (identity_base.entity.id == 'customers' and
+                assert not (identity_base.dataframe_name == 'customers' and
                             identity_base.get_name() == 'age')
 
 
@@ -1244,22 +1248,22 @@ def test_primitive_options_groupbys(pd_es):
     for f in features:
         if isinstance(f, ft.GroupByTransformFeature):
             deps = f.groupby.get_dependencies(deep=True)
-            entities = [d.entity.id for d in deps] + [f.groupby.entity.id]
+            df_names = [d.dataframe_name for d in deps] + [f.groupby.dataframe_name]
             variables = [d for d in deps if isinstance(d, IdentityFeature)]
             variables += [f.groupby] if isinstance(f.groupby, IdentityFeature) else []
         if isinstance(f.primitive, CumMean):
             for identity_groupby in variables:
-                assert not (identity_groupby.entity.id == 'customers' and
+                assert not (identity_groupby.dataframe_name == 'customers' and
                             identity_groupby.get_name() == u'région_id')
-                assert not (identity_groupby.entity.id == 'log' and
+                assert not (identity_groupby.dataframe_name == 'log' and
                             identity_groupby.get_name() == 'session_id')
         if isinstance(f.primitive, CumCount):
-            assert all([entity in ['log', 'customers'] for entity in entities])
+            assert all([entity in ['log', 'customers'] for entity in df_names])
         if isinstance(f.primitive, CumSum):
-            assert 'sessions' not in entities
+            assert 'sessions' not in df_names
         if isinstance(f.primitive, CumMin):
             for identity_groupby in variables:
-                if identity_groupby.entity.id == 'sessions':
+                if identity_groupby.dataframe_name == 'sessions':
                     assert identity_groupby.get_name() == 'customer_id' or\
                         identity_groupby.get_name() == 'device_type'
 
@@ -1301,10 +1305,10 @@ def test_primitive_options_multiple_inputs(es):
     features1 = dfs_obj1.build_features()
     for f in features1:
         deps = f.get_dependencies()
-        entities = [d.entity.id for d in deps]
+        df_names = [d.dataframe_name for d in deps]
         variables = [d.get_name() for d in deps]
         if f.primitive.name == 'trend':
-            assert all([entity in ['log'] for entity in entities])
+            assert all([df_name in ['log'] for df_name in df_names])
             assert 'datetime' in variables
             if len(variables) == 2:
                 assert 'value' != variables[0]
@@ -1359,9 +1363,9 @@ def test_primitive_options_class_names(es):
 
     for f in features[0]:
         deps = f.get_dependencies(deep=True)
-        entities = [d.entity.id for d in deps]
+        df_names = [d.dataframe_name for d in deps]
         if isinstance(f.primitive, Mean):
-            assert all(entity == 'customers' for entity in entities)
+            assert all(df_name == 'customers' for df_name in df_names)
 
     assert features[0] == features[1] == features[2] == features[3]
 
@@ -1386,20 +1390,20 @@ def test_primitive_options_instantiated_primitive(es):
     features = dfs_obj.build_features()
     for f in features:
         deps = f.get_dependencies(deep=True)
-        entities = [d.entity.id for d in deps]
+        df_names = [d.dataframe_name for d in deps]
         if f.primitive == skipna_mean:
-            assert all(entity == 'stores' for entity in entities)
+            assert all(df_name == 'stores' for df_name in df_names)
         elif isinstance(f.primitive, Mean):
-            assert 'stores' not in entities
+            assert 'stores' not in df_names
 
 
 def test_primitive_options_commutative(es):
     class AddThree(TransformPrimitive):
         name = 'add_three'
-        input_types = [ColumnSchema(semantic_tabs={'numeric'}),
-                       ColumnSchema(semantic_tabs={'numeric'}),
-                       ColumnSchema(semantic_tabs={'numeric'})]
-        return_type = ColumnSchema(semantic_tabs={'numeric'})
+        input_types = [ColumnSchema(semantic_tags={'numeric'}),
+                       ColumnSchema(semantic_tags={'numeric'}),
+                       ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
         commutative = True
         compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
@@ -1445,8 +1449,8 @@ def test_primitive_ordering():
     agg_prims = [NMostCommon(n=3), Sum, Mean, Mean(skipna=False), 'min', 'max']
     where_prims = ['count', Sum]
 
-    seed_num_chars = ft.Feature(es['customers']['favorite_quote'], primitive=NumCharacters)
-    seed_is_null = ft.Feature(es['customers']['age'], primitive=IsNull)
+    seed_num_chars = ft.Feature(es, 'customers', 'favorite_quote', primitive=NumCharacters)
+    seed_is_null = ft.Feature(es, 'customers', 'age', primitive=IsNull)
     seed_features = [seed_num_chars, seed_is_null]
 
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='customers',
@@ -1488,10 +1492,10 @@ def test_no_transform_stacking():
                         "A": [0, 1, 2, 3]})
     df2 = pd.DataFrame({'first_id': [0, 1, 1, 3], 'B': [99, 88, 77, 66]})
 
-    entities = {"first": (df1, 'id'),
+    dataframes = {"first": (df1, 'id'),
                 "second": (df2, 'index')}
     relationships = [("first", 'id', 'second', 'first_id')]
-    es = ft.EntitySet("data", entities, relationships)
+    es = ft.EntitySet("data", dataframes, relationships)
 
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='second',
                                    entityset=es,

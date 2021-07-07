@@ -1,10 +1,9 @@
 import logging
 import warnings
 from collections import defaultdict
-from woodwork import logical_types
 
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean, Ordinal
+from woodwork.logical_types import Boolean, BooleanNullable
 
 from featuretools import primitives
 from featuretools.entityset.relationship import RelationshipPath
@@ -287,7 +286,8 @@ class DeepFeatureSynthesis(object):
         if return_variable_types is None:
             return_variable_types = [ColumnSchema(semantic_tags=['numeric']),
                                      ColumnSchema(semantic_tags=['category']),
-                                     ColumnSchema(logical_type=Boolean)]
+                                     ColumnSchema(logical_type=Boolean),
+                                     ColumnSchema(logical_type=BooleanNullable)]
         elif return_variable_types == 'all':
             pass
         else:
@@ -307,7 +307,7 @@ class DeepFeatureSynthesis(object):
                 return False
 
             return True
-
+        breakpoint()
         # filter out features with undesired return types
         if return_variable_types != 'all':
             new_features = [
@@ -384,7 +384,7 @@ class DeepFeatureSynthesis(object):
                 continue
 
             new_path = relationship_path + sub_relationship_path
-            if self.allowed_paths and tuple(new_path.entities()) not in self.allowed_paths:
+            if self.allowed_paths and tuple(new_path.dataframes()) not in self.allowed_paths:
                 continue
 
             new_max_depth = None
@@ -589,10 +589,11 @@ class DeepFeatureSynthesis(object):
                                                         trans_prim,
                                                         current_options,
                                                         require_direct_input=require_direct_input)
-
+            
             for matching_input in matching_inputs:
                 if (all(bf.number_output_features == 1 for bf in matching_input) and
-                        check_transform_stacking(matching_input)):
+                        check_transform_stacking(matching_input) and
+                        not any('foreign_key' in bf.column_schema.semantic_tags for bf in matching_input)):
                     new_f = TransformFeature(matching_input,
                                              primitive=trans_prim)
                     features_to_add.append(new_f)
@@ -649,7 +650,8 @@ class DeepFeatureSynthesis(object):
 
     def _build_forward_features(self, all_features, relationship_path, max_depth=0):
         _, relationship = relationship_path[0]
-        child_dataframe_name = relationship.child_name
+
+        child_dataframe_name = relationship.child_dataframe.ww.name
         parent_dataframe = relationship.parent_dataframe
 
         features = self._features_by_type(
@@ -668,6 +670,7 @@ class DeepFeatureSynthesis(object):
                 for feat in deep_base_features:
                     if isinstance(feat, AggregationFeature) and feat.where is not None:
                         continue
+
             new_f = DirectFeature(f, child_dataframe_name, relationship=relationship)
 
             self._handle_new_feature(all_features=all_features,
