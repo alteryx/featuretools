@@ -275,6 +275,7 @@ def make_variable_types(with_integer_time_index=False):
         'priority_level': variable_types.Ordinal,
         'purchased': variable_types.Boolean,
         'url': variable_types.URL,
+        'email_address': variable_types.EmailAddress,
         'comments': variable_types.NaturalLanguage
     }
     if with_integer_time_index:
