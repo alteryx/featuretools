@@ -17,6 +17,7 @@ Future Release
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`frances-h`,  :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
+
 v0.25.0 Jun 11, 2021
 ====================
     * Enhancements
