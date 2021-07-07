@@ -851,7 +851,7 @@ class EmailAddressToDomain(TransformPrimitive):
     Examples:
         >>> email_address_to_domain = EmailAddressToDomain()
         >>> email_address_to_domain(['name@gmail.com', 'name@featuretools.com']).tolist()
-        [gmail.com, featuretools.com]
+        ['gmail.com', 'featuretools.com']
     """
     input_types = [EmailAddress]
     return_type = Categorical
