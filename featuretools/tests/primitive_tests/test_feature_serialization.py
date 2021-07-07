@@ -6,11 +6,15 @@ from pympler.asizeof import asizeof
 from smart_open import open
 
 import featuretools as ft
+from featuretools.entityset.serialize import \
+    SCHEMA_VERSION as ENTITYSET_SCHEMA_VERSION
 from featuretools.feature_base.features_deserializer import (
     FeaturesDeserializer
 )
-from featuretools.entityset.serialize import SCHEMA_VERSION as ENTITYSET_SCHEMA_VERSION
-from featuretools.feature_base.features_serializer import FeaturesSerializer, SCHEMA_VERSION
+from featuretools.feature_base.features_serializer import (
+    SCHEMA_VERSION,
+    FeaturesSerializer
+)
 from featuretools.primitives import (
     Count,
     CumSum,
