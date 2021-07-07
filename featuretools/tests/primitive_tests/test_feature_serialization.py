@@ -9,7 +9,8 @@ import featuretools as ft
 from featuretools.feature_base.features_deserializer import (
     FeaturesDeserializer
 )
-from featuretools.feature_base.features_serializer import FeaturesSerializer
+from featuretools.entityset.serialize import SCHEMA_VERSION as ENTITYSET_SCHEMA_VERSION
+from featuretools.feature_base.features_serializer import FeaturesSerializer, SCHEMA_VERSION
 from featuretools.primitives import (
     Count,
     CumSum,
@@ -38,7 +39,7 @@ from featuretools.variable_types import Numeric
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_feature_serialization_feature_schema_6.0.0_entityset_schema_5.1.0.json"
+TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}.json".format(SCHEMA_VERSION, ENTITYSET_SCHEMA_VERSION)
 S3_URL = "s3://featuretools-static/" + TEST_FILE
 URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
 TEST_CONFIG = "CheckConfigPassesOn"

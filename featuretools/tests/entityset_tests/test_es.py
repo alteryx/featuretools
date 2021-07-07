@@ -67,7 +67,8 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
         'priority_level': variable_types.Ordinal,
         'purchased': variable_types.Boolean,
         'comments': variable_types.NaturalLanguage,
-        'url': variable_types.URL
+        'url': variable_types.URL,
+        'email_address': variable_types.EmailAddress
     }
     assert set(log_variable_types) == set(log_2_df.columns)
     es.entity_from_dataframe(entity_id='log2',

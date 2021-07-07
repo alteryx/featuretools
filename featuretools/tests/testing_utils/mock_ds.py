@@ -201,6 +201,7 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
         ['www.featuretools.com', 'bit.ly', 'featuretools.com/demos/',
          'www.google.co.in/' 'http://lplay.google.co.in', ' ',
          'invalid_url', 'an', 'microsoft.com/search/'] + [np.nan] * 5,
+        'email_address': ['john.smith@example.com', np.nan, 'team@featuretools.com'] * 5 + [' prefix@space.com', 'suffix@space.com '],
         'comments': [coke_zero_review()] + ['I loved it'] * 2 +
         car_reviews() + toothpaste_reviews() +
         brown_bag_reviews() + [gummy_review()] +
