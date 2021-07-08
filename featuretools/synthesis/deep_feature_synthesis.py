@@ -307,7 +307,7 @@ class DeepFeatureSynthesis(object):
                 return False
 
             return True
-        breakpoint()
+
         # filter out features with undesired return types
         if return_variable_types != 'all':
             new_features = [
@@ -589,11 +589,14 @@ class DeepFeatureSynthesis(object):
                                                         trans_prim,
                                                         current_options,
                                                         require_direct_input=require_direct_input)
-            
+
             for matching_input in matching_inputs:
+                # Don't create transform features for foreign key columns unless any column schema is valid for input
+                if any('foreign_key' in bf.column_schema.semantic_tags for bf in matching_input):
+                    if not any(input_type == ColumnSchema() for input_type in input_types):
+                        continue
                 if (all(bf.number_output_features == 1 for bf in matching_input) and
-                        check_transform_stacking(matching_input) and
-                        not any('foreign_key' in bf.column_schema.semantic_tags for bf in matching_input)):
+                        check_transform_stacking(matching_input)):
                     new_f = TransformFeature(matching_input,
                                              primitive=trans_prim)
                     features_to_add.append(new_f)

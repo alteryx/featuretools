@@ -1,5 +1,4 @@
 import copy
-from featuretools.tests.conftest import dataframes
 
 import pandas as pd
 import pytest
@@ -1493,7 +1492,7 @@ def test_no_transform_stacking():
     df2 = pd.DataFrame({'first_id': [0, 1, 1, 3], 'B': [99, 88, 77, 66]})
 
     dataframes = {"first": (df1, 'id'),
-                "second": (df2, 'index')}
+                  "second": (df2, 'index')}
     relationships = [("first", 'id', 'second', 'first_id')]
     es = ft.EntitySet("data", dataframes, relationships)
 
