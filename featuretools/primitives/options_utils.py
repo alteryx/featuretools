@@ -49,9 +49,10 @@ def generate_all_primitive_options(all_primitives,
                                    ignore_entities,
                                    ignore_variables,
                                    es):
-    entityset_dict = {dataframe.ww.name: [col for col in dataframe.columns]
+    dataframe_dict = {dataframe.ww.name: [col for col in dataframe.columns]
                       for dataframe in es.dataframes}
-    primitive_options = _init_primitive_options(primitive_options, entityset_dict)
+
+    primitive_options = _init_primitive_options(primitive_options, dataframe_dict)
     global_ignore_entities = ignore_entities
     global_ignore_variables = ignore_variables.copy()
     # for now, only use primitive names as option keys

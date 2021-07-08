@@ -710,7 +710,7 @@ class Trend(AggregationPrimitive):
         -0.053
     """
     name = "trend"
-    input_types = [[ColumnSchema(semantic_tags={'numeric'})], [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]]
+    input_types = [ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
     return_type = ColumnSchema(semantic_tags={'numeric'})
     description_template = "the linear trend of {} over time"
 
