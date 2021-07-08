@@ -197,6 +197,11 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
         'value_many_nans': values_many_nans,
         'priority_level': [0] * 2 + [1] * 5 + [0] * 6 + [2] * 2 + [1] * 2,
         'purchased': [True] * 11 + [False] * 4 + [True, False],
+        'url': ['https://www.featuretools.com/'] * 2 + ['amazon.com'] * 2 +
+        ['www.featuretools.com', 'bit.ly', 'featuretools.com/demos/',
+         'www.google.co.in/' 'http://lplay.google.co.in', ' ',
+         'invalid_url', 'an', 'microsoft.com/search/'] + [np.nan] * 5,
+        'email_address': ['john.smith@example.com', np.nan, 'team@featuretools.com'] * 5 + [' prefix@space.com', 'suffix@space.com '],
         'comments': [coke_zero_review()] + ['I loved it'] * 2 +
         car_reviews() + toothpaste_reviews() +
         brown_bag_reviews() + [gummy_review()] +
@@ -269,6 +274,8 @@ def make_variable_types(with_integer_time_index=False):
         'value_many_nans': variable_types.Numeric,
         'priority_level': variable_types.Ordinal,
         'purchased': variable_types.Boolean,
+        'url': variable_types.URL,
+        'email_address': variable_types.EmailAddress,
         'comments': variable_types.NaturalLanguage
     }
     if with_integer_time_index:
