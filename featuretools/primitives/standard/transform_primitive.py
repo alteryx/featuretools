@@ -796,7 +796,7 @@ class IsFreeEmailDomain(TransformPrimitive):
         EmailAddress input should be a string. Will return Nan
         if an invalid email address is provided, or if the input is
         not a string. The list of free email domains used in this primitive
-        was obtained from https://gist.github.com/tbrianjones/5992856.
+        was obtained from https://github.com/willwhite/freemail/blob/master/data/free.txt.
 
     Examples:
         >>> is_free_email_domain = IsFreeEmailDomain()
