@@ -31,20 +31,20 @@ def test_relationship_path_name(es):
     assert RelationshipPath(mixed_path).name == 'sessions.log'
 
 
-def test_relationship_path_entities(es):
-    assert list(RelationshipPath([]).entities()) == []
+def test_relationship_path_dataframes(es):
+    assert list(RelationshipPath([]).dataframes()) == []
 
     log_to_sessions = Relationship(es, 'sessions', 'id', 'log', 'session_id')
     sessions_to_customers = Relationship(es, 'customers', 'id', 'sessions', 'customer_id')
 
     forward_path = [(True, log_to_sessions), (True, sessions_to_customers)]
-    assert list(RelationshipPath(forward_path).entities()) == ['log', 'sessions', 'customers']
+    assert list(RelationshipPath(forward_path).dataframes()) == ['log', 'sessions', 'customers']
 
     backward_path = [(False, sessions_to_customers), (False, log_to_sessions)]
-    assert list(RelationshipPath(backward_path).entities()) == ['customers', 'sessions', 'log']
+    assert list(RelationshipPath(backward_path).dataframes()) == ['customers', 'sessions', 'log']
 
     mixed_path = [(True, log_to_sessions), (False, log_to_sessions)]
-    assert list(RelationshipPath(mixed_path).entities()) == ['log', 'sessions', 'log']
+    assert list(RelationshipPath(mixed_path).dataframes()) == ['log', 'sessions', 'log']
 
 
 def test_names_when_multiple_relationships_between_entities(games_es):

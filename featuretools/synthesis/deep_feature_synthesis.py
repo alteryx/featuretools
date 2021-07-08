@@ -537,15 +537,26 @@ class DeepFeatureSynthesis(object):
                 has features as values with their ids as keys.
           dataframe (DataFrame): DataFrame to calculate features for.
         """
-        features = [f for f in all_features[dataframe.ww.name].values()
-                    if getattr(f, "column_name", None)]
+        def is_valid_feature(f):
+            if isinstance(f, IdentityFeature):
+                return True
+            if isinstance(f, DirectFeature) and getattr(f.base_features[0], "column_name", None):
+                return True
+            return False
 
+        features = [f for f in all_features[dataframe.ww.name].values() if is_valid_feature(f)]
         for feat in features:
             # Get interesting_values from the EntitySet that was passed, which
             # is assumed to be the most recent version of the EntitySet.
             # Features can contain a stale EntitySet reference without
             # interesting_values
-            metadata = self.es[feat.dataframe_name].ww.columns[feat.column_name].metadata
+            if isinstance(feat, DirectFeature):
+                df = feat.base_features[0].dataframe_name
+                col = feat.base_features[0].column_name
+            else:
+                df = feat.dataframe_name
+                col = feat.column_name
+            metadata = self.es[df].ww.columns[col].metadata
             interesting_values = metadata.get('interesting_values')
             if interesting_values:
                 for val in interesting_values:
@@ -714,6 +725,10 @@ class DeepFeatureSynthesis(object):
             wheres = list(self.where_clauses[child_dataframe.ww.name])
 
             for matching_input in matching_inputs:
+                # Don't create agg features for foreign key columns unless any column schema is valid for input
+                if any('foreign_key' in bf.column_schema.semantic_tags for bf in matching_input):
+                    if not any(input_type == ColumnSchema() for input_type in input_types):
+                        continue
                 if not check_stacking(agg_prim, matching_input):
                     continue
                 new_f = AggregationFeature(matching_input,
@@ -827,6 +842,7 @@ class DeepFeatureSynthesis(object):
         matching_inputs = filter_matches_by_options(matching_inputs,
                                                     primitive_options,
                                                     commutative=primitive.commutative)
+
         return matching_inputs
 
 
