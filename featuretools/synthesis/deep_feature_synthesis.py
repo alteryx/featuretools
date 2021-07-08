@@ -604,7 +604,7 @@ class DeepFeatureSynthesis(object):
             for matching_input in matching_inputs:
                 # Don't create transform features for foreign key columns unless any column schema is valid for input
                 if any('foreign_key' in bf.column_schema.semantic_tags for bf in matching_input):
-                    if not any(input_type == ColumnSchema() for input_type in input_types):
+                    if not any((input_type == ColumnSchema() or _schemas_equal(input_type, ColumnSchema(semantic_tags={'foreign_key'}))) for input_type in input_types):
                         continue
                 if (all(bf.number_output_features == 1 for bf in matching_input) and
                         check_transform_stacking(matching_input)):
@@ -645,6 +645,10 @@ class DeepFeatureSynthesis(object):
             # groupby, and don't create features of inputs/groupbys which are
             # all direct features with the same relationship path
             for matching_input in matching_inputs:
+                # Don't create groupby transform features for foreign key columns unless any column schema is valid for input
+                if any('foreign_key' in bf.column_schema.semantic_tags for bf in matching_input):
+                    if not any((input_type == ColumnSchema() or _schemas_equal(input_type, ColumnSchema(semantic_tags={'foreign_key'}))) for input_type in input_types):
+                        continue
                 if (all(bf.number_output_features == 1 for bf in matching_input) and
                         check_transform_stacking(matching_input)):
                     for groupby in groupby_matches:
@@ -725,9 +729,9 @@ class DeepFeatureSynthesis(object):
             wheres = list(self.where_clauses[child_dataframe.ww.name])
 
             for matching_input in matching_inputs:
-                # Don't create agg features for foreign key columns unless any column schema is valid for input
+                # Don't create groupby transform features for foreign key columns unless any column schema is valid for input
                 if any('foreign_key' in bf.column_schema.semantic_tags for bf in matching_input):
-                    if not any(input_type == ColumnSchema() for input_type in input_types):
+                    if not any((input_type == ColumnSchema() or _schemas_equal(input_type, ColumnSchema(semantic_tags={'foreign_key'}))) for input_type in input_types):
                         continue
                 if not check_stacking(agg_prim, matching_input):
                     continue

@@ -317,25 +317,25 @@ def test_makes_agg_features_of_trans_primitives(es):
     assert (feature_with_name(features, 'MEAN(log.NUM_CHARACTERS(comments))'))
 
 
-# def test_makes_agg_features_with_where(es):
-#     # TODO: Update to work with Dask and Koalas `es` fixture when issue #978 is closed
-#     if es.dataframe_type != Library.PANDAS.value:
-#         pytest.xfail("Dask EntitySets do not support add_interesting_values")
-#     es.add_interesting_values()
+def test_makes_agg_features_with_where(es):
+    # TODO: Update to work with Dask and Koalas `es` fixture when issue #978 is closed
+    if es.dataframe_type != Library.PANDAS.value:
+        pytest.xfail("Dask EntitySets do not support add_interesting_values")
+    es.add_interesting_values()
 
-#     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='sessions',
-#                                    entityset=es,
-#                                    agg_primitives=[Count],
-#                                    where_primitives=[Count],
-#                                    trans_primitives=[])
+    dfs_obj = DeepFeatureSynthesis(target_dataframe_name='sessions',
+                                   entityset=es,
+                                   agg_primitives=[Count],
+                                   where_primitives=[Count],
+                                   trans_primitives=[])
 
-#     features = dfs_obj.build_features()
-#     assert (feature_with_name(features,
-#                               'COUNT(log WHERE priority_level = 0)'))
+    features = dfs_obj.build_features()
+    assert (feature_with_name(features,
+                              'COUNT(log WHERE priority_level = 0)'))
 
-#     # make sure they are made using direct features too
-#     assert (feature_with_name(features,
-#                               'COUNT(log WHERE products.department = food)'))
+    # make sure they are made using direct features too
+    assert (feature_with_name(features,
+                              'COUNT(log WHERE products.department = food)'))
 
 
 def test_make_groupby_features(pd_es):
@@ -458,6 +458,7 @@ def test_drop_contains(es):
     features = dfs_obj.build_features()
     to_drop = features[0]
     partial_name = to_drop.get_name()[:5]
+
     dfs_drop = DeepFeatureSynthesis(target_dataframe_name='sessions',
                                     entityset=es,
                                     agg_primitives=[Sum],
@@ -832,7 +833,8 @@ def test_initialized_agg_prim(es):
                                    agg_primitives=[ThreeMost],
                                    trans_primitives=[])
     features = dfs_obj.build_features()
-    assert (feature_with_name(features, "N_MOST_COMMON(log.product_id)"))
+
+    assert (feature_with_name(features, "N_MOST_COMMON(log.subregioncode)"))
 
 
 def test_return_variable_types(es):

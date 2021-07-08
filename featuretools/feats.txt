@@ -1,0 +1,190 @@
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_drop_contains[pd_es] Built 12 features
+Built 5 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_drop_contains[dask_es] Built 12 features
+Built 5 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_drop_contains[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_drop_exact[pd_es] Built 12 features
+Built 11 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_drop_exact[dask_es] Built 12 features
+Built 11 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_drop_exact[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_seed_features[pd_es] Built 21 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_seed_features[dask_es] Built 21 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_seed_features[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_does_not_make_agg_of_direct_of_target_dataframe[pd_es] Built 58 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_does_not_make_agg_of_direct_of_target_dataframe[dask_es] XFAIL
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_does_not_make_agg_of_direct_of_target_dataframe[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_dfs_builds_on_seed_features_more_than_max_depth[pd_es] Built 20 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_dfs_builds_on_seed_features_more_than_max_depth[dask_es] XFAIL
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_dfs_builds_on_seed_features_more_than_max_depth[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_dfs_includes_seed_features_greater_than_max_depth[pd_es] Built 9 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_dfs_includes_seed_features_greater_than_max_depth[dask_es] Built 9 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_dfs_includes_seed_features_greater_than_max_depth[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_allowed_paths[pd_es] Built 55 features
+Built 8 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_allowed_paths[dask_es] XFAIL
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_allowed_paths[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_max_features[pd_es] Built 20 features
+Built 20 features
+Built 1 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_max_features[dask_es] Built 20 features
+Built 20 features
+Built 1 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_max_features[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_where_primitives[pd_es] Built 83 features
+Built 103 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_where_primitives[dask_es] Built 83 features
+Built 103 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_where_primitives[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_stacking_where_primitives[pd_es] Built 429 features
+Built 430 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_stacking_where_primitives[dask_es] XFAIL
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_stacking_where_primitives[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_where_different_base_feats[pd_es] Built 101 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_where_different_base_feats[dask_es] Built 95 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_where_different_base_feats[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_dfeats_where[pd_es] Built 53 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_dfeats_where[dask_es] XFAIL
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_dfeats_where[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_commutative[pd_es] Built 93 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_commutative[dask_es] Built 93 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_commutative[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_transform_consistency[pd_transform_es] Built 10 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_transform_consistency[dask_transform_es] Built 10 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_transform_consistency[koalas_transform_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_transform_no_stack_agg[pd_es] Built 740 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_transform_no_stack_agg[dask_es] XFAIL
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_transform_no_stack_agg[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_initialized_trans_prim[pd_es] Built 46 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_initialized_trans_prim[dask_es] Built 46 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_initialized_trans_prim[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_initialized_agg_prim[pd_es] Built 34 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_initialized_agg_prim[dask_es] XFAIL
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_initialized_agg_prim[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_return_variable_types[pd_es] Built 66 features
+Built 35 features
+Built 77 features
+Built 5 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_return_variable_types[dask_es] XFAIL
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_return_variable_types[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_checks_primitives_correct_type[pd_es] PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_checks_primitives_correct_type[dask_es] PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_checks_primitives_correct_type[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_makes_agg_features_along_multiple_paths[pd_diamond_es] Built 13 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_makes_agg_features_along_multiple_paths[dask_diamond_es] Built 13 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_makes_agg_features_along_multiple_paths[ks_diamond_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_makes_direct_features_through_multiple_relationships[pd_home_games_es] Built 14 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_makes_direct_features_through_multiple_relationships[dask_home_games_es] Built 14 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_makes_direct_features_through_multiple_relationships[ks_home_games_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_stacks_multioutput_features[pd_es] Built 482 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_stacks_multioutput_features[dask_es] XFAIL
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_stacks_multioutput_features[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_seed_multi_output_feature_stacking[pd_es] Built 61 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_seed_multi_output_feature_stacking[dask_es] XFAIL
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_seed_multi_output_feature_stacking[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_makes_direct_features_along_multiple_paths[pd_diamond_es] Built 12 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_makes_direct_features_along_multiple_paths[dask_diamond_es] Built 12 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_makes_direct_features_along_multiple_paths[ks_diamond_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_does_not_make_trans_of_single_direct_feature[pd_es] Built 15 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_does_not_make_trans_of_single_direct_feature[dask_es] Built 15 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_does_not_make_trans_of_single_direct_feature[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_makes_trans_of_multiple_direct_features[pd_diamond_es] Built 211 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_makes_trans_of_multiple_direct_features[dask_diamond_es] Built 211 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_makes_trans_of_multiple_direct_features[ks_diamond_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_makes_direct_of_agg_of_trans_on_target[pd_es] Built 49 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_makes_direct_of_agg_of_trans_on_target[dask_es] Built 49 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_makes_direct_of_agg_of_trans_on_target[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_errors[pd_es] PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_errors[dask_es] PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_errors[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options[pd_es] Built 89 features
+Built 26 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options[dask_es] Built 62 features
+Built 26 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_with_globals[pd_es] Built 96 features
+Built 298 features
+Built 50 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_with_globals[dask_es] Built 70 features
+Built 218 features
+Built 22 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_with_globals[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_groupbys Built 85 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_multiple_inputs[pd_es] Built 15 features
+Built 15 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_multiple_inputs[dask_es] XFAIL
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_multiple_inputs[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_class_names[pd_es] Built 2 features
+Built 2 features
+Built 2 features
+Built 2 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_class_names[dask_es] Built 2 features
+Built 2 features
+Built 2 features
+Built 2 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_class_names[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_instantiated_primitive[pd_es] Built 4 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_instantiated_primitive[dask_es] Built 4 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_instantiated_primitive[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_commutative[pd_es] Built 17 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_commutative[dask_es] Built 17 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_options_commutative[ks_es] SKIPPED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_primitive_ordering Built 1239 features
+Built 1239 features
+PASSED
+featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_no_transform_stacking Built 15 features
+PASSED
