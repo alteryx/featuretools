@@ -1,3 +1,0 @@
-featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_handles_diff_entity_groupby
-featuretools/tests/synthesis/test_deep_feature_synthesis.py::test_make_groupby_features
-test_deep_feature_synthesis.py::test_drop_contains
