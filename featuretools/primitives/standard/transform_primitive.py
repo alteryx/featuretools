@@ -857,7 +857,7 @@ class EmailAddressToDomain(TransformPrimitive):
     return_type = Categorical
 
     def get_function(self):
-        def is_free_email_domain(emails):
+        def email_to_domain(emails):
             # if the input is empty return an empty Series
             if len(emails) == 0:
                 return pd.Series([])
@@ -872,4 +872,4 @@ class EmailAddressToDomain(TransformPrimitive):
                 # .str.strip() and .str.split() return NaN for NaN values and propogate NaNs into new columns
                 emails_df['domain'] = emails_df['email'].str.strip().str.split('@', expand=True)[1]
             return emails_df.domain.values
-        return is_free_email_domain
+        return email_to_domain
