@@ -728,8 +728,8 @@ class DeepFeatureSynthesis(object):
             wheres = list(self.where_clauses[child_dataframe.ww.name])
 
             for matching_input in matching_inputs:
-                if (any(_schemas_equal(bf.column_schema, ColumnSchema(semantic_tags={'foreign_key', 'numeric'})) for bf in matching_input)
-                    and not any((input_type == ColumnSchema() or _schemas_equal(input_type, ColumnSchema(semantic_tags={'foreign_key'}))) for input_type in input_types)):
+                if (any(_schemas_equal(bf.column_schema, ColumnSchema(semantic_tags={'foreign_key', 'numeric'})) for bf in matching_input) and
+                        not any((input_type == ColumnSchema() or _schemas_equal(input_type, ColumnSchema(semantic_tags={'foreign_key'}))) for input_type in input_types)):
                     # Don't build agg features for numeric foreign key columns unless explicitly allowed
                     continue
                 if not check_stacking(agg_prim, matching_input):
