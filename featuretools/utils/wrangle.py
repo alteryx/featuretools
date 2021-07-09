@@ -103,7 +103,7 @@ def _check_time_against_column(time, time_column):
 def _check_time_type(time):
     '''
     Checks if `time` is an instance of common int, float, or datetime types.
-    Returns "numeric", "datetime", or "unknown" based on results
+    Returns "numeric" or Datetime based on results
     '''
     time_type = None
     if isinstance(time, (datetime, np.datetime64)):
