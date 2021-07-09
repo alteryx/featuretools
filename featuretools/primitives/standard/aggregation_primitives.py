@@ -234,7 +234,7 @@ class NumTrue(AggregationPrimitive):
         3
     """
     name = "num_true"
-    input_types = [[ColumnSchema(logical_type=Boolean)], [ColumnSchema(logical_type=BooleanNullable)]]
+    input_types = [ColumnSchema(logical_type=Boolean), ColumnSchema(logical_type=BooleanNullable)]
     return_type = ColumnSchema(semantic_tags={'numeric'})
     default_value = 0
     stack_on = []
@@ -539,7 +539,7 @@ class Any(AggregationPrimitive):
         True
     """
     name = "any"
-    input_types = [[ColumnSchema(logical_type=Boolean)], [ColumnSchema(logical_type=BooleanNullable)]]
+    input_types = [ColumnSchema(logical_type=Boolean), ColumnSchema(logical_type=BooleanNullable)]
     return_type = ColumnSchema(logical_type=Boolean)
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK]
@@ -571,7 +571,7 @@ class All(AggregationPrimitive):
         False
     """
     name = "all"
-    input_types = [[ColumnSchema(logical_type=Boolean)], [ColumnSchema(logical_type=BooleanNullable)]]
+    input_types = [ColumnSchema(logical_type=Boolean), ColumnSchema(logical_type=BooleanNullable)]
     return_type = ColumnSchema(logical_type=Boolean)
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK]

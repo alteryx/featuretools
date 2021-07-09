@@ -313,7 +313,6 @@ class DeepFeatureSynthesis(object):
             new_features = [
                 f for f in new_features
                 if any(_schemas_equal(f.column_schema, schema) for schema in return_variable_types)]
-
         new_features = list(filter(filt, new_features))
 
         new_features.sort(key=lambda f: f.get_depth())
@@ -322,7 +321,7 @@ class DeepFeatureSynthesis(object):
 
         if self.max_features > 0:
             new_features = new_features[:self.max_features]
-
+        print("\nBuilt {} features".format(len(new_features)))
         if verbose:
             print("Built {} features".format(len(new_features)))
             verbose = None
@@ -729,10 +728,10 @@ class DeepFeatureSynthesis(object):
             wheres = list(self.where_clauses[child_dataframe.ww.name])
 
             for matching_input in matching_inputs:
-                # Don't create groupby transform features for foreign key columns unless any column schema is valid for input
-                if any('foreign_key' in bf.column_schema.semantic_tags for bf in matching_input):
-                    if not any((input_type == ColumnSchema() or _schemas_equal(input_type, ColumnSchema(semantic_tags={'foreign_key'}))) for input_type in input_types):
-                        continue
+                if (any(_schemas_equal(bf.column_schema, ColumnSchema(semantic_tags={'foreign_key', 'numeric'})) for bf in matching_input)
+                    and not any((input_type == ColumnSchema() or _schemas_equal(input_type, ColumnSchema(semantic_tags={'foreign_key'}))) for input_type in input_types)):
+                    # Don't build agg features for numeric foreign key columns unless explicitly allowed
+                    continue
                 if not check_stacking(agg_prim, matching_input):
                     continue
                 new_f = AggregationFeature(matching_input,

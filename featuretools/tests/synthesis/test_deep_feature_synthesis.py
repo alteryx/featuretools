@@ -456,7 +456,7 @@ def test_drop_contains(es):
                                    seed_features=[],
                                    drop_contains=[])
     features = dfs_obj.build_features()
-    to_drop = features[0]
+    to_drop = features[2]
     partial_name = to_drop.get_name()[:5]
 
     dfs_drop = DeepFeatureSynthesis(target_dataframe_name='sessions',
@@ -479,7 +479,7 @@ def test_drop_exact(es):
                                    seed_features=[],
                                    drop_exact=[])
     features = dfs_obj.build_features()
-    to_drop = features[0]
+    to_drop = features[2]
     name = to_drop.get_name()
     dfs_drop = DeepFeatureSynthesis(target_dataframe_name='sessions',
                                     entityset=es,
