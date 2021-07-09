@@ -321,7 +321,7 @@ class DeepFeatureSynthesis(object):
 
         if self.max_features > 0:
             new_features = new_features[:self.max_features]
-        print("\nBuilt {} features".format(len(new_features)))
+
         if verbose:
             print("Built {} features".format(len(new_features)))
             verbose = None
