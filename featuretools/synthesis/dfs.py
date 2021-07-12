@@ -97,7 +97,7 @@ def dfs(dataframes=None,
 
         max_depth (int) : Maximum allowed depth of features.
 
-        ignore_dataframes (list[str], optional): List of entities to
+        ignore_dataframes (list[str], optional): List of dataframes to
             blacklist when creating features.
 
         ignore_columns (dict[str -> list[str]], optional): List of specific
@@ -109,11 +109,11 @@ def dfs(dataframes=None,
             with multiple inputs. Each option ``dict`` can have the following keys:
 
             ``"include_dataframes"``
-                List of entities to be included when creating features for
-                the primitive(s). All other entities will be ignored
+                List of dataframes to be included when creating features for
+                the primitive(s). All other dataframes will be ignored
                 (list[str]).
             ``"ignore_dataframes"``
-                List of entities to be blacklisted when creating features
+                List of dataframes to be blacklisted when creating features
                 for the primitive(s) (list[str]).
             ``"include_columns"``
                 List of specific columns within each entity to include when
@@ -124,10 +124,10 @@ def dfs(dataframes=None,
                 when creating features for the primitive(s) (dict[str ->
                 list[str]]).
             ``"include_groupby_dataframes"``
-                List of Entities to be included when finding groupbys. All
-                other entities will be ignored (list[str]).
+                List of dataframes to be included when finding groupbys. All
+                other dataframes will be ignored (list[str]).
             ``"ignore_groupby_dataframes"``
-                List of entities to blacklist when finding groupbys
+                List of dataframes to blacklist when finding groupbys
                 (list[str]).
             ``"include_groupby_columns"``
                 List of specific columns within each entity to include as
@@ -225,18 +225,18 @@ def dfs(dataframes=None,
 
             from featuretools.primitives import Mean
             # cutoff times per instance
-            entities = {
+            dataframes = {
                 "sessions" : (session_df, "id"),
                 "transactions" : (transactions_df, "id", "transaction_time")
             }
             relationships = [("sessions", "id", "transactions", "session_id")]
-            feature_matrix, features = dfs(entities=entities,
+            feature_matrix, features = dfs(dataframes=dataframes,
                                            relationships=relationships,
                                            target_dataframe="transactions",
                                            cutoff_time=cutoff_times)
             feature_matrix
 
-            features = dfs(entities=entities,
+            features = dfs(dataframes=dataframes,
                            relationships=relationships,
                            target_dataframe="transactions",
                            features_only=True)
