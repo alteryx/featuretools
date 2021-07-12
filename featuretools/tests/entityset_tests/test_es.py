@@ -1612,13 +1612,13 @@ def test_same_index_values(index_df):
 
     error_text = '"id" is already set as the index. An index cannot also be the time index.'
     with pytest.raises(ValueError, match=error_text):
-        es.add_dataframe(dataframe_name="entity",
+        es.add_dataframe(dataframe_name="dataframe",
                          index="id",
                          time_index="id",
                          dataframe=index_df,
                          logical_types=logical_types)
 
-    es.add_dataframe(dataframe_name="entity",
+    es.add_dataframe(dataframe_name="dataframe",
                      index="id",
                      time_index="transaction_time",
                      dataframe=index_df,
@@ -1626,7 +1626,7 @@ def test_same_index_values(index_df):
 
     error_text = "time_index and index cannot be the same value, first_dataframe_time"
     with pytest.raises(ValueError, match=error_text):
-        es.normalize_dataframe(base_dataframe_name="entity",
+        es.normalize_dataframe(base_dataframe_name="dataframe",
                                new_dataframe_name="new_dataframe",
                                index="first_dataframe_time",
                                make_time_index=True)
