@@ -9,6 +9,7 @@ Future Release
         * Add ``replace_inf_values`` utility function for replacing ``inf`` values in a feature matrix (:pr:`1505`)
         * Add URLToProtocol, URLToDomain, URLToTLD, EmailAddressToDomain, IsFreeEmailDomain as transform primitives (:pr:`1508`)
     * Fixes
+        * ``include_entities`` correctly overrides ``exclude_entities`` in ``primitive_options`` (:pr:`1518`)
     * Changes
     * Documentation Changes
         * Prevent logging on build (:pr:`1498`)
@@ -16,7 +17,7 @@ Future Release
         * Test featuretools on pandas 1.3.0 release candidate and make fixes (:pr:`1492`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`frances-h`,  :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
+    :user:`gsheni`, :user:`frances-h`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 v0.25.0 Jun 11, 2021
 ====================
