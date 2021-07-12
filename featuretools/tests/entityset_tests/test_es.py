@@ -66,7 +66,9 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
         'value_many_nans': variable_types.Numeric,
         'priority_level': variable_types.Ordinal,
         'purchased': variable_types.Boolean,
-        'comments': variable_types.NaturalLanguage
+        'comments': variable_types.NaturalLanguage,
+        'url': variable_types.URL,
+        'email_address': variable_types.EmailAddress
     }
     assert set(log_variable_types) == set(log_2_df.columns)
     es.entity_from_dataframe(entity_id='log2',
@@ -1238,7 +1240,7 @@ def test_datetime64_conversion(datetime3):
     if ks and isinstance(df, ks.DataFrame):
         df['time'] = df['time'].astype(np.datetime64)
     else:
-        df["time"] = df["time"].astype("datetime64[ns, UTC]")
+        df["time"] = df["time"].dt.tz_localize("UTC")
 
     if not isinstance(df, pd.DataFrame):
         vtypes = {
