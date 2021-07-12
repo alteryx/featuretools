@@ -139,18 +139,18 @@ def test_errors_unsupported_primitives_koalas(ks_es):
 
 
 def test_error_for_missing_target_dataframe(es):
-    error_text = 'Provided target dataframe missing_entity does not exist in ecommerce'
+    error_text = 'Provided target dataframe missing_dataframe does not exist in ecommerce'
     with pytest.raises(KeyError, match=error_text):
-        DeepFeatureSynthesis(target_dataframe_name='missing_entity',
+        DeepFeatureSynthesis(target_dataframe_name='missing_dataframe',
                              entityset=es,
                              agg_primitives=[Last],
                              trans_primitives=[],
                              ignore_entities=['log'])
 
     es_without_id = ft.EntitySet()
-    error_text = 'Provided target dataframe missing_entity does not exist in entity set'
+    error_text = 'Provided target dataframe missing_dataframe does not exist in entity set'
     with pytest.raises(KeyError, match=error_text):
-        DeepFeatureSynthesis(target_dataframe_name='missing_entity',
+        DeepFeatureSynthesis(target_dataframe_name='missing_dataframe',
                              entityset=es_without_id,
                              agg_primitives=[Last],
                              trans_primitives=[],
@@ -248,7 +248,7 @@ def test_makes_trans_feat(es):
     assert (feature_with_name(features, 'HOUR(datetime)'))
 
 
-def test_handles_diff_entity_groupby(pd_es):
+def test_handles_diff_dataframe_groupby(pd_es):
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='log',
                                    entityset=pd_es,
                                    agg_primitives=[],
@@ -259,7 +259,7 @@ def test_handles_diff_entity_groupby(pd_es):
     assert (feature_with_name(features, 'DIFF(value) by product_id'))
 
 
-def test_handles_time_since_previous_entity_groupby(pd_es):
+def test_handles_time_since_previous_dataframe_groupby(pd_es):
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='log',
                                    entityset=pd_es,
                                    agg_primitives=[],
@@ -270,7 +270,7 @@ def test_handles_time_since_previous_entity_groupby(pd_es):
 
 
 # M TODO
-# def test_handles_cumsum_entity_groupby(pd_es):
+# def test_handles_cumsum_dataframe_groupby(pd_es):
 #     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='sessions',
 #                                    entityset=pd_es,
 #                                    agg_primitives=[],
@@ -523,7 +523,7 @@ def test_does_not_make_agg_of_direct_of_target_dataframe(es):
                                    seed_features=[count_sessions])
     features = dfs_obj.build_features()
     # this feature is meaningless because customers.COUNT(sessions) is already defined on
-    # the customers entity
+    # the customers dataframe
     assert not feature_with_name(features, 'LAST(sessions.customers.COUNT(sessions))')
     assert not feature_with_name(features, 'LAST(sessions.customers.age)')
 
@@ -1259,7 +1259,7 @@ def test_primitive_options_groupbys(pd_es):
                 assert not (identity_groupby.dataframe_name == 'log' and
                             identity_groupby.get_name() == 'session_id')
         if isinstance(f.primitive, CumCount):
-            assert all([entity in ['log', 'customers'] for entity in df_names])
+            assert all([name in ['log', 'customers'] for name in df_names])
         if isinstance(f.primitive, CumSum):
             assert 'sessions' not in df_names
         if isinstance(f.primitive, CumMin):

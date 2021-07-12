@@ -65,14 +65,14 @@ class DeepFeatureSynthesis(object):
             max_features (int, optional) : Cap the number of generated features to
                 this number. If -1, no limit.
 
-            allowed_paths (list[list[str]], optional): Allowed entity paths to make
+            allowed_paths (list[list[str]], optional): Allowed dataframe paths to make
                 features for. If None, use all paths.
 
             ignore_entities (list[str], optional): List of entities to
                 blacklist when creating features. If None, use all entities.
 
             ignore_variables (dict[str -> list[str]], optional): List of specific
-                variables within each entity to blacklist when creating features.
+                variables within each dataframe to blacklist when creating features.
                 If None, use all variables.
 
             seed_features (list[:class:`.FeatureBase`], optional): List of manually
@@ -101,11 +101,11 @@ class DeepFeatureSynthesis(object):
                     List of entities to be blacklisted when creating features
                     for the primitive(s) (list[str]).
                 ``"include_variables"``
-                    List of specific variables within each entity to include when
-                    creating feautres for the primitive(s). All other variables
-                    in a given entity will be ignored (dict[str -> list[str]]).
+                    List of specific variables within each dataframe to include when
+                    creating features for the primitive(s). All other variables
+                    in a given dataframe will be ignored (dict[str -> list[str]]).
                 ``"ignore_variables"``
-                    List of specific variables within each entityt to blacklist
+                    List of specific variables within each dataframe to blacklist
                     when creating features for the primitive(s) (dict[str ->
                     list[str]]).
                 ``"include_groupby_entities"``
@@ -420,12 +420,12 @@ class DeepFeatureSynthesis(object):
         self._build_transform_features(all_features, dataframe, max_depth=max_depth)
 
         """
-        Step 5 - Recursively build features for each entity in a forward relationship
+        Step 5 - Recursively build features for each dataframe in a forward relationship
         """
 
         forward_dataframes = self.es.get_forward_dataframes(dataframe.ww.name)
         for f_dataframe_id, sub_relationship_path in forward_dataframes:
-            # Skip if we've already created features for this entity.
+            # Skip if we've already created features for this dataframe.
             if f_dataframe_id in all_features:
                 continue
 
@@ -503,7 +503,7 @@ class DeepFeatureSynthesis(object):
         all_features[dataframe_name][name] = new_feature
 
     def _add_identity_features(self, all_features, dataframe):
-        """converts all variables from the given entity into features
+        """converts all variables from the given dataframe into features
 
         Args:
             all_features (dict[dataframe name -> dict[str -> BaseFeature]]):
@@ -712,7 +712,7 @@ class DeepFeatureSynthesis(object):
 
             def feature_filter(f):
                 # Remove direct features of parent dataframe and features in relationship path.
-                return (not _direct_of_entity(f, parent_dataframe)) \
+                return (not _direct_of_dataframe(f, parent_dataframe)) \
                     and not self._feature_in_relationship_path(relationship_path, f)
 
             matching_inputs = self._get_matching_inputs(all_features,
@@ -987,6 +987,6 @@ def _features_have_same_path(input_features):
     return True
 
 
-def _direct_of_entity(feature, parent_dataframe):
+def _direct_of_dataframe(feature, parent_dataframe):
     return isinstance(feature, DirectFeature) \
         and feature.parent_dataframe_name == parent_dataframe.ww.name
