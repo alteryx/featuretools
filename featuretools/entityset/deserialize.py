@@ -4,8 +4,8 @@ import tarfile
 import tempfile
 
 import pandas as pd
-import woodwork as ww
 from woodwork.deserialize import read_woodwork_table
+from woodwork.type_sys.type_system import type_system
 
 from featuretools.entityset.relationship import Relationship
 from featuretools.utils.gen_utils import check_schema_version
@@ -70,7 +70,7 @@ def empty_dataframe(description):
         columns.append(col_name)
 
         ltype_metadata = col['logical_type']
-        ltype = ww.type_system.str_to_logical_type(ltype_metadata['type'], params=ltype_metadata['parameters'])
+        ltype = type_system.str_to_logical_type(ltype_metadata['type'], params=ltype_metadata['parameters'])
 
         tags = col['semantic_tags']
 

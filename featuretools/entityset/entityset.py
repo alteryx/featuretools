@@ -6,7 +6,6 @@ from collections import defaultdict
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
-import woodwork as ww
 
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.relationship import Relationship, RelationshipPath
@@ -17,6 +16,8 @@ from featuretools.utils.plot_utils import (
     save_graph
 )
 from featuretools.utils.wrangle import _check_timedelta
+from woodwork import init_series
+from woodwork.logical_types import Datetime
 
 ks = import_or_none('databricks.koalas')
 
@@ -1090,10 +1091,10 @@ class EntitySet(object):
                     if lti.dtype == 'datetime64[ns]':
                         # Woodwork cannot convert from datetime to numeric
                         lti = lti.apply(lambda x: x.value)
-                    lti = ww.init_series(lti, logical_type='Double')
+                    lti = init_series(lti, logical_type='Double')
                     lti_ltype = 'Double'
                 else:
-                    lti = ww.init_series(lti, logical_type='Datetime')
+                    lti = init_series(lti, logical_type='Datetime')
                     lti_ltype = 'Datetime'
 
                 lti.name = LTI_COLUMN_NAME
@@ -1501,7 +1502,7 @@ class EntitySet(object):
         if column_schema.is_numeric:
             time_type = 'numeric'
         elif column_schema.is_datetime:
-            time_type = ww.logical_types.Datetime
+            time_type = Datetime
 
         if time_type is None:
             info = "%s time index not recognized as numeric or datetime"

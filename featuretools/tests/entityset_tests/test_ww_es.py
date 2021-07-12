@@ -4,7 +4,6 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -13,7 +12,7 @@ from woodwork.logical_types import (
     Integer,
     NaturalLanguage
 )
-
+from woodwork.exceptions import TypeConversionError
 from featuretools.entityset.entityset import LTI_COLUMN_NAME, EntitySet
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
@@ -543,7 +542,7 @@ def test_update_dataframe_different_dtypes(es):
     if isinstance(es['customers'], pd.DataFrame):
         # Dask and Koalas do not error on invalid type conversion until compute
         error_msg = 'Error converting datatype for age from type object to type int64. Please confirm the underlying data is consistent with logical type Integer.'
-        with pytest.raises(ww.exceptions.TypeConversionError, match=error_msg):
+        with pytest.raises(TypeConversionError, match=error_msg):
             es.update_dataframe(dataframe_name='customers', df=incompatible_dtype_df)
 
 

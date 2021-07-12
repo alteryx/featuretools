@@ -2,9 +2,9 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
-import woodwork.logical_types as ltypes
 
 from featuretools.entityset import EntitySet
+from woodwork.logical_types import Boolean, Datetime, Categorical, CountryCode, Double, EmailAddress, Filepath, Integer, IPAddress, LatLong, NaturalLanguage, Ordinal, PostalCode, PersonFullName, PhoneNumber, SubRegionCode, URL
 
 
 def make_ecommerce_entityset(with_integer_time_index=False):
@@ -235,71 +235,71 @@ def make_semantic_tags():
 
 def make_logical_types(with_integer_time_index=False):
     region_logical_types = {
-        'id': ltypes.Categorical,
-        'language': ltypes.Categorical
+        'id': Categorical,
+        'language': Categorical
     }
 
     store_logical_types = {
-        'id': ltypes.Integer,
-        u'région_id': ltypes.Categorical
+        'id': Integer,
+        u'région_id': Categorical
     }
 
     product_logical_types = {
-        'id': ltypes.Categorical,
-        'rating': ltypes.Integer,
-        'department': ltypes.Categorical,
-        'url': ltypes.URL,
+        'id': Categorical,
+        'rating': Integer,
+        'department': Categorical,
+        'url': URL,
     }
 
     customer_logical_types = {
-        'id': ltypes.Integer,
-        'age': ltypes.Integer,
-        u'région_id': ltypes.Categorical,
-        'loves_ice_cream': ltypes.Boolean,
-        'favorite_quote': ltypes.NaturalLanguage,
-        'signup_date': ltypes.Datetime,
-        'upgrade_date': ltypes.Datetime,
-        'cancel_date': ltypes.Datetime,
-        'cancel_reason': ltypes.Categorical,
-        'engagement_level': ltypes.Ordinal(order=[1, 2, 3]),
-        'full_name': ltypes.PersonFullName,
-        'email': ltypes.EmailAddress,
-        'phone_number': ltypes.PhoneNumber,
-        'date_of_birth': ltypes.Datetime,
-        'cohort_name': ltypes.Categorical,
+        'id': Integer,
+        'age': Integer,
+        u'région_id': Categorical,
+        'loves_ice_cream': Boolean,
+        'favorite_quote': NaturalLanguage,
+        'signup_date': Datetime,
+        'upgrade_date': Datetime,
+        'cancel_date': Datetime,
+        'cancel_reason': Categorical,
+        'engagement_level': Ordinal(order=[1, 2, 3]),
+        'full_name': PersonFullName,
+        'email': EmailAddress,
+        'phone_number': PhoneNumber,
+        'date_of_birth': Datetime,
+        'cohort_name': Categorical,
     }
 
     session_logical_types = {
-        'id': ltypes.Integer,
-        'customer_id': ltypes.Integer,
-        'device_type': ltypes.Categorical,
-        'ip': ltypes.IPAddress,
-        'filepath': ltypes.Filepath,
+        'id': Integer,
+        'customer_id': Integer,
+        'device_type': Categorical,
+        'ip': IPAddress,
+        'filepath': Filepath,
     }
 
     log_logical_types = {
-        'id': ltypes.Integer,
-        'session_id': ltypes.Integer,
-        'product_id': ltypes.Categorical,
-        'datetime': ltypes.Datetime,
-        'value': ltypes.Double,
-        'value_2': ltypes.Double,
-        'latlong': ltypes.LatLong,
-        'latlong2': ltypes.LatLong,
-        'zipcode': ltypes.PostalCode,
-        'countrycode': ltypes.CountryCode,
-        'subregioncode': ltypes.SubRegionCode,
-        'value_many_nans': ltypes.Double,
-        'priority_level': ltypes.Ordinal(order=[0, 1, 2]),
-        'purchased': ltypes.Boolean,
-        'comments': ltypes.NaturalLanguage
+        'id': Integer,
+        'session_id': Integer,
+        'product_id': Categorical,
+        'datetime': Datetime,
+        'value': Double,
+        'value_2': Double,
+        'latlong': LatLong,
+        'latlong2': LatLong,
+        'zipcode': PostalCode,
+        'countrycode': CountryCode,
+        'subregioncode': SubRegionCode,
+        'value_many_nans': Double,
+        'priority_level': Ordinal(order=[0, 1, 2]),
+        'purchased': Boolean,
+        'comments': NaturalLanguage
     }
     if with_integer_time_index:
-        log_logical_types['datetime'] = ltypes.Integer
-        customer_logical_types['signup_date'] = ltypes.Integer
-        customer_logical_types['upgrade_date'] = ltypes.Integer
-        customer_logical_types['cancel_date'] = ltypes.Integer
-        customer_logical_types['date_of_birth'] = ltypes.Integer
+        log_logical_types['datetime'] = Integer
+        customer_logical_types['signup_date'] = Integer
+        customer_logical_types['upgrade_date'] = Integer
+        customer_logical_types['cancel_date'] = Integer
+        customer_logical_types['date_of_birth'] = Integer
 
     return {
         'customers': customer_logical_types,

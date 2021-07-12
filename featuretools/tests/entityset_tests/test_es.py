@@ -7,7 +7,6 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork.logical_types as ltypes
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
@@ -15,6 +14,7 @@ from featuretools.entityset.entityset import LTI_COLUMN_NAME
 from featuretools.tests.testing_utils import get_df_tags, to_pandas
 from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
+from woodwork.logical_types import Boolean, Categorical, CountryCode, Datetime, Double, Integer, LatLong, NaturalLanguage, PostalCode, SubRegionCode, Ordinal
 
 ks = import_or_none('databricks.koalas')
 
@@ -100,26 +100,26 @@ def test_add_relationships_convert_type(es):
 
 
 def test_add_relationship_diff_param_logical_types(es):
-    ordinal_1 = ltypes.Ordinal(order=[0, 1, 2, 3, 4, 5, 6])
-    ordinal_2 = ltypes.Ordinal(order=[0, 1, 2, 3, 4, 5])
+    ordinal_1 = Ordinal(order=[0, 1, 2, 3, 4, 5, 6])
+    ordinal_2 = Ordinal(order=[0, 1, 2, 3, 4, 5])
     es['sessions'].ww.set_types(logical_types={'id': ordinal_1})
     log_2_df = es['log'].copy()
     log_logical_types = {
-        'id': ltypes.Integer,
+        'id': Integer,
         'session_id': ordinal_2,
-        'product_id': ltypes.Categorical(),
-        'datetime': ltypes.Datetime,
-        'value': ltypes.Double,
-        'value_2': ltypes.Double,
-        'latlong': ltypes.LatLong,
-        'latlong2': ltypes.LatLong,
-        'zipcode': ltypes.PostalCode,
-        'countrycode': ltypes.CountryCode,
-        'subregioncode': ltypes.SubRegionCode,
-        'value_many_nans': ltypes.Double,
-        'priority_level': ltypes.Ordinal(order=[0, 1, 2]),
-        'purchased': ltypes.Boolean,
-        'comments': ltypes.NaturalLanguage
+        'product_id': Categorical(),
+        'datetime': Datetime,
+        'value': Double,
+        'value_2': Double,
+        'latlong': LatLong,
+        'latlong2': LatLong,
+        'zipcode': PostalCode,
+        'countrycode': CountryCode,
+        'subregioncode': SubRegionCode,
+        'value_many_nans': Double,
+        'priority_level': Ordinal(order=[0, 1, 2]),
+        'purchased': Boolean,
+        'comments': NaturalLanguage
     }
     log_semantic_tags = {
         'session_id': 'foreign_key',
@@ -134,8 +134,8 @@ def test_add_relationship_diff_param_logical_types(es):
                      time_index='datetime')
     assert 'log2' in es.dataframe_dict
     assert es['log2'].ww.schema is not None
-    assert isinstance(es['log2'].ww.logical_types['session_id'], ltypes.Ordinal)
-    assert isinstance(es['sessions'].ww.logical_types['id'], ltypes.Ordinal)
+    assert isinstance(es['log2'].ww.logical_types['session_id'], Ordinal)
+    assert isinstance(es['sessions'].ww.logical_types['id'], Ordinal)
     assert es['sessions'].ww.logical_types['id'] != es['log2'].ww.logical_types['session_id']
 
     warning_text = 'Logical type Ordinal for child column session_id does not match parent '\
@@ -143,28 +143,28 @@ def test_add_relationship_diff_param_logical_types(es):
         'Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
         es.add_relationship(u'sessions', 'id', 'log2', 'session_id')
-    assert isinstance(es['log2'].ww.logical_types['product_id'], ltypes.Categorical)
-    assert isinstance(es['products'].ww.logical_types['id'], ltypes.Categorical)
+    assert isinstance(es['log2'].ww.logical_types['product_id'], Categorical)
+    assert isinstance(es['products'].ww.logical_types['id'], Categorical)
 
 
 def test_add_relationship_different_logical_types_same_dtype(es):
     log_2_df = es['log'].copy()
     log_logical_types = {
-        'id': ltypes.Integer,
-        'session_id': ltypes.Integer,
-        'product_id': ltypes.CountryCode,
-        'datetime': ltypes.Datetime,
-        'value': ltypes.Double,
-        'value_2': ltypes.Double,
-        'latlong': ltypes.LatLong,
-        'latlong2': ltypes.LatLong,
-        'zipcode': ltypes.PostalCode,
-        'countrycode': ltypes.CountryCode,
-        'subregioncode': ltypes.SubRegionCode,
-        'value_many_nans': ltypes.Double,
-        'priority_level': ltypes.Ordinal(order=[0, 1, 2]),
-        'purchased': ltypes.Boolean,
-        'comments': ltypes.NaturalLanguage
+        'id': Integer,
+        'session_id': Integer,
+        'product_id': CountryCode,
+        'datetime': Datetime,
+        'value': Double,
+        'value_2': Double,
+        'latlong': LatLong,
+        'latlong2': LatLong,
+        'zipcode': PostalCode,
+        'countrycode': CountryCode,
+        'subregioncode': SubRegionCode,
+        'value_many_nans': Double,
+        'priority_level': Ordinal(order=[0, 1, 2]),
+        'purchased': Boolean,
+        'comments': NaturalLanguage
     }
     log_semantic_tags = {
         'session_id': 'foreign_key',
@@ -179,34 +179,34 @@ def test_add_relationship_different_logical_types_same_dtype(es):
                      time_index='datetime')
     assert 'log2' in es.dataframe_dict
     assert es['log2'].ww.schema is not None
-    assert isinstance(es['log2'].ww.logical_types['product_id'], ltypes.CountryCode)
-    assert isinstance(es['products'].ww.logical_types['id'], ltypes.Categorical)
+    assert isinstance(es['log2'].ww.logical_types['product_id'], CountryCode)
+    assert isinstance(es['products'].ww.logical_types['id'], Categorical)
 
     warning_text = 'Logical type CountryCode for child column product_id does not match parent column id logical type Categorical. Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
         es.add_relationship(u'products', 'id', 'log2', 'product_id')
-    assert isinstance(es['log2'].ww.logical_types['product_id'], ltypes.Categorical)
-    assert isinstance(es['products'].ww.logical_types['id'], ltypes.Categorical)
+    assert isinstance(es['log2'].ww.logical_types['product_id'], Categorical)
+    assert isinstance(es['products'].ww.logical_types['id'], Categorical)
 
 
 def test_add_relationship_different_compatible_dtypes(es):
     log_2_df = es['log'].copy()
     log_logical_types = {
-        'id': ltypes.Integer,
-        'session_id': ltypes.Datetime,
-        'product_id': ltypes.Categorical,
-        'datetime': ltypes.Datetime,
-        'value': ltypes.Double,
-        'value_2': ltypes.Double,
-        'latlong': ltypes.LatLong,
-        'latlong2': ltypes.LatLong,
-        'zipcode': ltypes.PostalCode,
-        'countrycode': ltypes.CountryCode,
-        'subregioncode': ltypes.SubRegionCode,
-        'value_many_nans': ltypes.Double,
-        'priority_level': ltypes.Ordinal(order=[0, 1, 2]),
-        'purchased': ltypes.Boolean,
-        'comments': ltypes.NaturalLanguage
+        'id': Integer,
+        'session_id': Datetime,
+        'product_id': Categorical,
+        'datetime': Datetime,
+        'value': Double,
+        'value_2': Double,
+        'latlong': LatLong,
+        'latlong2': LatLong,
+        'zipcode': PostalCode,
+        'countrycode': CountryCode,
+        'subregioncode': SubRegionCode,
+        'value_many_nans': Double,
+        'priority_level': Ordinal(order=[0, 1, 2]),
+        'purchased': Boolean,
+        'comments': NaturalLanguage
     }
     log_semantic_tags = {
         'session_id': 'foreign_key',
@@ -221,14 +221,14 @@ def test_add_relationship_different_compatible_dtypes(es):
                      time_index='datetime')
     assert 'log2' in es.dataframe_dict
     assert es['log2'].ww.schema is not None
-    assert isinstance(es['log2'].ww.logical_types['session_id'], ltypes.Datetime)
-    assert isinstance(es['customers'].ww.logical_types['id'], ltypes.Integer)
+    assert isinstance(es['log2'].ww.logical_types['session_id'], Datetime)
+    assert isinstance(es['customers'].ww.logical_types['id'], Integer)
 
     warning_text = 'Logical type Datetime for child column session_id does not match parent column id logical type Integer. Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
         es.add_relationship(u'customers', 'id', 'log2', 'session_id')
-    assert isinstance(es['log2'].ww.logical_types['session_id'], ltypes.Integer)
-    assert isinstance(es['customers'].ww.logical_types['id'], ltypes.Integer)
+    assert isinstance(es['log2'].ww.logical_types['session_id'], Integer)
+    assert isinstance(es['customers'].ww.logical_types['id'], Integer)
 
 
 def test_add_relationship_errors_child_v_index(es):
@@ -411,18 +411,18 @@ def df(request):
 
 def test_check_columns_and_dataframe(df):
     # matches
-    logical_types = {'id': ltypes.Integer,
-                     'category': ltypes.Categorical}
+    logical_types = {'id': Integer,
+                     'category': Categorical}
     es = EntitySet(id='test')
     es.add_dataframe(df, dataframe_name='test_dataframe', index='id',
                      logical_types=logical_types)
-    assert isinstance(es.dataframe_dict['test_dataframe'].ww.logical_types['category'], ltypes.Categorical)
+    assert isinstance(es.dataframe_dict['test_dataframe'].ww.logical_types['category'], Categorical)
     assert es.dataframe_dict['test_dataframe'].ww.semantic_tags['category'] == {'category'}
 
 
 def test_make_index_any_location(df):
-    logical_types = {'id': ltypes.Integer,
-                     'category': ltypes.Categorical}
+    logical_types = {'id': Integer,
+                     'category': Categorical}
 
     es = EntitySet(id='test')
     es.add_dataframe(dataframe_name='test_dataframe',
@@ -439,8 +439,8 @@ def test_make_index_any_location(df):
 
 
 def test_index_any_location(df):
-    logical_types = {'id': ltypes.Integer,
-                     'category': ltypes.Categorical}
+    logical_types = {'id': Integer,
+                     'category': Categorical}
 
     es = EntitySet(id='test')
     es.add_dataframe(dataframe_name='test_dataframe',
@@ -453,9 +453,9 @@ def test_index_any_location(df):
 
 def test_extra_column_type(df):
     # more columns
-    logical_types = {'id': ltypes.Integer,
-                     'category': ltypes.Categorical,
-                     'category2': ltypes.Categorical}
+    logical_types = {'id': Integer,
+                     'category': Categorical,
+                     'category2': Categorical}
 
     error_text = re.escape("logical_types contains columns that are not present in dataframe: ['category2']")
     with pytest.raises(LookupError, match=error_text):
@@ -508,7 +508,7 @@ def test_none_index(df2):
                          dataframe=df2)
     assert es['test_dataframe'].ww.index == 'category'
     assert es['test_dataframe'].ww.semantic_tags['category'] == {'index'}
-    assert isinstance(es['test_dataframe'].ww.logical_types['category'], ltypes.Categorical)
+    assert isinstance(es['test_dataframe'].ww.logical_types['category'], Categorical)
 
 
 @pytest.fixture
@@ -595,12 +595,12 @@ def df4(request):
 
 
 def test_converts_dtype_on_init(df4):
-    logical_types = {'id': ltypes.Integer,
-                     'ints': ltypes.Integer,
-                     'floats': ltypes.Double}
+    logical_types = {'id': Integer,
+                     'ints': Integer,
+                     'floats': Double}
     if not isinstance(df4, pd.DataFrame):
-        logical_types['category'] = ltypes.Categorical
-        logical_types['category_int'] = ltypes.Categorical
+        logical_types['category'] = Categorical
+        logical_types['category_int'] = Categorical
     es = EntitySet(id='test')
     df4.ww.init(name='test_dataframe', index='id', logical_types=logical_types)
     es.add_dataframe(dataframe=df4)
@@ -611,7 +611,7 @@ def test_converts_dtype_on_init(df4):
 
     # this is infer from pandas dtype
     df = es["test_dataframe"]
-    assert isinstance(df.ww.logical_types['category_int'], ltypes.Categorical)
+    assert isinstance(df.ww.logical_types['category_int'], Categorical)
 
 
 def test_converts_dtype_after_init(df4):
@@ -621,11 +621,11 @@ def test_converts_dtype_after_init(df4):
 
     df4["category"] = df4["category"].astype(category_dtype)
     if not isinstance(df4, pd.DataFrame):
-        logical_types = {'id': ltypes.Integer,
-                         'category': ltypes.Categorical,
-                         'category_int': ltypes.Categorical,
-                         'ints': ltypes.Integer,
-                         'floats': ltypes.Double}
+        logical_types = {'id': Integer,
+                         'category': Categorical,
+                         'category_int': Categorical,
+                         'ints': Integer,
+                         'floats': Double}
     else:
         logical_types = None
     es = EntitySet(id='test')
@@ -634,19 +634,19 @@ def test_converts_dtype_after_init(df4):
     df = es['test_dataframe']
 
     df.ww.set_types(logical_types={'ints': 'Integer'})
-    assert isinstance(df.ww.logical_types['ints'], ltypes.Integer)
+    assert isinstance(df.ww.logical_types['ints'], Integer)
     assert df['ints'].dtype == 'int64'
 
     df.ww.set_types(logical_types={'ints': 'Categorical'})
-    assert isinstance(df.ww.logical_types['ints'], ltypes.Categorical)
+    assert isinstance(df.ww.logical_types['ints'], Categorical)
     assert df['ints'].dtype == category_dtype
 
-    df.ww.set_types(logical_types={'ints': ltypes.Ordinal(order=[1, 2, 3])})
-    assert df.ww.logical_types['ints'] == ltypes.Ordinal(order=[1, 2, 3])
+    df.ww.set_types(logical_types={'ints': Ordinal(order=[1, 2, 3])})
+    assert df.ww.logical_types['ints'] == Ordinal(order=[1, 2, 3])
     assert df['ints'].dtype == category_dtype
 
     df.ww.set_types(logical_types={'ints': 'NaturalLanguage'})
-    assert isinstance(df.ww.logical_types['ints'], ltypes.NaturalLanguage)
+    assert isinstance(df.ww.logical_types['ints'], NaturalLanguage)
     assert df['ints'].dtype == 'string'
 
 
@@ -691,8 +691,8 @@ def test_converts_datetime(datetime1):
     # string converts to datetime correctly
     # This test fails without defining vtypes.  Entityset
     # infers time column should be numeric type
-    logical_types = {'id': ltypes.Integer,
-                     'time': ltypes.Datetime}
+    logical_types = {'id': Integer,
+                     'time': Datetime}
 
     es = EntitySet(id='test')
     es.add_dataframe(
@@ -737,9 +737,9 @@ def test_handles_datetime_format(datetime2):
     datetime_format = "%d-%m-%Y"
     actual = pd.Timestamp('Jan 2, 2011')
 
-    logical_types = {'id': ltypes.Integer,
-                     'time_format': (ltypes.Datetime(datetime_format=datetime_format)),
-                     'time_no_format': ltypes.Datetime}
+    logical_types = {'id': Integer,
+                     'time_format': (Datetime(datetime_format=datetime_format)),
+                     'time_no_format': Datetime}
 
     es = EntitySet(id='test')
     es.add_dataframe(
@@ -760,8 +760,8 @@ def test_handles_datetime_format(datetime2):
 def test_handles_datetime_mismatch():
     # can't convert arbitrary strings
     df = pd.DataFrame({'id': [0, 1, 2], 'time': ['a', 'b', 'tomorrow']})
-    logical_types = {'id': ltypes.Integer,
-                     'time': ltypes.Datetime}
+    logical_types = {'id': Integer,
+                     'time': Datetime}
 
     error_text = "Time index column must contain datetime or numeric values"
     with pytest.raises(TypeError, match=error_text):
@@ -781,12 +781,12 @@ def test_dataframe_init(es):
     elif es.dataframe_type == Library.KOALAS.value:
         df = ks.from_pandas(df)
 
-    logical_types = {'time': ltypes.Datetime}
+    logical_types = {'time': Datetime}
     if not isinstance(df, pd.DataFrame):
         extra_logical_types = {
-            'id': ltypes.Categorical,
-            'category': ltypes.Categorical,
-            'number': ltypes.Integer
+            'id': Categorical,
+            'category': Categorical,
+            'number': Integer
         }
         logical_types.update(extra_logical_types)
     es.add_dataframe(df.copy(), dataframe_name='test_dataframe', index='id',
@@ -1014,8 +1014,8 @@ def test_concat_with_make_index(es):
         df = dd.from_pandas(df, npartitions=2)
     elif es.dataframe_type == Library.KOALAS.value:
         df = ks.from_pandas(df)
-    logical_types = {'id': ltypes.Categorical,
-                     'category': ltypes.Categorical}
+    logical_types = {'id': Categorical,
+                     'category': Categorical}
     es.add_dataframe(dataframe=df,
                      dataframe_name='test_df',
                      index='id1',
@@ -1089,12 +1089,12 @@ def test_set_time_type_on_init(transactions_df):
     if ks and isinstance(transactions_df, ks.DataFrame):
         cards_df = ks.from_pandas(cards_df)
     if not isinstance(transactions_df, pd.DataFrame):
-        cards_logical_types = {'id': ltypes.Categorical}
+        cards_logical_types = {'id': Categorical}
         transactions_logical_types = {
-            'id': ltypes.Integer,
-            'card_id': ltypes.Categorical,
-            'transaction_time': ltypes.Integer,
-            'fraud': ltypes.Boolean
+            'id': Integer,
+            'card_id': Categorical,
+            'transaction_time': Integer,
+            'fraud': Boolean
         }
     else:
         cards_logical_types = None
@@ -1124,12 +1124,12 @@ def test_sets_time_when_adding_entity(transactions_df):
     if ks and isinstance(transactions_df, ks.DataFrame):
         accounts_df = ks.from_pandas(accounts_df)
     if not isinstance(transactions_df, pd.DataFrame):
-        accounts_logical_types = {'id': ltypes.Categorical, 'signup_date': ltypes.Datetime}
+        accounts_logical_types = {'id': Categorical, 'signup_date': Datetime}
         transactions_logical_types = {
-            'id': ltypes.Integer,
-            'card_id': ltypes.Categorical,
-            'transaction_time': ltypes.Integer,
-            'fraud': ltypes.Boolean
+            'id': Integer,
+            'card_id': Categorical,
+            'transaction_time': Integer,
+            'fraud': Boolean
         }
     else:
         accounts_logical_types = None
@@ -1192,12 +1192,12 @@ def test_set_non_valid_time_index_type(es):
 
 def test_checks_time_type_setting_secondary_time_index(es):
     # entityset is timestamp time type
-    assert es.time_type == ltypes.Datetime
+    assert es.time_type == Datetime
     # add secondary index that is timestamp type
     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
                   'cancel_date': ['cancel_date', 'cancel_reason']}
     es.set_secondary_time_index("customers", new_2nd_ti)
-    assert es.time_type == ltypes.Datetime
+    assert es.time_type == Datetime
     # add secondary index that is numeric type
     new_2nd_ti = {'age': ['age', 'loves_ice_cream']}
 
@@ -1407,11 +1407,11 @@ def test_raise_error_if_dupicate_copy_columns_passed(es):
 
 
 def test_normalize_dataframe_copies_logical_types(es):
-    es['log'].ww.set_types(logical_types={'value': ltypes.Ordinal(order=[0.0, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 14.0, 15.0, 20.0])})
+    es['log'].ww.set_types(logical_types={'value': Ordinal(order=[0.0, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 14.0, 15.0, 20.0])})
 
-    assert isinstance(es['log'].ww.logical_types['value'], ltypes.Ordinal)
+    assert isinstance(es['log'].ww.logical_types['value'], Ordinal)
     assert len(es['log'].ww.logical_types['value'].order) == 10
-    assert isinstance(es['log'].ww.logical_types['priority_level'], ltypes.Ordinal)
+    assert isinstance(es['log'].ww.logical_types['priority_level'], Ordinal)
     assert len(es['log'].ww.logical_types['priority_level'].order) == 3
     es.normalize_dataframe('log', 'values_2', 'value_2',
                            additional_columns=['priority_level'],
@@ -1426,9 +1426,9 @@ def test_normalize_dataframe_copies_logical_types(es):
     assert 'priority_level' not in es['log'].columns
     assert 'value' in es['log'].columns
     assert 'value_2' in es['values_2'].columns
-    assert isinstance(es['values_2'].ww.logical_types['priority_level'], ltypes.Ordinal)
+    assert isinstance(es['values_2'].ww.logical_types['priority_level'], Ordinal)
     assert len(es['values_2'].ww.logical_types['priority_level'].order) == 3
-    assert isinstance(es['values_2'].ww.logical_types['value'], ltypes.Ordinal)
+    assert isinstance(es['values_2'].ww.logical_types['value'], Ordinal)
     assert len(es['values_2'].ww.logical_types['value'].order) == 10
 
 
@@ -1493,7 +1493,7 @@ def test_secondary_time_index(es):
                            new_dataframe_time_index="value_time",
                            new_dataframe_secondary_time_index='second_ti')
 
-    assert isinstance(es['values'].ww.logical_types['second_ti'], ltypes.Datetime)
+    assert isinstance(es['values'].ww.logical_types['second_ti'], Datetime)
     assert (es['values'].ww.semantic_tags['second_ti'] == set())
     assert (es['values'].ww.metadata['secondary_time_index'] == {
             'second_ti': ['comments', 'second_ti']})
@@ -1560,9 +1560,9 @@ def test_datetime64_conversion(datetime3):
 
     if not isinstance(df, pd.DataFrame):
         logical_types = {
-            'id': ltypes.Integer,
-            'ints': ltypes.Integer,
-            'time': ltypes.Datetime
+            'id': Integer,
+            'ints': Integer,
+            'time': Datetime
         }
     else:
         logical_types = None
@@ -1601,9 +1601,9 @@ def index_df(request):
 def test_same_index_values(index_df):
     if not isinstance(index_df, pd.DataFrame):
         logical_types = {
-            'id': ltypes.Integer,
-            'transaction_time': ltypes.Datetime,
-            'first_entity_time': ltypes.Integer
+            'id': Integer,
+            'transaction_time': Datetime,
+            'first_entity_time': Integer
         }
     else:
         logical_types = None
@@ -1635,18 +1635,18 @@ def test_same_index_values(index_df):
 def test_use_time_index(index_df):
     if not isinstance(index_df, pd.DataFrame):
         bad_vtypes = {
-            'id': ltypes.Integer,
-            'transaction_time': ltypes.Datetime,
-            'first_entity_time': ltypes.Integer
+            'id': Integer,
+            'transaction_time': Datetime,
+            'first_entity_time': Integer
         }
         bad_semantic_tags = {'transaction_time': 'time_index'}
         logical_types = {
-            'id': ltypes.Integer,
-            'transaction_time': ltypes.Datetime,
-            'first_entity_time': ltypes.Integer
+            'id': Integer,
+            'transaction_time': Datetime,
+            'first_entity_time': Integer
         }
     else:
-        bad_vtypes = {"transaction_time": ltypes.Datetime}
+        bad_vtypes = {"transaction_time": Datetime}
         bad_semantic_tags = {'transaction_time': 'time_index'}
         logical_types = None
 
@@ -1674,8 +1674,8 @@ def test_normalize_with_datetime_time_index(es):
                            make_time_index=False,
                            copy_columns=['signup_date', 'upgrade_date'])
 
-    assert isinstance(es['cancel_reason'].ww.logical_types['signup_date'], ltypes.Datetime)
-    assert isinstance(es['cancel_reason'].ww.logical_types['upgrade_date'], ltypes.Datetime)
+    assert isinstance(es['cancel_reason'].ww.logical_types['signup_date'], Datetime)
+    assert isinstance(es['cancel_reason'].ww.logical_types['upgrade_date'], Datetime)
 
 
 def test_normalize_with_numeric_time_index(int_es):
@@ -1868,7 +1868,7 @@ def test_entityset_time_type_equality():
     first_es.time_type = 'numeric'
     assert first_es != second_es
 
-    second_es.time_type = ltypes.Datetime
+    second_es.time_type = Datetime
     assert first_es != second_es
 
     second_es.time_type = 'numeric'
