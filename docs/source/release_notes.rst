@@ -3,14 +3,23 @@
 Release Notes
 -------------
 
-Future Release
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.26.0 Jul 12, 2021
 ==============
     * Enhancements
         * Add ``replace_inf_values`` utility function for replacing ``inf`` values in a feature matrix (:pr:`1505`)
         * Add URLToProtocol, URLToDomain, URLToTLD, EmailAddressToDomain, IsFreeEmailDomain as transform primitives (:pr:`1508`)
     * Fixes
         * ``include_entities`` correctly overrides ``exclude_entities`` in ``primitive_options`` (:pr:`1518`)
-    * Changes
     * Documentation Changes
         * Prevent logging on build (:pr:`1498`)
     * Testing Changes
