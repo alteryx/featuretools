@@ -40,6 +40,7 @@ from featuretools.primitives import (
     Trend,
     Year
 )
+from featuretools.primitives.standard.transform_primitive import Negate
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.synthesis.utils import _schemas_equal
 from featuretools.tests.testing_utils import (
@@ -361,6 +362,9 @@ def test_make_indirect_groupby_features(pd_es):
 
 
 def test_make_groupby_features_with_id(pd_es):
+    # Need to convert customer_id to categorical column in order to build desired feature
+    pd_es['sessions'].ww.set_types(logical_types={'customer_id': 'Categorical'},
+                                   semantic_tags={'customer_id': 'foreign_key'})
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='sessions',
                                    entityset=pd_es,
                                    agg_primitives=[],
@@ -372,12 +376,16 @@ def test_make_groupby_features_with_id(pd_es):
 
 
 def test_make_groupby_features_with_diff_id(pd_es):
+    # Need to convert cohort to categorical column in order to build desired feature
+    pd_es['customers'].ww.set_types(logical_types={'cohort': 'Categorical'},
+                                    semantic_tags={'cohort': 'foreign_key'})
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='customers',
                                    entityset=pd_es,
                                    agg_primitives=[],
                                    trans_primitives=[],
                                    groupby_trans_primitives=['cum_count'])
     features = dfs_obj.build_features()
+
     groupby_with_diff_id = u"CUM_COUNT(cohort) by région_id"
     assert (feature_with_name(features, groupby_with_diff_id))
 
@@ -1110,6 +1118,7 @@ def test_primitive_options(es):
                                    entityset=es,
                                    primitive_options=options)
     features = dfs_obj.build_features()
+
     for f in features:
         deps = f.get_dependencies(deep=True)
         df_names = [d.dataframe_name for d in deps]
@@ -1527,3 +1536,17 @@ def test_no_transform_stacking():
 
     for feature_name in expected:
         assert feature_with_name(feature_defs, feature_name)
+
+
+def test_builds_seed_features_on_foreign_key_col(es):
+    seed_feature_sessions = ft.Feature(es, 'sessions', 'customer_id', primitive=Negate)
+
+    dfs_obj = DeepFeatureSynthesis(target_dataframe_name='sessions',
+                                   entityset=es,
+                                   agg_primitives=[Mean],
+                                   trans_primitives=[],
+                                   max_depth=2,
+                                   seed_features=[seed_feature_sessions])
+
+    features = dfs_obj.build_features()
+    assert (feature_with_name(features, '-(customer_id)'))

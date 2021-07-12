@@ -601,10 +601,6 @@ class DeepFeatureSynthesis(object):
                                                         require_direct_input=require_direct_input)
 
             for matching_input in matching_inputs:
-                # Don't create transform features for foreign key columns unless any column schema is valid for input
-                if any('foreign_key' in bf.column_schema.semantic_tags for bf in matching_input):
-                    if not any((input_type == ColumnSchema() or _schemas_equal(input_type, ColumnSchema(semantic_tags={'foreign_key'}))) for input_type in input_types):
-                        continue
                 if (all(bf.number_output_features == 1 for bf in matching_input) and
                         check_transform_stacking(matching_input)):
                     new_f = TransformFeature(matching_input,
@@ -644,10 +640,6 @@ class DeepFeatureSynthesis(object):
             # groupby, and don't create features of inputs/groupbys which are
             # all direct features with the same relationship path
             for matching_input in matching_inputs:
-                # Don't create groupby transform features for foreign key columns unless any column schema is valid for input
-                if any('foreign_key' in bf.column_schema.semantic_tags for bf in matching_input):
-                    if not any((input_type == ColumnSchema() or _schemas_equal(input_type, ColumnSchema(semantic_tags={'foreign_key'}))) for input_type in input_types):
-                        continue
                 if (all(bf.number_output_features == 1 for bf in matching_input) and
                         check_transform_stacking(matching_input)):
                     for groupby in groupby_matches:
@@ -728,16 +720,13 @@ class DeepFeatureSynthesis(object):
             wheres = list(self.where_clauses[child_dataframe.ww.name])
 
             for matching_input in matching_inputs:
-                if (any(_schemas_equal(bf.column_schema, ColumnSchema(semantic_tags={'foreign_key', 'numeric'})) for bf in matching_input) and
-                        not any((input_type == ColumnSchema() or _schemas_equal(input_type, ColumnSchema(semantic_tags={'foreign_key'}))) for input_type in input_types)):
-                    # Don't build agg features for numeric foreign key columns unless explicitly allowed
-                    continue
                 if not check_stacking(agg_prim, matching_input):
                     continue
                 new_f = AggregationFeature(matching_input,
                                            parent_dataframe_name=parent_dataframe.ww.name,
                                            relationship_path=relationship_path,
                                            primitive=agg_prim)
+
                 self._handle_new_feature(new_f, all_features)
 
                 # limit the stacking of where features
@@ -771,7 +760,6 @@ class DeepFeatureSynthesis(object):
                                                relationship_path=relationship_path,
                                                where=where,
                                                primitive=agg_prim)
-
                     self._handle_new_feature(new_f, all_features)
 
     def _features_by_type(self, all_features, dataframe, max_depth,
@@ -829,7 +817,6 @@ class DeepFeatureSynthesis(object):
                                           # variable_type=set(input_types))
                                           # TODO: Investigate whether this needs to be a set?
                                           column_schemas=list(input_types))
-
         if feature_filter:
             features = [f for f in features if feature_filter(f)]
 
@@ -846,7 +833,15 @@ class DeepFeatureSynthesis(object):
                                                     primitive_options,
                                                     commutative=primitive.commutative)
 
+        # Don't build features on numeric foreign key columns
+        matching_inputs = [match for match in matching_inputs if not _match_contains_numeric_foreign_key(match)]
+
         return matching_inputs
+
+
+def _match_contains_numeric_foreign_key(match):
+    match_schema = ColumnSchema(semantic_tags={'foreign_key', 'numeric'})
+    return any(_schemas_equal(f.column_schema, match_schema) for f in match)
 
 
 def check_transform_stacking(inputs):
