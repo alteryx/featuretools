@@ -23,8 +23,8 @@ def dfs(dataframes=None,
         groupby_trans_primitives=None,
         allowed_paths=None,
         max_depth=2,
-        ignore_entities=None,
-        ignore_variables=None,
+        ignore_dataframes=None,
+        ignore_columns=None,
         primitive_options=None,
         seed_features=None,
         drop_contains=None,
@@ -97,44 +97,44 @@ def dfs(dataframes=None,
 
         max_depth (int) : Maximum allowed depth of features.
 
-        ignore_entities (list[str], optional): List of entities to
+        ignore_dataframes (list[str], optional): List of entities to
             blacklist when creating features.
 
-        ignore_variables (dict[str -> list[str]], optional): List of specific
-            variables within each entity to blacklist when creating features.
+        ignore_columns (dict[str -> list[str]], optional): List of specific
+            columns within each entity to blacklist when creating features.
 
         primitive_options (list[dict[str or tuple[str] -> dict] or dict[str or tuple[str] -> dict, optional]):
             Specify options for a single primitive or a group of primitives.
             Lists of option dicts are used to specify options per input for primitives
             with multiple inputs. Each option ``dict`` can have the following keys:
 
-            ``"include_entities"``
+            ``"include_dataframes"``
                 List of entities to be included when creating features for
                 the primitive(s). All other entities will be ignored
                 (list[str]).
-            ``"ignore_entities"``
+            ``"ignore_dataframes"``
                 List of entities to be blacklisted when creating features
                 for the primitive(s) (list[str]).
-            ``"include_variables"``
-                List of specific variables within each entity to include when
-                creating feautres for the primitive(s). All other variables
+            ``"include_columns"``
+                List of specific columns within each entity to include when
+                creating features for the primitive(s). All other columns
                 in a given entity will be ignored (dict[str -> list[str]]).
-            ``"ignore_variables"``
-                List of specific variables within each entityt to blacklist
+            ``"ignore_columns"``
+                List of specific columns within each dataframe to blacklist
                 when creating features for the primitive(s) (dict[str ->
                 list[str]]).
-            ``"include_groupby_entities"``
+            ``"include_groupby_dataframes"``
                 List of Entities to be included when finding groupbys. All
                 other entities will be ignored (list[str]).
-            ``"ignore_groupby_entities"``
+            ``"ignore_groupby_dataframes"``
                 List of entities to blacklist when finding groupbys
                 (list[str]).
-            ``"include_groupby_variables"``
-                List of specific variables within each entity to include as
-                groupbys, if applicable. All other variables in each
+            ``"include_groupby_columns"``
+                List of specific columns within each entity to include as
+                groupbys, if applicable. All other columns in each
                 entity will be ignored (dict[str -> list[str]]).
-            ``"ignore_groupby_variables"``
-                List of specific variables within each entity to blacklist
+            ``"ignore_groupby_columns"``
+                List of specific columns within each entity to blacklist
                 as groupbys (dict[str -> list[str]]).
 
         seed_features (list[:class:`.FeatureBase`]): List of manually defined
@@ -253,8 +253,8 @@ def dfs(dataframes=None,
                                       allowed_paths=allowed_paths,
                                       drop_exact=drop_exact,
                                       drop_contains=drop_contains,
-                                      ignore_entities=ignore_entities,
-                                      ignore_variables=ignore_variables,
+                                      ignore_dataframes=ignore_dataframes,
+                                      ignore_columns=ignore_columns,
                                       primitive_options=primitive_options,
                                       max_features=max_features,
                                       seed_features=seed_features)

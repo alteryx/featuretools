@@ -47,13 +47,13 @@ def test_relationship_path_dataframes(es):
     assert list(RelationshipPath(mixed_path).dataframes()) == ['log', 'sessions', 'log']
 
 
-def test_names_when_multiple_relationships_between_entities(games_es):
+def test_names_when_multiple_relationships_between_dataframes(games_es):
     relationship = Relationship(games_es, 'teams', 'id', 'games', 'home_team_id')
     assert relationship.child_name == 'games[home_team_id]'
     assert relationship.parent_name == 'teams[home_team_id]'
 
 
-def test_names_when_no_other_relationship_between_entities(home_games_es):
+def test_names_when_no_other_relationship_between_dataframes(home_games_es):
     relationship = Relationship(home_games_es, 'teams', 'id', 'games', 'home_team_id')
     assert relationship.child_name == 'games'
     assert relationship.parent_name == 'teams'

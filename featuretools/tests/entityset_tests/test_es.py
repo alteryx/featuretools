@@ -1110,7 +1110,7 @@ def test_set_time_type_on_init(transactions_df):
     assert es.time_type == 'numeric'
 
 
-def test_sets_time_when_adding_entity(transactions_df):
+def test_sets_time_when_adding_dataframe(transactions_df):
     accounts_df = pd.DataFrame({"id": [3, 4, 5],
                                 "signup_date": [datetime(2002, 5, 1),
                                                 datetime(2006, 3, 20),
@@ -1301,7 +1301,7 @@ def test_normalize_dataframe_add_index_as_column(es):
                                make_time_index=False)
 
 
-def test_normalize_dataframe_new_time_index_in_base_entity_error_check(es):
+def test_normalize_dataframe_new_time_index_in_base_dataframe_error_check(es):
     error_text = "'make_time_index' must be a column in the base dataframe"
     with pytest.raises(ValueError, match=error_text):
         es.normalize_dataframe(base_dataframe_name='customers',
@@ -1310,7 +1310,7 @@ def test_normalize_dataframe_new_time_index_in_base_entity_error_check(es):
                                make_time_index="non-existent")
 
 
-def test_normalize_entity_new_time_index_in_column_list_error_check(es):
+def test_normalize_dataframe_new_time_index_in_column_list_error_check(es):
     error_text = "'make_time_index' must be specified in 'additional_columns' or 'copy_columns'"
     with pytest.raises(ValueError, match=error_text):
         es.normalize_dataframe(base_dataframe_name='customers',
@@ -1579,7 +1579,7 @@ def test_datetime64_conversion(datetime3):
 def pd_index_df():
     return pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                          "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s"),
-                         "first_entity_time": [1, 2, 3, 5, 6, 6]})
+                         "first_dataframe_time": [1, 2, 3, 5, 6, 6]})
 
 
 @pytest.fixture
@@ -1603,7 +1603,7 @@ def test_same_index_values(index_df):
         logical_types = {
             'id': ltypes.Integer,
             'transaction_time': ltypes.Datetime,
-            'first_entity_time': ltypes.Integer
+            'first_dataframe_time': ltypes.Integer
         }
     else:
         logical_types = None
@@ -1624,11 +1624,11 @@ def test_same_index_values(index_df):
                      dataframe=index_df,
                      logical_types=logical_types)
 
-    error_text = "time_index and index cannot be the same value, first_entity_time"
+    error_text = "time_index and index cannot be the same value, first_dataframe_time"
     with pytest.raises(ValueError, match=error_text):
         es.normalize_dataframe(base_dataframe_name="entity",
-                               new_dataframe_name="new_entity",
-                               index="first_entity_time",
+                               new_dataframe_name="new_dataframe",
+                               index="first_dataframe_time",
                                make_time_index=True)
 
 
@@ -1637,13 +1637,13 @@ def test_use_time_index(index_df):
         bad_vtypes = {
             'id': ltypes.Integer,
             'transaction_time': ltypes.Datetime,
-            'first_entity_time': ltypes.Integer
+            'first_dataframe_time': ltypes.Integer
         }
         bad_semantic_tags = {'transaction_time': 'time_index'}
         logical_types = {
             'id': ltypes.Integer,
             'transaction_time': ltypes.Datetime,
-            'first_entity_time': ltypes.Integer
+            'first_dataframe_time': ltypes.Integer
         }
     else:
         bad_vtypes = {"transaction_time": ltypes.Datetime}

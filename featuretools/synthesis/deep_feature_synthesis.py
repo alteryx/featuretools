@@ -68,12 +68,12 @@ class DeepFeatureSynthesis(object):
             allowed_paths (list[list[str]], optional): Allowed dataframe paths to make
                 features for. If None, use all paths.
 
-            ignore_entities (list[str], optional): List of entities to
+            ignore_dataframes (list[str], optional): List of entities to
                 blacklist when creating features. If None, use all entities.
 
-            ignore_variables (dict[str -> list[str]], optional): List of specific
-                variables within each dataframe to blacklist when creating features.
-                If None, use all variables.
+            ignore_columns (dict[str -> list[str]], optional): List of specific
+                columns within each dataframe to blacklist when creating features.
+                If None, use all columns.
 
             seed_features (list[:class:`.FeatureBase`], optional): List of manually
                 defined features to use.
@@ -93,33 +93,33 @@ class DeepFeatureSynthesis(object):
                 with multiple inputs. Each option ``dict`` can have the following keys:
 
 
-                ``"include_entities"``
-                    List of entities to be included when creating features for
-                    the primitive(s). All other entities will be ignored
+                ``"include_dataframes"``
+                    List of dataframes to be included when creating features for
+                    the primitive(s). All other dataframes will be ignored
                     (list[str]).
-                ``"ignore_entities"``
-                    List of entities to be blacklisted when creating features
+                ``"ignore_dataframes"``
+                    List of dataframes to be blacklisted when creating features
                     for the primitive(s) (list[str]).
-                ``"include_variables"``
-                    List of specific variables within each dataframe to include when
-                    creating features for the primitive(s). All other variables
+                ``"include_columns"``
+                    List of specific columns within each dataframe to include when
+                    creating features for the primitive(s). All other columns
                     in a given dataframe will be ignored (dict[str -> list[str]]).
-                ``"ignore_variables"``
-                    List of specific variables within each dataframe to blacklist
+                ``"ignore_columns"``
+                    List of specific columns within each dataframe to blacklist
                     when creating features for the primitive(s) (dict[str ->
                     list[str]]).
-                ``"include_groupby_entities"``
+                ``"include_groupby_dataframes"``
                     List of Entities to be included when finding groupbys. All
                     other entities will be ignored (list[str]).
-                ``"ignore_groupby_entities"``
+                ``"ignore_groupby_dataframes"``
                     List of entities to blacklist when finding groupbys
                     (list[str]).
-                ``"include_groupby_variables"``
-                    List of specific variables within each entity to include as
-                    groupbys, if applicable. All other variables in each
-                    entity will be ignored (dict[str -> list[str]]).
-                ``"ignore_groupby_variables"``
-                    List of specific variables within each entity to blacklist
+                ``"include_groupby_columns"``
+                    List of specific columns within each dataframe to include as
+                    groupbys, if applicable. All other columns in each
+                    dataframe will be ignored (dict[str -> list[str]]).
+                ``"ignore_groupby_columns"``
+                    List of specific columns within each dataframe to blacklist
                     as groupbys (dict[str -> list[str]]).
         """
 
@@ -133,8 +133,8 @@ class DeepFeatureSynthesis(object):
                  max_depth=2,
                  max_features=-1,
                  allowed_paths=None,
-                 ignore_entities=None,
-                 ignore_variables=None,
+                 ignore_dataframes=None,
+                 ignore_columns=None,
                  primitive_options=None,
                  seed_features=None,
                  drop_contains=None,
@@ -166,25 +166,25 @@ class DeepFeatureSynthesis(object):
             for path in allowed_paths:
                 self.allowed_paths.add(tuple(path))
 
-        if ignore_entities is None:
-            self.ignore_entities = set()
+        if ignore_dataframes is None:
+            self.ignore_dataframes = set()
         else:
-            if not isinstance(ignore_entities, list):
-                raise TypeError('ignore_entities must be a list')
-            assert target_dataframe_name not in ignore_entities,\
+            if not isinstance(ignore_dataframes, list):
+                raise TypeError('ignore_dataframes must be a list')
+            assert target_dataframe_name not in ignore_dataframes,\
                 "Can't ignore target_dataframe!"
-            self.ignore_entities = set(ignore_entities)
+            self.ignore_dataframes = set(ignore_dataframes)
 
-        self.ignore_variables = defaultdict(set)
-        if ignore_variables is not None:
-            # check if ignore_variables is not {str: list}
-            if not all(isinstance(i, str) for i in ignore_variables.keys()) or not all(isinstance(i, list) for i in ignore_variables.values()):
-                raise TypeError('ignore_variables should be dict[str -> list]')
+        self.ignore_columns = defaultdict(set)
+        if ignore_columns is not None:
+            # check if ignore_columns is not {str: list}
+            if not all(isinstance(i, str) for i in ignore_columns.keys()) or not all(isinstance(i, list) for i in ignore_columns.values()):
+                raise TypeError('ignore_columns should be dict[str -> list]')
             # check if list values are all of type str
-            elif not all(all(isinstance(v, str) for v in value) for value in ignore_variables.values()):
+            elif not all(all(isinstance(v, str) for v in value) for value in ignore_columns.values()):
                 raise TypeError('list values should be of type str')
-            for eid, vars in ignore_variables.items():
-                self.ignore_variables[eid] = set(vars)
+            for eid, vars in ignore_columns.items():
+                self.ignore_columns[eid] = set(vars)
         self.target_dataframe_name = target_dataframe_name
         self.es = entityset
 
@@ -251,11 +251,11 @@ class DeepFeatureSynthesis(object):
             msg = 'Selected primitives are incompatible with {} EntitySets: {}'
             raise ValueError(msg.format(df_library.value, ', '.join(bad_primitives)))
 
-        self.primitive_options, self.ignore_entities, self.ignore_variables =\
+        self.primitive_options, self.ignore_dataframes, self.ignore_columns =\
             generate_all_primitive_options(all_primitives,
                                            primitive_options,
-                                           self.ignore_entities,
-                                           self.ignore_variables,
+                                           self.ignore_dataframes,
+                                           self.ignore_columns,
                                            self.es)
         self.seed_features = sorted(seed_features or [], key=lambda f: f.unique_name())
         self.drop_exact = drop_exact or []
@@ -379,7 +379,7 @@ class DeepFeatureSynthesis(object):
             if b_dataframe_id in all_features:
                 continue
 
-            if b_dataframe_id in self.ignore_entities:
+            if b_dataframe_id in self.ignore_dataframes:
                 continue
 
             new_path = relationship_path + sub_relationship_path
@@ -400,7 +400,7 @@ class DeepFeatureSynthesis(object):
 
         backward_dataframes = self.es.get_backward_dataframes(dataframe.ww.name, deep=True)
         for b_dataframe_id, sub_relationship_path in backward_dataframes:
-            if b_dataframe_id in self.ignore_entities:
+            if b_dataframe_id in self.ignore_dataframes:
                 continue
 
             new_path = relationship_path + sub_relationship_path
@@ -429,7 +429,7 @@ class DeepFeatureSynthesis(object):
             if f_dataframe_id in all_features:
                 continue
 
-            if f_dataframe_id in self.ignore_entities:
+            if f_dataframe_id in self.ignore_dataframes:
                 continue
 
             new_path = relationship_path + sub_relationship_path
@@ -450,7 +450,7 @@ class DeepFeatureSynthesis(object):
 
         forward_dataframes = self.es.get_forward_dataframes(dataframe.ww.name)
         for f_dataframe_id, sub_relationship_path in forward_dataframes:
-            if f_dataframe_id in self.ignore_entities:
+            if f_dataframe_id in self.ignore_dataframes:
                 continue
 
             new_path = relationship_path + sub_relationship_path
@@ -503,7 +503,7 @@ class DeepFeatureSynthesis(object):
         all_features[dataframe_name][name] = new_feature
 
     def _add_identity_features(self, all_features, dataframe):
-        """converts all variables from the given dataframe into features
+        """converts all columns from the given dataframe into features
 
         Args:
             all_features (dict[dataframe name -> dict[str -> BaseFeature]]):
@@ -512,7 +512,7 @@ class DeepFeatureSynthesis(object):
             dataframe (DataFrame): DataFrame to calculate features for.
         """
         for col in dataframe.columns:
-            if col in self.ignore_variables[dataframe.ww.name]:
+            if col in self.ignore_columns[dataframe.ww.name]:
                 continue
             new_f = IdentityFeature(self.es, dataframe.ww.name, col)
             self._handle_new_feature(all_features=all_features,
@@ -625,8 +625,8 @@ class DeepFeatureSynthesis(object):
                                                         current_options)
 
             # get columns to use as groupbys, use IDs as default unless other groupbys specified
-            if any(['include_groupby_variables' in option and dataframe.ww.name in
-                    option['include_groupby_variables'] for option in current_options]):
+            if any(['include_groupby_columns' in option and dataframe.ww.name in
+                    option['include_groupby_columns'] for option in current_options]):
                 column_schemas = 'all'
             else:
                 column_schemas = [ColumnSchema(semantic_tags=['foreign_key'])]
@@ -814,8 +814,6 @@ class DeepFeatureSynthesis(object):
         features = self._features_by_type(all_features=all_features,
                                           dataframe=dataframe,
                                           max_depth=max_depth,
-                                          # variable_type=set(input_types))
-                                          # TODO: Investigate whether this needs to be a set?
                                           column_schemas=list(input_types))
         if feature_filter:
             features = [f for f in features if feature_filter(f)]

@@ -197,8 +197,8 @@ def test_all_variables(pd_dataframes, relationships):
                                    groupby_trans_primitives=["cum_sum"],
                                    max_depth=3,
                                    allowed_paths=None,
-                                   ignore_entities=None,
-                                   ignore_variables=None,
+                                   ignore_dataframes=None,
+                                   ignore_columns=None,
                                    seed_features=None)
     assert len(feature_matrix.index) == 3
     assert len(feature_matrix.columns) == len(features)
@@ -325,7 +325,7 @@ def test_does_not_warn_with_stacking_feature(pd_es):
             target_dataframe_name='régions',
             agg_primitives=['percent_true'],
             trans_primitives=[GreaterThanScalar(5)],
-            primitive_options={'greater_than_scalar': {'include_entities': ['stores']}},
+            primitive_options={'greater_than_scalar': {'include_dataframes': ['stores']}},
             features_only=True)
 
     assert not record

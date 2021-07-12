@@ -1777,7 +1777,7 @@ def test_approximate_with_single_cutoff_warns(pd_es):
     features = dfs(entityset=pd_es,
                    target_dataframe='customers',
                    features_only=True,
-                   ignore_entities=['cohorts'],
+                   ignore_dataframes=['cohorts'],
                    agg_primitives=['sum'])
 
     match = "Using approximate with a single cutoff_time value or no cutoff_time " \

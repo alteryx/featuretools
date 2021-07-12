@@ -28,17 +28,17 @@ def test_add_dataframe_with_non_numeric_index(pd_es, dask_es):
     dask_df = dd.from_pandas(df, npartitions=2)
 
     pd_es.add_dataframe(
-        dataframe_name="new_entity",
+        dataframe_name="new_dataframe",
         dataframe=df,
         index="id")
 
     dask_es.add_dataframe(
-        dataframe_name="new_entity",
+        dataframe_name="new_dataframe",
         dataframe=dask_df,
         index="id",
         logical_types={"id": ltypes.Categorical, "values": ltypes.Integer})
 
-    pd.testing.assert_frame_equal(pd_es['new_entity'].reset_index(drop=True), dask_es['new_entity'].compute())
+    pd.testing.assert_frame_equal(pd_es['new_dataframe'].reset_index(drop=True), dask_es['new_dataframe'].compute())
 
 
 def test_create_entityset_with_mixed_dataframe_types(pd_es, dask_es):
@@ -140,10 +140,10 @@ def test_add_dataframe_with_make_index():
     dask_df = dd.from_pandas(df, npartitions=2)
     dask_es = EntitySet(id="dask_es")
     logical_types = {"values": ltypes.Integer}
-    dask_es.add_dataframe(dataframe_name="new_entity", dataframe=dask_df, make_index=True, index="new_index", logical_types=logical_types)
+    dask_es.add_dataframe(dataframe_name="new_dataframe", dataframe=dask_df, make_index=True, index="new_index", logical_types=logical_types)
 
     expected_df = pd.DataFrame({"values": values, "new_index": range(len(values))})
-    pd.testing.assert_frame_equal(expected_df, dask_es['new_entity'].compute())
+    pd.testing.assert_frame_equal(expected_df, dask_es['new_dataframe'].compute())
 
 
 def test_dataframe_type_dask(dask_es):

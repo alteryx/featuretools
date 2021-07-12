@@ -225,7 +225,7 @@ def test_has_unique_path(diamond_es):
     assert not diamond_es.has_unique_forward_path('transactions', 'regions')
 
 
-def test_raise_key_error_missing_entity(es):
+def test_raise_key_error_missing_dataframe(es):
     error_text = "DataFrame testing does not exist in ecommerce"
     with pytest.raises(KeyError, match=error_text):
         es["testing"]
