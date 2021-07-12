@@ -7,6 +7,19 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    CountryCode,
+    Datetime,
+    Double,
+    Integer,
+    LatLong,
+    NaturalLanguage,
+    Ordinal,
+    PostalCode,
+    SubRegionCode
+)
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
@@ -14,7 +27,6 @@ from featuretools.entityset.entityset import LTI_COLUMN_NAME
 from featuretools.tests.testing_utils import get_df_tags, to_pandas
 from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
-from woodwork.logical_types import Boolean, Categorical, CountryCode, Datetime, Double, Integer, LatLong, NaturalLanguage, PostalCode, SubRegionCode, Ordinal
 
 ks = import_or_none('databricks.koalas')
 

@@ -1,6 +1,7 @@
 import logging
 import warnings
 from collections import defaultdict
+
 from woodwork.column_schema import ColumnSchema
 
 from featuretools import primitives

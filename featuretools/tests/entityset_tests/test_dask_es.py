@@ -1,11 +1,17 @@
 import dask.dataframe as dd
 import pandas as pd
 import pytest
+from woodwork.logical_types import (
+    Categorical,
+    Datetime,
+    Double,
+    Integer,
+    NaturalLanguage
+)
 
 from featuretools.entityset import EntitySet
 from featuretools.tests.testing_utils import get_df_tags
 from featuretools.utils.gen_utils import Library
-from woodwork.logical_types import Categorical, Datetime, Double, Integer, NaturalLanguage
 
 
 def test_add_dataframe(pd_es):

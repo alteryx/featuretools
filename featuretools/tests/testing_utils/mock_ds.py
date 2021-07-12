@@ -2,9 +2,27 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+from woodwork.logical_types import (
+    URL,
+    Boolean,
+    Categorical,
+    CountryCode,
+    Datetime,
+    Double,
+    EmailAddress,
+    Filepath,
+    Integer,
+    IPAddress,
+    LatLong,
+    NaturalLanguage,
+    Ordinal,
+    PersonFullName,
+    PhoneNumber,
+    PostalCode,
+    SubRegionCode
+)
 
 from featuretools.entityset import EntitySet
-from woodwork.logical_types import Boolean, Datetime, Categorical, CountryCode, Double, EmailAddress, Filepath, Integer, IPAddress, LatLong, NaturalLanguage, Ordinal, PostalCode, PersonFullName, PhoneNumber, SubRegionCode, URL
 
 
 def make_ecommerce_entityset(with_integer_time_index=False):

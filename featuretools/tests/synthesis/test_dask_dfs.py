@@ -1,9 +1,15 @@
 import dask.dataframe as dd
 import pandas as pd
+from woodwork.logical_types import (
+    Datetime,
+    DatetimeTimeIndex,
+    Double,
+    NaturalLanguage,
+    Numeric
+)
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
-from woodwork.logical_types import Datetime, DatetimeTimeIndex, Double, NaturalLanguage, Numeric
 
 
 def test_single_table_dask_entityset():

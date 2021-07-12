@@ -1,6 +1,7 @@
 import dask.dataframe as dd
 import pandas as pd
 import pytest
+from woodwork import list_logical_types, list_semantic_tags
 
 import featuretools as ft
 from featuretools.utils.gen_utils import (
@@ -8,7 +9,7 @@ from featuretools.utils.gen_utils import (
     import_or_raise,
     is_instance
 )
-from woodwork import list_logical_types, list_semantic_tags
+
 
 def test_import_or_raise_errors():
     with pytest.raises(ImportError, match="error message"):

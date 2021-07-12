@@ -1,7 +1,7 @@
 import pandas as pd
+from woodwork.logical_types import NaturalLanguage
 
 import featuretools as ft
-from woodwork.logical_types import NaturalLanguage
 
 
 def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):

@@ -1,10 +1,10 @@
 import pandas as pd
 import pytest
+from woodwork.logical_types import Datetime, Double, NaturalLanguage, Numeric
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
 from featuretools.utils.gen_utils import import_or_none
-from woodwork.logical_types import Datetime, Double, NaturalLanguage, Numeric
 
 ks = import_or_none('databricks.koalas')
 

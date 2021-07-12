@@ -4,6 +4,7 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
+from woodwork.exceptions import TypeConversionError
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -12,7 +13,7 @@ from woodwork.logical_types import (
     Integer,
     NaturalLanguage
 )
-from woodwork.exceptions import TypeConversionError
+
 from featuretools.entityset.entityset import LTI_COLUMN_NAME, EntitySet
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none

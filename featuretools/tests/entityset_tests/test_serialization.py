@@ -7,11 +7,10 @@ from urllib.request import urlretrieve
 import boto3
 import pandas as pd
 import pytest
-
 from woodwork.logical_types import Datetime, LogicalType, Ordinal
 from woodwork.serialize import typing_info_to_dict
-from woodwork.type_sys.utils import list_logical_types
 from woodwork.type_sys.type_system import type_system
+from woodwork.type_sys.utils import list_logical_types
 
 from featuretools.entityset import EntitySet, deserialize, serialize
 from featuretools.entityset.serialize import SCHEMA_VERSION
