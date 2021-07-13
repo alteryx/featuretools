@@ -1,7 +1,7 @@
 import pandas as pd
-import woodwork as ww
 from numpy import random
 from numpy.random import choice
+from woodwork.logical_types import Categorical, PostalCode
 
 import featuretools as ft
 
@@ -52,7 +52,7 @@ def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transaction
                               dataframe=transactions_df,
                               index="transaction_id",
                               time_index="transaction_time",
-                              logical_types={"product_id": ww.logical_types.Categorical})
+                              logical_types={"product_id": Categorical})
 
         es = es.add_dataframe(dataframe_name="products",
                               dataframe=products_df,
@@ -67,7 +67,7 @@ def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transaction
                               dataframe=customers_df,
                               index="customer_id",
                               time_index="join_date",
-                              logical_types={"zip_code": ww.logical_types.PostalCode})
+                              logical_types={"zip_code": PostalCode})
 
         rels = [("products", "product_id", "transactions", "product_id"),
                 ("sessions", "session_id", "transactions", "session_id"),

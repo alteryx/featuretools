@@ -1,5 +1,5 @@
 import pandas as pd
-import woodwork as ww
+from woodwork.logical_types import NaturalLanguage
 
 import featuretools as ft
 
@@ -79,7 +79,7 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
                      index="order_product_id",
                      make_index=True,
                      time_index="order_date",
-                     logical_types={'description': ww.logical_types.NaturalLanguage})
+                     logical_types={'description': NaturalLanguage})
 
     es.normalize_dataframe(new_dataframe_name="products",
                            base_dataframe_name="order_products",

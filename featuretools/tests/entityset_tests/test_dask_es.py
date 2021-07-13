@@ -1,7 +1,13 @@
 import dask.dataframe as dd
 import pandas as pd
 import pytest
-import woodwork.logical_types as ltypes
+from woodwork.logical_types import (
+    Categorical,
+    Datetime,
+    Double,
+    Integer,
+    NaturalLanguage
+)
 
 from featuretools.entityset import EntitySet
 from featuretools.tests.testing_utils import get_df_tags
@@ -36,7 +42,7 @@ def test_add_dataframe_with_non_numeric_index(pd_es, dask_es):
         dataframe_name="new_entity",
         dataframe=dask_df,
         index="id",
-        logical_types={"id": ltypes.Categorical, "values": ltypes.Integer})
+        logical_types={"id": Categorical, "values": Integer})
 
     pd.testing.assert_frame_equal(pd_es['new_entity'].reset_index(drop=True), dask_es['new_entity'].compute())
 
@@ -81,10 +87,10 @@ def test_add_last_time_indexes():
                                          ""]})
     sessions_dask = dd.from_pandas(sessions, npartitions=2)
     sessions_logical_types = {
-        "id": ltypes.Integer,
-        "user": ltypes.Integer,
-        "time": ltypes.Datetime,
-        "strings": ltypes.NaturalLanguage
+        "id": Integer,
+        "user": Integer,
+        "time": Datetime,
+        "strings": NaturalLanguage
     }
 
     transactions = pd.DataFrame({"id": [0, 1, 2, 3, 4, 5],
@@ -99,10 +105,10 @@ def test_add_last_time_indexes():
     transactions_dask = dd.from_pandas(transactions, npartitions=2)
 
     transactions_logical_types = {
-        "id": ltypes.Integer,
-        "session_id": ltypes.Integer,
-        "time": ltypes.Datetime,
-        "amount": ltypes.Double
+        "id": Integer,
+        "session_id": Integer,
+        "time": Datetime,
+        "amount": Double
     }
 
     pd_es.add_dataframe(dataframe_name="sessions", dataframe=sessions, index="id", time_index="time")
@@ -139,7 +145,7 @@ def test_add_dataframe_with_make_index():
     df = pd.DataFrame({"values": values})
     dask_df = dd.from_pandas(df, npartitions=2)
     dask_es = EntitySet(id="dask_es")
-    logical_types = {"values": ltypes.Integer}
+    logical_types = {"values": Integer}
     dask_es.add_dataframe(dataframe_name="new_entity", dataframe=dask_df, make_index=True, index="new_index", logical_types=logical_types)
 
     expected_df = pd.DataFrame({"values": values, "new_index": range(len(values))})

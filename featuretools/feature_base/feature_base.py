@@ -1,5 +1,5 @@
-from woodwork import logical_types as ltypes
 from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import Boolean
 
 from featuretools import Relationship, Timedelta, primitives
 from featuretools.entityset.relationship import RelationshipPath
@@ -269,7 +269,7 @@ class FeatureBase(object):
     def __mul__(self, other):
         """Multiply by other"""
         if isinstance(other, FeatureBase):
-            if all([isinstance(f.column_schema.logical_type, ltypes.Boolean)
+            if all([isinstance(f.column_schema.logical_type, Boolean)
                     for f in (self, other)]):
                 return Feature([self, other], primitive=primitives.MultiplyBoolean)
         return self._handle_binary_comparision(other, primitives.MultiplyNumeric, primitives.MultiplyNumericScalar)

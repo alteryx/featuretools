@@ -2,8 +2,8 @@ import math
 import re
 
 import pandas as pd
-import woodwork as ww
 from tqdm import tqdm
+from woodwork.logical_types import Boolean, Categorical, Ordinal
 
 import featuretools as ft
 
@@ -94,10 +94,10 @@ def make_es(data):
                         'late_aircraft_delay', 'canceled', 'diverted',
                         'taxi_in', 'taxi_out', 'air_time', 'dep_time']
 
-    logical_types = {'flight_num': ww.logical_types.Categorical,
-                     'distance_group': ww.logical_types.Ordinal(order=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]),
-                     'canceled': ww.logical_types.Boolean,
-                     'diverted': ww.logical_types.Boolean}
+    logical_types = {'flight_num': Categorical,
+                     'distance_group': Ordinal(order=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]),
+                     'canceled': Boolean,
+                     'diverted': Boolean}
 
     es.add_dataframe(data,
                      dataframe_name='trip_logs',

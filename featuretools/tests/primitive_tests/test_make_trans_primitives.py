@@ -3,10 +3,10 @@ import pytest
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, Datetime, Timedelta
 
+from featuretools.feature_base import Feature
 from featuretools.primitives.base.transform_primitive_base import (
     make_trans_primitive
 )
-from featuretools.feature_base import Feature
 
 
 # Check the custom trans primitives description
