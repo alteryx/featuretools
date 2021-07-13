@@ -7,9 +7,9 @@ from urllib.request import urlretrieve
 import boto3
 import pandas as pd
 import pytest
+import woodwork.type_sys.type_system as ww_type_system
 from woodwork.logical_types import Datetime, LogicalType, Ordinal
 from woodwork.serialize import typing_info_to_dict
-from woodwork.type_sys.type_system import type_system
 from woodwork.type_sys.utils import list_logical_types
 
 from featuretools.entityset import EntitySet, deserialize, serialize
@@ -48,7 +48,7 @@ def test_with_custom_ww_logical_type():
     class CustomLogicalType(LogicalType):
         pass
 
-    type_system.add_type(CustomLogicalType)
+    ww_type_system.add_type(CustomLogicalType)
     columns = ['integer', 'natural_language', 'custom_logical_type']
     dataframe = pd.DataFrame(columns=columns)
     es = EntitySet()
