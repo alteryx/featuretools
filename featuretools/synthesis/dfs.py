@@ -205,7 +205,7 @@ def dfs(dataframes=None,
             List of ColumnSchemas defining the types of
             columns to return. If None, defaults to returning all
             numeric, categorical and boolean types. If given as
-            the string 'all', use all available variable types.
+            the string 'all', returns all available types.
 
         progress_callback (callable): function to be called with incremental progress updates.
             Has the following parameters:

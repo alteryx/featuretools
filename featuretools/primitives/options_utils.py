@@ -73,23 +73,23 @@ def generate_all_primitive_options(all_primitives,
             for option in options:
                 # don't globally ignore a column if it's included for a primitive
                 if 'include_columns' in option:
-                    for dataframe, include_vars in option['include_columns'].items():
+                    for dataframe, include_cols in option['include_columns'].items():
                         global_ignore_columns[dataframe] = \
-                            global_ignore_columns[dataframe].difference(include_vars)
+                            global_ignore_columns[dataframe].difference(include_cols)
                 option['ignore_dataframes'] = option['ignore_dataframes'].union(
                     ignore_dataframes.difference(included_dataframes)
                 )
-            for dataframe, ignore_vars in ignore_columns.items():
+            for dataframe, ignore_cols in ignore_columns.items():
                 # if already ignoring columns for this dataframe, add globals
                 for option in options:
                     if dataframe in option['ignore_columns']:
-                        option['ignore_columns'][dataframe] = option['ignore_columns'][dataframe].union(ignore_vars)
+                        option['ignore_columns'][dataframe] = option['ignore_columns'][dataframe].union(ignore_cols)
                     # if no ignore_columns and dataframe is explicitly included, don't ignore the column
                     elif dataframe in included_dataframes:
                         continue
                     # Otherwise, keep the global option
                     else:
-                        option['ignore_columns'][dataframe] = ignore_vars
+                        option['ignore_columns'][dataframe] = ignore_cols
         else:
             # no user specified options, just use global defaults
             primitive_options[primitive] = [{'ignore_dataframes': ignore_dataframes,
@@ -162,21 +162,21 @@ def _init_option_dict(key, option_dict, es):
 def column_filter(f, options, groupby=False):
     if groupby and not f.column_schema.semantic_tags.intersection({'category', 'foreign_key'}):
         return False
-    include_vars = 'include_groupby_columns' if groupby else 'include_columns'
-    ignore_vars = 'ignore_groupby_columns' if groupby else 'ignore_columns'
+    include_cols = 'include_groupby_columns' if groupby else 'include_columns'
+    ignore_cols = 'ignore_groupby_columns' if groupby else 'ignore_columns'
     include_dataframes = 'include_groupby_dataframes' if groupby else 'include_dataframes'
     ignore_dataframes = 'ignore_groupby_dataframes' if groupby else 'ignore_dataframes'
 
     dependencies = f.get_dependencies(deep=True) + [f]
     for base_f in dependencies:
         if isinstance(base_f, IdentityFeature):
-            if include_vars in options and base_f.dataframe_name in options[include_vars]:
-                if base_f.get_name() in options[include_vars][base_f.dataframe_name]:
+            if include_cols in options and base_f.dataframe_name in options[include_cols]:
+                if base_f.get_name() in options[include_cols][base_f.dataframe_name]:
                     continue  # this is a valid feature, go to next
                 else:
                     return False  # this is not an included feature
-            if ignore_vars in options and base_f.dataframe_name in options[ignore_vars]:
-                if base_f.get_name() in options[ignore_vars][base_f.dataframe_name]:
+            if ignore_cols in options and base_f.dataframe_name in options[ignore_cols]:
+                if base_f.get_name() in options[ignore_cols][base_f.dataframe_name]:
                     return False  # ignore this feature
         if include_dataframes in options and \
                 base_f.dataframe_name not in options[include_dataframes]:
