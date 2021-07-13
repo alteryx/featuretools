@@ -26,7 +26,7 @@ v0.26.0 Jul 12, 2021
         * Test featuretools on pandas 1.3.0 release candidate and make fixes (:pr:`1492`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`frances-h`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
+    :user:`frances-h`, :user:`gsheni`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 v0.25.0 Jun 11, 2021
 ====================
