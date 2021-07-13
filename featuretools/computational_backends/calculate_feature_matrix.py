@@ -155,7 +155,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             msg = "Using training_window is not supported with Dask Entities"
             raise ValueError(msg)
 
-    target_dataframe = entityset[features[0].entity.id]
+    target_dataframe = entityset[features[0].dataframe_name]
 
     cutoff_time = _validate_cutoff_time(cutoff_time, target_dataframe)
     entityset._check_time_indexes()

@@ -136,7 +136,7 @@ class FeatureSetCalculator(object):
 
                 df = default_df.append(df, sort=True)
 
-            df.index.name = self.entityset[self.feature_set.target_eid].index
+            df.index.name = self.entityset[self.feature_set.target_eid].ww.index
 
             # Order by instance_ids
             unique_instance_ids = pd.unique(instance_ids)
@@ -218,9 +218,9 @@ class FeatureSetCalculator(object):
             query_variable = filter_variable
             query_values = filter_values
 
-        df = self.entityset.query_by_values(entity_id=entity_id,
+        df = self.entityset.query_by_values(dataframe_name=entity_id,
                                             instance_vals=query_values,
-                                            variable_id=query_variable,
+                                            column_name=query_variable,
                                             columns=columns,
                                             time_last=self.time_last,
                                             training_window=self.training_window,
@@ -749,10 +749,11 @@ class FeatureSetCalculator(object):
         # relationships will come from this node.
         df = self.entityset[dataframe_name]
         index_columns = {col for col in df.columns
-                         if {'index', 'foreign_key', 'time_index'} & df[col].ww.semantic_tags}
+                         if {'index', 'foreign_key', 'time_index'} & df.ww[col].ww.semantic_tags}
         features = (self.feature_set.features_by_name[name]
                     for name in feature_names)
-        feature_columns = {f.variable.id for f in features
+
+        feature_columns = {f.column_name for f in features
                            if isinstance(f, IdentityFeature)}
         return list(index_columns | feature_columns)
 

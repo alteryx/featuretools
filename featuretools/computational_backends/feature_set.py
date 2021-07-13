@@ -30,7 +30,7 @@ class FeatureSet(object):
                 approximate_feature_trie then neither A nor its dependencies will appear in
                 FeatureSet.feature_trie.
         """
-        self.target_eid = features[0].entity.id
+        self.target_eid = features[0].dataframe_name
         self.target_features = features
         self.target_feature_names = {f.unique_name() for f in features}
 
