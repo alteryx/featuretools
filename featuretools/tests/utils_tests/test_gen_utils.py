@@ -1,7 +1,7 @@
 import dask.dataframe as dd
 import pandas as pd
 import pytest
-import woodwork as ww
+from woodwork import list_logical_types, list_semantic_tags
 
 import featuretools as ft
 from featuretools.utils.gen_utils import (
@@ -60,11 +60,11 @@ def test_is_instance_none_module(df):
 
 def test_list_logical_types():
     ft_ltypes = ft.list_logical_types()
-    ww_ltypes = ww.list_logical_types()
+    ww_ltypes = list_logical_types()
     assert ft_ltypes.equals(ww_ltypes)
 
 
 def test_list_semantic_tags():
     ft_semantic_tags = ft.list_semantic_tags()
-    ww_semantic_tags = ww.list_semantic_tags()
+    ww_semantic_tags = list_semantic_tags()
     assert ft_semantic_tags.equals(ww_semantic_tags)

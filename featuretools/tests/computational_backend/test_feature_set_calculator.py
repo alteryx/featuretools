@@ -3,10 +3,10 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 from dask import dataframe as dd
 from numpy.testing import assert_array_equal
 from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import Categorical, Datetime, Double, Integer
 
 import featuretools as ft
 from featuretools import Timedelta
@@ -460,10 +460,10 @@ def test_make_3_stacked_agg_feats(df):
         pytest.xfail('normalize_entity fails with dask DataFrame')
     es = ft.EntitySet()
     ltypes = {
-        'e1': ww.logical_types.Categorical,
-        'e2': ww.logical_types.Categorical,
-        'e3': ww.logical_types.Categorical,
-        'val': ww.logical_types.Double
+        'e1': Categorical,
+        'e2': Categorical,
+        'e3': Categorical,
+        'val': Double
     }
     es.add_dataframe(dataframe=df,
                      index="id",
@@ -762,10 +762,10 @@ def test_empty_child_dataframe(parent_child):
     parent_df, child_df = parent_child
     if not isinstance(parent_df, pd.DataFrame):
         child_ltypes = {
-            'parent_id': ww.list_logical_types.Integer,
-            'time_index': ww.list_logical_types.Datetime,
-            'value': ww.list_logical_types.Double,
-            'cat': ww.list_logical_types.Categorical
+            'parent_id': Integer,
+            'time_index': Datetime,
+            'value': Double,
+            'cat': Categorical
         }
     else:
         child_ltypes = None
