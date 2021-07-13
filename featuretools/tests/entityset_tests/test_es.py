@@ -1615,7 +1615,7 @@ def test_same_index_values(index_df):
         logical_types = {
             'id': Integer,
             'transaction_time': Datetime,
-            'first_entity_time': Integer
+            'first_dataframe_time': Integer
         }
     else:
         logical_types = None
@@ -1649,13 +1649,13 @@ def test_use_time_index(index_df):
         bad_ltypes = {
             'id': Integer,
             'transaction_time': Datetime,
-            'first_entity_time': Integer
+            'first_dataframe_time': Integer
         }
         bad_semantic_tags = {'transaction_time': 'time_index'}
         logical_types = {
             'id': Integer,
             'transaction_time': Datetime,
-            'first_entity_time': Integer
+            'first_dataframe_time': Integer
         }
     else:
         bad_ltypes = {"transaction_time": Datetime}
@@ -1796,7 +1796,7 @@ def test_add_interesting_values_multiple_dataframes(pd_es):
         'customers': {'cancel_reason', 'engagement_level'},
         'sessions': {'device_type', 'device_name'},
         'log': {'zipcode', 'countrycode', 'subregioncode', 'priority_level'},
-        'cohorts': {},
+        'cohorts': {'cohort_name'},
     }
     for df_id, df in pd_es.dataframe_dict.items():
         expected_cols = expected_cols_with_vals[df_id]
