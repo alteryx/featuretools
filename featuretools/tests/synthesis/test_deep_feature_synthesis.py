@@ -845,7 +845,7 @@ def test_initialized_agg_prim(es):
     assert (feature_with_name(features, "N_MOST_COMMON(log.subregioncode)"))
 
 
-def test_return_variable_types(es):
+def test_return_types(es):
     # TODO: Update to work with Dask and Koalas supported primitive
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Dask and Koalas EntitySets do not support the NMostCommon primitive")
@@ -858,10 +858,10 @@ def test_return_variable_types(es):
     numeric = ColumnSchema(semantic_tags={"numeric"})
     datetime = ColumnSchema(logical_type=Datetime)
 
-    f1 = dfs_obj.build_features(return_variable_types=None)
-    f2 = dfs_obj.build_features(return_variable_types=[discrete])
-    f3 = dfs_obj.build_features(return_variable_types="all")
-    f4 = dfs_obj.build_features(return_variable_types=[datetime])
+    f1 = dfs_obj.build_features(return_types=None)
+    f2 = dfs_obj.build_features(return_types=[discrete])
+    f3 = dfs_obj.build_features(return_types="all")
+    f4 = dfs_obj.build_features(return_types=[datetime])
 
     f1_types = [f.column_schema for f in f1]
     f2_types = [f.column_schema for f in f2]

@@ -40,7 +40,7 @@ def dfs(dataframes=None,
         n_jobs=1,
         dask_kwargs=None,
         verbose=False,
-        return_variable_types=None,
+        return_types=None,
         progress_callback=None,
         include_cutoff_time=True):
     '''Calculates a feature matrix and features given a dictionary of dataframes
@@ -201,10 +201,11 @@ def dfs(dataframes=None,
 
             Valid keyword arguments for LocalCluster will also be accepted.
 
-        return_variable_types (list[Variable] or str, optional): Types of
-                variables to return. If None, default to
-                Numeric, Discrete, and Boolean. If given as
-                the string 'all', use all available variable types.
+        return_types (list[woodwork.ColumnSchema] or str, optional):
+            List of ColumnSchemas defining the types of
+            columns to return. If None, defaults to returning all
+            numeric, categorical and boolean types. If given as
+            the string 'all', use all available variable types.
 
         progress_callback (callable): function to be called with incremental progress updates.
             Has the following parameters:
@@ -260,7 +261,7 @@ def dfs(dataframes=None,
                                       seed_features=seed_features)
 
     features = dfs_object.build_features(
-        verbose=verbose, return_variable_types=return_variable_types)
+        verbose=verbose, return_types=return_types)
 
     trans, agg, groupby, where = _categorize_features(features)
 

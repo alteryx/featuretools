@@ -262,14 +262,15 @@ class DeepFeatureSynthesis(object):
         self.drop_contains = drop_contains or []
         self.where_stacking_limit = where_stacking_limit
 
-    def build_features(self, return_variable_types=None, verbose=False):
+    def build_features(self, return_types=None, verbose=False):
         """Automatically builds feature definitions for target
             dataframe using Deep Feature Synthesis algorithm
 
         Args:
-            return_variable_types (list[Variable] or str, optional): Types of
-                variables to return. If None, default to
-                Numeric, Discrete, and Boolean. If given as
+            return_types (list[woodwork.ColumnSchema] or str, optional):
+                List of ColumnSchemas defining the types of
+                columns to return. If None, defaults to returning all
+                numeric, categorical and boolean types. If given as
                 the string 'all', use all available variable types.
 
             verbose (bool, optional): If True, print progress.
@@ -283,16 +284,16 @@ class DeepFeatureSynthesis(object):
 
         self.where_clauses = defaultdict(set)
 
-        if return_variable_types is None:
-            return_variable_types = [ColumnSchema(semantic_tags=['numeric']),
-                                     ColumnSchema(semantic_tags=['category']),
-                                     ColumnSchema(logical_type=Boolean),
-                                     ColumnSchema(logical_type=BooleanNullable)]
-        elif return_variable_types == 'all':
+        if return_types is None:
+            return_types = [ColumnSchema(semantic_tags=['numeric']),
+                            ColumnSchema(semantic_tags=['category']),
+                            ColumnSchema(logical_type=Boolean),
+                            ColumnSchema(logical_type=BooleanNullable)]
+        elif return_types == 'all':
             pass
         else:
-            msg = "return_variable_types must be a list, or 'all'"
-            assert isinstance(return_variable_types, list), msg
+            msg = "return_types must be a list, or 'all'"
+            assert isinstance(return_types, list), msg
 
         self._run_dfs(self.es[self.target_dataframe_name], RelationshipPath([]),
                       all_features, max_depth=self.max_depth)
@@ -309,10 +310,10 @@ class DeepFeatureSynthesis(object):
             return True
 
         # filter out features with undesired return types
-        if return_variable_types != 'all':
+        if return_types != 'all':
             new_features = [
                 f for f in new_features
-                if any(_schemas_equal(f.column_schema, schema) for schema in return_variable_types)]
+                if any(_schemas_equal(f.column_schema, schema) for schema in return_types)]
         new_features = list(filter(filt, new_features))
 
         new_features.sort(key=lambda f: f.get_depth())
