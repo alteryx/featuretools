@@ -348,7 +348,7 @@ def test_dask_entityset_secondary_time_index():
         secondary_time_index={'arrival_time': ['departure_time', 'delay']})
 
     pd_es.add_dataframe(dataframe_name='flights', dataframe=flights_df, index="id")
-    flights_ltypes = pd_es['flights'].variable_types
+    flights_ltypes = pd_es['flights'].ww.logical_types
     dask_es.add_dataframe(dataframe_name='flights', dataframe=flights_dask, index="id", logical_types=flights_ltypes)
 
     pd_es.add_relationship('flights', 'id', 'logs', 'flight_id')

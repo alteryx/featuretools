@@ -305,6 +305,6 @@ def warn_unused_primitives(unused_primitives):
 
     warning_msg = "Some specified primitives were not used during DFS:\n{}".format(unused_string) + \
         "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
-        "or it may indicate no compatible variable types for the primitive were found in the data."
+        "or it may indicate no compatible columns for the primitive were found in the data."
 
     warnings.warn(warning_msg, UnusedPrimitiveWarning)
