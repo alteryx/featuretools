@@ -33,7 +33,7 @@ def test_schemas_equal():
 
     assert not _schemas_equal(feature_schema=ColumnSchema(),
                               primitive_schema=ColumnSchema(logical_type=Integer, semantic_tags={'index'}))
-    
+
     assert not _schemas_equal(feature_schema=ColumnSchema(),
                               primitive_schema=ColumnSchema(logical_type=Integer))
 
