@@ -41,12 +41,12 @@ def test_get_valid_primitives_selected_primitives_strings(es):
 
 def test_invalid_primitive(es):
     with pytest.raises(ValueError, match="'foobar' is not a recognized primitive name"):
-        get_valid_primitives(es, target_dataframe='log', selected_primitives=['foobar'])
+        get_valid_primitives(es, target_dataframe_name='log', selected_primitives=['foobar'])
 
-    msg = ("Selected primitive <class 'featuretools.utils.gen_utils.Library'> "
+    msg = ("Selected primitive <enum 'Library'> "
            "is not an AggregationPrimitive, TransformPrimitive, or str")
     with pytest.raises(ValueError, match=msg):
-        get_valid_primitives(es, target_dataframe='log', selected_primitives=[Library])
+        get_valid_primitives(es, target_dataframe_name='log', selected_primitives=[Library])
 
 
 def test_primitive_compatibility(es):
@@ -89,7 +89,7 @@ def test_get_valid_primitives_all_primitives(es):
 
 
 def test_get_valid_primitives_single_table(transform_es):
-    msg = "Only one entity in entityset, changing max_depth to 1 since deeper features cannot be created"
+    msg = "Only one dataframe in entityset, changing max_depth to 1 since deeper features cannot be created"
     with pytest.warns(UserWarning, match=msg):
         agg_prims, trans_prims = get_valid_primitives(transform_es, "first")
 

@@ -100,7 +100,7 @@ def test_count_null_and_make_agg_primitive(pd_es):
         return values.count()
 
     def count_generate_name(self, base_feature_names, relationship_path_name,
-                            parent_entity_id, where_str, use_prev_str):
+                            parent_dataframe_id, where_str, use_prev_str):
         return u"COUNT(%s%s%s)" % (relationship_path_name,
                                    where_str,
                                    use_prev_str)
@@ -666,8 +666,8 @@ def _assert_agg_feats_equal(f1, f2):
 
 def test_override_multi_feature_names(pd_es):
     def gen_custom_names(primitive, base_feature_names, relationship_path_name,
-                         parent_entity_id, where_str, use_prev_str):
-        base_string = 'Custom_%s({}.{})'.format(parent_entity_id, base_feature_names)
+                         parent_dataframe_name, where_str, use_prev_str):
+        base_string = 'Custom_%s({}.{})'.format(parent_dataframe_name, base_feature_names)
         return [base_string % i for i in range(primitive.number_output_features)]
 
     def pd_top3(x):

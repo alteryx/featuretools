@@ -3,6 +3,7 @@ import warnings
 from collections import defaultdict
 
 from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import Boolean, BooleanNullable
 
 from featuretools import primitives
 from featuretools.entityset.relationship import RelationshipPath
@@ -22,8 +23,9 @@ from featuretools.primitives.options_utils import (
     filter_groupby_matches_by_options,
     filter_matches_by_options,
     generate_all_primitive_options,
-    ignore_entity_for_primitive
+    ignore_dataframe_for_primitive
 )
+from featuretools.synthesis.utils import _schemas_equal
 from featuretools.utils.gen_utils import Library
 
 logger = logging.getLogger('featuretools')
@@ -63,15 +65,15 @@ class DeepFeatureSynthesis(object):
             max_features (int, optional) : Cap the number of generated features to
                 this number. If -1, no limit.
 
-            allowed_paths (list[list[str]], optional): Allowed entity paths to make
+            allowed_paths (list[list[str]], optional): Allowed dataframe paths to make
                 features for. If None, use all paths.
 
-            ignore_entities (list[str], optional): List of entities to
-                blacklist when creating features. If None, use all entities.
+            ignore_dataframes (list[str], optional): List of dataframes to
+                blacklist when creating features. If None, use all dataframes.
 
-            ignore_variables (dict[str -> list[str]], optional): List of specific
-                variables within each entity to blacklist when creating features.
-                If None, use all variables.
+            ignore_columns (dict[str -> list[str]], optional): List of specific
+                columns within each dataframe to blacklist when creating features.
+                If None, use all columns.
 
             seed_features (list[:class:`.FeatureBase`], optional): List of manually
                 defined features to use.
@@ -91,33 +93,33 @@ class DeepFeatureSynthesis(object):
                 with multiple inputs. Each option ``dict`` can have the following keys:
 
 
-                ``"include_entities"``
-                    List of entities to be included when creating features for
-                    the primitive(s). All other entities will be ignored
+                ``"include_dataframes"``
+                    List of dataframes to be included when creating features for
+                    the primitive(s). All other dataframes will be ignored
                     (list[str]).
-                ``"ignore_entities"``
-                    List of entities to be blacklisted when creating features
+                ``"ignore_dataframes"``
+                    List of dataframes to be blacklisted when creating features
                     for the primitive(s) (list[str]).
-                ``"include_variables"``
-                    List of specific variables within each entity to include when
-                    creating feautres for the primitive(s). All other variables
-                    in a given entity will be ignored (dict[str -> list[str]]).
-                ``"ignore_variables"``
-                    List of specific variables within each entityt to blacklist
+                ``"include_columns"``
+                    List of specific columns within each dataframe to include when
+                    creating features for the primitive(s). All other columns
+                    in a given dataframe will be ignored (dict[str -> list[str]]).
+                ``"ignore_columns"``
+                    List of specific columns within each dataframe to blacklist
                     when creating features for the primitive(s) (dict[str ->
                     list[str]]).
-                ``"include_groupby_entities"``
-                    List of Entities to be included when finding groupbys. All
-                    other entities will be ignored (list[str]).
-                ``"ignore_groupby_entities"``
-                    List of entities to blacklist when finding groupbys
+                ``"include_groupby_dataframes"``
+                    List of dataframes to be included when finding groupbys. All
+                    other dataframes will be ignored (list[str]).
+                ``"ignore_groupby_dataframes"``
+                    List of dataframes to blacklist when finding groupbys
                     (list[str]).
-                ``"include_groupby_variables"``
-                    List of specific variables within each entity to include as
-                    groupbys, if applicable. All other variables in each
-                    entity will be ignored (dict[str -> list[str]]).
-                ``"ignore_groupby_variables"``
-                    List of specific variables within each entity to blacklist
+                ``"include_groupby_columns"``
+                    List of specific columns within each dataframe to include as
+                    groupbys, if applicable. All other columns in each
+                    dataframe will be ignored (dict[str -> list[str]]).
+                ``"ignore_groupby_columns"``
+                    List of specific columns within each dataframe to blacklist
                     as groupbys (dict[str -> list[str]]).
         """
 
@@ -131,8 +133,8 @@ class DeepFeatureSynthesis(object):
                  max_depth=2,
                  max_features=-1,
                  allowed_paths=None,
-                 ignore_entities=None,
-                 ignore_variables=None,
+                 ignore_dataframes=None,
+                 ignore_columns=None,
                  primitive_options=None,
                  seed_features=None,
                  drop_contains=None,
@@ -148,9 +150,9 @@ class DeepFeatureSynthesis(object):
         if max_depth == -1:
             max_depth = None
 
-        # if just one entity, set max depth to 1 (transform stacking rule)
-        if len(entityset.entity_dict) == 1 and (max_depth is None or max_depth > 1):
-            warnings.warn("Only one entity in entityset, changing max_depth to "
+        # if just one dataframe, set max depth to 1 (transform stacking rule)
+        if len(entityset.dataframe_dict) == 1 and (max_depth is None or max_depth > 1):
+            warnings.warn("Only one dataframe in entityset, changing max_depth to "
                           "1 since deeper features cannot be created")
             max_depth = 1
 
@@ -164,25 +166,25 @@ class DeepFeatureSynthesis(object):
             for path in allowed_paths:
                 self.allowed_paths.add(tuple(path))
 
-        if ignore_entities is None:
-            self.ignore_entities = set()
+        if ignore_dataframes is None:
+            self.ignore_dataframes = set()
         else:
-            if not isinstance(ignore_entities, list):
-                raise TypeError('ignore_entities must be a list')
-            assert target_dataframe_name not in ignore_entities,\
+            if not isinstance(ignore_dataframes, list):
+                raise TypeError('ignore_dataframes must be a list')
+            assert target_dataframe_name not in ignore_dataframes,\
                 "Can't ignore target_dataframe!"
-            self.ignore_entities = set(ignore_entities)
+            self.ignore_dataframes = set(ignore_dataframes)
 
-        self.ignore_variables = defaultdict(set)
-        if ignore_variables is not None:
-            # check if ignore_variables is not {str: list}
-            if not all(isinstance(i, str) for i in ignore_variables.keys()) or not all(isinstance(i, list) for i in ignore_variables.values()):
-                raise TypeError('ignore_variables should be dict[str -> list]')
+        self.ignore_columns = defaultdict(set)
+        if ignore_columns is not None:
+            # check if ignore_columns is not {str: list}
+            if not all(isinstance(i, str) for i in ignore_columns.keys()) or not all(isinstance(i, list) for i in ignore_columns.values()):
+                raise TypeError('ignore_columns should be dict[str -> list]')
             # check if list values are all of type str
-            elif not all(all(isinstance(v, str) for v in value) for value in ignore_variables.values()):
+            elif not all(all(isinstance(v, str) for v in value) for value in ignore_columns.values()):
                 raise TypeError('list values should be of type str')
-            for eid, vars in ignore_variables.items():
-                self.ignore_variables[eid] = set(vars)
+            for df_name, cols in ignore_columns.items():
+                self.ignore_columns[df_name] = set(cols)
         self.target_dataframe_name = target_dataframe_name
         self.es = entityset
 
@@ -249,26 +251,27 @@ class DeepFeatureSynthesis(object):
             msg = 'Selected primitives are incompatible with {} EntitySets: {}'
             raise ValueError(msg.format(df_library.value, ', '.join(bad_primitives)))
 
-        self.primitive_options, self.ignore_entities, self.ignore_variables =\
+        self.primitive_options, self.ignore_dataframes, self.ignore_columns =\
             generate_all_primitive_options(all_primitives,
                                            primitive_options,
-                                           self.ignore_entities,
-                                           self.ignore_variables,
+                                           self.ignore_dataframes,
+                                           self.ignore_columns,
                                            self.es)
         self.seed_features = sorted(seed_features or [], key=lambda f: f.unique_name())
         self.drop_exact = drop_exact or []
         self.drop_contains = drop_contains or []
         self.where_stacking_limit = where_stacking_limit
 
-    def build_features(self, return_variable_types=None, verbose=False):
+    def build_features(self, return_types=None, verbose=False):
         """Automatically builds feature definitions for target
-            entity using Deep Feature Synthesis algorithm
+            dataframe using Deep Feature Synthesis algorithm
 
         Args:
-            return_variable_types (list[Variable] or str, optional): Types of
-                variables to return. If None, default to
-                Numeric, Discrete, and Boolean. If given as
-                the string 'all', use all available variable types.
+            return_types (list[woodwork.ColumnSchema] or str, optional):
+                List of ColumnSchemas defining the types of
+                columns to return. If None, defaults to returning all
+                numeric, categorical and boolean types. If given as
+                the string 'all', use all available return types.
 
             verbose (bool, optional): If True, print progress.
 
@@ -281,15 +284,16 @@ class DeepFeatureSynthesis(object):
 
         self.where_clauses = defaultdict(set)
 
-        if return_variable_types is None:
-            return_variable_types = [ColumnSchema(semantic_tags=['numeric']),
-                                     ColumnSchema(semantic_tags=['categorical']),
-                                     ColumnSchema(logical_type='boolean')]
-        elif return_variable_types == 'all':
+        if return_types is None:
+            return_types = [ColumnSchema(semantic_tags=['numeric']),
+                            ColumnSchema(semantic_tags=['category']),
+                            ColumnSchema(logical_type=Boolean),
+                            ColumnSchema(logical_type=BooleanNullable)]
+        elif return_types == 'all':
             pass
         else:
-            msg = "return_variable_types must be a list, or 'all'"
-            assert isinstance(return_variable_types, list), msg
+            msg = "return_types must be a list, or 'all'"
+            assert isinstance(return_types, list), msg
 
         self._run_dfs(self.es[self.target_dataframe_name], RelationshipPath([]),
                       all_features, max_depth=self.max_depth)
@@ -299,19 +303,17 @@ class DeepFeatureSynthesis(object):
         def filt(f):
             # remove identity features of the ID field of the target dataframe
             if (isinstance(f, IdentityFeature) and
-                    f.entity.id == self.target_dataframe_name and
-                    f.variable.id == self.es[self.target_dataframe_name].ww.index):
+                    f.dataframe_name == self.target_dataframe_name and
+                    f.column_name == self.es[self.target_dataframe_name].ww.index):
                 return False
 
             return True
 
         # filter out features with undesired return types
-        if return_variable_types != 'all':
+        if return_types != 'all':
             new_features = [
                 f for f in new_features
-                if any(issubclass(
-                    f.variable_type, vt) for vt in return_variable_types)]
-
+                if any(_schemas_equal(f.column_schema, schema) for schema in return_types)]
         new_features = list(filter(filt, new_features))
 
         new_features.sort(key=lambda f: f.get_depth())
@@ -346,49 +348,49 @@ class DeepFeatureSynthesis(object):
 
         return f_keep
 
-    def _run_dfs(self, entity, relationship_path, all_features, max_depth):
+    def _run_dfs(self, dataframe, relationship_path, all_features, max_depth):
         """
-        Create features for the provided entity
+        Create features for the provided dataframe
 
         Args:
-            entity (Entity): Entity for which to create features.
-            relationship_path (RelationshipPath): The path to this entity.
-            all_features (dict[Entity.id -> dict[str -> BaseFeature]]):
-                Dict containing a dict for each entity. Each nested dict
+            dataframe (DataFrame): Dataframe for which to create features.
+            relationship_path (RelationshipPath): The path to this dataframe.
+            all_features (dict[dataframe name -> dict[str -> BaseFeature]]):
+                Dict containing a dict for each dataframe. Each nested dict
                 has features as values with their ids as keys.
             max_depth (int) : Maximum allowed depth of features.
         """
         if max_depth is not None and max_depth < 0:
             return
 
-        all_features[entity.id] = {}
+        all_features[dataframe.ww.name] = {}
 
         """
         Step 1 - Create identity features
         """
-        self._add_identity_features(all_features, entity)
+        self._add_identity_features(all_features, dataframe)
 
         """
-        Step 2 - Recursively build features for each entity in a backward relationship
+        Step 2 - Recursively build features for each dataframe in a backward relationship
         """
 
-        backward_entities = self.es.get_backward_entities(entity.id)
-        for b_entity_id, sub_relationship_path in backward_entities:
-            # Skip if we've already created features for this entity.
-            if b_entity_id in all_features:
+        backward_dataframes = self.es.get_backward_dataframes(dataframe.ww.name)
+        for b_dataframe_id, sub_relationship_path in backward_dataframes:
+            # Skip if we've already created features for this dataframe.
+            if b_dataframe_id in all_features:
                 continue
 
-            if b_entity_id in self.ignore_entities:
+            if b_dataframe_id in self.ignore_dataframes:
                 continue
 
             new_path = relationship_path + sub_relationship_path
-            if self.allowed_paths and tuple(new_path.entities()) not in self.allowed_paths:
+            if self.allowed_paths and tuple(new_path.dataframes()) not in self.allowed_paths:
                 continue
 
             new_max_depth = None
             if max_depth is not None:
                 new_max_depth = max_depth - 1
-            self._run_dfs(entity=self.es[b_entity_id],
+            self._run_dfs(dataframe=self.es[b_dataframe_id],
                           relationship_path=new_path,
                           all_features=all_features,
                           max_depth=new_max_depth)
@@ -397,17 +399,17 @@ class DeepFeatureSynthesis(object):
         Step 3 - Create aggregation features for all deep backward relationships
         """
 
-        backward_entities = self.es.get_backward_entities(entity.id, deep=True)
-        for b_entity_id, sub_relationship_path in backward_entities:
-            if b_entity_id in self.ignore_entities:
+        backward_dataframes = self.es.get_backward_dataframes(dataframe.ww.name, deep=True)
+        for b_dataframe_id, sub_relationship_path in backward_dataframes:
+            if b_dataframe_id in self.ignore_dataframes:
                 continue
 
             new_path = relationship_path + sub_relationship_path
-            if self.allowed_paths and tuple(new_path.entities()) not in self.allowed_paths:
+            if self.allowed_paths and tuple(new_path.dataframes()) not in self.allowed_paths:
                 continue
 
-            self._build_agg_features(parent_entity=self.es[entity.id],
-                                     child_entity=self.es[b_entity_id],
+            self._build_agg_features(parent_dataframe=self.es[dataframe.ww.name],
+                                     child_dataframe=self.es[b_dataframe_id],
                                      all_features=all_features,
                                      max_depth=max_depth,
                                      relationship_path=sub_relationship_path)
@@ -416,29 +418,29 @@ class DeepFeatureSynthesis(object):
         Step 4 - Create transform features of identity and aggregation features
         """
 
-        self._build_transform_features(all_features, entity, max_depth=max_depth)
+        self._build_transform_features(all_features, dataframe, max_depth=max_depth)
 
         """
-        Step 5 - Recursively build features for each entity in a forward relationship
+        Step 5 - Recursively build features for each dataframe in a forward relationship
         """
 
-        forward_entities = self.es.get_forward_entities(entity.id)
-        for f_entity_id, sub_relationship_path in forward_entities:
-            # Skip if we've already created features for this entity.
-            if f_entity_id in all_features:
+        forward_dataframes = self.es.get_forward_dataframes(dataframe.ww.name)
+        for f_dataframe_id, sub_relationship_path in forward_dataframes:
+            # Skip if we've already created features for this dataframe.
+            if f_dataframe_id in all_features:
                 continue
 
-            if f_entity_id in self.ignore_entities:
+            if f_dataframe_id in self.ignore_dataframes:
                 continue
 
             new_path = relationship_path + sub_relationship_path
-            if self.allowed_paths and tuple(new_path.entities()) not in self.allowed_paths:
+            if self.allowed_paths and tuple(new_path.dataframes()) not in self.allowed_paths:
                 continue
 
             new_max_depth = None
             if max_depth is not None:
                 new_max_depth = max_depth - 1
-            self._run_dfs(entity=self.es[f_entity_id],
+            self._run_dfs(dataframe=self.es[f_dataframe_id],
                           relationship_path=new_path,
                           all_features=all_features,
                           max_depth=new_max_depth)
@@ -447,13 +449,13 @@ class DeepFeatureSynthesis(object):
         Step 6 - Create direct features for forward relationships
         """
 
-        forward_entities = self.es.get_forward_entities(entity.id)
-        for f_entity_id, sub_relationship_path in forward_entities:
-            if f_entity_id in self.ignore_entities:
+        forward_dataframes = self.es.get_forward_dataframes(dataframe.ww.name)
+        for f_dataframe_id, sub_relationship_path in forward_dataframes:
+            if f_dataframe_id in self.ignore_dataframes:
                 continue
 
             new_path = relationship_path + sub_relationship_path
-            if self.allowed_paths and tuple(new_path.entities()) not in self.allowed_paths:
+            if self.allowed_paths and tuple(new_path.dataframes()) not in self.allowed_paths:
                 continue
 
             self._build_forward_features(
@@ -464,11 +466,12 @@ class DeepFeatureSynthesis(object):
         """
         Step 7 - Create transform features of direct features
         """
-        self._build_transform_features(all_features, entity, max_depth=max_depth,
+
+        self._build_transform_features(all_features, dataframe, max_depth=max_depth,
                                        require_direct_input=True)
 
         # now that all  features are added, build where clauses
-        self._build_where_clauses(all_features, entity)
+        self._build_where_clauses(all_features, dataframe)
 
     def _handle_new_feature(self, new_feature, all_features):
         """Adds new feature to the dict
@@ -476,44 +479,43 @@ class DeepFeatureSynthesis(object):
         Args:
             new_feature (:class:`.FeatureBase`): New feature being
                 checked.
-            all_features (dict[Entity.id -> dict[str -> BaseFeature]]):
-                Dict containing a dict for each entity. Each nested dict
+            all_features (dict[dataframe name -> dict[str -> BaseFeature]]):
+                Dict containing a dict for each dataframe. Each nested dict
                 has features as values with their ids as keys.
 
         Returns:
-            dict[PrimitiveBase -> dict[featureid -> feature]]: Dict of
+            dict[PrimitiveBase -> dict[feature id -> feature]]: Dict of
                 features with any new features.
 
         Raises:
             Exception: Attempted to add a single feature multiple times
         """
-        entity_id = new_feature.entity.id
+        dataframe_name = new_feature.dataframe_name
         name = new_feature.unique_name()
 
         # Warn if this feature is already present, and it is not a seed feature.
         # It is expected that a seed feature could also be generated by dfs.
-        if name in all_features[entity_id] and \
+        if name in all_features[dataframe_name] and \
                 name not in (f.unique_name() for f in self.seed_features):
             logger.warning('Attempting to add feature %s which is already '
                            'present. This is likely a bug.' % new_feature)
             return
 
-        all_features[entity_id][name] = new_feature
+        all_features[dataframe_name][name] = new_feature
 
-    def _add_identity_features(self, all_features, entity):
-        """converts all variables from the given entity into features
+    def _add_identity_features(self, all_features, dataframe):
+        """converts all columns from the given dataframe into features
 
         Args:
-            all_features (dict[Entity.id -> dict[str -> BaseFeature]]):
-                Dict containing a dict for each entity. Each nested dict
+            all_features (dict[dataframe name -> dict[str -> BaseFeature]]):
+                Dict containing a dict for each dataframe. Each nested dict
                 has features as values with their ids as keys.
-            entity (Entity): Entity to calculate features for.
+            dataframe (DataFrame): DataFrame to calculate features for.
         """
-        variables = entity.variables
-        for v in variables:
-            if v.name in self.ignore_variables[entity.id]:
+        for col in dataframe.columns:
+            if col in self.ignore_columns[dataframe.ww.name]:
                 continue
-            new_f = IdentityFeature(variable=v)
+            new_f = IdentityFeature(self.es, dataframe.ww.name, col)
             self._handle_new_feature(all_features=all_features,
                                      new_feature=new_f)
 
@@ -521,46 +523,57 @@ class DeepFeatureSynthesis(object):
         # if there are any multi output features, this will build on
         # top of each output of the feature.
         for f in self.seed_features:
-            if f.entity.id == entity.id:
+            if f.dataframe_name == dataframe.ww.name:
                 self._handle_new_feature(all_features=all_features,
                                          new_feature=f)
 
-    def _build_where_clauses(self, all_features, entity):
+    def _build_where_clauses(self, all_features, dataframe):
         """Traverses all identity features and creates a Compare for
             each one, based on some heuristics
 
         Args:
-            all_features (dict[Entity.id -> dict[str -> BaseFeature]]):
-                Dict containing a dict for each entity. Each nested dict
+            all_features (dict[dataframe name -> dict[str -> BaseFeature]]):
+                Dict containing a dict for each dataframe. Each nested dict
                 has features as values with their ids as keys.
-          entity (Entity): Entity to calculate features for.
+          dataframe (DataFrame): DataFrame to calculate features for.
         """
-        features = [f for f in all_features[entity.id].values()
-                    if getattr(f, "variable", None)]
+        def is_valid_feature(f):
+            if isinstance(f, IdentityFeature):
+                return True
+            if isinstance(f, DirectFeature) and getattr(f.base_features[0], "column_name", None):
+                return True
+            return False
 
+        features = [f for f in all_features[dataframe.ww.name].values() if is_valid_feature(f)]
         for feat in features:
             # Get interesting_values from the EntitySet that was passed, which
             # is assumed to be the most recent version of the EntitySet.
             # Features can contain a stale EntitySet reference without
             # interesting_values
-            variable = self.es[feat.variable.entity.id][feat.variable.id]
-            if variable.interesting_values.empty:
-                continue
+            if isinstance(feat, DirectFeature):
+                df = feat.base_features[0].dataframe_name
+                col = feat.base_features[0].column_name
+            else:
+                df = feat.dataframe_name
+                col = feat.column_name
+            metadata = self.es[df].ww.columns[col].metadata
+            interesting_values = metadata.get('interesting_values')
+            if interesting_values:
+                for val in interesting_values:
+                    self.where_clauses[dataframe.ww.name].add(feat == val)
 
-            for val in variable.interesting_values:
-                self.where_clauses[entity.id].add(feat == val)
-
-    def _build_transform_features(self, all_features, entity, max_depth=0,
+    def _build_transform_features(self, all_features, dataframe, max_depth=0,
                                   require_direct_input=False):
-        """Creates trans_features for all the variables in an entity
+        """Creates trans_features for all the columns in a dataframe
 
         Args:
-            all_features (dict[:class:`.Entity`.id:dict->[str->:class:`BaseFeature`]]):
-                Dict containing a dict for each entity. Each nested dict
+            all_features (dict[dataframe name: dict->[str->:class:`BaseFeature`]]):
+                Dict containing a dict for each dataframe. Each nested dict
                 has features as values with their ids as keys
 
-          entity (Entity): Entity to calculate features for.
+          dataframe (DataFrame): DataFrame to calculate features for.
         """
+
         new_max_depth = None
         if max_depth is not None:
             new_max_depth = max_depth - 1
@@ -573,7 +586,7 @@ class DeepFeatureSynthesis(object):
             current_options = self.primitive_options.get(
                 trans_prim,
                 self.primitive_options.get(trans_prim.name))
-            if ignore_entity_for_primitive(current_options, entity):
+            if ignore_dataframe_for_primitive(current_options, dataframe):
                 continue
             # if multiple input_types, only use first one for DFS
             input_types = trans_prim.input_types
@@ -581,7 +594,7 @@ class DeepFeatureSynthesis(object):
                 input_types = input_types[0]
 
             matching_inputs = self._get_matching_inputs(all_features,
-                                                        entity,
+                                                        dataframe,
                                                         new_max_depth,
                                                         input_types,
                                                         trans_prim,
@@ -599,30 +612,29 @@ class DeepFeatureSynthesis(object):
             current_options = self.primitive_options.get(
                 groupby_prim,
                 self.primitive_options.get(groupby_prim.name))
-            if ignore_entity_for_primitive(current_options, entity, groupby=True):
+            if ignore_dataframe_for_primitive(current_options, dataframe, groupby=True):
                 continue
             input_types = groupby_prim.input_types[:]
             # if multiple input_types, only use first one for DFS
             if type(input_types[0]) == list:
                 input_types = input_types[0]
             matching_inputs = self._get_matching_inputs(all_features,
-                                                        entity,
+                                                        dataframe,
                                                         new_max_depth,
                                                         input_types,
                                                         groupby_prim,
                                                         current_options)
 
             # get columns to use as groupbys, use IDs as default unless other groupbys specified
-            if any(['include_groupby_variables' in option and entity.id in
-                    option['include_groupby_variables'] for option in current_options]):
-                raise NotImplementedError()
-                # default_type = variable_types.PandasTypes._all
+            if any(['include_groupby_columns' in option and dataframe.ww.name in
+                    option['include_groupby_columns'] for option in current_options]):
+                column_schemas = 'all'
             else:
-                default_type = set([ColumnSchema(semantic_tags=['foreign_key'])])
+                column_schemas = [ColumnSchema(semantic_tags=['foreign_key'])]
             groupby_matches = self._features_by_type(all_features=all_features,
-                                                     entity=entity,
+                                                     dataframe=dataframe,
                                                      max_depth=new_max_depth,
-                                                     variable_type=default_type)
+                                                     column_schemas=column_schemas)
             groupby_matches = filter_groupby_matches_by_options(groupby_matches, current_options)
 
             # If require_direct_input, require a DirectFeature in input or as a
@@ -648,17 +660,15 @@ class DeepFeatureSynthesis(object):
 
     def _build_forward_features(self, all_features, relationship_path, max_depth=0):
         _, relationship = relationship_path[0]
-        child_entity = relationship.child_dataframe
-        parent_entity = relationship.parent_dataframe
 
-        raise NotImplementedError()
-        # TODO: update
-        # features = self._features_by_type(
-        #     all_features=all_features,
-        #     entity=parent_entity,
-        #     max_depth=max_depth,
-        #     variable_type=variable_types.PandasTypes._all)
-        features = []
+        child_dataframe_name = relationship.child_dataframe.ww.name
+        parent_dataframe = relationship.parent_dataframe
+
+        features = self._features_by_type(
+            all_features=all_features,
+            dataframe=parent_dataframe,
+            max_depth=max_depth,
+            column_schemas='all')
 
         for f in features:
             if self._feature_in_relationship_path(relationship_path, f):
@@ -671,12 +681,12 @@ class DeepFeatureSynthesis(object):
                     if isinstance(feat, AggregationFeature) and feat.where is not None:
                         continue
 
-            new_f = DirectFeature(f, child_entity, relationship=relationship)
+            new_f = DirectFeature(f, child_dataframe_name, relationship=relationship)
 
             self._handle_new_feature(all_features=all_features,
                                      new_feature=new_f)
 
-    def _build_agg_features(self, all_features, parent_entity, child_entity,
+    def _build_agg_features(self, all_features, parent_dataframe, child_dataframe,
                             max_depth, relationship_path):
         new_max_depth = None
         if max_depth is not None:
@@ -686,7 +696,7 @@ class DeepFeatureSynthesis(object):
                 agg_prim,
                 self.primitive_options.get(agg_prim.name))
 
-            if ignore_entity_for_primitive(current_options, child_entity):
+            if ignore_dataframe_for_primitive(current_options, child_dataframe):
                 continue
             # if multiple input_types, only use first one for DFS
             input_types = agg_prim.input_types
@@ -694,28 +704,30 @@ class DeepFeatureSynthesis(object):
                 input_types = input_types[0]
 
             def feature_filter(f):
-                # Remove direct features of parent entity and features in relationship path.
-                return (not _direct_of_entity(f, parent_entity)) \
+                # Remove direct features of parent dataframe and features in relationship path.
+                return (not _direct_of_dataframe(f, parent_dataframe)) \
                     and not self._feature_in_relationship_path(relationship_path, f)
 
             matching_inputs = self._get_matching_inputs(all_features,
-                                                        child_entity,
+                                                        child_dataframe,
                                                         new_max_depth,
                                                         input_types,
                                                         agg_prim,
                                                         current_options,
                                                         feature_filter=feature_filter)
+
             matching_inputs = filter_matches_by_options(matching_inputs,
                                                         current_options)
-            wheres = list(self.where_clauses[child_entity.id])
+            wheres = list(self.where_clauses[child_dataframe.ww.name])
 
             for matching_input in matching_inputs:
                 if not check_stacking(agg_prim, matching_input):
                     continue
                 new_f = AggregationFeature(matching_input,
-                                           parent_entity=parent_entity,
+                                           parent_dataframe_name=parent_dataframe.ww.name,
                                            relationship_path=relationship_path,
                                            primitive=agg_prim)
+
                 self._handle_new_feature(new_f, all_features)
 
                 # limit the stacking of where features
@@ -745,42 +757,38 @@ class DeepFeatureSynthesis(object):
                         continue
 
                     new_f = AggregationFeature(matching_input,
-                                               parent_entity=parent_entity,
+                                               parent_dataframe_name=parent_dataframe.ww.name,
                                                relationship_path=relationship_path,
                                                where=where,
                                                primitive=agg_prim)
-
                     self._handle_new_feature(new_f, all_features)
 
-    def _features_by_type(self, all_features, entity, max_depth,
-                          variable_type=None):
+    def _features_by_type(self, all_features, dataframe, max_depth,
+                          column_schemas=None):
 
         selected_features = []
 
         if max_depth is not None and max_depth < 0:
             return selected_features
 
-        if entity.id not in all_features:
+        if dataframe.ww.name not in all_features:
             return selected_features
 
-        entity_features = all_features[entity.id].copy()
-        for fname, feature in all_features[entity.id].items():
+        dataframe_features = all_features[dataframe.ww.name].copy()
+        for fname, feature in all_features[dataframe.ww.name].items():
             outputs = feature.number_output_features
             if outputs > 1:
-                del(entity_features[fname])
+                del(dataframe_features[fname])
                 for i in range(outputs):
                     new_feat = feature[i]
-                    entity_features[new_feat.unique_name()] = new_feat
+                    dataframe_features[new_feat.unique_name()] = new_feat
 
-        for feat in entity_features:
-            f = entity_features[feat]
-            raise NotImplementedError()
-            # TODO: update
-            # if (variable_type == variable_types.PandasTypes._all or
-            #         f.variable_type == variable_type or
-            #         any(issubclass(f.variable_type, vt) for vt in variable_type)):
-            #     if max_depth is None or f.get_depth(stop_at=self.seed_features) <= max_depth:
-            #         selected_features.append(f)
+        for feat in dataframe_features:
+            f = dataframe_features[feat]
+            if (column_schemas == 'all' or
+                    any(_schemas_equal(f.column_schema, schema) for schema in column_schemas)):
+                if max_depth is None or f.get_depth(stop_at=self.seed_features) <= max_depth:
+                    selected_features.append(f)
 
         return selected_features
 
@@ -790,23 +798,24 @@ class DeepFeatureSynthesis(object):
             return False
 
         for _, relationship in relationship_path:
-            if relationship.child_dataframe.id == feature.entity.id and \
-               relationship.child_column.id == feature.variable.id:
+            if relationship.child_name == feature.dataframe_name and \
+               relationship.child_column.name == feature.column_name:
                 return True
 
-            if relationship.parent_dataframe.id == feature.entity.id and \
-               relationship.parent_column.id == feature.variable.id:
+            if relationship.parent_name == feature.dataframe_name and \
+               relationship.parent_column.name == feature.column_name:
                 return True
 
         return False
 
-    def _get_matching_inputs(self, all_features, entity, max_depth, input_types,
+    def _get_matching_inputs(self, all_features, dataframe, max_depth, input_types,
                              primitive, primitive_options, require_direct_input=False,
                              feature_filter=None):
+
         features = self._features_by_type(all_features=all_features,
-                                          entity=entity,
+                                          dataframe=dataframe,
                                           max_depth=max_depth,
-                                          variable_type=set(input_types))
+                                          column_schemas=list(input_types))
         if feature_filter:
             features = [f for f in features if feature_filter(f)]
 
@@ -822,7 +831,16 @@ class DeepFeatureSynthesis(object):
         matching_inputs = filter_matches_by_options(matching_inputs,
                                                     primitive_options,
                                                     commutative=primitive.commutative)
+
+        # Don't build features on numeric foreign key columns
+        matching_inputs = [match for match in matching_inputs if not _match_contains_numeric_foreign_key(match)]
+
         return matching_inputs
+
+
+def _match_contains_numeric_foreign_key(match):
+    match_schema = ColumnSchema(semantic_tags={'foreign_key', 'numeric'})
+    return any(_schemas_equal(f.column_schema, match_schema) for f in match)
 
 
 def check_transform_stacking(inputs):
@@ -877,17 +895,18 @@ def check_stacking(primitive, inputs):
     return True
 
 
-def match_by_type(features, t):
+def match_by_schema(features, column_schema):
     matches = []
     for f in features:
-        if issubclass(f.variable_type, t):
+        if _schemas_equal(f.column_schema, column_schema):
             matches += [f]
     return matches
 
 
 def match(input_types, features, replace=False, commutative=False, require_direct_input=False):
     to_match = input_types[0]
-    matches = match_by_type(features, to_match)
+
+    matches = match_by_schema(features, to_match)
 
     if len(input_types) == 1:
         return [(m,) for m in matches
@@ -962,6 +981,6 @@ def _features_have_same_path(input_features):
     return True
 
 
-def _direct_of_entity(feature, parent_entity):
+def _direct_of_dataframe(feature, parent_dataframe):
     return isinstance(feature, DirectFeature) \
-        and feature.parent_entity.id == parent_entity.id
+        and feature.parent_dataframe_name == parent_dataframe.ww.name

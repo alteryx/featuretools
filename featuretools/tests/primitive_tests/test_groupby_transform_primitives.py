@@ -223,7 +223,7 @@ def test_cum_sum_numpy_group_on_nan(pd_es):
         name = "cum_sum"
         input_types = [ColumnSchema(semantic_tags={'numeric'})]
         return_type = ColumnSchema(semantic_tags={'numeric'})
-        uses_full_entity = True
+        uses_full_dataframe = True
 
         def get_function(self):
             def cum_sum(values):
@@ -258,7 +258,7 @@ def test_cum_sum_numpy_group_on_nan(pd_es):
             assert v == cvalues[i]
 
 
-def test_cum_handles_uses_full_entity(pd_es):
+def test_cum_handles_uses_full_dataframe(pd_es):
     def check(feature):
         feature_set = FeatureSet([feature])
         calculator = FeatureSetCalculator(pd_es, feature_set=feature_set, time_last=None)
@@ -338,7 +338,7 @@ def test_groupby_uses_calc_time(pd_es):
         uses_calc_time = True
         input_types = [ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
         return_type = ColumnSchema(semantic_tags={'numeric'})
-        uses_full_entity = True
+        uses_full_dataframe = True
 
         def get_function(self):
             return projected_amount_left

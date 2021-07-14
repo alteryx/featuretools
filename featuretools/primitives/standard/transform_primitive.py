@@ -467,7 +467,7 @@ class Diff(TransformPrimitive):
     name = "diff"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(semantic_tags={'numeric'})
-    uses_full_entity = True
+    uses_full_dataframe = True
     description_template = "the difference from the previous value of {}"
 
     def get_function(self):
@@ -534,7 +534,7 @@ class Percentile(TransformPrimitive):
         [0.5, 0.75, 0.25, nan, 1.0]
     """
     name = 'percentile'
-    uses_full_entity = True
+    uses_full_dataframe = True
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(semantic_tags={'numeric'})
     description_template = "the percentile rank of {}"

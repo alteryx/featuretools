@@ -184,6 +184,12 @@ class FeatureBase(object):
             elif 'index' in column_schema.semantic_tags:
                 column_schema = ColumnSchema(logical_type=column_schema.logical_type,
                                              semantic_tags=column_schema.semantic_tags - {"index"})
+                # Need to add back in the numeric standard tag so the schema can get recognized
+                # as a valid return type
+                if column_schema.is_numeric:
+                    column_schema.semantic_tags.add('numeric')
+                if column_schema.is_categorical:
+                    column_schema.semantic_tags.add('category')
 
             # direct features should keep the Id return type, but all other features should get
             # converted to Categorical

@@ -73,7 +73,7 @@ def test_entry_point_error(es, monkeypatch):
                         "pkg_resources",
                         MockPkgResources(entry_point))
     with pytest.raises(KeyError):
-        dfs(entityset=es, target_dataframe='missing_entity')
+        dfs(entityset=es, target_dataframe='missing_dataframe')
 
     assert isinstance(entry_point.error, KeyError)
 

@@ -11,7 +11,7 @@ ks = import_or_none('databricks.koalas')
 
 
 @pytest.mark.skipif('not ks')
-def test_create_entity_from_ks_df(pd_es):
+def test_add_dataframe_from_ks_df(pd_es):
     cleaned_df = pd_to_ks_clean(pd_es["log"])
     log_ks = ks.from_pandas(cleaned_df)
 
@@ -34,17 +34,17 @@ def test_add_dataframe_with_non_numeric_index(pd_es, ks_es):
     ks_df = ks.from_pandas(df)
 
     pd_es.add_dataframe(
-        dataframe_name="new_entity",
+        dataframe_name="new_dataframe",
         dataframe=df,
         index="id",
         logical_types={"id": NaturalLanguage, "values": Integer})
 
     ks_es.add_dataframe(
-        dataframe_name="new_entity",
+        dataframe_name="new_dataframe",
         dataframe=ks_df,
         index="id",
         logical_types={"id": NaturalLanguage, "values": Integer})
-    pd.testing.assert_frame_equal(pd_es['new_entity'].reset_index(drop=True), ks_es['new_entity'].to_pandas())
+    pd.testing.assert_frame_equal(pd_es['new_dataframe'].reset_index(drop=True), ks_es['new_dataframe'].to_pandas())
 
 
 @pytest.mark.skipif('not ks')
@@ -57,17 +57,17 @@ def test_create_entityset_with_mixed_dataframe_types(pd_es, ks_es):
               "Cannot add dataframe of type {} to an entityset with existing dataframes " \
               "of type {}"
 
-    # Test error is raised when trying to add Koalas entity to entitset with existing pandas entities
+    # Test error is raised when trying to add Koalas dataframe to entitset with existing pandas entities
     with pytest.raises(ValueError, match=err_msg.format(type(ks_df), type(pd_es.dataframes[0]))):
         pd_es.add_dataframe(
-            dataframe_name="new_entity",
+            dataframe_name="new_dataframe",
             dataframe=ks_df,
             index="id")
 
-    # Test error is raised when trying to add pandas entity to entitset with existing ks entities
+    # Test error is raised when trying to add pandas dataframe to entitset with existing ks entities
     with pytest.raises(ValueError, match=err_msg.format(type(df), type(ks_es.dataframes[0]))):
         ks_es.add_dataframe(
-            dataframe_name="new_entity",
+            dataframe_name="new_dataframe",
             dataframe=df,
             index="id")
 
@@ -146,10 +146,10 @@ def test_add_dataframe_with_make_index():
     ks_df = ks.from_pandas(df)
     ks_es = EntitySet(id="ks_es")
     ltypes = {"values": "Integer"}
-    ks_es.add_dataframe(dataframe_name="new_entity", dataframe=ks_df, make_index=True, index="new_index", logical_types=ltypes)
+    ks_es.add_dataframe(dataframe_name="new_dataframe", dataframe=ks_df, make_index=True, index="new_index", logical_types=ltypes)
 
     expected_df = pd.DataFrame({"values": values, "new_index": range(len(values))})
-    pd.testing.assert_frame_equal(expected_df, ks_es['new_entity'].to_pandas())
+    pd.testing.assert_frame_equal(expected_df, ks_es['new_dataframe'].to_pandas())
 
 
 @pytest.mark.skipif('not ks')

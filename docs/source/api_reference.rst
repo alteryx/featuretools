@@ -282,7 +282,7 @@ EntitySet load and prepare data
 
     EntitySet.add_dataframe
     EntitySet.add_relationship
-    EntitySet.normalize_entity
+    EntitySet.normalize_dataframe
     EntitySet.add_interesting_values
     EntitySet.set_secondary_time_index
 
@@ -310,8 +310,8 @@ EntitySet query methods
     EntitySet.__getitem__
     EntitySet.find_backward_paths
     EntitySet.find_forward_paths
-    EntitySet.get_forward_entities
-    EntitySet.get_backward_entities
+    EntitySet.get_forward_dataframes
+    EntitySet.get_backward_dataframes
 
 EntitySet visualization
 -----------------------

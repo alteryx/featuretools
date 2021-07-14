@@ -15,14 +15,13 @@ def test_encodes_features(pd_es):
     features = [f1, f2, f3]
     feature_matrix = calculate_feature_matrix(features, pd_es, instance_ids=[0, 1, 2, 3, 4, 5])
 
-    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features)
+    _, features_encoded = encode_features(feature_matrix, features)
     assert len(features_encoded) == 6
 
-    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, top_n=2)
+    _, features_encoded = encode_features(feature_matrix, features, top_n=2)
     assert len(features_encoded) == 5
 
-    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features,
-                                                               include_unknown=False)
+    _, features_encoded = encode_features(feature_matrix, features, include_unknown=False)
     assert len(features_encoded) == 5
 
 
@@ -48,12 +47,12 @@ def test_inplace_encodes_features(pd_es):
     feature_matrix = calculate_feature_matrix(features, pd_es, instance_ids=[0, 1, 2, 3, 4, 5])
 
     feature_matrix_shape = feature_matrix.shape
-    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features)
+    feature_matrix_encoded, _ = encode_features(feature_matrix, features)
     assert feature_matrix_encoded.shape != feature_matrix_shape
     assert feature_matrix.shape == feature_matrix_shape
 
     # inplace they should be the same
-    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, inplace=True)
+    feature_matrix_encoded, _ = encode_features(feature_matrix, features, inplace=True)
     assert feature_matrix_encoded.shape == feature_matrix.shape
 
 
@@ -65,19 +64,19 @@ def test_to_encode_features(pd_es):
     features = [f1, f2, f3]
     feature_matrix = calculate_feature_matrix(features, pd_es, instance_ids=[0, 1, 2, 3, 4, 5])
 
-    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features)
+    feature_matrix_encoded, _ = encode_features(feature_matrix, features)
     feature_matrix_encoded_shape = feature_matrix_encoded.shape
 
     # to_encode should keep product_id as a string and datetime as a date,
     # and not have the same shape as previous encoded matrix due to fewer encoded features
     to_encode = []
-    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, to_encode=to_encode)
+    feature_matrix_encoded, _ = encode_features(feature_matrix, features, to_encode=to_encode)
     assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
     assert feature_matrix_encoded['datetime'].dtype == "datetime64[ns]"
     assert feature_matrix_encoded['product_id'].dtype == "object"
 
     to_encode = ['value']
-    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, to_encode=to_encode)
+    feature_matrix_encoded, _ = encode_features(feature_matrix, features, to_encode=to_encode)
     assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
     assert feature_matrix_encoded['datetime'].dtype == "datetime64[ns]"
     assert feature_matrix_encoded['product_id'].dtype == "object"
@@ -96,16 +95,16 @@ def test_encode_features_handles_pass_columns(pd_es):
 
     assert 'label' in feature_matrix.columns
 
-    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features)
+    feature_matrix_encoded, _ = encode_features(feature_matrix, features)
     feature_matrix_encoded_shape = feature_matrix_encoded.shape
 
     # to_encode should keep product_id as a string, and not create 3 additional columns
     to_encode = []
-    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, to_encode=to_encode)
+    feature_matrix_encoded, _ = encode_features(feature_matrix, features, to_encode=to_encode)
     assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
 
     to_encode = ['value']
-    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, to_encode=to_encode)
+    feature_matrix_encoded, _ = encode_features(feature_matrix, features, to_encode=to_encode)
     assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
 
     assert 'label' in feature_matrix_encoded.columns
@@ -136,11 +135,10 @@ def test_encode_unknown_features():
 
     pd_es = EntitySet('test')
     pd_es.add_dataframe(dataframe_name='a', dataframe=df, index='index', make_index=True)
-    features, feature_defs = dfs(entityset=pd_es, target_dataframe='a')
+    features, feature_defs = dfs(entityset=pd_es, target_dataframe_name='a')
 
     # Specify unknown token for replacement
-    features_enc, feature_defs_enc = encode_features(features, feature_defs,
-                                                     include_unknown=True)
+    features_enc, _ = encode_features(features, feature_defs, include_unknown=True)
     assert list(features_enc.columns) == ['category = unknown', 'category = e', 'category = d',
                                           'category = c', 'category = b', 'category is unknown']
 
@@ -151,7 +149,7 @@ def test_encode_features_topn(pd_es):
                    primitive=NMostCommon(n=3))
     features, feature_defs = dfs(entityset=pd_es,
                                  instance_ids=[0, 1, 2],
-                                 target_dataframe="customers",
+                                 target_dataframe_name="customers",
                                  agg_primitives=[NMostCommon(n=3)])
     features_enc, feature_defs_enc = encode_features(features,
                                                      feature_defs,
@@ -166,9 +164,9 @@ def test_encode_features_drop_first():
     df = pd.DataFrame({'category': ['ao', 'b', 'c', 'd', 'e']})
     pd_es = EntitySet('test')
     pd_es.add_dataframe(dataframe_name='a', dataframe=df, index='index', make_index=True)
-    features, feature_defs = dfs(entityset=pd_es, target_dataframe='a')
-    features_enc, feature_defs_enc = encode_features(features, feature_defs,
-                                                     drop_first=True, include_unknown=False)
+    features, feature_defs = dfs(entityset=pd_es, target_dataframe_name='a')
+    features_enc, _ = encode_features(features, feature_defs,
+                                      drop_first=True, include_unknown=False)
     assert len(features_enc.columns) == 4
 
     features_enc, feature_defs = encode_features(features, feature_defs, top_n=3, drop_first=True,
@@ -221,7 +219,7 @@ def test_encode_features_matches_calculate_feature_matrix():
 
     pd_es = EntitySet('test')
     pd_es.add_dataframe(dataframe_name='a', dataframe=df, index='index', make_index=True)
-    features, feature_defs = dfs(entityset=pd_es, target_dataframe='a')
+    features, feature_defs = dfs(entityset=pd_es, target_dataframe_name='a')
 
     features_enc, feature_defs_enc = encode_features(features, feature_defs, to_encode=['category'])
 

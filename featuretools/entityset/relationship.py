@@ -125,7 +125,7 @@ class RelationshipPath(object):
 
         return '.'.join(relationship_names)
 
-    def entities(self):
+    def dataframes(self):
         if self:
             # Yield first dataframe.
             is_forward, relationship = self[0]
@@ -164,7 +164,7 @@ class RelationshipPath(object):
 
     def __repr__(self):
         if self._relationships_with_direction:
-            path = '%s.%s' % (next(self.entities()), self.name)
+            path = '%s.%s' % (next(self.dataframes()), self.name)
         else:
             path = '[]'
         return '<RelationshipPath %s>' % path

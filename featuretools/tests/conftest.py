@@ -396,27 +396,27 @@ def lt(es):
     return labels
 
 
-@pytest.fixture(params=['pd_entities', 'dask_entities', 'koalas_entities'])
-def entities(request):
+@pytest.fixture(params=['pd_dataframes', 'dask_dataframes', 'koalas_dataframes'])
+def dataframes(request):
     return request.getfixturevalue(request.param)
 
 
 @pytest.fixture
-def pd_entities():
+def pd_dataframes():
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                                     "card_id": [1, 2, 1, 3, 4, 5],
                                     "transaction_time": [10, 12, 13, 20, 21, 20],
                                     "fraud": [True, False, False, False, True, True]})
-    entities = {
+    dataframes = {
         "cards": (cards_df, "id"),
         "transactions": (transactions_df, "id", "transaction_time")
     }
-    return entities
+    return dataframes
 
 
 @pytest.fixture
-def dask_entities():
+def dask_dataframes():
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                                     "card_id": [1, 2, 1, 3, 4, 5],
@@ -435,15 +435,15 @@ def dask_entities():
         'fraud': Boolean
     }
 
-    entities = {
+    dataframes = {
         "cards": (cards_df, "id", None, cards_ltypes),
         "transactions": (transactions_df, "id", "transaction_time", transactions_ltypes)
     }
-    return entities
+    return dataframes
 
 
 @pytest.fixture
-def koalas_entities():
+def koalas_dataframes():
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     cards_df = ks.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = ks.DataFrame({"id": [1, 2, 3, 4, 5, 6],
@@ -460,11 +460,11 @@ def koalas_entities():
         'fraud': Boolean
     }
 
-    entities = {
+    dataframes = {
         "cards": (cards_df, "id", None, cards_ltypes),
         "transactions": (transactions_df, "id", "transaction_time", transactions_ltypes)
     }
-    return entities
+    return dataframes
 
 
 @pytest.fixture
@@ -495,11 +495,11 @@ def pd_transform_es():
 @pytest.fixture
 def dask_transform_es(pd_transform_es):
     es = ft.EntitySet(id=pd_transform_es.id)
-    for entity in pd_transform_es.entities:
-        es.add_dataframe(dataframe_name=entity.id,
-                         dataframe=dd.from_pandas(entity.df, npartitions=2),
-                         index=entity.index,
-                         logical_types=entity.variable_types)
+    for df in pd_transform_es.dataframes:
+        es.add_dataframe(dataframe_name=df.ww.name,
+                         dataframe=dd.from_pandas(df, npartitions=2),
+                         index=df.ww.index,
+                         logical_types=df.ww.logical_types)
     return es
 
 
@@ -507,9 +507,9 @@ def dask_transform_es(pd_transform_es):
 def koalas_transform_es(pd_transform_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     es = ft.EntitySet(id=pd_transform_es.id)
-    for entity in pd_transform_es.entities:
-        es.add_dataframe(dataframe_name=entity.id,
-                         dataframe=ks.from_pandas(entity.df),
-                         index=entity.index,
-                         logical_types=entity.variable_types)
+    for df in pd_transform_es.dataframes:
+        es.add_dataframe(dataframe_name=df.ww.name,
+                         dataframe=ks.from_pandas(df),
+                         index=df.ww.index,
+                         logical_types=df.ww.logical_types)
     return es

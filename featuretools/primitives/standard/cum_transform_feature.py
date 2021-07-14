@@ -23,7 +23,7 @@ class CumSum(TransformPrimitive):
     name = "cum_sum"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(semantic_tags={'numeric'})
-    uses_full_entity = True
+    uses_full_dataframe = True
     description_template = "the cumulative sum of {}"
 
     def get_function(self):
@@ -48,10 +48,9 @@ class CumCount(TransformPrimitive):
         [1, 2, 3, 4, 5, 6]
     """
     name = "cum_count"
-    input_types = [[ColumnSchema(semantic_tags={'foreign_key'})],
-                   [ColumnSchema(semantic_tags={'category'})]]
-    return_type = ColumnSchema(logical_type=Integer)
-    uses_full_entity = True
+    input_types = [ColumnSchema(semantic_tags={'category'})]
+    return_type = ColumnSchema(logical_type=Integer, semantic_tags={'numeric'})
+    uses_full_dataframe = True
     description_template = "the cumulative count of {}"
 
     def get_function(self):
@@ -79,7 +78,7 @@ class CumMean(TransformPrimitive):
     name = "cum_mean"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(semantic_tags={'numeric'})
-    uses_full_entity = True
+    uses_full_dataframe = True
     description_template = "the cumulative mean of {}"
 
     def get_function(self):
@@ -107,7 +106,7 @@ class CumMin(TransformPrimitive):
     name = "cum_min"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(semantic_tags={'numeric'})
-    uses_full_entity = True
+    uses_full_dataframe = True
     description_template = "the cumulative minimum of {}"
 
     def get_function(self):
@@ -135,7 +134,7 @@ class CumMax(TransformPrimitive):
     name = "cum_max"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(semantic_tags={'numeric'})
-    uses_full_entity = True
+    uses_full_dataframe = True
     description_template = "the cumulative maximum of {}"
 
     def get_function(self):
