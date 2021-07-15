@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-import woodwork.logical_types as ltypes
+from woodwork.logical_types import Datetime, Double, Integer, NaturalLanguage
 
 from featuretools.entityset import EntitySet
 from featuretools.tests.testing_utils import get_df_tags
@@ -37,13 +37,13 @@ def test_add_dataframe_with_non_numeric_index(pd_es, ks_es):
         dataframe_name="new_dataframe",
         dataframe=df,
         index="id",
-        logical_types={"id": ltypes.NaturalLanguage, "values": ltypes.Integer})
+        logical_types={"id": NaturalLanguage, "values": Integer})
 
     ks_es.add_dataframe(
         dataframe_name="new_dataframe",
         dataframe=ks_df,
         index="id",
-        logical_types={"id": ltypes.NaturalLanguage, "values": ltypes.Integer})
+        logical_types={"id": NaturalLanguage, "values": Integer})
     pd.testing.assert_frame_equal(pd_es['new_dataframe'].reset_index(drop=True), ks_es['new_dataframe'].to_pandas())
 
 
@@ -89,10 +89,10 @@ def test_add_last_time_indexes():
                                          ""]})
     sessions_ks = ks.from_pandas(sessions)
     sessions_logical_types = {
-        "id": ltypes.Integer,
-        "user": ltypes.Integer,
-        "strings": ltypes.NaturalLanguage,
-        "time": ltypes.Datetime,
+        "id": Integer,
+        "user": Integer,
+        "strings": NaturalLanguage,
+        "time": Datetime,
     }
 
     transactions = pd.DataFrame({"id": [0, 1, 2, 3, 4, 5],
@@ -106,10 +106,10 @@ def test_add_last_time_indexes():
                                           pd.to_datetime('2017-08-25 04:53')]})
     transactions_ks = ks.from_pandas(transactions)
     transactions_logical_types = {
-        "id": ltypes.Integer,
-        "session_id": ltypes.Integer,
-        "amount": ltypes.Double,
-        "time": ltypes.Datetime,
+        "id": Integer,
+        "session_id": Integer,
+        "amount": Double,
+        "time": Datetime,
     }
 
     pd_es.add_dataframe(dataframe_name="sessions", dataframe=sessions, index="id", time_index="time")

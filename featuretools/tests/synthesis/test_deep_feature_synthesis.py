@@ -1543,7 +1543,7 @@ def test_builds_seed_features_on_foreign_key_col(es):
 
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='sessions',
                                    entityset=es,
-                                   agg_primitives=[Mean],
+                                   agg_primitives=[],
                                    trans_primitives=[],
                                    max_depth=2,
                                    seed_features=[seed_feature_sessions])

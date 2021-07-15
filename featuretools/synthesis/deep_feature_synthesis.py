@@ -183,8 +183,8 @@ class DeepFeatureSynthesis(object):
             # check if list values are all of type str
             elif not all(all(isinstance(v, str) for v in value) for value in ignore_columns.values()):
                 raise TypeError('list values should be of type str')
-            for eid, vars in ignore_columns.items():
-                self.ignore_columns[eid] = set(vars)
+            for df_name, cols in ignore_columns.items():
+                self.ignore_columns[df_name] = set(cols)
         self.target_dataframe_name = target_dataframe_name
         self.es = entityset
 
@@ -271,7 +271,7 @@ class DeepFeatureSynthesis(object):
                 List of ColumnSchemas defining the types of
                 columns to return. If None, defaults to returning all
                 numeric, categorical and boolean types. If given as
-                the string 'all', use all available variable types.
+                the string 'all', use all available return types.
 
             verbose (bool, optional): If True, print progress.
 

@@ -16,7 +16,6 @@ def test_encodes_features(pd_es):
     feature_matrix = calculate_feature_matrix(features, pd_es, instance_ids=[0, 1, 2, 3, 4, 5])
 
     _, features_encoded = encode_features(feature_matrix, features)
-    breakpoint()
     assert len(features_encoded) == 6
 
     _, features_encoded = encode_features(feature_matrix, features, top_n=2)

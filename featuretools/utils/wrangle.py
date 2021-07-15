@@ -4,7 +4,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
-from woodwork import logical_types as ltypes
+from woodwork.logical_types import Datetime, Ordinal
 
 from featuretools.entityset.timedelta import Timedelta
 
@@ -93,7 +93,7 @@ def _check_time_against_column(time, time_column):
         if time_column.ww.schema.is_datetime:
             return True
         elif time.unit not in Timedelta._time_units:
-            if (isinstance(time_column.ww.logical_type, ltypes.Ordinal) or
+            if (isinstance(time_column.ww.logical_type, Ordinal) or
                     'numeric' in time_column.ww.semantic_tags or
                     'time_index' in time_column.ww.semantic_tags):
                 return True
@@ -107,7 +107,7 @@ def _check_time_type(time):
     '''
     time_type = None
     if isinstance(time, (datetime, np.datetime64)):
-        time_type = ltypes.Datetime
+        time_type = Datetime
     elif isinstance(time, (int, float)) or np.issubdtype(time, np.integer) or np.issubdtype(time, np.floating):
         time_type = "numeric"
     return time_type

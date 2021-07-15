@@ -2,8 +2,8 @@ from datetime import datetime
 
 import pandas as pd
 import pytest
-import woodwork.logical_types as ltypes
 from dask import dataframe as dd
+from woodwork.logical_types import Categorical, Datetime, Integer
 
 from featuretools.entityset.entityset import LTI_COLUMN_NAME
 from featuretools.tests.testing_utils import to_pandas
@@ -185,9 +185,9 @@ class TestLastTimeIndex(object):
         # test all instances in both children
         if es.dataframe_type == Library.DASK.value:
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
-        logical_types = {'session_id': ltypes.Integer,
-                         'datetime': ltypes.Datetime,
-                         'product_id': ltypes.Categorical}
+        logical_types = {'session_id': Integer,
+                         'datetime': Datetime,
+                         'product_id': Categorical}
         es.add_dataframe(dataframe_name="wishlist_log",
                          dataframe=wishlist_df,
                          index='id',
@@ -217,9 +217,9 @@ class TestLastTimeIndex(object):
         wishlist_df.drop(4, inplace=True)
         if es.dataframe_type == Library.DASK.value:
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
-        logical_types = {'session_id': ltypes.Integer,
-                         'datetime': ltypes.Datetime,
-                         'product_id': ltypes.Categorical}
+        logical_types = {'session_id': Integer,
+                         'datetime': Datetime,
+                         'product_id': Categorical}
         es.add_dataframe(dataframe_name="wishlist_log",
                          dataframe=wishlist_df,
                          index='id',
@@ -255,9 +255,9 @@ class TestLastTimeIndex(object):
         df = wishlist_df.append(row)
         if es.dataframe_type == Library.DASK.value:
             df = dd.from_pandas(df, npartitions=2)
-        logical_types = {'session_id': ltypes.Integer,
-                         'datetime': ltypes.Datetime,
-                         'product_id': ltypes.Categorical}
+        logical_types = {'session_id': Integer,
+                         'datetime': Datetime,
+                         'product_id': Categorical}
         es.add_dataframe(dataframe_name="wishlist_log",
                          dataframe=df,
                          index='id',
@@ -300,9 +300,9 @@ class TestLastTimeIndex(object):
         df.drop(4, inplace=True)
         if es.dataframe_type == Library.DASK.value:
             df = dd.from_pandas(df, npartitions=2)
-        logical_types = {'session_id': ltypes.Integer,
-                         'datetime': ltypes.Datetime,
-                         'product_id': ltypes.Categorical}
+        logical_types = {'session_id': Integer,
+                         'datetime': Datetime,
+                         'product_id': Categorical}
         es.add_dataframe(dataframe_name="wishlist_log",
                          dataframe=df,
                          index='id',
@@ -335,9 +335,9 @@ class TestLastTimeIndex(object):
         if es.dataframe_type == Library.DASK.value:
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
 
-        logical_types = {'session_id': ltypes.Integer,
-                         'datetime': ltypes.Datetime,
-                         'product_id': ltypes.Categorical}
+        logical_types = {'session_id': Integer,
+                         'datetime': Datetime,
+                         'product_id': Categorical}
         # add row to sessions to create session with no events
         es.update_dataframe(dataframe_name='sessions', df=extra_session_df)
 

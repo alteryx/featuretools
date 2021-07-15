@@ -4,7 +4,7 @@ import composeml as cp
 import dask.dataframe as dd
 import pandas as pd
 import pytest
-from woodwork import logical_types as ltypes
+from woodwork.logical_types import Boolean, Integer
 
 import featuretools as ft
 from featuretools.tests.testing_utils import (
@@ -426,13 +426,13 @@ def dask_dataframes():
     transactions_df = dd.from_pandas(transactions_df, npartitions=2)
 
     cards_ltypes = {
-        'id': ltypes.Integer
+        'id': Integer
     }
     transactions_ltypes = {
-        'id': ltypes.Integer,
-        'card_id': ltypes.Integer,
-        'transaction_time': ltypes.Integer,
-        'fraud': ltypes.Boolean
+        'id': Integer,
+        'card_id': Integer,
+        'transaction_time': Integer,
+        'fraud': Boolean
     }
 
     dataframes = {
@@ -451,13 +451,13 @@ def koalas_dataframes():
                                     "transaction_time": [10, 12, 13, 20, 21, 20],
                                     "fraud": [True, False, False, False, True, True]})
     cards_ltypes = {
-        'id': ltypes.Integer
+        'id': Integer
     }
     transactions_ltypes = {
-        'id': ltypes.Integer,
-        'card_id': ltypes.Integer,
-        'transaction_time': ltypes.Integer,
-        'fraud': ltypes.Boolean
+        'id': Integer,
+        'card_id': Integer,
+        'transaction_time': Integer,
+        'fraud': Boolean
     }
 
     dataframes = {
