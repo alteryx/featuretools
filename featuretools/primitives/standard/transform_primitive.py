@@ -768,7 +768,7 @@ class URLToTLD(TransformPrimitive):
         >>> urls = ['https://www.google.com', 'http://www.google.co.in',
         ...         'www.facebook.com']
         >>> url_to_tld(urls).to_list()
-        ['com', 'co.in', 'com']
+        ['com', 'in', 'com']
     """
     name = "url_to_tld"
     input_types = [URL]
