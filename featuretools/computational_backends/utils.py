@@ -6,6 +6,7 @@ from functools import wraps
 import dask.dataframe as dd
 import pandas as pd
 import psutil
+from woodwork.logical_types import Datetime
 
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, DirectFeature
@@ -86,7 +87,7 @@ def gather_approximate_features(feature_set):
     approximate_feature_trie = Trie(default=set, path_constructor=RelationshipPath)
 
     for feature in feature_set.target_features:
-        if feature_set.uses_full_entity(feature, check_dependents=True):
+        if feature_set.uses_full_dataframe(feature, check_dependents=True):
             continue
 
         if isinstance(feature, DirectFeature):
@@ -256,18 +257,16 @@ def _check_cutoff_time_type(cutoff_time, es_time_type):
     if isinstance(cutoff_time, tuple):
         cutoff_time_value = cutoff_time[0]
         time_type = _check_time_type(cutoff_time_value)
-        is_numeric = time_type == 'numeric_time_index'
-        is_datetime = time_type == 'datetime_time_index'
+        is_numeric = time_type == 'numeric'
+        is_datetime = time_type == Datetime
     else:
-        raise NotImplementedError()
-        # cutoff_time_dtype = cutoff_time['time'].dtype.name
-        # # TODO: refactor for woodwork columns, maybe use ww is_datetime and is_numeric?
-        # is_numeric = cutoff_time_dtype in PandasTypes._pandas_numerics
-        # is_datetime = cutoff_time_dtype in PandasTypes._pandas_datetimes
+        cutoff_time_col = cutoff_time.ww['time']
+        is_numeric = cutoff_time_col.ww.schema.is_numeric
+        is_datetime = cutoff_time_col.ww.schema.is_datetime
 
-    if es_time_type == "numeric_time_index" and not is_numeric:
+    if es_time_type == "numeric" and not is_numeric:
         raise TypeError("cutoff_time times must be numeric: try casting "
                         "via pd.to_numeric()")
-    if es_time_type == "datetime_time_index" and not is_datetime:
+    if es_time_type == Datetime and not is_datetime:
         raise TypeError("cutoff_time times must be datetime type: try casting "
                         "via pd.to_datetime()")

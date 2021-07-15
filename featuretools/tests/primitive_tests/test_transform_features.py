@@ -167,9 +167,9 @@ def dd_simple_es(pd_simple_es):
                                df.ww.logical_types,
                                df.ww.semantic_tags)
 
-    relationships = [(rel.parent_dataframe.id,
+    relationships = [(rel.parent_name,
                       rel.parent_column.name,
-                      rel.child_dataframe.id,
+                      rel.child_name,
                       rel.child_column.name) for rel in pd_simple_es.relationships]
 
     return ft.EntitySet(id=pd_simple_es.id, dataframes=dataframes, relationships=relationships)
@@ -187,9 +187,9 @@ def ks_simple_es(pd_simple_es):
                                df.ww.logical_typecs,
                                df.ww.semantic_tags)
 
-    relationships = [(rel.parent_dataframe.id,
+    relationships = [(rel.parent_name,
                       rel.parent_column.name,
-                      rel.child_dataframe.id,
+                      rel.child_name,
                       rel.child_column.name) for rel in pd_simple_es.relationships]
 
     return ft.EntitySet(id=pd_simple_es.id, dataframes=dataframes, relationships=relationships)

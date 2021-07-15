@@ -5,28 +5,28 @@ from featuretools.tests.testing_utils import backward_path
 from featuretools.utils import Trie
 
 
-def test_feature_trie_without_needs_full_entity(diamond_es):
+def test_feature_trie_without_needs_full_dataframe(diamond_es):
     es = diamond_es
-    country_name = ft.IdentityFeature(es['countries']['name'])
-    direct_name = ft.DirectFeature(country_name, es['regions'])
-    amount = ft.IdentityFeature(es['transactions']['amount'])
+    country_name = ft.IdentityFeature(es, 'countries', 'name')
+    direct_name = ft.DirectFeature(country_name, es, 'regions')
+    amount = ft.IdentityFeature(es, 'transactions', 'amount')
 
     path_through_customers = backward_path(es, ['regions', 'customers', 'transactions'])
     through_customers = ft.AggregationFeature(amount, es['regions'],
                                               primitive=ft.primitives.Mean,
                                               relationship_path=path_through_customers)
     path_through_stores = backward_path(es, ['regions', 'stores', 'transactions'])
-    through_stores = ft.AggregationFeature(amount, es['regions'],
+    through_stores = ft.AggregationFeature(amount, es, 'regions',
                                            primitive=ft.primitives.Mean,
                                            relationship_path=path_through_stores)
     customers_to_transactions = backward_path(es, ['customers', 'transactions'])
-    customers_mean = ft.AggregationFeature(amount, es['customers'],
+    customers_mean = ft.AggregationFeature(amount, es, 'customers',
                                            primitive=ft.primitives.Mean,
                                            relationship_path=customers_to_transactions)
 
     negation = ft.TransformFeature(customers_mean, ft.primitives.Negate)
     regions_to_customers = backward_path(es, ['regions', 'customers'])
-    mean_of_mean = ft.AggregationFeature(negation, es['regions'],
+    mean_of_mean = ft.AggregationFeature(negation, es, 'regions',
                                          primitive=ft.primitives.Mean,
                                          relationship_path=regions_to_customers)
 
@@ -49,7 +49,7 @@ def test_feature_trie_without_needs_full_entity(diamond_es):
         (False, set(), {amount.unique_name()})
 
 
-def test_feature_trie_with_needs_full_entity(diamond_es):
+def test_feature_trie_with_needs_full_dataframe(diamond_es):
     pd_es = diamond_es
     amount = ft.IdentityFeature(pd_es['transactions']['amount'])
 
@@ -79,7 +79,7 @@ def test_feature_trie_with_needs_full_entity(diamond_es):
     assert trie.get_node(path_through_stores[:1]).value == (False, set(), set())
 
 
-def test_feature_trie_with_needs_full_entity_direct(es):
+def test_feature_trie_with_needs_full_dataframe_direct(es):
     value = ft.IdentityFeature(es['log']['value'],)
     agg = ft.AggregationFeature(value, es['sessions'],
                                 primitive=ft.primitives.Mean)

@@ -30,7 +30,7 @@ class FeatureSet(object):
                 approximate_feature_trie then neither A nor its dependencies will appear in
                 FeatureSet.feature_trie.
         """
-        self.target_eid = features[0].dataframe_name
+        self.target_df_name = features[0].dataframe_name
         self.target_features = features
         self.target_feature_names = {f.unique_name() for f in features}
 
@@ -97,13 +97,13 @@ class FeatureSet(object):
         return feature_trie
 
     def _add_feature_to_trie(self, trie, feature, approximate_feature_trie,
-                             ancestor_needs_full_entity=False):
+                             ancestor_needs_full_dataframe=False):
         """
         Add the given feature to the root of the trie, and recurse on its dependencies. If it is in
         approximate_feature_trie then it will not be added and we will not recurse on its dependencies.
         """
-        node_needs_full_entity, full_features, not_full_features = trie.value
-        needs_full_entity = ancestor_needs_full_entity or self.uses_full_entity(feature)
+        node_needs_full_dataframe, full_features, not_full_features = trie.value
+        needs_full_dataframe = ancestor_needs_full_dataframe or self.uses_full_dataframe(feature)
 
         name = feature.unique_name()
 
@@ -112,15 +112,15 @@ class FeatureSet(object):
             return
 
         # Add the feature to one of the sets, depending on whether it needs the full entity.
-        if needs_full_entity:
+        if needs_full_dataframe:
             full_features.add(name)
             if name in not_full_features:
                 not_full_features.remove(name)
 
-            # Update needs_full_entity for this node.
+            # Update needs_full_dataframe for this node.
             trie.value = (True, full_features, not_full_features)
 
-            # Set every node in relationship path to needs_full_entity.
+            # Set every node in relationship path to needs_full_dataframe.
             sub_trie = trie
             for edge in feature.relationship_path:
                 sub_trie = sub_trie.get_node([edge])
@@ -138,7 +138,7 @@ class FeatureSet(object):
             if isinstance(dep_feat, FeatureOutputSlice):
                 dep_feat = dep_feat.base_feature
             self._add_feature_to_trie(sub_trie, dep_feat, sub_ignored_trie,
-                                      ancestor_needs_full_entity=needs_full_entity)
+                                      ancestor_needs_full_dataframe=needs_full_dataframe)
 
     def group_features(self, feature_names):
         """
@@ -154,7 +154,7 @@ class FeatureSet(object):
                     str(f.__class__),
                     _get_use_previous(f),
                     _get_where(f),
-                    self.uses_full_entity(f),
+                    self.uses_full_dataframe(f),
                     _get_groupby(f))
 
         # Sort the list of features by the complex key function above, then
@@ -189,14 +189,14 @@ class FeatureSet(object):
 
         return depths
 
-    def uses_full_entity(self, feature, check_dependents=False):
-        if isinstance(feature, TransformFeature) and feature.primitive.uses_full_entity:
+    def uses_full_dataframe(self, feature, check_dependents=False):
+        if isinstance(feature, TransformFeature) and feature.primitive.uses_full_dataframe:
             return True
-        return check_dependents and self._dependent_uses_full_entity(feature)
+        return check_dependents and self._dependent_uses_full_dataframe(feature)
 
-    def _dependent_uses_full_entity(self, feature):
+    def _dependent_uses_full_dataframe(self, feature):
         for d in self.feature_dependents[feature.unique_name()]:
-            if isinstance(d, TransformFeature) and d.primitive.uses_full_entity:
+            if isinstance(d, TransformFeature) and d.primitive.uses_full_dataframe:
                 return True
         return False
 

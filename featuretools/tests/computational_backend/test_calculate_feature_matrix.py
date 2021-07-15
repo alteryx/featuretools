@@ -71,10 +71,10 @@ def test_calc_feature_matrix(es):
                  [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
                  [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
     instances = range(17)
-    cutoff_time = pd.DataFrame({'time': times, es['log'].index: instances})
+    cutoff_time = pd.DataFrame({'time': times, es['log'].ww.index: instances})
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
 
-    property_feature = ft.Feature(es['log']['value']) > 10
+    property_feature = ft.Feature(es, 'log', 'value') > 10
 
     feature_matrix = calculate_feature_matrix([property_feature],
                                               es,
@@ -110,7 +110,7 @@ def test_calc_feature_matrix(es):
 
     cutoff_times_dup = pd.DataFrame({'time': [datetime(2018, 3, 1),
                                               datetime(2018, 3, 1)],
-                                     es['log'].index: [1, 1]})
+                                     es['log'].ww.index: [1, 1]})
 
     error_text = 'Duplicated rows in cutoff time dataframe.'
     with pytest.raises(AssertionError, match=error_text):
@@ -138,10 +138,10 @@ def test_cfm_warns_dask_cutoff_time(es):
                  [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
     instances = range(17)
     cutoff_time = pd.DataFrame({'time': times,
-                                es['log'].index: instances})
+                                es['log'].ww.index: instances})
     cutoff_time = dd.from_pandas(cutoff_time, npartitions=4)
 
-    property_feature = ft.Feature(es['log']['value']) > 10
+    property_feature = ft.Feature(es, 'log', 'value') > 10
 
     match = "cutoff_time should be a Pandas DataFrame: " \
             "computing cutoff_time, this may take a while"
@@ -152,7 +152,7 @@ def test_cfm_warns_dask_cutoff_time(es):
 
 
 def test_cfm_compose(es, lt):
-    property_feature = ft.Feature(es['log']['value']) > 10
+    property_feature = ft.Feature(es, 'log', 'value') > 10
 
     feature_matrix = calculate_feature_matrix([property_feature],
                                               es,
@@ -168,7 +168,7 @@ def test_cfm_compose_approximate(es, lt):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('dask does not support approximate')
 
-    property_feature = ft.Feature(es['log']['value']) > 10
+    property_feature = ft.Feature(es, 'log', 'value') > 10
 
     feature_matrix = calculate_feature_matrix([property_feature],
                                               es,
@@ -183,7 +183,7 @@ def test_cfm_compose_approximate(es, lt):
 
 
 def test_cfm_dask_compose(dask_es, lt):
-    property_feature = ft.Feature(dask_es['log']['value']) > 10
+    property_feature = ft.Feature(dask_es, 'log', 'value') > 10
 
     feature_matrix = calculate_feature_matrix([property_feature],
                                               dask_es,
@@ -208,20 +208,20 @@ def test_cfm_approximate_correct_ordering():
                      dataframe=df,
                      index="trip_id",
                      time_index='flight_time')
-    es.normalize_entity(base_entity_id="trips",
-                        new_entity_id="flights",
-                        index="flight_id",
-                        make_time_index=True)
-    features = dfs(entityset=es, target_dataframe='trips', features_only=True)
+    es.normalize_dataframe(base_dataframe_name="trips",
+                           new_dataframe_name="flights",
+                           index="flight_id",
+                           make_time_index=True)
+    features = dfs(entityset=es, target_dataframe_name='trips', features_only=True)
     flight_features = [feature for feature in features
                        if isinstance(feature, DirectFeature) and
                        isinstance(feature.base_features[0],
                                   AggregationFeature)]
-    property_feature = IdentityFeature(es['trips']['trip_id'])
+    property_feature = IdentityFeature(es, 'trips', 'trip_id')
 
     cutoff_time = pd.DataFrame.from_dict({'instance_id': df['trip_id'],
                                           'time': df['flight_time']})
-    time_feature = IdentityFeature(es['trips']['flight_time'])
+    time_feature = IdentityFeature(es, 'trips', 'flight_time')
     feature_matrix = calculate_feature_matrix(flight_features + [property_feature, time_feature],
                                               es,
                                               cutoff_time_in_index=True,
@@ -242,7 +242,7 @@ def test_cfm_approximate_correct_ordering():
 
 # uses approximate, skip for dask/koalas entitysets
 def test_cfm_no_cutoff_time_index(pd_es):
-    agg_feat = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['sessions'], primitive=Count)
+    agg_feat = ft.Feature(pd_es, 'log', 'id', parent_entity=pd_es['sessions'], primitive=Count)
     agg_feat4 = ft.Feature(agg_feat, parent_entity=pd_es['customers'], primitive=Sum)
     dfeat = DirectFeature(agg_feat4, pd_es['sessions'])
     cutoff_time = pd.DataFrame({
@@ -283,7 +283,7 @@ def test_cfm_duplicated_index_in_cutoff_time(es):
              datetime(2011, 4, 1), datetime(2011, 5, 1)]
 
     instances = [1, 1, 2, 2]
-    property_feature = ft.Feature(es['log']['value']) > 10
+    property_feature = ft.Feature(es, 'log', 'value') > 10
     cutoff_time = pd.DataFrame({'id': instances, 'time': times},
                                index=[1, 1, 1, 1])
 
@@ -305,7 +305,7 @@ def test_saveprogress(es, tmpdir):
                  [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
                  [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
-    property_feature = ft.Feature(es['log']['value']) > 10
+    property_feature = ft.Feature(es, 'log', 'value') > 10
     save_progress = str(tmpdir)
     fm_save = calculate_feature_matrix([property_feature],
                                        es,
@@ -331,7 +331,7 @@ def test_saveprogress(es, tmpdir):
 
 
 def test_cutoff_time_correctly(es):
-    property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
+    property_feature = ft.Feature(es, 'log', 'id', parent_entity=es['customers'], primitive=Count)
     times = [datetime(2011, 4, 10), datetime(2011, 4, 11), datetime(2011, 4, 7)]
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 1, 2]})
     feature_matrix = calculate_feature_matrix([property_feature],
@@ -371,7 +371,7 @@ def test_cutoff_time_binning():
 
 
 def test_training_window_fails_dask(dask_es):
-    property_feature = ft.Feature(dask_es['log']['id'],
+    property_feature = ft.Feature(dask_es, 'log', 'id',
                                   parent_entity=dask_es['customers'],
                                   primitive=Count)
 
@@ -383,10 +383,10 @@ def test_training_window_fails_dask(dask_es):
 
 
 def test_cutoff_time_columns_order(es):
-    property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
+    property_feature = ft.Feature(es, 'log', 'id', parent_entity=es['customers'], primitive=Count)
     times = [datetime(2011, 4, 10), datetime(2011, 4, 11), datetime(2011, 4, 7)]
-    id_col_names = ['instance_id', es['customers'].index]
-    time_col_names = ['time', es['customers'].time_index]
+    id_col_names = ['instance_id', es['customers'].ww.index]
+    time_col_names = ['time', es['customers'].ww.time_index]
     for id_col in id_col_names:
         for time_col in time_col_names:
             cutoff_time = pd.DataFrame({'dummy_col_1': [1, 2, 3],
@@ -403,10 +403,10 @@ def test_cutoff_time_columns_order(es):
 
 
 def test_cutoff_time_df_redundant_column_names(es):
-    property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
+    property_feature = ft.Feature(es, 'log', 'id', parent_entity=es['customers'], primitive=Count)
     times = [datetime(2011, 4, 10), datetime(2011, 4, 11), datetime(2011, 4, 7)]
 
-    cutoff_time = pd.DataFrame({es['customers'].index: [0, 1, 2],
+    cutoff_time = pd.DataFrame({es['customers'].ww.index: [0, 1, 2],
                                 'instance_id': [0, 1, 2],
                                 'dummy_col': [True, False, False],
                                 'time': times})
@@ -417,7 +417,7 @@ def test_cutoff_time_df_redundant_column_names(es):
                                  es,
                                  cutoff_time=cutoff_time)
 
-    cutoff_time = pd.DataFrame({es['customers'].time_index: [0, 1, 2],
+    cutoff_time = pd.DataFrame({es['customers'].ww.time_index: [0, 1, 2],
                                 'instance_id': [0, 1, 2],
                                 'dummy_col': [True, False, False],
                                 'time': times})
@@ -430,8 +430,8 @@ def test_cutoff_time_df_redundant_column_names(es):
 
 
 def test_training_window(pd_es):
-    property_feature = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['customers'], primitive=Count)
-    top_level_agg = ft.Feature(pd_es['customers']['id'], parent_entity=pd_es[u'régions'], primitive=Count)
+    property_feature = ft.Feature(pd_es, 'log', 'id', parent_entity=pd_es['customers'], primitive=Count)
+    top_level_agg = ft.Feature(pd_es, 'customers', 'id', parent_entity=pd_es[u'régions'], primitive=Count)
 
     # make sure features that have a direct to a higher level agg
     # so we have multiple "filter eids" in get_pandas_data_slice,
@@ -509,7 +509,7 @@ def test_training_window_overlap(pd_es):
     pd_es.add_last_time_indexes()
 
     count_log = ft.Feature(
-        base=pd_es['log']['id'],
+        pd_es, 'log', 'id',
         parent_entity=pd_es['customers'],
         primitive=Count,
     )
@@ -794,7 +794,7 @@ def test_approximate_dfeat_of_need_all_values(pd_es):
     assert test_list == true_vals
 
 
-def test_uses_full_entity_feat_of_approximate(pd_es):
+def test_uses_full_dataframe_feat_of_approximate(pd_es):
     agg_feat = ft.Feature(pd_es['log']['value'], parent_entity=pd_es['sessions'], primitive=Sum)
     agg_feat2 = ft.Feature(agg_feat, parent_entity=pd_es['customers'], primitive=Sum)
     agg_feat3 = ft.Feature(agg_feat, parent_entity=pd_es['customers'], primitive=Max)
@@ -1617,7 +1617,7 @@ def test_some_instances_not_in_data(pd_es):
 
 def test_missing_instances_with_categorical_index(pd_es):
     instance_ids = [0, 1, 3, 2]
-    features = ft.dfs(entityset=pd_es, target_dataframe='customers', features_only=True)
+    features = ft.dfs(entityset=pd_es, target_dataframe_name='customers', features_only=True)
     fm = calculate_feature_matrix(entityset=pd_es,
                                   features=features,
                                   instance_ids=instance_ids)
@@ -1775,7 +1775,7 @@ def test_closes_tqdm(es):
 
 def test_approximate_with_single_cutoff_warns(pd_es):
     features = dfs(entityset=pd_es,
-                   target_dataframe='customers',
+                   target_dataframe_name='customers',
                    features_only=True,
                    ignore_dataframes=['cohorts'],
                    agg_primitives=['sum'])
@@ -1812,7 +1812,7 @@ def test_calc_feature_matrix_with_cutoff_df_and_instance_ids(es):
                  [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
                  [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
     instances = range(17)
-    cutoff_time = pd.DataFrame({'time': times, es['log'].index: instances})
+    cutoff_time = pd.DataFrame({'time': times, es['log'].ww.index: instances})
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
 
     property_feature = ft.Feature(es['log']['value']) > 10
@@ -1847,7 +1847,7 @@ def test_calculate_feature_matrix_returns_default_values(default_value_es):
 def test_entities_relationships(entities, relationships):
     fm_1, features = ft.dfs(entities=entities,
                             relationships=relationships,
-                            target_dataframe="transactions")
+                            target_dataframe_name="transactions")
 
     fm_2 = calculate_feature_matrix(features=features,
                                     entities=entities,
@@ -1861,7 +1861,7 @@ def test_entities_relationships(entities, relationships):
 def test_no_entities(entities, relationships):
     features = ft.dfs(entities=entities,
                       relationships=relationships,
-                      target_dataframe="transactions",
+                      target_dataframe_name="transactions",
                       features_only=True)
 
     msg = "No entities or valid EntitySet provided"
@@ -1874,7 +1874,7 @@ def test_no_entities(entities, relationships):
 def test_no_relationships(entities):
     fm_1, features = ft.dfs(entities=entities,
                             relationships=None,
-                            target_dataframe="transactions")
+                            target_dataframe_name="transactions")
 
     fm_2 = calculate_feature_matrix(features=features,
                                     entities=entities,
@@ -1887,7 +1887,7 @@ def test_no_relationships(entities):
 
 def test_cfm_with_invalid_time_index(es):
     # TODO: does _check_uniform_time_index occur at CFM runtime?
-    features = ft.dfs(entityset=es, target_dataframe="customers", features_only=True)
+    features = ft.dfs(entityset=es, target_dataframe_name="customers", features_only=True)
     es['customers'].convert_variable_type('signup_date', ft.variable_types.Numeric)
     match = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> "
     match += "type which differs from other entityset time indexes"

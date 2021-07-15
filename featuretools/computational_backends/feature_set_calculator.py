@@ -18,7 +18,7 @@ from featuretools.feature_base import (
 from featuretools.utils import Trie
 from featuretools.utils.gen_utils import (
     Library,
-    get_relationship_variable_id,
+    get_relationship_column_id,
     import_or_none,
     is_instance
 )
@@ -67,17 +67,17 @@ class FeatureSetCalculator(object):
     def run(self, instance_ids, progress_callback=None, include_cutoff_time=True):
         """
         Calculate values of features for the given instances of the target
-        entity.
+        dataframe.
 
         Summary of algorithm:
         1. Construct a trie where the edges are relationships and each node
-            contains a set of features for a single entity. See
+            contains a set of features for a single dataframe. See
             FeatureSet._build_feature_trie.
         2. Initialize a trie for storing dataframes.
         3. Traverse the trie using depth first search. At each node calculate
             the features and store the resulting dataframe in the dataframe
             trie (so that its values can be used by features which depend on
-            these features). See _calculate_features_for_entity.
+            these features). See _calculate_features_for_dataframe.
         4. Get the dataframe at the root of the trie (for the target dataframe) and
             return the columns corresponding to the requested features.
 
@@ -104,18 +104,18 @@ class FeatureSetCalculator(object):
         feature_trie = self.feature_set.feature_trie
 
         df_trie = Trie(path_constructor=RelationshipPath)
-        full_entity_df_trie = Trie(path_constructor=RelationshipPath)
+        full_dataframe_df_trie = Trie(path_constructor=RelationshipPath)
 
-        target_dataframe = self.entityset[self.feature_set.target_eid]
-        self._calculate_features_for_entity(entity_id=self.feature_set.target_eid,
-                                            feature_trie=feature_trie,
-                                            df_trie=df_trie,
-                                            full_entity_df_trie=full_entity_df_trie,
-                                            precalculated_trie=self.precalculated_features,
-                                            filter_variable=target_dataframe.ww.index,
-                                            filter_values=instance_ids,
-                                            progress_callback=progress_callback,
-                                            include_cutoff_time=include_cutoff_time)
+        target_dataframe = self.entityset[self.feature_set.target_df_name]
+        self._calculate_features_for_dataframe(dataframe_name=self.feature_set.target_df_name,
+                                               feature_trie=feature_trie,
+                                               df_trie=df_trie,
+                                               full_dataframe_df_trie=full_dataframe_df_trie,
+                                               precalculated_trie=self.precalculated_features,
+                                               filter_column=target_dataframe.ww.index,
+                                               filter_values=instance_ids,
+                                               progress_callback=progress_callback,
+                                               include_cutoff_time=include_cutoff_time)
 
         # The dataframe for the target dataframe should be stored at the root of
         # df_trie.
@@ -136,7 +136,7 @@ class FeatureSetCalculator(object):
 
                 df = default_df.append(df, sort=True)
 
-            df.index.name = self.entityset[self.feature_set.target_eid].ww.index
+            df.index.name = self.entityset[self.feature_set.target_df_name].ww.index
 
             # Order by instance_ids
             unique_instance_ids = pd.unique(instance_ids)
@@ -157,70 +157,70 @@ class FeatureSetCalculator(object):
 
         return df[column_list]
 
-    def _calculate_features_for_entity(self, entity_id, feature_trie, df_trie,
-                                       full_entity_df_trie,
-                                       precalculated_trie,
-                                       filter_variable, filter_values,
-                                       parent_data=None,
-                                       progress_callback=None,
-                                       include_cutoff_time=True):
+    def _calculate_features_for_dataframe(self, dataframe_name, feature_trie, df_trie,
+                                          full_dataframe_df_trie,
+                                          precalculated_trie,
+                                          filter_column, filter_values,
+                                          parent_data=None,
+                                          progress_callback=None,
+                                          include_cutoff_time=True):
         """
         Generate dataframes with features calculated for this node of the trie,
         and all descendant nodes. The dataframes will be stored in df_trie.
 
         Args:
-            entity_id (str): The name of the entity to calculate features for.
+            dataframe_name (str): The name of the dataframe to calculate features for.
 
             feature_trie (Trie): the trie with sets of features to calculate.
-                The root contains features for the given entity.
+                The root contains features for the given dataframe.
 
             df_trie (Trie): a parallel trie for storing dataframes. The
                 dataframe with features calculated will be placed in the root.
 
-            full_entity_df_trie (Trie): a trie storing dataframes will all entity
-                rows, for features that are uses_full_entity.
+            full_dataframe_df_trie (Trie): a trie storing dataframes will all dataframe
+                rows, for features that are uses_full_dataframe.
 
             precalculated_trie (Trie): a parallel trie containing dataframes
-                with precalculated features. The dataframe for this entity will
+                with precalculated features. The dataframe for this dataframe will
                 be at the root.
 
-            filter_variable (str): The name of the variable to filter this
+            filter_column (str): The name of the column to filter this
                 dataframe by.
 
-            filter_values (pd.Series): The values to filter the filter_variable
+            filter_values (pd.Series): The values to filter the filter_column
                 to.
 
             parent_data (tuple[Relationship, list[str], pd.DataFrame]): Data
                 related to the parent of this trie. This will only be present if
-                the relationship points from this entity to the parent entity. A
+                the relationship points from this dataframe to the parent dataframe. A
                 3 tuple of (parent_relationship,
-                ancestor_relationship_variables, parent_df).
-                ancestor_relationship_variables is the names of variables which
-                link the parent entity to its ancestors.
+                ancestor_relationship_columns, parent_df).
+                ancestor_relationship_columns is the names of columns which
+                link the parent dataframe to its ancestors.
 
             include_cutoff_time (bool): If True, data at cutoff time are included
                 in calculating features.
 
         """
-        # Step 1: Get a dataframe for the given entity, filtered by the given
+        # Step 1: Get a dataframe for the given dataframe, filtered by the given
         # conditions.
 
-        need_full_entity, full_entity_features, not_full_entity_features = feature_trie.value
+        need_full_dataframe, full_dataframe_features, not_full_dataframe_features = feature_trie.value
 
-        all_features = full_entity_features | not_full_entity_features
-        columns = self._necessary_columns(entity_id, all_features)
+        all_features = full_dataframe_features | not_full_dataframe_features
+        columns = self._necessary_columns(dataframe_name, all_features)
 
-        # If we need the full entity then don't filter by filter_values.
-        if need_full_entity:
-            query_variable = None
+        # If we need the full dataframe then don't filter by filter_values.
+        if need_full_dataframe:
+            query_column = None
             query_values = None
         else:
-            query_variable = filter_variable
+            query_column = filter_column
             query_values = filter_values
 
-        df = self.entityset.query_by_values(dataframe_name=entity_id,
+        df = self.entityset.query_by_values(dataframe_name=dataframe_name,
                                             instance_vals=query_values,
-                                            column_name=query_variable,
+                                            column_name=query_column,
                                             columns=columns,
                                             time_last=self.time_last,
                                             training_window=self.training_window,
@@ -229,19 +229,19 @@ class FeatureSetCalculator(object):
         # call to update timer
         progress_callback(0)
 
-        # Step 2: Add variables to the dataframe linking it to all ancestors.
-        new_ancestor_relationship_variables = []
+        # Step 2: Add columns to the dataframe linking it to all ancestors.
+        new_ancestor_relationship_columns = []
         if parent_data:
-            parent_relationship, ancestor_relationship_variables, parent_df = \
+            parent_relationship, ancestor_relationship_columns, parent_df = \
                 parent_data
 
-            if ancestor_relationship_variables:
-                df, new_ancestor_relationship_variables = self._add_ancestor_relationship_variables(
-                    df, parent_df, ancestor_relationship_variables, parent_relationship)
+            if ancestor_relationship_columns:
+                df, new_ancestor_relationship_columns = self._add_ancestor_relationship_columns(
+                    df, parent_df, ancestor_relationship_columns, parent_relationship)
 
-            # Add the variable linking this entity to its parent, so that
+            # Add the column linking this dataframe to its parent, so that
             # descendants get linked to the parent.
-            new_ancestor_relationship_variables.append(parent_relationship.child_column.id)
+            new_ancestor_relationship_columns.append(parent_relationship.child_column.name)
 
         # call to update timer
         progress_callback(0)
@@ -249,48 +249,48 @@ class FeatureSetCalculator(object):
         # Step 3: Recurse on children.
 
         # Pass filtered values, even if we are using a full df.
-        if need_full_entity:
+        if need_full_dataframe:
             if isinstance(filter_values, dd.Series):
-                msg = "Cannot use primitives that require full entity with Dask EntitySets"
+                msg = "Cannot use primitives that require full dataframe with Dask EntitySets"
                 raise ValueError(msg)
-            filtered_df = df[df[filter_variable].isin(filter_values)]
+            filtered_df = df[df[filter_column].isin(filter_values)]
         else:
             filtered_df = df
 
         for edge, sub_trie in feature_trie.children():
             is_forward, relationship = edge
             if is_forward:
-                sub_entity = relationship.parent_dataframe.id
-                sub_filter_variable = relationship.parent_column.id
-                sub_filter_values = filtered_df[relationship.child_column.id]
+                sub_dataframe = relationship.parent_dataframe.ww.name
+                sub_filter_column = relationship.parent_column.name
+                sub_filter_values = filtered_df[relationship.child_column.name]
                 parent_data = None
             else:
-                sub_entity = relationship.child_dataframe.id
-                sub_filter_variable = relationship.child_column.id
-                sub_filter_values = filtered_df[relationship.parent_column.id]
+                sub_dataframe = relationship.child_dataframe.ww.name
+                sub_filter_column = relationship.child_column.name
+                sub_filter_values = filtered_df[relationship.parent_column.name]
 
                 parent_data = (relationship,
-                               new_ancestor_relationship_variables,
+                               new_ancestor_relationship_columns,
                                df)
 
             sub_df_trie = df_trie.get_node([edge])
-            sub_full_entity_df_trie = full_entity_df_trie.get_node([edge])
+            sub_full_dataframe_df_trie = full_dataframe_df_trie.get_node([edge])
             sub_precalc_trie = precalculated_trie.get_node([edge])
-            self._calculate_features_for_entity(
-                entity_id=sub_entity,
+            self._calculate_features_for_dataframe(
+                dataframe_name=sub_dataframe,
                 feature_trie=sub_trie,
                 df_trie=sub_df_trie,
-                full_entity_df_trie=sub_full_entity_df_trie,
+                full_dataframe_df_trie=sub_full_dataframe_df_trie,
                 precalculated_trie=sub_precalc_trie,
-                filter_variable=sub_filter_variable,
+                filter_column=sub_filter_column,
                 filter_values=sub_filter_values,
                 parent_data=parent_data,
                 progress_callback=progress_callback,
                 include_cutoff_time=include_cutoff_time)
 
-        # Step 4: Calculate the features for this entity.
+        # Step 4: Calculate the features for this dataframe.
         #
-        # All dependencies of the features for this entity have been calculated
+        # All dependencies of the features for this dataframe have been calculated
         # by the above recursive calls, and their results stored in df_trie.
 
         # Add any precalculated features.
@@ -306,23 +306,23 @@ class FeatureSetCalculator(object):
         # call to update timer
         progress_callback(0)
 
-        # First, calculate any features that require the full entity. These can
+        # First, calculate any features that require the full dataframe. These can
         # be calculated first because all of their dependents are included in
-        # full_entity_features.
-        if need_full_entity:
-            df = self._calculate_features(df, full_entity_df_trie, full_entity_features, progress_callback)
+        # full_dataframe_features.
+        if need_full_dataframe:
+            df = self._calculate_features(df, full_dataframe_df_trie, full_dataframe_features, progress_callback)
 
-            # Store full entity df.
-            full_entity_df_trie.value = df
+            # Store full dataframe
+            full_dataframe_df_trie.value = df
 
-            # Filter df so that features that don't require the full entity are
+            # Filter df so that features that don't require the full dataframe are
             # only calculated on the necessary instances.
-            df = df[df[filter_variable].isin(filter_values)]
+            df = df[df[filter_column].isin(filter_values)]
 
-        # Calculate all features that don't require the full entity.
-        df = self._calculate_features(df, df_trie, not_full_entity_features, progress_callback)
+        # Calculate all features that don't require the full dataframe.
+        df = self._calculate_features(df, df_trie, not_full_dataframe_features, progress_callback)
 
-        # Step 5: Store the dataframe for this entity at the root of df_trie, so
+        # Step 5: Store the dataframe for this dataframe at the root of df_trie, so
         # that it can be accessed by the caller.
         df_trie.value = df
 
@@ -339,53 +339,53 @@ class FeatureSetCalculator(object):
 
         return df
 
-    def _add_ancestor_relationship_variables(self, child_df, parent_df,
-                                             ancestor_relationship_variables,
-                                             relationship):
+    def _add_ancestor_relationship_columns(self, child_df, parent_df,
+                                           ancestor_relationship_columns,
+                                           relationship):
         """
-        Merge ancestor_relationship_variables from parent_df into child_df, adding a prefix to
+        Merge ancestor_relationship_columns from parent_df into child_df, adding a prefix to
         each column name specifying the relationship.
 
-        Return the updated df and the new relationship variable names.
+        Return the updated df and the new relationship column names.
 
         Args:
-            child_df (pd.DataFrame): The dataframe to add relationship variables to.
-            parent_df (pd.DataFrame): The dataframe to copy relationship variables from.
-            ancestor_relationship_variables (list[str]): The names of
-                relationship variables in the parent_df to copy into child_df.
+            child_df (pd.DataFrame): The dataframe to add relationship columns to.
+            parent_df (pd.DataFrame): The dataframe to copy relationship columns from.
+            ancestor_relationship_columns (list[str]): The names of
+                relationship columns in the parent_df to copy into child_df.
             relationship (Relationship): the relationship through which the
                 child is connected to the parent.
         """
         relationship_name = relationship.parent_name
-        new_relationship_variables = ['%s.%s' % (relationship_name, var)
-                                      for var in ancestor_relationship_variables]
+        new_relationship_columns = ['%s.%s' % (relationship_name, var)
+                                    for var in ancestor_relationship_columns]
 
         # create an intermediate dataframe which shares a column
         # with the child dataframe and has a column with the
         # original parent's id.
-        col_map = {relationship.parent_column.id: relationship.child_column.id}
-        for child_var, parent_var in zip(new_relationship_variables, ancestor_relationship_variables):
+        col_map = {relationship.parent_column.name: relationship.child_column.name}
+        for child_var, parent_var in zip(new_relationship_columns, ancestor_relationship_columns):
             col_map[parent_var] = child_var
 
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
 
         merge_df.index.name = None  # change index name for merge
 
-        # Merge the dataframe, adding the relationship variables to the child.
+        # Merge the dataframe, adding the relationship columns to the child.
         # Left outer join so that all rows in child are kept (if it contains
-        # all rows of the entity then there may not be corresponding rows in the
+        # all rows of the dataframe then there may not be corresponding rows in the
         # parent_df).
         df = child_df.merge(merge_df,
                             how='left',
-                            left_on=relationship.child_column.id,
-                            right_on=relationship.child_column.id)
+                            left_on=relationship.child_column.name,
+                            right_on=relationship.child_column.name)
 
         # ensure index is maintained
         # TODO: Review for dask dataframes
         if isinstance(df, pd.DataFrame):
-            df.set_index(relationship.child_dataframe.index, drop=False, inplace=True)
+            df.set_index(relationship.child_dataframe.ww.index, drop=False, inplace=True)
 
-        return df, new_relationship_variables
+        return df, new_relationship_columns
 
     def generate_default_df(self, instance_ids, extra_columns=None):
         default_row = []
@@ -399,7 +399,7 @@ class FeatureSetCalculator(object):
         default_df = pd.DataFrame(default_matrix,
                                   columns=default_cols,
                                   index=instance_ids)
-        index_name = self.entityset[self.feature_set.target_eid].index
+        index_name = self.entityset[self.feature_set.target_df_name].ww.index
         default_df.index.name = index_name
         if extra_columns is not None:
             for c in extra_columns:
@@ -442,18 +442,18 @@ class FeatureSetCalculator(object):
 
                 continue
 
-            # collect only the variables we need for this transformation
+            # collect only the columns we need for this transformation
 
-            variable_data = [frame[bf.get_name()]
-                             for bf in f.base_features]
+            column_data = [frame[bf.get_name()]
+                           for bf in f.base_features]
 
             feature_func = f.get_function()
             # apply the function to the relevant dataframe slice and add the
             # feature row to the results dataframe.
             if f.primitive.uses_calc_time:
-                values = feature_func(*variable_data, time=self.time_last)
+                values = feature_func(*column_data, time=self.time_last)
             else:
-                values = feature_func(*variable_data)
+                values = feature_func(*column_data)
 
             # if we don't get just the values, the assignment breaks when indexes don't match
             if f.number_output_features > 1:
@@ -493,16 +493,16 @@ class FeatureSetCalculator(object):
                     continue
 
                 column_names = [bf.get_name() for bf in f.base_features]
-                # exclude the groupby variable from being passed to the function
-                variable_data = [grouped[name].get_group(group) for name in column_names[:-1]]
+                # exclude the groupby column from being passed to the function
+                column_data = [grouped[name].get_group(group) for name in column_names[:-1]]
                 feature_func = f.get_function()
 
                 # apply the function to the relevant dataframe slice and add the
                 # feature row to the results dataframe.
                 if f.primitive.uses_calc_time:
-                    values = feature_func(*variable_data, time=self.time_last)
+                    values = feature_func(*column_data, time=self.time_last)
                 else:
-                    values = feature_func(*variable_data)
+                    values = feature_func(*column_data)
 
                 if f.number_output_features == 1:
                     values = [values]
@@ -510,9 +510,9 @@ class FeatureSetCalculator(object):
                 # make sure index is aligned
                 for i, value in enumerate(values):
                     if isinstance(value, pd.Series):
-                        value.index = variable_data[0].index
+                        value.index = column_data[0].index
                     else:
-                        value = pd.Series(value, index=variable_data[0].index)
+                        value = pd.Series(value, index=column_data[0].index)
                     feature_vals[i].append(value)
 
             if any(feature_vals):
@@ -531,11 +531,11 @@ class FeatureSetCalculator(object):
 
         parent_df = df_trie.get_node([path[0]]).value
         _is_forward, relationship = path[0]
-        merge_var = relationship.child_column.id
+        merge_var = relationship.child_column.name
 
-        # generate a mapping of old column names (in the parent entity) to
-        # new column names (in the child entity) for the merge
-        col_map = {relationship.parent_column.id: merge_var}
+        # generate a mapping of old column names (in the parent dataframe) to
+        # new column names (in the child dataframe) for the merge
+        col_map = {relationship.parent_column.name: merge_var}
         index_as_feature = None
 
         fillna_dict = {}
@@ -543,7 +543,7 @@ class FeatureSetCalculator(object):
             feature_defaults = {name: f.default_value
                                 for name in f.get_feature_names() if not pd.isna(f.default_value)}
             fillna_dict.update(feature_defaults)
-            if f.base_features[0].get_name() == relationship.parent_column.id:
+            if f.base_features[0].get_name() == relationship.parent_column.name:
                 index_as_feature = f
             base_names = f.base_features[0].get_feature_names()
             for name, base_name in zip(f.get_feature_names(), base_names):
@@ -551,7 +551,7 @@ class FeatureSetCalculator(object):
                     continue
                 col_map[base_name] = name
 
-        # merge the identity feature from the parent entity into the child
+        # merge the identity feature from the parent dataframe into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
         if is_instance(merge_df, (dd, ks), 'DataFrame'):
             new_df = child_df.merge(merge_df, left_on=merge_var, right_on=merge_var,
@@ -573,9 +573,9 @@ class FeatureSetCalculator(object):
 
     def _calculate_agg_features(self, features, frame, df_trie, progress_callback):
         test_feature = features[0]
-        child_entity = test_feature.base_features[0].entity
+        child_dataframe = test_feature.base_features[0].dataframe
         base_frame = df_trie.get_node(test_feature.relationship_path).value
-        parent_merge_var = test_feature.relationship_path[0][1].parent_column.id
+        parent_merge_var = test_feature.relationship_path[0][1].parent_column.name
         # Sometimes approximate features get computed in a previous filter frame
         # and put in the current one dynamically,
         # so there may be existing features here
@@ -607,17 +607,17 @@ class FeatureSetCalculator(object):
         else:
             relationship_path = test_feature.relationship_path
 
-            groupby_var = get_relationship_variable_id(relationship_path)
+            groupby_var = get_relationship_column_id(relationship_path)
 
             # if the use_previous property exists on this feature, include only the
-            # instances from the child entity included in that Timedelta
+            # instances from the child dataframe included in that Timedelta
             use_previous = test_feature.use_previous
             if use_previous:
                 # Filter by use_previous values
                 time_last = self.time_last
                 if use_previous.has_no_observations():
                     time_first = time_last - use_previous
-                    ti = child_entity.time_index
+                    ti = child_dataframe.ww.time_index
                     if ti is not None:
                         base_frame = base_frame[base_frame[ti] >= time_first]
                 else:
@@ -636,9 +636,9 @@ class FeatureSetCalculator(object):
             for f in features:
                 if _can_agg(f):
 
-                    variable_id = f.base_features[0].get_name()
-                    if variable_id not in to_agg:
-                        to_agg[variable_id] = []
+                    column_id = f.base_features[0].get_name()
+                    if column_id not in to_agg:
+                        to_agg[column_id] = []
                     if isinstance(base_frame, dd.DataFrame):
                         func = f.get_function(agg_type=Library.DASK)
                     elif is_instance(base_frame, ks, 'DataFrame'):
@@ -655,23 +655,23 @@ class FeatureSetCalculator(object):
                     funcname = func
                     if callable(func):
                         # if the same function is being applied to the same
-                        # variable twice, wrap it in a partial to avoid
+                        # column twice, wrap it in a partial to avoid
                         # duplicate functions
                         funcname = str(id(func))
-                        if u"{}-{}".format(variable_id, funcname) in agg_rename:
+                        if u"{}-{}".format(column_id, funcname) in agg_rename:
                             func = partial(func)
                             funcname = str(id(func))
 
                         func.__name__ = funcname
 
                     if isinstance(func, dd.Aggregation):
-                        # TODO: handle aggregation being applied to same variable twice
+                        # TODO: handle aggregation being applied to same column twice
                         # (see above partial wrapping of functions)
                         funcname = func.__name__
 
-                    to_agg[variable_id].append(func)
+                    to_agg[column_id].append(func)
                     # this is used below to rename columns that pandas names for us
-                    agg_rename[u"{}-{}".format(variable_id, funcname)] = f.get_name()
+                    agg_rename[u"{}-{}".format(column_id, funcname)] = f.get_name()
                     continue
 
                 to_apply.add(f)
@@ -777,8 +777,8 @@ def agg_wrapper(feats, time_last):
         feature_values = []
         for f in feats:
             func = f.get_function()
-            variable_ids = [bf.get_name() for bf in f.base_features]
-            args = [df[v] for v in variable_ids]
+            column_ids = [bf.get_name() for bf in f.base_features]
+            args = [df[v] for v in column_ids]
 
             if f.primitive.uses_calc_time:
                 values = func(*args, time=time_last)

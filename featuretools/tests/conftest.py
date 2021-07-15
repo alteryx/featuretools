@@ -386,7 +386,7 @@ def lt(es):
         window_size='1m'
     )
 
-    df = es['log'].df
+    df = es['log']
     df = to_pandas(df)
     labels = lm.search(
         df,
