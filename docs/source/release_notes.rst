@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Add ``replace_inf_values`` utility function for replacing ``inf`` values in a feature matrix (:pr:`1505`)
-        * Add URLToProtocol, URLToDomain, URLToTLD, EmailAddressToDomain, IsFreeEmailDomain as transform primitives (:pr:`1508`)
+        * Add URLToProtocol, URLToDomain, URLToTLD, EmailAddressToDomain, IsFreeEmailDomain as transform primitives (:pr:`1508`, :pr:`1531`)
     * Fixes
         * ``include_entities`` correctly overrides ``exclude_entities`` in ``primitive_options`` (:pr:`1518`)
     * Changes

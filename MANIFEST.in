@@ -3,5 +3,6 @@ include LICENSE
 include README.md
 include featuretools/primitives/data/featuretools_unit_test_example.csv
 include featuretools/primitives/data/free_email_provider_domains.txt
+include featuretools/primitives/data/free_email_provider_domains_license
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
