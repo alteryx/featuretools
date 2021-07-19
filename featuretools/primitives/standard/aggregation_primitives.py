@@ -400,7 +400,7 @@ class AvgTimeBetween(AggregationPrimitive):
             if x.shape[0] < 2:
                 return np.nan
             if isinstance(x.iloc[0], (pd.Timestamp, datetime)):
-                x = x.astype('int64')
+                x = x.view('int64')
                 # use len(x)-1 because we care about difference
                 # between values, len(x)-1 = len(diff(x))
 

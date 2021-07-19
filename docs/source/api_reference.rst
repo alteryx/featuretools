@@ -251,6 +251,26 @@ Feature encoding
 
     encode_features
 
+Feature Selection
+~~~~~~~~~~~~~~~~~
+.. currentmodule:: featuretools.selection
+.. autosummary::
+    :toctree: generated/
+
+    remove_low_information_features
+    remove_highly_correlated_features
+    remove_highly_null_features
+    remove_single_value_features
+
+Feature Matrix utils
+~~~~~~~~~~~~~~~~~~~~
+.. currentmodule:: featuretools.computational_backends
+.. autosummary::
+    :toctree: generated/
+
+    replace_inf_values
+    
+
 Saving and Loading Features
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. currentmodule:: featuretools
@@ -384,14 +404,3 @@ Data Type Util Methods
 
     list_logical_types
     list_semantic_tags
-
-Feature Selection
-------------------
-.. currentmodule:: featuretools.selection
-.. autosummary::
-    :toctree: generated/
-
-    remove_low_information_features
-    remove_highly_correlated_features
-    remove_highly_null_features
-    remove_single_value_features

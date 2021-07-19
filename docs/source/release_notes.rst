@@ -2,17 +2,16 @@
 
 Release Notes
 -------------
-Future Release
-==============
+
+.. Future Release
+  ==============
     * Enhancements
         * Add support for creating EntitySets from Woodwork DataTables (:pr:`1277`)
         * Add ``EntitySet.__deepcopy__` that retains Woodwork typing information (:pr:`1465`)
-    * Fixes
     * Changes
         * Remove ``add_interesting_values`` from ``Entity`` (:pr:`1269`)
         * Move ``set_secondary_time_index`` method from ``Entity`` to ``EntitySet`` (:pr:`1280`)
         * Refactor Relationship creation process (:pr:`1370`)
-        * Add auto assign bot on GitHub (:pr:`1380`)
         * Replaced ``Entity.update_data`` with ``EntitySet.update_dataframe`` (:pr:`1398`)
         * Move validation check for uniform time index to ``EntitySet`` (:pr:`1400`)
         * Replace ``Entity`` objects in ``EntitySet`` with Woodwork dataframes (:pr:`1405`)
@@ -25,12 +24,7 @@ Future Release
         * Update ``EntitySet.concat`` to work with Woodwork DataFrames (:pr:`1490`)
         * Add function to list semantic tags (:pr:`1486`)
     * Documentation Changes
-        * Improve formatting of release notes (:pr:`1396`)
     * Testing Changes
-        * Update Dask/Koalas test fixtures (:pr:`1382`)
-        * Update Spark config in test fixtures and docs (:pr:`1387`, :pr:`1389`)
-        * Don't cancel other CI jobs if one fails (:pr:`1386`)
-        * Update boto3 and urllib3 version requirements (:pr:`1394`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
@@ -156,6 +150,21 @@ You can list all the available semantic tags by calling ``featuretools.list_sema
 .. code-block:: python
 
     >>> ft.list_semantic_tags()
+
+v0.26.0 Jul 15, 2021
+====================
+    * Enhancements
+        * Add ``replace_inf_values`` utility function for replacing ``inf`` values in a feature matrix (:pr:`1505`)
+        * Add URLToProtocol, URLToDomain, URLToTLD, EmailAddressToDomain, IsFreeEmailDomain as transform primitives (:pr:`1508`, :pr:`1531`)
+    * Fixes
+        * ``include_entities`` correctly overrides ``exclude_entities`` in ``primitive_options`` (:pr:`1518`)
+    * Documentation Changes
+        * Prevent logging on build (:pr:`1498`)
+    * Testing Changes
+        * Test featuretools on pandas 1.3.0 release candidate and make fixes (:pr:`1492`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`frances-h`, :user:`gsheni`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 v0.25.0 Jun 11, 2021
 ====================
