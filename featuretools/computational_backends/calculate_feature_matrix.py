@@ -731,7 +731,7 @@ def _chunk_dataframe_groups(grouped, chunk_size):
     else:
         for group_key, group_df in grouped:
             for i in range(0, len(group_df), chunk_size):
-               yield group_key, group_df.iloc[i:i + chunk_size]
+                yield group_key, group_df.iloc[i:i + chunk_size]
 
 
 def _handle_chunk_size(chunk_size, total_size):

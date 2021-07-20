@@ -1830,7 +1830,7 @@ def test_no_relationships(dataframes):
 
 def test_cfm_with_invalid_time_index(es):
     features = ft.dfs(entityset=es, target_dataframe_name="customers", features_only=True)
-    es['customers'].ww.set_types(logical_types={'signup_date':'integer'})
+    es['customers'].ww.set_types(logical_types={'signup_date': 'integer'})
     match = "customers time index is numeric type "
     match += "which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=match):

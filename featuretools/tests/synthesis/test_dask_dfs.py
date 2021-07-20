@@ -1,12 +1,6 @@
 import dask.dataframe as dd
 import pandas as pd
-from woodwork.logical_types import (
-    Datetime,
-    DatetimeTimeIndex,
-    Double,
-    NaturalLanguage,
-    Numeric
-)
+from woodwork.logical_types import Datetime, Double, NaturalLanguage
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
@@ -168,7 +162,7 @@ def test_single_table_dask_entityset_single_cutoff_time():
                                    ""]})
     values_dd = dd.from_pandas(df, npartitions=2)
     ltypes = {
-        "values": Numeric,
+        "values": Double,
         "dates": Datetime,
         "strings": NaturalLanguage
     }
@@ -213,8 +207,8 @@ def test_single_table_dask_entityset_cutoff_time_df():
                                    "abcdef ghijk"]})
     values_dd = dd.from_pandas(df, npartitions=2)
     ltypes = {
-        "values": Numeric,
-        "dates": DatetimeTimeIndex,
+        "values": Double,
+        "dates": Datetime,
         "strings": NaturalLanguage
     }
     dask_es.add_dataframe(
@@ -269,7 +263,7 @@ def test_single_table_dask_entityset_dates_not_sorted():
     primitives_list = ['absolute', 'is_weekend', 'year', 'day']
     values_dd = dd.from_pandas(df, npartitions=1)
     ltypes = {
-        "values": Numeric,
+        "values": Double,
         "dates": Datetime,
     }
     dask_es.add_dataframe(

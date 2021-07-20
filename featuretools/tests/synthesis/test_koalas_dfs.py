@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from woodwork.logical_types import Datetime, Double, NaturalLanguage, Numeric
+from woodwork.logical_types import Datetime, Double, NaturalLanguage
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
@@ -215,7 +215,7 @@ def test_single_table_ks_entityset_cutoff_time_df():
                                    "abcdef ghijk"]})
     values_dd = ks.from_pandas(df)
     ltypes = {
-        "values": Numeric,
+        "values": Double,
         "dates": Datetime,
         "strings": NaturalLanguage
     }
