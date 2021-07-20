@@ -197,8 +197,8 @@ def ignore_dataframe_for_primitive(options, dataframe, groupby=False):
                     return True
         if 'include_columns' in option and dataframe.ww.name in option['include_columns']:
             return False
-        elif 'include_dataframes' in option and dataframe.ww.name not in option['include_dataframes']:
-            return True
+        elif 'include_dataframes' in option:
+            return dataframe.ww.name not in option['include_dataframes']
         elif dataframe.ww.name in option['ignore_dataframes']:
             return True
         else:

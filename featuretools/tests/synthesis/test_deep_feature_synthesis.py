@@ -1451,7 +1451,7 @@ def test_primitive_options_commutative(es):
 
 def test_primitive_options_include_over_exclude(es):
     options = {
-        'mean': {'ignore_entities': ['stores'], 'include_entities': ['stores']}
+        'mean': {'ignore_dataframes': ['stores'], 'include_dataframes': ['stores']}
     }
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='régions',
                                    entityset=es,
@@ -1463,10 +1463,10 @@ def test_primitive_options_include_over_exclude(es):
     at_least_one_mean = False
     for f in features:
         deps = f.get_dependencies(deep=True)
-        entities = [d.entity.id for d in deps]
+        dataframes = [d.dataframe_name for d in deps]
         if isinstance(f.primitive, Mean):
             at_least_one_mean = True
-            assert 'stores' in entities
+            assert 'stores' in dataframes
     assert at_least_one_mean
 
 
