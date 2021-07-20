@@ -14,7 +14,7 @@ from woodwork.logical_types import (
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
 )
-from featuretools.utils import convert_time_units, replace_latlong_nan
+from featuretools.utils import convert_time_units
 from featuretools.utils.gen_utils import Library
 
 
@@ -561,9 +561,7 @@ class Latitude(TransformPrimitive):
 
     def get_function(self):
         def latitude(latlong):
-            if latlong.hasnans:
-                latlong = replace_latlong_nan(latlong)
-            return latlong.map(lambda x: x[0])
+            return latlong.map(lambda x: x[0] if isinstance(x, tuple) else np.nan)
         return latitude
 
 
@@ -585,9 +583,7 @@ class Longitude(TransformPrimitive):
 
     def get_function(self):
         def longitude(latlong):
-            if latlong.hasnans:
-                latlong = replace_latlong_nan(latlong)
-            return latlong.map(lambda x: x[1])
+            return latlong.map(lambda x: x[1] if isinstance(x, tuple) else np.nan)
         return longitude
 
 
@@ -629,14 +625,10 @@ class Haversine(TransformPrimitive):
 
     def get_function(self):
         def haversine(latlong1, latlong2):
-            if latlong1.hasnans:
-                latlong1 = replace_latlong_nan(latlong1)
-            if latlong2.hasnans:
-                latlong2 = replace_latlong_nan(latlong2)
-            lat_1s = np.array([x[0] for x in latlong1])
-            lon_1s = np.array([x[1] for x in latlong1])
-            lat_2s = np.array([x[0] for x in latlong2])
-            lon_2s = np.array([x[1] for x in latlong2])
+            lat_1s = np.array([x[0] if isinstance(x, tuple) else np.nan for x in latlong1])
+            lon_1s = np.array([x[1] if isinstance(x, tuple) else np.nan for x in latlong1])
+            lat_2s = np.array([x[0] if isinstance(x, tuple) else np.nan for x in latlong2])
+            lon_2s = np.array([x[1] if isinstance(x, tuple) else np.nan for x in latlong2])
             lon1, lat1, lon2, lat2 = map(
                 np.radians, [lon_1s, lat_1s, lon_2s, lat_2s])
             dlon = lon2 - lon1

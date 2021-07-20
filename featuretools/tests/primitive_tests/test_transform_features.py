@@ -626,7 +626,7 @@ def test_arithmetic_of_agg(es):
 
 
 def test_latlong(pd_es):
-    log_latlong_feat = pd_es['log']['latlong']
+    log_latlong_feat = ft.Feature(pd_es, 'log', 'latlong')
     latitude = ft.Feature(log_latlong_feat, primitive=Latitude)
     longitude = ft.Feature(log_latlong_feat, primitive=Longitude)
     features = [latitude, longitude]
@@ -650,7 +650,7 @@ def test_latlong_with_nan(pd_es):
     df['latlong'][2] = (np.nan, 4)
     df['latlong'][3] = (np.nan, np.nan)
     pd_es.update_dataframe(dataframe_name='log', df=df)
-    log_latlong_feat = pd_es['log']['latlong']
+    log_latlong_feat = ft.Feature(pd_es, 'log', 'latlong')
     latitude = ft.Feature(log_latlong_feat, primitive=Latitude)
     longitude = ft.Feature(log_latlong_feat, primitive=Longitude)
     features = [latitude, longitude]
