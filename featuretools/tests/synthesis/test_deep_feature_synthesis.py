@@ -1453,7 +1453,7 @@ def test_primitive_options_include_over_exclude(es):
     options = {
         'mean': {'ignore_entities': ['stores'], 'include_entities': ['stores']}
     }
-    dfs_obj = DeepFeatureSynthesis(target_entity_id='régions',
+    dfs_obj = DeepFeatureSynthesis(target_dataframe_name='régions',
                                    entityset=es,
                                    agg_primitives=['mean'],
                                    trans_primitives=[],
