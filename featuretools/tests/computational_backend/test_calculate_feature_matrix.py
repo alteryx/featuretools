@@ -1335,7 +1335,6 @@ def test_n_jobs():
         n_jobs_to_workers(0)
 
 
-# TODO: add dask version of int_es
 def test_integer_time_index(int_es):
     times = list(range(8, 18)) + list(range(19, 26))
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
@@ -1381,7 +1380,6 @@ def test_integer_time_index_datetime_cutoffs(int_es):
                                  cutoff_time_in_index=True)
 
 
-# TODO: add Dask version of int_es
 def test_integer_time_index_passes_extra_columns(int_es):
     times = list(range(8, 18)) + list(range(19, 23)) + [25, 24, 23]
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [False] * 2 + [True]
@@ -1396,7 +1394,7 @@ def test_integer_time_index_passes_extra_columns(int_es):
                                   int_es,
                                   cutoff_time=cutoff_df,
                                   cutoff_time_in_index=True)
-
+    fm = to_pandas(fm)
     assert (fm[property_feature.get_name()] == fm['labels']).all()
 
 

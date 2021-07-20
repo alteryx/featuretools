@@ -21,11 +21,10 @@ def test_tokenize_entityset(pd_es, int_es):
     # add row to cohorts
     cohorts_df = dupe['cohorts']
     new_row = pd.DataFrame(data={'cohort': [2],
-                                 'cohort_name': ['On Time Adopters'],
+                                 'cohort_name': ['Early Adopters'],
                                  'cohort_end': [pd.Timestamp('2011-04-08 12:00:00')]},
                            columns=['cohort', 'cohort_name', 'cohort_end'],
                            index=[2])
     more_cohorts = cohorts_df.append(new_row, ignore_index=True, sort=True)
     dupe.update_dataframe(dataframe_name='cohorts', df=more_cohorts)
-
     assert tokenize(pd_es) == tokenize(dupe)
