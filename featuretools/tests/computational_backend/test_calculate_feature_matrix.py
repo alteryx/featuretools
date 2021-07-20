@@ -1345,26 +1345,34 @@ def test_integer_time_index(int_es):
                                               int_es,
                                               cutoff_time=cutoff_df,
                                               cutoff_time_in_index=True)
-
-    time_level_vals = feature_matrix.index.get_level_values(1).values
+    feature_matrix = to_pandas(feature_matrix)
+    if int_es.dataframe_type == 'pandas':
+        time_level_vals = feature_matrix.index.get_level_values(1).values
+    else:
+        time_level_vals = feature_matrix['time'].values
     sorted_df = cutoff_df.sort_values(['time', 'instance_id'], kind='mergesort')
     assert (time_level_vals == sorted_df['time'].values).all()
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
-# def test_integer_time_index_single_cutoff_value(int_es):
-#     labels = [False] * 3 + [True] * 2 + [False] * 4
-#     property_feature = IdentityFeature(int_es, 'log', 'value') > 10
+def test_integer_time_index_single_cutoff_value(int_es):
+    labels = [False] * 3 + [True] * 2 + [False] * 4
+    property_feature = IdentityFeature(int_es, 'log', 'value') > 10
 
-#     cutoff_times = [16, pd.Series([16])[0], 16.0, pd.Series([16.0])[0]]
-#     for cutoff_time in cutoff_times:
-#         feature_matrix = calculate_feature_matrix([property_feature],
-#                                                   int_es,
-#                                                   cutoff_time=cutoff_time,
-#                                                   cutoff_time_in_index=True)
-#         time_level_vals = feature_matrix.index.get_level_values(1).values
-#         assert (time_level_vals == [16] * 9).all()
-#         assert (feature_matrix[property_feature.get_name()] == labels).values.all()
+    cutoff_times = [16, pd.Series([16])[0], 16.0, pd.Series([16.0])[0]]
+    for cutoff_time in cutoff_times:
+        feature_matrix = calculate_feature_matrix([property_feature],
+                                                  int_es,
+                                                  cutoff_time=cutoff_time,
+                                                  cutoff_time_in_index=True)
+        feature_matrix = to_pandas(feature_matrix, index='id', sort_index=True)
+        if int_es.dataframe_type == 'pandas':
+            time_level_vals = feature_matrix.index.get_level_values(1).values
+        else:
+            time_level_vals = feature_matrix['time'].values
+
+        assert (time_level_vals == [16] * 9).all()
+        assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
 def test_integer_time_index_datetime_cutoffs(int_es):

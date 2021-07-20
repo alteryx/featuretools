@@ -357,6 +357,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
         time_last = cutoff_time[0]
         ids = cutoff_time[1]
+
         calculator = FeatureSetCalculator(entityset,
                                           feature_set,
                                           time_last,
@@ -367,6 +368,10 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
         if isinstance(_feature_matrix, pd.DataFrame):
             time_index = pd.Index([time_last] * len(ids), name='time')
             _feature_matrix = _feature_matrix.set_index(time_index, append=True)
+        else:
+            if isinstance(time_last, np.int64):
+                time_last = int(time_last)
+            _feature_matrix['time'] = time_last
         feature_matrix.append(_feature_matrix)
 
     else:
@@ -466,18 +471,20 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                             pass_through.set_index([id_name, 'time'], inplace=True)
                             for col in pass_columns:
                                 _feature_matrix[col] = pass_through[col]
-                    elif isinstance(_feature_matrix, dd.DataFrame) and (len(pass_columns) > 0):
+                    elif isinstance(_feature_matrix, dd.DataFrame):
                         _feature_matrix['time'] = time_last
-                        for col in pass_columns:
-                            pass_df = dd.from_pandas(pass_through[[id_name, 'time', col]], npartitions=_feature_matrix.npartitions)
-                            _feature_matrix = _feature_matrix.merge(pass_df, how="outer")
-                        _feature_matrix = _feature_matrix.drop(columns=['time'])
-                    elif is_instance(_feature_matrix, ks, 'DataFrame') and (len(pass_columns) > 0):
+                        if len(pass_columns) > 0:
+                            for col in pass_columns:
+                                pass_df = dd.from_pandas(pass_through[[id_name, 'time', col]], npartitions=_feature_matrix.npartitions)
+                                _feature_matrix = _feature_matrix.merge(pass_df, how="outer")
+                            _feature_matrix = _feature_matrix.drop(columns=['time'])
+                    elif is_instance(_feature_matrix, ks, 'DataFrame'):
                         _feature_matrix['time'] = time_last
-                        for col in pass_columns:
-                            pass_df = ks.from_pandas(pass_through[[id_name, 'time', col]])
-                            _feature_matrix = _feature_matrix.merge(pass_df, how="outer")
-                        _feature_matrix = _feature_matrix.drop(columns=['time'])
+                        if len(pass_columns) > 0:
+                            for col in pass_columns:
+                                pass_df = ks.from_pandas(pass_through[[id_name, 'time', col]])
+                                _feature_matrix = _feature_matrix.merge(pass_df, how="outer")
+                            _feature_matrix = _feature_matrix.drop(columns=['time'])
                 feature_matrix.append(_feature_matrix)
 
     if any(isinstance(fm, dd.DataFrame) for fm in feature_matrix):
