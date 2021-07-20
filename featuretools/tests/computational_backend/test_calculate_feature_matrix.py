@@ -1612,7 +1612,7 @@ def test_some_instances_not_in_data(pd_es):
 
     assert all(fm.index.values == cutoff_time["instance_id"].values)
     for x, y in zip(fm.columns, [ifeat_answer, prop_answer, dfeat_answer]):
-        np.testing.assert_array_equal(fm[x], y)
+        np.testing.assert_array_equal(fm[x].astype('float64'), y)
 
 
 def test_missing_instances_with_categorical_index(pd_es):

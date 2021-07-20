@@ -7,10 +7,15 @@ from smart_open import open
 from woodwork.column_schema import ColumnSchema
 
 import featuretools as ft
+from featuretools.entityset.serialize import \
+    SCHEMA_VERSION as ENTITYSET_SCHEMA_VERSION
 from featuretools.feature_base.features_deserializer import (
     FeaturesDeserializer
 )
-from featuretools.feature_base.features_serializer import FeaturesSerializer
+from featuretools.feature_base.features_serializer import (
+    SCHEMA_VERSION,
+    FeaturesSerializer
+)
 from featuretools.primitives import (
     Count,
     CumSum,
@@ -38,7 +43,7 @@ from featuretools.tests.testing_utils import check_names
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_feature_serialization_feature_schema_6.0.0_entityset_schema_6.0.0.json"
+TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}.json".format(SCHEMA_VERSION, ENTITYSET_SCHEMA_VERSION)
 S3_URL = "s3://featuretools-static/" + TEST_FILE
 URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
 TEST_CONFIG = "CheckConfigPassesOn"

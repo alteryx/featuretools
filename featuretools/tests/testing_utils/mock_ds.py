@@ -135,7 +135,7 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
         'engagement_level': [1, 3, 2],
         'full_name': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown'],
         'email': ['john.smith@example.com', np.nan, 'team@featuretools.com'],
-        'phone_number': ['5555555555', '555-555-5555', '1-(555)-555-5555'],
+        'phone_number': ['555-555-5555', '555-555-5555', '1-(555)-555-5555'],
         'date_of_birth': customer_times['date_of_birth'],
     })
 
@@ -217,6 +217,11 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
         'value_many_nans': values_many_nans,
         'priority_level': [0] * 2 + [1] * 5 + [0] * 6 + [2] * 2 + [1] * 2,
         'purchased': [True] * 11 + [False] * 4 + [True, False],
+        'url': ['https://www.featuretools.com/'] * 2 + ['amazon.com'] * 2 +
+        ['www.featuretools.com', 'bit.ly', 'featuretools.com/demos/',
+         'www.google.co.in/' 'http://lplay.google.co.in', ' ',
+         'invalid_url', 'an', 'microsoft.com/search/'] + [np.nan] * 5,
+        'email_address': ['john.smith@example.com', np.nan, 'team@featuretools.com'] * 5 + [' prefix@space.com', 'suffix@space.com '],
         'comments': [coke_zero_review()] + ['I loved it'] * 2 +
         car_reviews() + toothpaste_reviews() +
         brown_bag_reviews() + [gummy_review()] +
@@ -310,6 +315,8 @@ def make_logical_types(with_integer_time_index=False):
         'value_many_nans': Double,
         'priority_level': Ordinal(order=[0, 1, 2]),
         'purchased': Boolean,
+        'url': URL,
+        'email_address': EmailAddress,
         'comments': NaturalLanguage
     }
     if with_integer_time_index:
