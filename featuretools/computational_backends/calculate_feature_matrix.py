@@ -43,7 +43,7 @@ FEATURE_CALCULATION_PERCENTAGE = .95  # make total 5% higher to allot time for w
 
 
 def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instance_ids=None,
-                             entities=None, relationships=None,
+                             dataframes=None, relationships=None,
                              cutoff_time_in_index=False,
                              training_window=None, approximate=None,
                              save_progress=None, verbose=False,
@@ -55,7 +55,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     Args:
         features (list[:class:`.FeatureBase`]): Feature definitions to be calculated.
 
-        entityset (EntitySet): An already initialized entityset. Required if `entities` and `relationships`
+        entityset (EntitySet): An already initialized entityset. Required if `dataframes` and `relationships`
             not provided
 
         cutoff_time (pd.DataFrame or Datetime): Specifies times at which to calculate
@@ -72,14 +72,14 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         instance_ids (list): List of instances to calculate features on. Only
             used if cutoff_time is a single datetime.
 
-        entities (dict[str -> tuple(pd.DataFrame, str, str, dict[str -> Variable])]): dictionary of
-            entities. Entries take the format
-            {entity id -> (dataframe, id column, (time_column), (variable_types))}.
-            Note that time_column and variable_types are optional.
+        dataframes (dict[str -> tuple(pd.DataFrame, str, str, dict[str -> Variable])]): dictionary of
+            dataframes. Entries take the format
+            {datframe name -> (dataframe, id column, (time_column), (logical_types))}.
+            Note that time_column and logical_types are optional.
 
         relationships (list[(str, str, str, str)]): list of relationships
-            between entities. List items are a tuple with the format
-            (parent entity id, parent column, child entity id, child column).
+            between dataframe. List items are a tuple with the format
+            (parent dataframe name, parent column, child dataframe name, child column).
 
         cutoff_time_in_index (bool): If True, return a DataFrame with a MultiIndex
             where the second index is the cutoff time (first is instance id).
@@ -142,17 +142,17 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     # handle loading entityset
     from featuretools.entityset.entityset import EntitySet
     if not isinstance(entityset, EntitySet):
-        if entities is not None:
-            entityset = EntitySet("entityset", entities, relationships)
+        if dataframes is not None:
+            entityset = EntitySet("entityset", dataframes, relationships)
         else:
-            raise TypeError("No entities or valid EntitySet provided")
+            raise TypeError("No dataframes or valid EntitySet provided")
 
     if entityset.dataframe_type == Library.DASK.value:
         if approximate:
-            msg = "Using approximate is not supported with Dask Entities"
+            msg = "Using approximate is not supported with Dask dataframes"
             raise ValueError(msg)
         if training_window:
-            msg = "Using training_window is not supported with Dask Entities"
+            msg = "Using training_window is not supported with Dask dataframes"
             raise ValueError(msg)
 
     target_dataframe = entityset[features[0].dataframe_name]
@@ -174,7 +174,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     else:
         pass_columns = []
         if cutoff_time is None:
-            if entityset.time_type == 'numeric_time_index':
+            if entityset.time_type == 'numeric':
                 cutoff_time = np.inf
             else:
                 cutoff_time = datetime.now()
@@ -731,7 +731,7 @@ def _chunk_dataframe_groups(grouped, chunk_size):
     else:
         for group_key, group_df in grouped:
             for i in range(0, len(group_df), chunk_size):
-                yield group_key, group_df.iloc[i:i + chunk_size]
+               yield group_key, group_df.iloc[i:i + chunk_size]
 
 
 def _handle_chunk_size(chunk_size, total_size):

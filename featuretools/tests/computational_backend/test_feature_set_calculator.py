@@ -785,8 +785,8 @@ def test_empty_child_dataframe(parent_child):
 
     # create agg feature that requires multiple arguments
     trend = ft.Feature([ft.Feature(es, "child", "value"), ft.Feature(es, "child", 'time_index')],
-                        parent_dataframe_name="parent",
-                        primitive=Trend)
+                       parent_dataframe_name="parent",
+                       primitive=Trend)
 
     # create multi-output agg feature
     n_most_common = ft.Feature(ft.Feature(es, "child", "cat"), parent_dataframe_name="parent", primitive=NMostCommon)

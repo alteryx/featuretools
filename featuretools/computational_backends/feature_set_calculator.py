@@ -107,6 +107,7 @@ class FeatureSetCalculator(object):
         full_dataframe_df_trie = Trie(path_constructor=RelationshipPath)
 
         target_dataframe = self.entityset[self.feature_set.target_df_name]
+
         self._calculate_features_for_dataframe(dataframe_name=self.feature_set.target_df_name,
                                                feature_trie=feature_trie,
                                                df_trie=df_trie,

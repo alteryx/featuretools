@@ -107,7 +107,7 @@ def gather_approximate_features(feature_set):
 
 def gen_empty_approx_features_df(approx_features):
     df = pd.DataFrame(columns=[f.get_name() for f in approx_features])
-    df.index.name = approx_features[0].entity.index
+    df.index.name = approx_features[0].dataframe.ww.index
     return df
 
 
