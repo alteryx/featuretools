@@ -1301,8 +1301,6 @@ class EntitySet(object):
         schema = self[dataframe_name].ww.schema
         if is_instance(df, ks, 'DataFrame') and isinstance(time_last, np.datetime64):
             time_last = pd.to_datetime(time_last)
-        if is_instance(df, ks, 'DataFrame') and isinstance(time_last, np.int64):
-            time_last = int(time_last)
         if schema.time_index:
             df_empty = df.empty if isinstance(df, pd.DataFrame) else False
             if time_last is not None and not df_empty:
