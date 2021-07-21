@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
-        * Set ``name`` attributed for ``EmailAddressToDomain`` primitive (:pr:`1543`)
+        * Set ``name`` attribute for ``EmailAddressToDomain`` primitive (:pr:`1543`)
     * Changes
     * Documentation Changes
     * Testing Changes
