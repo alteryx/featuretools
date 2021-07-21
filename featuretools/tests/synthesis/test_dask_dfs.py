@@ -1,4 +1,3 @@
-from operator import lt
 import dask.dataframe as dd
 import pandas as pd
 from woodwork.logical_types import Datetime, Double, Integer, NaturalLanguage

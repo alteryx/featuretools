@@ -1,6 +1,6 @@
 import logging
 import os
-import re
+# import re
 import shutil
 from datetime import datetime
 from itertools import combinations
@@ -11,7 +11,7 @@ import pandas as pd
 import psutil
 import pytest
 from dask import dataframe as dd
-from distributed.utils_test import cluster
+# from distributed.utils_test import cluster
 from tqdm import tqdm
 from woodwork.column_schema import ColumnSchema
 

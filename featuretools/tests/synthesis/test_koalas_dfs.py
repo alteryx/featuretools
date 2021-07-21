@@ -1,4 +1,3 @@
-from operator import lt
 import pandas as pd
 import pytest
 from woodwork.logical_types import Datetime, Double, Integer, NaturalLanguage
