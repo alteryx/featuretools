@@ -103,7 +103,7 @@ def test_string_timedelta_args():
 
 def test_feature_takes_timedelta_string(es):
     feature = Feature(Feature(es, 'log', 'id'), parent_dataframe_name='customers',
-                         use_previous="1 day", primitive=Count)
+                      use_previous="1 day", primitive=Count)
     assert feature.use_previous == Timedelta(1, 'd')
 
 
