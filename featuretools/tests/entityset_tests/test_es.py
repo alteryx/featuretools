@@ -718,7 +718,7 @@ def test_converts_datetime(datetime1):
         logical_types=logical_types,
         dataframe=datetime1)
     pd_col = to_pandas(es['test_dataframe']['time'])
-    # assert type(es['test_entity']['time']) == variable_types.Datetime
+    assert isinstance(es['test_dataframe'].ww.logical_types['time'], Datetime)
     assert type(pd_col[0]) == pd.Timestamp
 
 

@@ -539,18 +539,18 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
         if not approx_feature_names:
             continue
 
-        cutoffs_with_approx_e_ids, new_approx_entity_index_col = \
-            _add_approx_entity_index_col(entityset, feature_set.target_df_name,
+        cutoffs_with_approx_e_ids, new_approx_dataframe_index_col = \
+            _add_approx_dataframe_index_col(entityset, feature_set.target_df_name,
                                          approx_cutoffs.copy(), relationship_path)
 
         # Select only columns we care about
-        columns_we_want = [new_approx_entity_index_col,
+        columns_we_want = [new_approx_dataframe_index_col,
                            cutoff_df_time_col,
                            target_time_colname]
 
         cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids[columns_we_want]
         cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids.drop_duplicates()
-        cutoffs_with_approx_e_ids.dropna(subset=[new_approx_entity_index_col],
+        cutoffs_with_approx_e_ids.dropna(subset=[new_approx_dataframe_index_col],
                                          inplace=True)
 
         approx_features = [feature_set.features_by_name[name]
@@ -559,9 +559,9 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
             approx_fm = gen_empty_approx_features_df(approx_features)
         else:
             cutoffs_with_approx_e_ids.sort_values([cutoff_df_time_col,
-                                                   new_approx_entity_index_col], inplace=True)
+                                                   new_approx_dataframe_index_col], inplace=True)
             # CFM assumes specific column names for cutoff_time argument
-            rename = {new_approx_entity_index_col: cutoff_df_instance_col}
+            rename = {new_approx_dataframe_index_col: cutoff_df_instance_col}
             cutoff_time_to_pass = cutoffs_with_approx_e_ids.rename(columns=rename)
             cutoff_time_to_pass = cutoff_time_to_pass[[cutoff_df_instance_col, cutoff_df_time_col]]
 
@@ -692,9 +692,9 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
     return feature_matrix
 
 
-def _add_approx_entity_index_col(es, target_dataframe_name, cutoffs, path):
+def _add_approx_dataframe_index_col(es, target_dataframe_name, cutoffs, path):
     """
-    Add a column to the cutoff df linking it to the entity at the end of the
+    Add a column to the cutoff df linking it to the dataframe at the end of the
     path.
 
     Return the updated cutoff df and the name of this column. The name will

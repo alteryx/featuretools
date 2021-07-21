@@ -696,7 +696,7 @@ def test_diamond_entityset(diamond_es):
     assert (df['SUM(customers.transactions.amount)'] == [72, 411, 0]).all()
 
 
-def test_two_relationships_to_single_entity(games_es):
+def test_two_relationships_to_single_dataframe(games_es):
     es = games_es
     home_team, away_team = es.relationships
     path = RelationshipPath([(False, home_team)])
