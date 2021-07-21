@@ -1449,6 +1449,27 @@ def test_primitive_options_commutative(es):
     assert deps[0].get_name() == 'value_2' and deps[1].get_name() == 'value_many_nans' and deps[2].get_name() == 'value'
 
 
+def test_primitive_options_include_over_exclude(es):
+    options = {
+        'mean': {'ignore_dataframes': ['stores'], 'include_dataframes': ['stores']}
+    }
+    dfs_obj = DeepFeatureSynthesis(target_dataframe_name='régions',
+                                   entityset=es,
+                                   agg_primitives=['mean'],
+                                   trans_primitives=[],
+                                   primitive_options=options)
+
+    features = dfs_obj.build_features()
+    at_least_one_mean = False
+    for f in features:
+        deps = f.get_dependencies(deep=True)
+        dataframes = [d.dataframe_name for d in deps]
+        if isinstance(f.primitive, Mean):
+            at_least_one_mean = True
+            assert 'stores' in dataframes
+    assert at_least_one_mean
+
+
 def test_primitive_ordering():
     # Test that the order of the input primitives impacts neither
     # which features are created nor their order

@@ -178,9 +178,8 @@ def column_filter(f, options, groupby=False):
             if ignore_cols in options and base_f.dataframe_name in options[ignore_cols]:
                 if base_f.get_name() in options[ignore_cols][base_f.dataframe_name]:
                     return False  # ignore this feature
-        if include_dataframes in options and \
-                base_f.dataframe_name not in options[include_dataframes]:
-            return False  # not an included dataframe
+        if include_dataframes in options:
+            return base_f.dataframe_name in options[include_dataframes]
         elif ignore_dataframes in options and \
                 base_f.dataframe_name in options[ignore_dataframes]:
             return False  # ignore the dataframe
@@ -198,8 +197,8 @@ def ignore_dataframe_for_primitive(options, dataframe, groupby=False):
                     return True
         if 'include_columns' in option and dataframe.ww.name in option['include_columns']:
             return False
-        elif 'include_dataframes' in option and dataframe.ww.name not in option['include_dataframes']:
-            return True
+        elif 'include_dataframes' in option:
+            return dataframe.ww.name not in option['include_dataframes']
         elif dataframe.ww.name in option['ignore_dataframes']:
             return True
         else:

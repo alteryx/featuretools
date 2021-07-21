@@ -8,11 +8,13 @@ import numpy as np
 import pandas as pd
 import pytest
 from woodwork.logical_types import (
+    URL,
     Boolean,
     Categorical,
     CountryCode,
     Datetime,
     Double,
+    EmailAddress,
     Integer,
     LatLong,
     NaturalLanguage,
@@ -131,7 +133,9 @@ def test_add_relationship_diff_param_logical_types(es):
         'value_many_nans': Double,
         'priority_level': Ordinal(order=[0, 1, 2]),
         'purchased': Boolean,
-        'comments': NaturalLanguage
+        'comments': NaturalLanguage,
+        'url': URL,
+        'email_address': EmailAddress
     }
     log_semantic_tags = {
         'session_id': 'foreign_key',
@@ -1568,7 +1572,7 @@ def test_datetime64_conversion(datetime3):
     if ks and isinstance(df, ks.DataFrame):
         df['time'] = df['time'].astype(np.datetime64)
     else:
-        df["time"] = df["time"].astype("datetime64[ns, UTC]")
+        df["time"] = df["time"].dt.tz_localize("UTC")
 
     if not isinstance(df, pd.DataFrame):
         logical_types = {
