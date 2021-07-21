@@ -65,43 +65,43 @@ from featuretools.utils.gen_utils import Library
 from featuretools.utils.koalas_utils import pd_to_ks_clean
 
 
-# def test_init_and_name(es):
-#     log = es['log']
-#     rating = ft.Feature(ft.IdentityFeature(es, "products", "rating"), "log")
-#     log_features = [ft.Feature(es, 'log', col) for col in log.columns] +\
-#         [ft.Feature(rating, primitive=GreaterThanScalar(2.5))]
-#     # Add Timedelta feature
-#     # features.append(pd.Timestamp.now() - ft.Feature(log['datetime']))
-#     customers_features = [ft.Feature(es, "customers", col) for col in es["customers"].columns]
-#     trans_primitives = get_transform_primitives().values()
-#     # If Dask EntitySet use only Dask compatible primitives
-#     if es.dataframe_type == Library.DASK.value:
-#         trans_primitives = [prim for prim in trans_primitives if Library.DASK in prim.compatibility]
-#     if es.dataframe_type == Library.KOALAS.value:
-#         trans_primitives = [prim for prim in trans_primitives if Library.KOALAS in prim.compatibility]
-#     for transform_prim in trans_primitives:
-#         # skip automated testing if a few special cases
-#         features_to_use = log_features
-#         if transform_prim in [NotEqual, Equal]:
-#             continue
-#         if transform_prim in [Age]:
-#             features_to_use = customers_features
+def test_init_and_name(es):
+    log = es['log']
+    rating = ft.Feature(ft.IdentityFeature(es, "products", "rating"), "log")
+    log_features = [ft.Feature(es, 'log', col) for col in log.columns] +\
+        [ft.Feature(rating, primitive=GreaterThanScalar(2.5))]
+    # Add Timedelta feature
+    # features.append(pd.Timestamp.now() - ft.Feature(log['datetime']))
+    customers_features = [ft.Feature(es, "customers", col) for col in es["customers"].columns]
+    trans_primitives = get_transform_primitives().values()
+    # If Dask EntitySet use only Dask compatible primitives
+    if es.dataframe_type == Library.DASK.value:
+        trans_primitives = [prim for prim in trans_primitives if Library.DASK in prim.compatibility]
+    if es.dataframe_type == Library.KOALAS.value:
+        trans_primitives = [prim for prim in trans_primitives if Library.KOALAS in prim.compatibility]
+    for transform_prim in trans_primitives:
+        # skip automated testing if a few special cases
+        features_to_use = log_features
+        if transform_prim in [NotEqual, Equal]:
+            continue
+        if transform_prim in [Age]:
+            features_to_use = customers_features
 
-#         # use the input_types matching function from DFS
-#         input_types = transform_prim.input_types
-#         if type(input_types[0]) == list:
-#             matching_inputs = match(input_types[0], features_to_use)
-#         else:
-#             matching_inputs = match(input_types, features_to_use)
-#         if len(matching_inputs) == 0:
-#             raise Exception(
-#                 "Transform Primitive %s not tested" % transform_prim.name)
-#         for prim in matching_inputs:
-#             instance = ft.Feature(prim, primitive=transform_prim)
+        # use the input_types matching function from DFS
+        input_types = transform_prim.input_types
+        if type(input_types[0]) == list:
+            matching_inputs = match(input_types[0], features_to_use)
+        else:
+            matching_inputs = match(input_types, features_to_use)
+        if len(matching_inputs) == 0:
+            raise Exception(
+                "Transform Primitive %s not tested" % transform_prim.name)
+        for prim in matching_inputs:
+            instance = ft.Feature(prim, primitive=transform_prim)
 
-#             # try to get name and calculate
-#             instance.get_name()
-#             ft.calculate_feature_matrix([instance], entityset=es)
+            # try to get name and calculate
+            instance.get_name()
+            ft.calculate_feature_matrix([instance], entityset=es)
 
 
 def test_relationship_path(es):
@@ -162,9 +162,9 @@ def dd_simple_es(pd_simple_es):
     dataframes = {}
     for df in pd_simple_es.dataframes:
         dataframes[df.ww.name] = (dd.from_pandas(df.reset_index(drop=True), npartitions=4),
-                               df.ww.index,
-                               None,
-                               df.ww.logical_types)
+                                  df.ww.index,
+                                  None,
+                                  df.ww.logical_types)
 
     relationships = [(rel.parent_name,
                       rel.parent_column.name,
@@ -181,9 +181,9 @@ def ks_simple_es(pd_simple_es):
     for df in pd_simple_es.dataframes:
         cleaned_df = pd_to_ks_clean(df).reset_index(drop=True)
         dataframes[df.ww.name] = (ks.from_pandas(cleaned_df),
-                               df.ww.index,
-                               None,
-                               df.ww.logical_types)
+                                  df.ww.index,
+                                  None,
+                                  df.ww.logical_types)
 
     relationships = [(rel.parent_name,
                       rel.parent_column.name,
@@ -448,8 +448,6 @@ def test_arithmetic_two_vals_fails(es):
 
 
 def test_arithmetic_of_identity(es):
-    logs = es['log']
-
     to_test = [(AddNumeric, [0., 7., 14., 21.]),
                (SubtractNumeric, [0, 3, 6, 9]),
                (MultiplyNumeric, [0, 10, 40, 90]),
