@@ -218,7 +218,6 @@ def test_stack_on_self(es, test_primitive):
 
 
 def test_init_and_name(es):
-    session = es['sessions']
     log = es['log']
 
     features = [ft.Feature(es, 'log', col) for col in log.columns]
@@ -241,7 +240,7 @@ def test_init_and_name(es):
             if len(matching_types) == 0:
                 raise Exception("Agg Primitive %s not tested" % agg_prim.name)
             for t in matching_types:
-                instance = ft.Feature(t, parent_dataframe_name=session, primitive=agg_prim)
+                instance = ft.Feature(t, parent_dataframe_name='sessions', primitive=agg_prim)
 
                 # try to get name and calculate
                 instance.get_name()
@@ -540,7 +539,7 @@ def test_custom_primitive_multiple_inputs(pd_es):
     )
 
     fm, features = ft.dfs(entityset=pd_es,
-                          target_dataframe="sessions",
+                          target_dataframe_name="sessions",
                           agg_primitives=[MeanSunday],
                           trans_primitives=[])
     mean_sunday_value = pd.Series([None, None, None, 2.5, 7, None])
@@ -551,7 +550,7 @@ def test_custom_primitive_multiple_inputs(pd_es):
     pd_es.add_interesting_values()
     mean_sunday_value_priority_0 = pd.Series([None, None, None, 2.5, 0, None])
     fm, features = ft.dfs(entityset=pd_es,
-                          target_dataframe="sessions",
+                          target_dataframe_name="sessions",
                           agg_primitives=[MeanSunday],
                           trans_primitives=[],
                           where_primitives=[MeanSunday])
@@ -594,7 +593,9 @@ def test_makes_numtrue(es):
 
 def test_make_three_most_common(pd_es):
     def pd_top3(x):
-        array = np.array(x.value_counts()[:3].index)
+        counts = x.value_counts()
+        counts = counts[counts > 0]
+        array = np.array(counts[:3].index)
         if len(array) < 3:
             filler = np.full(3 - len(array), np.nan)
             array = np.append(array, filler)
@@ -606,7 +607,7 @@ def test_make_three_most_common(pd_es):
                                        number_output_features=3)
 
     fm, features = ft.dfs(entityset=pd_es,
-                          target_dataframe="customers",
+                          target_dataframe_name="customers",
                           instance_ids=[0, 1, 2],
                           agg_primitives=[NMostCommoner],
                           trans_primitives=[])
@@ -671,7 +672,9 @@ def test_override_multi_feature_names(pd_es):
         return [base_string % i for i in range(primitive.number_output_features)]
 
     def pd_top3(x):
-        array = np.array(x.value_counts()[:3].index)
+        counts = x.value_counts()
+        counts = counts[counts > 0]
+        array = np.array(counts[:3].index)
         if len(array) < 3:
             filler = np.full(3 - len(array), np.nan)
             array = np.append(array, filler)
@@ -685,7 +688,7 @@ def test_override_multi_feature_names(pd_es):
                                        cls_attributes={"generate_names": gen_custom_names})
 
     fm, features = ft.dfs(entityset=pd_es,
-                          target_dataframe="products",
+                          target_dataframe_name="products",
                           instance_ids=[0, 1, 2],
                           agg_primitives=[NMostCommoner],
                           trans_primitives=[])
