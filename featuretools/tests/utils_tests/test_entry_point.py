@@ -63,7 +63,7 @@ def test_entry_point(es, monkeypatch):
                         MockPkgResources(entry_point))
     fm, fl = dfs(entityset=es, target_dataframe_name='customers')
     assert "entityset" in entry_point.kwargs.keys()
-    assert "target_dataframe" in entry_point.kwargs.keys()
+    assert "target_dataframe_name" in entry_point.kwargs.keys()
     assert (fm, fl) == entry_point.return_value
 
 
@@ -88,7 +88,7 @@ def test_entry_point_detect_arg(monkeypatch, entry_points_dfs):
         "transaction_time": [10, 12, 13, 20, 21, 20],
         "fraud": [True, False, True, False, True, True]
     })
-    entities = {
+    dataframes = {
         "cards": (cards_df, "id"),
         "transactions": (transactions_df, "id", "transaction_time")
     }
@@ -97,9 +97,9 @@ def test_entry_point_detect_arg(monkeypatch, entry_points_dfs):
     monkeypatch.setitem(dfs.__globals__['entry_point'].__globals__,
                         "pkg_resources",
                         MockPkgResources(entry_point))
-    fm, fl = dfs(entities,
+    fm, fl = dfs(dataframes,
                  relationships,
                  target_dataframe_name='cards')
-    assert "entities" in entry_point.kwargs.keys()
+    assert "dataframes" in entry_point.kwargs.keys()
     assert "relationships" in entry_point.kwargs.keys()
-    assert "target_dataframe" in entry_point.kwargs.keys()
+    assert "target_dataframe_name" in entry_point.kwargs.keys()

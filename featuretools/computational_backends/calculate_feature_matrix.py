@@ -501,7 +501,7 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
 
     ..note:: this only approximates DirectFeatures of AggregationFeatures, on
         the target dataframe. In future versions, it may also be possible to
-        approximate these features on other top-level entities
+        approximate these features on other top-level dataframes
 
     Args:
         cutoff_time (pd.DataFrame): specifies what time to calculate

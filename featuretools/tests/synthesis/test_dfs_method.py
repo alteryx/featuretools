@@ -165,7 +165,7 @@ def test_ignores_instance_ids_if_cutoff_df(dataframes, relationships):
 
 
 def test_approximate_features(pd_dataframes, relationships):
-    # TODO: Update to use Dask entities when issue #985 is closed
+    # TODO: Update to use Dask dataframes when issue #985 is closed
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 3, 1, 5, 3, 6],
                                     "time": [11, 16, 16, 26, 17, 22]})
     feature_matrix, features = dfs(dataframes=pd_dataframes,
@@ -223,7 +223,7 @@ def test_features_only(dataframes, relationships):
 
 
 def test_accepts_relative_training_window(datetime_es):
-    # TODO: Update to use Dask entities when issue #882 is closed
+    # TODO: Update to use Dask dataframes when issue #882 is closed
     feature_matrix, _ = dfs(entityset=datetime_es,
                             target_dataframe_name="transactions")
 
@@ -263,7 +263,7 @@ def test_accepts_relative_training_window(datetime_es):
 
 
 def test_accepts_pd_timedelta_training_window(datetime_es):
-    # TODO: Update to use Dask entities when issue #882 is closed
+    # TODO: Update to use Dask dataframes when issue #882 is closed
     feature_matrix, _ = dfs(entityset=datetime_es,
                             target_dataframe_name="transactions",
                             cutoff_time=pd.Timestamp("2012-3-31 04:00"),
@@ -273,7 +273,7 @@ def test_accepts_pd_timedelta_training_window(datetime_es):
 
 
 def test_accepts_pd_dateoffset_training_window(datetime_es):
-    # TODO: Update to use Dask entities when issue #882 is closed
+    # TODO: Update to use Dask dataframes when issue #882 is closed
     feature_matrix, _ = dfs(entityset=datetime_es,
                             target_dataframe_name="transactions",
                             cutoff_time=pd.Timestamp("2012-3-31 04:00"),

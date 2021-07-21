@@ -176,8 +176,8 @@ def test_ignores_dataframes(es):
     features = dfs_obj.build_features()
     for f in features:
         deps = f.get_dependencies(deep=True)
-        entities = [d.dataframe_name for d in deps]
-        assert 'log' not in entities
+        dataframes = [d.dataframe_name for d in deps]
+        assert 'log' not in dataframes
 
 
 def test_ignores_columns(es):
