@@ -1336,6 +1336,8 @@ def test_n_jobs():
 
 
 def test_integer_time_index(int_es):
+    if int_es.dataframe_type != Library.PANDAS.value:
+        pytest.xfail('Dask and Koalas do not retain time column')
     times = list(range(8, 18)) + list(range(19, 26))
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
     cutoff_df = pd.DataFrame({'time': times, 'instance_id': range(17)})
@@ -1352,19 +1354,21 @@ def test_integer_time_index(int_es):
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
-# def test_integer_time_index_single_cutoff_value(int_es):
-#     labels = [False] * 3 + [True] * 2 + [False] * 4
-#     property_feature = IdentityFeature(int_es, 'log', 'value') > 10
+def test_integer_time_index_single_cutoff_value(int_es):
+    if int_es.dataframe_type != Library.PANDAS.value:
+        pytest.xfail('Dask and Koalas do not retain time column')
+    labels = [False] * 3 + [True] * 2 + [False] * 4
+    property_feature = IdentityFeature(int_es, 'log', 'value') > 10
 
-#     cutoff_times = [16, pd.Series([16])[0], 16.0, pd.Series([16.0])[0]]
-#     for cutoff_time in cutoff_times:
-#         feature_matrix = calculate_feature_matrix([property_feature],
-#                                                   int_es,
-#                                                   cutoff_time=cutoff_time,
-#                                                   cutoff_time_in_index=True)
-#         time_level_vals = feature_matrix.index.get_level_values(1).values
-#         assert (time_level_vals == [16] * 9).all()
-#         assert (feature_matrix[property_feature.get_name()] == labels).values.all()
+    cutoff_times = [16, pd.Series([16])[0], 16.0, pd.Series([16.0])[0]]
+    for cutoff_time in cutoff_times:
+        feature_matrix = calculate_feature_matrix([property_feature],
+                                                  int_es,
+                                                  cutoff_time=cutoff_time,
+                                                  cutoff_time_in_index=True)
+        time_level_vals = feature_matrix.index.get_level_values(1).values
+        assert (time_level_vals == [16] * 9).all()
+        assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
 def test_integer_time_index_datetime_cutoffs(int_es):
