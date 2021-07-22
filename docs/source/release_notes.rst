@@ -10,6 +10,7 @@ Future Release
         * Set ``name`` attribute for ``EmailAddressToDomain`` primitive (:pr:`1543`)
     * Changes
     * Documentation Changes
+        * Remove and ignore unnecessary graph files (:pr:`1544`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
