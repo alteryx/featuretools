@@ -1,4 +1,5 @@
 from datetime import datetime
+from inspect import isclass
 from math import isnan
 
 import numpy as np
@@ -223,6 +224,14 @@ def test_init_and_name(es):
     log = es['log']
 
     features = [ft.Feature(v) for v in log.variables]
+
+    # check all primitives have name
+    for attribute_string in dir(ft.primitives):
+        attr = getattr(ft.primitives, attribute_string)
+        if isclass(attr):
+            if issubclass(attr, AggregationPrimitive) and attr != AggregationPrimitive:
+                assert getattr(attr, "name") is not None
+
     agg_primitives = get_aggregation_primitives().values()
     # If Dask EntitySet use only Dask compatible primitives
     if es.dataframe_type == Library.DASK.value:

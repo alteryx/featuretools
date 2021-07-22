@@ -853,6 +853,7 @@ class EmailAddressToDomain(TransformPrimitive):
         >>> email_address_to_domain(['name@gmail.com', 'name@featuretools.com']).tolist()
         ['gmail.com', 'featuretools.com']
     """
+    name = "email_address_to_domain"
     input_types = [EmailAddress]
     return_type = Categorical
 
