@@ -1190,43 +1190,37 @@ class EntitySet(object):
             dataframes = [self[dataframe_name]]
         else:
             dataframes = self.dataframes
+
+        def add_value(df, col, val, verbose):
+            if verbose:
+                msg = "Column {}: Marking {} as an "
+                msg += "interesting value"
+                logger.info(msg.format(col, val))
+            interesting_vals = df.ww.columns[col].metadata.get('interesting_values', [])
+            df.ww.columns[col].metadata['interesting_values'] = interesting_vals + [val]
+
         for df in dataframes:
-            for column in df.columns:
-                # some heuristics to find basic 'where'-able columns
-                # include categorical columns, exclude index or foreign key columns
-                col_schema = df.ww.columns[column]
-                col_is_valid = (col_schema.is_categorical and
-                                not {'index', 'foreign_key'}.intersection(col_schema.semantic_tags))
+            value_counts = df.ww.value_counts(top_n=max(25, max_values), dropna=True)
+            total_count = len(df)
 
-                if col_is_valid:
-                    counts = df[column].value_counts()
+            for col, counts in value_counts.items():
+                if {'index', 'foreign_key'}.intersection(df.ww[col].ww.semantic_tags):
+                    continue
 
-                    # find how many of each unique value there are; sort by count,
-                    # and add interesting values to each column
-                    total_count = np.sum(counts)
-                    counts_idx = counts.index.tolist()
-                    for i in range(min(max_values, len(counts.index))):
-                        idx = counts_idx[i]
-
-                        if len(counts.index) < 25:
-                            if verbose:
-                                msg = "Column {}: Marking {} as an "
-                                msg += "interesting value"
-                                logger.info(msg.format(column, idx))
-                            interesting_vals = df.ww.columns[column].metadata.get('interesting_values', [])
-                            df.ww.columns[column].metadata['interesting_values'] = interesting_vals + [idx]
-
+                for i in range(min(max_values, len(counts))):
+                    if len(counts) < 25:
+                        # Categorical columns will include counts of 0 for all values
+                        # in categories. Only include values that have nonzero counts.
+                        if counts[i]['count'] > 0:
+                            value = counts[i]['value']
+                            add_value(df, col, value, verbose)
+                    else:
+                        fraction = counts[i]['count'] / total_count
+                        if fraction > 0.05 and fraction < 0.95:
+                            value = counts[i]['value']
+                            add_value(df, col, value, verbose)
                         else:
-                            fraction = counts[idx] / total_count
-                            if fraction > 0.05 and fraction < 0.95:
-                                if verbose:
-                                    msg = "Column {}: Marking {} as an "
-                                    msg += "interesting value"
-                                    logger.info(msg.format(column, idx))
-                                interesting_vals = df.ww.columns[column].metadata.get('interesting_values', [])
-                                df.ww.columns[column].metadata['interesting_values'] = interesting_vals + [idx]
-                            else:
-                                break
+                            break
 
         self.reset_data_description()
 
