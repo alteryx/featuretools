@@ -365,8 +365,8 @@ class FeatureSetCalculator(object):
         # with the child dataframe and has a column with the
         # original parent's id.
         col_map = {relationship.parent_column.name: relationship.child_column.name}
-        for child_var, parent_var in zip(new_relationship_columns, ancestor_relationship_columns):
-            col_map[parent_var] = child_var
+        for child_column, parent_column in zip(new_relationship_columns, ancestor_relationship_columns):
+            col_map[parent_column] = child_column
 
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
 
