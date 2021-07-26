@@ -16,7 +16,7 @@ from featuretools.computational_backends.feature_set_calculator import (
 )
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import DirectFeature, IdentityFeature
-from featuretools.primitives import (  # NMostCommon,
+from featuretools.primitives import (
     And,
     Count,
     CumSum,

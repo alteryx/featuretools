@@ -136,7 +136,9 @@ def test_direct_features_of_multi_output_agg_primitives(pd_es):
 
         def get_function(self, agg_type='pandas'):
             def pd_top3(x):
-                array = np.array(x.value_counts()[:3].index)
+                counts = x.value_counts()
+                counts = counts[counts > 0]
+                array = np.array(counts.index[:3])
                 if len(array) < 3:
                     filler = np.full(3 - len(array), np.nan)
                     array = np.append(array, filler)
