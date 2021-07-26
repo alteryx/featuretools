@@ -74,4 +74,4 @@ jobs:
           branch: min-dep-update
           branch-suffix: short-commit-hash
           base: main
-          reviewers: thehomebrewnerd, tamargrey, jeff-hernandez
+          team-reviewers: @alteryx/ml-tools
