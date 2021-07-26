@@ -21,7 +21,7 @@ def test_tokenize_entityset(pd_es, int_es):
     # add row to cohorts
     cohorts_df = dupe['cohorts']
     new_row = pd.DataFrame(data={'cohort': [2],
-                                 'cohort_name': ['Early Adopters'],
+                                 'cohort_name': None,
                                  'cohort_end': [pd.Timestamp('2011-04-08 12:00:00')]},
                            columns=['cohort', 'cohort_name', 'cohort_end'],
                            index=[2])
