@@ -108,9 +108,9 @@ def test_add_relationships_convert_type(es):
     for r in es.relationships:
         parent_df = es[r.parent_dataframe.ww.name]
         child_df = es[r.child_dataframe.ww.name]
-        assert parent_df.ww.index == r.parent_column.name
+        assert parent_df.ww.index == r._parent_column_name
         assert 'foreign_key' in r.child_column.ww.semantic_tags
-        assert str(parent_df[r.parent_column.name].dtype) == str(child_df[r.child_column.name].dtype)
+        assert str(parent_df[r._parent_column_name].dtype) == str(child_df[r._child_column_name].dtype)
 
 
 def test_add_relationship_diff_param_logical_types(es):
@@ -1958,8 +1958,8 @@ def dask_es_to_copy(make_es):
         es.add_dataframe(dd_df)
 
     for rel in make_es.relationships:
-        es.add_relationship(rel.parent_dataframe.ww.name, rel.parent_column.name,
-                            rel.child_dataframe.ww.name, rel.child_column.name)
+        es.add_relationship(rel.parent_dataframe.ww.name, rel._parent_column_name,
+                            rel.child_dataframe.ww.name, rel._child_column_name)
     return es
 
 

@@ -58,8 +58,8 @@ def dask_int_es(pd_int_es):
         es.add_dataframe(dd_df)
 
     for rel in pd_int_es.relationships:
-        es.add_relationship(rel.parent_dataframe.ww.name, rel.parent_column.name,
-                            rel.child_dataframe.ww.name, rel.child_column.name)
+        es.add_relationship(rel.parent_dataframe.ww.name, rel._parent_column_name,
+                            rel.child_dataframe.ww.name, rel._child_column_name)
     return es
 
 
@@ -93,8 +93,8 @@ def dask_es(pd_es):
         es.add_dataframe(dd_df)
 
     for rel in pd_es.relationships:
-        es.add_relationship(rel.parent_dataframe.ww.name, rel.parent_column.name,
-                            rel.child_dataframe.ww.name, rel.child_column.name)
+        es.add_relationship(rel.parent_dataframe.ww.name, rel._parent_column_name,
+                            rel.child_dataframe.ww.name, rel._child_column_name)
     return es
 
 

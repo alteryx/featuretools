@@ -171,9 +171,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         # make sure dtype of instance_id in cutoff time
         # is same as column it references
         target_dataframe = features[0].dataframe
-        dtype = target_dataframe[target_dataframe.ww.index].dtype
-        cutoff_time["instance_id"] = cutoff_time["instance_id"].astype(dtype)
-        cutoff_time.ww.init()
+        ltype = target_dataframe.ww.logical_types[target_dataframe.ww.index]
+        cutoff_time.ww.init(logical_types={'instance_id': ltype})
     else:
         pass_columns = []
         if cutoff_time is None:
@@ -707,13 +706,13 @@ def _add_approx_dataframe_index_col(es, target_dataframe_name, cutoffs, path):
     last_parent_col = es[target_dataframe_name].ww.index
 
     for _, relationship in path:
-        child_cols = [last_parent_col, relationship.child_column.name]
+        child_cols = [last_parent_col, relationship._child_column_name]
         child_df = es[relationship.child_name][child_cols]
 
         # Rename relationship.child_column to include the columns we have
         # joined through.
-        new_col_name = '%s.%s' % (last_child_col, relationship.child_column.name)
-        to_rename = {relationship.child_column.name: new_col_name}
+        new_col_name = '%s.%s' % (last_child_col, relationship._child_column_name)
+        to_rename = {relationship._child_column_name: new_col_name}
         child_df = child_df.rename(columns=to_rename)
         cutoffs = cutoffs.merge(child_df,
                                 left_on=last_child_col,
@@ -721,7 +720,7 @@ def _add_approx_dataframe_index_col(es, target_dataframe_name, cutoffs, path):
 
         # These will be used in the next iteration.
         last_child_col = new_col_name
-        last_parent_col = relationship.parent_column.name
+        last_parent_col = relationship._parent_column_name
 
     return cutoffs, new_col_name
 

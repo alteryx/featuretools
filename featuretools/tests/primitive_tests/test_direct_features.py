@@ -78,7 +78,7 @@ def test_direct_rename(es):
 
 def test_direct_copy(games_es):
     home_team = next(r for r in games_es.relationships
-                     if r.child_column.name == 'home_team_id')
+                     if r._child_column_name == 'home_team_id')
     feat = DirectFeature(IdentityFeature(games_es, 'teams', 'name'), 'games',
                          relationship=home_team)
     copied = feat.copy()
@@ -209,7 +209,7 @@ def test_direct_with_multiple_possible_paths(games_es):
 
     # Does not raise if path specified.
     relationship = next(r for r in games_es.get_forward_relationships('games')
-                        if r.child_column.name == 'home_team_id')
+                        if r._child_column_name == 'home_team_id')
     feat = DirectFeature(IdentityFeature(games_es, 'teams', 'name'), 'games',
                          relationship=relationship)
     assert feat.relationship_path_name() == 'teams[home_team_id]'

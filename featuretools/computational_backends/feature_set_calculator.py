@@ -242,7 +242,7 @@ class FeatureSetCalculator(object):
 
             # Add the column linking this dataframe to its parent, so that
             # descendants get linked to the parent.
-            new_ancestor_relationship_columns.append(parent_relationship.child_column.name)
+            new_ancestor_relationship_columns.append(parent_relationship._child_column_name)
 
         # call to update timer
         progress_callback(0)
@@ -262,13 +262,13 @@ class FeatureSetCalculator(object):
             is_forward, relationship = edge
             if is_forward:
                 sub_dataframe = relationship.parent_dataframe.ww.name
-                sub_filter_column = relationship.parent_column.name
-                sub_filter_values = filtered_df[relationship.child_column.name]
+                sub_filter_column = relationship._parent_column_name
+                sub_filter_values = filtered_df[relationship._child_column_name]
                 parent_data = None
             else:
                 sub_dataframe = relationship.child_dataframe.ww.name
-                sub_filter_column = relationship.child_column.name
-                sub_filter_values = filtered_df[relationship.parent_column.name]
+                sub_filter_column = relationship._child_column_name
+                sub_filter_values = filtered_df[relationship._parent_column_name]
 
                 parent_data = (relationship,
                                new_ancestor_relationship_columns,
@@ -364,7 +364,7 @@ class FeatureSetCalculator(object):
         # create an intermediate dataframe which shares a column
         # with the child dataframe and has a column with the
         # original parent's id.
-        col_map = {relationship.parent_column.name: relationship.child_column.name}
+        col_map = {relationship._parent_column_name: relationship._child_column_name}
         for child_column, parent_column in zip(new_relationship_columns, ancestor_relationship_columns):
             col_map[parent_column] = child_column
 
@@ -378,8 +378,8 @@ class FeatureSetCalculator(object):
         # parent_df).
         df = child_df.merge(merge_df,
                             how='left',
-                            left_on=relationship.child_column.name,
-                            right_on=relationship.child_column.name)
+                            left_on=relationship._child_column_name,
+                            right_on=relationship._child_column_name)
 
         # ensure index is maintained
         # TODO: Review for dask dataframes
@@ -532,11 +532,11 @@ class FeatureSetCalculator(object):
 
         parent_df = df_trie.get_node([path[0]]).value
         _is_forward, relationship = path[0]
-        merge_var = relationship.child_column.name
+        merge_var = relationship._child_column_name
 
         # generate a mapping of old column names (in the parent dataframe) to
         # new column names (in the child dataframe) for the merge
-        col_map = {relationship.parent_column.name: merge_var}
+        col_map = {relationship._parent_column_name: merge_var}
         index_as_feature = None
 
         fillna_dict = {}
@@ -544,7 +544,7 @@ class FeatureSetCalculator(object):
             feature_defaults = {name: f.default_value
                                 for name in f.get_feature_names() if not pd.isna(f.default_value)}
             fillna_dict.update(feature_defaults)
-            if f.base_features[0].get_name() == relationship.parent_column.name:
+            if f.base_features[0].get_name() == relationship._parent_column_name:
                 index_as_feature = f
             base_names = f.base_features[0].get_feature_names()
             for name, base_name in zip(f.get_feature_names(), base_names):
@@ -576,7 +576,7 @@ class FeatureSetCalculator(object):
         test_feature = features[0]
         child_dataframe = test_feature.base_features[0].dataframe
         base_frame = df_trie.get_node(test_feature.relationship_path).value
-        parent_merge_var = test_feature.relationship_path[0][1].parent_column.name
+        parent_merge_var = test_feature.relationship_path[0][1]._parent_column_name
         # Sometimes approximate features get computed in a previous filter frame
         # and put in the current one dynamically,
         # so there may be existing features here
@@ -750,7 +750,7 @@ class FeatureSetCalculator(object):
         # relationships will come from this node.
         df = self.entityset[dataframe_name]
         index_columns = {col for col in df.columns
-                         if {'index', 'foreign_key', 'time_index'} & df.ww[col].ww.semantic_tags}
+                         if {'index', 'foreign_key', 'time_index'} & df.ww.semantic_tags[col]}
         features = (self.feature_set.features_by_name[name]
                     for name in feature_names)
 

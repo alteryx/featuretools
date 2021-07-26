@@ -25,7 +25,7 @@ class Relationship(object):
 
         if (self.parent_dataframe.ww.index is not None and
                 self._parent_column_name != self.parent_dataframe.ww.index):
-            raise AttributeError(f"Parent column '{self.parent_column.name}' is not the index of "
+            raise AttributeError(f"Parent column '{self._parent_column_name}' is not the index of "
                                  f"dataframe {self._parent_dataframe_name}")
 
     @classmethod
