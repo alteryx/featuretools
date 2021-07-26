@@ -261,12 +261,12 @@ class FeatureSetCalculator(object):
         for edge, sub_trie in feature_trie.children():
             is_forward, relationship = edge
             if is_forward:
-                sub_dataframe = relationship.parent_dataframe.ww.name
+                sub_dataframe_name = relationship.parent_dataframe.ww.name
                 sub_filter_column = relationship._parent_column_name
                 sub_filter_values = filtered_df[relationship._child_column_name]
                 parent_data = None
             else:
-                sub_dataframe = relationship.child_dataframe.ww.name
+                sub_dataframe_name = relationship.child_dataframe.ww.name
                 sub_filter_column = relationship._child_column_name
                 sub_filter_values = filtered_df[relationship._parent_column_name]
 
@@ -278,7 +278,7 @@ class FeatureSetCalculator(object):
             sub_full_dataframe_df_trie = full_dataframe_df_trie.get_node([edge])
             sub_precalc_trie = precalculated_trie.get_node([edge])
             self._calculate_features_for_dataframe(
-                dataframe_name=sub_dataframe,
+                dataframe_name=sub_dataframe_name,
                 feature_trie=sub_trie,
                 df_trie=sub_df_trie,
                 full_dataframe_df_trie=sub_full_dataframe_df_trie,
