@@ -1204,7 +1204,7 @@ class EntitySet(object):
             total_count = len(df)
 
             for col, counts in value_counts.items():
-                if {'index', 'foreign_key'}.intersection(df.ww[col].ww.semantic_tags):
+                if {'index', 'foreign_key'}.intersection(df.ww.semantic_tags[col]):
                     continue
 
                 for i in range(min(max_values, len(counts))):
