@@ -1196,7 +1196,8 @@ class EntitySet(object):
                 msg = "Column {}: Marking {} as an interesting value"
                 logger.info(msg.format(col, val))
             interesting_vals = df.ww.columns[col].metadata.get('interesting_values', [])
-            df.ww.columns[col].metadata['interesting_values'] = interesting_vals + [val]
+            interesting_vals.append(val)
+            df.ww.columns[col].metadata['interesting_values'] = interesting_vals
 
         for df in dataframes:
             value_counts = df.ww.value_counts(top_n=max(25, max_values), dropna=True)
