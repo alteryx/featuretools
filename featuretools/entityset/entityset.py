@@ -1193,8 +1193,7 @@ class EntitySet(object):
 
         def add_value(df, col, val, verbose):
             if verbose:
-                msg = "Column {}: Marking {} as an "
-                msg += "interesting value"
+                msg = "Column {}: Marking {} as an interesting value"
                 logger.info(msg.format(col, val))
             interesting_vals = df.ww.columns[col].metadata.get('interesting_values', [])
             df.ww.columns[col].metadata['interesting_values'] = interesting_vals + [val]
