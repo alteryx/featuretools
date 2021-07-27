@@ -81,7 +81,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             will be ignored.
 
         relationships (list[(str, str, str, str)]): list of relationships
-            between dataframe. List items are a tuple with the format
+            between dataframes. List items are a tuple with the format
             (parent dataframe name, parent column, child dataframe name, child column).
 
         cutoff_time_in_index (bool): If True, return a DataFrame with a MultiIndex
