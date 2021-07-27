@@ -31,4 +31,4 @@ jobs:
         branch: latest-dep-update
         branch-suffix: short-commit-hash
         base: main
-        team-reviewers: @alteryx/ml-tools
+        team-reviewers: alteryx/ml-tools
