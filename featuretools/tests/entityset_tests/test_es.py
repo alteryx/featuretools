@@ -180,7 +180,9 @@ def test_add_relationship_different_logical_types_same_dtype(es):
         'value_many_nans': Double,
         'priority_level': Ordinal(order=[0, 1, 2]),
         'purchased': Boolean,
-        'comments': NaturalLanguage
+        'comments': NaturalLanguage,
+        'url': URL,
+        'email_address': EmailAddress,
     }
     log_semantic_tags = {
         'session_id': 'foreign_key',
@@ -222,7 +224,9 @@ def test_add_relationship_different_compatible_dtypes(es):
         'value_many_nans': Double,
         'priority_level': Ordinal(order=[0, 1, 2]),
         'purchased': Boolean,
-        'comments': NaturalLanguage
+        'comments': NaturalLanguage,
+        'url': URL,
+        'email_address': EmailAddress,
     }
     log_semantic_tags = {
         'session_id': 'foreign_key',
