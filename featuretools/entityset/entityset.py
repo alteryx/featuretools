@@ -1207,12 +1207,13 @@ class EntitySet(object):
                     continue
 
                 for i in range(min(max_values, len(counts))):
+                    # Categorical columns will include counts of 0 for all values
+                    # in categories. Stop when we encounter a 0 count.
+                    if counts[i]['count'] == 0:
+                        break
                     if len(counts) < 25:
-                        # Categorical columns will include counts of 0 for all values
-                        # in categories. Only include values that have nonzero counts.
-                        if counts[i]['count'] > 0:
-                            value = counts[i]['value']
-                            add_value(df, col, value, verbose)
+                        value = counts[i]['value']
+                        add_value(df, col, value, verbose)
                     else:
                         fraction = counts[i]['count'] / total_count
                         if fraction > 0.05 and fraction < 0.95:
