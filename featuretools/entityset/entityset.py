@@ -1210,8 +1210,7 @@ class EntitySet(object):
 
                         if len(counts.index) < 25:
                             if verbose:
-                                msg = "Column {}: Marking {} as an "
-                                msg += "interesting value"
+                                msg = "Column {}: Marking {} as an interesting value"
                                 logger.info(msg.format(column, idx))
                             interesting_vals = df.ww.columns[column].metadata.get('interesting_values', [])
                             df.ww.columns[column].metadata['interesting_values'] = interesting_vals + [idx]
@@ -1220,8 +1219,7 @@ class EntitySet(object):
                             fraction = counts[idx] / total_count
                             if fraction > 0.05 and fraction < 0.95:
                                 if verbose:
-                                    msg = "Column {}: Marking {} as an "
-                                    msg += "interesting value"
+                                    msg = "Column {}: Marking {} as an interesting value"
                                     logger.info(msg.format(column, idx))
                                 interesting_vals = df.ww.columns[column].metadata.get('interesting_values', [])
                                 df.ww.columns[column].metadata['interesting_values'] = interesting_vals + [idx]
