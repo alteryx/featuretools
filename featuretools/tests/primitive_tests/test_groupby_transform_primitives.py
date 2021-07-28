@@ -328,7 +328,7 @@ def test_groupby_no_data(pd_es):
 
 def test_groupby_uses_calc_time(pd_es):
     def projected_amount_left(amount, timestamp, time=None):
-        # cumulative sum of amout, with timedelta *  constant subtracted
+        # cumulative sum of amount, with timedelta *  constant subtracted
         delta = time - timestamp
         delta_seconds = delta / np.timedelta64(1, 's')
         return amount.cumsum() - (delta_seconds)
