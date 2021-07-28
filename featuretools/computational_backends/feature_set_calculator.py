@@ -182,8 +182,8 @@ class FeatureSetCalculator(object):
                 rows, for features that are uses_full_dataframe.
 
             precalculated_trie (Trie): a parallel trie containing dataframes
-                with precalculated features. The dataframe for this dataframe will
-                be at the root.
+                with precalculated features. The dataframe specified by dataframe_name
+                will be at the root.
 
             filter_column (str): The name of the column to filter this
                 dataframe by.
@@ -203,7 +203,7 @@ class FeatureSetCalculator(object):
                 in calculating features.
 
         """
-        # Step 1: Get a dataframe for the given dataframe, filtered by the given
+        # Step 1: Get a dataframe for the given dataframe name, filtered by the given
         # conditions.
 
         need_full_dataframe, full_dataframe_features, not_full_dataframe_features = feature_trie.value
@@ -358,8 +358,8 @@ class FeatureSetCalculator(object):
                 child is connected to the parent.
         """
         relationship_name = relationship.parent_name
-        new_relationship_columns = ['%s.%s' % (relationship_name, var)
-                                    for var in ancestor_relationship_columns]
+        new_relationship_columns = ['%s.%s' % (relationship_name, col)
+                                    for col in ancestor_relationship_columns]
 
         # create an intermediate dataframe which shares a column
         # with the child dataframe and has a column with the
@@ -532,11 +532,11 @@ class FeatureSetCalculator(object):
 
         parent_df = df_trie.get_node([path[0]]).value
         _is_forward, relationship = path[0]
-        merge_var = relationship._child_column_name
+        merge_col = relationship._child_column_name
 
         # generate a mapping of old column names (in the parent dataframe) to
         # new column names (in the child dataframe) for the merge
-        col_map = {relationship._parent_column_name: merge_var}
+        col_map = {relationship._parent_column_name: merge_col}
         index_as_feature = None
 
         fillna_dict = {}
@@ -555,7 +555,7 @@ class FeatureSetCalculator(object):
         # merge the identity feature from the parent dataframe into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
         if is_instance(merge_df, (dd, ks), 'DataFrame'):
-            new_df = child_df.merge(merge_df, left_on=merge_var, right_on=merge_var,
+            new_df = child_df.merge(merge_df, left_on=merge_col, right_on=merge_col,
                                     how='left')
         else:
             if index_as_feature is not None:
@@ -563,9 +563,9 @@ class FeatureSetCalculator(object):
                                    inplace=True,
                                    drop=False)
             else:
-                merge_df.set_index(merge_var, inplace=True)
+                merge_df.set_index(merge_col, inplace=True)
 
-            new_df = child_df.merge(merge_df, left_on=merge_var, right_index=True,
+            new_df = child_df.merge(merge_df, left_on=merge_col, right_index=True,
                                     how='left')
 
         progress_callback(len(features) / float(self.num_features))
@@ -576,7 +576,7 @@ class FeatureSetCalculator(object):
         test_feature = features[0]
         child_dataframe = test_feature.base_features[0].dataframe
         base_frame = df_trie.get_node(test_feature.relationship_path).value
-        parent_merge_var = test_feature.relationship_path[0][1]._parent_column_name
+        parent_merge_col = test_feature.relationship_path[0][1]._parent_column_name
         # Sometimes approximate features get computed in a previous filter frame
         # and put in the current one dynamically,
         # so there may be existing features here
@@ -608,7 +608,7 @@ class FeatureSetCalculator(object):
         else:
             relationship_path = test_feature.relationship_path
 
-            groupby_var = get_relationship_column_id(relationship_path)
+            groupby_col = get_relationship_column_id(relationship_path)
 
             # if the use_previous property exists on this feature, include only the
             # instances from the child dataframe included in that Timedelta
@@ -627,7 +627,7 @@ class FeatureSetCalculator(object):
                     def last_n(df):
                         return df.iloc[-n:]
 
-                    base_frame = base_frame.groupby(groupby_var, observed=True, sort=False).apply(last_n)
+                    base_frame = base_frame.groupby(groupby_col, observed=True, sort=False).apply(last_n)
 
             to_agg = {}
             agg_rename = {}
@@ -681,11 +681,11 @@ class FeatureSetCalculator(object):
             # it with the existing one
             if len(to_apply):
                 wrap = agg_wrapper(to_apply, self.time_last)
-                # groupby_var can be both the name of the index and a column,
+                # groupby_col can be both the name of the index and a column,
                 # to silence pandas warning about ambiguity we explicitly pass
                 # the column (in actuality grouping by both index and group would
                 # work)
-                to_merge = base_frame.groupby(base_frame[groupby_var],
+                to_merge = base_frame.groupby(base_frame[groupby_col],
                                               observed=True,
                                               sort=False).apply(wrap)
                 frame = pd.merge(left=frame, right=to_merge,
@@ -697,15 +697,15 @@ class FeatureSetCalculator(object):
             # Apply the aggregate functions to generate a new dataframe, and merge
             # it with the existing one
             if len(to_agg):
-                # groupby_var can be both the name of the index and a column,
+                # groupby_col can be both the name of the index and a column,
                 # to silence pandas warning about ambiguity we explicitly pass
                 # the column (in actuality grouping by both index and group would
                 # work)
                 if is_instance(base_frame, (dd, ks), 'DataFrame'):
-                    to_merge = base_frame.groupby(groupby_var).agg(to_agg)
+                    to_merge = base_frame.groupby(groupby_col).agg(to_agg)
 
                 else:
-                    to_merge = base_frame.groupby(base_frame[groupby_var],
+                    to_merge = base_frame.groupby(base_frame[groupby_col],
                                                   observed=True, sort=False).agg(to_agg)
                 # rename columns to the correct feature names
                 to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns]
@@ -718,7 +718,7 @@ class FeatureSetCalculator(object):
                     to_merge.index = to_merge.index.astype(object).astype(categories)
 
                 if is_instance(frame, (dd, ks), 'DataFrame'):
-                    frame = frame.merge(to_merge, left_on=parent_merge_var, right_index=True, how='left')
+                    frame = frame.merge(to_merge, left_on=parent_merge_col, right_index=True, how='left')
                 else:
                     frame = pd.merge(left=frame, right=to_merge,
                                      left_index=True, right_index=True, how='left')
