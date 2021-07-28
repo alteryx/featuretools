@@ -341,7 +341,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
     feature_matrix = []
     if no_unapproximated_aggs and approximate is not None:
-        if entityset.time_type == 'numeric_time_index':
+        if entityset.time_type == 'numeric':
             group_time = np.inf
         else:
             group_time = datetime.now()
