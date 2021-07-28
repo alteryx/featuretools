@@ -152,17 +152,17 @@ def get_feature_data(feat, dataframes, groupbys, edges, primitives, layer=0):
         if is_forward:
             if r.child_dataframe.ww.name not in dataframes:
                 add_dataframe(r.child_dataframe, dataframes)
-            dataframes[r.child_dataframe.ww.name]['columns'].add(r.child_column.name)
-            child_node = '{}:{}'.format(r.child_dataframe.ww.name, r.child_column.name)
+            dataframes[r.child_dataframe.ww.name]['columns'].add(r._child_column_name)
+            child_node = '{}:{}'.format(r.child_dataframe.ww.name, r._child_column_name)
             edges[0].append([base_node, child_node])
         else:
             if r.child_dataframe.ww.name not in dataframes:
                 add_dataframe(r.child_dataframe, dataframes)
-            dataframes[r.child_dataframe.ww.name]['columns'].add(r.child_column.name)
-            child_node = '{}:{}'.format(r.child_dataframe.ww.name, r.child_column.name)
+            dataframes[r.child_dataframe.ww.name]['columns'].add(r._child_column_name)
+            child_node = '{}:{}'.format(r.child_dataframe.ww.name, r._child_column_name)
             child_name = child_node.replace(':', '--')
             groupby_node = "{}_groupby_{}".format(feat_name, child_name)
-            groupby_name = 'group by\n{}'.format(r.child_column.name)
+            groupby_name = 'group by\n{}'.format(r._child_column_name)
             groupbys.append((groupby_node, groupby_name))
             edges[0].append([child_node, groupby_node])
             edges[1].append([groupby_node, base_node])

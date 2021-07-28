@@ -269,7 +269,7 @@ def make_logical_types(with_integer_time_index=False):
 
     product_logical_types = {
         'id': Categorical,
-        'rating': Integer,
+        'rating': Double,
         'department': Categorical,
         'url': URL,
     }

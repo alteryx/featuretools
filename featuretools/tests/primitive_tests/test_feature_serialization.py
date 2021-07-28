@@ -80,7 +80,7 @@ def pickle_features_test_helper(es_size, features_original, dir_path):
 
 
 def test_pickle_features(es, tmpdir):
-    features_original = ft.dfs(target_dataframe='sessions', entityset=es, features_only=True)
+    features_original = ft.dfs(target_dataframe_name='sessions', entityset=es, features_only=True)
     pickle_features_test_helper(asizeof(es), features_original, str(tmpdir))
 
 
@@ -92,7 +92,7 @@ def test_pickle_features_with_custom_primitive(pd_es, tmpdir):
         return_type=ColumnSchema(semantic_tags={'numeric'}),
         description="Calculate means ignoring nan values")
 
-    features_original = ft.dfs(target_dataframe='sessions', entityset=pd_es,
+    features_original = ft.dfs(target_dataframe_name='sessions', entityset=pd_es,
                                agg_primitives=["Last", "Mean", NewMax], features_only=True)
 
     assert any([isinstance(feat.primitive, NewMax) for feat in features_original])
@@ -166,7 +166,7 @@ def s3_bucket(s3_client):
 
 
 def test_serialize_features_mock_s3(es, s3_client, s3_bucket):
-    features_original = ft.dfs(target_dataframe='sessions', entityset=es, features_only=True)
+    features_original = ft.dfs(target_dataframe_name='sessions', entityset=es, features_only=True)
 
     ft.save_features(features_original, TEST_S3_URL)
 
@@ -178,7 +178,7 @@ def test_serialize_features_mock_s3(es, s3_client, s3_bucket):
 
 
 def test_serialize_features_mock_anon_s3(es, s3_client, s3_bucket):
-    features_original = ft.dfs(target_dataframe='sessions', entityset=es, features_only=True)
+    features_original = ft.dfs(target_dataframe_name='sessions', entityset=es, features_only=True)
 
     ft.save_features(features_original, TEST_S3_URL, profile_name=False)
 
@@ -223,7 +223,7 @@ def setup_test_profile(monkeypatch, tmpdir):
 
 
 def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
-    features_original = ft.dfs(target_dataframe='sessions', entityset=es, features_only=True)
+    features_original = ft.dfs(target_dataframe_name='sessions', entityset=es, features_only=True)
 
     ft.save_features(features_original, TEST_S3_URL, profile_name='test')
 
@@ -243,7 +243,7 @@ def test_deserialize_features_s3(pd_es, url, profile_name):
     trans_primitives = [Day, Year, Month, Weekday, Haversine, NumWords,
                         NumCharacters]
 
-    features_original = ft.dfs(target_dataframe='sessions',
+    features_original = ft.dfs(target_dataframe_name='sessions',
                                entityset=pd_es,
                                features_only=True,
                                agg_primitives=agg_primitives,
@@ -253,7 +253,7 @@ def test_deserialize_features_s3(pd_es, url, profile_name):
 
 
 def test_serialize_url(es):
-    features_original = ft.dfs(target_dataframe='sessions',
+    features_original = ft.dfs(target_dataframe_name='sessions',
                                entityset=es,
                                features_only=True)
     error_text = "Writing to URLs is not supported"

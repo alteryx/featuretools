@@ -1,12 +1,6 @@
 import dask.dataframe as dd
 import pandas as pd
-from woodwork.logical_types import (
-    Datetime,
-    DatetimeTimeIndex,
-    Double,
-    NaturalLanguage,
-    Numeric
-)
+from woodwork.logical_types import Datetime, Double, Integer, NaturalLanguage
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
@@ -28,7 +22,7 @@ def test_single_table_dask_entityset():
                                    ""]})
     values_dd = dd.from_pandas(df, npartitions=2)
     ltypes = {
-        "values": Double,
+        "values": Integer,
         "dates": Datetime,
         "strings": NaturalLanguage
     }
@@ -39,7 +33,7 @@ def test_single_table_dask_entityset():
         logical_types=ltypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_dataframe="data",
+                        target_dataframe_name="data",
                         trans_primitives=primitives_list)
 
     pd_es = ft.EntitySet(id="pd_es")
@@ -47,10 +41,10 @@ def test_single_table_dask_entityset():
         dataframe_name="data",
         dataframe=df,
         index="id",
-        logical_types={"strings": NaturalLanguage})
+        logical_types=ltypes)
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_dataframe="data",
+                   target_dataframe_name="data",
                    trans_primitives=primitives_list)
 
     # Use the same columns and make sure both indexes are sorted the same
@@ -74,7 +68,7 @@ def test_single_table_dask_entityset_ids_not_sorted():
                                    ""]})
     values_dd = dd.from_pandas(df, npartitions=2)
     ltypes = {
-        "values": Double,
+        "values": Integer,
         "dates": Datetime,
         "strings": NaturalLanguage
     }
@@ -85,7 +79,7 @@ def test_single_table_dask_entityset_ids_not_sorted():
         logical_types=ltypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_dataframe="data",
+                        target_dataframe_name="data",
                         trans_primitives=primitives_list)
 
     pd_es = ft.EntitySet(id="pd_es")
@@ -93,10 +87,10 @@ def test_single_table_dask_entityset_ids_not_sorted():
         dataframe_name="data",
         dataframe=df,
         index="id",
-        logical_types={"strings": NaturalLanguage})
+        logical_types=ltypes)
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_dataframe="data",
+                   target_dataframe_name="data",
                    trans_primitives=primitives_list)
 
     # Make sure both indexes are sorted the same
@@ -121,7 +115,7 @@ def test_single_table_dask_entityset_with_instance_ids():
 
     values_dd = dd.from_pandas(df, npartitions=2)
     ltypes = {
-        "values": Double,
+        "values": Integer,
         "dates": Datetime,
         "strings": NaturalLanguage
     }
@@ -132,7 +126,7 @@ def test_single_table_dask_entityset_with_instance_ids():
         logical_types=ltypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_dataframe="data",
+                        target_dataframe_name="data",
                         trans_primitives=primitives_list,
                         instance_ids=instance_ids)
 
@@ -141,10 +135,10 @@ def test_single_table_dask_entityset_with_instance_ids():
         dataframe_name="data",
         dataframe=df,
         index="id",
-        logical_types={"strings": NaturalLanguage})
+        logical_types=ltypes)
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_dataframe="data",
+                   target_dataframe_name="data",
                    trans_primitives=primitives_list,
                    instance_ids=instance_ids)
 
@@ -168,7 +162,7 @@ def test_single_table_dask_entityset_single_cutoff_time():
                                    ""]})
     values_dd = dd.from_pandas(df, npartitions=2)
     ltypes = {
-        "values": Numeric,
+        "values": Integer,
         "dates": Datetime,
         "strings": NaturalLanguage
     }
@@ -179,7 +173,7 @@ def test_single_table_dask_entityset_single_cutoff_time():
         logical_types=ltypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_dataframe="data",
+                        target_dataframe_name="data",
                         trans_primitives=primitives_list,
                         cutoff_time=pd.Timestamp("2019-01-05 04:00"))
 
@@ -188,10 +182,10 @@ def test_single_table_dask_entityset_single_cutoff_time():
         dataframe_name="data",
         dataframe=df,
         index="id",
-        logical_types={"strings": NaturalLanguage})
+        logical_types=ltypes)
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_dataframe="data",
+                   target_dataframe_name="data",
                    trans_primitives=primitives_list,
                    cutoff_time=pd.Timestamp("2019-01-05 04:00"))
 
@@ -213,8 +207,8 @@ def test_single_table_dask_entityset_cutoff_time_df():
                                    "abcdef ghijk"]})
     values_dd = dd.from_pandas(df, npartitions=2)
     ltypes = {
-        "values": Numeric,
-        "dates": DatetimeTimeIndex,
+        "values": Integer,
+        "dates": Datetime,
         "strings": NaturalLanguage
     }
     dask_es.add_dataframe(
@@ -233,7 +227,7 @@ def test_single_table_dask_entityset_cutoff_time_df():
     cutoff_times = pd.DataFrame({"id": ids, "time": times, "labels": labels}, columns=["id", "time", "labels"])
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_dataframe="data",
+                        target_dataframe_name="data",
                         trans_primitives=primitives_list,
                         cutoff_time=cutoff_times)
 
@@ -243,10 +237,10 @@ def test_single_table_dask_entityset_cutoff_time_df():
         dataframe=df,
         index="id",
         time_index="dates",
-        logical_types={"strings": NaturalLanguage})
+        logical_types=ltypes)
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_dataframe="data",
+                   target_dataframe_name="data",
                    trans_primitives=primitives_list,
                    cutoff_time=cutoff_times)
     # Because row ordering with Dask is not guaranteed, we need to sort on two columns to make sure that values
@@ -269,7 +263,7 @@ def test_single_table_dask_entityset_dates_not_sorted():
     primitives_list = ['absolute', 'is_weekend', 'year', 'day']
     values_dd = dd.from_pandas(df, npartitions=1)
     ltypes = {
-        "values": Numeric,
+        "values": Integer,
         "dates": Datetime,
     }
     dask_es.add_dataframe(
@@ -280,7 +274,7 @@ def test_single_table_dask_entityset_dates_not_sorted():
         logical_types=ltypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_dataframe="data",
+                        target_dataframe_name="data",
                         trans_primitives=primitives_list,
                         max_depth=1)
 
@@ -289,10 +283,11 @@ def test_single_table_dask_entityset_dates_not_sorted():
         dataframe_name="data",
         dataframe=df,
         index="id",
-        time_index="dates")
+        time_index="dates",
+        logical_types=ltypes)
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_dataframe="data",
+                   target_dataframe_name="data",
                    trans_primitives=primitives_list,
                    max_depth=1)
 
@@ -365,13 +360,13 @@ def test_dask_entityset_secondary_time_index():
     cutoff_df['time'] = pd.to_datetime(['2019-02-02', '2019-02-02', '2019-02-20'])
 
     fm, _ = ft.dfs(entityset=pd_es,
-                   target_dataframe="logs",
+                   target_dataframe_name="logs",
                    cutoff_time=cutoff_df,
                    agg_primitives=["max"],
                    trans_primitives=["month"])
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_dataframe="logs",
+                        target_dataframe_name="logs",
                         cutoff_time=cutoff_df,
                         agg_primitives=["max"],
                         trans_primitives=["month"])

@@ -105,13 +105,13 @@ def test_init_and_name(es):
 
 
 def test_relationship_path(es):
-    f = ft.TransformFeature(es['log']['datetime'], Hour)
+    f = ft.TransformFeature(ft.Feature(es, 'log', 'datetime'), Hour)
 
     assert len(f.relationship_path) == 0
 
 
 def test_serialization(es):
-    value = ft.IdentityFeature(es['log']['value'])
+    value = ft.IdentityFeature(es, 'log', 'value')
     primitive = ft.primitives.MultiplyNumericScalar(value=2)
     value_x2 = ft.TransformFeature(value, primitive)
 
@@ -161,16 +161,15 @@ def pd_simple_es():
 def dd_simple_es(pd_simple_es):
     dataframes = {}
     for df in pd_simple_es.dataframes:
-        dataframes[df.name] = (dd.from_pandas(df.reset_index(drop=True), npartitions=4),
-                               df.ww.index,
-                               None,
-                               df.ww.logical_types,
-                               df.ww.semantic_tags)
+        dataframes[df.ww.name] = (dd.from_pandas(df.reset_index(drop=True), npartitions=4),
+                                  df.ww.index,
+                                  None,
+                                  df.ww.logical_types)
 
-    relationships = [(rel.parent_dataframe.id,
-                      rel.parent_column.name,
-                      rel.child_dataframe.id,
-                      rel.child_column.name) for rel in pd_simple_es.relationships]
+    relationships = [(rel.parent_name,
+                      rel._parent_column_name,
+                      rel.child_name,
+                      rel._child_column_name) for rel in pd_simple_es.relationships]
 
     return ft.EntitySet(id=pd_simple_es.id, dataframes=dataframes, relationships=relationships)
 
@@ -181,16 +180,15 @@ def ks_simple_es(pd_simple_es):
     dataframes = {}
     for df in pd_simple_es.dataframes:
         cleaned_df = pd_to_ks_clean(df).reset_index(drop=True)
-        dataframes[df.name] = (ks.from_pandas(cleaned_df),
-                               df.ww.index,
-                               None,
-                               df.ww.logical_typecs,
-                               df.ww.semantic_tags)
+        dataframes[df.ww.name] = (ks.from_pandas(cleaned_df),
+                                  df.ww.index,
+                                  None,
+                                  df.ww.logical_types)
 
-    relationships = [(rel.parent_dataframe.id,
-                      rel.parent_column.name,
-                      rel.child_dataframe.id,
-                      rel.child_column.name) for rel in pd_simple_es.relationships]
+    relationships = [(rel.parent_name,
+                      rel._parent_column_name,
+                      rel.child_name,
+                      rel._child_column_name) for rel in pd_simple_es.relationships]
 
     return ft.EntitySet(id=pd_simple_es.id, dataframes=dataframes, relationships=relationships)
 
@@ -208,8 +206,8 @@ def test_equal_categorical(simple_es):
     df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1])
     if simple_es.dataframe_type != Library.KOALAS.value:
         # Koalas does not support categorical dtype
-        assert set(simple_es['values'].df['value'].cat.categories) != \
-            set(simple_es['values'].df['value2'].cat.categories)
+        assert set(simple_es['values']['value'].cat.categories) != \
+            set(simple_es['values']['value2'].cat.categories)
     assert to_pandas(df, index='id', sort_index=True)['value = value2'].to_list() == [True, False, False, True]
 
 
@@ -237,8 +235,8 @@ def test_not_equal_categorical(simple_es):
 
     if simple_es.dataframe_type != Library.KOALAS.value:
         # Koalas does not support categorical dtype
-        assert set(simple_es['values'].df['value'].cat.categories) != \
-            set(simple_es['values'].df['value2'].cat.categories)
+        assert set(simple_es['values']['value'].cat.categories) != \
+            set(simple_es['values']['value2'].cat.categories)
     assert to_pandas(df, index='id', sort_index=True)['value != value2'].to_list() == [False, True, True, False]
 
 
@@ -258,9 +256,9 @@ def test_not_equal_different_dtypes(simple_es):
 
 
 def test_diff(pd_es):
-    value = ft.Feature(pd_es['log']['value'])
-    customer_id_feat = ft.Feature(pd_es['sessions']['customer_id'], entity=pd_es['log'])
-    diff1 = ft.Feature(value, groupby=pd_es['log']['session_id'], primitive=Diff)
+    value = ft.Feature(pd_es, 'log', 'value')
+    customer_id_feat = ft.Feature(ft.Feature(pd_es, 'sessions', 'customer_id'), 'log')
+    diff1 = ft.Feature(value, groupby=ft.Feature(pd_es, 'log', 'session_id'), primitive=Diff)
     diff2 = ft.Feature(value, groupby=customer_id_feat, primitive=Diff)
 
     feature_set = FeatureSet([diff1, diff2])
@@ -287,7 +285,7 @@ def test_diff(pd_es):
 
 
 def test_diff_single_value(pd_es):
-    diff = ft.Feature(pd_es['stores']['num_square_feet'], groupby=pd_es['stores'][u'région_id'], primitive=Diff)
+    diff = ft.Feature(ft.Feature(pd_es, 'stores', 'num_square_feet'), groupby=ft.Feature(pd_es, 'stores', u'région_id'), primitive=Diff)
     feature_set = FeatureSet([diff])
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array([4]))
@@ -295,7 +293,7 @@ def test_diff_single_value(pd_es):
 
 
 def test_diff_reordered(pd_es):
-    sum_feat = ft.Feature(pd_es['log']['value'], parent_entity=pd_es["sessions"], primitive=Sum)
+    sum_feat = ft.Feature(ft.Feature(pd_es, 'log', 'value'), parent_dataframe_name='sessions', primitive=Sum)
     diff = ft.Feature(sum_feat, primitive=Diff)
     feature_set = FeatureSet([diff])
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
@@ -305,7 +303,7 @@ def test_diff_reordered(pd_es):
 
 
 def test_diff_single_value_is_nan(pd_es):
-    diff = ft.Feature(pd_es['stores']['num_square_feet'], groupby=pd_es['stores'][u'région_id'], primitive=Diff)
+    diff = ft.Feature(ft.Feature(pd_es, 'stores', 'num_square_feet'), groupby=ft.Feature(pd_es, 'stores', u'région_id'), primitive=Diff)
     feature_set = FeatureSet([diff])
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array([5]))
@@ -323,7 +321,7 @@ def test_compare_of_identity(es):
 
     features = []
     for test in to_test:
-        features.append(ft.Feature(es['log']['value'], primitive=test[0](10)))
+        features.append(ft.Feature(ft.Feature(es, 'log', 'value'), primitive=test[0](10)))
 
     df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3]),
                    index='id',
@@ -335,7 +333,7 @@ def test_compare_of_identity(es):
 
 
 def test_compare_of_direct(es):
-    log_rating = ft.Feature(es['products']['rating'], entity=es['log'])
+    log_rating = ft.Feature(ft.Feature(es, 'products', 'rating'), 'log')
     to_test = [(EqualScalar, [False, False, False, False]),
                (NotEqualScalar, [True, True, True, True]),
                (LessThanScalar, [False, False, False, True]),
@@ -377,7 +375,7 @@ def test_compare_of_transform(es):
 
 
 def test_compare_of_agg(es):
-    count_logs = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
+    count_logs = ft.Feature(ft.Feature(es, 'log', 'id'), parent_dataframe_name='sessions', primitive=Count)
 
     to_test = [(EqualScalar, [False, False, False, True]),
                (NotEqualScalar, [True, True, True, False]),
@@ -400,10 +398,10 @@ def test_compare_of_agg(es):
 
 def test_compare_all_nans(es):
     if es.dataframe_type != Library.PANDAS.value:
-        nan_feat = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=ft.primitives.Min)
+        nan_feat = ft.Feature(ft.Feature(es, 'log', 'value'), parent_dataframe_name='sessions', primitive=ft.primitives.Min)
         compare = nan_feat == 0.0
     else:
-        nan_feat = ft.Feature(es['log']['product_id'], parent_entity=es['sessions'], primitive=Mode)
+        nan_feat = ft.Feature(ft.Feature(es, 'log', 'product_id'), parent_dataframe_name='sessions', primitive=Mode)
         compare = nan_feat == 'brown bag'
 
     # before all data
@@ -426,9 +424,9 @@ def test_arithmetic_of_val(es):
 
     features = []
     for test in to_test:
-        features.append(ft.Feature(es['log']['value'], primitive=test[0](2)))
+        features.append(ft.Feature(ft.Feature(es, 'log', 'value'), primitive=test[0](2)))
 
-    features.append(ft.Feature(es['log']['value']) / 0)
+    features.append(ft.Feature(es, 'log', 'value') / 0)
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
     df = to_pandas(df, index='id', sort_index=True)
@@ -450,8 +448,6 @@ def test_arithmetic_two_vals_fails(es):
 
 
 def test_arithmetic_of_identity(es):
-    logs = es['log']
-
     to_test = [(AddNumeric, [0., 7., 14., 21.]),
                (SubtractNumeric, [0, 3, 6, 9]),
                (MultiplyNumeric, [0, 10, 40, 90]),
@@ -462,7 +458,7 @@ def test_arithmetic_of_identity(es):
 
     features = []
     for test in to_test:
-        features.append(ft.Feature([logs['value'], logs['value_2']], primitive=test[0]))
+        features.append(ft.Feature([ft.Feature(es, 'log', 'value'), ft.Feature(es, 'log', 'value_2')], primitive=test[0]))
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
     df = to_pandas(df, index='id', sort_index=True)
@@ -477,11 +473,11 @@ def test_arithmetic_of_identity(es):
 
 
 def test_arithmetic_of_direct(es):
-    rating = es['products']['rating']
-    log_rating = ft.Feature(rating, entity=es['log'])
-    customer_age = es['customers']['age']
-    session_age = ft.Feature(customer_age, entity=es['sessions'])
-    log_age = ft.Feature(session_age, entity=es['log'])
+    rating = ft.Feature(es, 'products', 'rating')
+    log_rating = ft.Feature(rating, 'log')
+    customer_age = ft.Feature(es, 'customers', 'age')
+    session_age = ft.Feature(customer_age, 'sessions')
+    log_age = ft.Feature(session_age, 'log')
 
     to_test = [(AddNumeric, [38, 37, 37.5, 37.5]),
                (SubtractNumeric, [28, 29, 28.5, 28.5]),
@@ -526,7 +522,7 @@ def pd_boolean_mult_es():
 def dask_boolean_mult_es(pd_boolean_mult_es):
     dataframes = {}
     for df in pd_boolean_mult_es.dataframes:
-        dataframes[df.ww.name] = (dd.from_pandas(df, npartitions=2), df.ww.index, None, df.ww.logical_types, df.ww.semantic_tags)
+        dataframes[df.ww.name] = (dd.from_pandas(df, npartitions=2), df.ww.index, None, df.ww.logical_types)
 
     return ft.EntitySet(id=pd_boolean_mult_es.id, dataframes=dataframes)
 
@@ -545,7 +541,7 @@ def test_boolean_multiply(boolean_mult_es):
 
     fm = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features))
 
-    df = to_pandas(es['test'].df)
+    df = to_pandas(es['test'])
 
     for row in to_test:
         col_name = '{} * {}'.format(row[0], row[1])
@@ -559,8 +555,8 @@ def test_boolean_multiply(boolean_mult_es):
 def test_arithmetic_of_transform(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Test uses Diff which is not supported in Dask or Koalas")
-    diff1 = ft.Feature([es['log']['value']], primitive=Diff)
-    diff2 = ft.Feature([es['log']['value_2']], primitive=Diff)
+    diff1 = ft.Feature([ft.Feature(es, 'log', 'value')], primitive=Diff)
+    diff2 = ft.Feature([ft.Feature(es, 'log', 'value_2')], primitive=Diff)
 
     to_test = [(AddNumeric, [np.nan, 7., -7., 10.]),
                (SubtractNumeric, [np.nan, 3., -3., 4.]),
@@ -582,7 +578,7 @@ def test_arithmetic_of_transform(es):
 
 
 def test_not_feature(es):
-    not_feat = ft.Feature(es['customers']['loves_ice_cream'], primitive=Not)
+    not_feat = ft.Feature(ft.Feature(es, 'customers', 'loves_ice_cream'), primitive=Not)
     features = [not_feat]
     df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1]))
     v = df[not_feat.get_name()].values
@@ -591,10 +587,10 @@ def test_not_feature(es):
 
 
 def test_arithmetic_of_agg(es):
-    customer_id_feat = es['customers']['id']
-    store_id_feat = es['stores']['id']
-    count_customer = ft.Feature(customer_id_feat, parent_entity=es[u'régions'], primitive=Count)
-    count_stores = ft.Feature(store_id_feat, parent_entity=es[u'régions'], primitive=Count)
+    customer_id_feat = ft.Feature(es, 'customers', 'id')
+    store_id_feat = ft.Feature(es, 'stores', 'id')
+    count_customer = ft.Feature(customer_id_feat, parent_dataframe_name=u'régions', primitive=Count)
+    count_stores = ft.Feature(store_id_feat, parent_dataframe_name=u'régions', primitive=Count)
     to_test = [(AddNumeric, [6, 2]),
                (SubtractNumeric, [0, -2]),
                (MultiplyNumeric, [9, 0]),
@@ -626,7 +622,7 @@ def test_arithmetic_of_agg(es):
 
 
 def test_latlong(pd_es):
-    log_latlong_feat = pd_es['log']['latlong']
+    log_latlong_feat = ft.Feature(pd_es, 'log', 'latlong')
     latitude = ft.Feature(log_latlong_feat, primitive=Latitude)
     longitude = ft.Feature(log_latlong_feat, primitive=Longitude)
     features = [latitude, longitude]
@@ -650,7 +646,7 @@ def test_latlong_with_nan(pd_es):
     df['latlong'][2] = (np.nan, 4)
     df['latlong'][3] = (np.nan, np.nan)
     pd_es.update_dataframe(dataframe_name='log', df=df)
-    log_latlong_feat = pd_es['log']['latlong']
+    log_latlong_feat = ft.Feature(pd_es, 'log', 'latlong')
     latitude = ft.Feature(log_latlong_feat, primitive=Latitude)
     longitude = ft.Feature(log_latlong_feat, primitive=Longitude)
     features = [latitude, longitude]
@@ -666,8 +662,8 @@ def test_latlong_with_nan(pd_es):
 
 
 def test_haversine(pd_es):
-    log_latlong_feat = pd_es['log']['latlong']
-    log_latlong_feat2 = pd_es['log']['latlong2']
+    log_latlong_feat = ft.Feature(pd_es, 'log', 'latlong')
+    log_latlong_feat2 = ft.Feature(pd_es, 'log', 'latlong2')
     haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
                            primitive=Haversine)
     features = [haversine]
@@ -703,8 +699,8 @@ def test_haversine_with_nan(pd_es):
     df['latlong'][0] = np.nan
     df['latlong'][1] = (10, np.nan)
     pd_es.update_dataframe(dataframe_name='log', df=df)
-    log_latlong_feat = pd_es['log']['latlong']
-    log_latlong_feat2 = pd_es['log']['latlong2']
+    log_latlong_feat = ft.Feature(pd_es, 'log', 'latlong')
+    log_latlong_feat2 = ft.Feature(pd_es, 'log', 'latlong2')
     haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
                            primitive=Haversine)
     features = [haversine]
@@ -718,25 +714,25 @@ def test_haversine_with_nan(pd_es):
     assert np.allclose(values, real, atol=0.0001, equal_nan=True)
 
     # Check all `nan` values
-    df = pd_es['log'].df
+    df = pd_es['log']
     df['latlong2'] = np.nan
-    pd_es.update_dataframe(entity_id='log', df=df)
-    log_latlong_feat = pd_es['log']['latlong']
-    log_latlong_feat2 = pd_es['log']['latlong2']
+    pd_es.update_dataframe(dataframe_name='log', df=df)
+    log_latlong_feat = ft.Feature(pd_es, 'log', 'latlong')
+    log_latlong_feat2 = ft.Feature(pd_es, 'log', 'latlong2')
     haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
                            primitive=Haversine)
     features = [haversine]
 
     df = ft.calculate_feature_matrix(entityset=pd_es, features=features)
     values = df[haversine.get_name()].values
-    real = [np.nan] * pd_es['log'].df.shape[0]
+    real = [np.nan] * pd_es['log'].shape[0]
 
     assert np.allclose(values, real, atol=0.0001, equal_nan=True)
 
 
 def test_text_primitives(es):
-    words = ft.Feature(es['log']['comments'], primitive=NumWords)
-    chars = ft.Feature(es['log']['comments'], primitive=NumCharacters)
+    words = ft.Feature(ft.Feature(es, 'log', 'comments'), primitive=NumWords)
+    chars = ft.Feature(ft.Feature(es, 'log', 'comments'), primitive=NumCharacters)
 
     features = [words, chars]
 
@@ -758,7 +754,7 @@ def test_text_primitives(es):
 
 
 def test_isin_feat(es):
-    isin = ft.Feature(es['log']['product_id'], primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
+    isin = ft.Feature(ft.Feature(es, 'log', 'product_id'), primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
     features = [isin]
     df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)),
                    index='id',
@@ -769,7 +765,7 @@ def test_isin_feat(es):
 
 
 def test_isin_feat_other_syntax(es):
-    isin = ft.Feature(es['log']['product_id']).isin(["toothpaste", "coke zero"])
+    isin = ft.Feature(es, 'log', 'product_id').isin(["toothpaste", "coke zero"])
     features = [isin]
     df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)),
                    index='id',
@@ -780,7 +776,7 @@ def test_isin_feat_other_syntax(es):
 
 
 def test_isin_feat_other_syntax_int(es):
-    isin = ft.Feature(es['log']['value']).isin([5, 10])
+    isin = ft.Feature(es, 'log', 'value').isin([5, 10])
     features = [isin]
     df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)),
                    index='id',
@@ -809,7 +805,7 @@ def test_isin_feat_custom(es):
         "in a list that is provided.",
         cls_attributes={"generate_name": isin_generate_name})
 
-    isin = ft.Feature(es['log']['product_id'], primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
+    isin = ft.Feature(ft.Feature(es, 'log', 'product_id'), primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
     features = [isin]
     df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)),
                    index='id',
@@ -818,7 +814,7 @@ def test_isin_feat_custom(es):
     v = df[isin.get_name()].values.tolist()
     assert true == v
 
-    isin = ft.Feature(es['log']['product_id']).isin(["toothpaste", "coke zero"])
+    isin = ft.Feature(es, 'log', 'product_id').isin(["toothpaste", "coke zero"])
     features = [isin]
     df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)),
                    index='id',
@@ -827,7 +823,7 @@ def test_isin_feat_custom(es):
     v = df[isin.get_name()].values.tolist()
     assert true == v
 
-    isin = ft.Feature(es['log']['value']).isin([5, 10])
+    isin = ft.Feature(es, 'log', 'value').isin([5, 10])
     features = [isin]
     df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)),
                    index='id',
@@ -838,8 +834,8 @@ def test_isin_feat_custom(es):
 
 
 def test_isnull_feat(pd_es):
-    value = ft.Feature(pd_es['log']['value'])
-    diff = ft.Feature(value, groupby=pd_es['log']['session_id'], primitive=Diff)
+    value = ft.Feature(pd_es, 'log', 'value')
+    diff = ft.Feature(value, groupby=ft.Feature(pd_es, 'log', 'session_id'), primitive=Diff)
     isnull = ft.Feature(diff, primitive=IsNull)
     features = [isnull]
     df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(15))
@@ -852,38 +848,38 @@ def test_isnull_feat(pd_es):
 
 
 def test_percentile(pd_es):
-    v = ft.Feature(pd_es['log']['value'])
+    v = ft.Feature(pd_es, 'log', 'value')
     p = ft.Feature(v, primitive=Percentile)
     feature_set = FeatureSet([p])
     calculator = FeatureSetCalculator(pd_es, feature_set)
     df = calculator.run(np.array(range(10, 17)))
-    true = pd_es['log'].df[v.get_name()].rank(pct=True)
+    true = pd_es['log'][v.get_name()].rank(pct=True)
     true = true.loc[range(10, 17)]
     for t, a in zip(true.values, df[p.get_name()].values):
         assert (pd.isnull(t) and pd.isnull(a)) or t == a
 
 
 def test_dependent_percentile(pd_es):
-    v = ft.Feature(pd_es['log']['value'])
+    v = ft.Feature(pd_es, 'log', 'value')
     p = ft.Feature(v, primitive=Percentile)
     p2 = ft.Feature(p - 1, primitive=Percentile)
     feature_set = FeatureSet([p, p2])
     calculator = FeatureSetCalculator(pd_es, feature_set)
     df = calculator.run(np.array(range(10, 17)))
-    true = pd_es['log'].df[v.get_name()].rank(pct=True)
+    true = pd_es['log'][v.get_name()].rank(pct=True)
     true = true.loc[range(10, 17)]
     for t, a in zip(true.values, df[p.get_name()].values):
         assert (pd.isnull(t) and pd.isnull(a)) or t == a
 
 
 def test_agg_percentile(pd_es):
-    v = ft.Feature(pd_es['log']['value'])
+    v = ft.Feature(pd_es, 'log', 'value')
     p = ft.Feature(v, primitive=Percentile)
-    agg = ft.Feature(p, parent_entity=pd_es['sessions'], primitive=Sum)
+    agg = ft.Feature(p, parent_dataframe_name='sessions', primitive=Sum)
     feature_set = FeatureSet([agg])
     calculator = FeatureSetCalculator(pd_es, feature_set)
     df = calculator.run(np.array([0, 1]))
-    log_vals = pd_es['log'].df[[v.get_name(), 'session_id']]
+    log_vals = pd_es['log'][[v.get_name(), 'session_id']]
     log_vals['percentile'] = log_vals[v.get_name()].rank(pct=True)
     true_p = log_vals.groupby('session_id')['percentile'].sum()[[0, 1]]
     for t, a in zip(true_p.values, df[agg.get_name()].values):
@@ -891,15 +887,15 @@ def test_agg_percentile(pd_es):
 
 
 def test_percentile_agg_percentile(pd_es):
-    v = ft.Feature(pd_es['log']['value'])
+    v = ft.Feature(pd_es, 'log', 'value')
     p = ft.Feature(v, primitive=Percentile)
-    agg = ft.Feature(p, parent_entity=pd_es['sessions'], primitive=Sum)
+    agg = ft.Feature(p, parent_dataframe_name='sessions', primitive=Sum)
     pagg = ft.Feature(agg, primitive=Percentile)
     feature_set = FeatureSet([pagg])
     calculator = FeatureSetCalculator(pd_es, feature_set)
     df = calculator.run(np.array([0, 1]))
 
-    log_vals = pd_es['log'].df[[v.get_name(), 'session_id']]
+    log_vals = pd_es['log'][[v.get_name(), 'session_id']]
     log_vals['percentile'] = log_vals[v.get_name()].rank(pct=True)
     true_p = log_vals.groupby('session_id')['percentile'].sum().fillna(0)
     true_p = true_p.rank(pct=True)[[0, 1]]
@@ -909,14 +905,14 @@ def test_percentile_agg_percentile(pd_es):
 
 
 def test_percentile_agg(pd_es):
-    v = ft.Feature(pd_es['log']['value'])
-    agg = ft.Feature(v, parent_entity=pd_es['sessions'], primitive=Sum)
+    v = ft.Feature(pd_es, 'log', 'value')
+    agg = ft.Feature(v, parent_dataframe_name='sessions', primitive=Sum)
     pagg = ft.Feature(agg, primitive=Percentile)
     feature_set = FeatureSet([pagg])
     calculator = FeatureSetCalculator(pd_es, feature_set)
     df = calculator.run(np.array([0, 1]))
 
-    log_vals = pd_es['log'].df[[v.get_name(), 'session_id']]
+    log_vals = pd_es['log'][[v.get_name(), 'session_id']]
     true_p = log_vals.groupby('session_id')[v.get_name()].sum().fillna(0)
     true_p = true_p.rank(pct=True)[[0, 1]]
 
@@ -925,14 +921,14 @@ def test_percentile_agg(pd_es):
 
 
 def test_direct_percentile(pd_es):
-    v = ft.Feature(pd_es['customers']['age'])
+    v = ft.Feature(pd_es, 'customers', 'age')
     p = ft.Feature(v, primitive=Percentile)
-    d = ft.Feature(p, pd_es['sessions'])
+    d = ft.Feature(p, 'sessions')
     feature_set = FeatureSet([d])
     calculator = FeatureSetCalculator(pd_es, feature_set)
     df = calculator.run(np.array([0, 1]))
 
-    cust_vals = pd_es['customers'].df[[v.get_name()]]
+    cust_vals = pd_es['customers'][[v.get_name()]]
     cust_vals['percentile'] = cust_vals[v.get_name()].rank(pct=True)
     true_p = cust_vals['percentile'].loc[[0, 0]]
     for t, a in zip(true_p.values, df[d.get_name()].values):
@@ -940,15 +936,15 @@ def test_direct_percentile(pd_es):
 
 
 def test_direct_agg_percentile(pd_es):
-    v = ft.Feature(pd_es['log']['value'])
+    v = ft.Feature(pd_es, 'log', 'value')
     p = ft.Feature(v, primitive=Percentile)
-    agg = ft.Feature(p, parent_entity=pd_es['customers'], primitive=Sum)
-    d = ft.Feature(agg, pd_es['sessions'])
+    agg = ft.Feature(p, parent_dataframe_name='customers', primitive=Sum)
+    d = ft.Feature(agg, 'sessions')
     feature_set = FeatureSet([d])
     calculator = FeatureSetCalculator(pd_es, feature_set)
     df = calculator.run(np.array([0, 1]))
 
-    log_vals = pd_es['log'].df[[v.get_name(), 'session_id']]
+    log_vals = pd_es['log'][[v.get_name(), 'session_id']]
     log_vals['percentile'] = log_vals[v.get_name()].rank(pct=True)
     log_vals['customer_id'] = [0] * 10 + [1] * 5 + [2] * 2
     true_p = log_vals.groupby('customer_id')['percentile'].sum().fillna(0)
@@ -958,7 +954,7 @@ def test_direct_agg_percentile(pd_es):
 
 
 def test_percentile_with_cutoff(pd_es):
-    v = ft.Feature(pd_es['log']['value'])
+    v = ft.Feature(pd_es, 'log', 'value')
     p = ft.Feature(v, primitive=Percentile)
     feature_set = FeatureSet([p])
     calculator = FeatureSetCalculator(pd_es, feature_set, pd.Timestamp('2011/04/09 10:30:13'))
@@ -967,13 +963,13 @@ def test_percentile_with_cutoff(pd_es):
 
 
 def test_two_kinds_of_dependents(pd_es):
-    v = ft.Feature(pd_es['log']['value'])
-    product = ft.Feature(pd_es['log']['product_id'])
-    agg = ft.Feature(v, parent_entity=pd_es['customers'], where=product == 'coke zero', primitive=Sum)
+    v = ft.Feature(pd_es, 'log', 'value')
+    product = ft.Feature(pd_es, 'log', 'product_id')
+    agg = ft.Feature(v, parent_dataframe_name='customers', where=product == 'coke zero', primitive=Sum)
     p = ft.Feature(agg, primitive=Percentile)
     g = ft.Feature(agg, primitive=Absolute)
-    agg2 = ft.Feature(v, parent_entity=pd_es['sessions'], where=product == 'coke zero', primitive=Sum)
-    agg3 = ft.Feature(agg2, parent_entity=pd_es['customers'], primitive=Sum)
+    agg2 = ft.Feature(v, parent_dataframe_name='sessions', where=product == 'coke zero', primitive=Sum)
+    agg3 = ft.Feature(agg2, parent_dataframe_name='customers', primitive=Sum)
     feature_set = FeatureSet([p, g, agg3])
     calculator = FeatureSetCalculator(pd_es, feature_set)
     df = calculator.run(np.array([0, 1]))
@@ -1000,16 +996,16 @@ def test_make_transform_multiple_output_features(pd_es):
         cls_attributes={"get_feature_names": gen_feat_names},
     )
 
-    join_time_split = ft.Feature(pd_es["log"]["datetime"], primitive=TestTime)
-    alt_features = [ft.Feature(pd_es["log"]["datetime"], primitive=Year),
-                    ft.Feature(pd_es["log"]["datetime"], primitive=Month),
-                    ft.Feature(pd_es["log"]["datetime"], primitive=Day),
-                    ft.Feature(pd_es["log"]["datetime"], primitive=Hour),
-                    ft.Feature(pd_es["log"]["datetime"], primitive=Minute),
-                    ft.Feature(pd_es["log"]["datetime"], primitive=Second)]
+    join_time_split = ft.Feature(ft.Feature(pd_es, "log", "datetime"), primitive=TestTime)
+    alt_features = [ft.Feature(ft.Feature(pd_es, "log", "datetime"), primitive=Year),
+                    ft.Feature(ft.Feature(pd_es, "log", "datetime"), primitive=Month),
+                    ft.Feature(ft.Feature(pd_es, "log", "datetime"), primitive=Day),
+                    ft.Feature(ft.Feature(pd_es, "log", "datetime"), primitive=Hour),
+                    ft.Feature(ft.Feature(pd_es, "log", "datetime"), primitive=Minute),
+                    ft.Feature(ft.Feature(pd_es, "log", "datetime"), primitive=Second)]
     fm, fl = ft.dfs(
         entityset=pd_es,
-        target_dataframe="log",
+        target_dataframe_name="log",
         agg_primitives=['sum'],
         trans_primitives=[TestTime, Year, Month, Day, Hour, Minute, Second, Diff],
         max_depth=5)
@@ -1050,7 +1046,7 @@ def test_get_filepath(es):
                 return x.apply(_map)
             return map_to_word
 
-    feat = ft.Feature(es['log']['value'], primitive=Mod4)
+    feat = ft.Feature(ft.Feature(es, 'log', 'value'), primitive=Mod4)
     df = ft.calculate_feature_matrix(features=[feat],
                                      entityset=es,
                                      instance_ids=range(17))
@@ -1060,7 +1056,7 @@ def test_get_filepath(es):
     assert df["MOD4(value)"][14] == 2
 
     fm, fl = ft.dfs(entityset=es,
-                    target_dataframe="log",
+                    target_dataframe_name="log",
                     agg_primitives=[],
                     trans_primitives=[Mod4])
     fm = to_pandas(fm, index='id')
@@ -1086,7 +1082,7 @@ def test_override_multi_feature_names(pd_es):
                                      cls_attributes={"generate_names": gen_custom_names})
 
     fm, features = ft.dfs(entityset=pd_es,
-                          target_dataframe="customers",
+                          target_dataframe_name="customers",
                           instance_ids=[0, 1, 2],
                           agg_primitives=[],
                           trans_primitives=[IsGreater])
@@ -1101,14 +1097,14 @@ def test_time_since_primitive_matches_all_datetime_types(es):
     if es.dataframe_type == Library.KOALAS.value:
         pytest.xfail('TimeSince transform primitive is incompatible with Koalas')
     fm, fl = ft.dfs(
-        target_dataframe="customers",
+        target_dataframe_name="customers",
         entityset=es,
         trans_primitives=[TimeSince],
         agg_primitives=[],
         max_depth=1
     )
 
-    customers_datetime_cols = [id for id, t in es['customers'].logical_types.items() if isinstance(t, Datetime)]
+    customers_datetime_cols = [id for id, t in es['customers'].ww.logical_types.items() if isinstance(t, Datetime)]
     expected_names = [f"TIME_SINCE({v})" for v in customers_datetime_cols]
 
     for name in expected_names:

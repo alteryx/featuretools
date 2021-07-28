@@ -21,12 +21,12 @@ def make_tqdm_iterator(**kwargs):
     return iterator
 
 
-def get_relationship_variable_id(path):
+def get_relationship_column_id(path):
     _, r = path[0]
-    child_link_name = r.child_column.id
+    child_link_name = r._child_column_name
     for _, r in path[1:]:
         parent_link_name = child_link_name
-        child_link_name = '%s.%s' % (r.parent_dataframe.id,
+        child_link_name = '%s.%s' % (r.parent_name,
                                      parent_link_name)
     return child_link_name
 

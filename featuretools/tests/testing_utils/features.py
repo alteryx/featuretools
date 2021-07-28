@@ -9,9 +9,9 @@ def feature_with_name(features, name):
     return False
 
 
-def backward_path(es, entity_ids):
+def backward_path(es, dataframe_ids):
     """
-    Create a backward RelationshipPath through the given entities. Assumes only
+    Create a backward RelationshipPath through the given dataframes. Assumes only
     one such path is possible.
     """
     def _get_relationship(child, parent):
@@ -19,14 +19,14 @@ def backward_path(es, entity_ids):
                     if r._parent_dataframe_name == parent)
 
     relationships = [_get_relationship(child, parent)
-                     for parent, child in zip(entity_ids[:-1], entity_ids[1:])]
+                     for parent, child in zip(dataframe_ids[:-1], dataframe_ids[1:])]
 
     return RelationshipPath([(False, r) for r in relationships])
 
 
-def forward_path(es, entity_ids):
+def forward_path(es, dataframe_ids):
     """
-    Create a forward RelationshipPath through the given entities. Assumes only
+    Create a forward RelationshipPath through the given dataframes. Assumes only
     one such path is possible.
     """
     def _get_relationship(child, parent):
@@ -34,7 +34,7 @@ def forward_path(es, entity_ids):
                     if r._parent_dataframe_name == parent)
 
     relationships = [_get_relationship(child, parent)
-                     for child, parent in zip(entity_ids[:-1], entity_ids[1:])]
+                     for child, parent in zip(dataframe_ids[:-1], dataframe_ids[1:])]
 
     return RelationshipPath([(True, r) for r in relationships])
 

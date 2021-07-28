@@ -3,7 +3,8 @@ import pytest
 from dateutil.relativedelta import relativedelta
 
 from featuretools.entityset import Timedelta
-# from featuretools.primitives import Count
+from featuretools.feature_base import Feature
+from featuretools.primitives import Count
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.wrangle import _check_timedelta
 
@@ -100,11 +101,10 @@ def test_string_timedelta_args():
     assert Timedelta("1001 weeks") == Timedelta(1001, "weeks")
 
 
-# --> needs to wait till we can update the Feature class - probs till input and return types are updated
-# def test_feature_takes_timedelta_string(es):
-#     feature = ft.Feature(es['log']['id'], parent_entity=es['customers'],
-#                          use_previous="1 day", primitive=Count)
-#     assert feature.use_previous == Timedelta(1, 'd')
+def test_feature_takes_timedelta_string(es):
+    feature = Feature(Feature(es, 'log', 'id'), parent_dataframe_name='customers',
+                      use_previous="1 day", primitive=Count)
+    assert feature.use_previous == Timedelta(1, 'd')
 
 
 def test_deltas_week(es):

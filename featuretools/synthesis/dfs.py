@@ -233,13 +233,13 @@ def dfs(dataframes=None,
             relationships = [("sessions", "id", "transactions", "session_id")]
             feature_matrix, features = dfs(dataframes=dataframes,
                                            relationships=relationships,
-                                           target_dataframe="transactions",
+                                           target_dataframe_name="transactions",
                                            cutoff_time=cutoff_times)
             feature_matrix
 
             features = dfs(dataframes=dataframes,
                            relationships=relationships,
-                           target_dataframe="transactions",
+                           target_dataframe_name="transactions",
                            features_only=True)
     '''
     if not isinstance(entityset, EntitySet):

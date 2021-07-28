@@ -799,11 +799,11 @@ class DeepFeatureSynthesis(object):
 
         for _, relationship in relationship_path:
             if relationship.child_name == feature.dataframe_name and \
-               relationship.child_column.name == feature.column_name:
+               relationship._child_column_name == feature.column_name:
                 return True
 
             if relationship.parent_name == feature.dataframe_name and \
-               relationship.parent_column.name == feature.column_name:
+               relationship._parent_column_name == feature.column_name:
                 return True
 
         return False

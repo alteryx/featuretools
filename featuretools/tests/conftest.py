@@ -58,8 +58,8 @@ def dask_int_es(pd_int_es):
         es.add_dataframe(dd_df)
 
     for rel in pd_int_es.relationships:
-        es.add_relationship(rel.parent_dataframe.ww.name, rel.parent_column.name,
-                            rel.child_dataframe.ww.name, rel.child_column.name)
+        es.add_relationship(rel.parent_dataframe.ww.name, rel._parent_column_name,
+                            rel.child_dataframe.ww.name, rel._child_column_name)
     return es
 
 
@@ -93,8 +93,8 @@ def dask_es(pd_es):
         es.add_dataframe(dd_df)
 
     for rel in pd_es.relationships:
-        es.add_relationship(rel.parent_dataframe.ww.name, rel.parent_column.name,
-                            rel.child_dataframe.ww.name, rel.child_column.name)
+        es.add_relationship(rel.parent_dataframe.ww.name, rel._parent_column_name,
+                            rel.child_dataframe.ww.name, rel._child_column_name)
     return es
 
 
@@ -335,38 +335,39 @@ def pd_mock_customer():
 
 @pytest.fixture
 def dd_mock_customer(pd_mock_customer):
-    entities = {}
-    for entity in pd_mock_customer.entities:
-        entities[entity.id] = (dd.from_pandas(entity.df.reset_index(drop=True), npartitions=4),
-                               entity.index,
-                               entity.time_index,
-                               entity.variable_types)
+    dataframes = {}
+    for df in pd_mock_customer.dataframes:
+        dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
+        dd_df.ww.init(schema=df.ww.schema)
+        dataframes[df.ww.name] = (dd_df,
+                                  df.ww.index,
+                                  df.ww.time_index,
+                                  df.ww.logical_types)
+    relationships = [(rel._parent_dataframe_name,
+                      rel._parent_column_name,
+                      rel._child_dataframe_name,
+                      rel._child_column_name) for rel in pd_mock_customer.relationships]
 
-    relationships = [(rel.parent_dataframe.id,
-                      rel.parent_column.name,
-                      rel.child_dataframe.id,
-                      rel.child_column.name) for rel in pd_mock_customer.relationships]
-
-    return ft.EntitySet(id=pd_mock_customer.id, entities=entities, relationships=relationships)
+    return ft.EntitySet(id=pd_mock_customer.id, dataframes=dataframes, relationships=relationships)
 
 
 @pytest.fixture
 def ks_mock_customer(pd_mock_customer):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    entities = {}
-    for entity in pd_mock_customer.entities:
-        cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
-        entities[entity.id] = (ks.from_pandas(cleaned_df),
-                               entity.index,
-                               entity.time_index,
-                               entity.variable_types)
+    dataframes = {}
+    for df in pd_mock_customer.dataframes:
+        cleaned_df = pd_to_ks_clean(df).reset_index(drop=True)
+        dataframes[df.ww.name] = (ks.from_pandas(cleaned_df),
+                                  df.ww.index,
+                                  df.ww.time_index,
+                                  df.ww.logical_types)
 
-    relationships = [(rel.parent_dataframe.id,
-                      rel.parent_column.name,
-                      rel.child_dataframe.id,
-                      rel.child_column.name) for rel in pd_mock_customer.relationships]
+    relationships = [(rel._parent_dataframe_name,
+                      rel._parent_column_name,
+                      rel._child_dataframe_name,
+                      rel._child_column_name) for rel in pd_mock_customer.relationships]
 
-    return ft.EntitySet(id=pd_mock_customer.id, entities=entities, relationships=relationships)
+    return ft.EntitySet(id=pd_mock_customer.id, dataframes=dataframes, relationships=relationships)
 
 
 @pytest.fixture(params=['pd_mock_customer', 'dd_mock_customer', 'ks_mock_customer'])
@@ -386,7 +387,7 @@ def lt(es):
         window_size='1m'
     )
 
-    df = es['log'].df
+    df = es['log']
     df = to_pandas(df)
     labels = lm.search(
         df,
