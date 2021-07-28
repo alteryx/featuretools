@@ -61,9 +61,9 @@ def test_entry_point(es, monkeypatch):
     monkeypatch.setitem(dfs.__globals__['entry_point'].__globals__,
                         "pkg_resources",
                         MockPkgResources(entry_point))
-    fm, fl = dfs(entityset=es, target_dataframe='customers')
+    fm, fl = dfs(entityset=es, target_dataframe_name='customers')
     assert "entityset" in entry_point.kwargs.keys()
-    assert "target_dataframe" in entry_point.kwargs.keys()
+    assert "target_dataframe_name" in entry_point.kwargs.keys()
     assert (fm, fl) == entry_point.return_value
 
 
@@ -73,7 +73,7 @@ def test_entry_point_error(es, monkeypatch):
                         "pkg_resources",
                         MockPkgResources(entry_point))
     with pytest.raises(KeyError):
-        dfs(entityset=es, target_dataframe='missing_dataframe')
+        dfs(entityset=es, target_dataframe_name='missing_dataframe')
 
     assert isinstance(entry_point.error, KeyError)
 
@@ -88,7 +88,7 @@ def test_entry_point_detect_arg(monkeypatch, entry_points_dfs):
         "transaction_time": [10, 12, 13, 20, 21, 20],
         "fraud": [True, False, True, False, True, True]
     })
-    entities = {
+    dataframes = {
         "cards": (cards_df, "id"),
         "transactions": (transactions_df, "id", "transaction_time")
     }
@@ -97,9 +97,9 @@ def test_entry_point_detect_arg(monkeypatch, entry_points_dfs):
     monkeypatch.setitem(dfs.__globals__['entry_point'].__globals__,
                         "pkg_resources",
                         MockPkgResources(entry_point))
-    fm, fl = dfs(entities,
+    fm, fl = dfs(dataframes,
                  relationships,
-                 target_dataframe='cards')
-    assert "entities" in entry_point.kwargs.keys()
+                 target_dataframe_name='cards')
+    assert "dataframes" in entry_point.kwargs.keys()
     assert "relationships" in entry_point.kwargs.keys()
-    assert "target_dataframe" in entry_point.kwargs.keys()
+    assert "target_dataframe_name" in entry_point.kwargs.keys()

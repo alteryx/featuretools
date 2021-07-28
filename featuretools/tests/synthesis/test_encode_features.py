@@ -8,9 +8,9 @@ from featuretools.synthesis import encode_features
 
 
 def test_encodes_features(pd_es):
-    f1 = IdentityFeature(pd_es["log"]["product_id"])
-    f2 = IdentityFeature(pd_es["log"]["purchased"])
-    f3 = IdentityFeature(pd_es["log"]["value"])
+    f1 = IdentityFeature(pd_es, "log", "product_id")
+    f2 = IdentityFeature(pd_es, "log", "purchased")
+    f3 = IdentityFeature(pd_es, "log", "value")
 
     features = [f1, f2, f3]
     feature_matrix = calculate_feature_matrix(features, pd_es, instance_ids=[0, 1, 2, 3, 4, 5])
@@ -26,9 +26,9 @@ def test_encodes_features(pd_es):
 
 
 def test_dask_errors_encode_features(dask_es):
-    f1 = IdentityFeature(dask_es["log"]["product_id"])
-    f2 = IdentityFeature(dask_es["log"]["purchased"])
-    f3 = IdentityFeature(dask_es["log"]["value"])
+    f1 = IdentityFeature(dask_es, "log", "product_id")
+    f2 = IdentityFeature(dask_es, "log", "purchased")
+    f3 = IdentityFeature(dask_es, "log", "value")
 
     features = [f1, f2, f3]
     feature_matrix = calculate_feature_matrix(features,
@@ -41,7 +41,7 @@ def test_dask_errors_encode_features(dask_es):
 
 
 def test_inplace_encodes_features(pd_es):
-    f1 = IdentityFeature(pd_es["log"]["product_id"])
+    f1 = IdentityFeature(pd_es, "log", "product_id")
 
     features = [f1]
     feature_matrix = calculate_feature_matrix(features, pd_es, instance_ids=[0, 1, 2, 3, 4, 5])
@@ -57,9 +57,9 @@ def test_inplace_encodes_features(pd_es):
 
 
 def test_to_encode_features(pd_es):
-    f1 = IdentityFeature(pd_es["log"]["product_id"])
-    f2 = IdentityFeature(pd_es["log"]["value"])
-    f3 = IdentityFeature(pd_es["log"]["datetime"])
+    f1 = IdentityFeature(pd_es, "log", "product_id")
+    f2 = IdentityFeature(pd_es, "log", "value")
+    f3 = IdentityFeature(pd_es, "log", "datetime")
 
     features = [f1, f2, f3]
     feature_matrix = calculate_feature_matrix(features, pd_es, instance_ids=[0, 1, 2, 3, 4, 5])
@@ -73,22 +73,22 @@ def test_to_encode_features(pd_es):
     feature_matrix_encoded, _ = encode_features(feature_matrix, features, to_encode=to_encode)
     assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
     assert feature_matrix_encoded['datetime'].dtype == "datetime64[ns]"
-    assert feature_matrix_encoded['product_id'].dtype == "object"
+    assert feature_matrix_encoded['product_id'].dtype == "category"
 
     to_encode = ['value']
     feature_matrix_encoded, _ = encode_features(feature_matrix, features, to_encode=to_encode)
     assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
     assert feature_matrix_encoded['datetime'].dtype == "datetime64[ns]"
-    assert feature_matrix_encoded['product_id'].dtype == "object"
+    assert feature_matrix_encoded['product_id'].dtype == "category"
 
 
 def test_encode_features_handles_pass_columns(pd_es):
-    f1 = IdentityFeature(pd_es["log"]["product_id"])
-    f2 = IdentityFeature(pd_es["log"]["value"])
+    f1 = IdentityFeature(pd_es, "log", "product_id")
+    f2 = IdentityFeature(pd_es, "log", "value")
 
     features = [f1, f2]
     cutoff_time = pd.DataFrame({'instance_id': range(6),
-                                'time': pd_es['log'].df['datetime'][0:6],
+                                'time': pd_es['log']['datetime'][0:6],
                                 'label': [i % 2 for i in range(6)]},
                                columns=["instance_id", "time", "label"])
     feature_matrix = calculate_feature_matrix(features, pd_es, cutoff_time)
@@ -111,13 +111,13 @@ def test_encode_features_handles_pass_columns(pd_es):
 
 
 def test_encode_features_catches_features_mismatch(pd_es):
-    f1 = IdentityFeature(pd_es["log"]["product_id"])
-    f2 = IdentityFeature(pd_es["log"]["value"])
-    f3 = IdentityFeature(pd_es["log"]["session_id"])
+    f1 = IdentityFeature(pd_es, "log", "product_id")
+    f2 = IdentityFeature(pd_es, "log", "value")
+    f3 = IdentityFeature(pd_es, "log", "session_id")
 
     features = [f1, f2]
     cutoff_time = pd.DataFrame({'instance_id': range(6),
-                                'time': pd_es['log'].df['datetime'][0:6],
+                                'time': pd_es['log']['datetime'][0:6],
                                 'label': [i % 2 for i in range(6)]},
                                columns=["instance_id", "time", "label"])
     feature_matrix = calculate_feature_matrix(features, pd_es, cutoff_time)
@@ -144,8 +144,8 @@ def test_encode_unknown_features():
 
 
 def test_encode_features_topn(pd_es):
-    topn = Feature(pd_es['log']['product_id'],
-                   parent_entity=pd_es['customers'],
+    topn = Feature(Feature(pd_es, 'log', 'product_id'),
+                   parent_dataframe_name='customers',
                    primitive=NMostCommon(n=3))
     features, feature_defs = dfs(entityset=pd_es,
                                  instance_ids=[0, 1, 2],
@@ -176,9 +176,9 @@ def test_encode_features_drop_first():
 
 
 def test_encode_features_handles_dictionary_input(pd_es):
-    f1 = IdentityFeature(pd_es["log"]["product_id"])
-    f2 = IdentityFeature(pd_es["log"]["purchased"])
-    f3 = IdentityFeature(pd_es["log"]["session_id"])
+    f1 = IdentityFeature(pd_es, "log", "product_id")
+    f2 = IdentityFeature(pd_es, "log", "purchased")
+    f3 = IdentityFeature(pd_es, "log", "session_id")
 
     features = [f1, f2, f3]
     feature_matrix = calculate_feature_matrix(features, pd_es, instance_ids=range(16))

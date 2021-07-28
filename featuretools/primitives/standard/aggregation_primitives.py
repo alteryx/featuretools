@@ -343,7 +343,11 @@ class NMostCommon(AggregationPrimitive):
 
     def get_function(self, agg_type=Library.PANDAS):
         def n_most_common(x):
-            array = np.array(x.value_counts().index[:self.n])
+            # Counts of 0 remain in value_counts output if dtype is category
+            # so we need to remove them
+            counts = x.value_counts()
+            counts = counts[counts > 0]
+            array = np.array(counts.index[:self.n])
             if len(array) < self.n:
                 filler = np.full(self.n - len(array), np.nan)
                 array = np.append(array, filler)

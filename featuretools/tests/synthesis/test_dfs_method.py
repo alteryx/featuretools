@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from dask import dataframe as dd
-from distributed.utils_test import cluster
+# from distributed.utils_test import cluster
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import NaturalLanguage
 
@@ -165,7 +165,7 @@ def test_ignores_instance_ids_if_cutoff_df(dataframes, relationships):
 
 
 def test_approximate_features(pd_dataframes, relationships):
-    # TODO: Update to use Dask entities when issue #985 is closed
+    # TODO: Update to use Dask dataframes when issue #985 is closed
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 3, 1, 5, 3, 6],
                                     "time": [11, 16, 16, 26, 17, 22]})
     feature_matrix, features = dfs(dataframes=pd_dataframes,
@@ -223,7 +223,7 @@ def test_features_only(dataframes, relationships):
 
 
 def test_accepts_relative_training_window(datetime_es):
-    # TODO: Update to use Dask entities when issue #882 is closed
+    # TODO: Update to use Dask dataframes when issue #882 is closed
     feature_matrix, _ = dfs(entityset=datetime_es,
                             target_dataframe_name="transactions")
 
@@ -263,7 +263,7 @@ def test_accepts_relative_training_window(datetime_es):
 
 
 def test_accepts_pd_timedelta_training_window(datetime_es):
-    # TODO: Update to use Dask entities when issue #882 is closed
+    # TODO: Update to use Dask dataframes when issue #882 is closed
     feature_matrix, _ = dfs(entityset=datetime_es,
                             target_dataframe_name="transactions",
                             cutoff_time=pd.Timestamp("2012-3-31 04:00"),
@@ -273,7 +273,7 @@ def test_accepts_pd_timedelta_training_window(datetime_es):
 
 
 def test_accepts_pd_dateoffset_training_window(datetime_es):
-    # TODO: Update to use Dask entities when issue #882 is closed
+    # TODO: Update to use Dask dataframes when issue #882 is closed
     feature_matrix, _ = dfs(entityset=datetime_es,
                             target_dataframe_name="transactions",
                             cutoff_time=pd.Timestamp("2012-3-31 04:00"),
@@ -467,49 +467,49 @@ def test_calls_progress_callback(dataframes, relationships):
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
 
-def test_calls_progress_callback_cluster(pd_dataframes, relationships):
-    class MockProgressCallback:
-        def __init__(self):
-            self.progress_history = []
-            self.total_update = 0
-            self.total_progress_percent = 0
+# def test_calls_progress_callback_cluster(pd_dataframes, relationships):
+#     class MockProgressCallback:
+#         def __init__(self):
+#             self.progress_history = []
+#             self.total_update = 0
+#             self.total_progress_percent = 0
 
-        def __call__(self, update, progress_percent, time_elapsed):
-            self.total_update += update
-            self.total_progress_percent = progress_percent
-            self.progress_history.append(progress_percent)
+#         def __call__(self, update, progress_percent, time_elapsed):
+#             self.total_update += update
+#             self.total_progress_percent = progress_percent
+#             self.progress_history.append(progress_percent)
 
-    mock_progress_callback = MockProgressCallback()
+#     mock_progress_callback = MockProgressCallback()
 
-    with cluster() as (scheduler, [a, b]):
-        dkwargs = {'cluster': scheduler['address']}
-        dfs(dataframes=pd_dataframes,
-            relationships=relationships,
-            target_dataframe_name="transactions",
-            progress_callback=mock_progress_callback,
-            dask_kwargs=dkwargs)
+#     with cluster() as (scheduler, [a, b]):
+#         dkwargs = {'cluster': scheduler['address']}
+#         dfs(dataframes=pd_dataframes,
+#             relationships=relationships,
+#             target_dataframe_name="transactions",
+#             progress_callback=mock_progress_callback,
+#             dask_kwargs=dkwargs)
 
-    assert np.isclose(mock_progress_callback.total_update, 100.0)
-    assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
+#     assert np.isclose(mock_progress_callback.total_update, 100.0)
+#     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
 
-def test_dask_kwargs(pd_dataframes, relationships):
-    cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
-                                    "time": [10, 12, 15]})
-    feature_matrix, features = dfs(dataframes=pd_dataframes,
-                                   relationships=relationships,
-                                   target_dataframe_name="transactions",
-                                   cutoff_time=cutoff_times_df)
+# def test_dask_kwargs(pd_dataframes, relationships):
+#     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
+#                                     "time": [10, 12, 15]})
+#     feature_matrix, features = dfs(dataframes=pd_dataframes,
+#                                    relationships=relationships,
+#                                    target_dataframe_name="transactions",
+#                                    cutoff_time=cutoff_times_df)
 
-    with cluster() as (scheduler, [a, b]):
-        dask_kwargs = {'cluster': scheduler['address']}
-        feature_matrix_2, features_2 = dfs(dataframes=pd_dataframes,
-                                           relationships=relationships,
-                                           target_dataframe_name="transactions",
-                                           cutoff_time=cutoff_times_df,
-                                           dask_kwargs=dask_kwargs)
+#     with cluster() as (scheduler, [a, b]):
+#         dask_kwargs = {'cluster': scheduler['address']}
+#         feature_matrix_2, features_2 = dfs(dataframes=pd_dataframes,
+#                                            relationships=relationships,
+#                                            target_dataframe_name="transactions",
+#                                            cutoff_time=cutoff_times_df,
+#                                            dask_kwargs=dask_kwargs)
 
-    assert all(f1.unique_name() == f2.unique_name() for f1, f2 in zip(features, features_2))
-    for column in feature_matrix:
-        for x, y in zip(feature_matrix[column], feature_matrix_2[column]):
-            assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+#     assert all(f1.unique_name() == f2.unique_name() for f1, f2 in zip(features, features_2))
+#     for column in feature_matrix:
+#         for x, y in zip(feature_matrix[column], feature_matrix_2[column]):
+#             assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))

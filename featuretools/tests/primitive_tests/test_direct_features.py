@@ -78,7 +78,7 @@ def test_direct_rename(es):
 
 def test_direct_copy(games_es):
     home_team = next(r for r in games_es.relationships
-                     if r.child_column.name == 'home_team_id')
+                     if r._child_column_name == 'home_team_id')
     feat = DirectFeature(IdentityFeature(games_es, 'teams', 'name'), 'games',
                          relationship=home_team)
     copied = feat.copy()
@@ -115,7 +115,7 @@ def test_direct_of_multi_output_transform_feat(es):
                     Feature(base_feature, primitive=Second)]
     fm, fl = dfs(
         entityset=es,
-        target_dataframe="sessions",
+        target_dataframe_name="sessions",
         trans_primitives=[TestTime, Year, Month, Day, Hour, Minute, Second])
 
     # Get column names of for multi feature and normal features
@@ -136,7 +136,9 @@ def test_direct_features_of_multi_output_agg_primitives(pd_es):
 
         def get_function(self, agg_type='pandas'):
             def pd_top3(x):
-                array = np.array(x.value_counts()[:3].index)
+                counts = x.value_counts()
+                counts = counts[counts > 0]
+                array = np.array(counts.index[:3])
                 if len(array) < 3:
                     filler = np.full(3 - len(array), np.nan)
                     array = np.append(array, filler)
@@ -144,7 +146,7 @@ def test_direct_features_of_multi_output_agg_primitives(pd_es):
             return pd_top3
 
     fm, fl = dfs(entityset=pd_es,
-                 target_dataframe="log",
+                 target_dataframe_name="log",
                  agg_primitives=[ThreeMostCommonCat],
                  trans_primitives=[],
                  max_depth=3)
@@ -207,7 +209,7 @@ def test_direct_with_multiple_possible_paths(games_es):
 
     # Does not raise if path specified.
     relationship = next(r for r in games_es.get_forward_relationships('games')
-                        if r.child_column.name == 'home_team_id')
+                        if r._child_column_name == 'home_team_id')
     feat = DirectFeature(IdentityFeature(games_es, 'teams', 'name'), 'games',
                          relationship=relationship)
     assert feat.relationship_path_name() == 'teams[home_team_id]'
