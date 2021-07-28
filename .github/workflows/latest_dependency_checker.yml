@@ -31,4 +31,4 @@ jobs:
         branch: latest-dep-update
         branch-suffix: short-commit-hash
         base: main
-        team-reviewers: alteryx/ml-tools
+        reviewers: thehomebrewnerd, tamargrey, jeff-hernandez, tuethan1999, davesque, simha104 
