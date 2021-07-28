@@ -100,7 +100,7 @@ def test_count_null_and_make_agg_primitive(pd_es):
         return values.count()
 
     def count_generate_name(self, base_feature_names, relationship_path_name,
-                            parent_dataframe_id, where_str, use_prev_str):
+                            parent_dataframe_name, where_str, use_prev_str):
         return u"COUNT(%s%s%s)" % (relationship_path_name,
                                    where_str,
                                    use_prev_str)
@@ -219,6 +219,11 @@ def test_stack_on_self(es, test_primitive):
 
 def test_init_and_name(es):
     log = es['log']
+
+    # Add a BooleanNullable column so primitives with that input type get tested
+    boolean_nullable = log.ww['purchased']
+    boolean_nullable = boolean_nullable.ww.set_logical_type('BooleanNullable')
+    log.ww['boolean_nullable'] = boolean_nullable
 
     features = [ft.Feature(es, 'log', col) for col in log.columns]
     agg_primitives = get_aggregation_primitives().values()
