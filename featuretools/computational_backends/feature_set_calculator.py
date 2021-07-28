@@ -104,14 +104,14 @@ class FeatureSetCalculator(object):
         feature_trie = self.feature_set.feature_trie
 
         df_trie = Trie(path_constructor=RelationshipPath)
-        full_dataframe_df_trie = Trie(path_constructor=RelationshipPath)
+        full_dataframe_trie = Trie(path_constructor=RelationshipPath)
 
         target_dataframe = self.entityset[self.feature_set.target_df_name]
 
         self._calculate_features_for_dataframe(dataframe_name=self.feature_set.target_df_name,
                                                feature_trie=feature_trie,
                                                df_trie=df_trie,
-                                               full_dataframe_df_trie=full_dataframe_df_trie,
+                                               full_dataframe_trie=full_dataframe_trie,
                                                precalculated_trie=self.precalculated_features,
                                                filter_column=target_dataframe.ww.index,
                                                filter_values=instance_ids,
@@ -159,7 +159,7 @@ class FeatureSetCalculator(object):
         return df[column_list]
 
     def _calculate_features_for_dataframe(self, dataframe_name, feature_trie, df_trie,
-                                          full_dataframe_df_trie,
+                                          full_dataframe_trie,
                                           precalculated_trie,
                                           filter_column, filter_values,
                                           parent_data=None,
@@ -178,7 +178,7 @@ class FeatureSetCalculator(object):
             df_trie (Trie): a parallel trie for storing dataframes. The
                 dataframe with features calculated will be placed in the root.
 
-            full_dataframe_df_trie (Trie): a trie storing dataframes will all dataframe
+            full_dataframe_trie (Trie): a trie storing dataframes will all dataframe
                 rows, for features that are uses_full_dataframe.
 
             precalculated_trie (Trie): a parallel trie containing dataframes
@@ -275,13 +275,13 @@ class FeatureSetCalculator(object):
                                df)
 
             sub_df_trie = df_trie.get_node([edge])
-            sub_full_dataframe_df_trie = full_dataframe_df_trie.get_node([edge])
+            sub_full_dataframe_trie = full_dataframe_trie.get_node([edge])
             sub_precalc_trie = precalculated_trie.get_node([edge])
             self._calculate_features_for_dataframe(
                 dataframe_name=sub_dataframe_name,
                 feature_trie=sub_trie,
                 df_trie=sub_df_trie,
-                full_dataframe_df_trie=sub_full_dataframe_df_trie,
+                full_dataframe_trie=sub_full_dataframe_trie,
                 precalculated_trie=sub_precalc_trie,
                 filter_column=sub_filter_column,
                 filter_values=sub_filter_values,
@@ -311,10 +311,10 @@ class FeatureSetCalculator(object):
         # be calculated first because all of their dependents are included in
         # full_dataframe_features.
         if need_full_dataframe:
-            df = self._calculate_features(df, full_dataframe_df_trie, full_dataframe_features, progress_callback)
+            df = self._calculate_features(df, full_dataframe_trie, full_dataframe_features, progress_callback)
 
             # Store full dataframe
-            full_dataframe_df_trie.value = df
+            full_dataframe_trie.value = df
 
             # Filter df so that features that don't require the full dataframe are
             # only calculated on the necessary instances.
