@@ -105,7 +105,7 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
     for f in iterator:
         # TODO: features with multiple columns are not encoded by this method,
         # which can cause an "encoded" matrix with non-numeric vlaues
-        is_discrete = 'category' in f.column_schema.semantic_tags
+        is_discrete = {'category', 'foreign_key'}.intersection(f.column_schema.semantic_tags)
         if (f.number_output_features > 1 or not is_discrete):
             if f.number_output_features > 1:
                 logger.warning("Feature %s has multiple columns and will not "
@@ -120,7 +120,9 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
             new_columns.extend(f.get_feature_names())
             continue
 
-        val_counts = X[f.get_name()].value_counts().to_frame()
+        val_counts = X[f.get_name()].value_counts()
+        # Remove 0 count category values
+        val_counts = val_counts[val_counts > 0].to_frame()
         index_name = val_counts.index.name
         if index_name is None:
             if 'index' in val_counts.columns:
