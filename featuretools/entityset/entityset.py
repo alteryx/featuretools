@@ -7,7 +7,6 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 from woodwork import init_series
-from woodwork.exceptions import WoodworkNotInitError
 from woodwork.logical_types import Datetime
 
 from featuretools.entityset import deserialize, serialize
