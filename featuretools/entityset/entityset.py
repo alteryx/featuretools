@@ -1157,17 +1157,9 @@ class EntitySet(object):
     # #  Pickling ###############################################
     # ###########################################################################
     def __getstate__(self):
-        schemas = {}
-        for df_name, df in self.dataframe_dict.items():
-            try:
-                schema = df.ww.schema
-            except WoodworkNotInitError:
-                schema = None
-            schemas[df_name] = schema
-
         return {
             **self.__dict__,
-            'schemas': schemas
+            'schemas': {df_name: df.ww.schema for df_name, df in self.dataframe_dict.items()}
         }
 
     def __setstate__(self, state):

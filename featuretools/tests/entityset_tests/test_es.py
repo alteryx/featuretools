@@ -1,5 +1,6 @@
 import copy
 import logging
+import pickle
 import re
 from datetime import datetime
 
@@ -2016,3 +2017,19 @@ def test_dataframe_type_empty_es():
 
 def test_dataframe_type_pandas_es(pd_es):
     assert pd_es.dataframe_type == Library.PANDAS.value
+
+
+def test_pd_es_pickling(pd_es):
+    pkl = pickle.dumps(pd_es)
+    unpickled = pickle.loads(pkl)
+
+    assert pd_es.__eq__(unpickled, deep=True)
+    assert not hasattr(unpickled, 'schemas')
+
+
+def test_empty_es_pickling():
+    es = ft.EntitySet(id="empty")
+    pkl = pickle.dumps(es)
+    unpickled = pickle.loads(pkl)
+
+    assert es.__eq__(unpickled, deep=True)
