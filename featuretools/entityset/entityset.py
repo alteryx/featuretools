@@ -7,6 +7,7 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 from woodwork import init_series
+from woodwork.exceptions import WoodworkNotInitError
 from woodwork.logical_types import Datetime
 
 from featuretools.entityset import deserialize, serialize
@@ -1151,10 +1152,35 @@ class EntitySet(object):
             self.dataframe_dict[df.ww.name] = df
 
         self.reset_data_description()
+
+    # ###########################################################################
+    # #  Pickling ###############################################
+    # ###########################################################################
+    def __getstate__(self):
+        schemas = {}
+        for df_name, df in self.dataframe_dict.items():
+            try:
+                schema = df.ww.schema
+            except WoodworkNotInitError:
+                schema = None
+            schemas[df_name] = schema
+
+        return {
+            **self.__dict__,
+            'schemas': schemas
+        }
+
+    def __setstate__(self, state):
+        schemas = state.pop('schemas')
+        for df_name, df in state.get('dataframe_dict', {}).items():
+            if schemas[df_name] is not None:
+                df.ww.init(schema=schemas[df_name])
+        for k, v in state.items():
+            object.__setattr__(self, k, v)
+
     # ###########################################################################
     # #  Other ###############################################
     # ###########################################################################
-
     def add_interesting_values(self, max_values=5, verbose=False, dataframe_name=None, values=None):
         """Find or set interesting values for categorical columns, to be used to generate "where" clauses
 
