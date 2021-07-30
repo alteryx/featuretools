@@ -1298,10 +1298,10 @@ def test_parallel_failure_raises_correct_error(pd_es):
                                  approximate='1 hour')
 
 
-def test_warning_not_enough_chunks(pd_es, capsys, cluster_scheduler_3):
+def test_warning_not_enough_chunks(pd_es, capsys, three_worker_scheduler):
     property_feature = IdentityFeature(pd_es, 'log', 'value') > 10
 
-    dkwargs = {'cluster': cluster_scheduler_3['address']}
+    dkwargs = {'cluster': three_worker_scheduler['address']}
     calculate_feature_matrix([property_feature],
                              entityset=pd_es,
                              chunk_size=.5,
@@ -1673,7 +1673,6 @@ def test_calls_progress_callback_cluster(pd_mock_customer, cluster_scheduler):
     trans_per_customer = ft.Feature(ft.Feature(pd_mock_customer, "transactions", "transaction_id"), parent_dataframe_name="customers", primitive=Count)
     features = [trans_per_session, ft.Feature(trans_per_customer, "sessions")]
 
-    # with cluster() as (scheduler, [a, b]):
     dkwargs = {'cluster': cluster_scheduler['address']}
     calculate_feature_matrix(features,
                              entityset=pd_mock_customer,

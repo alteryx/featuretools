@@ -23,7 +23,7 @@ def cluster_scheduler():
 
 
 @pytest.fixture()
-def cluster_scheduler_3():
+def three_worker_scheduler():
     with cluster(nworkers=3) as (scheduler, [a, b, c]):
         yield scheduler
 
