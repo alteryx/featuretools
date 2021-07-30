@@ -271,7 +271,7 @@ def test_cum_handles_uses_full_dataframe(pd_es):
     for primitive in [CumSum, CumMean, CumMax, CumMin]:
         check(ft.Feature(pd_es, 'log', 'value', groupby=ft.IdentityFeature(pd_es, 'log', 'session_id'), primitive=primitive))
 
-    check(ft.Feature(ft.IdentityFeature(pd_es, 'log', 'session_id'), groupby=ft.IdentityFeature(pd_es, 'log', 'session_id'), primitive=CumCount))
+    check(ft.Feature(ft.Feature(pd_es, 'log', 'product_id'), groupby=ft.Feature(pd_es, 'log', 'product_id'), primitive=CumCount))
 
 
 def test_cum_mean(pd_es):
@@ -287,8 +287,8 @@ def test_cum_mean(pd_es):
 
 
 def test_cum_count(pd_es):
-    cum_count = ft.Feature(ft.IdentityFeature(pd_es, 'log', 'session_id'),
-                           groupby=ft.IdentityFeature(pd_es, 'log', 'session_id'),
+    cum_count = ft.Feature(ft.IdentityFeature(pd_es, 'log', 'product_id'),
+                           groupby=ft.IdentityFeature(pd_es, 'log', 'product_id'),
                            primitive=CumCount)
     features = [cum_count]
     df = ft.calculate_feature_matrix(entityset=pd_es,
@@ -296,14 +296,14 @@ def test_cum_count(pd_es):
                                      instance_ids=range(15))
     cvalues = df[cum_count.get_name()].values
     assert len(cvalues) == 15
-    cum_count_values = [1, 2, 3, 4, 5, 1, 2, 3, 4, 1, 1, 2, 1, 2, 3]
+    cum_count_values = [1, 2, 3, 1, 2, 1, 2, 3, 1, 2, 1, 4, 5, 6, 7]
     for i, v in enumerate(cum_count_values):
         assert v == cvalues[i]
 
 
 def test_rename(pd_es):
-    cum_count = ft.Feature(ft.IdentityFeature(pd_es, 'log', 'session_id'),
-                           groupby=ft.IdentityFeature(pd_es, 'log', 'session_id'),
+    cum_count = ft.Feature(ft.IdentityFeature(pd_es, 'log', 'product_id'),
+                           groupby=ft.IdentityFeature(pd_es, 'log', 'product_id'),
                            primitive=CumCount)
     copy_feat = cum_count.rename("rename_test")
     assert cum_count.unique_name() != copy_feat.unique_name()
@@ -314,8 +314,8 @@ def test_rename(pd_es):
 
 
 def test_groupby_no_data(pd_es):
-    cum_count = ft.Feature(ft.IdentityFeature(pd_es, 'log', 'session_id'),
-                           groupby=ft.IdentityFeature(pd_es, 'log', 'session_id'),
+    cum_count = ft.Feature(ft.IdentityFeature(pd_es, 'log', 'product_id'),
+                           groupby=ft.IdentityFeature(pd_es, 'log', 'product_id'),
                            primitive=CumCount)
     last_feat = ft.Feature(cum_count, parent_dataframe_name='customers', primitive=Last)
     df = ft.calculate_feature_matrix(entityset=pd_es,
@@ -328,7 +328,7 @@ def test_groupby_no_data(pd_es):
 
 def test_groupby_uses_calc_time(pd_es):
     def projected_amount_left(amount, timestamp, time=None):
-        # cumulative sum of amout, with timedelta *  constant subtracted
+        # cumulative sum of amount, with timedelta *  constant subtracted
         delta = time - timestamp
         delta_seconds = delta / np.timedelta64(1, 's')
         return amount.cumsum() - (delta_seconds)
