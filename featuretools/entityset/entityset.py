@@ -665,6 +665,10 @@ class EntitySet(object):
 
         self.dataframe_dict[dataframe.ww.name] = dataframe
         self.reset_data_description()
+
+        for column in dataframe.columns:
+            dataframe.ww[column].ww.entityset = self
+
         return self
 
     def normalize_dataframe(self, base_dataframe_name, new_dataframe_name, index,
