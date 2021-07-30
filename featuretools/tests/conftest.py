@@ -4,6 +4,7 @@ import composeml as cp
 import dask.dataframe as dd
 import pandas as pd
 import pytest
+from distributed.utils_test import cluster
 from woodwork.logical_types import Boolean, Integer
 
 import featuretools as ft
@@ -13,6 +14,18 @@ from featuretools.tests.testing_utils import (
 )
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
+
+
+@pytest.fixture()
+def cluster_scheduler():
+    with cluster() as (scheduler, [a, b]):
+        yield scheduler
+
+
+@pytest.fixture()
+def cluster_scheduler_3():
+    with cluster(nworkers=3) as (scheduler, [a, b, c]):
+        yield scheduler
 
 
 @pytest.fixture(scope='session', autouse=True)

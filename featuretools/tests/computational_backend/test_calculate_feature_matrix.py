@@ -11,7 +11,6 @@ import pandas as pd
 import psutil
 import pytest
 from dask import dataframe as dd
-from distributed.utils_test import cluster
 from tqdm import tqdm
 from woodwork.column_schema import ColumnSchema
 
@@ -1161,61 +1160,59 @@ def test_cfm_returns_original_time_indexes_approximate(pd_es):
     assert (time_level_vals == cutoff_df['time'].values).all()
 
 
-def test_dask_kwargs(pd_es):
-    times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
-                 [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
-                 [datetime(2011, 4, 9, 10, 40, 0)] +
-                 [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
-                 [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
-                 [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
+def test_dask_kwargs(pd_es, cluster_scheduler):
+    times = ([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
+             [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
+             [datetime(2011, 4, 9, 10, 40, 0)] +
+             [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
+             [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
+             [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
     property_feature = IdentityFeature(pd_es, 'log', 'value') > 10
 
-    with cluster() as (scheduler, [a, b]):
-        dkwargs = {'cluster': scheduler['address']}
-        feature_matrix = calculate_feature_matrix([property_feature],
-                                                  entityset=pd_es,
-                                                  cutoff_time=cutoff_time,
-                                                  verbose=True,
-                                                  chunk_size=.13,
-                                                  dask_kwargs=dkwargs,
-                                                  approximate='1 hour')
+    dkwargs = {'cluster': cluster_scheduler['address']}
+    feature_matrix = calculate_feature_matrix([property_feature],
+                                              entityset=pd_es,
+                                              cutoff_time=cutoff_time,
+                                              verbose=True,
+                                              chunk_size=.13,
+                                              dask_kwargs=dkwargs,
+                                              approximate='1 hour')
 
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
-def test_dask_persisted_es(pd_es, capsys):
-    times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
-                 [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
-                 [datetime(2011, 4, 9, 10, 40, 0)] +
-                 [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
-                 [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
-                 [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
+def test_dask_persisted_es(pd_es, capsys, cluster_scheduler):
+    times = ([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
+             [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
+             [datetime(2011, 4, 9, 10, 40, 0)] +
+             [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
+             [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
+             [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
     property_feature = IdentityFeature(pd_es, 'log', 'value') > 10
 
-    with cluster() as (scheduler, [a, b]):
-        dkwargs = {'cluster': scheduler['address']}
-        feature_matrix = calculate_feature_matrix([property_feature],
-                                                  entityset=pd_es,
-                                                  cutoff_time=cutoff_time,
-                                                  verbose=True,
-                                                  chunk_size=.13,
-                                                  dask_kwargs=dkwargs,
-                                                  approximate='1 hour')
-        assert (feature_matrix[property_feature.get_name()] == labels).values.all()
-        feature_matrix = calculate_feature_matrix([property_feature],
-                                                  entityset=pd_es,
-                                                  cutoff_time=cutoff_time,
-                                                  verbose=True,
-                                                  chunk_size=.13,
-                                                  dask_kwargs=dkwargs,
-                                                  approximate='1 hour')
-        captured = capsys.readouterr()
-        assert "Using EntitySet persisted on the cluster as dataset " in captured[0]
-        assert (feature_matrix[property_feature.get_name()] == labels).values.all()
+    dkwargs = {'cluster': cluster_scheduler['address']}
+    feature_matrix = calculate_feature_matrix([property_feature],
+                                              entityset=pd_es,
+                                              cutoff_time=cutoff_time,
+                                              verbose=True,
+                                              chunk_size=.13,
+                                              dask_kwargs=dkwargs,
+                                              approximate='1 hour')
+    assert (feature_matrix[property_feature.get_name()] == labels).values.all()
+    feature_matrix = calculate_feature_matrix([property_feature],
+                                              entityset=pd_es,
+                                              cutoff_time=cutoff_time,
+                                              verbose=True,
+                                              chunk_size=.13,
+                                              dask_kwargs=dkwargs,
+                                              approximate='1 hour')
+    captured = capsys.readouterr()
+    assert "Using EntitySet persisted on the cluster as dataset " in captured[0]
+    assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
 class TestCreateClientAndCluster(object):
@@ -1281,12 +1278,12 @@ class TestCreateClientAndCluster(object):
 
 
 def test_parallel_failure_raises_correct_error(pd_es):
-    times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
-                 [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
-                 [datetime(2011, 4, 9, 10, 40, 0)] +
-                 [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
-                 [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
-                 [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
+    times = ([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
+             [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
+             [datetime(2011, 4, 9, 10, 40, 0)] +
+             [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
+             [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
+             [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
     property_feature = IdentityFeature(pd_es, 'log', 'value') > 10
 
@@ -1301,16 +1298,15 @@ def test_parallel_failure_raises_correct_error(pd_es):
                                  approximate='1 hour')
 
 
-def test_warning_not_enough_chunks(pd_es, capsys):
+def test_warning_not_enough_chunks(pd_es, capsys, cluster_scheduler_3):
     property_feature = IdentityFeature(pd_es, 'log', 'value') > 10
 
-    with cluster(nworkers=3) as (scheduler, [a, b, c]):
-        dkwargs = {'cluster': scheduler['address']}
-        calculate_feature_matrix([property_feature],
-                                 entityset=pd_es,
-                                 chunk_size=.5,
-                                 verbose=True,
-                                 dask_kwargs=dkwargs)
+    dkwargs = {'cluster': cluster_scheduler_3['address']}
+    calculate_feature_matrix([property_feature],
+                             entityset=pd_es,
+                             chunk_size=.5,
+                             verbose=True,
+                             dask_kwargs=dkwargs)
 
     captured = capsys.readouterr()
     pattern = r'Fewer chunks \([0-9]+\), than workers \([0-9]+\) consider reducing the chunk size'
@@ -1659,7 +1655,7 @@ def test_calls_progress_callback(mock_customer):
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
 
-def test_calls_progress_callback_cluster(pd_mock_customer):
+def test_calls_progress_callback_cluster(pd_mock_customer, cluster_scheduler):
     class MockProgressCallback:
         def __init__(self):
             self.progress_history = []
@@ -1677,12 +1673,12 @@ def test_calls_progress_callback_cluster(pd_mock_customer):
     trans_per_customer = ft.Feature(ft.Feature(pd_mock_customer, "transactions", "transaction_id"), parent_dataframe_name="customers", primitive=Count)
     features = [trans_per_session, ft.Feature(trans_per_customer, "sessions")]
 
-    with cluster() as (scheduler, [a, b]):
-        dkwargs = {'cluster': scheduler['address']}
-        calculate_feature_matrix(features,
-                                 entityset=pd_mock_customer,
-                                 progress_callback=mock_progress_callback,
-                                 dask_kwargs=dkwargs)
+    # with cluster() as (scheduler, [a, b]):
+    dkwargs = {'cluster': cluster_scheduler['address']}
+    calculate_feature_matrix(features,
+                             entityset=pd_mock_customer,
+                             progress_callback=mock_progress_callback,
+                             dask_kwargs=dkwargs)
 
     assert np.isclose(mock_progress_callback.total_update, 100.0)
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)

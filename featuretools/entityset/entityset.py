@@ -25,6 +25,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
 
 LTI_COLUMN_NAME = '_ft_last_time'
+WW_SCHEMA_KEY = '_ww__getstate__schemas'
 
 
 class EntitySet(object):
@@ -1158,16 +1159,15 @@ class EntitySet(object):
     def __getstate__(self):
         return {
             **self.__dict__,
-            'schemas': {df_name: df.ww.schema for df_name, df in self.dataframe_dict.items()}
+            WW_SCHEMA_KEY: {df_name: df.ww.schema for df_name, df in self.dataframe_dict.items()}
         }
 
     def __setstate__(self, state):
-        schemas = state.pop('schemas')
+        ww_schemas = state.pop(WW_SCHEMA_KEY)
         for df_name, df in state.get('dataframe_dict', {}).items():
-            if schemas[df_name] is not None:
-                df.ww.init(schema=schemas[df_name])
-        for k, v in state.items():
-            object.__setattr__(self, k, v)
+            if ww_schemas[df_name] is not None:
+                df.ww.init(schema=ww_schemas[df_name], validate=False)
+        self.__dict__ = state
 
     # ###########################################################################
     # #  Other ###############################################
