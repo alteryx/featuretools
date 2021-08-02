@@ -1,5 +1,6 @@
 import copy
 import logging
+import pickle
 import re
 from datetime import datetime
 
@@ -25,7 +26,7 @@ from woodwork.logical_types import (
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
-from featuretools.entityset.entityset import LTI_COLUMN_NAME
+from featuretools.entityset.entityset import LTI_COLUMN_NAME, WW_SCHEMA_KEY
 from featuretools.tests.testing_utils import get_df_tags, to_pandas
 from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
@@ -2016,3 +2017,23 @@ def test_dataframe_type_empty_es():
 
 def test_dataframe_type_pandas_es(pd_es):
     assert pd_es.dataframe_type == Library.PANDAS.value
+
+
+def test_es__getstate__key_unique(es):
+    assert not hasattr(es, WW_SCHEMA_KEY)
+
+
+def test_pd_es_pickling(pd_es):
+    pkl = pickle.dumps(pd_es)
+    unpickled = pickle.loads(pkl)
+
+    assert pd_es.__eq__(unpickled, deep=True)
+    assert not hasattr(unpickled, WW_SCHEMA_KEY)
+
+
+def test_empty_es_pickling():
+    es = ft.EntitySet(id="empty")
+    pkl = pickle.dumps(es)
+    unpickled = pickle.loads(pkl)
+
+    assert es.__eq__(unpickled, deep=True)

@@ -25,6 +25,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
 
 LTI_COLUMN_NAME = '_ft_last_time'
+WW_SCHEMA_KEY = '_ww__getstate__schemas'
 
 
 class EntitySet(object):
@@ -1151,10 +1152,26 @@ class EntitySet(object):
             self.dataframe_dict[df.ww.name] = df
 
         self.reset_data_description()
+
+    # ###########################################################################
+    # #  Pickling ###############################################
+    # ###########################################################################
+    def __getstate__(self):
+        return {
+            **self.__dict__,
+            WW_SCHEMA_KEY: {df_name: df.ww.schema for df_name, df in self.dataframe_dict.items()}
+        }
+
+    def __setstate__(self, state):
+        ww_schemas = state.pop(WW_SCHEMA_KEY)
+        for df_name, df in state.get('dataframe_dict', {}).items():
+            if ww_schemas[df_name] is not None:
+                df.ww.init(schema=ww_schemas[df_name], validate=False)
+        self.__dict__.update(state)
+
     # ###########################################################################
     # #  Other ###############################################
     # ###########################################################################
-
     def add_interesting_values(self, max_values=5, verbose=False, dataframe_name=None, values=None):
         """Find or set interesting values for categorical columns, to be used to generate "where" clauses
 
