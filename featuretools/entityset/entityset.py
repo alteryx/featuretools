@@ -594,7 +594,6 @@ class EntitySet(object):
                                  dataframe=transactions_df)
 
                 es["transactions"]
-                es["transactions"].df
 
         """
         logical_types = logical_types or {}

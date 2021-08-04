@@ -282,8 +282,8 @@ Saving and Loading Features
 
 .. _api_ref.dataset:
 
-EntitySet, Entity, Relationship, Variable Types
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+EntitySet, Relationship
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Constructors
 ------------
@@ -292,7 +292,6 @@ Constructors
     :toctree: generated/
 
     EntitySet
-    Entity
     Relationship
 
 EntitySet load and prepare data
@@ -340,14 +339,6 @@ EntitySet visualization
 
     EntitySet.plot
 
-
-Entity methods
--------------------
-.. autosummary::
-    :toctree: generated/
-
-    Entity.convert_variable_type
-
 Relationship attributes
 -----------------------
 .. autosummary::
@@ -357,44 +348,6 @@ Relationship attributes
     Relationship.child_column
     Relationship.parent_dataframe
     Relationship.child_dataframe
-
-Variable types
-----------------
-.. currentmodule:: featuretools.variable_types.variable
-.. autosummary::
-    :toctree: generated/
-
-    Index
-    Id
-    TimeIndex
-    DatetimeTimeIndex
-    NumericTimeIndex
-    Datetime
-    Numeric
-    Categorical
-    Ordinal
-    Boolean
-    NaturalLanguage
-    LatLong
-    ZIPCode
-    IPAddress
-    FullName
-    EmailAddress
-    URL
-    PhoneNumber
-    DateOfBirth
-    CountryCode
-    SubRegionCode
-    FilePath
-
-Variable Utils Methods
-----------------------
-.. currentmodule:: featuretools.variable_types.utils
-.. autosummary::
-    :toctree: generated/
-
-    find_variable_types
-    graph_variable_types
 
 Data Type Util Methods
 ----------------------
