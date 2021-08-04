@@ -767,7 +767,6 @@ class Feature(object):
         raise Exception("Unrecognized feature initialization")
 
 
-
 class FeatureOutputSlice(FeatureBase):
     """
     Class to access specific multi output feature column
