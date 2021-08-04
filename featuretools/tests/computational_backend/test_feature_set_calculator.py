@@ -732,7 +732,7 @@ def pd_parent_child():
                              "parent_id": [1, 1, 1],
                              "time_index": pd.date_range(start='1/1/2018', periods=3),
                              "value": [10, 5, 2],
-                             "cat": ['a', 'a', 'b']})
+                             "cat": ['a', 'a', 'b']}).astype({'cat': 'category'})
     return (parent_df, child_df)
 
 
@@ -760,15 +760,13 @@ def parent_child(request):
 
 def test_empty_child_dataframe(parent_child):
     parent_df, child_df = parent_child
-    if not isinstance(parent_df, pd.DataFrame):
-        child_ltypes = {
-            'parent_id': Integer,
-            'time_index': Datetime,
-            'value': Double,
-            'cat': Categorical
-        }
-    else:
-        child_ltypes = None
+    child_ltypes = {
+        'parent_id': Integer,
+        'time_index': Datetime,
+        'value': Double,
+        'cat': Categorical
+    }
+
     es = ft.EntitySet(id="blah")
     es.add_dataframe(dataframe_name="parent",
                      dataframe=parent_df,
