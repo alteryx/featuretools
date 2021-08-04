@@ -211,8 +211,8 @@ def test_multi_output_selection():
                           max_depth=2)
 
     matrix_with_slices, unsliced_features = ft.selection.remove_highly_null_features(fm, features)
-    assert len(matrix_with_slices.columns) == 16
-    assert len(unsliced_features) == 12
+    assert len(matrix_with_slices.columns) == 18
+    assert len(unsliced_features) == 14
 
     matrix_columns = set(matrix_with_slices.columns)
     for f in unsliced_features:
