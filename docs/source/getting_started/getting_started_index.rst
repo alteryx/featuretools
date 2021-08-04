@@ -11,5 +11,5 @@ How to start working with Featuretools; the main concepts:
    using_entitysets
    afe
    primitives
-   variables
+   woodwork_types
    handling_time
