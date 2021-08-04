@@ -9,7 +9,7 @@ As features become more complicated, their names can become harder to understand
     es = ft.demo.load_mock_customer(return_entityset=True)
 
     feature_defs = ft.dfs(entityset=es,
-                          target_dataframe="customers",
+                          target_dataframe_name="customers",
                           agg_primitives=["mean", "sum", "mode", "n_most_common"],
                           trans_primitives=["month", "hour"],
                           max_depth=2,
@@ -46,7 +46,7 @@ For example, the above replaces the variable name ``"join_date"`` with a more de
 .. ipython:: python
 
     es['customers']['join_date'].description = 'the date the customer joined'
-    feature = ft.TransformFeature(es['customers']['join_date'], ft.primitives.Hour)
+    feature = ft.TransformFeature(ft.IdentityFeature(es, 'customers', 'join_date'), ft.primitives.Hour)
     feature
     ft.describe_feature(feature)
 
