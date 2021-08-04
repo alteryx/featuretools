@@ -296,6 +296,7 @@ def make_logical_types(with_integer_time_index=False):
         'id': Integer,
         'customer_id': Integer,
         'device_type': Categorical,
+        'device_name': Categorical,
         'ip': IPAddress,
         'filepath': Filepath,
     }
