@@ -17,7 +17,7 @@ from featuretools.utils.wrangle import (
 
 
 class FeatureBase(object):
-    def __init__(self, entityset, dataframe_name, base_features, relationship_path, primitive, name=None, names=None):
+    def __init__(self, column, base_features, relationship_path, primitive, name=None, names=None):
         """Base class for all features
 
         Args:
@@ -31,8 +31,8 @@ class FeatureBase(object):
         assert all(isinstance(f, FeatureBase) for f in base_features), \
             "All base features must be features"
 
-        self.dataframe_name = dataframe_name
-        self.entityset = entityset  # TODO: use entityset.metadata or equivalent
+        self.dataframe_name = column.ww.dataframe_name
+        self.entityset = column.ww.entityset  # TODO: use entityset.metadata or equivalent
 
         self.base_features = base_features
 
@@ -343,12 +343,10 @@ class FeatureBase(object):
 class IdentityFeature(FeatureBase):
     """Feature for dataframe that is equivalent to underlying column"""
 
-    def __init__(self, entityset, dataframe_name, column_name, name=None):
-        self.column_name = column_name
-        column_accessor = entityset[dataframe_name].ww[column_name]
-        self.return_type = column_accessor.ww.schema
-        super(IdentityFeature, self).__init__(entityset=entityset,
-                                              dataframe_name=dataframe_name,
+    def __init__(self, column, name=None):
+        self.column_name = column.ww.name
+        self.return_type = column.ww.schema
+        super(IdentityFeature, self).__init__(column=column,
                                               base_features=[],
                                               relationship_path=RelationshipPath([]),
                                               primitive=PrimitiveBase,
@@ -356,10 +354,10 @@ class IdentityFeature(FeatureBase):
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
-        return cls(entityset=entityset,
-                   dataframe_name=arguments['dataframe_name'],
-                   column_name=arguments['column_name'],
-                   name=arguments['name'])
+        dataframe_name = arguments['dataframe_name']
+        column_name = arguments['column_name']
+        column = entityset[dataframe_name].ww[column_name]
+        return cls(column=column, name=arguments['name'])
 
     def copy(self):
         """Return copy of feature"""
@@ -745,14 +743,15 @@ class Feature(object):
     Alias to create feature. Infers the feature type based on init parameters.
     """
 
-    def __new__(self, base, dataframe_name=None, column_name=None, groupby=None, parent_dataframe_name=None,
+    def __new__(self, base, dataframe_name=None, groupby=None, parent_dataframe_name=None,
                 primitive=None, use_previous=None, where=None):
         # either direct or identity
-        if dataframe_name is not None:
-            if column_name is not None:
-                base = IdentityFeature(base, dataframe_name, column_name)
-            else:
-                return DirectFeature(base, dataframe_name)
+        if isinstance(base, FeatureBase):
+            return DirectFeature(base, dataframe_name)
+        elif hasattr(base, 'ww') and base.ww.name is not None:
+            base = IdentityFeature(base)
+        else:
+            raise Exception("Unrecognized feature initialization")
 
         if primitive is not None:
             if parent_dataframe_name is not None:
@@ -767,10 +766,6 @@ class Feature(object):
                                                    primitive=primitive,
                                                    groupby=groupby)
                 return TransformFeature(base, primitive=primitive)
-        elif column_name is not None:
-            return base
-
-        raise Exception("Unrecognized feature initialization")
 
 
 class FeatureOutputSlice(FeatureBase):
