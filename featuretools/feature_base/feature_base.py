@@ -746,26 +746,26 @@ class Feature(object):
     def __new__(self, base, dataframe_name=None, groupby=None, parent_dataframe_name=None,
                 primitive=None, use_previous=None, where=None):
         # either direct or identity
-        if isinstance(base, FeatureBase):
+        if primitive is None and dataframe_name is None:
+            return IdentityFeature(base)
+        elif primitive is None and dataframe_name is not None:
             return DirectFeature(base, dataframe_name)
-        elif hasattr(base, 'ww') and base.ww.name is not None:
-            base = IdentityFeature(base)
-        else:
-            raise Exception("Unrecognized feature initialization")
+        elif primitive is not None and parent_dataframe_name is not None:
+            assert isinstance(primitive, AggregationPrimitive) or issubclass(primitive, AggregationPrimitive)
+            return AggregationFeature(base, parent_dataframe_name=parent_dataframe_name,
+                                      use_previous=use_previous, where=where,
+                                      primitive=primitive)
+        elif primitive is not None:
+            assert (isinstance(primitive, TransformPrimitive) or
+                    issubclass(primitive, TransformPrimitive))
+            if groupby is not None:
+                return GroupByTransformFeature(base,
+                                               primitive=primitive,
+                                               groupby=groupby)
+            return TransformFeature(base, primitive=primitive)
+ 
+        raise Exception("Unrecognized feature initialization")
 
-        if primitive is not None:
-            if parent_dataframe_name is not None:
-                assert isinstance(primitive, AggregationPrimitive) or issubclass(primitive, AggregationPrimitive)
-                return AggregationFeature(base,
-                                          parent_dataframe_name=parent_dataframe_name,
-                                          use_previous=use_previous, where=where,
-                                          primitive=primitive)
-            elif isinstance(primitive, TransformPrimitive) or issubclass(primitive, TransformPrimitive):
-                if groupby is not None:
-                    return GroupByTransformFeature(base,
-                                                   primitive=primitive,
-                                                   groupby=groupby)
-                return TransformFeature(base, primitive=primitive)
 
 
 class FeatureOutputSlice(FeatureBase):
