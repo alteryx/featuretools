@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 
 import featuretools as ft
 from featuretools.primitives import (
@@ -12,6 +13,7 @@ UNSUPPORTED += [p.name for p in get_aggregation_primitives().values() if Library
 
 
 def test_transform(pd_es, dask_es):
+    pytest.skip("TODO: Dask issue with `series.eq`. Fix once Dask Issue #7957 is closed.")
     primitives = ft.list_primitives()
     trans_list = primitives[primitives['type'] == 'transform']['name'].tolist()
     trans_primitives = [prim for prim in trans_list if prim not in UNSUPPORTED]

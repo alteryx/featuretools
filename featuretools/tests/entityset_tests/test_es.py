@@ -935,6 +935,8 @@ def test_concat_inplace(es):
 
 
 def test_concat_with_lti(es):
+    if es.dataframe_type == Library.DASK.value:
+        pytest.skip("TODO: Woodwork transforming empty latlong columns causes a failure. Fix after WW issue is closed.")
     first_es = copy.deepcopy(es)
     for df in first_es.dataframes:
         if first_es.dataframe_type == Library.KOALAS.value:
