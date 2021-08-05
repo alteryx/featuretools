@@ -135,7 +135,7 @@ def test_serialized_renamed_features(es):
     groupby_original = ft.feature_base.GroupByTransformFeature(value, primitive, zipcode)
     assert groupby_original.get_name() == 'CUM_SUM(value) by zipcode'
 
-    multioutput_original = ft.Feature(es, 'log', 'product_id', parent_dataframe_name='customers', primitive=NMostCommon(n=2))
+    multioutput_original = ft.Feature(es['log'].ww['product_id'], parent_dataframe_name='customers', primitive=NMostCommon(n=2))
     assert multioutput_original.get_name() == 'N_MOST_COMMON(log.product_id, n=2)'
 
     featureslice_original = ft.feature_base.FeatureOutputSlice(multioutput_original, 0)

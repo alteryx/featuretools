@@ -501,7 +501,7 @@ def test_drop_exact(es):
 
 
 def test_seed_features(es):
-    seed_feature_sessions = ft.Feature(es, 'log', 'id', parent_dataframe_name='sessions', primitive=Count) > 2
+    seed_feature_sessions = ft.Feature(es['log'].ww['id'], parent_dataframe_name='sessions', primitive=Count) > 2
     seed_feature_log = ft.Feature(es, 'log', 'comments', primitive=NumCharacters)
     session_agg = ft.Feature(seed_feature_log, parent_dataframe_name='sessions', primitive=Mean)
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='sessions',
@@ -541,8 +541,8 @@ def test_dfs_builds_on_seed_features_more_than_max_depth(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Dask EntitySets do not support the Last and Mode primitives")
 
-    seed_feature_sessions = ft.Feature(es, 'log', 'id', parent_dataframe_name='sessions', primitive=Count)
-    seed_feature_log = ft.Feature(es, 'log', 'datetime', primitive=Hour)
+    seed_feature_sessions = ft.Feature(es['log'].ww['id'], parent_dataframe_name='sessions', primitive=Count)
+    seed_feature_log = ft.Feature(es['log'].ww['datetime'], primitive=Hour)
     session_agg = ft.Feature(seed_feature_log, parent_dataframe_name='sessions', primitive=Last)
 
     # Depth of this feat is 2 relative to session_agg, the seed feature,
@@ -968,7 +968,7 @@ def test_seed_multi_output_feature_stacking(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Dask EntitySets do not support the NMostCommon and NumUnique primitives")
     threecommon = NMostCommon(3)
-    tc = ft.Feature(es, 'log', 'product_id', parent_dataframe_name="sessions", primitive=threecommon)
+    tc = ft.Feature(es['log'].ww['product_id'], parent_dataframe_name="sessions", primitive=threecommon)
 
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='customers',
                                    entityset=es,

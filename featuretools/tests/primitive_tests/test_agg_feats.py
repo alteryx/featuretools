@@ -113,7 +113,7 @@ def test_count_null_and_make_agg_primitive(pd_es):
         stack_on_self=False,
         cls_attributes={"generate_name": count_generate_name}
     )
-    count_null = ft.Feature(pd_es, 'log', 'value', parent_dataframe_name='sessions', primitive=Count(count_null=True))
+    count_null = ft.Feature(pd_es['log'].ww['value'], parent_dataframe_name='sessions', primitive=Count(count_null=True))
     feature_matrix = ft.calculate_feature_matrix([count_null], entityset=pd_es)
     values = [5, 4, 1, 2, 3, 2]
     assert (values == feature_matrix[count_null.get_name()]).all()
@@ -568,7 +568,7 @@ def test_custom_primitive_default_kwargs(es):
                                    return_type=ColumnSchema(semantic_tags={'numeric'}))
 
     sum_n_1_n = 1
-    sum_n_1_base_f = ft.Feature(es, 'log', 'value')
+    sum_n_1_base_f = ft.Feature(es['log'].ww['value'])
     sum_n_1 = ft.Feature([sum_n_1_base_f], parent_dataframe_name='sessions', primitive=SumNTimes(n=sum_n_1_n))
     sum_n_2_n = 2
     sum_n_2_base_f = ft.Feature(es, 'log', 'value_2')
@@ -623,7 +623,7 @@ def test_make_three_most_common(pd_es):
 
 def test_stacking_multi(pd_es):
     threecommon = NMostCommon(3)
-    tc = ft.Feature(pd_es, 'log', 'product_id', parent_dataframe_name="sessions", primitive=threecommon)
+    tc = ft.Feature(pd_es['log'].ww['product_id'], parent_dataframe_name="sessions", primitive=threecommon)
 
     stacked = []
     for i in range(3):

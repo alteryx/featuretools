@@ -39,7 +39,7 @@ def test_copy_features_does_not_copy_entityset(es):
 
 
 def test_get_dependencies(es):
-    f = ft.Feature(es, 'log', 'value')
+    f = ft.Feature(es['log'].ww['value'])
     agg1 = ft.Feature(f, parent_dataframe_name='sessions', primitive=Sum)
     agg2 = ft.Feature(agg1, parent_dataframe_name='customers', primitive=Sum)
     d1 = ft.Feature(agg2, 'sessions')
@@ -53,8 +53,8 @@ def test_get_dependencies(es):
 
 
 def test_get_depth(es):
-    f = ft.Feature(es, 'log', 'value')
-    g = ft.Feature(es, 'log', 'value')
+    f = ft.Feature(es['log'].ww['value'])
+    g = ft.Feature(es['log'].ww['value'])
     agg1 = ft.Feature(f, parent_dataframe_name='sessions', primitive=Last)
     agg2 = ft.Feature(agg1, parent_dataframe_name='customers', primitive=Last)
     d1 = ft.Feature(agg2, 'sessions')
@@ -72,7 +72,7 @@ def test_get_depth(es):
 
 
 def test_squared(es):
-    feature = ft.Feature(es, 'log', 'value')
+    feature = ft.Feature(es['log'].ww['value'])
     squared = feature * feature
     assert len(squared.base_features) == 2
     assert squared.base_features[0].unique_name() == squared.base_features[1].unique_name()
@@ -245,7 +245,7 @@ def test_to_dictionary_trans(es):
 
 
 def test_to_dictionary_groupby_trans(es):
-    id_feat = ft.Feature(es, 'log', 'product_id')
+    id_feat = ft.Feature(es['log'].ww['product_id'])
     groupby_feature = ft.Feature(es, 'log', 'value', primitive=Negate, groupby=id_feat)
 
     expected = {
@@ -263,7 +263,7 @@ def test_to_dictionary_groupby_trans(es):
 
 
 def test_to_dictionary_multi_slice(es):
-    slice_feature = ft.Feature(es, 'log', 'product_id', parent_dataframe_name='customers', primitive=NMostCommon(n=2))[0]
+    slice_feature = ft.Feature(es['log'].ww['product_id'], parent_dataframe_name='customers', primitive=NMostCommon(n=2))[0]
 
     expected = {
         'type': 'FeatureOutputSlice',
@@ -278,7 +278,7 @@ def test_to_dictionary_multi_slice(es):
 
 def test_multi_output_base_error_agg(es):
     three_common = NMostCommon(3)
-    tc = ft.Feature(es, 'log', 'product_id', parent_dataframe_name="sessions", primitive=three_common)
+    tc = ft.Feature(es['log'].ww['product_id'], parent_dataframe_name="sessions", primitive=three_common)
     error_text = "Cannot stack on whole multi-output feature."
     with pytest.raises(ValueError, match=error_text):
         ft.Feature(tc, parent_dataframe_name='customers', primitive=NumUnique)
@@ -299,7 +299,7 @@ def test_multi_output_base_error_trans(es):
 
 
 def test_multi_output_attributes(es):
-    tc = ft.Feature(es, 'log', 'product_id', parent_dataframe_name="sessions", primitive=NMostCommon)
+    tc = ft.Feature(es['log'].ww['product_id'], parent_dataframe_name="sessions", primitive=NMostCommon)
 
     assert tc.generate_name() == 'N_MOST_COMMON(log.product_id)'
     assert tc.number_output_features == 3
@@ -313,12 +313,12 @@ def test_multi_output_attributes(es):
 
 def test_multi_output_index_error(es):
     error_text = "can only access slice of multi-output feature"
-    three_common = ft.Feature(es, 'log', 'product_id',
+    three_common = ft.Feature(es['log'].ww['product_id'],
                               parent_dataframe_name="sessions",
                               primitive=NMostCommon)
 
     with pytest.raises(AssertionError, match=error_text):
-        single = ft.Feature(es, 'log', 'product_id',
+        single = ft.Feature(es['log'].ww['product_id'],
                             parent_dataframe_name="sessions",
                             primitive=NumUnique)
         single[0]
@@ -333,14 +333,14 @@ def test_multi_output_index_error(es):
 
 
 def test_rename(es):
-    feat = ft.Feature(es, 'log', 'id', parent_dataframe_name='sessions', primitive=Count)
+    feat = ft.Feature(es['log'].ww['id'], parent_dataframe_name='sessions', primitive=Count)
     new_name = 'session_test'
     new_names = ['session_test']
     check_rename(feat, new_name, new_names)
 
 
 def test_rename_multioutput(es):
-    feat = ft.Feature(es, 'log', 'product_id',
+    feat = ft.Feature(es['log'].ww['product_id'],
                       parent_dataframe_name='customers',
                       primitive=NMostCommon(n=2))
     new_name = 'session_test'
@@ -349,7 +349,7 @@ def test_rename_multioutput(es):
 
 
 def test_rename_featureoutputslice(es):
-    multi_output_feat = ft.Feature(es, 'log', 'product_id',
+    multi_output_feat = ft.Feature(es['log'].ww['product_id'],
                                    parent_dataframe_name='customers',
                                    primitive=NMostCommon(n=2))
     feat = ft.feature_base.FeatureOutputSlice(multi_output_feat, 0)

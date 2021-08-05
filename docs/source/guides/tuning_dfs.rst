@@ -19,7 +19,7 @@ By using seed features, we can include domain specific knowledge in feature engi
 
 .. ipython:: python
 
-    expensive_purchase = ft.Feature(es["transactions"]["amount"]) > 125
+    expensive_purchase = ft.Feature(es["transactions"].ww["amount"]) > 125
 
     feature_matrix, feature_defs = ft.dfs(entityset=es,
                                           target_dataframe="customers",

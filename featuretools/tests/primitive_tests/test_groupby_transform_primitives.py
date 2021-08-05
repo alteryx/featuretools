@@ -269,7 +269,7 @@ def test_cum_handles_uses_full_dataframe(pd_es):
         assert (df_2.loc[2] == df_1.loc[2]).all()
 
     for primitive in [CumSum, CumMean, CumMax, CumMin]:
-        check(ft.Feature(pd_es, 'log', 'value', groupby=ft.IdentityFeature(pd_es['log'].ww['session_id']), primitive=primitive))
+        check(ft.Feature(pd_es['log'].ww['value'], groupby=ft.IdentityFeature(pd_es['log'].ww['session_id']), primitive=primitive))
 
     check(ft.Feature(ft.IdentityFeature(pd_es['log'].ww['session_id']), groupby=ft.IdentityFeature(pd_es['log'].ww['session_id']), primitive=CumCount))
 
