@@ -99,7 +99,7 @@ def test_base_features_not_in_list(es):
 
 def test_where_feature_dependency(es):
     value = ft.IdentityFeature(es['log'].ww['value'])
-    is_purchased = ft.IdentityFeature(es, 'log', 'purchased')
+    is_purchased = ft.IdentityFeature(es['log'].ww['purchased'])
     max_feature = ft.AggregationFeature(value, 'sessions', ft.primitives.Max,
                                         where=is_purchased)
     features = [max_feature]

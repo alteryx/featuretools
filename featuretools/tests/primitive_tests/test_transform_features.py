@@ -67,7 +67,7 @@ from featuretools.utils.koalas_utils import pd_to_ks_clean
 
 def test_init_and_name(es):
     log = es['log']
-    rating = ft.Feature(ft.IdentityFeature(es, "products", "rating"), "log")
+    rating = ft.Feature(ft.IdentityFeature(es["products"].ww["rating"]), "log")
     log_features = [ft.Feature(es, 'log', col) for col in log.columns] +\
         [ft.Feature(rating, primitive=GreaterThanScalar(2.5))]
     # Add Timedelta feature
@@ -199,8 +199,8 @@ def simple_es(request):
 
 
 def test_equal_categorical(simple_es):
-    f1 = ft.Feature([ft.IdentityFeature(simple_es, 'values', 'value'),
-                     ft.IdentityFeature(simple_es, 'values', 'value2')],
+    f1 = ft.Feature([ft.IdentityFeature(simple_es['values'].ww['value']),
+                     ft.IdentityFeature(simple_es['values'].ww['value2'])],
                     primitive=Equal)
 
     df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1])
@@ -212,11 +212,11 @@ def test_equal_categorical(simple_es):
 
 
 def test_equal_different_dtypes(simple_es):
-    f1 = ft.Feature([ft.IdentityFeature(simple_es, 'values', 'object'),
-                     ft.IdentityFeature(simple_es, 'values', 'datetime')],
+    f1 = ft.Feature([ft.IdentityFeature(simple_es['values'].ww['object']),
+                     ft.IdentityFeature(simple_es['values'].ww['datetime'])],
                     primitive=Equal)
-    f2 = ft.Feature([ft.IdentityFeature(simple_es, 'values', 'datetime'),
-                     ft.IdentityFeature(simple_es, 'values', 'object')],
+    f2 = ft.Feature([ft.IdentityFeature(simple_es['values'].ww['datetime']),
+                     ft.IdentityFeature(simple_es['values'].ww['object'])],
                     primitive=Equal)
 
     # verify that equals works for different dtypes regardless of order
@@ -227,8 +227,8 @@ def test_equal_different_dtypes(simple_es):
 
 
 def test_not_equal_categorical(simple_es):
-    f1 = ft.Feature([ft.IdentityFeature(simple_es, 'values', 'value'),
-                     ft.IdentityFeature(simple_es, 'values', 'value2')],
+    f1 = ft.Feature([ft.IdentityFeature(simple_es['values'].ww['value']),
+                     ft.IdentityFeature(simple_es['values'].ww['value2'])],
                     primitive=NotEqual)
 
     df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1])
@@ -241,11 +241,11 @@ def test_not_equal_categorical(simple_es):
 
 
 def test_not_equal_different_dtypes(simple_es):
-    f1 = ft.Feature([ft.IdentityFeature(simple_es, 'values', 'object'),
-                     ft.IdentityFeature(simple_es, 'values', 'datetime')],
+    f1 = ft.Feature([ft.IdentityFeature(simple_es['values'].ww['object']),
+                     ft.IdentityFeature(simple_es['values'].ww['datetime'])],
                     primitive=NotEqual)
-    f2 = ft.Feature([ft.IdentityFeature(simple_es, 'values', 'datetime'),
-                     ft.IdentityFeature(simple_es, 'values', 'object')],
+    f2 = ft.Feature([ft.IdentityFeature(simple_es['values'].ww['datetime']),
+                     ft.IdentityFeature(simple_es['values'].ww['object'])],
                     primitive=NotEqual)
 
     # verify that equals works for different dtypes regardless of order
