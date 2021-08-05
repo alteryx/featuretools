@@ -22,14 +22,14 @@ def to_pandas(df, index=None, sort_index=False, int_index=False):
         return df
 
     if isinstance(df, (dd.DataFrame, dd.Series)):
-        pd_df = df.compute()
+        pd_df = df.ww.compute()
     if is_instance(df, (ks, ks), ('DataFrame', 'Series')):
-        pd_df = df.to_pandas()
+        pd_df = df.ww.to_pandas()
 
     if index:
-        pd_df = pd_df.set_index(index)
+        pd_df.ww.set_index(index)
     if sort_index:
-        pd_df = pd_df.sort_index()
+        pd_df = pd_df.ww.sort_index()
     if int_index and isinstance(df, dd.DataFrame):
         pd_df.index = pd.Int64Index(pd_df.index)
 

@@ -291,3 +291,16 @@ def replace_inf_values(feature_matrix, replacement_value=np.nan, columns=None):
     else:
         feature_matrix[columns] = feature_matrix[columns].replace([np.inf, -np.inf], replacement_value)
     return feature_matrix
+
+
+def get_ww_types_from_features(features):
+    """ TODO """
+    logical_types = {}
+    semantic_tags = {}
+    for feature in features:
+        names = feature.get_feature_names()
+        for name in names:
+            logical_types[name] = feature.column_schema.logical_type
+            semantic_tags[name] = feature.column_schema.semantic_tags
+
+    return logical_types, semantic_tags

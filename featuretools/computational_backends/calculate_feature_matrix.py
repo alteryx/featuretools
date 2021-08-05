@@ -21,6 +21,7 @@ from featuretools.computational_backends.utils import (
     bin_cutoff_times,
     create_client_and_cluster,
     gather_approximate_features,
+    get_ww_types_from_features,
     gen_empty_approx_features_df,
     save_csv_decorator
 )
@@ -316,6 +317,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             if not cutoff_time_in_index:
                 feature_matrix.reset_index(level='time', drop=True, inplace=True)
 
+        ltypes, tags = get_ww_types_from_features(features)
+        feature_matrix.ww.init(logical_types=ltypes, semantic_tags=tags)
         if save_progress and os.path.exists(os.path.join(save_progress, 'temp')):
             shutil.rmtree(os.path.join(save_progress, 'temp'))
 
