@@ -1,5 +1,5 @@
 pyspark==3.0.0
-koalas==1.1.0
+koalas==1.8.0
 scipy==1.3.2
 numpy==1.17.5
 pandas==1.3.0
