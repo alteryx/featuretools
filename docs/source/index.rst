@@ -61,7 +61,7 @@ First, we specify a dictionary with all the entities in our dataset.
 
 .. ipython:: python
 
-    entities = {
+    dataframes = {
        "customers" : (customers_df, "customer_id"),
        "sessions" : (sessions_df, "session_id", "session_start"),
        "transactions" : (transactions_df, "transaction_id", "transaction_time")
@@ -96,9 +96,9 @@ Let's first create a feature matrix for each customer in the data
 
 .. ipython:: python
 
-    feature_matrix_customers, features_defs = ft.dfs(entities=entities,
+    feature_matrix_customers, features_defs = ft.dfs(dataframes=dataframes,
                                                      relationships=relationships,
-                                                     target_dataframe="customers")
+                                                     target_dataframe_name="customers")
     feature_matrix_customers
 
 We now have dozens of new features to describe a customer's behavior.
@@ -111,9 +111,9 @@ One of the reasons DFS is so powerful is that it can create a feature matrix for
 
 .. ipython:: python
 
-    feature_matrix_sessions, features_defs = ft.dfs(entities=entities,
+    feature_matrix_sessions, features_defs = ft.dfs(dataframes={name: (df[0],) for name,df in dataframes.items()},
                                                     relationships=relationships,
-                                                    target_dataframe="sessions")
+                                                    target_dataframe_name="sessions")
     feature_matrix_sessions.head(5)
 
 

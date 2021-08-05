@@ -32,11 +32,12 @@ Koalas ``EntitySets`` require Koalas and PySpark. Both can be installed directly
 Now that we have our Koalas dataframe, we can start to create the ``EntitySet``. The current implementation does not support logical type inference for Koalas entities, so we must pass a dictionary of logical types using the ``logical_types`` parameter when calling ``es.add_dataframe()``. Aside from needing to supply the logical types, the rest of the process of creating an ``EntitySet`` is the same as if we were using pandas dataframes.
 
 .. ipython:: python
+    import woodwork as ww
 
     es = ft.EntitySet(id="koalas_es")
-    es = es.add_dataframe(
-        dataframe_name="koalas_entity",
+    es.add_dataframe(
         dataframe=koalas_df,
+        dataframe_name="koalas_df",
         index="id",
         logical_types={"id": ww.logical_types.Integer, "values": ww.logical_types.Double})
 
@@ -49,9 +50,8 @@ Running DFS
 We can pass the ``EntitySet`` we created above to ``featuretools.dfs`` in order to create a feature matrix. If the ``EntitySet`` we pass to ``dfs`` is made of Koalas entities, the feature matrix we get back will be a Koalas dataframe.
 
 .. ipython:: python
-
     feature_matrix, features = ft.dfs(entityset=es,
-                                      target_dataframe_name="koalas_entity",
+                                      target_dataframe_name="koalas_df",
                                       trans_primitives=["negate"],
                                       max_depth=1)
     feature_matrix
