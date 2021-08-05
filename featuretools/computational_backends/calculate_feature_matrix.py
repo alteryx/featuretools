@@ -21,8 +21,8 @@ from featuretools.computational_backends.utils import (
     bin_cutoff_times,
     create_client_and_cluster,
     gather_approximate_features,
-    get_ww_types_from_features,
     gen_empty_approx_features_df,
+    get_ww_types_from_features,
     save_csv_decorator
 )
 from featuretools.entityset.relationship import RelationshipPath
