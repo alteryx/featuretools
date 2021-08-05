@@ -12,6 +12,7 @@ from featuretools.feature_base import (
     IdentityFeature,
     TransformFeature
 )
+from featuretools.feature_base.utils import is_valid_input
 from featuretools.primitives import (
     Absolute,
     AddNumeric,
@@ -42,7 +43,6 @@ from featuretools.primitives import (
 )
 from featuretools.primitives.standard.transform_primitive import Negate
 from featuretools.synthesis import DeepFeatureSynthesis
-from featuretools.synthesis.utils import _schemas_equal
 from featuretools.tests.testing_utils import (
     feature_with_name,
     make_ecommerce_entityset
@@ -868,21 +868,21 @@ def test_return_types(es):
     f3_types = [f.column_schema for f in f3]
     f4_types = [f.column_schema for f in f4]
 
-    assert any([_schemas_equal(schema, discrete) for schema in f1_types])
-    assert any([_schemas_equal(schema, numeric) for schema in f1_types])
-    assert not any([_schemas_equal(schema, datetime) for schema in f1_types])
+    assert any([is_valid_input(schema, discrete) for schema in f1_types])
+    assert any([is_valid_input(schema, numeric) for schema in f1_types])
+    assert not any([is_valid_input(schema, datetime) for schema in f1_types])
 
-    assert any([_schemas_equal(schema, discrete) for schema in f2_types])
-    assert not any([_schemas_equal(schema, numeric) for schema in f2_types])
-    assert not any([_schemas_equal(schema, datetime) for schema in f2_types])
+    assert any([is_valid_input(schema, discrete) for schema in f2_types])
+    assert not any([is_valid_input(schema, numeric) for schema in f2_types])
+    assert not any([is_valid_input(schema, datetime) for schema in f2_types])
 
-    assert any([_schemas_equal(schema, discrete) for schema in f3_types])
-    assert any([_schemas_equal(schema, numeric) for schema in f3_types])
-    assert any([_schemas_equal(schema, datetime) for schema in f3_types])
+    assert any([is_valid_input(schema, discrete) for schema in f3_types])
+    assert any([is_valid_input(schema, numeric) for schema in f3_types])
+    assert any([is_valid_input(schema, datetime) for schema in f3_types])
 
-    assert not any([_schemas_equal(schema, discrete) for schema in f4_types])
-    assert not any([_schemas_equal(schema, numeric) for schema in f4_types])
-    assert any([_schemas_equal(schema, datetime) for schema in f4_types])
+    assert not any([is_valid_input(schema, discrete) for schema in f4_types])
+    assert not any([is_valid_input(schema, numeric) for schema in f4_types])
+    assert any([is_valid_input(schema, datetime) for schema in f4_types])
 
 
 def test_checks_primitives_correct_type(es):

@@ -14,6 +14,7 @@ from featuretools.feature_base import (
     IdentityFeature,
     TransformFeature
 )
+from featuretools.feature_base.utils import is_valid_input
 from featuretools.primitives.base import (
     AggregationPrimitive,
     PrimitiveBase,
@@ -25,7 +26,6 @@ from featuretools.primitives.options_utils import (
     generate_all_primitive_options,
     ignore_dataframe_for_primitive
 )
-from featuretools.synthesis.utils import _schemas_equal
 from featuretools.utils.gen_utils import Library
 
 logger = logging.getLogger('featuretools')
@@ -313,7 +313,7 @@ class DeepFeatureSynthesis(object):
         if return_types != 'all':
             new_features = [
                 f for f in new_features
-                if any(_schemas_equal(f.column_schema, schema) for schema in return_types)]
+                if any(is_valid_input(f.column_schema, schema) for schema in return_types)]
         new_features = list(filter(filt, new_features))
 
         new_features.sort(key=lambda f: f.get_depth())
@@ -786,7 +786,7 @@ class DeepFeatureSynthesis(object):
         for feat in dataframe_features:
             f = dataframe_features[feat]
             if (column_schemas == 'all' or
-                    any(_schemas_equal(f.column_schema, schema) for schema in column_schemas)):
+                    any(is_valid_input(f.column_schema, schema) for schema in column_schemas)):
                 if max_depth is None or f.get_depth(stop_at=self.seed_features) <= max_depth:
                     selected_features.append(f)
 
@@ -840,7 +840,7 @@ class DeepFeatureSynthesis(object):
 
 def _match_contains_numeric_foreign_key(match):
     match_schema = ColumnSchema(semantic_tags={'foreign_key', 'numeric'})
-    return any(_schemas_equal(f.column_schema, match_schema) for f in match)
+    return any(is_valid_input(f.column_schema, match_schema) for f in match)
 
 
 def check_transform_stacking(inputs):
@@ -898,7 +898,7 @@ def check_stacking(primitive, inputs):
 def match_by_schema(features, column_schema):
     matches = []
     for f in features:
-        if _schemas_equal(f.column_schema, column_schema):
+        if is_valid_input(f.column_schema, column_schema):
             matches += [f]
     return matches
 

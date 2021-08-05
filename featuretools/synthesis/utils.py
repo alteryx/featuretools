@@ -54,14 +54,3 @@ def get_unused_primitives(specified, used):
         return []
     specified = {primitive if isinstance(primitive, str) else primitive.name for primitive in specified}
     return sorted(list(specified.difference(used)))
-
-
-def _schemas_equal(feature_schema, primitive_schema):
-    """Checks if a feature schema matches a primitive schema"""
-    if primitive_schema.logical_type and \
-            not isinstance(feature_schema.logical_type, type(primitive_schema.logical_type)):
-        return False
-    if primitive_schema.semantic_tags and \
-            not primitive_schema.semantic_tags.issubset(feature_schema.semantic_tags):
-        return False
-    return True
