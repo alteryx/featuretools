@@ -297,10 +297,14 @@ def get_ww_types_from_features(features):
     """ TODO """
     logical_types = {}
     semantic_tags = {}
+    origins = {}
     for feature in features:
         names = feature.get_feature_names()
         for name in names:
             logical_types[name] = feature.column_schema.logical_type
             semantic_tags[name] = feature.column_schema.semantic_tags
-
-    return logical_types, semantic_tags
+        if all([f.primitive is None for f in feature.get_dependencies(deep=True)]):
+            origins[name] = "base"
+        else:
+            origins[name] = "engineered"
+    return logical_types, semantic_tags, origins
