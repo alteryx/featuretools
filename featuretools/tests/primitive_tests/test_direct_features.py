@@ -233,7 +233,7 @@ def test_direct_with_no_path(diamond_es):
 
 
 def test_serialization(es):
-    value = ft.IdentityFeature(es, 'products', 'rating')
+    value = ft.IdentityFeature(es['products'].ww['rating'])
     direct = DirectFeature(value, 'log')
 
     log_to_products = next(r for r in es.get_forward_relationships('log')

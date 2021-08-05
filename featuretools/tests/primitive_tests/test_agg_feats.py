@@ -57,8 +57,8 @@ def test_primitive():
 
 
 def test_get_depth(es):
-    log_id_feat = ft.IdentityFeature(es, 'log', 'id')
-    customer_id_feat = ft.IdentityFeature(es, 'customers', 'id')
+    log_id_feat = ft.IdentityFeature(es['log'].ww['id'])
+    customer_id_feat = ft.IdentityFeature(es['customers'].ww['id'])
     count_logs = ft.Feature(log_id_feat, parent_dataframe_name='sessions', primitive=Count)
     sum_count_logs = ft.Feature(count_logs, parent_dataframe_name='customers', primitive=Sum)
     num_logs_greater_than_5 = sum_count_logs > 5
@@ -251,7 +251,7 @@ def test_invalid_init_args(diamond_es):
     error_text = 'parent_dataframe must match first relationship in path'
     with pytest.raises(AssertionError, match=error_text):
         path = backward_path(diamond_es, ['stores', 'transactions'])
-        ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'transactions', 'amount'),
+        ft.AggregationFeature(ft.IdentityFeature(diamond_es['transactions'].ww['amount']),
                               'customers',
                               ft.primitives.Mean,
                               relationship_path=path)
@@ -259,7 +259,7 @@ def test_invalid_init_args(diamond_es):
     error_text = 'Base feature must be defined on the dataframe at the end of relationship_path'
     with pytest.raises(AssertionError, match=error_text):
         path = backward_path(diamond_es, ['regions', 'stores'])
-        ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'transactions', 'amount'),
+        ft.AggregationFeature(ft.IdentityFeature(diamond_es['transactions'].ww['amount']),
                               'regions',
                               ft.primitives.Mean,
                               relationship_path=path)
@@ -269,7 +269,7 @@ def test_invalid_init_args(diamond_es):
         backward = backward_path(diamond_es, ['customers', 'transactions'])
         forward = RelationshipPath([(True, r) for _, r in backward])
         path = RelationshipPath(list(forward) + list(backward))
-        ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'transactions', 'amount'),
+        ft.AggregationFeature(ft.IdentityFeature(diamond_es['transactions'].ww['amount']),
                               'transactions',
                               ft.primitives.Mean,
                               relationship_path=path)
@@ -279,13 +279,13 @@ def test_init_with_multiple_possible_paths(diamond_es):
     error_text = "There are multiple possible paths to the base dataframe. " \
                  "You must specify a relationship path."
     with pytest.raises(RuntimeError, match=error_text):
-        ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'transactions', 'amount'),
+        ft.AggregationFeature(ft.IdentityFeature(diamond_es['transactions'].ww['amount']),
                               'regions',
                               ft.primitives.Mean)
 
     # Does not raise if path specified.
     path = backward_path(diamond_es, ['regions', 'customers', 'transactions'])
-    ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'transactions', 'amount'),
+    ft.AggregationFeature(ft.IdentityFeature(diamond_es['transactions'].ww['amount']),
                           'regions',
                           ft.primitives.Mean,
                           relationship_path=path)
@@ -294,7 +294,7 @@ def test_init_with_multiple_possible_paths(diamond_es):
 def test_init_with_single_possible_path(diamond_es):
     # This uses diamond_es to test that there being a cycle somewhere in the
     # graph doesn't cause an error.
-    feat = ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'transactions', 'amount'),
+    feat = ft.AggregationFeature(ft.IdentityFeature(diamond_es['transactions'].ww['amount']),
                                  'customers',
                                  ft.primitives.Mean)
     expected_path = backward_path(diamond_es, ['customers', 'transactions'])
@@ -304,20 +304,20 @@ def test_init_with_single_possible_path(diamond_es):
 def test_init_with_no_path(diamond_es):
     error_text = 'No backward path from "transactions" to "customers" found.'
     with pytest.raises(RuntimeError, match=error_text):
-        ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'customers', 'name'),
+        ft.AggregationFeature(ft.IdentityFeature(diamond_es['customers'].ww['name']),
                               'transactions',
                               ft.primitives.Count)
 
     error_text = 'No backward path from "transactions" to "transactions" found.'
     with pytest.raises(RuntimeError, match=error_text):
-        ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'transactions', 'amount'),
+        ft.AggregationFeature(ft.IdentityFeature(diamond_es['transactions'].ww['amount']),
                               'transactions',
                               ft.primitives.Mean)
 
 
 def test_name_with_multiple_possible_paths(diamond_es):
     path = backward_path(diamond_es, ['regions', 'customers', 'transactions'])
-    feat = ft.AggregationFeature(ft.IdentityFeature(diamond_es, 'transactions', 'amount'),
+    feat = ft.AggregationFeature(ft.IdentityFeature(diamond_es['transactions'].ww['amount']),
                                  'regions',
                                  ft.primitives.Mean,
                                  relationship_path=path)
@@ -330,7 +330,7 @@ def test_copy(games_es):
     home_games = next(r for r in games_es.relationships
                       if r._child_column_name == 'home_team_id')
     path = RelationshipPath([(False, home_games)])
-    feat = ft.AggregationFeature(ft.IdentityFeature(games_es, 'games', 'home_team_score'),
+    feat = ft.AggregationFeature(ft.IdentityFeature(games_es['games'].ww['home_team_score']),
                                  'teams',
                                  relationship_path=path,
                                  primitive=ft.primitives.Mean)
@@ -343,7 +343,7 @@ def test_copy(games_es):
 
 def test_serialization(es):
     primitives_deserializer = PrimitivesDeserializer()
-    value = ft.IdentityFeature(es, 'log', 'value')
+    value = ft.IdentityFeature(es['log'].ww['value'])
     primitive = ft.primitives.Max()
     max1 = ft.AggregationFeature(value, 'customers', primitive)
 
@@ -364,7 +364,7 @@ def test_serialization(es):
                                                          primitives_deserializer)
     _assert_agg_feats_equal(max1, deserialized)
 
-    is_purchased = ft.IdentityFeature(es, 'log', 'purchased')
+    is_purchased = ft.IdentityFeature(es['log'].ww['purchased'])
     use_previous = ft.Timedelta(3, 'd')
     max2 = ft.AggregationFeature(value, 'customers', primitive,
                                  where=is_purchased, use_previous=use_previous)

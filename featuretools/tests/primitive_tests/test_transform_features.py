@@ -111,7 +111,7 @@ def test_relationship_path(es):
 
 
 def test_serialization(es):
-    value = ft.IdentityFeature(es, 'log', 'value')
+    value = ft.IdentityFeature(es['log'].ww['value'])
     primitive = ft.primitives.MultiplyNumericScalar(value=2)
     value_x2 = ft.TransformFeature(value, primitive)
 

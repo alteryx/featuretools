@@ -207,7 +207,7 @@ def test_to_dictionary_agg(es):
 
 def test_to_dictionary_where(es):
     actual = ft.Feature(es, 'log', 'value', parent_dataframe_name='sessions',
-                        where=ft.IdentityFeature(es, 'log', 'value') == 2, primitive=Sum).to_dictionary()
+                        where=ft.IdentityFeature(es['log'].ww['value']) == 2, primitive=Sum).to_dictionary()
 
     expected = {
         'type': 'AggregationFeature',

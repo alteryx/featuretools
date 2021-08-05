@@ -7,9 +7,9 @@ from featuretools.utils import Trie
 
 def test_feature_trie_without_needs_full_dataframe(diamond_es):
     es = diamond_es
-    country_name = ft.IdentityFeature(es, 'countries', 'name')
+    country_name = ft.IdentityFeature(es['countries'].ww['name'])
     direct_name = ft.DirectFeature(country_name, 'regions')
-    amount = ft.IdentityFeature(es, 'transactions', 'amount')
+    amount = ft.IdentityFeature(es['transactions'].ww['amount'])
 
     path_through_customers = backward_path(es, ['regions', 'customers', 'transactions'])
     through_customers = ft.AggregationFeature(amount, 'regions',
@@ -51,7 +51,7 @@ def test_feature_trie_without_needs_full_dataframe(diamond_es):
 
 def test_feature_trie_with_needs_full_dataframe(diamond_es):
     pd_es = diamond_es
-    amount = ft.IdentityFeature(pd_es, 'transactions', 'amount')
+    amount = ft.IdentityFeature(pd_es['transactions'].ww['amount'])
 
     path_through_customers = backward_path(pd_es, ['regions', 'customers', 'transactions'])
     agg = ft.AggregationFeature(amount, 'regions',
@@ -80,7 +80,7 @@ def test_feature_trie_with_needs_full_dataframe(diamond_es):
 
 
 def test_feature_trie_with_needs_full_dataframe_direct(es):
-    value = ft.IdentityFeature(es, 'log', 'value')
+    value = ft.IdentityFeature(es['log'].ww['value'])
     agg = ft.AggregationFeature(value, 'sessions',
                                 primitive=ft.primitives.Mean)
     agg_of_agg = ft.AggregationFeature(agg, 'customers',
@@ -109,7 +109,7 @@ def test_feature_trie_with_needs_full_dataframe_direct(es):
 
 
 def test_feature_trie_ignores_approximate_features(es):
-    value = ft.IdentityFeature(es, 'log', 'value')
+    value = ft.IdentityFeature(es['log'].ww['value'])
     agg = ft.AggregationFeature(value, 'sessions',
                                 primitive=ft.primitives.Mean)
     agg_of_agg = ft.AggregationFeature(agg, 'customers',

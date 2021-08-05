@@ -675,7 +675,7 @@ def test_agg_empty_child(es):
 def test_diamond_entityset(diamond_es):
     es = diamond_es
 
-    amount = ft.IdentityFeature(es, 'transactions', 'amount')
+    amount = ft.IdentityFeature(es['transactions'].ww['amount'])
     path = backward_path(es, ['regions', 'customers', 'transactions'])
     through_customers = ft.AggregationFeature(amount, 'regions',
                                               primitive=ft.primitives.Sum,
