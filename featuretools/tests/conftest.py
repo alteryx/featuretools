@@ -147,7 +147,7 @@ def pd_diamond_es():
         'id': range(3),
         'country_id': [0, 0, 1],
         'name': ['Northeast', 'South', 'Quebec'],
-    })
+    }).astype({'name': 'category'})
     stores_df = pd.DataFrame({
         'id': range(5),
         'region_id': [0, 1, 2, 2, 1],

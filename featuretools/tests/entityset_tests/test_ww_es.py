@@ -31,7 +31,7 @@ def test_empty_es():
 
 @pytest.fixture
 def pd_df():
-    return pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'c']})
+    return pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'c']}).astype({'category': 'category'})
 
 
 @pytest.fixture
