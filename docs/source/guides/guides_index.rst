@@ -14,4 +14,3 @@ Guides on more advanced Featuretools functionality
    deployment
    advanced_custom_primitives
    feature_descriptions
-   feature_selection

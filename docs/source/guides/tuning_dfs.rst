@@ -52,8 +52,8 @@ We then specify the aggregation primitive to make where clauses for using ``wher
 
     feature_matrix, feature_defs = ft.dfs(entityset=es,
                                           target_dataframe_name="customers",
-                                          agg_primitives=["count", "avg_time_between"],
-                                          where_primitives=["count", "avg_time_between"],
+                                          agg_primitives=[],
+                                          where_primitives=[],
                                           trans_primitives=[])
     feature_matrix
 
@@ -61,7 +61,7 @@ Now, we have several new potentially useful features. For example, the two featu
 
 .. ipython:: python
 
-    feature_matrix[["COUNT(sessions WHERE device = tablet)", "AVG_TIME_BETWEEN(sessions.session_start WHERE device = tablet)"]]
+    feature_matrix
 
 We can see that customer who only had 0 or 1 sessions on a tablet, had ``NaN`` values for average time between such sessions.
 
