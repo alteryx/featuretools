@@ -152,6 +152,16 @@ You can list all the available semantic tags by calling ``featuretools.list_sema
 .. code-block:: python
 
     >>> ft.list_semantic_tags()
+    
+v0.26.1 Jul 23, 2021
+====================
+    * Fixes
+        * Set ``name`` attribute for ``EmailAddressToDomain`` primitive (:pr:`1543`)
+    * Documentation Changes
+        * Remove and ignore unnecessary graph files (:pr:`1544`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`davesque`, :user:`rwedge`
 
 v0.26.0 Jul 15, 2021
 ====================
