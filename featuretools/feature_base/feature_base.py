@@ -346,7 +346,8 @@ class IdentityFeature(FeatureBase):
     def __init__(self, column, name=None):
         self.column_name = column.ww.name
         self.return_type = column.ww.schema
-        super(IdentityFeature, self).__init__(column=column,
+        dataframe = column.ww.entityset[column.ww.dataframe_name]
+        super(IdentityFeature, self).__init__(dataframe=dataframe,
                                               base_features=[],
                                               relationship_path=RelationshipPath([]),
                                               primitive=PrimitiveBase,

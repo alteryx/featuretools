@@ -509,7 +509,7 @@ def test_make_dfeat_of_agg_feat_on_self(es):
 
     We're trying to calculate a DFeat from C to R on an agg_feat of R on C.
     """
-    customer_count_feat = ft.Feature(es['customers'].ww['id']), parent_dataframe_name=u'régions', primitive=Count)
+    customer_count_feat = ft.Feature(es['customers'].ww['id'], parent_dataframe_name=u'régions', primitive=Count)
 
     num_customers_feat = DirectFeature(customer_count_feat, child_dataframe_name='customers')
 

@@ -509,7 +509,7 @@ def test_training_window_overlap(pd_es):
     pd_es.add_last_time_indexes()
 
     count_log = ft.Feature(
-        ft.Feature(pd_es['log'].ww['id'],
+        ft.Feature(pd_es['log'].ww['id']),
         parent_dataframe_name='customers',
         primitive=Count,
     )
@@ -600,7 +600,7 @@ def test_include_cutoff_time_without_training_window(es):
 
 
 def test_approximate_dfeat_of_agg_on_target_include_cutoff_time(pd_es):
-    agg_feat = ft.Feature(ft.Feature(pd_es['log'].ww['id'], parent_dataframe_name='sessions', primitive=Count)
+    agg_feat = ft.Feature(ft.Feature(pd_es['log'].ww['id']), parent_dataframe_name='sessions', primitive=Count)
     agg_feat2 = ft.Feature(agg_feat, parent_dataframe_name='customers', primitive=Sum)
     dfeat = DirectFeature(agg_feat2, 'sessions')
 
@@ -663,7 +663,7 @@ def test_training_window_recent_time_index(pd_es):
     pd_es.update_dataframe(dataframe_name='customers', df=df, recalculate_last_time_indexes=False)
     pd_es.add_last_time_indexes()
 
-    property_feature = ft.Feature(ft.Feature(pd_es['log'].ww['id'], parent_dataframe_name='customers', primitive=Count)
+    property_feature = ft.Feature(ft.Feature(pd_es['log'].ww['id']), parent_dataframe_name='customers', primitive=Count)
     top_level_agg = ft.Feature(ft.Feature(pd_es['customers'].ww['id']), parent_dataframe_name=u'régions', primitive=Count)
     dagg = DirectFeature(top_level_agg, 'customers')
     instance_ids = [0, 1, 2, 3]
@@ -715,7 +715,7 @@ def test_approximate_fails_dask(dask_es):
 
 
 def test_approximate_multiple_instances_per_cutoff_time(pd_es):
-    agg_feat = ft.Feature(ft.Feature(pd_es['log'].ww['id'], parent_dataframe_name='sessions', primitive=Count)
+    agg_feat = ft.Feature(ft.Feature(pd_es['log'].ww['id']), parent_dataframe_name='sessions', primitive=Count)
     agg_feat2 = ft.Feature(agg_feat, parent_dataframe_name='customers', primitive=Sum)
     dfeat = DirectFeature(agg_feat2, 'sessions')
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
@@ -746,7 +746,7 @@ def test_approximate_with_multiple_paths(pd_diamond_es):
 
 
 def test_approximate_dfeat_of_agg_on_target(pd_es):
-    agg_feat = ft.Feature(ft.Feature(pd_es['log'].ww['id'], parent_dataframe_name='sessions', primitive=Count)
+    agg_feat = ft.Feature(ft.Feature(pd_es['log'].ww['id']), parent_dataframe_name='sessions', primitive=Count)
     agg_feat2 = ft.Feature(agg_feat, parent_dataframe_name='customers', primitive=Sum)
     dfeat = DirectFeature(agg_feat2, 'sessions')
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
@@ -842,7 +842,7 @@ def test_uses_full_dataframe_feat_of_approximate(pd_es):
 
 
 def test_approximate_dfeat_of_dfeat_of_agg_on_target(pd_es):
-    agg_feat = ft.Feature(ft.Feature(pd_es['log'].ww['id'], parent_dataframe_name='sessions', primitive=Count)
+    agg_feat = ft.Feature(ft.Feature(pd_es['log'].ww['id']), parent_dataframe_name='sessions', primitive=Count)
     agg_feat2 = ft.Feature(agg_feat, parent_dataframe_name='customers', primitive=Sum)
     dfeat = DirectFeature(ft.Feature(agg_feat2, 'sessions'), 'log')
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
@@ -858,7 +858,7 @@ def test_empty_path_approximate_full(pd_es):
     pd_es['sessions'].ww['customer_id'] = pd.Series([np.nan, np.nan, np.nan, 1, 1, 2], dtype="category")
     # Need to reassign the `foreign_key` tag as the column reassignment above removes it
     pd_es['sessions'].ww.set_types(semantic_tags={'customer_id': 'foreign_key'})
-    agg_feat = ft.Feature(ft.Feature(pd_es['log'].ww['id'], parent_dataframe_name='sessions', primitive=Count)
+    agg_feat = ft.Feature(ft.Feature(pd_es['log'].ww['id']), parent_dataframe_name='sessions', primitive=Count)
     agg_feat2 = ft.Feature(agg_feat, parent_dataframe_name='customers', primitive=Sum)
     dfeat = DirectFeature(agg_feat2, 'sessions')
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
@@ -895,7 +895,7 @@ def test_approx_base_feature_is_also_first_class_feature(pd_es):
 
 
 def test_approximate_time_split_returns_the_same_result(pd_es):
-    agg_feat = ft.Feature(ft.Feature(pd_es['log'].ww['id'], parent_dataframe_name='sessions', primitive=Count)
+    agg_feat = ft.Feature(ft.Feature(pd_es['log'].ww['id']), parent_dataframe_name='sessions', primitive=Count)
     agg_feat2 = ft.Feature(agg_feat, parent_dataframe_name='customers', primitive=Sum)
     dfeat = DirectFeature(agg_feat2, 'sessions')
 
@@ -929,7 +929,7 @@ def test_approximate_time_split_returns_the_same_result(pd_es):
 
 
 def test_approximate_returns_correct_empty_default_values(pd_es):
-    agg_feat = ft.Feature(ft.Feature(pd_es['log'].ww['id'], parent_dataframe_name='customers', primitive=Count)
+    agg_feat = ft.Feature(ft.Feature(pd_es['log'].ww['id']), parent_dataframe_name='customers', primitive=Count)
     dfeat = DirectFeature(agg_feat, 'sessions')
 
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-08 11:00:00'),
@@ -964,7 +964,7 @@ def test_approximate_child_aggs_handled_correctly(pd_es):
 
 
 def test_cutoff_time_naming(es):
-    agg_feat = ft.Feature(es['customers'].ww['id']), parent_dataframe_name=u'régions', primitive=Count)
+    agg_feat = ft.Feature(es['customers'].ww['id'], parent_dataframe_name=u'régions', primitive=Count)
     dfeat = DirectFeature(agg_feat, 'customers')
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-08 10:30:00'),
                                        pd.Timestamp('2011-04-09 10:30:06')],
@@ -1033,7 +1033,7 @@ def test_cutoff_time_extra_columns_approximate(pd_es):
 def test_cutoff_time_extra_columns_same_name(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('Distributed result not ordered')
-    agg_feat = ft.Feature(es['customers'].ww['id']), parent_dataframe_name=u'régions', primitive=Count)
+    agg_feat = ft.Feature(es['customers'].ww['id'], parent_dataframe_name=u'régions', primitive=Count)
     dfeat = DirectFeature(agg_feat, 'customers')
 
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
@@ -1102,7 +1102,7 @@ def test_instances_with_id_kept_after_cutoff(es):
 def test_cfm_returns_original_time_indexes(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('Distributed result not ordered, indexes are lost due to not multiindexing')
-    agg_feat = ft.Feature(es['customers'].ww['id']), parent_dataframe_name=u'régions', primitive=Count)
+    agg_feat = ft.Feature(es['customers'].ww['id'], parent_dataframe_name=u'régions', primitive=Count)
     dfeat = DirectFeature(agg_feat, 'customers')
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
                                        pd.Timestamp('2011-04-09 10:30:03'),
