@@ -68,11 +68,11 @@ from featuretools.utils.koalas_utils import pd_to_ks_clean
 def test_init_and_name(es):
     log = es['log']
     rating = ft.Feature(ft.IdentityFeature(es["products"].ww["rating"]), "log")
-    log_features = [ft.Feature(es, 'log', col) for col in log.columns] +\
+    log_features = [ft.Feature(es['log'].ww[col]) for col in log.columns] +\
         [ft.Feature(rating, primitive=GreaterThanScalar(2.5))]
     # Add Timedelta feature
     # features.append(pd.Timestamp.now() - ft.Feature(log['datetime']))
-    customers_features = [ft.Feature(es, "customers", col) for col in es["customers"].columns]
+    customers_features = [ft.Feature(es["customers"].ww[col]) for col in es["customers"].columns]
     trans_primitives = get_transform_primitives().values()
     # If Dask EntitySet use only Dask compatible primitives
     if es.dataframe_type == Library.DASK.value:
@@ -257,8 +257,8 @@ def test_not_equal_different_dtypes(simple_es):
 
 def test_diff(pd_es):
     value = ft.Feature(pd_es['log'].ww['value'])
-    customer_id_feat = ft.Feature(ft.Feature(pd_es, 'sessions', 'customer_id'), 'log')
-    diff1 = ft.Feature(value, groupby=ft.Feature(pd_es, 'log', 'session_id'), primitive=Diff)
+    customer_id_feat = ft.Feature(ft.Feature(pd_es['sessions'].ww['customer_id']), 'log')
+    diff1 = ft.Feature(value, groupby=ft.Feature(pd_es['log'].ww['session_id']), primitive=Diff)
     diff2 = ft.Feature(value, groupby=customer_id_feat, primitive=Diff)
 
     feature_set = FeatureSet([diff1, diff2])
@@ -285,7 +285,7 @@ def test_diff(pd_es):
 
 
 def test_diff_single_value(pd_es):
-    diff = ft.Feature(ft.Feature(pd_es, 'stores', 'num_square_feet'), groupby=ft.Feature(pd_es, 'stores', u'région_id'), primitive=Diff)
+    diff = ft.Feature(ft.Feature(pd_es['stores'].ww['num_square_feet']), groupby=ft.Feature(pd_es, 'stores', u'région_id'), primitive=Diff)
     feature_set = FeatureSet([diff])
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array([4]))
@@ -303,7 +303,7 @@ def test_diff_reordered(pd_es):
 
 
 def test_diff_single_value_is_nan(pd_es):
-    diff = ft.Feature(ft.Feature(pd_es, 'stores', 'num_square_feet'), groupby=ft.Feature(pd_es, 'stores', u'région_id'), primitive=Diff)
+    diff = ft.Feature(ft.Feature(pd_es['stores'].ww['num_square_feet']), groupby=ft.Feature(pd_es, 'stores', u'région_id'), primitive=Diff)
     feature_set = FeatureSet([diff])
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array([5]))
@@ -587,8 +587,8 @@ def test_not_feature(es):
 
 
 def test_arithmetic_of_agg(es):
-    customer_id_feat = ft.Feature(es, 'customers', 'id')
-    store_id_feat = ft.Feature(es, 'stores', 'id')
+    customer_id_feat = ft.Feature(es['customers'].ww['id'])
+    store_id_feat = ft.Feature(es['stores'].ww['id'])
     count_customer = ft.Feature(customer_id_feat, parent_dataframe_name=u'régions', primitive=Count)
     count_stores = ft.Feature(store_id_feat, parent_dataframe_name=u'régions', primitive=Count)
     to_test = [(AddNumeric, [6, 2]),
@@ -622,7 +622,7 @@ def test_arithmetic_of_agg(es):
 
 
 def test_latlong(pd_es):
-    log_latlong_feat = ft.Feature(pd_es, 'log', 'latlong')
+    log_latlong_feat = ft.Feature(pd_es['log'].ww['latlong'])
     latitude = ft.Feature(log_latlong_feat, primitive=Latitude)
     longitude = ft.Feature(log_latlong_feat, primitive=Longitude)
     features = [latitude, longitude]
@@ -646,7 +646,7 @@ def test_latlong_with_nan(pd_es):
     df['latlong'][2] = (np.nan, 4)
     df['latlong'][3] = (np.nan, np.nan)
     pd_es.update_dataframe(dataframe_name='log', df=df)
-    log_latlong_feat = ft.Feature(pd_es, 'log', 'latlong')
+    log_latlong_feat = ft.Feature(pd_es['log'].ww['latlong'])
     latitude = ft.Feature(log_latlong_feat, primitive=Latitude)
     longitude = ft.Feature(log_latlong_feat, primitive=Longitude)
     features = [latitude, longitude]
@@ -662,7 +662,7 @@ def test_latlong_with_nan(pd_es):
 
 
 def test_haversine(pd_es):
-    log_latlong_feat = ft.Feature(pd_es, 'log', 'latlong')
+    log_latlong_feat = ft.Feature(pd_es['log'].ww['latlong'])
     log_latlong_feat2 = ft.Feature(pd_es, 'log', 'latlong2')
     haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
                            primitive=Haversine)
@@ -699,7 +699,7 @@ def test_haversine_with_nan(pd_es):
     df['latlong'][0] = np.nan
     df['latlong'][1] = (10, np.nan)
     pd_es.update_dataframe(dataframe_name='log', df=df)
-    log_latlong_feat = ft.Feature(pd_es, 'log', 'latlong')
+    log_latlong_feat = ft.Feature(pd_es['log'].ww['latlong'])
     log_latlong_feat2 = ft.Feature(pd_es, 'log', 'latlong2')
     haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
                            primitive=Haversine)
@@ -717,7 +717,7 @@ def test_haversine_with_nan(pd_es):
     df = pd_es['log']
     df['latlong2'] = np.nan
     pd_es.update_dataframe(dataframe_name='log', df=df)
-    log_latlong_feat = ft.Feature(pd_es, 'log', 'latlong')
+    log_latlong_feat = ft.Feature(pd_es['log'].ww['latlong'])
     log_latlong_feat2 = ft.Feature(pd_es, 'log', 'latlong2')
     haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
                            primitive=Haversine)
@@ -731,8 +731,8 @@ def test_haversine_with_nan(pd_es):
 
 
 def test_text_primitives(es):
-    words = ft.Feature(ft.Feature(es, 'log', 'comments'), primitive=NumWords)
-    chars = ft.Feature(ft.Feature(es, 'log', 'comments'), primitive=NumCharacters)
+    words = ft.Feature(ft.Feature(es['log'].ww['comments']), primitive=NumWords)
+    chars = ft.Feature(ft.Feature(es['log'].ww['comments']), primitive=NumCharacters)
 
     features = [words, chars]
 
@@ -835,7 +835,7 @@ def test_isin_feat_custom(es):
 
 def test_isnull_feat(pd_es):
     value = ft.Feature(pd_es['log'].ww['value'])
-    diff = ft.Feature(value, groupby=ft.Feature(pd_es, 'log', 'session_id'), primitive=Diff)
+    diff = ft.Feature(value, groupby=ft.Feature(pd_es['log'].ww['session_id']), primitive=Diff)
     isnull = ft.Feature(diff, primitive=IsNull)
     features = [isnull]
     df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(15))

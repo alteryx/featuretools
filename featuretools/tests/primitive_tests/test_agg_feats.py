@@ -415,7 +415,7 @@ def test_time_since_first(pd_es):
 
 
 def test_median(pd_es):
-    f = ft.Feature(pd_es, "log", "value_many_nans", parent_dataframe_name="customers", primitive=Median)
+    f = ft.Feature(pd_es["log"].ww["value_many_nans"], parent_dataframe_name="customers", primitive=Median)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=pd_es,
                                      instance_ids=[0, 1, 2],

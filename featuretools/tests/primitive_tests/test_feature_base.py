@@ -79,12 +79,12 @@ def test_squared(es):
 
 
 def test_return_type_inference(es):
-    mode = ft.Feature(es, "log", "priority_level", parent_dataframe_name="customers", primitive=Mode)
+    mode = ft.Feature(es["log"].ww["priority_level"], parent_dataframe_name="customers", primitive=Mode)
     assert mode.column_schema == IdentityFeature(es, "log", "priority_level").column_schema
 
 
 def test_return_type_inference_direct_feature(es):
-    mode = ft.Feature(es, "log", "priority_level", parent_dataframe_name="customers", primitive=Mode)
+    mode = ft.Feature(es["log"].ww["priority_level"], parent_dataframe_name="customers", primitive=Mode)
     mode_session = ft.Feature(mode, "sessions")
     assert mode_session.column_schema == IdentityFeature(es, "log", "priority_level").column_schema
 
@@ -111,7 +111,7 @@ def test_return_type_inference_id(es):
     assert "foreign_key" in direct_id_feature.column_schema.semantic_tags
 
     # aggregations of Id variable types should get converted
-    last_feat = ft.Feature(es, "log", "session_id", parent_dataframe_name="customers", primitive=Last)
+    last_feat = ft.Feature(es["log"].ww["session_id"], parent_dataframe_name="customers", primitive=Last)
     assert "foreign_key" not in last_feat.column_schema.semantic_tags
     assert isinstance(last_feat.column_schema.logical_type, Integer)
 
@@ -152,7 +152,7 @@ def test_set_data_path(es):
 
 
 def test_to_dictionary_direct(es):
-    actual = ft.Feature(IdentityFeature(es, "sessions", "customer_id"), "log").to_dictionary()
+    actual = ft.Feature(IdentityFeature(es["sessions"].ww["customer_id"]), "log").to_dictionary()
 
     expected = {
         'type': 'DirectFeature',
@@ -184,7 +184,7 @@ def test_to_dictionary_identity(es):
 
 
 def test_to_dictionary_agg(es):
-    actual = ft.Feature(es, "customers", "age", primitive=Sum, parent_dataframe_name='cohorts').to_dictionary()
+    actual = ft.Feature(es["customers"].ww["age"], primitive=Sum, parent_dataframe_name='cohorts').to_dictionary()
 
     expected = {
         'type': 'AggregationFeature',
@@ -229,7 +229,7 @@ def test_to_dictionary_where(es):
 
 
 def test_to_dictionary_trans(es):
-    trans_feature = ft.Feature(es, "customers", "age", primitive=Negate)
+    trans_feature = ft.Feature(es["customers"].ww["age"], primitive=Negate)
 
     expected = {
         'type': 'TransformFeature',
@@ -291,7 +291,7 @@ def test_multi_output_base_error_trans(es):
         return_type = ColumnSchema(semantic_tags={'numeric'})
         number_output_features = 6
 
-    tc = ft.Feature(es, 'customers', 'date_of_birth', primitive=TestTime)
+    tc = ft.Feature(es['customers'].ww['date_of_birth'], primitive=TestTime)
 
     error_text = "Cannot stack on whole multi-output feature."
     with pytest.raises(ValueError, match=error_text):
