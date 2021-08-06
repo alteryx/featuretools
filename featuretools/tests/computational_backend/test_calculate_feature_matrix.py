@@ -1673,8 +1673,8 @@ def test_calls_progress_callback(mock_customer):
 
 #     mock_progress_callback = MockProgressCallback()
 
-#     trans_per_session = ft.Feature(ft.Feature(pd_mock_customer, "transactions", "transaction_id"), parent_dataframe_name="sessions", primitive=Count)
-#     trans_per_customer = ft.Feature(ft.Feature(pd_mock_customer, "transactions", "transaction_id"), parent_dataframe_name="customers", primitive=Count)
+#     trans_per_session = ft.Feature(ft.Feature(pd_mock_customer["transactions"].ww["transaction_id"]), parent_dataframe_name="sessions", primitive=Count)
+#     trans_per_customer = ft.Feature(ft.Feature(pd_mock_customer["transactions"].ww["transaction_id"]), parent_dataframe_name="customers", primitive=Count)
 #     features = [trans_per_session, ft.Feature(trans_per_customer, "sessions")]
 
 #     with cluster() as (scheduler, [a, b]):

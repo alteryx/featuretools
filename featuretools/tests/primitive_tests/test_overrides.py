@@ -34,7 +34,7 @@ from featuretools.tests.testing_utils import to_pandas
 
 def test_overrides(es):
     value = ft.Feature(es['log'].ww['value'])
-    value2 = ft.Feature(es, 'log', 'value_2')
+    value2 = ft.Feature(es['log'].ww['value_2'])
 
     feats = [AddNumeric, SubtractNumeric, MultiplyNumeric, DivideNumeric,
              ModuloNumeric, GreaterThan, LessThan, Equal, NotEqual,
@@ -125,7 +125,7 @@ def test_scalar_overrides(es):
         o = overrides.pop(0)
         assert o.unique_name() == f.unique_name()
 
-    value2 = ft.Feature(es, 'log', 'value_2')
+    value2 = ft.Feature(es['log'].ww['value_2'])
 
     reverse_feats = [
         AddNumericScalar, ScalarSubtractNumericFeature, MultiplyNumericScalar,
@@ -169,7 +169,7 @@ def test_override_cmp_from_variable(es):
 
 def test_override_cmp(es):
     count = ft.Feature(es['log'].ww['id'], parent_dataframe_name='sessions', primitive=Count)
-    _sum = ft.Feature(es, 'log', 'value', parent_dataframe_name='sessions', primitive=Sum)
+    _sum = ft.Feature(es['log'].ww['value'], parent_dataframe_name='sessions', primitive=Sum)
     gt_lo = count > 1
     gt_other = count > _sum
     ge_lo = count >= 1

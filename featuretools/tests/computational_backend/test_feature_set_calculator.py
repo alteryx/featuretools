@@ -56,7 +56,7 @@ def test_make_identity(es):
 
 
 def test_make_dfeat(es):
-    f = DirectFeature(ft.Feature(es, 'customers', 'age'),
+    f = DirectFeature(ft.Feature(es['customers'].ww['age']),
                       child_dataframe_name='sessions')
 
     feature_set = FeatureSet([f])
@@ -784,12 +784,12 @@ def test_empty_child_dataframe(parent_child):
     count = ft.Feature(ft.Feature(es["child"].ww["id"]), parent_dataframe_name="parent", primitive=Count)
 
     # create agg feature that requires multiple arguments
-    trend = ft.Feature([ft.Feature(es["child"].ww["value"]), ft.Feature(es, "child", 'time_index')],
+    trend = ft.Feature([ft.Feature(es["child"].ww["value"]), ft.Feature(es["child"].ww['time_index'])],
                        parent_dataframe_name="parent",
                        primitive=Trend)
 
     # create multi-output agg feature
-    n_most_common = ft.Feature(ft.Feature(es, "child", "cat"), parent_dataframe_name="parent", primitive=NMostCommon)
+    n_most_common = ft.Feature(ft.Feature(es["child"].ww["cat"]), parent_dataframe_name="parent", primitive=NMostCommon)
 
     # create aggs with where
     where = ft.Feature(es["child"].ww["value"]) == 1
@@ -798,7 +798,7 @@ def test_empty_child_dataframe(parent_child):
                              parent_dataframe_name="parent",
                              where=where,
                              primitive=Trend)
-    n_most_common_where = ft.Feature(ft.Feature(es, "child", "cat"), parent_dataframe_name="parent", where=where, primitive=NMostCommon)
+    n_most_common_where = ft.Feature(ft.Feature(es["child"].ww["cat"]), parent_dataframe_name="parent", where=where, primitive=NMostCommon)
 
     if isinstance(parent_df, pd.DataFrame):
         features = [count, count_where, trend, trend_where, n_most_common, n_most_common_where]
@@ -842,7 +842,7 @@ def test_empty_child_dataframe(parent_child):
 def test_with_features_built_from_es_metadata(es):
     metadata = es.metadata
 
-    agg_feat = ft.Feature(ft.Feature(metadata, 'log', 'id'), parent_dataframe_name='customers', primitive=Count)
+    agg_feat = ft.Feature(ft.Feature(metadata['log'].ww['id']), parent_dataframe_name='customers', primitive=Count)
 
     feature_set = FeatureSet([agg_feat])
     calculator = FeatureSetCalculator(es,
@@ -874,7 +874,7 @@ def test_handles_primitive_function_name_uniqueness(es):
             return my_function
 
     # works as expected
-    f1 = ft.Feature(ft.Feature(es, "log", "value"),
+    f1 = ft.Feature(ft.Feature(es["log"].ww["value"]),
                     parent_dataframe_name="customers",
                     primitive=SumTimesN(n=1))
     fm = ft.calculate_feature_matrix(features=[f1], entityset=es)
@@ -883,7 +883,7 @@ def test_handles_primitive_function_name_uniqueness(es):
     assert all(fm[f1.get_name()].sort_index() == value_sum)
 
     # works as expected
-    f2 = ft.Feature(ft.Feature(es, "log", "value"),
+    f2 = ft.Feature(ft.Feature(es["log"].ww["value"]),
                     parent_dataframe_name="customers",
                     primitive=SumTimesN(n=2))
     fm = ft.calculate_feature_matrix(features=[f2], entityset=es)
@@ -899,10 +899,10 @@ def test_handles_primitive_function_name_uniqueness(es):
 
     # different primtives, same function returned by get_function,
     # different base features
-    f3 = ft.Feature(ft.Feature(es, "log", "value"),
+    f3 = ft.Feature(ft.Feature(es["log"].ww["value"]),
                     parent_dataframe_name="customers",
                     primitive=Sum)
-    f4 = ft.Feature(ft.Feature(es, "log", "purchased"),
+    f4 = ft.Feature(ft.Feature(es["log"].ww["purchased"]),
                     parent_dataframe_name="customers",
                     primitive=NumTrue)
     fm = ft.calculate_feature_matrix(features=[f3, f4], entityset=es)
@@ -950,13 +950,13 @@ def test_handles_primitive_function_name_uniqueness(es):
         def get_function(self, agg_type='pandas'):
             return np.sum
 
-    f5 = ft.Feature(ft.Feature(es, "log", "value"),
+    f5 = ft.Feature(ft.Feature(es["log"].ww["value"]),
                     parent_dataframe_name="customers",
                     primitive=Sum1)
-    f6 = ft.Feature(ft.Feature(es, "log", "value"),
+    f6 = ft.Feature(ft.Feature(es["log"].ww["value"]),
                     parent_dataframe_name="customers",
                     primitive=Sum2)
-    f7 = ft.Feature(ft.Feature(es, "log", "value"),
+    f7 = ft.Feature(ft.Feature(es["log"].ww["value"]),
                     parent_dataframe_name="customers",
                     primitive=Sum3)
     fm = ft.calculate_feature_matrix(features=[f5, f6, f7], entityset=es)
@@ -967,7 +967,7 @@ def test_handles_primitive_function_name_uniqueness(es):
 
 # No order guarantees w/ Dask
 def test_returns_order_of_instance_ids(pd_es):
-    feature_set = FeatureSet([ft.Feature(pd_es, 'customers', 'age')])
+    feature_set = FeatureSet([ft.Feature(pd_es['customers'].ww['age'])])
     calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
@@ -982,13 +982,13 @@ def test_returns_order_of_instance_ids(pd_es):
 
 def test_calls_progress_callback(es):
     # call with all feature types. make sure progress callback calls sum to 1
-    identity = ft.Feature(es, 'customers', 'age')
-    direct = ft.Feature(ft.Feature(es, 'cohorts', 'cohort_name'), 'customers')
+    identity = ft.Feature(es['customers'].ww['age'])
+    direct = ft.Feature(ft.Feature(es['cohorts'].ww['cohort_name']), 'customers')
     agg = ft.Feature(ft.Feature(es['sessions'].ww['id']), parent_dataframe_name='customers', primitive=Count)
     agg_apply = ft.Feature(ft.Feature(es['log'].ww['datetime']), parent_dataframe_name='customers', primitive=TimeSinceLast)  # this feature is handle differently than simple features
     trans = ft.Feature(agg, primitive=Negate)
     trans_full = ft.Feature(agg, primitive=CumSum)
-    groupby_trans = ft.Feature(agg, primitive=CumSum, groupby=ft.Feature(es, 'customers', 'cohort'))
+    groupby_trans = ft.Feature(agg, primitive=CumSum, groupby=ft.Feature(es['customers'].ww['cohort']))
 
     if es.dataframe_type != Library.PANDAS.value:
         all_features = [identity, direct, agg, trans]

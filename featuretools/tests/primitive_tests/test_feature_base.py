@@ -23,12 +23,12 @@ from featuretools.tests.testing_utils import check_rename
 
 
 def test_copy_features_does_not_copy_entityset(es):
-    agg = ft.Feature(es, 'log', 'value', parent_dataframe_name='sessions', primitive=Sum)
-    agg_where = ft.Feature(es, 'log', 'value', parent_dataframe_name='sessions',
+    agg = ft.Feature(es['log'].ww['value'], parent_dataframe_name='sessions', primitive=Sum)
+    agg_where = ft.Feature(es['log'].ww['value'], parent_dataframe_name='sessions',
                            where=IdentityFeature(es, 'log', 'value') == 2, primitive=Sum)
-    agg_use_previous = ft.Feature(es, 'log', 'value', parent_dataframe_name='sessions',
+    agg_use_previous = ft.Feature(es['log'].ww['value'], parent_dataframe_name='sessions',
                                   use_previous='4 days', primitive=Sum)
-    agg_use_previous_where = ft.Feature(es, 'log', 'value', parent_dataframe_name='sessions',
+    agg_use_previous_where = ft.Feature(es['log'].ww['value'], parent_dataframe_name='sessions',
                                         where=IdentityFeature(es, 'log', 'value') == 2,
                                         use_previous='4 days', primitive=Sum)
     features = [agg, agg_where, agg_use_previous, agg_use_previous_where]
@@ -90,24 +90,24 @@ def test_return_type_inference_direct_feature(es):
 
 
 def test_return_type_inference_index(es):
-    last = ft.Feature(es, "log", "id", parent_dataframe_name="customers", primitive=Last)
+    last = ft.Feature(es["log"].ww["id"], parent_dataframe_name="customers", primitive=Last)
     assert "index" not in last.column_schema.semantic_tags
     assert isinstance(last.column_schema.logical_type, Integer)
 
 
 def test_return_type_inference_datetime_time_index(es):
-    last = ft.Feature(es, "log", "datetime", parent_dataframe_name="customers", primitive=Last)
+    last = ft.Feature(es["log"].ww["datetime"], parent_dataframe_name="customers", primitive=Last)
     assert isinstance(last.column_schema.logical_type, Datetime)
 
 
 def test_return_type_inference_numeric_time_index(int_es):
-    last = ft.Feature(int_es, "log", "datetime", parent_dataframe_name="customers", primitive=Last)
+    last = ft.Feature(int_es["log"].ww["datetime"], parent_dataframe_name="customers", primitive=Last)
     assert "numeric" in last.column_schema.semantic_tags
 
 
 def test_return_type_inference_id(es):
     # direct features should keep Id variable type
-    direct_id_feature = ft.Feature(es, "sessions", "customer_id", "log")
+    direct_id_feature = ft.Feature(es["sessions"].ww["customer_id"], "log")
     assert "foreign_key" in direct_id_feature.column_schema.semantic_tags
 
     # aggregations of Id variable types should get converted
@@ -170,7 +170,7 @@ def test_to_dictionary_direct(es):
 
 
 def test_to_dictionary_identity(es):
-    actual = ft.Feature(es, "sessions", "customer_id").to_dictionary()
+    actual = ft.Feature(es["sessions"].ww["customer_id"]).to_dictionary()
 
     expected = {
         'type': 'IdentityFeature',
@@ -206,7 +206,7 @@ def test_to_dictionary_agg(es):
 
 
 def test_to_dictionary_where(es):
-    actual = ft.Feature(es, 'log', 'value', parent_dataframe_name='sessions',
+    actual = ft.Feature(es['log'].ww['value'], parent_dataframe_name='sessions',
                         where=ft.IdentityFeature(es['log'].ww['value']) == 2, primitive=Sum).to_dictionary()
 
     expected = {
@@ -246,7 +246,7 @@ def test_to_dictionary_trans(es):
 
 def test_to_dictionary_groupby_trans(es):
     id_feat = ft.Feature(es['log'].ww['product_id'])
-    groupby_feature = ft.Feature(es, 'log', 'value', primitive=Negate, groupby=id_feat)
+    groupby_feature = ft.Feature(es['log'].ww['value'], primitive=Negate, groupby=id_feat)
 
     expected = {
         'type': 'GroupByTransformFeature',

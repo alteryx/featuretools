@@ -458,7 +458,7 @@ def test_arithmetic_of_identity(es):
 
     features = []
     for test in to_test:
-        features.append(ft.Feature([ft.Feature(es['log'].ww['value']), ft.Feature(es, 'log', 'value_2')], primitive=test[0]))
+        features.append(ft.Feature([ft.Feature(es['log'].ww['value']), ft.Feature(es['log'].ww['value_2'])], primitive=test[0]))
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
     df = to_pandas(df, index='id', sort_index=True)
@@ -475,7 +475,7 @@ def test_arithmetic_of_identity(es):
 def test_arithmetic_of_direct(es):
     rating = ft.Feature(es, 'products', 'rating')
     log_rating = ft.Feature(rating, 'log')
-    customer_age = ft.Feature(es, 'customers', 'age')
+    customer_age = ft.Feature(es['customers'].ww['age'])
     session_age = ft.Feature(customer_age, 'sessions')
     log_age = ft.Feature(session_age, 'log')
 
@@ -556,7 +556,7 @@ def test_arithmetic_of_transform(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Test uses Diff which is not supported in Dask or Koalas")
     diff1 = ft.Feature([ft.Feature(es['log'].ww['value'])], primitive=Diff)
-    diff2 = ft.Feature([ft.Feature(es, 'log', 'value_2')], primitive=Diff)
+    diff2 = ft.Feature([ft.Feature(es['log'].ww['value_2'])], primitive=Diff)
 
     to_test = [(AddNumeric, [np.nan, 7., -7., 10.]),
                (SubtractNumeric, [np.nan, 3., -3., 4.]),
@@ -921,7 +921,7 @@ def test_percentile_agg(pd_es):
 
 
 def test_direct_percentile(pd_es):
-    v = ft.Feature(pd_es, 'customers', 'age')
+    v = ft.Feature(pd_es['customers'].ww['age'])
     p = ft.Feature(v, primitive=Percentile)
     d = ft.Feature(p, 'sessions')
     feature_set = FeatureSet([d])
@@ -996,13 +996,13 @@ def test_make_transform_multiple_output_features(pd_es):
         cls_attributes={"get_feature_names": gen_feat_names},
     )
 
-    join_time_split = ft.Feature(ft.Feature(pd_es, "log", "datetime"), primitive=TestTime)
-    alt_features = [ft.Feature(ft.Feature(pd_es, "log", "datetime"), primitive=Year),
-                    ft.Feature(ft.Feature(pd_es, "log", "datetime"), primitive=Month),
-                    ft.Feature(ft.Feature(pd_es, "log", "datetime"), primitive=Day),
-                    ft.Feature(ft.Feature(pd_es, "log", "datetime"), primitive=Hour),
-                    ft.Feature(ft.Feature(pd_es, "log", "datetime"), primitive=Minute),
-                    ft.Feature(ft.Feature(pd_es, "log", "datetime"), primitive=Second)]
+    join_time_split = ft.Feature(ft.Feature(pd_es["log"].ww["datetime"]), primitive=TestTime)
+    alt_features = [ft.Feature(ft.Feature(pd_es["log"].ww["datetime"]), primitive=Year),
+                    ft.Feature(ft.Feature(pd_es["log"].ww["datetime"]), primitive=Month),
+                    ft.Feature(ft.Feature(pd_es["log"].ww["datetime"]), primitive=Day),
+                    ft.Feature(ft.Feature(pd_es["log"].ww["datetime"]), primitive=Hour),
+                    ft.Feature(ft.Feature(pd_es["log"].ww["datetime"]), primitive=Minute),
+                    ft.Feature(ft.Feature(pd_es["log"].ww["datetime"]), primitive=Second)]
     fm, fl = ft.dfs(
         entityset=pd_es,
         target_dataframe_name="log",

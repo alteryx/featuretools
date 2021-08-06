@@ -565,7 +565,7 @@ def test_dfs_builds_on_seed_features_more_than_max_depth(es):
 
 
 def test_dfs_includes_seed_features_greater_than_max_depth(es):
-    session_agg = ft.Feature(es, 'log', 'value', parent_dataframe_name='sessions', primitive=Sum)
+    session_agg = ft.Feature(es['log'].ww['value'], parent_dataframe_name='sessions', primitive=Sum)
     customer_agg = ft.Feature(session_agg, parent_dataframe_name='customers', primitive=Mean)
     assert customer_agg.get_depth() == 2
 
@@ -597,7 +597,7 @@ def test_allowed_paths(es):
 
     unconstrained_names = [f.get_name() for f in features_unconstrained]
     customers_session_feat = ft.Feature(es, 'sessions', 'device_type', parent_dataframe_name='customers', primitive=Last)
-    customers_session_log_feat = ft.Feature(es, 'log', 'value', parent_dataframe_name='customers', primitive=Last)
+    customers_session_log_feat = ft.Feature(es['log'].ww['value'], parent_dataframe_name='customers', primitive=Last)
     assert customers_session_feat.get_name() in unconstrained_names
     assert customers_session_log_feat.get_name() in unconstrained_names
 
@@ -1481,7 +1481,7 @@ def test_primitive_ordering():
     where_prims = ['count', Sum]
 
     seed_num_chars = ft.Feature(es, 'customers', 'favorite_quote', primitive=NumCharacters)
-    seed_is_null = ft.Feature(es, 'customers', 'age', primitive=IsNull)
+    seed_is_null = ft.Feature(es['customers'].ww['age'], primitive=IsNull)
     seed_features = [seed_num_chars, seed_is_null]
 
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='customers',

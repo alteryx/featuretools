@@ -120,7 +120,7 @@ def test_count_null_and_make_agg_primitive(pd_es):
 
 
 def test_check_input_types(es):
-    count = ft.Feature(es, "sessions", "id", parent_dataframe_name="customers", primitive=Count)
+    count = ft.Feature(es["sessions"].ww["id"], parent_dataframe_name="customers", primitive=Count)
     mean = ft.Feature(count, parent_dataframe_name=u"régions", primitive=Mean)
     assert mean._check_input_types()
 
@@ -147,22 +147,22 @@ def test_mean_nan(es):
     assert isnan(mean_func_nans_true(array_nans))
 
     # test naming
-    default_feat = ft.Feature(es, "log", "value",
+    default_feat = ft.Feature(es["log"].ww["value"],
                               parent_dataframe_name="customers",
                               primitive=Mean)
     assert default_feat.get_name() == "MEAN(log.value)"
-    ignore_nan_feat = ft.Feature(es, "log", "value",
+    ignore_nan_feat = ft.Feature(es["log"].ww["value"],
                                  parent_dataframe_name="customers",
                                  primitive=Mean(skipna=True))
     assert ignore_nan_feat.get_name() == "MEAN(log.value)"
-    include_nan_feat = ft.Feature(es, "log", "value",
+    include_nan_feat = ft.Feature(es["log"].ww["value"],
                                   parent_dataframe_name="customers",
                                   primitive=Mean(skipna=False))
     assert include_nan_feat.get_name() == "MEAN(log.value, skipna=False)"
 
 
 def test_base_of_and_stack_on_heuristic(es, test_primitive):
-    child = ft.Feature(es, "sessions", "id", parent_dataframe_name="customers", primitive=Count)
+    child = ft.Feature(es["sessions"].ww["id"], parent_dataframe_name="customers", primitive=Count)
     test_primitive.stack_on = []
     child.primitive.base_of = []
     assert not check_stacking(test_primitive(), [child])
@@ -202,7 +202,7 @@ def test_base_of_and_stack_on_heuristic(es, test_primitive):
 
 def test_stack_on_self(es, test_primitive):
     # test stacks on self
-    child = ft.Feature(es, 'log', 'value', parent_dataframe_name=u'régions', primitive=test_primitive)
+    child = ft.Feature(es['log'].ww['value'], parent_dataframe_name=u'régions', primitive=test_primitive)
     test_primitive.stack_on = []
     child.primitive.base_of = []
     test_primitive.stack_on_self = False
@@ -220,7 +220,7 @@ def test_stack_on_self(es, test_primitive):
 def test_init_and_name(es):
     log = es['log']
 
-    features = [ft.Feature(es, 'log', col) for col in log.columns]
+    features = [ft.Feature(es['log'].ww[col]) for col in log.columns]
     agg_primitives = get_aggregation_primitives().values()
     # If Dask EntitySet use only Dask compatible primitives
     if es.dataframe_type == Library.DASK.value:
@@ -391,7 +391,7 @@ def test_serialization(es):
 
 
 def test_time_since_last(pd_es):
-    f = ft.Feature(pd_es, "log", "datetime", parent_dataframe_name="customers", primitive=TimeSinceLast)
+    f = ft.Feature(pd_es["log"].ww["datetime"], parent_dataframe_name="customers", primitive=TimeSinceLast)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=pd_es,
                                      instance_ids=[0, 1, 2],
@@ -403,7 +403,7 @@ def test_time_since_last(pd_es):
 
 
 def test_time_since_first(pd_es):
-    f = ft.Feature(pd_es, "log", "datetime", parent_dataframe_name="customers", primitive=TimeSinceFirst)
+    f = ft.Feature(pd_es["log"].ww["datetime"], parent_dataframe_name="customers", primitive=TimeSinceFirst)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=pd_es,
                                      instance_ids=[0, 1, 2],
@@ -449,8 +449,8 @@ def test_agg_same_method_name(es):
     Max = make_agg_primitive(custom_primitive, input_types=[ColumnSchema(semantic_tags={'numeric'})],
                              return_type=ColumnSchema(semantic_tags={'numeric'}), name="max")
 
-    f_sum = ft.Feature(es, "log", "value", parent_dataframe_name="customers", primitive=Sum)
-    f_max = ft.Feature(es, "log", "value", parent_dataframe_name="customers", primitive=Max)
+    f_sum = ft.Feature(es["log"].ww["value"], parent_dataframe_name="customers", primitive=Sum)
+    f_max = ft.Feature(es["log"].ww["value"], parent_dataframe_name="customers", primitive=Max)
 
     fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
@@ -461,8 +461,8 @@ def test_agg_same_method_name(es):
     Max = make_agg_primitive(lambda x: x.max(), input_types=[ColumnSchema(semantic_tags={'numeric'})],
                              return_type=ColumnSchema(semantic_tags={'numeric'}), name="max")
 
-    f_sum = ft.Feature(es, "log", "value", parent_dataframe_name="customers", primitive=Sum)
-    f_max = ft.Feature(es, "log", "value", parent_dataframe_name="customers", primitive=Max)
+    f_sum = ft.Feature(es["log"].ww["value"], parent_dataframe_name="customers", primitive=Sum)
+    f_max = ft.Feature(es["log"].ww["value"], parent_dataframe_name="customers", primitive=Max)
     fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
 
@@ -477,7 +477,7 @@ def test_time_since_last_custom(pd_es):
                                        ColumnSchema(semantic_tags={'numeric'}),
                                        name="time_since_last",
                                        uses_calc_time=True)
-    f = ft.Feature(pd_es, "log", "datetime", parent_dataframe_name="customers", primitive=TimeSinceLast)
+    f = ft.Feature(pd_es["log"].ww["datetime"], parent_dataframe_name="customers", primitive=TimeSinceLast)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=pd_es,
                                      instance_ids=[0, 1, 2],
@@ -505,7 +505,7 @@ def test_custom_primitive_time_as_arg(pd_es):
                                        ColumnSchema(semantic_tags={'numeric'}),
                                        uses_calc_time=True)
     assert TimeSinceLast.name == "time_since_last"
-    f = ft.Feature(pd_es, "log", "datetime", parent_dataframe_name="customers", primitive=TimeSinceLast)
+    f = ft.Feature(pd_es["log"].ww["datetime"], parent_dataframe_name="customers", primitive=TimeSinceLast)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=pd_es,
                                      instance_ids=[0, 1, 2],
@@ -571,7 +571,7 @@ def test_custom_primitive_default_kwargs(es):
     sum_n_1_base_f = ft.Feature(es['log'].ww['value'])
     sum_n_1 = ft.Feature([sum_n_1_base_f], parent_dataframe_name='sessions', primitive=SumNTimes(n=sum_n_1_n))
     sum_n_2_n = 2
-    sum_n_2_base_f = ft.Feature(es, 'log', 'value_2')
+    sum_n_2_base_f = ft.Feature(es['log'].ww['value_2'])
     sum_n_2 = ft.Feature([sum_n_2_base_f], parent_dataframe_name='sessions', primitive=SumNTimes(n=sum_n_2_n))
     assert sum_n_1_base_f == sum_n_1.base_features[0]
     assert sum_n_1_n == sum_n_1.primitive.kwargs['n']
@@ -644,7 +644,7 @@ def test_stacking_multi(pd_es):
 
 
 def test_use_previous_pd_dateoffset(es):
-    total_events_pd = ft.Feature(es, "log", "id",
+    total_events_pd = ft.Feature(es["log"].ww["id"],
                                  parent_dataframe_name="customers",
                                  use_previous=pd.DateOffset(hours=47, minutes=60),
                                  primitive=Count)
