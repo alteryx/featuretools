@@ -842,6 +842,7 @@ class EmailAddressToDomain(TransformPrimitive):
         >>> email_address_to_domain(['name@gmail.com', 'name@featuretools.com']).tolist()
         ['gmail.com', 'featuretools.com']
     """
+    name = "email_address_to_domain"
     input_types = [ColumnSchema(logical_type=EmailAddress)]
     return_type = ColumnSchema(logical_type=Categorical, semantic_tags={'category'})
 

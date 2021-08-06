@@ -193,21 +193,6 @@ class EntitySet(object):
         return df_type
 
     @property
-    def dataframe_type(self):
-        '''String specifying the library used for the entity dataframes. Null if no entities'''
-        df_type = None
-
-        if self.entities:
-            if isinstance(self.entities[0].df, pd.DataFrame):
-                df_type = Library.PANDAS.value
-            elif isinstance(self.entities[0].df, dd.DataFrame):
-                df_type = Library.DASK.value
-            elif is_instance(self.entities[0].df, ks, 'DataFrame'):
-                df_type = Library.KOALAS.value
-
-        return df_type
-
-    @property
     def metadata(self):
         '''Returns the metadata for this EntitySet. The metadata will be recomputed if it does not exist.'''
         if self._data_description is None:
