@@ -666,6 +666,7 @@ class EntitySet(object):
         self.dataframe_dict[dataframe.ww.name] = dataframe
         self.reset_data_description()
 
+        dataframe.ww.entityset = self
         for column in dataframe.columns:
             dataframe.ww[column].ww.dataframe_name = dataframe.ww.name
             dataframe.ww[column].ww.entityset = self
