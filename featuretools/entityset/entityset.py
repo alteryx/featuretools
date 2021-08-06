@@ -170,6 +170,9 @@ class EntitySet(object):
                 copied_attr = copy.deepcopy(v, memo)
 
             setattr(result, k, copied_attr)
+
+        for df in result.dataframe_dict.values():
+            result._add_references_to_ww(df)
         return result
 
     @property
@@ -530,6 +533,13 @@ class EntitySet(object):
     #  DataFrame creation methods  ##############################################
     ###########################################################################
 
+    def _add_references_to_ww(self, dataframe):
+        dataframe.ww.entityset = self
+        for column in dataframe.columns:
+            dataframe.ww[column].ww.dataframe_name = dataframe.ww.name
+            dataframe.ww[column].ww.entityset = self
+
+
     def add_dataframe(self,
                       dataframe,
                       dataframe_name=None,
@@ -665,12 +675,7 @@ class EntitySet(object):
 
         self.dataframe_dict[dataframe.ww.name] = dataframe
         self.reset_data_description()
-
-        dataframe.ww.entityset = self
-        for column in dataframe.columns:
-            dataframe.ww[column].ww.dataframe_name = dataframe.ww.name
-            dataframe.ww[column].ww.entityset = self
-
+        self._add_references_to_ww(dataframe)
         return self
 
     def normalize_dataframe(self, base_dataframe_name, new_dataframe_name, index,
