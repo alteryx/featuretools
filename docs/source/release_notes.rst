@@ -152,60 +152,6 @@ You can list all the available semantic tags by calling ``featuretools.list_sema
 .. code-block:: python
 
     >>> ft.list_semantic_tags()
-
-v0.26.0 Jul 15, 2021
-====================
-    * Enhancements
-        * Add ``replace_inf_values`` utility function for replacing ``inf`` values in a feature matrix (:pr:`1505`)
-        * Add URLToProtocol, URLToDomain, URLToTLD, EmailAddressToDomain, IsFreeEmailDomain as transform primitives (:pr:`1508`, :pr:`1531`)
-    * Fixes
-        * ``include_entities`` correctly overrides ``exclude_entities`` in ``primitive_options`` (:pr:`1518`)
-    * Documentation Changes
-        * Prevent logging on build (:pr:`1498`)
-    * Testing Changes
-        * Test featuretools on pandas 1.3.0 release candidate and make fixes (:pr:`1492`)
-
-    Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`gsheni`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
-
-v0.25.0 Jun 11, 2021
-====================
-    * Enhancements
-       * Add ``get_valid_primitives`` function (:pr:`1462`)
-       * Add ``EntitySet.dataframe_type`` attribute (:pr:`1473`)
-    * Changes
-        * Upgrade minimum alteryx open source update checker to 2.0.0 (:pr:`1460`)
-    * Testing Changes
-        * Upgrade minimum pip requirement for testing to 21.1.2 (:pr:`1475`)
-
-    Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`
-
-v0.24.1 May 26, 2021
-====================
-    * Fixes
-        * Update minimum pyyaml requirement to 5.4 (:pr:`1433`)
-        * Update minimum psutil requirement to 5.6.6 (:pr:`1438`)
-    * Documentation Changes
-        * Update nbsphinx version to fix docs build issue (:pr:`1436`)
-    * Testing Changes
-        * Create separate worksflows for each CI job (:pr:`1422`)
-        * Add minimum dependency checker to generate minimum requirement files (:pr:`1428`)
-        * Add unit tests against minimum dependencies for python 3.7 on PRs and main (:pr:`1432`, :pr:`1445`)
-        * Update minimum urllib3 requirement to 1.26.5 (:pr:`1457`)
-
-    Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
-
-v0.24.0 Apr 30, 2021
-====================
-    * Changes
-    * Documentation Changes
-    * Testing Changes
-        * Add additional reviewers to minimum and latest dependency checkers (:pr:`1558`, :pr:`1562`, :pr:`1564`, :pr:`1567`)
-    
-    Thanks to the following people for contributing to this release:
-    :user:`gsheni`
     
 v0.26.1 Jul 23, 2021
 ====================
