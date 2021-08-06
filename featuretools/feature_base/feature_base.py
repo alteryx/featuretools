@@ -17,7 +17,7 @@ from featuretools.utils.wrangle import (
 
 
 class FeatureBase(object):
-    def __init__(self, column, base_features, relationship_path, primitive, name=None, names=None):
+    def __init__(self, dataframe, base_features, relationship_path, primitive, name=None, names=None):
         """Base class for all features
 
         Args:
@@ -31,8 +31,8 @@ class FeatureBase(object):
         assert all(isinstance(f, FeatureBase) for f in base_features), \
             "All base features must be features"
 
-        self.dataframe_name = column.ww.dataframe_name
-        self.entityset = column.ww.entityset  # TODO: use entityset.metadata or equivalent
+        self.dataframe_name = dataframe.ww.name
+        self.entityset = dataframe.ww.entityset  # TODO: use entityset.metadata or equivalent
 
         self.base_features = base_features
 
@@ -520,8 +520,7 @@ class AggregationFeature(FeatureBase):
                                             "on entities with a time index")
             assert _check_time_against_column(self.use_previous, time_col)
 
-        super(AggregationFeature, self).__init__(entityset=entityset,
-                                                 dataframe_name=parent_dataframe_name,
+        super(AggregationFeature, self).__init__(dataframe=entityset[parent_dataframe_name],
                                                  base_features=base_features,
                                                  relationship_path=relationship_path,
                                                  primitive=primitive,
