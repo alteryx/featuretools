@@ -430,7 +430,7 @@ def test_cutoff_time_df_redundant_column_names(es):
 
 
 def test_training_window(pd_es):
-    property_feature = ft.Feature(ft.Feature(pd_es['log'].ww['id'], parent_dataframe_name='customers', primitive=Count)
+    property_feature = ft.Feature(ft.Feature(pd_es['log'].ww['id']), parent_dataframe_name='customers', primitive=Count)
     top_level_agg = ft.Feature(ft.Feature(pd_es['customers'].ww['id']), parent_dataframe_name=u'régions', primitive=Count)
 
     # make sure features that have a direct to a higher level agg
