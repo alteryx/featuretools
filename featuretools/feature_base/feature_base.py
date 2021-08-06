@@ -652,9 +652,8 @@ class TransformFeature(FeatureBase):
         for bf in base_features:
             if bf.number_output_features > 1:
                 raise ValueError("Cannot stack on whole multi-output feature.")
-
-        super(TransformFeature, self).__init__(entityset=base_features[0].entityset,
-                                               dataframe_name=base_features[0].dataframe_name,
+        dataframe = base_features[0].entityset[base_features[0].dataframe_name]
+        super(TransformFeature, self).__init__(dataframe=dataframe,
                                                base_features=base_features,
                                                relationship_path=RelationshipPath([]),
                                                primitive=primitive,
