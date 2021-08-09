@@ -131,7 +131,7 @@ def test_encode_features_catches_features_mismatch(pd_es):
 
 def test_encode_unknown_features():
     # Dataframe with categorical column with "unknown" string
-    df = pd.DataFrame({'category': ['unknown', 'b', 'c', 'd', 'e']})
+    df = pd.DataFrame({'category': ['unknown', 'b', 'c', 'd', 'e']}).astype({'category': 'category'})
 
     pd_es = EntitySet('test')
     pd_es.add_dataframe(dataframe_name='a', dataframe=df, index='index', make_index=True)
@@ -161,7 +161,7 @@ def test_encode_features_topn(pd_es):
 
 
 def test_encode_features_drop_first():
-    df = pd.DataFrame({'category': ['ao', 'b', 'c', 'd', 'e']})
+    df = pd.DataFrame({'category': ['ao', 'b', 'c', 'd', 'e']}).astype({'category': 'category'})
     pd_es = EntitySet('test')
     pd_es.add_dataframe(dataframe_name='a', dataframe=df, index='index', make_index=True)
     features, feature_defs = dfs(entityset=pd_es, target_dataframe_name='a')
@@ -215,7 +215,7 @@ def test_encode_features_handles_dictionary_input(pd_es):
 
 
 def test_encode_features_matches_calculate_feature_matrix():
-    df = pd.DataFrame({'category': ['b', 'c', 'd', 'e']})
+    df = pd.DataFrame({'category': ['b', 'c', 'd', 'e']}).astype({'category': 'category'})
 
     pd_es = EntitySet('test')
     pd_es.add_dataframe(dataframe_name='a', dataframe=df, index='index', make_index=True)

@@ -36,7 +36,8 @@ def test_add_dataframe_with_non_numeric_index(pd_es, dask_es):
     pd_es.add_dataframe(
         dataframe_name="new_dataframe",
         dataframe=df,
-        index="id")
+        index="id",
+        logical_types={"id": Categorical, "values": Integer})
 
     dask_es.add_dataframe(
         dataframe_name="new_dataframe",

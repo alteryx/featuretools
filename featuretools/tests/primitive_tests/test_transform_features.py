@@ -1,3 +1,5 @@
+from inspect import isclass
+
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
@@ -73,6 +75,14 @@ def test_init_and_name(es):
     # Add Timedelta feature
     # features.append(pd.Timestamp.now() - ft.Feature(log['datetime']))
     customers_features = [ft.Feature(es["customers"].ww[col]) for col in es["customers"].columns]
+
+    # check all transform primitives have a name
+    for attribute_string in dir(ft.primitives):
+        attr = getattr(ft.primitives, attribute_string)
+        if isclass(attr):
+            if issubclass(attr, TransformPrimitive) and attr != TransformPrimitive:
+                assert getattr(attr, "name") is not None
+
     trans_primitives = get_transform_primitives().values()
     # If Dask EntitySet use only Dask compatible primitives
     if es.dataframe_type == Library.DASK.value:

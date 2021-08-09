@@ -36,7 +36,11 @@ def test_direct_from_identity(es):
     df = calculator.run(np.array([0, 5]))
     df = to_pandas(df, index='id', sort_index=True)
     v = df[d.get_name()].tolist()
-    assert v == [0, 1]
+    if es.dataframe_type == Library.KOALAS.value:
+        expected = ['0', '1']
+    else:
+        expected = [0, 1]
+    assert v == expected
 
 
 def test_direct_from_variable(es):
@@ -50,7 +54,11 @@ def test_direct_from_variable(es):
     df = calculator.run(np.array([0, 5]))
     df = to_pandas(df, index='id', sort_index=True)
     v = df[d.get_name()].tolist()
-    assert v == [0, 1]
+    if es.dataframe_type == Library.KOALAS.value:
+        expected = ['0', '1']
+    else:
+        expected = [0, 1]
+    assert v == expected
 
 
 def test_direct_rename_multioutput(es):
