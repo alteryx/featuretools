@@ -1470,6 +1470,7 @@ class EntitySet(object):
         if recalculate_last_time_indexes and last_time_index_column is not None:
             self.add_last_time_indexes(updated_dataframes=[dataframe_name])
         self.reset_data_description()
+        self._add_references_to_ww(df)
 
     def _check_time_indexes(self):
         for dataframe in self.dataframe_dict.values():
