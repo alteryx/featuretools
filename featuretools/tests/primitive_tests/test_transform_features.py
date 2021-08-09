@@ -295,7 +295,7 @@ def test_diff(pd_es):
 
 
 def test_diff_single_value(pd_es):
-    diff = ft.Feature(ft.Feature(pd_es['stores'].ww['num_square_feet']), groupby=ft.Feature(pd_es, 'stores', u'région_id'), primitive=Diff)
+    diff = ft.Feature(ft.Feature(pd_es['stores'].ww['num_square_feet']), groupby=ft.Feature(pd_es['stores'].ww[u'région_id']), primitive=Diff)
     feature_set = FeatureSet([diff])
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array([4]))
@@ -343,7 +343,7 @@ def test_compare_of_identity(es):
 
 
 def test_compare_of_direct(es):
-    log_rating = ft.Feature(ft.Feature(es, 'products', 'rating'), 'log')
+    log_rating = ft.Feature(ft.Feature(es['products'].ww['rating']), 'log')
     to_test = [(EqualScalar, [False, False, False, False]),
                (NotEqualScalar, [True, True, True, True]),
                (LessThanScalar, [False, False, False, True]),
@@ -483,7 +483,7 @@ def test_arithmetic_of_identity(es):
 
 
 def test_arithmetic_of_direct(es):
-    rating = ft.Feature(es, 'products', 'rating')
+    rating = ft.Feature(es['products'].ww['rating'])
     log_rating = ft.Feature(rating, 'log')
     customer_age = ft.Feature(es['customers'].ww['age'])
     session_age = ft.Feature(customer_age, 'sessions')
