@@ -263,10 +263,14 @@ EntitySet load and prepare data
     :toctree: generated/
 
     EntitySet.add_dataframe
-    EntitySet.add_relationship
-    EntitySet.normalize_dataframe
     EntitySet.add_interesting_values
+    EntitySet.add_last_time_indexes
+    EntitySet.add_relationship
+    EntitySet.add_relationships
+    EntitySet.concat
+    EntitySet.normalize_dataframe
     EntitySet.set_secondary_time_index
+    EntitySet.update_dataframe
 
 EntitySet serialization
 -------------------------------
@@ -294,6 +298,7 @@ EntitySet query methods
     EntitySet.find_forward_paths
     EntitySet.get_forward_dataframes
     EntitySet.get_backward_dataframes
+    EntitySet.query_by_values
 
 EntitySet visualization
 -----------------------
