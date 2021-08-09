@@ -392,9 +392,8 @@ class DirectFeature(FeatureBase):
         base_feature = _check_feature(base_feature)
         self.parent_dataframe_name = base_feature.dataframe_name
         relationship = self._handle_relationship(base_feature.entityset, child_dataframe_name, relationship)
-
-        super(DirectFeature, self).__init__(entityset=base_feature.entityset,
-                                            dataframe_name=child_dataframe_name,
+        child_dataframe = base_feature.entityset[child_dataframe_name]
+        super(DirectFeature, self).__init__(dataframe=child_dataframe,
                                             base_features=[base_feature],
                                             relationship_path=RelationshipPath([(True, relationship)]),
                                             primitive=PrimitiveBase,

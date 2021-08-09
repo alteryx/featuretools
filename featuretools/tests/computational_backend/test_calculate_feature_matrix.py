@@ -221,7 +221,7 @@ def test_cfm_approximate_correct_ordering():
 
     cutoff_time = pd.DataFrame.from_dict({'instance_id': df['trip_id'],
                                           'time': df['flight_time']})
-    time_feature = IdentityFeature(es['trips']ww['flight_time'])
+    time_feature = IdentityFeature(es['trips'].ww['flight_time'])
     feature_matrix = calculate_feature_matrix(flight_features + [property_feature, time_feature],
                                               es,
                                               cutoff_time_in_index=True,
