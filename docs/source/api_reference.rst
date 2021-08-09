@@ -38,7 +38,8 @@ Scikit-learn (BETA)
     :toctree: generated/
 
     wrappers.DFSTransformer
-    
+
+ 
 
 .. DeepFeatureSynthesis
 
