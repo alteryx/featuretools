@@ -39,7 +39,7 @@ Scikit-learn (BETA)
 
     wrappers.DFSTransformer
 
- 
+
 
 .. DeepFeatureSynthesis
 
