@@ -384,7 +384,7 @@ def test_groupby_multi_output_stacking(pd_es):
 
 def test_serialization(pd_es):
     value = ft.IdentityFeature(pd_es['log'].ww['value'])
-    zipcode = ft.IdentityFeature(pd_es, 'log', 'zipcode')
+    zipcode = ft.IdentityFeature(pd_es['log'].ww['zipcode'])
     primitive = CumSum()
     groupby = ft.feature_base.GroupByTransformFeature(value, primitive, zipcode)
 

@@ -67,7 +67,7 @@ def test_direct_rename_multioutput(es):
 
 def test_direct_rename(es):
     # should be same behavior as test_direct_from_identity
-    feat = DirectFeature(base_feature=IdentityFeature(es, 'sessions', 'device_type'),
+    feat = DirectFeature(base_feature=IdentityFeature(es['sessions'].ww['device_type']),
                          child_dataframe_name='log')
     copy_feat = feat.rename("session_test")
     assert feat.unique_name() != copy_feat.unique_name()
@@ -79,7 +79,7 @@ def test_direct_rename(es):
 def test_direct_copy(games_es):
     home_team = next(r for r in games_es.relationships
                      if r._child_column_name == 'home_team_id')
-    feat = DirectFeature(IdentityFeature(games_es, 'teams', 'name'), 'games',
+    feat = DirectFeature(IdentityFeature(games_es['teams'].ww['name']), 'games',
                          relationship=home_team)
     copied = feat.copy()
     assert copied.dataframe_name == feat.dataframe_name
@@ -105,7 +105,7 @@ def test_direct_of_multi_output_transform_feat(es):
                 return [times.apply(lambda x: getattr(x, unit)) for unit in units]
             return test_f
 
-    base_feature = IdentityFeature(es, "customers", "signup_date")
+    base_feature = IdentityFeature(es["customers"].ww["signup_date"])
     join_time_split = Feature(base_feature, primitive=TestTime)
     alt_features = [Feature(base_feature, primitive=Year),
                     Feature(base_feature, primitive=Month),
@@ -189,7 +189,7 @@ def test_direct_with_invalid_init_args(diamond_es):
     customer_to_region = diamond_es.get_forward_relationships('customers')[0]
     error_text = 'child_dataframe must be the relationship child dataframe'
     with pytest.raises(AssertionError, match=error_text):
-        DirectFeature(IdentityFeature(diamond_es, 'regions', 'name'), 'stores',
+        DirectFeature(IdentityFeature(diamond_es['regions'].ww['name']), 'stores',
                       relationship=customer_to_region)
 
     transaction_relationships = diamond_es.get_forward_relationships('transactions')
@@ -197,7 +197,7 @@ def test_direct_with_invalid_init_args(diamond_es):
                                 if r.parent_dataframe.ww.name == 'stores')
     error_text = 'Base feature must be defined on the relationship parent dataframe'
     with pytest.raises(AssertionError, match=error_text):
-        DirectFeature(IdentityFeature(diamond_es, 'regions', 'name'), 'transactions',
+        DirectFeature(IdentityFeature(diamond_es['regions'].ww['name']), 'transactions',
                       relationship=transaction_to_store)
 
 
@@ -205,19 +205,19 @@ def test_direct_with_multiple_possible_paths(games_es):
     error_text = "There are multiple relationships to the base dataframe. " \
                  "You must specify a relationship."
     with pytest.raises(RuntimeError, match=error_text):
-        DirectFeature(IdentityFeature(games_es, 'teams', 'name'), 'games')
+        DirectFeature(IdentityFeature(games_es['teams'].ww['name']), 'games')
 
     # Does not raise if path specified.
     relationship = next(r for r in games_es.get_forward_relationships('games')
                         if r._child_column_name == 'home_team_id')
-    feat = DirectFeature(IdentityFeature(games_es, 'teams', 'name'), 'games',
+    feat = DirectFeature(IdentityFeature(games_es['teams'].ww['name']), 'games',
                          relationship=relationship)
     assert feat.relationship_path_name() == 'teams[home_team_id]'
     assert feat.get_name() == 'teams[home_team_id].name'
 
 
 def test_direct_with_single_possible_path(es):
-    feat = DirectFeature(IdentityFeature(es, 'customers', 'age'), 'sessions')
+    feat = DirectFeature(IdentityFeature(es['customers'].ww['age']), 'sessions')
     assert feat.relationship_path_name() == 'customers'
     assert feat.get_name() == 'customers.age'
 
@@ -225,11 +225,11 @@ def test_direct_with_single_possible_path(es):
 def test_direct_with_no_path(diamond_es):
     error_text = 'No relationship from "regions" to "customers" found.'
     with pytest.raises(RuntimeError, match=error_text):
-        DirectFeature(IdentityFeature(diamond_es, 'customers', 'name'), 'regions')
+        DirectFeature(IdentityFeature(diamond_es['customers'].ww['name']), 'regions')
 
     error_text = 'No relationship from "customers" to "customers" found.'
     with pytest.raises(RuntimeError, match=error_text):
-        DirectFeature(IdentityFeature(diamond_es, 'customers', 'name'), 'customers')
+        DirectFeature(IdentityFeature(diamond_es['customers'].ww['name']), 'customers')
 
 
 def test_serialization(es):

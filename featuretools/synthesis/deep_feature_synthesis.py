@@ -515,7 +515,7 @@ class DeepFeatureSynthesis(object):
         for col in dataframe.columns:
             if col in self.ignore_columns[dataframe.ww.name]:
                 continue
-            new_f = IdentityFeature(self.es, dataframe.ww.name, col)
+            new_f = IdentityFeature(self.es[dataframe.ww.name].ww[col])
             self._handle_new_feature(all_features=all_features,
                                      new_feature=new_f)
 

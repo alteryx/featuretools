@@ -362,7 +362,7 @@ class IdentityFeature(FeatureBase):
 
     def copy(self):
         """Return copy of feature"""
-        return IdentityFeature(self.entityset, self.dataframe_name, self.column_name)
+        return IdentityFeature(self.entityset[self.dataframe_name].ww[self.column_name])
 
     def generate_name(self):
         return self.column_name

@@ -217,11 +217,11 @@ def test_cfm_approximate_correct_ordering():
                        if isinstance(feature, DirectFeature) and
                        isinstance(feature.base_features[0],
                                   AggregationFeature)]
-    property_feature = IdentityFeature(es, 'trips', 'trip_id')
+    property_feature = IdentityFeature(es['trips'].ww['trip_id'])
 
     cutoff_time = pd.DataFrame.from_dict({'instance_id': df['trip_id'],
                                           'time': df['flight_time']})
-    time_feature = IdentityFeature(es, 'trips', 'flight_time')
+    time_feature = IdentityFeature(es['trips']ww['flight_time'])
     feature_matrix = calculate_feature_matrix(flight_features + [property_feature, time_feature],
                                               es,
                                               cutoff_time_in_index=True,
@@ -1170,7 +1170,7 @@ def test_cfm_returns_original_time_indexes_approximate(pd_es):
 #                  [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
 #     labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
 #     cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
-#     property_feature = IdentityFeature(pd_es, 'log', 'value') > 10
+#     property_feature = IdentityFeature(pd_es['log'].ww['value']) > 10
 
 #     with cluster() as (scheduler, [a, b]):
 #         dkwargs = {'cluster': scheduler['address']}
@@ -1194,7 +1194,7 @@ def test_cfm_returns_original_time_indexes_approximate(pd_es):
 #                  [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
 #     labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
 #     cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
-#     property_feature = IdentityFeature(pd_es, 'log', 'value') > 10
+#     property_feature = IdentityFeature(pd_es['log'].ww['value']) > 10
 
 #     with cluster() as (scheduler, [a, b]):
 #         dkwargs = {'cluster': scheduler['address']}
@@ -1288,7 +1288,7 @@ def test_parallel_failure_raises_correct_error(pd_es):
                  [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
                  [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
-    property_feature = IdentityFeature(pd_es, 'log', 'value') > 10
+    property_feature = IdentityFeature(pd_es['log'].ww['value']) > 10
 
     error_text = 'Need at least one worker'
     with pytest.raises(AssertionError, match=error_text):
@@ -1302,7 +1302,7 @@ def test_parallel_failure_raises_correct_error(pd_es):
 
 
 # def test_warning_not_enough_chunks(pd_es, capsys):
-#     property_feature = IdentityFeature(pd_es, 'log', 'value') > 10
+#     property_feature = IdentityFeature(pd_es['log'].ww['value']) > 10
 
 #     with cluster(nworkers=3) as (scheduler, [a, b, c]):
 #         dkwargs = {'cluster': scheduler['address']}
@@ -1341,7 +1341,7 @@ def test_integer_time_index(int_es):
     times = list(range(8, 18)) + list(range(19, 26))
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
     cutoff_df = pd.DataFrame({'time': times, 'instance_id': range(17)})
-    property_feature = IdentityFeature(int_es, 'log', 'value') > 10
+    property_feature = IdentityFeature(int_es['log'].ww['value']) > 10
 
     feature_matrix = calculate_feature_matrix([property_feature],
                                               int_es,
@@ -1358,7 +1358,7 @@ def test_integer_time_index_single_cutoff_value(int_es):
     if int_es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('Dask and Koalas do not retain time column')
     labels = [False] * 3 + [True] * 2 + [False] * 4
-    property_feature = IdentityFeature(int_es, 'log', 'value') > 10
+    property_feature = IdentityFeature(int_es['log'].ww['value']) > 10
 
     cutoff_times = [16, pd.Series([16])[0], 16.0, pd.Series([16.0])[0]]
     for cutoff_time in cutoff_times:
@@ -1374,7 +1374,7 @@ def test_integer_time_index_single_cutoff_value(int_es):
 def test_integer_time_index_datetime_cutoffs(int_es):
     times = [datetime.now()] * 17
     cutoff_df = pd.DataFrame({'time': times, 'instance_id': range(17)})
-    property_feature = IdentityFeature(int_es, 'log', 'value') > 10
+    property_feature = IdentityFeature(int_es['log'].ww['value']) > 10
 
     error_text = "cutoff_time times must be numeric: try casting via pd\\.to_numeric\\(\\)"
     with pytest.raises(TypeError, match=error_text):
@@ -1392,7 +1392,7 @@ def test_integer_time_index_passes_extra_columns(int_es):
                               'instance_id': instances,
                               'labels': labels})
     cutoff_df = cutoff_df[['time', 'instance_id', 'labels']]
-    property_feature = IdentityFeature(int_es, 'log', 'value') > 10
+    property_feature = IdentityFeature(int_es['log'].ww['value']) > 10
 
     fm = calculate_feature_matrix([property_feature],
                                   int_es,
@@ -1410,7 +1410,7 @@ def test_integer_time_index_mixed_cutoff(int_es):
                               'instance_id': instances,
                               'labels': labels})
     cutoff_df = cutoff_df[['time', 'instance_id', 'labels']]
-    property_feature = IdentityFeature(int_es, 'log', 'value') > 10
+    property_feature = IdentityFeature(int_es['log'].ww['value']) > 10
 
     error_text = 'cutoff_time times must be.*try casting via.*'
     with pytest.raises(TypeError, match=error_text):
@@ -1455,7 +1455,7 @@ def test_datetime_index_mixed_cutoff(es):
                               'instance_id': instances,
                               'labels': labels})
     cutoff_df = cutoff_df[['time', 'instance_id', 'labels']]
-    property_feature = IdentityFeature(es, 'log', 'value') > 10
+    property_feature = IdentityFeature(es['log'].ww['value']) > 10
 
     error_text = 'cutoff_time times must be.*try casting via.*'
     with pytest.raises(TypeError, match=error_text):
@@ -1502,7 +1502,7 @@ def test_no_data_for_cutoff_time(mock_customer):
 def test_instances_not_in_data(pd_es):
     last_instance = max(pd_es['log'].index.values)
     instances = list(range(last_instance + 1, last_instance + 11))
-    identity_feature = IdentityFeature(pd_es, 'log', 'value')
+    identity_feature = IdentityFeature(pd_es['log'].ww['value'])
     property_feature = identity_feature > 10
     agg_feat = AggregationFeature(ft.Feature(pd_es['log'].ww['value']),
                                   parent_dataframe_name="sessions",
@@ -1531,7 +1531,7 @@ def test_some_instances_not_in_data(pd_es):
     times = [a_time, b_time, a_time, a_time, b_time, b_time] + [c_time] * 4
     cutoff_time = pd.DataFrame({"instance_id": list(range(12, 22)),
                                 "time": times})
-    identity_feature = IdentityFeature(pd_es, 'log', 'value')
+    identity_feature = IdentityFeature(pd_es['log'].ww['value'])
     property_feature = identity_feature > 10
     agg_feat = AggregationFeature(ft.Feature(pd_es['log'].ww['value']),
                                   parent_dataframe_name="sessions",

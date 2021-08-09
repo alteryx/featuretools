@@ -25,11 +25,11 @@ from featuretools.tests.testing_utils import check_rename
 def test_copy_features_does_not_copy_entityset(es):
     agg = ft.Feature(es['log'].ww['value'], parent_dataframe_name='sessions', primitive=Sum)
     agg_where = ft.Feature(es['log'].ww['value'], parent_dataframe_name='sessions',
-                           where=IdentityFeature(es, 'log', 'value') == 2, primitive=Sum)
+                           where=IdentityFeature(es['log'].ww['value']) == 2, primitive=Sum)
     agg_use_previous = ft.Feature(es['log'].ww['value'], parent_dataframe_name='sessions',
                                   use_previous='4 days', primitive=Sum)
     agg_use_previous_where = ft.Feature(es['log'].ww['value'], parent_dataframe_name='sessions',
-                                        where=IdentityFeature(es, 'log', 'value') == 2,
+                                        where=IdentityFeature(es['log'].ww['value']) == 2,
                                         use_previous='4 days', primitive=Sum)
     features = [agg, agg_where, agg_use_previous, agg_use_previous_where]
     in_memory_size = asizeof(locals())
@@ -80,13 +80,13 @@ def test_squared(es):
 
 def test_return_type_inference(es):
     mode = ft.Feature(es["log"].ww["priority_level"], parent_dataframe_name="customers", primitive=Mode)
-    assert mode.column_schema == IdentityFeature(es, "log", "priority_level").column_schema
+    assert mode.column_schema == IdentityFeature(es["log"].ww["priority_level"]).column_schema
 
 
 def test_return_type_inference_direct_feature(es):
     mode = ft.Feature(es["log"].ww["priority_level"], parent_dataframe_name="customers", primitive=Mode)
     mode_session = ft.Feature(mode, "sessions")
-    assert mode_session.column_schema == IdentityFeature(es, "log", "priority_level").column_schema
+    assert mode_session.column_schema == IdentityFeature(es["log"].ww["priority_level"]).column_schema
 
 
 def test_return_type_inference_index(es):

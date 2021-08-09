@@ -43,7 +43,7 @@ from featuretools.utils.gen_utils import Library
 
 
 def test_make_identity(es):
-    f = IdentityFeature(es, 'log', 'datetime')
+    f = IdentityFeature(es['log'].ww['datetime'])
 
     feature_set = FeatureSet([f])
     calculator = FeatureSetCalculator(es,
@@ -129,7 +129,7 @@ def test_make_agg_feat_of_identity_index_variable(es):
 def test_make_agg_feat_where_count(es):
     agg_feat = ft.Feature(ft.Feature(es['log'].ww['id']),
                           parent_dataframe_name='sessions',
-                          where=IdentityFeature(es, 'log', 'product_id') == 'coke zero',
+                          where=IdentityFeature(es['log'].ww['product_id']) == 'coke zero',
                           primitive=Count)
 
     feature_set = FeatureSet([agg_feat])
@@ -208,7 +208,7 @@ def test_make_agg_feat_using_prev_n_events(es):
 def test_make_agg_feat_multiple_dtypes(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('Currently no Dask or Koalas compatible agg prims that use multiple dtypes')
-    compare_prod = IdentityFeature(es, 'log', 'product_id') == 'coke zero'
+    compare_prod = IdentityFeature(es['log'].ww['product_id']) == 'coke zero'
 
     agg_feat = ft.Feature(ft.Feature(es['log'].ww['id']),
                           parent_dataframe_name='sessions',
@@ -359,7 +359,7 @@ def test_make_agg_feat_where_count_and_device_type_feat(es):
     log_count_feat = ft.Feature(ft.Feature(es['log'].ww['id']), parent_dataframe_name='sessions', primitive=Count)
 
     compare_count = log_count_feat == 1
-    compare_device_type = IdentityFeature(es, 'sessions', 'device_type') == 1
+    compare_device_type = IdentityFeature(es['sessions'].ww['device_type']) == 1
     and_feat = ft.Feature([compare_count, compare_device_type], primitive=And)
     feat = ft.Feature(ft.Feature(es['sessions'].ww['id']),
                       parent_dataframe_name='customers',
@@ -387,7 +387,7 @@ def test_make_agg_feat_where_count_or_device_type_feat(es):
     log_count_feat = ft.Feature(ft.Feature(es['log'].ww['id']), parent_dataframe_name='sessions', primitive=Count)
 
     compare_count = log_count_feat > 1
-    compare_device_type = IdentityFeature(es, 'sessions', 'device_type') == 1
+    compare_device_type = IdentityFeature(es['sessions'].ww['device_type']) == 1
     or_feat = compare_count.OR(compare_device_type)
     feat = ft.Feature(ft.Feature(es['sessions'].ww['id']),
                       parent_dataframe_name='customers',
@@ -535,7 +535,7 @@ def test_make_dfeat_of_agg_feat_through_parent(es):
 
     We're trying to calculate a DFeat from C to R on an agg_feat of R on S.
     """
-    store_id_feat = IdentityFeature(es, 'stores', 'id')
+    store_id_feat = IdentityFeature(es['stores'].ww['id'])
 
     store_count_feat = ft.Feature(store_id_feat, parent_dataframe_name=u'régions', primitive=Count)
 
@@ -648,7 +648,7 @@ def test_trend(pd_es):
 
 
 def test_direct_squared(es):
-    feature = IdentityFeature(es, 'log', 'value')
+    feature = IdentityFeature(es['log'].ww['value'])
     squared = feature * feature
     feature_set = FeatureSet([feature, squared])
     calculator = FeatureSetCalculator(es,
