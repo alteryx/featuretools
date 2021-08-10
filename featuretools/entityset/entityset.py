@@ -1167,6 +1167,8 @@ class EntitySet(object):
             self.dataframe_dict[df.ww.name] = df
 
         self.reset_data_description()
+        for df in self.dataframes:
+                self._add_references_to_metadata(df)
 
     # ###########################################################################
     # #  Pickling ###############################################
