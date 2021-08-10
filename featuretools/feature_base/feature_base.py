@@ -15,10 +15,9 @@ from featuretools.utils.wrangle import (
     _check_time_against_column,
     _check_timedelta
 )
-from weakref import WeakValueDictionary
 
 class FeatureBase(object):
-    _entityset_ref = WeakValueDictionary()
+    _entityset_ref = {}
 
     def __init__(self, dataframe, base_features, relationship_path, primitive, name=None, names=None):
         """Base class for all features
@@ -490,12 +489,12 @@ class AggregationFeature(FeatureBase):
 
     def __init__(self, base_features, parent_dataframe_name, primitive,
                  relationship_path=None, use_previous=None, where=None, name=None):
-        if hasattr(base_features, '__iter__'):
-            base_features = [_check_feature(bf) for bf in base_features]
+        base_features = _check_feature(base_features)
+        if isinstance(base_features, list):
             msg = "all base features must share the same dataframe"
             assert len(set([bf.dataframe_name for bf in base_features])) == 1, msg
         else:
-            base_features = [_check_feature(base_features)]
+            base_features = [base_features]
 
         for bf in base_features:
             if bf.number_output_features > 1:
@@ -647,12 +646,12 @@ class TransformFeature(FeatureBase):
     def __init__(self, base_features, primitive, name=None):
         # Any edits made to this method should also be made to the
         # new_class_init method in make_trans_primitive
-        if hasattr(base_features, '__iter__'):
-            base_features = [_check_feature(bf) for bf in base_features]
+        base_features = _check_feature(base_features)
+        if isinstance(base_features, list):
             msg = "all base features must share the same dataframe"
             assert len(set([bf.dataframe_name for bf in base_features])) == 1, msg
         else:
-            base_features = [_check_feature(base_features)]
+            base_features = [base_features]
 
         for bf in base_features:
             if bf.number_output_features > 1:
@@ -750,15 +749,10 @@ class Feature(object):
     def __new__(self, base, dataframe_name=None, groupby=None, parent_dataframe_name=None,
                 primitive=None, use_previous=None, where=None):
         # either direct or identity
-        if not isinstance(base, (FeatureBase, list)):
-            if dataframe_name is None:
-                base = IdentityFeature(base)
-            else:
-                base = DirectFeature(base, dataframe_name)
-
-        if primitive is None:
-            return base
-
+        if primitive is None and dataframe_name is None:
+            return IdentityFeature(base)
+        elif primitive is None and dataframe_name is not None:
+            return DirectFeature(base, dataframe_name)
         elif primitive is not None and parent_dataframe_name is not None:
             assert isinstance(primitive, AggregationPrimitive) or issubclass(primitive, AggregationPrimitive)
             return AggregationFeature(base, parent_dataframe_name=parent_dataframe_name,
@@ -837,7 +831,11 @@ def _check_feature(feature):
     #     return IdentityFeature(feature)
     # elif isinstance(feature, FeatureBase):
     #     return feature
-    if isinstance(feature, FeatureBase):
+    if 'Series' == type(feature).__name__:
+        return IdentityFeature(feature)
+    elif hasattr(feature, '__iter__'):
+        return [_check_feature(f) for f in feature]
+    elif isinstance(feature, FeatureBase):
         return feature
-
-    raise Exception("Not a feature")
+    else:
+        raise Exception("Not a feature")
