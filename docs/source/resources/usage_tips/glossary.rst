@@ -42,8 +42,3 @@ Glossary
 
     ColumnSchema
         All of Woodwork's column type information including the logical type and any semantic tags.
-
-.. todo
-.. label maker,
-.. lag
-..     The amount of time before the prediction time that data is used to make a prediction. This is the time between the beginning and end of a learning window.
