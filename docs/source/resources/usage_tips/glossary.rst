@@ -8,7 +8,7 @@ Glossary
     :sorted:
 
     feature
-        A transformation of data used for machine learning.  featuretools has a custom language for defining features as described :ref:`here <primitives>`. All features are represented by subclasses of :class:`FeatureBase`.
+        A transformation of data used for machine learning.  Featuretools has a custom language for defining features as described :ref:`here <primitives>`. All features are represented by subclasses of :class:`FeatureBase`.
 
     feature engineering
         The process of transforming data into representations that are better for machine learning.
@@ -32,13 +32,16 @@ Glossary
         A dataframe that references another dataframe via relationship. The "many" in a one-to-many relationship.
 
     relationship
-        A mapping between a parent dataframe and a child dataframe. The child dataframe must contain a column referencing the ID column on the parent dataframe. Represented by the :class:`.Relationship` class.
+        A mapping between a parent dataframe and a child dataframe. The child dataframe must contain a column referencing the index column on the parent dataframe. Represented by the :class:`.Relationship` class.
 
     logical type
-        Additional information about how data should be interpreted or parsed beyond how the data is stored on disk or in memory.
+        Additional information about how a column should be interpreted or parsed beyond how the data is stored on disk or in memory. Used to determine which primitives can be applied to a column to generate features.
 
     semantic tag
-        Optional additional information on the column about the meaning or potential uses of data.
+        Optional additional information on the column about the meaning or potential uses of data. Used to determine which primitives can be applied to a column to generate features.
+
+    ColumnSchema
+        All of Woodwork's column type information including the logical type and any semantic tags.
 
 .. todo
 .. label maker,
