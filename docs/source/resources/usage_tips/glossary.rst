@@ -34,6 +34,12 @@ Glossary
     relationship
         A mapping between a parent dataframe and a child dataframe. The child dataframe must contain a column referencing the ID column on the parent dataframe. Represented by the :class:`.Relationship` class.
 
+    logical type
+        Additional information about how data should be interpreted or parsed beyond how the data is stored on disk or in memory.
+
+    semantic tag
+        Optional additional information on the column about the meaning or potential uses of data.
+
 .. todo
 .. label maker,
 .. lag
