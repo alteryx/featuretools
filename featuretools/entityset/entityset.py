@@ -9,6 +9,7 @@ import pandas as pd
 from woodwork import init_series
 from woodwork.logical_types import Datetime
 
+from featuretools.feature_base import FeatureBase
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.relationship import Relationship, RelationshipPath
 from featuretools.utils.gen_utils import Library, import_or_none, is_instance
@@ -108,11 +109,13 @@ class EntitySet(object):
                                semantic_tags=semantic_tags,
                                make_index=make_index)
 
+
         for relationship in relationships:
             parent_df, parent_column, child_df, child_column = relationship
             self.add_relationship(parent_df, parent_column, child_df, child_column)
 
         self.reset_data_description()
+        FeatureBase._entityset_ref[self.id] = self
 
     def __sizeof__(self):
         return sum([df.__sizeof__() for df in self.dataframes])
@@ -173,7 +176,7 @@ class EntitySet(object):
             setattr(result, k, copied_attr)
 
         for df in result.dataframe_dict.values():
-            result._add_references_to_ww(df)
+            result._add_references_to_metadata(df)
         return result
 
     @property
@@ -534,11 +537,12 @@ class EntitySet(object):
     #  DataFrame creation methods  ##############################################
     ###########################################################################
 
-    def _add_references_to_ww(self, dataframe):
-        dataframe.ww.entityset = self
+    def _add_references_to_metadata(self, dataframe):
+        dataframe.ww.metadata.update(entityset_id=self.id)
         for column in dataframe.columns:
-            dataframe.ww[column].ww.dataframe_name = dataframe.ww.name
-            dataframe.ww[column].ww.entityset = self
+            metadata = dataframe.ww._schema.columns[column].metadata
+            metadata.update(dataframe_name=dataframe.ww.name)
+            metadata.update(entityset_id=self.id)
 
 
     def add_dataframe(self,
@@ -676,7 +680,7 @@ class EntitySet(object):
 
         self.dataframe_dict[dataframe.ww.name] = dataframe
         self.reset_data_description()
-        self._add_references_to_ww(dataframe)
+        self._add_references_to_metadata(dataframe)
         return self
 
     def normalize_dataframe(self, base_dataframe_name, new_dataframe_name, index,
@@ -1487,7 +1491,7 @@ class EntitySet(object):
         if recalculate_last_time_indexes and last_time_index_column is not None:
             self.add_last_time_indexes(updated_dataframes=[dataframe_name])
         self.reset_data_description()
-        self._add_references_to_ww(df)
+        self._add_references_to_metadata(df)
 
     def _check_time_indexes(self):
         for dataframe in self.dataframe_dict.values():

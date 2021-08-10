@@ -1,8 +1,9 @@
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean
 
-from featuretools import Relationship, Timedelta, primitives
-from featuretools.entityset.relationship import RelationshipPath
+from featuretools import primitives
+from featuretools.entityset.timedelta import Timedelta
+from featuretools.entityset.relationship import Relationship, RelationshipPath
 from featuretools.feature_base.utils import is_valid_input
 from featuretools.primitives.base import (
     AggregationPrimitive,
@@ -14,9 +15,11 @@ from featuretools.utils.wrangle import (
     _check_time_against_column,
     _check_timedelta
 )
-
+from weakref import WeakValueDictionary
 
 class FeatureBase(object):
+    _entityset_ref = WeakValueDictionary()
+
     def __init__(self, dataframe, base_features, relationship_path, primitive, name=None, names=None):
         """Base class for all features
 
@@ -32,7 +35,8 @@ class FeatureBase(object):
             "All base features must be features"
 
         self.dataframe_name = dataframe.ww.name
-        self.entityset = dataframe.ww.entityset  # TODO: use entityset.metadata or equivalent
+        es = self._entityset_ref[dataframe.ww.metadata['entityset_id']]
+        self.entityset = es  # TODO: use entityset.metadata or equivalent
 
         self.base_features = base_features
 
@@ -346,8 +350,10 @@ class IdentityFeature(FeatureBase):
     def __init__(self, column, name=None):
         self.column_name = column.ww.name
         self.return_type = column.ww.schema
-        dataframe = column.ww.entityset[column.ww.dataframe_name]
-        super(IdentityFeature, self).__init__(dataframe=dataframe,
+
+        metadata = column.ww.schema._metadata
+        es = self._entityset_ref[metadata['entityset_id']]
+        super(IdentityFeature, self).__init__(dataframe=es[metadata['dataframe_name']],
                                               base_features=[],
                                               relationship_path=RelationshipPath([]),
                                               primitive=PrimitiveBase,
@@ -744,10 +750,15 @@ class Feature(object):
     def __new__(self, base, dataframe_name=None, groupby=None, parent_dataframe_name=None,
                 primitive=None, use_previous=None, where=None):
         # either direct or identity
-        if primitive is None and dataframe_name is None:
-            return IdentityFeature(base)
-        elif primitive is None and dataframe_name is not None:
-            return DirectFeature(base, dataframe_name)
+        if not isinstance(base, (FeatureBase, list)):
+            if dataframe_name is None:
+                base = IdentityFeature(base)
+            else:
+                base = DirectFeature(base, dataframe_name)
+
+        if primitive is None:
+            return base
+
         elif primitive is not None and parent_dataframe_name is not None:
             assert isinstance(primitive, AggregationPrimitive) or issubclass(primitive, AggregationPrimitive)
             return AggregationFeature(base, parent_dataframe_name=parent_dataframe_name,
