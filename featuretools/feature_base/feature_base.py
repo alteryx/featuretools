@@ -693,7 +693,8 @@ class GroupByTransformFeature(TransformFeature):
         assert len({"category", "foreign_key"} - groupby.column_schema.semantic_tags) < 2
         self.groupby = groupby
 
-        if hasattr(base_features, '__iter__'):
+        base_features = _check_feature(base_features)
+        if isinstance(base_features, list):
             base_features.append(groupby)
         else:
             base_features = [base_features, groupby]
