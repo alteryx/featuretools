@@ -62,7 +62,7 @@ def test_direct_from_variable(es):
 
 
 def test_direct_rename_multioutput(es):
-    n_common = Feature(es, 'log', 'product_id',
+    n_common = Feature(es['log'].ww['product_id'],
                        parent_dataframe_name='customers',
                        primitive=NMostCommon(n=2))
     feat = DirectFeature(n_common, 'sessions')

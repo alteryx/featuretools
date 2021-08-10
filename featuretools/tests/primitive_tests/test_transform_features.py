@@ -313,7 +313,7 @@ def test_diff_reordered(pd_es):
 
 
 def test_diff_single_value_is_nan(pd_es):
-    diff = ft.Feature(ft.Feature(pd_es['stores'].ww['num_square_feet']), groupby=ft.Feature(pd_es, 'stores', u'région_id'), primitive=Diff)
+    diff = ft.Feature(ft.Feature(pd_es['stores'].ww['num_square_feet']), groupby=ft.Feature(pd_es['stores'].ww[u'région_id']), primitive=Diff)
     feature_set = FeatureSet([diff])
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array([5]))
@@ -547,7 +547,7 @@ def test_boolean_multiply(boolean_mult_es):
     ]
     features = []
     for row in to_test:
-        features.append(ft.Feature(es, "test", row[0]) * ft.Feature(es, "test", row[1]))
+        features.append(ft.Feature(es["test"].ww[row[0]]) * ft.Feature(es["test"].ww[row[1]]))
 
     fm = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features))
 
@@ -588,7 +588,7 @@ def test_arithmetic_of_transform(es):
 
 
 def test_not_feature(es):
-    not_feat = ft.Feature(ft.Feature(es, 'customers', 'loves_ice_cream'), primitive=Not)
+    not_feat = ft.Feature(ft.Feature(es['customers'].ww['loves_ice_cream']), primitive=Not)
     features = [not_feat]
     df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1]))
     v = df[not_feat.get_name()].values
@@ -673,7 +673,7 @@ def test_latlong_with_nan(pd_es):
 
 def test_haversine(pd_es):
     log_latlong_feat = ft.Feature(pd_es['log'].ww['latlong'])
-    log_latlong_feat2 = ft.Feature(pd_es, 'log', 'latlong2')
+    log_latlong_feat2 = ft.Feature(pd_es['log'].ww['latlong2'])
     haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
                            primitive=Haversine)
     features = [haversine]
@@ -710,7 +710,7 @@ def test_haversine_with_nan(pd_es):
     df['latlong'][1] = (10, np.nan)
     pd_es.update_dataframe(dataframe_name='log', df=df)
     log_latlong_feat = ft.Feature(pd_es['log'].ww['latlong'])
-    log_latlong_feat2 = ft.Feature(pd_es, 'log', 'latlong2')
+    log_latlong_feat2 = ft.Feature(pd_es['log'].ww['latlong2'])
     haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
                            primitive=Haversine)
     features = [haversine]
@@ -728,7 +728,7 @@ def test_haversine_with_nan(pd_es):
     df['latlong2'] = np.nan
     pd_es.update_dataframe(dataframe_name='log', df=df)
     log_latlong_feat = ft.Feature(pd_es['log'].ww['latlong'])
-    log_latlong_feat2 = ft.Feature(pd_es, 'log', 'latlong2')
+    log_latlong_feat2 = ft.Feature(pd_es['log'].ww['latlong2'])
     haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
                            primitive=Haversine)
     features = [haversine]

@@ -792,7 +792,7 @@ def test_empty_child_dataframe(parent_child):
     # create aggs with where
     where = ft.Feature(es["child"].ww["value"]) == 1
     count_where = ft.Feature(ft.Feature(es["child"].ww["id"]), parent_dataframe_name="parent", where=where, primitive=Count)
-    trend_where = ft.Feature([ft.Feature(es["child"].ww["value"]), ft.Feature(es, "child", "time_index")],
+    trend_where = ft.Feature([ft.Feature(es["child"].ww["value"]), ft.Feature(es["child"].ww["time_index"])],
                              parent_dataframe_name="parent",
                              where=where,
                              primitive=Trend)

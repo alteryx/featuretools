@@ -113,10 +113,10 @@ def test_make_transform_sets_kwargs_correctly(es):
         cls_attributes={"generate_name": isin_generate_name})
 
     isin_1_list = ["toothpaste", "coke_zero"]
-    isin_1_base_f = Feature(es, 'log', 'product_id')
+    isin_1_base_f = Feature(es['log'].ww['product_id'])
     isin_1 = Feature(isin_1_base_f, primitive=IsIn(list_of_outputs=isin_1_list))
     isin_2_list = ["coke_zero"]
-    isin_2_base_f = Feature(es, 'log', 'session_id')
+    isin_2_base_f = Feature(es['log'].ww['session_id'])
     isin_2 = Feature(isin_2_base_f, primitive=IsIn(list_of_outputs=isin_2_list))
     assert isin_1_base_f == isin_1.base_features[0]
     assert isin_1_list == isin_1.primitive.kwargs['list_of_outputs']
