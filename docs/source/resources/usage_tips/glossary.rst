@@ -13,33 +13,26 @@ Glossary
     feature engineering
         The process of transforming data into representations that are better for machine learning.
 
-    variable
-        Equivalent to a column in a relational database. Represented by the :class:`.Variable` class.
-
-
     cutoff time
         The last point in time data is allowed to be used when calculating a feature
 
-    entity
-        Equivalent to a table in relational database. Represented by the :class:`.Entity` class.
-
     EntitySet
-        A collection of entities and the relationships between them. Represented by the :class:`.EntitySet` class.
+        A collection of dataframes and the relationships between them. Represented by the :class:`.EntitySet` class.
 
     instance
-        Equivalent to a row in a relational database. Each entity has many instances, and each instance has a value for each variable and feature defined on the entity.
+        Equivalent to a row in a relational database. Each dataframe has many instances, and each instance has a value for each column and feature defined on the dataframe.
 
     target dataframe
         The dataframe for which we will be making features
 
-    parent entity
-        An entity that is referenced by another entity via relationship. The "one" in a one-to-many relationship.
+    parent dataframe
+        A dataframe that is referenced by another dataframe via relationship. The "one" in a one-to-many relationship.
 
-    child entity
-        An entity that references another entity via relationship. The "many" in a one-to-many relationship.
+    child dataframe
+        A dataframe that references another dataframe via relationship. The "many" in a one-to-many relationship.
 
     relationship
-        A mapping between a parent entity and a child entity. The child entity must contain a variable referencing the ID variable on the parent entity. Represented by the :class:`.Relationship` class.
+        A mapping between a parent dataframe and a child dataframe. The child dataframe must contain a column referencing the ID column on the parent dataframe. Represented by the :class:`.Relationship` class.
 
 .. todo
 .. label maker,
