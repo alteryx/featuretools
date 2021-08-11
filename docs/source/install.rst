@@ -62,7 +62,7 @@ pip users::
     
 conda users::
 
-    conda install -c conda-forge graphviz
+    conda install -c conda-forge python-graphviz
 
 Ubuntu::
 
@@ -80,7 +80,7 @@ Windows:
 - Install according to your package manager::
 
     # conda
-    conda install -c conda-forge graphviz
+    conda install -c conda-forge python-graphviz
     # pip
     pip install graphviz
 
