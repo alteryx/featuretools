@@ -16,6 +16,7 @@ def check_graphviz():
             "  Mac OS: brew install graphviz\n" +
             "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
             "  Windows: conda install -c conda-forge python-graphviz\n" +
+            "  Windows: https://graphviz.org/download/#windows" +
             "  For more details visit: https://featuretools.alteryx.com/en/stable/install.html#installing-graphviz"
         )
     return graphviz
