@@ -41,4 +41,4 @@ Glossary
         Optional additional information on the column about the meaning or potential uses of data. Used to determine which primitives can be applied to a column to generate features.
 
     ColumnSchema
-        All of Woodwork's column type information including the logical type and any semantic tags.
+        All of a Woodwork column's type information including the logical type and any semantic tags.
