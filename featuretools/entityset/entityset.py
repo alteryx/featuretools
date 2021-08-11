@@ -543,6 +543,7 @@ class EntitySet(object):
             metadata = dataframe.ww._schema.columns[column].metadata
             metadata.update(dataframe_name=dataframe.ww.name)
             metadata.update(entityset_id=self.id)
+        FeatureBase._entityset_ref[self.id] = self
 
 
     def add_dataframe(self,
