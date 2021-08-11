@@ -66,7 +66,7 @@ conda users::
 
 Ubuntu::
 
-    sudo apt-get install graphviz
+    sudo apt install graphviz
     pip install graphviz
 
 Mac OS::
