@@ -2,7 +2,7 @@ class Relationship(object):
     """Class to represent a relationship between dataframes
 
     See Also:
-        :class:`.EntitySet`, :class:`.Entity`
+        :class:`.EntitySet`
     """
 
     def __init__(self, entityset, parent_dataframe_name, parent_column_name,

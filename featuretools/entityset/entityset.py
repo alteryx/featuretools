@@ -179,7 +179,7 @@ class EntitySet(object):
 
     @property
     def dataframe_type(self):
-        '''String specifying the library used for the entity dataframes. Null if no dataframes'''
+        '''String specifying the library used for the dataframes. Null if no dataframes'''
         df_type = None
 
         if self.dataframes:
@@ -342,7 +342,7 @@ class EntitySet(object):
 
         if parent_df.ww.index != parent_column:
             parent_df.ww.set_index(parent_column)
-        # Empty dataframes (as a result of accessing Entity.metadata)
+        # Empty dataframes (as a result of accessing metadata)
         # default to object dtypes for categorical columns, but
         # indexes/foreign keys default to ints. In this case, we convert
         # the empty column's type to int
@@ -1281,7 +1281,7 @@ class EntitySet(object):
                 column_typing_info.append(col_string)
 
             columns_string = '\l'.join(column_typing_info)  # noqa: W605
-            if isinstance(df, dd.DataFrame):  # entity is a dask entity
+            if isinstance(df, dd.DataFrame):  # dataframe is a dask dataframe
                 label = '{%s |%s\l}' % (df.ww.name, columns_string)  # noqa: W605
             else:
                 nrows = df.shape[0]
@@ -1368,7 +1368,7 @@ class EntitySet(object):
             column_name (str) : Column to query on. If None, query on index.
             columns (list[str]) : Columns to return. Return all columns if None.
             time_last (pd.TimeStamp) : Query data up to and including this
-                time. Only applies if entity has a time index.
+                time. Only applies if dataframe has a time index.
             training_window (Timedelta, optional):
                 Window defining how much time before the cutoff time data
                 can be used when calculating features. If None, all data before cutoff time is used.

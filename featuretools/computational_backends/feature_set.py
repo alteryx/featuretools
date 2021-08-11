@@ -16,7 +16,7 @@ logger = logging.getLogger('featuretools.computational_backend')
 
 class FeatureSet(object):
     """
-    Represents an immutable set of features to be calculated for a single entity, and their
+    Represents an immutable set of features to be calculated for a single dataframe, and their
     dependencies.
     """
 
@@ -70,9 +70,9 @@ class FeatureSet(object):
         then used for all subsequent calls.
 
         The edges of the trie are RelationshipPaths and the values are tuples of
-        (bool, set[str], set[str]). The bool represents whether the full entity df is needed at
+        (bool, set[str], set[str]). The bool represents whether the full df is needed at
         that node, the first set contains the names of features which are needed on the full
-        entity, and the second set contains the names of the rest of the features
+        dataframe, and the second set contains the names of the rest of the features
 
         Returns:
             Trie[RelationshipPath, (bool, set[str], set[str])]
@@ -111,7 +111,7 @@ class FeatureSet(object):
         if name in approximate_feature_trie.value:
             return
 
-        # Add the feature to one of the sets, depending on whether it needs the full entity.
+        # Add the feature to one of the sets, depending on whether it needs the full dataframe.
         if needs_full_dataframe:
             full_features.add(name)
             if name in not_full_features:
@@ -168,7 +168,7 @@ class FeatureSet(object):
     def _get_feature_depths(self, features):
         """
         Generate and return a mapping of {feature name -> depth} in the
-        feature DAG for the given entity.
+        feature DAG for the given dataframe.
         """
         order = defaultdict(int)
         depths = {}
@@ -179,7 +179,7 @@ class FeatureSet(object):
 
             depths[f.unique_name()] = order[f.unique_name()]
 
-            # Only look at dependencies if they are on the same entity.
+            # Only look at dependencies if they are on the same dataframe.
             if not f.relationship_path:
                 dependencies = f.get_dependencies()
                 for dep in dependencies:

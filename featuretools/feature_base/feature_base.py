@@ -24,8 +24,8 @@ class FeatureBase(object):
             entityset (EntitySet): entityset this feature is being calculated for
             dataframe_name (str): name of dataframe this feature is being calculated for
             base_features (list[FeatureBase]): list of base features for primitive
-            relationship_path (RelationshipPath): path from this entity to the
-                entity of the base features.
+            relationship_path (RelationshipPath): path from this dataframe to the
+                dataframe of the base features.
             primitive (:class:`.PrimitiveBase`): primitive to calculate. if not initialized when passed, gets initialized with no arguments
         """
         assert all(isinstance(f, FeatureBase) for f in base_features), \

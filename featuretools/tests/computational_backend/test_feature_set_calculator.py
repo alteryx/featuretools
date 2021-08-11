@@ -503,7 +503,7 @@ def test_make_dfeat_of_agg_feat_on_self(es):
 
         R       R = Regions, a parent of customers
         |
-        C       C = Customers, the entity we're trying to predict on
+        C       C = Customers, the dataframe we're trying to predict on
         |
        etc.
 
@@ -527,7 +527,7 @@ def test_make_dfeat_of_agg_feat_through_parent(es):
     """
     The graph looks like this:
 
-        R       C = Customers, the entity we're trying to predict on
+        R       C = Customers, the dataframe we're trying to predict on
        / \\     R = Regions, a parent of customers
       S   C     S = Stores, a child of regions
           |
@@ -555,7 +555,7 @@ def test_make_deep_agg_feat_of_dfeat_of_agg_feat(es):
     """
     The graph looks like this (higher implies parent):
 
-          C     C = Customers, the entity we're trying to predict on
+          C     C = Customers, the dataframe we're trying to predict on
           |     S = Sessions, a child of Customers
       P   S     L = Log, a child of both Sessions and Log
        \\ /     P = Products, a parent of Log which is not a descendent of customers

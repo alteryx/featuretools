@@ -626,9 +626,9 @@ def test_converts_dtype_on_init(df4):
     df4.ww.init(name='test_dataframe', index='id', logical_types=logical_types)
     es.add_dataframe(dataframe=df4)
 
-    entity_df = es['test_dataframe']
-    assert entity_df['ints'].dtype.name == 'int64'
-    assert entity_df['floats'].dtype.name == 'float64'
+    df = es['test_dataframe']
+    assert df['ints'].dtype.name == 'int64'
+    assert df['floats'].dtype.name == 'float64'
 
     # this is infer from pandas dtype
     df = es["test_dataframe"]
@@ -1051,7 +1051,7 @@ def test_concat_with_make_index(es):
     assert es.__eq__(es_1, deep=True)
     assert es.__eq__(es_2, deep=True)
 
-    # map of what rows to take from es_1 and es_2 for each entity
+    # map of what rows to take from es_1 and es_2 for each dataframe
     emap = {
         'log': [list(range(10)) + [14, 15, 16], list(range(10, 14)) + [15, 16]],
         'sessions': [[0, 1, 2], [1, 3, 4, 5]],
@@ -1105,7 +1105,7 @@ def transactions_df(request):
 
 
 def test_set_time_type_on_init(transactions_df):
-    # create cards entity
+    # create cards dataframe
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     if isinstance(transactions_df, dd.DataFrame):
         cards_df = dd.from_pandas(cards_df, npartitions=3)
@@ -1162,7 +1162,7 @@ def test_sets_time_when_adding_dataframe(transactions_df):
     es = EntitySet("fraud")
     # assert it's not set
     assert getattr(es, "time_type", None) is None
-    # add entity
+    # add dataframe
     es.add_dataframe(transactions_df,
                      dataframe_name="transactions",
                      index="id",
@@ -1170,14 +1170,14 @@ def test_sets_time_when_adding_dataframe(transactions_df):
                      logical_types=transactions_logical_types)
     # assert time_type is set
     assert es.time_type == 'numeric'
-    # add another entity
+    # add another dataframe
     es.normalize_dataframe("transactions",
                            "cards",
                            "card_id",
                            make_time_index=True)
     # assert time_type unchanged
     assert es.time_type == 'numeric'
-    # add wrong time type entity
+    # add wrong time type dataframe
     error_text = "accounts time index is Datetime type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
         es.add_dataframe(accounts_df,
@@ -1677,13 +1677,13 @@ def test_use_time_index(index_df):
 
     error_text = re.escape("Cannot add 'time_index' tag directly for column transaction_time. To set a column as the time index, use DataFrame.ww.set_time_index() instead.")
     with pytest.raises(ValueError, match=error_text):
-        es.add_dataframe(dataframe_name="entity",
+        es.add_dataframe(dataframe_name="dataframe",
                          index="id",
                          logical_types=bad_ltypes,
                          semantic_tags=bad_semantic_tags,
                          dataframe=index_df)
 
-    es.add_dataframe(dataframe_name="entity",
+    es.add_dataframe(dataframe_name="dataframe",
                      index="id",
                      time_index="transaction_time",
                      logical_types=logical_types,
