@@ -28,7 +28,7 @@ from featuretools.utils.gen_utils import Library
 
 
 def test_direct_from_identity(es):
-    device = Feature(es, 'sessions', 'device_type')
+    device = Feature(es['sessions'].ww['device_type'])
     d = DirectFeature(base_feature=device, child_dataframe_name='log')
 
     feature_set = FeatureSet([d])
@@ -45,7 +45,7 @@ def test_direct_from_identity(es):
 
 def test_direct_from_variable(es):
     # should be same behavior as test_direct_from_identity
-    device = Feature(es, 'sessions', 'device_type')
+    device = Feature(es['sessions'].ww['device_type'])
     d = DirectFeature(base_feature=device,
                       child_dataframe_name='log')
 

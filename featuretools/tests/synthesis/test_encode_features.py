@@ -144,7 +144,7 @@ def test_encode_unknown_features():
 
 
 def test_encode_features_topn(pd_es):
-    topn = Feature(Feature(pd_es, 'log', 'product_id'),
+    topn = Feature(Feature(pd_es['log'].ww['product_id']),
                    parent_dataframe_name='customers',
                    primitive=NMostCommon(n=3))
     features, feature_defs = dfs(entityset=pd_es,
