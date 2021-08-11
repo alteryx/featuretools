@@ -146,7 +146,7 @@ def test_groupby_transform_direct_groupby(es):
         assert component in graph
 
     dataframes = {'cohorts': [cohorts_table, 'cohort_name'],
-                'customers': [customers_table, 'cohort', 'age', groupby_name, feat_name]}
+                  'customers': [customers_table, 'cohort', 'age', groupby_name, feat_name]}
     for dataframe in dataframes:
         regex = r"{} \[label=<\n<TABLE.*?</TABLE>>".format(dataframe)
         matches = re.findall(regex, graph, re.DOTALL)
@@ -188,7 +188,7 @@ def test_aggregation(es):
         assert component in graph
 
     dataframes = {'log': [log_table, 'id', 'session_id'],
-                'sessions': [sessions_table, feat_name]}
+                  'sessions': [sessions_table, feat_name]}
     for dataframe in dataframes:
         regex = r"{} \[label=<\n<TABLE.*?</TABLE>>".format(dataframe)
         matches = re.findall(regex, graph, re.DOTALL)
@@ -230,7 +230,7 @@ def test_multioutput(es):
         assert component in graph
 
     dataframes = {'log': [log_table, 'zipcode', 'session_id'],
-                'sessions': [sessions_table, feat_name]}
+                  'sessions': [sessions_table, feat_name]}
     for dataframe in dataframes:
         regex = r"{} \[label=<\n<TABLE.*?</TABLE>>".format(dataframe)
         matches = re.findall(regex, graph, re.DOTALL)
@@ -276,8 +276,8 @@ def test_direct(es):
         assert component in graph
 
     dataframes = {'customers': [customers_table, 'engagement_level'],
-                'sessions': [sessions_table, 'customer_id', d1_name],
-                'log': [log_table, 'session_id', d2_name]}
+                  'sessions': [sessions_table, 'customer_id', d1_name],
+                  'log': [log_table, 'session_id', d2_name]}
 
     for dataframe in dataframes:
         regex = r"{} \[label=<\n<TABLE.*?</TABLE>>".format(dataframe)
