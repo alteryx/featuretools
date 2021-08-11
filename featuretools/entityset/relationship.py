@@ -1,5 +1,5 @@
 class Relationship(object):
-    """Class to represent an relationship between entities
+    """Class to represent a relationship between dataframes
 
     See Also:
         :class:`.EntitySet`, :class:`.Entity`
@@ -103,7 +103,7 @@ class Relationship(object):
         }
 
     def _is_unique(self):
-        """Is there any other relationship with same parent and child entities?"""
+        """Is there any other relationship with same parent and child dataframes?"""
         es = self.entityset
         relationships = es.get_forward_relationships(self._child_dataframe_name)
         n = len([r for r in relationships

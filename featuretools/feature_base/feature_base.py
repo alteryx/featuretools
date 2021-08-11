@@ -519,7 +519,7 @@ class AggregationFeature(FeatureBase):
             time_index = base_features[0].dataframe.ww.time_index
             time_col = base_features[0].dataframe.ww[time_index]
             assert time_index is not None, ("Use previous can only be defined "
-                                            "on entities with a time index")
+                                            "on dataframes with a time index")
             assert _check_time_against_column(self.use_previous, time_col)
 
         super(AggregationFeature, self).__init__(entityset=entityset,

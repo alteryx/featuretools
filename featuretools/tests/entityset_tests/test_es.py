@@ -1123,12 +1123,12 @@ def test_set_time_type_on_init(transactions_df):
         cards_logical_types = None
         transactions_logical_types = None
 
-    entities = {
+    dataframes = {
         "cards": (cards_df, "id", None, cards_logical_types),
         "transactions": (transactions_df, "id", "transaction_time", transactions_logical_types)
     }
     relationships = [("cards", "id", "transactions", "card_id")]
-    es = EntitySet("fraud", entities, relationships)
+    es = EntitySet("fraud", dataframes, relationships)
     # assert time_type is set
     assert es.time_type == 'numeric'
 
@@ -1252,12 +1252,12 @@ def test_checks_time_type_setting_secondary_time_index(es):
         "transaction_date": [datetime(1989, 2, i) for i in range(1, 7)],
         "fraud": [True, False, False, False, True, True]
     })
-    entities = {
+    dataframes = {
         "cards": (cards_df, "id"),
         "transactions": (transactions_df, "id", "transaction_time")
     }
     relationships = [("cards", "id", "transactions", "card_id")]
-    card_es = EntitySet("fraud", entities, relationships)
+    card_es = EntitySet("fraud", dataframes, relationships)
     assert card_es.time_type == 'numeric'
     # add secondary index that is numeric time type
     new_2nd_ti = {'fraud_decision_time': ['fraud_decision_time', 'fraud']}

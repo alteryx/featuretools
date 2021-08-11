@@ -452,7 +452,7 @@ def test_make_3_stacked_agg_feats(df):
     """
     Tests stacking 3 agg features.
 
-    The test specifically uses non numeric indices to test how ancestor variables are handled
+    The test specifically uses non numeric indices to test how ancestor columns are handled
     as dataframes are merged together
 
     """

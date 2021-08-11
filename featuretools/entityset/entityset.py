@@ -64,14 +64,14 @@ class EntitySet(object):
 
                 .. code-block:: python
 
-                    entities = {
+                    dataframes = {
                         "cards" : (card_df, "id"),
                         "transactions" : (transactions_df, "id", "transaction_time")
                     }
 
                     relationships = [("cards", "id", "transactions", "card_id")]
 
-                    ft.EntitySet("my-entity-set", entities, relationships)
+                    ft.EntitySet("my-entity-set", dataframes, relationships)
         """
         self.id = id
         self.dataframe_dict = {}
@@ -179,7 +179,7 @@ class EntitySet(object):
 
     @property
     def dataframe_type(self):
-        '''String specifying the library used for the entity dataframes. Null if no entities'''
+        '''String specifying the library used for the entity dataframes. Null if no dataframes'''
         df_type = None
 
         if self.dataframes:
@@ -343,7 +343,7 @@ class EntitySet(object):
         if parent_df.ww.index != parent_column:
             parent_df.ww.set_index(parent_column)
         # Empty dataframes (as a result of accessing Entity.metadata)
-        # default to object dtypes for discrete variables, but
+        # default to object dtypes for categorical columns, but
         # indexes/foreign keys default to ints. In this case, we convert
         # the empty column's type to int
         # --> Implementation: is this still relevant?
@@ -819,7 +819,7 @@ class EntitySet(object):
 
         base_dataframe_index = index
 
-        # --> Implementation: not sure that this is the same as using vtype Categorical because we can't just set a standard tag
+        # --> Implementation: not sure that this is the same as using ltype Categorical because we can't just set a standard tag
         # why did we set it to variable Categorical???
         # and why does it get reset when we did it above??
         # transfer_types[index] = ('Categorical', set())
@@ -1268,7 +1268,7 @@ class EntitySet(object):
         graph = graphviz.Digraph(self.id, format=format_,
                                  graph_attr={'splines': 'ortho'})
 
-        # Draw entities
+        # Draw dataframes
         for df in self.dataframes:
             column_typing_info = []
             for col_name, col_schema in df.ww.columns.items():
@@ -1290,7 +1290,7 @@ class EntitySet(object):
 
         # Draw relationships
         for rel in self.relationships:
-            # Display the key only once if is the same for both related entities
+            # Display the key only once if is the same for both related dataframes
             if rel._parent_column_name == rel._child_column_name:
                 label = rel._parent_column_name
             else:
