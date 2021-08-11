@@ -2,8 +2,8 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean
 
 from featuretools import primitives
-from featuretools.entityset.timedelta import Timedelta
 from featuretools.entityset.relationship import Relationship, RelationshipPath
+from featuretools.entityset.timedelta import Timedelta
 from featuretools.feature_base.utils import is_valid_input
 from featuretools.primitives.base import (
     AggregationPrimitive,
@@ -15,6 +15,7 @@ from featuretools.utils.wrangle import (
     _check_time_against_column,
     _check_timedelta
 )
+
 
 class FeatureBase(object):
     _entityset_ref = {}
@@ -767,7 +768,7 @@ class Feature(object):
                                                primitive=primitive,
                                                groupby=groupby)
             return TransformFeature(base, primitive=primitive)
- 
+
         raise Exception("Unrecognized feature initialization")
 
 

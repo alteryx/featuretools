@@ -9,9 +9,9 @@ import pandas as pd
 from woodwork import init_series
 from woodwork.logical_types import Datetime
 
-from featuretools.feature_base import FeatureBase
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.relationship import Relationship, RelationshipPath
+from featuretools.feature_base import FeatureBase
 from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.utils.plot_utils import (
     check_graphviz,
@@ -108,7 +108,6 @@ class EntitySet(object):
                                logical_types=logical_types,
                                semantic_tags=semantic_tags,
                                make_index=make_index)
-
 
         for relationship in relationships:
             parent_df, parent_column, child_df, child_column = relationship
@@ -544,7 +543,6 @@ class EntitySet(object):
             metadata.update(dataframe_name=dataframe.ww.name)
             metadata.update(entityset_id=self.id)
         FeatureBase._entityset_ref[self.id] = self
-
 
     def add_dataframe(self,
                       dataframe,
@@ -1169,7 +1167,7 @@ class EntitySet(object):
 
         self.reset_data_description()
         for df in self.dataframes:
-                self._add_references_to_metadata(df)
+            self._add_references_to_metadata(df)
 
     # ###########################################################################
     # #  Pickling ###############################################
