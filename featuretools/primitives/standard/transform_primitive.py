@@ -550,7 +550,7 @@ class Percentile(TransformPrimitive):
 
 class Latitude(TransformPrimitive):
     """Returns the first tuple value in a list of LatLong tuples.
-       For use with the LatLong variable type.
+       For use with the LatLong logical type.
 
     Examples:
         >>> latitude = Latitude()
@@ -572,7 +572,7 @@ class Latitude(TransformPrimitive):
 
 class Longitude(TransformPrimitive):
     """Returns the second tuple value in a list of LatLong tuples.
-       For use with the LatLong variable type.
+       For use with the LatLong logical type.
 
     Examples:
         >>> longitude = Longitude()
@@ -593,8 +593,7 @@ class Longitude(TransformPrimitive):
 
 
 class Haversine(TransformPrimitive):
-    """Calculates the approximate haversine distance between two LatLong
-        variable types.
+    """Calculates the approximate haversine distance between two LatLong columns.
 
         Args:
             unit (str): Determines the unit value to output. Could

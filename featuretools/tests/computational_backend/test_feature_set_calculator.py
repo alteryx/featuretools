@@ -69,7 +69,7 @@ def test_make_dfeat(es):
     assert (v == 33)
 
 
-def test_make_agg_feat_of_identity_variable(es):
+def test_make_agg_feat_of_identity_column(es):
     agg_feat = ft.Feature(ft.Feature(es, 'log', 'value'), parent_dataframe_name='sessions', primitive=Sum)
 
     feature_set = FeatureSet([agg_feat])
@@ -113,7 +113,7 @@ def test_full_dataframe_error_dask(dask_es):
         calculator.run(np.array([1]))
 
 
-def test_make_agg_feat_of_identity_index_variable(es):
+def test_make_agg_feat_of_identity_index_column(es):
     agg_feat = ft.Feature(ft.Feature(es, 'log', 'id'), parent_dataframe_name='sessions', primitive=Count)
 
     feature_set = FeatureSet([agg_feat])
@@ -889,7 +889,7 @@ def test_handles_primitive_function_name_uniqueness(es):
     double_value_sum = pd.Series([112, 52, 0])
     assert all(fm[f2.get_name()].sort_index() == double_value_sum)
 
-    # same primitive, same variable, different args
+    # same primitive, same column, different args
     fm = ft.calculate_feature_matrix(features=[f1, f2], entityset=es)
 
     assert all(fm[f1.get_name()].sort_index() == value_sum)

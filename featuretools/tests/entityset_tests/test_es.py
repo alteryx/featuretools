@@ -355,7 +355,7 @@ def test_query_by_id_with_time(es):
     assert list(df['id'].values) == [0, 1, 2]
 
 
-def test_query_by_variable_with_time(es):
+def test_query_by_column_with_time(es):
     df = es.query_by_values(
         dataframe_name='log',
         instance_vals=[0, 1, 2], column_name='session_id',
@@ -372,7 +372,7 @@ def test_query_by_variable_with_time(es):
     assert list(df['value'].values) == true_values
 
 
-def test_query_by_variable_with_no_lti_and_training_window(es):
+def test_query_by_column_with_no_lti_and_training_window(es):
     match = "Using training_window but last_time_index is not set for dataframe customers"
     with pytest.warns(UserWarning, match=match):
         df = es.query_by_values(
@@ -386,7 +386,7 @@ def test_query_by_variable_with_no_lti_and_training_window(es):
     assert list(df['age'].values) == [25]
 
 
-def test_query_by_variable_with_lti_and_training_window(es):
+def test_query_by_column_with_lti_and_training_window(es):
     es.add_last_time_indexes()
     df = es.query_by_values(
         dataframe_name='customers',
@@ -399,7 +399,7 @@ def test_query_by_variable_with_lti_and_training_window(es):
     assert list(df['age'].values) == [33, 25, 56]
 
 
-def test_query_by_indexed_variable(es):
+def test_query_by_indexed_column(es):
     df = es.query_by_values(
         dataframe_name='log',
         instance_vals=['taco clock'],

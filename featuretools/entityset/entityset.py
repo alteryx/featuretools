@@ -820,7 +820,7 @@ class EntitySet(object):
         base_dataframe_index = index
 
         # --> Implementation: not sure that this is the same as using ltype Categorical because we can't just set a standard tag
-        # why did we set it to variable Categorical???
+        # why did we set it to Categorical???
         # and why does it get reset when we did it above??
         # transfer_types[index] = ('Categorical', set())
         if make_secondary_time_index:
@@ -1522,7 +1522,7 @@ class EntitySet(object):
         return time_type
 
 
-def _vals_to_series(instance_vals, variable_id):
+def _vals_to_series(instance_vals, column_id):
     """
     instance_vals may be a pd.Dataframe, a pd.Series, a list, a single
     value, or None. This function always returns a Series or None.
@@ -1536,9 +1536,9 @@ def _vals_to_series(instance_vals, variable_id):
 
     # convert iterable to pd.Series
     if isinstance(instance_vals, pd.DataFrame):
-        out_vals = instance_vals[variable_id]
+        out_vals = instance_vals[column_id]
     elif is_instance(instance_vals, (pd, dd, ks), 'Series'):
-        out_vals = instance_vals.rename(variable_id)
+        out_vals = instance_vals.rename(column_id)
     else:
         out_vals = pd.Series(instance_vals)
 
