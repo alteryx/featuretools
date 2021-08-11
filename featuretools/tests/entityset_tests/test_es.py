@@ -486,7 +486,7 @@ def test_extra_column_type(df):
                          logical_types=logical_types, dataframe=df)
 
 
-def test_add_parent_not_index_varible(es):
+def test_add_parent_not_index_column(es):
     error_text = "Parent column 'language' is not the index of dataframe régions"
     with pytest.raises(AttributeError, match=error_text):
         es.add_relationship(u'régions', 'language', 'customers', u'région_id')
