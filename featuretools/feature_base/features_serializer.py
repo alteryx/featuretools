@@ -42,9 +42,9 @@ def save_features(features, location=None, profile_name=None):
 
         .. code-block:: python
 
-            f1 = ft.Feature(es["log"]["product_id"])
-            f2 = ft.Feature(es["log"]["purchased"])
-            f3 = ft.Feature(es["log"]["value"])
+            f1 = ft.Feature(es, "log", "product_id")
+            f2 = ft.Feature(es, "log", "purchased")
+            f3 = ft.Feature(es, "log", "value")
 
             features = [f1, f2, f3]
 

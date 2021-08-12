@@ -48,11 +48,9 @@ def dfs(dataframes=None,
 
 
     Args:
-        dataframes (dict[str -> tuple(DataFrame, str, str,
-                                      dict[str -> str/Woodwork.LogicalType],
-                                      dict[str->str/set],
-                                      boolean)]): dictionary of DataFrames.
-            Entries take the format dataframe name -> (dataframe, index column, time_index, logical_types, semantic_tags, make_index)}.
+        dataframes (dict[str -> tuple(DataFrame, str, str, dict[str -> str/Woodwork.LogicalType], dict[str->str/set], boolean)]):
+            Dictionary of DataFrames. Entries take the format
+            {dataframe name -> (dataframe, index column, time_index, logical_types, semantic_tags, make_index)}.
             Note that only the dataframe is required. If a Woodwork DataFrame is supplied, any other parameters
             will be ignored.
 
@@ -89,7 +87,7 @@ def dfs(dataframes=None,
 
                 Default: ["day", "year", "month", "weekday", "haversine", "num_words", "num_characters"]
 
-        groupby_trans_primitives (list[str or :class:`.primitives.TransformPrimitive`], optional):
+        groupby_trans_primitives (list[str or TransformPrimitive], optional):
             list of Transform primitives to make GroupByTransformFeatures with
 
         allowed_paths (list[list[str]]): Allowed dataframe paths on which to make

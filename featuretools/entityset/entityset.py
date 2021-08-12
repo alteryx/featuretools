@@ -48,12 +48,9 @@ class EntitySet(object):
 
             Args:
                 id (str) : Unique identifier to associate with this instance
-
-                dataframes (dict[str -> tuple(DataFrame, str, str,
-                                              dict[str -> str/Woodwork.LogicalType],
-                                              dict[str->str/set],
-                                              boolean)]): dictionary of DataFrames.
-                    Entries take the format dataframe name -> (dataframe, index column, time_index, logical_types, semantic_tags, make_index)}.
+                dataframes (dict[str -> tuple(DataFrame, str, str, dict[str -> str/Woodwork.LogicalType], dict[str->str/set], boolean)]):
+                    Dictionary of DataFrames. Entries take the format
+                    {dataframe name -> (dataframe, index column, time_index, logical_types, semantic_tags, make_index)}.
                     Note that only the dataframe is required. If a Woodwork DataFrame is supplied, any other parameters
                     will be ignored.
                 relationships (list[(str, str, str, str)]): List of relationships
@@ -594,7 +591,6 @@ class EntitySet(object):
                                  dataframe=transactions_df)
 
                 es["transactions"]
-                es["transactions"].df
 
         """
         logical_types = logical_types or {}
@@ -927,6 +923,7 @@ class EntitySet(object):
         an instance or children of that instance were observed).  Used when
         calculating features using training windows. Adds the last time index as
         a series named _ft_last_time on the dataframe.
+
         Args:
             updated_dataframes (list[str]): List of dataframe names to update last_time_index for
                 (will update all parents of those dataframes as well)
