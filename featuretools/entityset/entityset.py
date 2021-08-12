@@ -49,7 +49,7 @@ class EntitySet(object):
             Args:
                 id (str) : Unique identifier to associate with this instance
                 dataframes (dict[str -> tuple(DataFrame, str, str, dict[str -> str/Woodwork.LogicalType], dict[str->str/set], boolean)]):
-                    Dictionary of DataFrames. Entries take the format 
+                    Dictionary of DataFrames. Entries take the format
                     {dataframe name -> (dataframe, index column, time_index, logical_types, semantic_tags, make_index)}.
                     Note that only the dataframe is required. If a Woodwork DataFrame is supplied, any other parameters
                     will be ignored.

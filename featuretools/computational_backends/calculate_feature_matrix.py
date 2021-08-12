@@ -72,8 +72,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         instance_ids (list): List of instances to calculate features on. Only
             used if cutoff_time is a single datetime.
 
-        dataframes (dict[str -> tuple(DataFrame, str, str, dict[str -> str/Woodwork.LogicalType], dict[str->str/set], boolean)]): 
-            Dictionary of DataFrames. Entries take the format 
+        dataframes (dict[str -> tuple(DataFrame, str, str, dict[str -> str/Woodwork.LogicalType], dict[str->str/set], boolean)]):
+            Dictionary of DataFrames. Entries take the format
             {dataframe name -> (dataframe, index column, time_index, logical_types, semantic_tags, make_index)}.
             Note that only the dataframe is required. If a Woodwork DataFrame is supplied, any other parameters
             will be ignored.
