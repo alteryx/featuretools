@@ -15,8 +15,9 @@ def check_graphviz():
             "Install the backend using one of the following commands:\n" +
             "  Mac OS: brew install graphviz\n" +
             "  Linux (Ubuntu): $ sudo apt install graphviz\n" +
-            "  Windows: conda install -c conda-forge python-graphviz\n" +
-            "  Windows (download exe and install): https://graphviz.org/download/#windows" +
+            "  Windows (conda): conda install -c conda-forge python-graphviz\n" +
+            "  Windows (pip): pip install graphviz\n" +
+            "  Windows (EXE required if graphviz was installed via pip): https://graphviz.org/download/#windows" +
             "  For more details visit: https://featuretools.alteryx.com/en/stable/install.html#installing-graphviz"
         )
     return graphviz
