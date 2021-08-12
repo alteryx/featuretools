@@ -13,9 +13,9 @@ class PrimitiveBase(object):
     """Base class for all primitives."""
     #: (str): Name of the primitive
     name = None
-    #: (list): Variable types of inputs
+    #: (list): woodwork.ColumnSchema types of inputs
     input_types = None
-    #: (:class:`.Variable`): variable type of return
+    #: (woodwork.ColumnSchema): ColumnSchema type of return
     return_type = None
     #: Default value this feature returns if no data found. Defaults to np.nan
     default_value = np.nan

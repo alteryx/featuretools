@@ -927,9 +927,9 @@ def test_makes_direct_features_through_multiple_relationships(games_es):
     teams = ['home', 'away']
     for forward in teams:
         for backward in teams:
-            for var in teams:
+            for col in teams:
                 f = 'teams[%s_team_id].MEAN(games[%s_team_id].%s_team_score)' \
-                    % (forward, backward, var)
+                    % (forward, backward, col)
                 assert feature_with_name(features, f)
 
 

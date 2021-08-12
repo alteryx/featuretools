@@ -57,14 +57,14 @@ def test_create_entityset_with_mixed_dataframe_types(pd_es, ks_es):
               "Cannot add dataframe of type {} to an entityset with existing dataframes " \
               "of type {}"
 
-    # Test error is raised when trying to add Koalas dataframe to entitset with existing pandas entities
+    # Test error is raised when trying to add Koalas dataframe to entitset with existing pandas dataframes
     with pytest.raises(ValueError, match=err_msg.format(type(ks_df), type(pd_es.dataframes[0]))):
         pd_es.add_dataframe(
             dataframe_name="new_dataframe",
             dataframe=ks_df,
             index="id")
 
-    # Test error is raised when trying to add pandas dataframe to entitset with existing ks entities
+    # Test error is raised when trying to add pandas dataframe to entitset with existing ks dataframes
     with pytest.raises(ValueError, match=err_msg.format(type(df), type(ks_es.dataframes[0]))):
         ks_es.add_dataframe(
             dataframe_name="new_dataframe",

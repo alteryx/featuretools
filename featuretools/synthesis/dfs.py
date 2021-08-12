@@ -63,7 +63,7 @@ def dfs(dataframes=None,
         entityset (EntitySet): An already initialized entityset. Required if
             dataframes and relationships are not defined.
 
-        target_dataframe (str): Entity id of entity on which to make predictions.
+        target_dataframe_name (str): Name of dataframe on which to make predictions.
 
         cutoff_time (pd.DataFrame or Datetime): Specifies times at which to calculate
             the features for each instance. The resulting feature matrix will use data
@@ -92,7 +92,7 @@ def dfs(dataframes=None,
         groupby_trans_primitives (list[str or :class:`.primitives.TransformPrimitive`], optional):
             list of Transform primitives to make GroupByTransformFeatures with
 
-        allowed_paths (list[list[str]]): Allowed entity paths on which to make
+        allowed_paths (list[list[str]]): Allowed dataframe paths on which to make
             features.
 
         max_depth (int) : Maximum allowed depth of features.
@@ -101,7 +101,7 @@ def dfs(dataframes=None,
             blacklist when creating features.
 
         ignore_columns (dict[str -> list[str]], optional): List of specific
-            columns within each entity to blacklist when creating features.
+            columns within each dataframe to blacklist when creating features.
 
         primitive_options (list[dict[str or tuple[str] -> dict] or dict[str or tuple[str] -> dict, optional]):
             Specify options for a single primitive or a group of primitives.
@@ -116,9 +116,9 @@ def dfs(dataframes=None,
                 List of dataframes to be blacklisted when creating features
                 for the primitive(s) (list[str]).
             ``"include_columns"``
-                List of specific columns within each entity to include when
+                List of specific columns within each dataframe to include when
                 creating features for the primitive(s). All other columns
-                in a given entity will be ignored (dict[str -> list[str]]).
+                in a given dataframe will be ignored (dict[str -> list[str]]).
             ``"ignore_columns"``
                 List of specific columns within each dataframe to blacklist
                 when creating features for the primitive(s) (dict[str ->
@@ -130,11 +130,11 @@ def dfs(dataframes=None,
                 List of dataframes to blacklist when finding groupbys
                 (list[str]).
             ``"include_groupby_columns"``
-                List of specific columns within each entity to include as
+                List of specific columns within each dataframe to include as
                 groupbys, if applicable. All other columns in each
-                entity will be ignored (dict[str -> list[str]]).
+                dataframe will be ignored (dict[str -> list[str]]).
             ``"ignore_groupby_columns"``
-                List of specific columns within each entity to blacklist
+                List of specific columns within each dataframe to blacklist
                 as groupbys (dict[str -> list[str]]).
 
         seed_features (list[:class:`.FeatureBase`]): List of manually defined

@@ -236,7 +236,7 @@ def test_raise_key_error_missing_dataframe(es):
         es_without_id["testing"]
 
 
-def test_add_parent_not_index_variable(es):
+def test_add_parent_not_index_column(es):
     error_text = "Parent column 'language' is not the index of dataframe régions"
     with pytest.raises(AttributeError, match=error_text):
         es.add_relationship(u'régions', 'language', 'customers', u'région_id')

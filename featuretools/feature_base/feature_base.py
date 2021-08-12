@@ -24,8 +24,8 @@ class FeatureBase(object):
             entityset (EntitySet): entityset this feature is being calculated for
             dataframe_name (str): name of dataframe this feature is being calculated for
             base_features (list[FeatureBase]): list of base features for primitive
-            relationship_path (RelationshipPath): path from this entity to the
-                entity of the base features.
+            relationship_path (RelationshipPath): path from this dataframe to the
+                dataframe of the base features.
             primitive (:class:`.PrimitiveBase`): primitive to calculate. if not initialized when passed, gets initialized with no arguments
         """
         assert all(isinstance(f, FeatureBase) for f in base_features), \
@@ -191,8 +191,7 @@ class FeatureBase(object):
                 if column_schema.is_categorical:
                     column_schema.semantic_tags.add('category')
 
-            # direct features should keep the Id return type, but all other features should get
-            # converted to Categorical
+            # direct features should keep the foreign key tag, but all other features should get converted
             if not isinstance(feature, DirectFeature) and 'foreign_key' in column_schema.semantic_tags:
                 column_schema = ColumnSchema(logical_type=column_schema.logical_type,
                                              semantic_tags=column_schema.semantic_tags - {"foreign_key"})
@@ -519,7 +518,7 @@ class AggregationFeature(FeatureBase):
             time_index = base_features[0].dataframe.ww.time_index
             time_col = base_features[0].dataframe.ww[time_index]
             assert time_index is not None, ("Use previous can only be defined "
-                                            "on entities with a time index")
+                                            "on dataframes with a time index")
             assert _check_time_against_column(self.use_previous, time_col)
 
         super(AggregationFeature, self).__init__(entityset=entityset,
