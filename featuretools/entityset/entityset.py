@@ -343,6 +343,10 @@ class EntitySet(object):
         if parent_df.ww.index != parent_column:
             parent_df.ww.set_index(parent_column)
 
+        # Empty dataframes (as a result of accessing metadata)
+        # default to object dtypes for categorical columns, but
+        # indexes/foreign keys default to ints. In this case, we convert
+        # the empty column's type to int
         if isinstance(child_df, pd.DataFrame) and \
                 (child_df.empty and child_df[child_column].dtype == object and
                  parent_df.ww.columns[parent_column].is_numeric):
