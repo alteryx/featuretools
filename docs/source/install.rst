@@ -76,13 +76,15 @@ Mac OS::
 
 Windows:
 
-- Install the graphviz from the `official source <https://graphviz.org/download/#windows>`_
 - Install according to your package manager::
 
     # conda
     conda install -c conda-forge python-graphviz
     # pip
     pip install graphviz
+
+- If you installed graphviz with `pip`, install graphviz.exe from the `official source <https://graphviz.org/download/#windows>`_
+
 
 Install from Source
 -------------------
