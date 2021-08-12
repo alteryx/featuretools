@@ -191,8 +191,7 @@ class FeatureBase(object):
                 if column_schema.is_categorical:
                     column_schema.semantic_tags.add('category')
 
-            # direct features should keep the Id return type, but all other features should get
-            # converted to Categorical
+            # direct features should keep the foreign key tag, but all other features should get converted
             if not isinstance(feature, DirectFeature) and 'foreign_key' in column_schema.semantic_tags:
                 column_schema = ColumnSchema(logical_type=column_schema.logical_type,
                                              semantic_tags=column_schema.semantic_tags - {"foreign_key"})

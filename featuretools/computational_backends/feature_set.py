@@ -70,7 +70,7 @@ class FeatureSet(object):
         then used for all subsequent calls.
 
         The edges of the trie are RelationshipPaths and the values are tuples of
-        (bool, set[str], set[str]). The bool represents whether the full df is needed at
+        (bool, set[str], set[str]). The bool represents whether the full dataframe is needed at
         that node, the first set contains the names of features which are needed on the full
         dataframe, and the second set contains the names of the rest of the features
 

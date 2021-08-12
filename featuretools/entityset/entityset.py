@@ -342,11 +342,7 @@ class EntitySet(object):
 
         if parent_df.ww.index != parent_column:
             parent_df.ww.set_index(parent_column)
-        # Empty dataframes (as a result of accessing metadata)
-        # default to object dtypes for categorical columns, but
-        # indexes/foreign keys default to ints. In this case, we convert
-        # the empty column's type to int
-        # --> Implementation: is this still relevant?
+
         if isinstance(child_df, pd.DataFrame) and \
                 (child_df.empty and child_df[child_column].dtype == object and
                  parent_df.ww.columns[parent_column].is_numeric):
@@ -819,10 +815,6 @@ class EntitySet(object):
 
         base_dataframe_index = index
 
-        # --> Implementation: not sure that this is the same as using ltype Categorical because we can't just set a standard tag
-        # why did we set it to Categorical???
-        # and why does it get reset when we did it above??
-        # transfer_types[index] = ('Categorical', set())
         if make_secondary_time_index:
             old_ti_name = list(make_secondary_time_index.keys())[0]
             ti_cols = list(make_secondary_time_index.values())[0]
