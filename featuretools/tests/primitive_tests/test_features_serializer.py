@@ -182,7 +182,7 @@ def test_feature_use_previous_pd_dateoffset(es):
 
 
 def _compare_feature_dicts(a_dict, b_dict):
-    # We can't compare entityset dictionaries because variable lists are not
+    # We can't compare entityset dictionaries because column lists are not
     # guaranteed to be in the same order.
     es_a = description_to_entityset(a_dict.pop('entityset'))
     es_b = description_to_entityset(b_dict.pop('entityset'))

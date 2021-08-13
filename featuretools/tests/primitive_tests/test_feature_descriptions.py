@@ -195,10 +195,10 @@ def test_generic_description(es):
 
 
 def test_variable_description(es):
-    variable_description = 'the name of the device used for each session'
-    es['sessions'].ww.columns['device_name'].description = variable_description
+    column_description = 'the name of the device used for each session'
+    es['sessions'].ww.columns['device_name'].description = column_description
     identity_feat = IdentityFeature(es['sessions'].ww['device_name'])
-    assert describe_feature(identity_feat) == variable_description[0].upper() + variable_description[1:] + '.'
+    assert describe_feature(identity_feat) == column_description[0].upper() + column_description[1:] + '.'
 
 
 def test_metadata(es, tmpdir):

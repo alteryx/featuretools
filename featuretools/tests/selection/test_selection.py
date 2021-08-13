@@ -184,13 +184,13 @@ def test_multi_output_selection():
     df2 = pd.DataFrame({'first_id': [0, 1, 1, 3],
                         "all_nulls": [None, None, None, None], 'quarter': ['a', 'b', None, 'c']})
 
-    entities = {
+    dataframes = {
         "first": (df1, 'id'),
         "second": (df2, 'index'),
     }
 
     relationships = [("first", 'id', 'second', 'first_id')]
-    es = ft.EntitySet("data", entities, relationships=relationships)
+    es = ft.EntitySet("data", dataframes, relationships=relationships)
     es['second'].ww.set_types(logical_types={'all_nulls': 'categorical', 'quarter': 'categorical'})
 
     fm, features = ft.dfs(entityset=es,

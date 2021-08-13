@@ -57,11 +57,11 @@ def test_transform(es, trans_feat):
 
     feat_name = feat.get_name()
     prim_node = '0_{}_year'.format(feat_name)
-    entity_table = '\u2605 customers (target)'
+    dataframe_table = '\u2605 customers (target)'
     prim_edge = 'customers:cancel_date -> "{}"'.format(prim_node)
     feat_edge = '"{}" -> customers:"{}"'.format(prim_node, feat_name)
 
-    graph_components = [feat_name, entity_table, prim_node, prim_edge, feat_edge]
+    graph_components = [feat_name, dataframe_table, prim_node, prim_edge, feat_edge]
     for component in graph_components:
         assert component in graph
 
@@ -96,14 +96,14 @@ def test_groupby_transform(es):
     feat_name = feat.get_name()
     prim_node = "0_{}_cum_max".format(feat_name)
     groupby_node = '{}_groupby_customers--cohort'.format(feat_name)
-    entity_table = '\u2605 customers (target)'
+    dataframe_table = '\u2605 customers (target)'
 
     groupby_edge = 'customers:cohort -> "{}"'.format(groupby_node)
     groupby_input = 'customers:age -> "{}"'.format(groupby_node)
     prim_input = '"{}" -> "{}"'.format(groupby_node, prim_node)
     feat_edge = '"{}" -> customers:"{}"'.format(prim_node, feat_name)
 
-    graph_components = [feat_name, prim_node, groupby_node, entity_table,
+    graph_components = [feat_name, prim_node, groupby_node, dataframe_table,
                         groupby_edge, groupby_input, prim_input, feat_edge]
     for component in graph_components:
         assert component in graph
@@ -112,7 +112,7 @@ def test_groupby_transform(es):
     assert len(matches) == 1
     rows = re.findall(r"<TR.*?</TR>", matches[0], re.DOTALL)
     assert len(rows) == 4
-    assert entity_table in rows[0]
+    assert dataframe_table in rows[0]
     assert feat_name in rows[-1]
     assert ('age' in rows[1] and 'cohort' in rows[2]) or \
            ('age' in rows[2] and 'cohort' in rows[1])
@@ -145,22 +145,22 @@ def test_groupby_transform_direct_groupby(es):
     for component in graph_components:
         assert component in graph
 
-    entities = {'cohorts': [cohorts_table, 'cohort_name'],
-                'customers': [customers_table, 'cohort', 'age', groupby_name, feat_name]}
-    for entity in entities:
-        regex = r"{} \[label=<\n<TABLE.*?</TABLE>>".format(entity)
+    dataframes = {'cohorts': [cohorts_table, 'cohort_name'],
+                  'customers': [customers_table, 'cohort', 'age', groupby_name, feat_name]}
+    for dataframe in dataframes:
+        regex = r"{} \[label=<\n<TABLE.*?</TABLE>>".format(dataframe)
         matches = re.findall(regex, graph, re.DOTALL)
         assert len(matches) == 1
 
         rows = re.findall(r"<TR.*?</TR>", matches[0], re.DOTALL)
-        assert len(rows) == len(entities[entity])
+        assert len(rows) == len(dataframes[dataframe])
 
         for row in rows:
             matched = False
-            for i in entities[entity]:
+            for i in dataframes[dataframe]:
                 if i in row:
                     matched = True
-                    entities[entity].remove(i)
+                    dataframes[dataframe].remove(i)
                     break
             assert matched
 
@@ -187,21 +187,21 @@ def test_aggregation(es):
     for component in graph_components:
         assert component in graph
 
-    entities = {'log': [log_table, 'id', 'session_id'],
-                'sessions': [sessions_table, feat_name]}
-    for entity in entities:
-        regex = r"{} \[label=<\n<TABLE.*?</TABLE>>".format(entity)
+    dataframes = {'log': [log_table, 'id', 'session_id'],
+                  'sessions': [sessions_table, feat_name]}
+    for dataframe in dataframes:
+        regex = r"{} \[label=<\n<TABLE.*?</TABLE>>".format(dataframe)
         matches = re.findall(regex, graph, re.DOTALL)
         assert len(matches) == 1
 
         rows = re.findall(r"<TR.*?</TR>", matches[0], re.DOTALL)
-        assert len(rows) == len(entities[entity])
+        assert len(rows) == len(dataframes[dataframe])
         for row in rows:
             matched = False
-            for i in entities[entity]:
+            for i in dataframes[dataframe]:
                 if i in row:
                     matched = True
-                    entities[entity].remove(i)
+                    dataframes[dataframe].remove(i)
                     break
             assert matched
 
@@ -229,21 +229,21 @@ def test_multioutput(es):
     for component in graph_components:
         assert component in graph
 
-    entities = {'log': [log_table, 'zipcode', 'session_id'],
-                'sessions': [sessions_table, feat_name]}
-    for entity in entities:
-        regex = r"{} \[label=<\n<TABLE.*?</TABLE>>".format(entity)
+    dataframes = {'log': [log_table, 'zipcode', 'session_id'],
+                  'sessions': [sessions_table, feat_name]}
+    for dataframe in dataframes:
+        regex = r"{} \[label=<\n<TABLE.*?</TABLE>>".format(dataframe)
         matches = re.findall(regex, graph, re.DOTALL)
         assert len(matches) == 1
 
         rows = re.findall(r"<TR.*?</TR>", matches[0], re.DOTALL)
-        assert len(rows) == len(entities[entity])
+        assert len(rows) == len(dataframes[dataframe])
         for row in rows:
             matched = False
-            for i in entities[entity]:
+            for i in dataframes[dataframe]:
                 if i in row:
                     matched = True
-                    entities[entity].remove(i)
+                    dataframes[dataframe].remove(i)
                     break
             assert matched
 
@@ -275,23 +275,23 @@ def test_direct(es):
     for component in graph_components:
         assert component in graph
 
-    entities = {'customers': [customers_table, 'engagement_level'],
-                'sessions': [sessions_table, 'customer_id', d1_name],
-                'log': [log_table, 'session_id', d2_name]}
+    dataframes = {'customers': [customers_table, 'engagement_level'],
+                  'sessions': [sessions_table, 'customer_id', d1_name],
+                  'log': [log_table, 'session_id', d2_name]}
 
-    for entity in entities:
-        regex = r"{} \[label=<\n<TABLE.*?</TABLE>>".format(entity)
+    for dataframe in dataframes:
+        regex = r"{} \[label=<\n<TABLE.*?</TABLE>>".format(dataframe)
         matches = re.findall(regex, graph, re.DOTALL)
         assert len(matches) == 1
 
         rows = re.findall(r"<TR.*?</TR>", matches[0], re.DOTALL)
-        assert len(rows) == len(entities[entity])
+        assert len(rows) == len(dataframes[dataframe])
         for row in rows:
             matched = False
-            for i in entities[entity]:
+            for i in dataframes[dataframe]:
                 if i in row:
                     matched = True
-                    entities[entity].remove(i)
+                    dataframes[dataframe].remove(i)
                     break
             assert matched
 

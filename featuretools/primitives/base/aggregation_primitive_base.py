@@ -80,7 +80,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
             calculated at will be passed to the function as the keyword
             argument 'time'.
 
-        default_value (Variable): Default value when creating the primitive to
+        default_value (int, float): Default value when creating the primitive to
             avoid the inference step. If no default value if provided, the
             inference happen.
 

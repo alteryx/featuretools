@@ -35,7 +35,7 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
             In [3]: es
             Out[3]:
             Entityset: demo_retail_data
-              Entities:
+              DataFrames:
                 orders (shape = [22190, 3])
                 products (shape = [3684, 3])
                 customers (shape = [4372, 2])
@@ -51,7 +51,7 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
             In [5]: es
             Out[5]:
             Entityset: demo_retail_data
-              Entities:
+              DataFrames:
                 orders (shape = [67, 5])
                 products (shape = [606, 3])
                 customers (shape = [50, 2])
