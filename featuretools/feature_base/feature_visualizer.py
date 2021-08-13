@@ -228,13 +228,13 @@ def get_dataframe_table(dataframe_name, dataframe_dict):
     else:
         rows = []
 
-    for var in list(columns) + list(feats) + list(targets):
+    for col in list(columns) + list(feats) + list(targets):
         template = COL_TEMPLATE
-        if var in targets:
+        if col in targets:
             template = TARGET_TEMPLATE
 
-        var = html.escape(var)
-        rows.append(template.format(var, var))
+        col = html.escape(col)
+        rows.append(template.format(col, col))
 
     table = TABLE_TEMPLATE.format(dataframe_name=dataframe_name,
                                   table_cols="\n".join(rows))

@@ -355,7 +355,7 @@ def test_query_by_id_with_time(es):
     assert list(df['id'].values) == [0, 1, 2]
 
 
-def test_query_by_variable_with_time(es):
+def test_query_by_column_with_time(es):
     df = es.query_by_values(
         dataframe_name='log',
         instance_vals=[0, 1, 2], column_name='session_id',
@@ -372,7 +372,7 @@ def test_query_by_variable_with_time(es):
     assert list(df['value'].values) == true_values
 
 
-def test_query_by_variable_with_no_lti_and_training_window(es):
+def test_query_by_column_with_no_lti_and_training_window(es):
     match = "Using training_window but last_time_index is not set for dataframe customers"
     with pytest.warns(UserWarning, match=match):
         df = es.query_by_values(
@@ -386,7 +386,7 @@ def test_query_by_variable_with_no_lti_and_training_window(es):
     assert list(df['age'].values) == [25]
 
 
-def test_query_by_variable_with_lti_and_training_window(es):
+def test_query_by_column_with_lti_and_training_window(es):
     es.add_last_time_indexes()
     df = es.query_by_values(
         dataframe_name='customers',
@@ -399,7 +399,7 @@ def test_query_by_variable_with_lti_and_training_window(es):
     assert list(df['age'].values) == [33, 25, 56]
 
 
-def test_query_by_indexed_variable(es):
+def test_query_by_indexed_column(es):
     df = es.query_by_values(
         dataframe_name='log',
         instance_vals=['taco clock'],
@@ -486,7 +486,7 @@ def test_extra_column_type(df):
                          logical_types=logical_types, dataframe=df)
 
 
-def test_add_parent_not_index_varible(es):
+def test_add_parent_not_index_column(es):
     error_text = "Parent column 'language' is not the index of dataframe régions"
     with pytest.raises(AttributeError, match=error_text):
         es.add_relationship(u'régions', 'language', 'customers', u'région_id')
@@ -626,9 +626,9 @@ def test_converts_dtype_on_init(df4):
     df4.ww.init(name='test_dataframe', index='id', logical_types=logical_types)
     es.add_dataframe(dataframe=df4)
 
-    entity_df = es['test_dataframe']
-    assert entity_df['ints'].dtype.name == 'int64'
-    assert entity_df['floats'].dtype.name == 'float64'
+    df = es['test_dataframe']
+    assert df['ints'].dtype.name == 'int64'
+    assert df['floats'].dtype.name == 'float64'
 
     # this is infer from pandas dtype
     df = es["test_dataframe"]
@@ -1051,7 +1051,7 @@ def test_concat_with_make_index(es):
     assert es.__eq__(es_1, deep=True)
     assert es.__eq__(es_2, deep=True)
 
-    # map of what rows to take from es_1 and es_2 for each entity
+    # map of what rows to take from es_1 and es_2 for each dataframe
     emap = {
         'log': [list(range(10)) + [14, 15, 16], list(range(10, 14)) + [15, 16]],
         'sessions': [[0, 1, 2], [1, 3, 4, 5]],
@@ -1105,7 +1105,7 @@ def transactions_df(request):
 
 
 def test_set_time_type_on_init(transactions_df):
-    # create cards entity
+    # create cards dataframe
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     if isinstance(transactions_df, dd.DataFrame):
         cards_df = dd.from_pandas(cards_df, npartitions=3)
@@ -1123,12 +1123,12 @@ def test_set_time_type_on_init(transactions_df):
         cards_logical_types = None
         transactions_logical_types = None
 
-    entities = {
+    dataframes = {
         "cards": (cards_df, "id", None, cards_logical_types),
         "transactions": (transactions_df, "id", "transaction_time", transactions_logical_types)
     }
     relationships = [("cards", "id", "transactions", "card_id")]
-    es = EntitySet("fraud", entities, relationships)
+    es = EntitySet("fraud", dataframes, relationships)
     # assert time_type is set
     assert es.time_type == 'numeric'
 
@@ -1162,7 +1162,7 @@ def test_sets_time_when_adding_dataframe(transactions_df):
     es = EntitySet("fraud")
     # assert it's not set
     assert getattr(es, "time_type", None) is None
-    # add entity
+    # add dataframe
     es.add_dataframe(transactions_df,
                      dataframe_name="transactions",
                      index="id",
@@ -1170,14 +1170,14 @@ def test_sets_time_when_adding_dataframe(transactions_df):
                      logical_types=transactions_logical_types)
     # assert time_type is set
     assert es.time_type == 'numeric'
-    # add another entity
+    # add another dataframe
     es.normalize_dataframe("transactions",
                            "cards",
                            "card_id",
                            make_time_index=True)
     # assert time_type unchanged
     assert es.time_type == 'numeric'
-    # add wrong time type entity
+    # add wrong time type dataframe
     error_text = "accounts time index is Datetime type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
         es.add_dataframe(accounts_df,
@@ -1252,12 +1252,12 @@ def test_checks_time_type_setting_secondary_time_index(es):
         "transaction_date": [datetime(1989, 2, i) for i in range(1, 7)],
         "fraud": [True, False, False, False, True, True]
     })
-    entities = {
+    dataframes = {
         "cards": (cards_df, "id"),
         "transactions": (transactions_df, "id", "transaction_time")
     }
     relationships = [("cards", "id", "transactions", "card_id")]
-    card_es = EntitySet("fraud", entities, relationships)
+    card_es = EntitySet("fraud", dataframes, relationships)
     assert card_es.time_type == 'numeric'
     # add secondary index that is numeric time type
     new_2nd_ti = {'fraud_decision_time': ['fraud_decision_time', 'fraud']}
@@ -1677,13 +1677,13 @@ def test_use_time_index(index_df):
 
     error_text = re.escape("Cannot add 'time_index' tag directly for column transaction_time. To set a column as the time index, use DataFrame.ww.set_time_index() instead.")
     with pytest.raises(ValueError, match=error_text):
-        es.add_dataframe(dataframe_name="entity",
+        es.add_dataframe(dataframe_name="dataframe",
                          index="id",
                          logical_types=bad_ltypes,
                          semantic_tags=bad_semantic_tags,
                          dataframe=index_df)
 
-    es.add_dataframe(dataframe_name="entity",
+    es.add_dataframe(dataframe_name="dataframe",
                      index="id",
                      time_index="transaction_time",
                      logical_types=logical_types,

@@ -69,7 +69,7 @@ def test_make_dfeat(es):
     assert (v == 33)
 
 
-def test_make_agg_feat_of_identity_variable(es):
+def test_make_agg_feat_of_identity_column(es):
     agg_feat = ft.Feature(ft.Feature(es, 'log', 'value'), parent_dataframe_name='sessions', primitive=Sum)
 
     feature_set = FeatureSet([agg_feat])
@@ -113,7 +113,7 @@ def test_full_dataframe_error_dask(dask_es):
         calculator.run(np.array([1]))
 
 
-def test_make_agg_feat_of_identity_index_variable(es):
+def test_make_agg_feat_of_identity_index_column(es):
     agg_feat = ft.Feature(ft.Feature(es, 'log', 'id'), parent_dataframe_name='sessions', primitive=Count)
 
     feature_set = FeatureSet([agg_feat])
@@ -452,7 +452,7 @@ def test_make_3_stacked_agg_feats(df):
     """
     Tests stacking 3 agg features.
 
-    The test specifically uses non numeric indices to test how ancestor variables are handled
+    The test specifically uses non numeric indices to test how ancestor columns are handled
     as dataframes are merged together
 
     """
@@ -503,7 +503,7 @@ def test_make_dfeat_of_agg_feat_on_self(es):
 
         R       R = Regions, a parent of customers
         |
-        C       C = Customers, the entity we're trying to predict on
+        C       C = Customers, the dataframe we're trying to predict on
         |
        etc.
 
@@ -527,7 +527,7 @@ def test_make_dfeat_of_agg_feat_through_parent(es):
     """
     The graph looks like this:
 
-        R       C = Customers, the entity we're trying to predict on
+        R       C = Customers, the dataframe we're trying to predict on
        / \\     R = Regions, a parent of customers
       S   C     S = Stores, a child of regions
           |
@@ -555,7 +555,7 @@ def test_make_deep_agg_feat_of_dfeat_of_agg_feat(es):
     """
     The graph looks like this (higher implies parent):
 
-          C     C = Customers, the entity we're trying to predict on
+          C     C = Customers, the dataframe we're trying to predict on
           |     S = Sessions, a child of Customers
       P   S     L = Log, a child of both Sessions and Log
        \\ /     P = Products, a parent of Log which is not a descendent of customers
@@ -889,7 +889,7 @@ def test_handles_primitive_function_name_uniqueness(es):
     double_value_sum = pd.Series([112, 52, 0])
     assert all(fm[f2.get_name()].sort_index() == double_value_sum)
 
-    # same primitive, same variable, different args
+    # same primitive, same column, different args
     fm = ft.calculate_feature_matrix(features=[f1, f2], entityset=es)
 
     assert all(fm[f1.get_name()].sort_index() == value_sum)

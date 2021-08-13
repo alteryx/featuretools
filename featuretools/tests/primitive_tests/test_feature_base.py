@@ -106,11 +106,11 @@ def test_return_type_inference_numeric_time_index(int_es):
 
 
 def test_return_type_inference_id(es):
-    # direct features should keep Id variable type
+    # direct features should keep foreign key tag
     direct_id_feature = ft.Feature(es, "sessions", "customer_id", "log")
     assert "foreign_key" in direct_id_feature.column_schema.semantic_tags
 
-    # aggregations of Id variable types should get converted
+    # aggregations of foreign key types should get converted
     last_feat = ft.Feature(es, "log", "session_id", parent_dataframe_name="customers", primitive=Last)
     assert "foreign_key" not in last_feat.column_schema.semantic_tags
     assert isinstance(last_feat.column_schema.logical_type, Integer)

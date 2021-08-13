@@ -77,8 +77,8 @@ def _check_time_against_column(time, time_column):
     '''
     Check to make sure that time is compatible with time_column,
     where time could be a timestamp, or a Timedelta, number, or None,
-    and time_column is a Variable. Compatibility means that
-    arithmetic can be performed between time and elements of time_columnj
+    and time_column is a Woodwork initialized column. Compatibility means that
+    arithmetic can be performed between time and elements of time_column
 
     If time is None, then we don't care if arithmetic can be performed
     (presumably it won't ever be performed)

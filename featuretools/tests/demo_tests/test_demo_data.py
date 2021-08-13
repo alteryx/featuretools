@@ -41,7 +41,7 @@ def test_load_flight():
     es = load_flight(month_filter=[1],
                      categorical_filter={'origin_city': ['Charlotte, NC']},
                      return_single_table=False, nrows=1000)
-    entity_names = ['airports', 'flights', 'trip_logs', 'airlines']
+    dataframe_names = ['airports', 'flights', 'trip_logs', 'airlines']
     realvals = [(11, 3), (13, 9), (103, 21), (1, 1)]
-    for i, name in enumerate(entity_names):
+    for i, name in enumerate(dataframe_names):
         assert es[name].shape == realvals[i]

@@ -632,7 +632,7 @@ class FeatureSetCalculator(object):
             to_agg = {}
             agg_rename = {}
             to_apply = set()
-            # apply multivariable and time-dependent features as we find them, and
+            # apply multi-column and time-dependent features as we find them, and
             # save aggregable features for later
             for f in features:
                 if _can_agg(f):
@@ -746,7 +746,7 @@ class FeatureSetCalculator(object):
         return frame
 
     def _necessary_columns(self, dataframe_name, feature_names):
-        # We have to keep all Id columns because we don't know what forward
+        # We have to keep all index and foreign columns because we don't know what forward
         # relationships will come from this node.
         df = self.entityset[dataframe_name]
         index_columns = {col for col in df.columns

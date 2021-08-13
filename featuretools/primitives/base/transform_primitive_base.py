@@ -7,9 +7,9 @@ from featuretools.primitives.base.utils import inspect_function_args
 
 
 class TransformPrimitive(PrimitiveBase):
-    """Feature for entity that is a based off one or more other features
-        in that entity."""
-    # (bool) If True, feature function depends on all values of entity
+    """Feature for dataframe that is a based off one or more other features
+        in that dataframe."""
+    # (bool) If True, feature function depends on all values of dataframe
     #   (and will receive these values as input, regardless of specified instance ids)
     uses_full_dataframe = False
 

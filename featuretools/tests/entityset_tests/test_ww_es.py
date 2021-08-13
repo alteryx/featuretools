@@ -463,7 +463,7 @@ def test_update_dataframe_errors(es):
 
 
 def test_update_dataframe_already_sorted(es):
-    # test already_sorted on entity without time index
+    # test already_sorted on dataframe without time index
     df = es["sessions"].copy()
     updated_id = to_pandas(df['id'])
     updated_id.iloc[1] = 2
@@ -487,7 +487,7 @@ def test_update_dataframe_already_sorted(es):
     sessions_df = to_pandas(es['sessions'])
     assert sessions_df["id"].iloc[1] == 2
 
-    # test already_sorted on entity with time index
+    # test already_sorted on dataframe with time index
     df = es["customers"].copy()
     updated_signup = to_pandas(df['signup_date'])
     updated_signup.iloc[0] = datetime(2011, 4, 11)
