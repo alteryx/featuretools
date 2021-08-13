@@ -9,6 +9,7 @@ Future Release
     * Fixes
     * Changes
     * Documentation Changes
+        * Specify conda channel and Windows exe in graphviz installation instructions (:pr:`1611`)
     * Testing Changes
         * Add additional reviewers to minimum and latest dependency checkers (:pr:`1558`, :pr:`1562`, :pr:`1564`, :pr:`1567`)
     
