@@ -109,11 +109,14 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
                 the feature list will not be returned. For consistent results,
                 do not change the order of features outputted by dfs.
     """
+    if feature_matrix.ww.schema is None:
+        feature_matrix.ww.init()
+
     if pct_corr_threshold < 0 or pct_corr_threshold > 1:
         raise ValueError("pct_corr_threshold must be a float between 0 and 1, inclusive.")
 
     if features_to_check is None:
-        features_to_check = feature_matrix.columns
+        features_to_check = list(feature_matrix.columns)
     else:
         for f_name in features_to_check:
             assert f_name in feature_matrix.columns, "feature named {} is not in feature matrix".format(f_name)
@@ -122,7 +125,8 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
         features_to_keep = []
 
     to_select = ['numeric', Boolean, BooleanNullable]
-    fm_to_check = feature_matrix[features_to_check].ww.select(include=to_select)
+    fm = feature_matrix.ww[features_to_check]
+    fm_to_check = fm.ww.select(include=to_select)
 
     dropped = set()
     columns_to_check = fm_to_check.columns
