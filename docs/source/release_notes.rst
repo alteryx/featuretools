@@ -8,8 +8,6 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
-        * Specify conda channel and Windows exe in graphviz installation instructions (:pr:`1611`)
-        * Remove GA token from the layout html (:pr:`1622`)
     * Testing Changes
 
 .. Thanks to the following people for contributing to this release:
@@ -17,6 +15,9 @@ Release Notes
 
 v0.26.2 Aug 17, 2021
 ====================
+    * Documentation Changes
+        * Specify conda channel and Windows exe in graphviz installation instructions (:pr:`1611`)
+        * Remove GA token from the layout html (:pr:`1622`)
     * Testing Changes
         * Add additional reviewers to minimum and latest dependency checkers (:pr:`1558`, :pr:`1562`, :pr:`1564`, :pr:`1567`)
     
