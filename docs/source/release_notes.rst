@@ -8,6 +8,8 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Specify conda channel and Windows exe in graphviz installation instructions (:pr:`1611`)
+        * Remove GA token from the layout html (:pr:`1622`)
     * Testing Changes
 
 .. Thanks to the following people for contributing to this release:
