@@ -2,18 +2,24 @@
 
 Release Notes
 -------------
-
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+
+v0.26.2 Aug 17, 2021
+====================
+    * Testing Changes
         * Add additional reviewers to minimum and latest dependency checkers (:pr:`1558`, :pr:`1562`, :pr:`1564`, :pr:`1567`)
     
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`simha104`
     
 v0.26.1 Jul 23, 2021
 ====================
