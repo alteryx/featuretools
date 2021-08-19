@@ -11,7 +11,7 @@ from woodwork.logical_types import Datetime
 
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.relationship import Relationship, RelationshipPath
-from featuretools.feature_base import FeatureBase
+from featuretools.feature_base.feature_base import _ES_REF
 from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.utils.plot_utils import (
     check_graphviz,
@@ -111,7 +111,7 @@ class EntitySet(object):
             self.add_relationship(parent_df, parent_column, child_df, child_column)
 
         self.reset_data_description()
-        FeatureBase._entityset_ref[self.id] = self
+        _ES_REF[self.id] = self
 
     def __sizeof__(self):
         return sum([df.__sizeof__() for df in self.dataframes])
@@ -532,14 +532,6 @@ class EntitySet(object):
     ###########################################################################
     #  DataFrame creation methods  ##############################################
     ###########################################################################
-
-    def _add_references_to_metadata(self, dataframe):
-        dataframe.ww.metadata.update(entityset_id=self.id)
-        for column in dataframe.columns:
-            metadata = dataframe.ww._schema.columns[column].metadata
-            metadata.update(dataframe_name=dataframe.ww.name)
-            metadata.update(entityset_id=self.id)
-        FeatureBase._entityset_ref[self.id] = self
 
     def add_dataframe(self,
                       dataframe,
@@ -1530,6 +1522,14 @@ class EntitySet(object):
             info = "%s time index not recognized as numeric or datetime"
             raise TypeError(info % dataframe.ww.name)
         return time_type
+
+    def _add_references_to_metadata(self, dataframe):
+        dataframe.ww.metadata.update(entityset_id=self.id)
+        for column in dataframe.columns:
+            metadata = dataframe.ww._schema.columns[column].metadata
+            metadata.update(dataframe_name=dataframe.ww.name)
+            metadata.update(entityset_id=self.id)
+        _ES_REF[self.id] = self
 
 
 def _vals_to_series(instance_vals, column_id):

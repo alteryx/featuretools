@@ -16,9 +16,10 @@ from featuretools.utils.wrangle import (
     _check_timedelta
 )
 
+_ES_REF = {}
+
 
 class FeatureBase(object):
-    _entityset_ref = {}
 
     def __init__(self, dataframe, base_features, relationship_path, primitive, name=None, names=None):
         """Base class for all features
@@ -35,8 +36,7 @@ class FeatureBase(object):
             "All base features must be features"
 
         self.dataframe_name = dataframe.ww.name
-        es = self._entityset_ref[dataframe.ww.metadata['entityset_id']]
-        self.entityset = es  # TODO: use entityset.metadata or equivalent
+        self.entityset = _ES_REF[dataframe.ww.metadata['entityset_id']]
 
         self.base_features = base_features
 
@@ -351,7 +351,7 @@ class IdentityFeature(FeatureBase):
         self.return_type = column.ww.schema
 
         metadata = column.ww.schema._metadata
-        es = self._entityset_ref[metadata['entityset_id']]
+        es = _ES_REF[metadata['entityset_id']]
         super(IdentityFeature, self).__init__(dataframe=es[metadata['dataframe_name']],
                                               base_features=[],
                                               relationship_path=RelationshipPath([]),
