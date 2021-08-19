@@ -307,7 +307,7 @@ EntitySet load and prepare data
     EntitySet.concat
     EntitySet.normalize_dataframe
     EntitySet.set_secondary_time_index
-    EntitySet.update_dataframe
+    EntitySet.replace_dataframe
 
 EntitySet serialization
 -------------------------------

@@ -459,7 +459,7 @@ def test_make_index_any_location(df):
     assert es.dataframe_dict['test_dataframe'].ww.index == 'id1'
 
 
-def test_update_dataframe_with_make_index(es):
+def test_replace_dataframe_with_make_index(es):
     df = pd.DataFrame({'ints': [3, 4, 5], 'category': ['a', 'b', 'a']})
     if es.dataframe_type == Library.DASK.value:
         df = dd.from_pandas(df, npartitions=2)
@@ -481,7 +481,7 @@ def test_update_dataframe_with_make_index(es):
     # DataFrame that needs the index column added
     assert 'id' not in needs_idx_df.columns
     expected_idx_col = [0, 1, 2]
-    es.update_dataframe('test_df', needs_idx_df)
+    es.replace_dataframe('test_df', needs_idx_df)
 
     assert es['test_df'].ww.index == 'id'
     assert all(expected_idx_col == to_pandas(es['test_df']['id']))
@@ -497,7 +497,7 @@ def test_update_dataframe_with_make_index(es):
 
     warning = "New DataFrame, test_df, already has the created index column, id."
     with pytest.warns(UserWarning, match=warning):
-        es.update_dataframe('test_df', has_idx_df)
+        es.replace_dataframe('test_df', has_idx_df)
     assert es['test_df'].ww.index == 'id'
     assert all(original_idx_col == to_pandas(es['test_df']['id']))
 
@@ -947,7 +947,7 @@ def test_concat_not_inplace(es):
     first_es = copy.deepcopy(es)
     for df in first_es.dataframes:
         new_df = df.loc[[], :]
-        first_es.update_dataframe(df.ww.name, new_df)
+        first_es.replace_dataframe(df.ww.name, new_df)
 
     second_es = copy.deepcopy(es)
 
@@ -966,7 +966,7 @@ def test_concat_inplace(es):
     second_es = copy.deepcopy(es)
     for df in first_es.dataframes:
         new_df = df.loc[[], :]
-        first_es.update_dataframe(df.ww.name, new_df)
+        first_es.replace_dataframe(df.ww.name, new_df)
 
     # set the data description
     es.metadata
@@ -987,7 +987,7 @@ def test_concat_with_lti(es):
             new_df = df.head(1)
         else:
             new_df = df.loc[[], :]
-        first_es.update_dataframe(df.ww.name, new_df)
+        first_es.replace_dataframe(df.ww.name, new_df)
 
     second_es = copy.deepcopy(es)
 
@@ -1030,9 +1030,9 @@ def test_concat_errors(es):
 def test_concat_sort_index_with_time_index(pd_es):
     # only pandas dataframes sort on the index and time index
     es1 = copy.deepcopy(pd_es)
-    es1.update_dataframe(dataframe_name='customers', df=pd_es['customers'].loc[[0, 1], :], already_sorted=True)
+    es1.replace_dataframe(dataframe_name='customers', df=pd_es['customers'].loc[[0, 1], :], already_sorted=True)
     es2 = copy.deepcopy(pd_es)
-    es2.update_dataframe(dataframe_name='customers', df=pd_es['customers'].loc[[2], :], already_sorted=True)
+    es2.replace_dataframe(dataframe_name='customers', df=pd_es['customers'].loc[[2], :], already_sorted=True)
 
     combined_es_order_1 = es1.concat(es2)
     combined_es_order_2 = es2.concat(es1)
@@ -1047,9 +1047,9 @@ def test_concat_sort_index_with_time_index(pd_es):
 def test_concat_sort_index_without_time_index(pd_es):
     # Sorting is only performed on DataFrames with time indices
     es1 = copy.deepcopy(pd_es)
-    es1.update_dataframe(dataframe_name='products', df=pd_es['products'].iloc[[0, 1, 2], :], already_sorted=True)
+    es1.replace_dataframe(dataframe_name='products', df=pd_es['products'].iloc[[0, 1, 2], :], already_sorted=True)
     es2 = copy.deepcopy(pd_es)
-    es2.update_dataframe(dataframe_name='products', df=pd_es['products'].iloc[[3, 4, 5], :], already_sorted=True)
+    es2.replace_dataframe(dataframe_name='products', df=pd_es['products'].iloc[[3, 4, 5], :], already_sorted=True)
 
     combined_es_order_1 = es1.concat(es2)
     combined_es_order_2 = es2.concat(es1)
@@ -1105,7 +1105,7 @@ def test_concat_with_make_index(es):
     for i, _es in enumerate([es_1, es_2]):
         for df_name, rows in emap.items():
             df = _es[df_name]
-            _es.update_dataframe(dataframe_name=df_name, df=df.loc[rows[i]])
+            _es.replace_dataframe(dataframe_name=df_name, df=df.loc[rows[i]])
 
     assert es.__eq__(es_1, deep=False)
     assert es.__eq__(es_2, deep=False)
@@ -1984,7 +1984,7 @@ def test_entityset_deep_equality(es):
     assert first_es.__eq__(second_es, deep=True)
 
     updated_df = first_es['customers'].loc[[2, 0], :]
-    first_es.update_dataframe('customers', updated_df)
+    first_es.replace_dataframe('customers', updated_df)
 
     assert first_es.__eq__(second_es, deep=False)
     # Uses woodwork equality which only looks at df content for pandas

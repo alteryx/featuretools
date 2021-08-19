@@ -900,7 +900,7 @@ class EntitySet(object):
                     other_lti_col is not None):
                 has_last_time_index.append(df.ww.name)
 
-            combined_es.update_dataframe(
+            combined_es.replace_dataframe(
                 dataframe_name=df.ww.name,
                 df=combined_df,
                 recalculate_last_time_indexes=False,
@@ -1418,7 +1418,7 @@ class EntitySet(object):
 
         return df
 
-    def update_dataframe(self, dataframe_name, df, already_sorted=False, recalculate_last_time_indexes=True):
+    def replace_dataframe(self, dataframe_name, df, already_sorted=False, recalculate_last_time_indexes=True):
         '''Update the internal dataframe of an EntitySet table, keeping Woodwork typing information the same.
         Optionally makes sure that data is sorted, that reference indexes to other dataframes are consistent,
         and that last_time_indexes are updated to reflect the new data.
