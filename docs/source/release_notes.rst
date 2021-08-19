@@ -132,9 +132,9 @@ this approach the ``relationship`` parameter name must be included.
 
     >>> es.add_relationship(relationship=new_relationship)
 
-**Update DataFrame**
+**Replace DataFrame**
 
-To update a dataframe in an EntitySet, call ``EntitySet.replace_dataframe`` and pass in the name of the dataframe to update along with the new data.
+To replace a dataframe in an EntitySet with a new dataframe, call ``EntitySet.replace_dataframe`` and pass in the name of the dataframe to replace along with the new data.
 
 .. code-block:: python
 

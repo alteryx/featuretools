@@ -1419,9 +1419,10 @@ class EntitySet(object):
         return df
 
     def replace_dataframe(self, dataframe_name, df, already_sorted=False, recalculate_last_time_indexes=True):
-        '''Update the internal dataframe of an EntitySet table, keeping Woodwork typing information the same.
+        '''Replace the internal dataframe of an EntitySet table, keeping Woodwork typing information the same.
         Optionally makes sure that data is sorted, that reference indexes to other dataframes are consistent,
-        and that last_time_indexes are updated to reflect the new data.
+        and that last_time_indexes are updated to reflect the new data. If an index was created for the original
+        dataframe, an index column of the same name will be added to the new dataframe.
         '''
         if not isinstance(df, type(self[dataframe_name])):
             raise TypeError('Incorrect DataFrame type used')
