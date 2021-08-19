@@ -459,6 +459,49 @@ def test_make_index_any_location(df):
     assert es.dataframe_dict['test_dataframe'].ww.index == 'id1'
 
 
+def test_update_dataframe_with_make_index(es):
+    df = pd.DataFrame({'ints': [3, 4, 5], 'category': ['a', 'b', 'a']})
+    if es.dataframe_type == Library.DASK.value:
+        df = dd.from_pandas(df, npartitions=2)
+    elif es.dataframe_type == Library.KOALAS.value:
+        df = ks.from_pandas(df)
+
+    needs_idx_df = df.copy()
+
+    logical_types = {'ints': Integer,
+                     'category': Categorical}
+    es.add_dataframe(dataframe=df,
+                     dataframe_name='test_df',
+                     index='id',
+                     make_index=True,
+                     logical_types=logical_types)
+
+    assert es['test_df'].ww.index == 'id'
+
+    # DataFrame that needs the index column added
+    assert 'id' not in needs_idx_df.columns
+    expected_idx_col = [0, 1, 2]
+    es.update_dataframe('test_df', needs_idx_df)
+
+    assert es['test_df'].ww.index == 'id'
+    assert all(expected_idx_col == to_pandas(es['test_df']['id']))
+
+    # DataFrame that already has the index column
+    has_idx_df = es['test_df'].replace({0: 100})
+    if es.dataframe_type == Library.PANDAS.value:
+        has_idx_df.set_index('id', drop=False, inplace=True)
+
+    assert 'id' in has_idx_df.columns
+
+    original_idx_col = [100, 1, 2]
+
+    warning = "New DataFrame, test_df, already has the created index column, id."
+    with pytest.warns(UserWarning, match=warning):
+        es.update_dataframe('test_df', has_idx_df)
+    assert es['test_df'].ww.index == 'id'
+    assert all(original_idx_col == to_pandas(es['test_df']['id']))
+
+
 def test_index_any_location(df):
     logical_types = {'id': Integer,
                      'category': Categorical}
