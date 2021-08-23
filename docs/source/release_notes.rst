@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Add support for creating EntitySets from Woodwork DataTables (:pr:`1277`)
-        * Add ``EntitySet.__deepcopy__` that retains Woodwork typing information (:pr:`1465`)
+        * Add ``EntitySet.__deepcopy__`` that retains Woodwork typing information (:pr:`1465`)
     * Fixes
     * Changes
         * Remove ``add_interesting_values`` from ``Entity`` (:pr:`1269`)
@@ -45,7 +45,7 @@ Breaking Changes
 * ``EntitySet.add_relationship`` has been updated to accept dataframe and column name values or a
   ``Relationship`` object. Adding a relationship from a ``Relationship`` object now requires passing
   the relationship as a keyword argument.
-* ``Entity.update_data`` has been removed. To update the dataframe, call ``EntitySet.replace_dataframe`` and use the ``dataframe_name`` paramter.
+* ``Entity.update_data`` has been removed. To update the dataframe, call ``EntitySet.replace_dataframe`` and use the ``dataframe_name`` parameter.
 * The data in an ``EntitySet`` is no longer stored in ``Entity`` objects. Instead, dataframes
   with Woodwork typing information are used. Accordingly, most language referring to “entities”
   will now refer to “dataframes”, references to “variables” will now refer to “columns”, and
