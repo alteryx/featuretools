@@ -459,7 +459,7 @@ def test_make_index_any_location(df):
     assert es.dataframe_dict['test_dataframe'].ww.index == 'id1'
 
 
-def test_replace_dataframe_with_make_index(es):
+def test_replace_dataframe_and_create_index(es):
     df = pd.DataFrame({'ints': [3, 4, 5], 'category': ['a', 'b', 'a']})
     if es.dataframe_type == Library.DASK.value:
         df = dd.from_pandas(df, npartitions=2)
@@ -486,6 +486,22 @@ def test_replace_dataframe_with_make_index(es):
     assert es['test_df'].ww.index == 'id'
     assert all(expected_idx_col == to_pandas(es['test_df']['id']))
 
+
+def test_replace_dataframe_created_index_present(es):
+    df = pd.DataFrame({'ints': [3, 4, 5], 'category': ['a', 'b', 'a']})
+    if es.dataframe_type == Library.DASK.value:
+        df = dd.from_pandas(df, npartitions=2)
+    elif es.dataframe_type == Library.KOALAS.value:
+        df = ks.from_pandas(df)
+
+    logical_types = {'ints': Integer,
+                     'category': Categorical}
+    es.add_dataframe(dataframe=df,
+                     dataframe_name='test_df',
+                     index='id',
+                     make_index=True,
+                     logical_types=logical_types)
+
     # DataFrame that already has the index column
     has_idx_df = es['test_df'].replace({0: 100})
     if es.dataframe_type == Library.PANDAS.value:
@@ -495,9 +511,7 @@ def test_replace_dataframe_with_make_index(es):
 
     original_idx_col = [100, 1, 2]
 
-    warning = "New DataFrame, test_df, already has the created index column, id."
-    with pytest.warns(UserWarning, match=warning):
-        es.replace_dataframe('test_df', has_idx_df)
+    es.replace_dataframe('test_df', has_idx_df)
     assert es['test_df'].ww.index == 'id'
     assert all(original_idx_col == to_pandas(es['test_df']['id']))
 

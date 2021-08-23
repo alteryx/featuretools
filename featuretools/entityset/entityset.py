@@ -1435,13 +1435,11 @@ class EntitySet(object):
             self[dataframe_name].ww.pop(last_time_index_column)
             del self[dataframe_name].ww.metadata['last_time_index']
 
-        # If the original DataFrame had an index created via make_index, we may need to remake the index
+        # If the original DataFrame had an index created via make_index,
+        # we may need to remake the index if it's not in the new DataFrame
         created_index = self[dataframe_name].ww.metadata.get('created_index')
-        if created_index is not None:
-            if created_index not in df.columns:
-                df = _create_index(df, created_index)
-            else:
-                warnings.warn(f'New DataFrame, {dataframe_name}, already has the created index column, {created_index}. ')
+        if created_index is not None and created_index not in df.columns:
+            df = _create_index(df, created_index)
 
         old_column_names = list(self[dataframe_name].columns)
         if len(df.columns) != len(old_column_names):
