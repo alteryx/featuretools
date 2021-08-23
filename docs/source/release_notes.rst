@@ -27,6 +27,7 @@ Future Release
         * Initialize Woodwork on feature matrix in ``remove_highly_correlated_features`` if necessary (:pr:`1618`)
         * Remove categorical-encoding as an add-on library (will be added back later) (:pr:`1632`)
         * Remove autonormalize as an add-on library (will be added back later) (:pr:`1636`)
+        * Remove tsfresh, nlp_primitives, sklearn_transformer as an add-on library (will be added back later) (:pr:`1638`)
     * Documentation Changes
         * Add a Woodwork Typing in Featuretools guide (:pr:`1589`)
     * Testing Changes
