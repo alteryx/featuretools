@@ -89,7 +89,9 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
 
         Args:
             feature_matrix (:class:`pd.DataFrame`): DataFrame whose columns are feature
-                        names and rows are instances.
+                        names and rows are instances. If Woodwork is not initalized, will
+                        perform Woodwork initialization, which may result in slightly different
+                        types than those in the original feature matrix created by Featuretools.
             features (list[:class:`featuretools.FeatureBase`] or list[str], optional):
                         List of features to select.
             pct_corr_threshold (float): The correlation threshold to be considered highly
