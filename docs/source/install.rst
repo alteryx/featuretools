@@ -28,11 +28,6 @@ TSFresh Primitives:
 
         python -m pip install "featuretools[tsfresh]"
 
-Categorical Encoding:
-    Encode categorical data for integration into Featuretools/machine learning workflows::
-
-        python -m pip install "featuretools[categorical_encoding]"
-
 NLP Primitives:
     Use Natural Language Processing Primitives for data with text in Featuretools::
 
