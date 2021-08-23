@@ -24,6 +24,8 @@ Future Release
         * Allow deep EntitySet equality check (:pr:`1480`)
         * Update ``EntitySet.concat`` to work with Woodwork DataFrames (:pr:`1490`)
         * Add function to list semantic tags (:pr:`1486`)
+        * Remove categorical-encoding as an add-on library (will be added back later) (:pr:`1632`)
+        * Remove autonormalize as an add-on library (will be added back later) (:pr:`1636`)
     * Documentation Changes
         * Add a Woodwork Typing in Featuretools guide (:pr:`1589`)
     * Testing Changes
