@@ -25,13 +25,13 @@ Future Release
         * Update ``EntitySet.concat`` to work with Woodwork DataFrames (:pr:`1490`)
         * Add function to list semantic tags (:pr:`1486`)
         * Remove categorical-encoding as an add-on library (:pr:`1632`)
+        * initialize Woodwork on feature matrix in ``remove_highly_correlated_features`` if necessary (:pr:`1618`)
     * Documentation Changes
         * Add a Woodwork Typing in Featuretools guide (:pr:`1589`)
-        * Updated function calls within Featuretools feature selection guide (:pr:`1618`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`simha104`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 Breaking Changes
 ++++++++++++++++
