@@ -33,11 +33,6 @@ NLP Primitives:
 
         python -m pip install "featuretools[nlp_primitives]"
 
-AutoNormalize:
-    Automated creation of normalized ``EntitySet`` from denormalized data::
-
-        python -m pip install "featuretools[autonormalize]"
-
 Featuretools Sklearn Transformer:
     Deep Feature Synthesis as a scikit-learn pipelines transformer::
 
