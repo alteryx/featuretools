@@ -127,7 +127,6 @@ def test_remove_single_value_features():
 
 
 def test_remove_highly_correlated_features():
-    pytest.skip("TODO: Fix after feature matrix has Woodwork initialized")
     correlated_df = pd.DataFrame({
         "id": [0, 1, 2, 3],
         "diff_ints": [34, 11, 29, 91],
