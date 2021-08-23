@@ -26,7 +26,7 @@ class FeatureBase(object):
 
         Args:
             entityset (EntitySet): entityset this feature is being calculated for
-            dataframe_name (str): name of dataframe this feature is being calculated for
+            dataframe (DataFrame): dataframe for calculating this feature
             base_features (list[FeatureBase]): list of base features for primitive
             relationship_path (RelationshipPath): path from this dataframe to the
                 dataframe of the base features.
