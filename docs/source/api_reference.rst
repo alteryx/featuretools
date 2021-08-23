@@ -27,11 +27,7 @@ Deep Feature Synthesis
     dfs
     get_valid_primitives
 
-
-Wrappers
-~~~~~~~~
-.. currentmodule:: featuretools
-
+.. DeepFeatureSynthesis
 
 Timedelta
 ~~~~~~~~~
