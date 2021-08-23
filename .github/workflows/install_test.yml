@@ -33,7 +33,6 @@ jobs:
           python -c "import featuretools_tsfresh_primitives"
           python -c "import alteryx_open_src_update_checker"
           python -c "import nlp_primitives"
-          python -c "import autonormalize"
           python -c "import featuretools_sklearn_transformer"
         env:
           ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
