@@ -177,6 +177,32 @@ def test_remove_highly_correlated_features():
     assert 'diff_ints' in diff_threshold_cols
 
 
+def test_remove_highly_correlated_features_init_woodwork():
+    correlated_df = pd.DataFrame({
+        "id": [0, 1, 2, 3],
+        "diff_ints": [34, 11, 29, 91],
+        "words": ["test", "this is a short sentence", "foo bar", "baz"],
+        "corr_words": [4, 24, 7, 3],
+        'corr_1': [99, 88, 77, 33],
+        'corr_2': [99, 88, 77, 33]
+    })
+
+    es = ft.EntitySet("data", {'correlated': (correlated_df, 'id', None, {'words': NaturalLanguage})})
+    fm, _ = ft.dfs(entityset=es,
+                   target_dataframe_name="correlated",
+                   trans_primitives=['num_characters'],
+                   max_depth=2)
+
+    no_ww_fm = fm.copy()
+    ww_fm = fm.copy()
+    ww_fm.ww.init()
+
+    new_no_ww_fm = ft.selection.remove_highly_correlated_features(no_ww_fm)
+    new_ww_fm = ft.selection.remove_highly_correlated_features(ww_fm)
+
+    pd.testing.assert_frame_equal(new_no_ww_fm, new_ww_fm)
+
+
 def test_multi_output_selection():
     df1 = pd.DataFrame({'id': [0, 1, 2, 3]})
 
