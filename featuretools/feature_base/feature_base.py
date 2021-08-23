@@ -394,7 +394,7 @@ class DirectFeature(FeatureBase):
     return_type = None
 
     def __init__(self, base_feature, child_dataframe_name, relationship=None, name=None):
-        base_feature = _check_feature(base_feature)
+        base_feature = _validate_base_features(base_feature)[0]
         self.parent_dataframe_name = base_feature.dataframe_name
         relationship = self._handle_relationship(base_feature.entityset, child_dataframe_name, relationship)
         child_dataframe = base_feature.entityset[child_dataframe_name]
@@ -489,12 +489,7 @@ class AggregationFeature(FeatureBase):
 
     def __init__(self, base_features, parent_dataframe_name, primitive,
                  relationship_path=None, use_previous=None, where=None, name=None):
-        base_features = _check_feature(base_features)
-        if isinstance(base_features, list):
-            msg = "all base features must share the same dataframe"
-            assert len(set([bf.dataframe_name for bf in base_features])) == 1, msg
-        else:
-            base_features = [base_features]
+        base_features = _validate_base_features(base_features)
 
         for bf in base_features:
             if bf.number_output_features > 1:
@@ -508,7 +503,7 @@ class AggregationFeature(FeatureBase):
         self.parent_dataframe_name = parent_dataframe_name
 
         if where is not None:
-            self.where = _check_feature(where)
+            self.where = _validate_base_features(where)[0]
             msg = "Where feature must be defined on child dataframe {}".format(
                 self.child_dataframe_name)
             assert self.where.dataframe_name == self.child_dataframe_name, msg
@@ -646,12 +641,7 @@ class TransformFeature(FeatureBase):
     def __init__(self, base_features, primitive, name=None):
         # Any edits made to this method should also be made to the
         # new_class_init method in make_trans_primitive
-        base_features = _check_feature(base_features)
-        if isinstance(base_features, list):
-            msg = "all base features must share the same dataframe"
-            assert len(set([bf.dataframe_name for bf in base_features])) == 1, msg
-        else:
-            base_features = [base_features]
+        base_features = _validate_base_features(base_features)
 
         for bf in base_features:
             if bf.number_output_features > 1:
@@ -693,11 +683,8 @@ class GroupByTransformFeature(TransformFeature):
         assert len({"category", "foreign_key"} - groupby.column_schema.semantic_tags) < 2
         self.groupby = groupby
 
-        base_features = _check_feature(base_features)
-        if isinstance(base_features, list):
-            base_features.append(groupby)
-        else:
-            base_features = [base_features, groupby]
+        base_features = _validate_base_features(base_features)
+        base_features.append(groupby)
 
         super(GroupByTransformFeature, self).__init__(base_features=base_features,
                                                       primitive=primitive,
@@ -826,17 +813,15 @@ class FeatureOutputSlice(FeatureBase):
         return FeatureOutputSlice(self.base_feature, self.n)
 
 
-def _check_feature(feature):
-    # TODO: revisit if we change how to declare features
-    # if isinstance(feature, Variable):
-    #     return IdentityFeature(feature)
-    # elif isinstance(feature, FeatureBase):
-    #     return feature
+def _validate_base_features(feature):
     if 'Series' == type(feature).__name__:
-        return IdentityFeature(feature)
+        return [IdentityFeature(feature)]
     elif hasattr(feature, '__iter__'):
-        return [_check_feature(f) for f in feature]
+        features = [_validate_base_features(f)[0] for f in feature]
+        msg = "all base features must share the same dataframe"
+        assert len(set([bf.dataframe_name for bf in features])) == 1, msg
+        return features
     elif isinstance(feature, FeatureBase):
-        return feature
+        return [feature]
     else:
         raise Exception("Not a feature")
