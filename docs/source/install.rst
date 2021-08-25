@@ -31,13 +31,17 @@ Installing Graphviz
 In order to use :meth:`EntitySet.plot <featuretools.entityset.EntitySet.plot>` or :func:`featuretools.graph_feature`
 you will need to install the graphviz library.
 
-Conda users::
+pip users::
 
-    conda install python-graphviz
+    pip install graphviz
+    
+conda users::
+
+    conda install -c conda-forge python-graphviz
 
 Ubuntu::
 
-    sudo apt-get install graphviz
+    sudo apt install graphviz
     pip install graphviz
 
 Mac OS::
@@ -45,9 +49,16 @@ Mac OS::
     brew install graphviz
     pip install graphviz
 
-Windows::
+Windows:
 
-    conda install python-graphviz
+- Install according to your package manager::
+
+    # conda
+    conda install -c conda-forge python-graphviz
+    # pip
+    pip install graphviz
+
+- If you installed graphviz with ``pip``, install graphviz.exe from the `official source <https://graphviz.org/download/#windows>`_
 
 
 Install from Source
