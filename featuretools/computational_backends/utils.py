@@ -322,7 +322,7 @@ def get_ww_types_from_features(features, entityset, pass_columns, cutoff_time):
         table_accessor = entityset[target_dataframe_name].ww
         index_col = table_accessor.index
         logical_types[index_col] = table_accessor.columns[index_col].logical_type
-        semantic_tags[index_col] = table_accessor.columns[index_col].semantic_tags
+        semantic_tags[index_col] = table_accessor.columns[index_col].semantic_tags.copy()
         semantic_tags[index_col] -= {"index"}
         origins[index_col] = "base"
 
