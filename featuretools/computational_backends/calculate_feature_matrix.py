@@ -485,12 +485,14 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                         _feature_matrix = _feature_matrix.drop(columns=['time'])
                 feature_matrix.append(_feature_matrix)
 
-    if any(isinstance(fm, dd.DataFrame) for fm in feature_matrix):
-        feature_matrix = dd.concat(feature_matrix)
-    elif any(is_instance(fm, ks, 'DataFrame') for fm in feature_matrix):
-        feature_matrix = ks.concat(feature_matrix)
-    else:
-        feature_matrix = pd.concat(feature_matrix)
+    ww_init_kwargs = get_ww_types_from_features(feature_set.target_features, entityset, pass_columns, cutoff_time)
+    for fm in feature_matrix:
+        fm.ww.init(**ww_init_kwargs)
+
+    fm = feature_matrix[0]
+    for i, other in enumerate(feature_matrix[1:]):
+        fm = fm.ww.append(other)
+    feature_matrix = fm
 
     return feature_matrix
 

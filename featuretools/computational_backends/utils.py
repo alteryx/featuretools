@@ -7,11 +7,12 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import psutil
-from woodwork.logical_types import Datetime
+from woodwork.logical_types import Datetime, Double
 
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, DirectFeature
 from featuretools.utils import Trie
+from featuretools.utils.gen_utils import Library
 from featuretools.utils.wrangle import _check_time_type, _check_timedelta
 
 logger = logging.getLogger('featuretools.computational_backend')
@@ -293,7 +294,7 @@ def replace_inf_values(feature_matrix, replacement_value=np.nan, columns=None):
     return feature_matrix
 
 
-def get_ww_types_from_features(features):
+def get_ww_types_from_features(features, entityset, pass_columns, cutoff_time):
     """ TODO """
     logical_types = {}
     semantic_tags = {}
@@ -303,8 +304,32 @@ def get_ww_types_from_features(features):
         for name in names:
             logical_types[name] = feature.column_schema.logical_type
             semantic_tags[name] = feature.column_schema.semantic_tags
+            semantic_tags[name] -= {'index', 'time_index'}
+
+            if logical_types[name] is None and "numeric" in semantic_tags[name]:
+                logical_types[name] = Double
         if all([f.primitive is None for f in feature.get_dependencies(deep=True)]):
             origins[name] = "base"
         else:
             origins[name] = "engineered"
-    return logical_types, semantic_tags, origins
+    for column in pass_columns:
+        logical_types[column] = cutoff_time.ww[column].ww.logical_type
+        semantic_tags[column] = cutoff_time.ww[column].ww.semantic_tags
+        origins[column] = "base"
+
+    if entityset.dataframe_type in (Library.DASK.value, Library.KOALAS.value):
+        target_dataframe_name = features[0].dataframe_name
+        table_accessor = entityset[target_dataframe_name].ww
+        index_col = table_accessor.index
+        logical_types[index_col] = table_accessor.columns[index_col].logical_type
+        semantic_tags[index_col] = table_accessor.columns[index_col].semantic_tags
+        semantic_tags[index_col] -= {"index"}
+        origins[index_col] = "base"
+
+
+    ww_init = {
+        "logical_types": logical_types,
+        "semantic_tags": semantic_tags,
+        "column_origins": origins
+    }
+    return ww_init
