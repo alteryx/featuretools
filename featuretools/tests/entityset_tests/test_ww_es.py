@@ -505,7 +505,6 @@ def test_replace_dataframe_already_sorted(es):
 
     es.replace_dataframe(dataframe_name='customers', df=df.copy(), already_sorted=True)
     customers_df = to_pandas(es['customers'])
-    # --> this is showing up as 0 - not sure why - maybe bc ww init defaults to False
     assert customers_df["id"].iloc[0] == 2
 
     # only pandas allows for sorting:
@@ -524,9 +523,21 @@ def test_replace_dataframe_invalid_schema(es):
     df = es['customers'].copy()
     df['id'] = pd.Series([1, 1, 1])
 
-    error_text = 'Woodwork typing information is not valid for this DataFrame: Index mismatch between DataFrame and typing information'
-    with pytest.raises(ValueError, match=error_text):
+    error_text = 'Index column must be unique'
+    with pytest.raises(IndexError, match=error_text):
         es.replace_dataframe(dataframe_name='customers', df=df)
+
+
+def test_replace_dataframe_mismatched_index(es):
+    if not isinstance(es['customers'], pd.DataFrame):
+        pytest.xfail('Only pandas checks whether underlying index matches the Woodwork index')
+    df = es['customers'].copy()
+    df['id'] = pd.Series([99, 88, 77])
+
+    es.replace_dataframe(dataframe_name='customers', df=df)
+
+    assert all([77, 99, 88] == es['customers']['id'])
+    assert all([77, 99, 88] == (es['customers']['id']).index)
 
 
 def test_replace_dataframe_different_dtypes(es):

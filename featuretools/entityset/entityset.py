@@ -1463,7 +1463,7 @@ class EntitySet(object):
             if updated_series is not series:
                 df[col_name] = updated_series
 
-        df.ww.init_with_full_schema(schema=self[dataframe_name].ww._schema)
+        df.ww.init(schema=self[dataframe_name].ww._schema, already_sorted=already_sorted)
         # Make sure column ordering matches original ordering
         df = df.ww[old_column_names]
 
