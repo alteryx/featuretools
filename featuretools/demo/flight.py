@@ -45,7 +45,7 @@ def load_flight(month_filter=None,
             In [3]: es
             Out[3]:
             Entityset: Flight Data
-              Entities:
+              DataFrames:
                 airports [Rows: 55, Columns: 3]
                 flights [Rows: 613, Columns: 9]
                 trip_logs [Rows: 9456, Columns: 22]

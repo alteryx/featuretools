@@ -22,7 +22,7 @@ def test_transform(pd_es, dask_es):
 
     assert pd_es == dask_es
 
-    # Run DFS using each entity as a target and confirm results match
+    # Run DFS using each dataframe as a target and confirm results match
     for df in pd_es.dataframes:
         features = ft.dfs(entityset=pd_es,
                           target_dataframe_name=df.ww.name,
@@ -60,7 +60,7 @@ def test_aggregation(pd_es, dask_es):
 
     assert pd_es == dask_es
 
-    # Run DFS using each entity as a target and confirm results match
+    # Run DFS using each dataframe as a target and confirm results match
     for df in pd_es.dataframes:
         fm, _ = ft.dfs(entityset=pd_es,
                        target_dataframe_name=df.ww.name,

@@ -43,7 +43,7 @@ def test_direct_from_identity(es):
     assert v == expected
 
 
-def test_direct_from_variable(es):
+def test_direct_from_column(es):
     # should be same behavior as test_direct_from_identity
     device = Feature(es, 'sessions', 'device_type')
     d = DirectFeature(base_feature=device,

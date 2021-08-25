@@ -48,12 +48,9 @@ class EntitySet(object):
 
             Args:
                 id (str) : Unique identifier to associate with this instance
-
-                dataframes (dict[str -> tuple(DataFrame, str, str,
-                                              dict[str -> str/Woodwork.LogicalType],
-                                              dict[str->str/set],
-                                              boolean)]): dictionary of DataFrames.
-                    Entries take the format dataframe name -> (dataframe, index column, time_index, logical_types, semantic_tags, make_index)}.
+                dataframes (dict[str -> tuple(DataFrame, str, str, dict[str -> str/Woodwork.LogicalType], dict[str->str/set], boolean)]):
+                    Dictionary of DataFrames. Entries take the format
+                    {dataframe name -> (dataframe, index column, time_index, logical_types, semantic_tags, make_index)}.
                     Note that only the dataframe is required. If a Woodwork DataFrame is supplied, any other parameters
                     will be ignored.
                 relationships (list[(str, str, str, str)]): List of relationships
@@ -64,14 +61,14 @@ class EntitySet(object):
 
                 .. code-block:: python
 
-                    entities = {
+                    dataframes = {
                         "cards" : (card_df, "id"),
                         "transactions" : (transactions_df, "id", "transaction_time")
                     }
 
                     relationships = [("cards", "id", "transactions", "card_id")]
 
-                    ft.EntitySet("my-entity-set", entities, relationships)
+                    ft.EntitySet("my-entity-set", dataframes, relationships)
         """
         self.id = id
         self.dataframe_dict = {}
@@ -179,7 +176,7 @@ class EntitySet(object):
 
     @property
     def dataframe_type(self):
-        '''String specifying the library used for the entity dataframes. Null if no entities'''
+        '''String specifying the library used for the dataframes. Null if no dataframes'''
         df_type = None
 
         if self.dataframes:
@@ -342,11 +339,11 @@ class EntitySet(object):
 
         if parent_df.ww.index != parent_column:
             parent_df.ww.set_index(parent_column)
-        # Empty dataframes (as a result of accessing Entity.metadata)
-        # default to object dtypes for discrete variables, but
+
+        # Empty dataframes (as a result of accessing metadata)
+        # default to object dtypes for categorical columns, but
         # indexes/foreign keys default to ints. In this case, we convert
         # the empty column's type to int
-        # --> Implementation: is this still relevant?
         if isinstance(child_df, pd.DataFrame) and \
                 (child_df.empty and child_df[child_column].dtype == object and
                  parent_df.ww.columns[parent_column].is_numeric):
@@ -594,7 +591,6 @@ class EntitySet(object):
                                  dataframe=transactions_df)
 
                 es["transactions"]
-                es["transactions"].df
 
         """
         logical_types = logical_types or {}
@@ -819,10 +815,6 @@ class EntitySet(object):
 
         base_dataframe_index = index
 
-        # --> Implementation: not sure that this is the same as using vtype Categorical because we can't just set a standard tag
-        # why did we set it to variable Categorical???
-        # and why does it get reset when we did it above??
-        # transfer_types[index] = ('Categorical', set())
         if make_secondary_time_index:
             old_ti_name = list(make_secondary_time_index.keys())[0]
             ti_cols = list(make_secondary_time_index.values())[0]
@@ -908,7 +900,7 @@ class EntitySet(object):
                     other_lti_col is not None):
                 has_last_time_index.append(df.ww.name)
 
-            combined_es.update_dataframe(
+            combined_es.replace_dataframe(
                 dataframe_name=df.ww.name,
                 df=combined_df,
                 recalculate_last_time_indexes=False,
@@ -931,6 +923,7 @@ class EntitySet(object):
         an instance or children of that instance were observed).  Used when
         calculating features using training windows. Adds the last time index as
         a series named _ft_last_time on the dataframe.
+
         Args:
             updated_dataframes (list[str]): List of dataframe names to update last_time_index for
                 (will update all parents of those dataframes as well)
@@ -1268,7 +1261,7 @@ class EntitySet(object):
         graph = graphviz.Digraph(self.id, format=format_,
                                  graph_attr={'splines': 'ortho'})
 
-        # Draw entities
+        # Draw dataframes
         for df in self.dataframes:
             column_typing_info = []
             for col_name, col_schema in df.ww.columns.items():
@@ -1281,7 +1274,7 @@ class EntitySet(object):
                 column_typing_info.append(col_string)
 
             columns_string = '\l'.join(column_typing_info)  # noqa: W605
-            if isinstance(df, dd.DataFrame):  # entity is a dask entity
+            if isinstance(df, dd.DataFrame):  # dataframe is a dask dataframe
                 label = '{%s |%s\l}' % (df.ww.name, columns_string)  # noqa: W605
             else:
                 nrows = df.shape[0]
@@ -1290,7 +1283,7 @@ class EntitySet(object):
 
         # Draw relationships
         for rel in self.relationships:
-            # Display the key only once if is the same for both related entities
+            # Display the key only once if is the same for both related dataframes
             if rel._parent_column_name == rel._child_column_name:
                 label = rel._parent_column_name
             else:
@@ -1368,7 +1361,7 @@ class EntitySet(object):
             column_name (str) : Column to query on. If None, query on index.
             columns (list[str]) : Columns to return. Return all columns if None.
             time_last (pd.TimeStamp) : Query data up to and including this
-                time. Only applies if entity has a time index.
+                time. Only applies if dataframe has a time index.
             training_window (Timedelta, optional):
                 Window defining how much time before the cutoff time data
                 can be used when calculating features. If None, all data before cutoff time is used.
@@ -1425,10 +1418,12 @@ class EntitySet(object):
 
         return df
 
-    def update_dataframe(self, dataframe_name, df, already_sorted=False, recalculate_last_time_indexes=True):
-        '''Update the internal dataframe of an EntitySet table, keeping Woodwork typing information the same.
+    def replace_dataframe(self, dataframe_name, df, already_sorted=False, recalculate_last_time_indexes=True):
+        '''Replace the internal dataframe of an EntitySet table, keeping Woodwork typing information the same.
         Optionally makes sure that data is sorted, that reference indexes to other dataframes are consistent,
-        and that last_time_indexes are updated to reflect the new data.
+        and that last_time_indexes are updated to reflect the new data. If an index was created for the original
+        dataframe and is not present on the new dataframe, an index column of the same name will be added to the
+        new dataframe.
         '''
         if not isinstance(df, type(self[dataframe_name])):
             raise TypeError('Incorrect DataFrame type used')
@@ -1439,6 +1434,12 @@ class EntitySet(object):
         if last_time_index_column is not None and last_time_index_column not in df.columns:
             self[dataframe_name].ww.pop(last_time_index_column)
             del self[dataframe_name].ww.metadata['last_time_index']
+
+        # If the original DataFrame had an index created via make_index,
+        # we may need to remake the index if it's not in the new DataFrame
+        created_index = self[dataframe_name].ww.metadata.get('created_index')
+        if created_index is not None and created_index not in df.columns:
+            df = _create_index(df, created_index)
 
         old_column_names = list(self[dataframe_name].columns)
         if len(df.columns) != len(old_column_names):
@@ -1522,7 +1523,7 @@ class EntitySet(object):
         return time_type
 
 
-def _vals_to_series(instance_vals, variable_id):
+def _vals_to_series(instance_vals, column_id):
     """
     instance_vals may be a pd.Dataframe, a pd.Series, a list, a single
     value, or None. This function always returns a Series or None.
@@ -1536,9 +1537,9 @@ def _vals_to_series(instance_vals, variable_id):
 
     # convert iterable to pd.Series
     if isinstance(instance_vals, pd.DataFrame):
-        out_vals = instance_vals[variable_id]
+        out_vals = instance_vals[column_id]
     elif is_instance(instance_vals, (pd, dd, ks), 'Series'):
-        out_vals = instance_vals.rename(variable_id)
+        out_vals = instance_vals.rename(column_id)
     else:
         out_vals = pd.Series(instance_vals)
 
@@ -1573,13 +1574,18 @@ def _get_or_create_index(index, make_index, df):
                           "integer column".format(index))
         # Case 5: make_index with no errors or warnings
         # (Case 4 also uses this code path)
-        if isinstance(df, dd.DataFrame):
-            df[index] = 1
-            df[index] = df[index].cumsum() - 1
-        elif is_instance(df, ks, 'DataFrame'):
-            df = df.koalas.attach_id_column('distributed-sequence', index)
-        else:
-            df.insert(0, index, range(len(df)))
+        df = _create_index(df, index)
         index_was_created = True
     # Case 6: user specified index, which is already in df. No action needed.
     return index_was_created, index, df
+
+
+def _create_index(df, index):
+    if isinstance(df, dd.DataFrame):
+        df[index] = 1
+        df[index] = df[index].cumsum() - 1
+    elif is_instance(df, ks, 'DataFrame'):
+        df = df.koalas.attach_id_column('distributed-sequence', index)
+    else:
+        df.insert(0, index, range(len(df)))
+    return df

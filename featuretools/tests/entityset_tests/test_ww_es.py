@@ -264,7 +264,7 @@ def test_normalize_dataframe():
     assert 'foreign_key' in es['first_table'].ww.semantic_tags['age']
 
 
-def test_update_dataframe():
+def test_replace_dataframe():
     df = pd.DataFrame({
         'id': range(4),
         'full_name': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner'],
@@ -281,7 +281,7 @@ def test_update_dataframe():
     original_schema = es['table'].ww.schema
 
     new_df = df.iloc[2:]
-    es.update_dataframe('table', new_df)
+    es.replace_dataframe('table', new_df)
 
     assert len(es['table']) == 2
     assert es['table'].ww.schema == original_schema
@@ -446,7 +446,7 @@ def test_extra_woodwork_params(es):
     assert 'new_tag' not in sessions_df.ww.semantic_tags
 
 
-def test_update_dataframe_errors(es):
+def test_replace_dataframe_errors(es):
     df = es['customers'].copy()
     if ks and isinstance(df, ks.DataFrame):
         df['new'] = [1, 2, 3]
@@ -455,15 +455,15 @@ def test_update_dataframe_errors(es):
 
     error_text = 'Updated dataframe is missing new cohort column'
     with pytest.raises(ValueError, match=error_text):
-        es.update_dataframe(dataframe_name='customers', df=df.drop(columns=['cohort']))
+        es.replace_dataframe(dataframe_name='customers', df=df.drop(columns=['cohort']))
 
     error_text = 'Updated dataframe contains 16 columns, expecting 15'
     with pytest.raises(ValueError, match=error_text):
-        es.update_dataframe(dataframe_name='customers', df=df)
+        es.replace_dataframe(dataframe_name='customers', df=df)
 
 
-def test_update_dataframe_already_sorted(es):
-    # test already_sorted on entity without time index
+def test_replace_dataframe_already_sorted(es):
+    # test already_sorted on dataframe without time index
     df = es["sessions"].copy()
     updated_id = to_pandas(df['id'])
     updated_id.iloc[1] = 2
@@ -480,14 +480,14 @@ def test_update_dataframe_already_sorted(es):
     elif isinstance(df, dd.DataFrame):
         df["id"] = updated_id
 
-    es.update_dataframe(dataframe_name='sessions', df=df.copy(), already_sorted=False)
+    es.replace_dataframe(dataframe_name='sessions', df=df.copy(), already_sorted=False)
     sessions_df = to_pandas(es['sessions'])
     assert sessions_df["id"].iloc[1] == 2  # no sorting since time index not defined
-    es.update_dataframe(dataframe_name='sessions', df=df.copy(), already_sorted=True)
+    es.replace_dataframe(dataframe_name='sessions', df=df.copy(), already_sorted=True)
     sessions_df = to_pandas(es['sessions'])
     assert sessions_df["id"].iloc[1] == 2
 
-    # test already_sorted on entity with time index
+    # test already_sorted on dataframe with time index
     df = es["customers"].copy()
     updated_signup = to_pandas(df['signup_date'])
     updated_signup.iloc[0] = datetime(2011, 4, 11)
@@ -500,12 +500,12 @@ def test_update_dataframe_already_sorted(es):
     else:
         df['signup_date'] = updated_signup
 
-    es.update_dataframe(dataframe_name='customers', df=df.copy(), already_sorted=True)
+    es.replace_dataframe(dataframe_name='customers', df=df.copy(), already_sorted=True)
     customers_df = to_pandas(es['customers'])
     assert customers_df["id"].iloc[0] == 2
 
     # only pandas allows for sorting:
-    es.update_dataframe(dataframe_name='customers', df=df.copy(), already_sorted=False)
+    es.replace_dataframe(dataframe_name='customers', df=df.copy(), already_sorted=False)
     updated_customers = to_pandas(es['customers'])
     if isinstance(df, pd.DataFrame):
         assert updated_customers["id"].iloc[0] == 0
@@ -513,7 +513,7 @@ def test_update_dataframe_already_sorted(es):
         assert updated_customers["id"].iloc[0] == 2
 
 
-def test_update_dataframe_invalid_schema(es):
+def test_replace_dataframe_invalid_schema(es):
     if not isinstance(es['customers'], pd.DataFrame):
         pytest.xfail('Invalid schema checks able to be caught by Woodwork only relevant for Pandas')
     df = es['customers'].copy()
@@ -521,14 +521,14 @@ def test_update_dataframe_invalid_schema(es):
 
     error_text = 'Woodwork typing information is not valid for this DataFrame: Index mismatch between DataFrame and typing information'
     with pytest.raises(ValueError, match=error_text):
-        es.update_dataframe(dataframe_name='customers', df=df)
+        es.replace_dataframe(dataframe_name='customers', df=df)
 
 
-def test_update_dataframe_different_dtypes(es):
+def test_replace_dataframe_different_dtypes(es):
     float_dtype_df = es['customers'].copy()
     float_dtype_df = float_dtype_df.astype({'age': 'float64'})
 
-    es.update_dataframe(dataframe_name='customers', df=float_dtype_df)
+    es.replace_dataframe(dataframe_name='customers', df=float_dtype_df)
 
     assert es['customers']['age'].dtype == 'int64'
     assert isinstance(es['customers'].ww.logical_types['age'], Integer)
@@ -544,7 +544,7 @@ def test_update_dataframe_different_dtypes(es):
         # Dask and Koalas do not error on invalid type conversion until compute
         error_msg = 'Error converting datatype for age from type object to type int64. Please confirm the underlying data is consistent with logical type Integer.'
         with pytest.raises(TypeConversionError, match=error_msg):
-            es.update_dataframe(dataframe_name='customers', df=incompatible_dtype_df)
+            es.replace_dataframe(dataframe_name='customers', df=incompatible_dtype_df)
 
 
 @pytest.fixture()
@@ -578,7 +578,7 @@ def latlong_df(request):
     return request.getfixturevalue(request.param)
 
 
-def test_update_dataframe_data_transformation(latlong_df):
+def test_replace_dataframe_data_transformation(latlong_df):
     initial_df = latlong_df.copy()
     initial_df.ww.init(name='latlongs', index='string_tuple',
                        logical_types={col_name: 'LatLong' for col_name in initial_df.columns})
@@ -593,7 +593,7 @@ def test_update_dataframe_data_transformation(latlong_df):
         series = df[col]
         assert series.iloc[0] == expected_val
 
-    es.update_dataframe('latlongs', latlong_df)
+    es.replace_dataframe('latlongs', latlong_df)
     df = to_pandas(es['latlongs'])
     expected_val = (3, 4)
     if ks and isinstance(es['latlongs'], ks.DataFrame):
@@ -603,7 +603,7 @@ def test_update_dataframe_data_transformation(latlong_df):
         assert series.iloc[-1] == expected_val
 
 
-def test_update_dataframe_column_order(es):
+def test_replace_dataframe_column_order(es):
     original_column_order = es['customers'].columns.copy()
 
     df = es['customers'].copy()
@@ -613,12 +613,12 @@ def test_update_dataframe_column_order(es):
     assert not df.columns.equals(original_column_order)
     assert set(df.columns) == set(original_column_order)
 
-    es.update_dataframe(dataframe_name='customers', df=df)
+    es.replace_dataframe(dataframe_name='customers', df=df)
 
     assert es['customers'].columns.equals(original_column_order)
 
 
-def test_update_dataframe_different_woodwork_initialized(es):
+def test_replace_dataframe_different_woodwork_initialized(es):
     df = es['customers'].copy()
     if ks and isinstance(df, ks.DataFrame):
         df['age'] = [1, 2, 3]
@@ -638,7 +638,7 @@ def test_update_dataframe_different_woodwork_initialized(es):
 
     warning = 'Woodwork typing information on new dataframe will be replaced with existing typing information from customers'
     with pytest.warns(UserWarning, match=warning):
-        es.update_dataframe('customers', df, already_sorted=True)
+        es.replace_dataframe('customers', df, already_sorted=True)
 
     if isinstance(df, dd.DataFrame):
         assert all(to_pandas(es['customers']['age']) == [1, 2, 3])
@@ -650,7 +650,7 @@ def test_update_dataframe_different_woodwork_initialized(es):
     assert es['customers']['cancel_date'].dtype == 'datetime64[ns]'
 
 
-def test_update_dataframe_different_dataframe_types():
+def test_replace_dataframe_different_dataframe_types():
     dask_es = EntitySet(id="dask_es")
 
     sessions = pd.DataFrame({"id": [0, 1, 2, 3],
@@ -676,10 +676,10 @@ def test_update_dataframe_different_dataframe_types():
                           logical_types=sessions_logical_types, semantic_tags=sessions_semantic_tags)
 
     with pytest.raises(TypeError, match='Incorrect DataFrame type used'):
-        dask_es.update_dataframe('sessions', sessions)
+        dask_es.replace_dataframe('sessions', sessions)
 
 
-def test_update_dataframe_and_min_last_time_index(es):
+def test_replace_dataframe_and_min_last_time_index(es):
     es.add_last_time_indexes(['products'])
 
     original_time_index = es['log']['datetime'].copy()
@@ -696,14 +696,14 @@ def test_update_dataframe_and_min_last_time_index(es):
     new_dataframe['datetime'] = new_time_index
     new_dataframe.pop(LTI_COLUMN_NAME)
 
-    es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
+    es.replace_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
 
     # Koalas reorders indices during last time index, so we sort to confirm individual values are the same
     pd.testing.assert_series_equal(to_pandas(es['products'][LTI_COLUMN_NAME]).sort_index(), to_pandas(expected_last_time_index).sort_index())
     pd.testing.assert_series_equal(to_pandas(es['log'][LTI_COLUMN_NAME]).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
 
 
-def test_update_dataframe_dont_recalculate_last_time_index_present(es):
+def test_replace_dataframe_dont_recalculate_last_time_index_present(es):
     es.add_last_time_indexes()
 
     original_time_index = es['customers']['signup_date'].copy()
@@ -717,11 +717,11 @@ def test_update_dataframe_dont_recalculate_last_time_index_present(es):
     new_dataframe = es['customers'].copy()
     new_dataframe['signup_date'] = new_time_index
 
-    es.update_dataframe('customers', new_dataframe, recalculate_last_time_indexes=False)
+    es.replace_dataframe('customers', new_dataframe, recalculate_last_time_indexes=False)
     pd.testing.assert_series_equal(to_pandas(es['customers'][LTI_COLUMN_NAME], sort_index=True), to_pandas(original_last_time_index, sort_index=True))
 
 
-def test_update_dataframe_dont_recalculate_last_time_index_not_present(es):
+def test_replace_dataframe_dont_recalculate_last_time_index_not_present(es):
     es.add_last_time_indexes()
     original_lti_name = es['customers'].ww.metadata.get('last_time_index')
     assert original_lti_name is not None
@@ -737,12 +737,12 @@ def test_update_dataframe_dont_recalculate_last_time_index_not_present(es):
     new_dataframe['signup_date'] = new_time_index
     new_dataframe.pop(LTI_COLUMN_NAME)
 
-    es.update_dataframe('customers', new_dataframe, recalculate_last_time_indexes=False)
+    es.replace_dataframe('customers', new_dataframe, recalculate_last_time_indexes=False)
     assert 'last_time_index' not in es['customers'].ww.metadata
     assert original_lti_name not in es['customers'].columns
 
 
-def test_update_dataframe_recalculate_last_time_index_not_present(es):
+def test_replace_dataframe_recalculate_last_time_index_not_present(es):
     es.add_last_time_indexes()
 
     original_time_index = es['log']['datetime'].copy()
@@ -756,12 +756,12 @@ def test_update_dataframe_recalculate_last_time_index_not_present(es):
     new_dataframe['datetime'] = new_time_index
     new_dataframe.pop(LTI_COLUMN_NAME)
 
-    es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
+    es.replace_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
     pd.testing.assert_series_equal(to_pandas(es['log']['datetime']).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
     pd.testing.assert_series_equal(to_pandas(es['log'][LTI_COLUMN_NAME]).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
 
 
-def test_update_dataframe_recalculate_last_time_index_present(es):
+def test_replace_dataframe_recalculate_last_time_index_present(es):
     es.add_last_time_indexes()
 
     original_time_index = es['log']['datetime'].copy()
@@ -775,7 +775,7 @@ def test_update_dataframe_recalculate_last_time_index_present(es):
     new_dataframe['datetime'] = new_time_index
     assert LTI_COLUMN_NAME in new_dataframe.columns
 
-    es.update_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
+    es.replace_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
     pd.testing.assert_series_equal(to_pandas(es['log']['datetime']).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
     pd.testing.assert_series_equal(to_pandas(es['log'][LTI_COLUMN_NAME]).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
 
