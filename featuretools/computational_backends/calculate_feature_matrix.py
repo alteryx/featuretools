@@ -488,20 +488,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                 feature_matrix.append(_feature_matrix)
 
     ww_init_kwargs = get_ww_types_from_features(feature_set.target_features, entityset, pass_columns, cutoff_time)
-    for fm in feature_matrix:
-        fm.ww.init(**ww_init_kwargs)
-
-    fm = feature_matrix[0]
-    
-    for i, other in enumerate(feature_matrix[1:]):
-        fm = fm.ww.append(other)
-        if not fm.ww.schema:
-            # Koalas bug sometimes causes schema to be invalidated
-            # after `append` so need to reinitialize WW
-            fm.ww.init(**ww_init_kwargs)
-
-    feature_matrix = fm
-
+    feature_matrix = init_ww_and_concat_fm(feature_matrix, ww_init_kwargs)
     return feature_matrix
 
 
@@ -702,8 +689,8 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
         if 'cluster' not in dask_kwargs and cluster is not None:
             cluster.close()
 
-    feature_matrix = pd.concat(feature_matrix)
-
+    ww_init_kwargs = get_ww_types_from_features(feature_set.target_features, entityset, pass_columns, cutoff_time)
+    feature_matrix = init_ww_and_concat_fm(feature_matrix, ww_init_kwargs)
     return feature_matrix
 
 
@@ -766,3 +753,20 @@ def update_progress_callback_parameters(progress_bar, previous_progress):
     progress_percent = (progress_bar.n / progress_bar.total) * 100
     time_elapsed = progress_bar.format_dict["elapsed"]
     return (update, progress_percent, time_elapsed)
+
+
+def init_ww_and_concat_fm(feature_matrix, ww_init_kwargs):
+    for fm in feature_matrix:
+        fm.ww.init(**ww_init_kwargs)
+
+    fm = feature_matrix[0]
+
+    for i, other in enumerate(feature_matrix[1:]):
+        fm = fm.ww.append(other)
+        if not fm.ww.schema:
+            # Koalas bug sometimes causes schema to be invalidated
+            # after `append` so need to reinitialize WW
+            fm.ww.init(**ww_init_kwargs)
+
+    feature_matrix = fm
+    return feature_matrix
