@@ -906,7 +906,7 @@ class EntitySet(object):
                     other_lti_col is not None):
                 has_last_time_index.append(df.ww.name)
 
-            combined_es.update_dataframe(
+            combined_es.replace_dataframe(
                 dataframe_name=df.ww.name,
                 df=combined_df,
                 recalculate_last_time_indexes=False,
@@ -1426,10 +1426,12 @@ class EntitySet(object):
 
         return df
 
-    def update_dataframe(self, dataframe_name, df, already_sorted=False, recalculate_last_time_indexes=True):
-        '''Update the internal dataframe of an EntitySet table, keeping Woodwork typing information the same.
+    def replace_dataframe(self, dataframe_name, df, already_sorted=False, recalculate_last_time_indexes=True):
+        '''Replace the internal dataframe of an EntitySet table, keeping Woodwork typing information the same.
         Optionally makes sure that data is sorted, that reference indexes to other dataframes are consistent,
-        and that last_time_indexes are updated to reflect the new data.
+        and that last_time_indexes are updated to reflect the new data. If an index was created for the original
+        dataframe and is not present on the new dataframe, an index column of the same name will be added to the
+        new dataframe.
         '''
         if not isinstance(df, type(self[dataframe_name])):
             raise TypeError('Incorrect DataFrame type used')
@@ -1440,6 +1442,12 @@ class EntitySet(object):
         if last_time_index_column is not None and last_time_index_column not in df.columns:
             self[dataframe_name].ww.pop(last_time_index_column)
             del self[dataframe_name].ww.metadata['last_time_index']
+
+        # If the original DataFrame had an index created via make_index,
+        # we may need to remake the index if it's not in the new DataFrame
+        created_index = self[dataframe_name].ww.metadata.get('created_index')
+        if created_index is not None and created_index not in df.columns:
+            df = _create_index(df, created_index)
 
         old_column_names = list(self[dataframe_name].columns)
         if len(df.columns) != len(old_column_names):
@@ -1583,13 +1591,18 @@ def _get_or_create_index(index, make_index, df):
                           "integer column".format(index))
         # Case 5: make_index with no errors or warnings
         # (Case 4 also uses this code path)
-        if isinstance(df, dd.DataFrame):
-            df[index] = 1
-            df[index] = df[index].cumsum() - 1
-        elif is_instance(df, ks, 'DataFrame'):
-            df = df.koalas.attach_id_column('distributed-sequence', index)
-        else:
-            df.insert(0, index, range(len(df)))
+        df = _create_index(df, index)
         index_was_created = True
     # Case 6: user specified index, which is already in df. No action needed.
     return index_was_created, index, df
+
+
+def _create_index(df, index):
+    if isinstance(df, dd.DataFrame):
+        df[index] = 1
+        df[index] = df[index].cumsum() - 1
+    elif is_instance(df, ks, 'DataFrame'):
+        df = df.koalas.attach_id_column('distributed-sequence', index)
+    else:
+        df.insert(0, index, range(len(df)))
+    return df

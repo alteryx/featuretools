@@ -46,12 +46,6 @@ python -m pip install featuretools[complete]
 python -m pip install featuretools[update_checker]
 ```
 
-**TSFresh Primitives** - Use 60+ primitives from [tsfresh](https://tsfresh.readthedocs.io/en/latest/) within Featuretools
-
-```
-python -m pip install featuretools[tsfresh]
-```
-
 ## Example
 Below is an example of using Deep Feature Synthesis (DFS) to perform automated feature engineering. In this example, we apply DFS to a multi-table dataset consisting of timestamped customer transactions.
 

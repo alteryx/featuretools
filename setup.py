@@ -7,11 +7,7 @@ with open(path.join(dirname, 'README.md')) as f:
     long_description = f.read()
 
 extras_require = {
-    'tsfresh': ['featuretools-tsfresh-primitives >= 0.1.0'],
     'update_checker': ['alteryx-open-src-update-checker >= 2.0.0'],
-    'nlp_primitives': ['nlp-primitives[complete] >= 1.0.0'],
-    'autonormalize': ['autonormalize >= 1.0.0'],
-    'sklearn_transformer': ['featuretools-sklearn-transformer >= 0.1.1'],
     'koalas': open('koalas-requirements.txt').readlines(),
 }
 extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))

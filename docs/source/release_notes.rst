@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Add support for creating EntitySets from Woodwork DataTables (:pr:`1277`)
-        * Add ``EntitySet.__deepcopy__` that retains Woodwork typing information (:pr:`1465`)
+        * Add ``EntitySet.__deepcopy__`` that retains Woodwork typing information (:pr:`1465`)
     * Fixes
     * Changes
         * Remove ``add_interesting_values`` from ``Entity`` (:pr:`1269`)
@@ -24,7 +24,9 @@ Future Release
         * Allow deep EntitySet equality check (:pr:`1480`)
         * Update ``EntitySet.concat`` to work with Woodwork DataFrames (:pr:`1490`)
         * Add function to list semantic tags (:pr:`1486`)
-        * Remove categorical-encoding as an add-on library (:pr:`1632`)
+        * Remove categorical-encoding as an add-on library (will be added back later) (:pr:`1632`)
+        * Remove autonormalize as an add-on library (will be added back later) (:pr:`1636`)
+        * Remove tsfresh, nlp_primitives, sklearn_transformer as an add-on library (will be added back later) (:pr:`1638`)
     * Documentation Changes
         * Add a Woodwork Typing in Featuretools guide (:pr:`1589`)
     * Testing Changes
@@ -45,7 +47,7 @@ Breaking Changes
 * ``EntitySet.add_relationship`` has been updated to accept dataframe and column name values or a
   ``Relationship`` object. Adding a relationship from a ``Relationship`` object now requires passing
   the relationship as a keyword argument.
-* ``Entity.update_data`` has been removed. To update the dataframe, call ``EntitySet.update_dataframe`` and use the ``dataframe_name`` paramter.
+* ``Entity.update_data`` has been removed. To update the dataframe, call ``EntitySet.replace_dataframe`` and use the ``dataframe_name`` parameter.
 * The data in an ``EntitySet`` is no longer stored in ``Entity`` objects. Instead, dataframes
   with Woodwork typing information are used. Accordingly, most language referring to “entities”
   will now refer to “dataframes”, references to “variables” will now refer to “columns”, and
@@ -132,13 +134,13 @@ this approach the ``relationship`` parameter name must be included.
 
     >>> es.add_relationship(relationship=new_relationship)
 
-**Update DataFrame**
+**Replace DataFrame**
 
-To update a dataframe in an EntitySet, call ``EntitySet.update_dataframe`` and pass in the name of the dataframe to update along with the new data.
+To replace a dataframe in an EntitySet with a new dataframe, call ``EntitySet.replace_dataframe`` and pass in the name of the dataframe to replace along with the new data.
 
 .. code-block:: python
 
-    >>> es.update_dataframe(dataframe_name='log', df=df)
+    >>> es.replace_dataframe(dataframe_name='log', df=df)
 
 **List Logical Types and Semantic Tags**
 

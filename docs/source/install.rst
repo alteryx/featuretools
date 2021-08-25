@@ -23,26 +23,6 @@ Update checker:
 
         python -m pip install "featuretools[update_checker]"
 
-TSFresh Primitives:
-    Use 60+ primitives from `tsfresh <https://tsfresh.readthedocs.io/en/latest/>`__ in Featuretools::
-
-        python -m pip install "featuretools[tsfresh]"
-
-NLP Primitives:
-    Use Natural Language Processing Primitives for data with text in Featuretools::
-
-        python -m pip install "featuretools[nlp_primitives]"
-
-AutoNormalize:
-    Automated creation of normalized ``EntitySet`` from denormalized data::
-
-        python -m pip install "featuretools[autonormalize]"
-
-Featuretools Sklearn Transformer:
-    Deep Feature Synthesis as a scikit-learn pipelines transformer::
-
-        python -m pip install "featuretools[sklearn_transformer]"
-
 .. _graphviz:
 
 Installing Graphviz
