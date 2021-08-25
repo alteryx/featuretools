@@ -350,6 +350,7 @@ def test_cutoff_time_binning():
         ],
         'instance_id': [1, 2, 3]
     })
+    cutoff_time.ww.init()
     binned_cutoff_times = bin_cutoff_times(cutoff_time, Timedelta(4, 'h'))
     labels = [datetime(2011, 4, 9, 12),
               datetime(2011, 4, 10, 8),
