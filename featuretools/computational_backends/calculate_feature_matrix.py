@@ -488,8 +488,14 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
         fm.ww.init(**ww_init_kwargs)
 
     fm = feature_matrix[0]
+    
     for i, other in enumerate(feature_matrix[1:]):
         fm = fm.ww.append(other)
+        if not fm.ww.schema:
+            # Koalas bug sometimes causes schema to be invalidated
+            # after `append` so need to reinitialize WW
+            fm.ww.init(**ww_init_kwargs)
+
     feature_matrix = fm
 
     return feature_matrix
