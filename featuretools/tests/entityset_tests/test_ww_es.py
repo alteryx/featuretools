@@ -453,6 +453,7 @@ def test_replace_dataframe_errors(es):
     else:
         df['new'] = pd.Series([1, 2, 3])
 
+# --> change to say "Replaced dataframe"
     error_text = 'Updated dataframe is missing new cohort column'
     with pytest.raises(ValueError, match=error_text):
         es.replace_dataframe(dataframe_name='customers', df=df.drop(columns=['cohort']))
@@ -460,6 +461,8 @@ def test_replace_dataframe_errors(es):
     error_text = 'Updated dataframe contains 16 columns, expecting 15'
     with pytest.raises(ValueError, match=error_text):
         es.replace_dataframe(dataframe_name='customers', df=df)
+
+# --> add test that fails for mismatched dataframe
 
 
 def test_replace_dataframe_already_sorted(es):
@@ -502,6 +505,7 @@ def test_replace_dataframe_already_sorted(es):
 
     es.replace_dataframe(dataframe_name='customers', df=df.copy(), already_sorted=True)
     customers_df = to_pandas(es['customers'])
+    # --> this is showing up as 0 - not sure why - maybe bc ww init defaults to False
     assert customers_df["id"].iloc[0] == 2
 
     # only pandas allows for sorting:
@@ -513,6 +517,7 @@ def test_replace_dataframe_already_sorted(es):
         assert updated_customers["id"].iloc[0] == 2
 
 
+# --> no longer raising error when the index is mismatched
 def test_replace_dataframe_invalid_schema(es):
     if not isinstance(es['customers'], pd.DataFrame):
         pytest.xfail('Invalid schema checks able to be caught by Woodwork only relevant for Pandas')

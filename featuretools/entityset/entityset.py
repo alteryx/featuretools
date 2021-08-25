@@ -835,6 +835,7 @@ class EntitySet(object):
             column_metadata[col_name] = copy.deepcopy(metadata)
             column_descriptions[col_name] = description
 
+        # --> consider using init with partial schema - add test that wold utilize changes
         new_dataframe.ww.init(name=new_dataframe_name, index=index,
                               already_sorted=already_sorted,
                               time_index=new_dataframe_time_index,
@@ -1102,6 +1103,7 @@ class EntitySet(object):
                                          f"'{LTI_COLUMN_NAME}' column. Please rename '{LTI_COLUMN_NAME}'.")
 
                 # Add the new column to the DataFrame
+                # --> consider initializing with partial schema + lti info
                 if isinstance(df, dd.DataFrame):
                     new_df = df.merge(lti.reset_index(), on=df.ww.index)
                     new_df.ww.init(
@@ -1159,6 +1161,7 @@ class EntitySet(object):
         ww_schemas = state.pop(WW_SCHEMA_KEY)
         for df_name, df in state.get('dataframe_dict', {}).items():
             if ww_schemas[df_name] is not None:
+                # --> use full shcema init
                 df.ww.init(schema=ww_schemas[df_name], validate=False)
         self.__dict__.update(state)
 
@@ -1453,19 +1456,21 @@ class EntitySet(object):
             warnings.warn('Woodwork typing information on new dataframe will be replaced '
                           f'with existing typing information from {dataframe_name}')
         # Update the dtypes to match the original dataframe's and transform data if necessary
+        # --> shouldn't be necessary
         for col_name in df.columns:
             series = df[col_name]
             updated_series = self[dataframe_name].ww.logical_types[col_name].transform(series)
             if updated_series is not series:
                 df[col_name] = updated_series
 
-        df.ww.init(schema=self[dataframe_name].ww._schema)
+        df.ww.init_with_full_schema(schema=self[dataframe_name].ww._schema)
         # Make sure column ordering matches original ordering
         df = df.ww[old_column_names]
 
         self.dataframe_dict[dataframe_name] = df
 
         # Sort the dataframe through Woodwork
+        # --> shouldn't be necessary - pass in already sorted at init
         if self.dataframe_dict[dataframe_name].ww.time_index is not None:
             self.dataframe_dict[dataframe_name].ww._sort_columns(already_sorted)
 
