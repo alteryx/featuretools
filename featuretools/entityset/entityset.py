@@ -835,7 +835,6 @@ class EntitySet(object):
             column_metadata[col_name] = copy.deepcopy(metadata)
             column_descriptions[col_name] = description
 
-        # --> consider using init with partial schema - add test that wold utilize changes
         new_dataframe.ww.init(name=new_dataframe_name, index=index,
                               already_sorted=already_sorted,
                               time_index=new_dataframe_time_index,
@@ -1103,19 +1102,9 @@ class EntitySet(object):
                                          f"'{LTI_COLUMN_NAME}' column. Please rename '{LTI_COLUMN_NAME}'.")
 
                 # Add the new column to the DataFrame
-                # --> consider initializing with partial schema + lti info
                 if isinstance(df, dd.DataFrame):
                     new_df = df.merge(lti.reset_index(), on=df.ww.index)
-                    new_df.ww.init(
-                        name=df.ww.name,
-                        index=df.ww.index,
-                        time_index=df.ww.time_index,
-                        logical_types={**df.ww.logical_types, LTI_COLUMN_NAME: lti_ltype},
-                        semantic_tags={col_name: tags - {'index', 'time_index'} for col_name, tags in df.ww.semantic_tags.items()},
-                        table_metadata=df.ww.metadata,
-                        column_metadata={col_name: col_schema.metadata for col_name, col_schema in df.ww.columns.items()},
-                        use_standard_tags=df.ww.use_standard_tags
-                    )
+                    new_df.ww.init(schema=df.ww.schema, logical_types={LTI_COLUMN_NAME: lti_ltype})
 
                     new_idx = new_df[new_df.ww.index]
                     new_idx.name = None
@@ -1123,17 +1112,8 @@ class EntitySet(object):
                     dfs_to_update[df.ww.name] = new_df
                 elif is_instance(df, ks, 'DataFrame'):
                     new_df = df.merge(lti, left_on=df.ww.index, right_index=True)
+                    new_df.ww.init(schema=df.ww.schema, logical_types={LTI_COLUMN_NAME: lti_ltype})
 
-                    new_df.ww.init(
-                        name=df.ww.name,
-                        index=df.ww.index,
-                        time_index=df.ww.time_index,
-                        logical_types={**df.ww.logical_types, LTI_COLUMN_NAME: lti_ltype},
-                        semantic_tags={col_name: tags - {'index', 'time_index'} for col_name, tags in df.ww.semantic_tags.items()},
-                        table_metadata=df.ww.metadata,
-                        column_metadata={col_name: col_schema.metadata for col_name, col_schema in df.ww.columns.items()},
-                        use_standard_tags=df.ww.use_standard_tags
-                    )
                     dfs_to_update[df.ww.name] = new_df
                 else:
                     df.ww[LTI_COLUMN_NAME] = lti
@@ -1161,8 +1141,7 @@ class EntitySet(object):
         ww_schemas = state.pop(WW_SCHEMA_KEY)
         for df_name, df in state.get('dataframe_dict', {}).items():
             if ww_schemas[df_name] is not None:
-                # --> use full shcema init
-                df.ww.init(schema=ww_schemas[df_name], validate=False)
+                df.ww.init_with_full_schema(schema=ww_schemas[df_name], validate=False)
         self.__dict__.update(state)
 
     # ###########################################################################
