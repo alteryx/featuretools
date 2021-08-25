@@ -27,22 +27,6 @@ Deep Feature Synthesis
     dfs
     get_valid_primitives
 
-
-Wrappers
-~~~~~~~~
-.. currentmodule:: featuretools
-
-Scikit-learn (BETA)
--------------------
-.. autosummary::
-    :toctree: generated/
-
-    wrappers.DFSTransformer
-
-
-
-.. DeepFeatureSynthesis
-
 Timedelta
 ~~~~~~~~~
 .. currentmodule:: featuretools
@@ -183,29 +167,6 @@ Location Transform Primitives
    Latitude
    Longitude
    Haversine
-
-.. currentmodule:: nlp_primitives
-
-.. autosummary::
-   :nosignatures:
-
-Natural Language Processing Primitives
---------------------------------------
-Natural Language Processing primitives create features for textual data. For more information on how to use and install these primitives, see `here <https://github.com/FeatureLabs/nlp_primitives>`__.
-
-.. autosummary::
-    :toctree: generated/
-
-    DiversityScore
-    LSA
-    MeanCharactersPerWord
-    PartOfSpeechCount
-    PolarityScore
-    PunctuationCount
-    StopwordCount
-    TitleWordCount
-    UniversalSentenceEncoder
-    UpperCaseCount
 
 
 Feature methods

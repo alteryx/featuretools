@@ -1,5 +1,5 @@
 -r test-requirements.txt
-featuretools-sklearn-transformer >= 0.1.1
+scikit-learn>=0.20.0,!=0.22
 codecov==2.1.8
 flake8==3.7.8
 autopep8==1.4.4
@@ -11,6 +11,4 @@ nbconvert==6.0.6
 nbsphinx==0.8.5
 Sphinx==3.2.1
 pydata_sphinx_theme==0.4.0
-nlp_primitives>=1.0.0
-autonormalize >= 1.0.1
 -r koalas-requirements.txt

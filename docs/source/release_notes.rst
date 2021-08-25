@@ -7,6 +7,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Remove autonormalize, tsfresh, nlp_primitives, sklearn_transformer, caegorical_encoding as an add-on libraries (will be added back later) (:pr:`1644`)
     * Documentation Changes
     * Testing Changes
 
