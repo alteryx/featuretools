@@ -26,7 +26,7 @@ class GreaterThan(TransformPrimitive):
     input_types = [[ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(semantic_tags={'numeric'})],
                    [ColumnSchema(logical_type=Datetime), ColumnSchema(logical_type=Datetime)],
                    [ColumnSchema(logical_type=Ordinal), ColumnSchema(logical_type=Ordinal)]]
-    return_type = ColumnSchema(logical_type=Boolean)
+    return_type = ColumnSchema(logical_type=BooleanNullable)
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "whether {} is greater than {}"
 
@@ -54,7 +54,7 @@ class GreaterThanScalar(TransformPrimitive):
     input_types = [[ColumnSchema(semantic_tags={'numeric'})],
                    [ColumnSchema(logical_type=Datetime)],
                    [ColumnSchema(logical_type=Ordinal)]]
-    return_type = ColumnSchema(logical_type=Boolean)
+    return_type = ColumnSchema(logical_type=BooleanNullable)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=0):
@@ -87,7 +87,7 @@ class GreaterThanEqualTo(TransformPrimitive):
     input_types = [[ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(semantic_tags={'numeric'})],
                    [ColumnSchema(logical_type=Datetime), ColumnSchema(logical_type=Datetime)],
                    [ColumnSchema(logical_type=Ordinal), ColumnSchema(logical_type=Ordinal)]]
-    return_type = ColumnSchema(logical_type=Boolean)
+    return_type = ColumnSchema(logical_type=BooleanNullable)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "whether {} is greater than or equal to {}"
 
@@ -115,7 +115,7 @@ class GreaterThanEqualToScalar(TransformPrimitive):
     input_types = [[ColumnSchema(semantic_tags={'numeric'})],
                    [ColumnSchema(logical_type=Datetime)],
                    [ColumnSchema(logical_type=Ordinal)]]
-    return_type = ColumnSchema(logical_type=Boolean)
+    return_type = ColumnSchema(logical_type=BooleanNullable)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=0):
@@ -148,7 +148,7 @@ class LessThan(TransformPrimitive):
     input_types = [[ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(semantic_tags={'numeric'})],
                    [ColumnSchema(logical_type=Datetime), ColumnSchema(logical_type=Datetime)],
                    [ColumnSchema(logical_type=Ordinal), ColumnSchema(logical_type=Ordinal)]]
-    return_type = ColumnSchema(logical_type=Boolean)
+    return_type = ColumnSchema(logical_type=BooleanNullable)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "whether {} is less than {}"
 
@@ -176,7 +176,7 @@ class LessThanScalar(TransformPrimitive):
     input_types = [[ColumnSchema(semantic_tags={'numeric'})],
                    [ColumnSchema(logical_type=Datetime)],
                    [ColumnSchema(logical_type=Ordinal)]]
-    return_type = ColumnSchema(logical_type=Boolean)
+    return_type = ColumnSchema(logical_type=BooleanNullable)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=0):
@@ -209,7 +209,7 @@ class LessThanEqualTo(TransformPrimitive):
     input_types = [[ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(semantic_tags={'numeric'})],
                    [ColumnSchema(logical_type=Datetime), ColumnSchema(logical_type=Datetime)],
                    [ColumnSchema(logical_type=Ordinal), ColumnSchema(logical_type=Ordinal)]]
-    return_type = ColumnSchema(logical_type=Boolean)
+    return_type = ColumnSchema(logical_type=BooleanNullable)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "whether {} is less than or equal to {}"
 
@@ -237,7 +237,7 @@ class LessThanEqualToScalar(TransformPrimitive):
     input_types = [[ColumnSchema(semantic_tags={'numeric'})],
                    [ColumnSchema(logical_type=Datetime)],
                    [ColumnSchema(logical_type=Ordinal)]]
-    return_type = ColumnSchema(logical_type=Boolean)
+    return_type = ColumnSchema(logical_type=BooleanNullable)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=0):
@@ -268,7 +268,7 @@ class Equal(TransformPrimitive):
     """
     name = "equal"
     input_types = [ColumnSchema(), ColumnSchema()]
-    return_type = ColumnSchema(logical_type=Boolean)
+    return_type = ColumnSchema(logical_type=BooleanNullable)
     commutative = True
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "whether {} equals {}"
@@ -303,7 +303,7 @@ class EqualScalar(TransformPrimitive):
     """
     name = "equal_scalar"
     input_types = [ColumnSchema()]
-    return_type = ColumnSchema(logical_type=Boolean)
+    return_type = ColumnSchema(logical_type=BooleanNullable)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=None):
@@ -334,7 +334,7 @@ class NotEqual(TransformPrimitive):
     """
     name = "not_equal"
     input_types = [ColumnSchema(), ColumnSchema()]
-    return_type = ColumnSchema(logical_type=Boolean)
+    return_type = ColumnSchema(logical_type=BooleanNullable)
     commutative = True
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "whether {} does not equal {}"
@@ -369,7 +369,7 @@ class NotEqualScalar(TransformPrimitive):
     """
     name = "not_equal_scalar"
     input_types = [ColumnSchema()]
-    return_type = ColumnSchema(logical_type=Boolean)
+    return_type = ColumnSchema(logical_type=BooleanNullable)
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, value=None):
