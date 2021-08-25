@@ -24,6 +24,7 @@ Future Release
         * Allow deep EntitySet equality check (:pr:`1480`)
         * Update ``EntitySet.concat`` to work with Woodwork DataFrames (:pr:`1490`)
         * Add function to list semantic tags (:pr:`1486`)
+        * Initialize Woodwork on feature matrix in ``remove_highly_correlated_features`` if necessary (:pr:`1618`)
         * Remove categorical-encoding as an add-on library (will be added back later) (:pr:`1632`)
         * Remove autonormalize as an add-on library (will be added back later) (:pr:`1636`)
         * Remove tsfresh, nlp_primitives, sklearn_transformer as an add-on library (will be added back later) (:pr:`1638`)
