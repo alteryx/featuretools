@@ -210,6 +210,9 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             "provides no computational efficiency benefit"
         warnings.warn(msg)
         cutoff_time = pd.DataFrame({"instance_id": cutoff_time[1], "time": [cutoff_time[0]] * len(cutoff_time[1])})
+        target_dataframe = features[0].dataframe
+        ltype = target_dataframe.ww.logical_types[target_dataframe.ww.index]
+        cutoff_time.ww.init(logical_types={'instance_id': ltype})
 
     feature_set = FeatureSet(features)
 
@@ -247,7 +250,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         binned_cutoff_time = bin_cutoff_times(cutoff_time, approximate)
 
         # Think about collisions: what if original time is a feature
-        binned_cutoff_time[target_time] = cutoff_time[cutoff_df_time_col]
+        binned_cutoff_time.ww[target_time] = cutoff_time[cutoff_df_time_col]
 
         cutoff_time_to_pass = binned_cutoff_time
 
@@ -307,15 +310,15 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         # ensure rows are sorted by input order
         if isinstance(feature_matrix, pd.DataFrame):
             if isinstance(cutoff_time, pd.DataFrame):
-                feature_matrix = feature_matrix.reindex(
+                feature_matrix = feature_matrix.ww.reindex(
                     pd.MultiIndex.from_frame(cutoff_time[["instance_id", "time"]],
                                              names=feature_matrix.index.names))
             else:
                 # Maintain index dtype
                 index_dtype = feature_matrix.index.get_level_values(0).dtype
-                feature_matrix = feature_matrix.reindex(cutoff_time[1].astype(index_dtype), level=0)
+                feature_matrix = feature_matrix.ww.reindex(cutoff_time[1].astype(index_dtype), level=0)
             if not cutoff_time_in_index:
-                feature_matrix.reset_index(level='time', drop=True, inplace=True)
+                feature_matrix.ww.reset_index(level='time', drop=True, inplace=True)
 
         if save_progress and os.path.exists(os.path.join(save_progress, 'temp')):
             shutil.rmtree(os.path.join(save_progress, 'temp'))
@@ -376,6 +379,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
         for _, group in cutoff_time.groupby(cutoff_df_time_col):
             # if approximating, calculate the approximate features
             if approximate is not None:
+                group.ww.init(schema=cutoff_time.ww.schema, validate=False)
                 precalculated_features_trie = approximate_features(
                     feature_set,
                     group,
@@ -540,7 +544,7 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
     approx_fms_trie = Trie(path_constructor=RelationshipPath)
 
     target_time_colname = 'target_time'
-    cutoff_time[target_time_colname] = cutoff_time['time']
+    cutoff_time.ww[target_time_colname] = cutoff_time['time']
     approx_cutoffs = bin_cutoff_times(cutoff_time, window)
     cutoff_df_time_col = 'time'
     cutoff_df_instance_col = 'instance_id'
