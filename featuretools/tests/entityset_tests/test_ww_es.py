@@ -462,8 +462,6 @@ def test_replace_dataframe_errors(es):
     with pytest.raises(ValueError, match=error_text):
         es.replace_dataframe(dataframe_name='customers', df=df)
 
-# --> add test that fails for mismatched dataframe
-
 
 def test_replace_dataframe_already_sorted(es):
     # test already_sorted on dataframe without time index

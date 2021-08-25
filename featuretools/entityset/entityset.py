@@ -1455,24 +1455,12 @@ class EntitySet(object):
         if df.ww.schema is not None:
             warnings.warn('Woodwork typing information on new dataframe will be replaced '
                           f'with existing typing information from {dataframe_name}')
-        # Update the dtypes to match the original dataframe's and transform data if necessary
-        # --> shouldn't be necessary
-        for col_name in df.columns:
-            series = df[col_name]
-            updated_series = self[dataframe_name].ww.logical_types[col_name].transform(series)
-            if updated_series is not series:
-                df[col_name] = updated_series
 
         df.ww.init(schema=self[dataframe_name].ww._schema, already_sorted=already_sorted)
         # Make sure column ordering matches original ordering
         df = df.ww[old_column_names]
 
         self.dataframe_dict[dataframe_name] = df
-
-        # Sort the dataframe through Woodwork
-        # --> shouldn't be necessary - pass in already sorted at init
-        if self.dataframe_dict[dataframe_name].ww.time_index is not None:
-            self.dataframe_dict[dataframe_name].ww._sort_columns(already_sorted)
 
         if self[dataframe_name].ww.time_index is not None:
             self._check_uniform_time_index(self[dataframe_name])
