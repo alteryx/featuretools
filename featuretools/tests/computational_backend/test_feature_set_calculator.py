@@ -644,7 +644,7 @@ def test_trend(pd_es):
 
     true_results = [-0.812730, 4.870378, np.nan]
 
-    np.testing.assert_almost_equal(df[trend.get_name()].values.tolist(), true_results, decimal=5)
+    np.testing.assert_almost_equal(df[trend.get_name()].tolist(), true_results, decimal=5)
 
 
 def test_direct_squared(es):

@@ -761,7 +761,7 @@ def init_ww_and_concat_fm(feature_matrix, ww_init_kwargs):
 
     fm = feature_matrix[0]
 
-    for i, other in enumerate(feature_matrix[1:]):
+    for other in feature_matrix[1:]:
         fm = fm.ww.append(other)
         if not fm.ww.schema:
             # Koalas bug sometimes causes schema to be invalidated

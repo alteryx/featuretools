@@ -326,7 +326,6 @@ def get_ww_types_from_features(features, entityset, pass_columns, cutoff_time):
         semantic_tags[index_col] -= {"index"}
         origins[index_col] = "base"
 
-
     ww_init = {
         "logical_types": logical_types,
         "semantic_tags": semantic_tags,

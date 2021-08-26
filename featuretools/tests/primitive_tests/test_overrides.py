@@ -92,7 +92,7 @@ def test_override_boolean(es):
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2])
     df = to_pandas(df, index='id', sort_index=True)
     for i, test in enumerate(to_test):
-        v = df[features[i].get_name()].values.tolist()
+        v = df[features[i].get_name()].tolist()
         assert v == test
 
 
@@ -162,7 +162,7 @@ def test_override_cmp_from_variable(es):
     df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2]),
                    index='id',
                    sort_index=True)
-    v = df[count_lo.get_name()].values.tolist()
+    v = df[count_lo.get_name()].tolist()
     for i, test in enumerate(to_test):
         assert v[i] == test
 
@@ -195,5 +195,5 @@ def test_override_cmp(es):
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2])
     df = to_pandas(df, index='id', sort_index=True)
     for i, test in enumerate(to_test):
-        v = df[features[i].get_name()].values.tolist()
+        v = df[features[i].get_name()].tolist()
         assert v == test

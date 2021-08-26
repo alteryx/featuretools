@@ -5,7 +5,13 @@ import pandas as pd
 from dask import dataframe as dd
 from scipy import stats
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean, BooleanNullable, Datetime, Double, Integer, IntegerNullable
+from woodwork.logical_types import (
+    Boolean,
+    BooleanNullable,
+    Datetime,
+    Double,
+    IntegerNullable
+)
 
 from featuretools.primitives.base.aggregation_primitive_base import (
     AggregationPrimitive

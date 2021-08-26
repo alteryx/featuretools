@@ -254,7 +254,7 @@ def test_cfm_no_cutoff_time_index(pd_es):
                                               approximate=Timedelta(12, 's'),
                                               cutoff_time=cutoff_time)
     assert feature_matrix.index.name == 'id'
-    assert feature_matrix.index.values.tolist() == [0, 2]
+    assert feature_matrix.index.tolist() == [0, 2]
     assert feature_matrix[dfeat.get_name()].tolist() == [10, 10]
     assert feature_matrix[agg_feat.get_name()].tolist() == [5, 1]
 
