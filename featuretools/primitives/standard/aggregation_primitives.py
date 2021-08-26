@@ -701,7 +701,7 @@ class TimeSinceFirst(AggregationPrimitive):
 
 
 class Trend(AggregationPrimitive):
-    """Calculates the trend of a variable over time.
+    """Calculates the trend of a column over time.
 
     Description:
         Given a list of values and a corresponding list of
@@ -783,11 +783,11 @@ def find_dividend_by_unit(time):
 
 
 class Entropy(AggregationPrimitive):
-    """Calculates the entropy for a categorical variable
+    """Calculates the entropy for a categorical column
 
     Description:
         Given a list of observations from a categorical
-        variable return the entropy of the distribution.
+        column return the entropy of the distribution.
         NaN values can be treated as a category or
         dropped.
 

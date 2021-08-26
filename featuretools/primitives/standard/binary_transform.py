@@ -280,7 +280,6 @@ class Equal(TransformPrimitive):
                 categories = set(x_vals.cat.categories).union(set(y_vals.cat.categories))
                 x_vals = x_vals.cat.add_categories(categories.difference(set(x_vals.cat.categories)))
                 y_vals = y_vals.cat.add_categories(categories.difference(set(y_vals.cat.categories)))
-                y_vals = y_vals.cat.reorder_categories(x_vals.cat.categories)
             return x_vals.eq(y_vals)
 
         return equal
@@ -346,7 +345,6 @@ class NotEqual(TransformPrimitive):
                 categories = set(x_vals.cat.categories).union(set(y_vals.cat.categories))
                 x_vals = x_vals.cat.add_categories(categories.difference(set(x_vals.cat.categories)))
                 y_vals = y_vals.cat.add_categories(categories.difference(set(y_vals.cat.categories)))
-                y_vals = y_vals.cat.reorder_categories(x_vals.cat.categories)
             return x_vals.ne(y_vals)
 
         return not_equal

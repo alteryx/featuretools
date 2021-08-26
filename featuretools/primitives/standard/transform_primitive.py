@@ -5,6 +5,7 @@ import pandas as pd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import (
     URL,
+    AgeFractional,
     Boolean,
     BooleanNullable,
     Categorical,
@@ -550,7 +551,7 @@ class Percentile(TransformPrimitive):
 
 class Latitude(TransformPrimitive):
     """Returns the first tuple value in a list of LatLong tuples.
-       For use with the LatLong variable type.
+       For use with the LatLong logical type.
 
     Examples:
         >>> latitude = Latitude()
@@ -572,7 +573,7 @@ class Latitude(TransformPrimitive):
 
 class Longitude(TransformPrimitive):
     """Returns the second tuple value in a list of LatLong tuples.
-       For use with the LatLong variable type.
+       For use with the LatLong logical type.
 
     Examples:
         >>> longitude = Longitude()
@@ -593,8 +594,7 @@ class Longitude(TransformPrimitive):
 
 
 class Haversine(TransformPrimitive):
-    """Calculates the approximate haversine distance between two LatLong
-        variable types.
+    """Calculates the approximate haversine distance between two LatLong columns.
 
         Args:
             unit (str): Determines the unit value to output. Could
@@ -678,7 +678,7 @@ class Age(TransformPrimitive):
     """
     name = "age"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'date_of_birth'})]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    return_type = ColumnSchema(logical_type=AgeFractional, semantic_tags={'numeric'})
     uses_calc_time = True
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "the age from {}"

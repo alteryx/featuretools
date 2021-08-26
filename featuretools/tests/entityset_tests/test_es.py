@@ -355,7 +355,7 @@ def test_query_by_id_with_time(es):
     assert list(df['id'].values) == [0, 1, 2]
 
 
-def test_query_by_variable_with_time(es):
+def test_query_by_column_with_time(es):
     df = es.query_by_values(
         dataframe_name='log',
         instance_vals=[0, 1, 2], column_name='session_id',
@@ -372,7 +372,7 @@ def test_query_by_variable_with_time(es):
     assert list(df['value'].values) == true_values
 
 
-def test_query_by_variable_with_no_lti_and_training_window(es):
+def test_query_by_column_with_no_lti_and_training_window(es):
     match = "Using training_window but last_time_index is not set for dataframe customers"
     with pytest.warns(UserWarning, match=match):
         df = es.query_by_values(
@@ -386,7 +386,7 @@ def test_query_by_variable_with_no_lti_and_training_window(es):
     assert list(df['age'].values) == [25]
 
 
-def test_query_by_variable_with_lti_and_training_window(es):
+def test_query_by_column_with_lti_and_training_window(es):
     es.add_last_time_indexes()
     df = es.query_by_values(
         dataframe_name='customers',
@@ -399,7 +399,7 @@ def test_query_by_variable_with_lti_and_training_window(es):
     assert list(df['age'].values) == [33, 25, 56]
 
 
-def test_query_by_indexed_variable(es):
+def test_query_by_indexed_column(es):
     df = es.query_by_values(
         dataframe_name='log',
         instance_vals=['taco clock'],
@@ -459,6 +459,63 @@ def test_make_index_any_location(df):
     assert es.dataframe_dict['test_dataframe'].ww.index == 'id1'
 
 
+def test_replace_dataframe_and_create_index(es):
+    df = pd.DataFrame({'ints': [3, 4, 5], 'category': ['a', 'b', 'a']})
+    if es.dataframe_type == Library.DASK.value:
+        df = dd.from_pandas(df, npartitions=2)
+    elif es.dataframe_type == Library.KOALAS.value:
+        df = ks.from_pandas(df)
+
+    needs_idx_df = df.copy()
+
+    logical_types = {'ints': Integer,
+                     'category': Categorical}
+    es.add_dataframe(dataframe=df,
+                     dataframe_name='test_df',
+                     index='id',
+                     make_index=True,
+                     logical_types=logical_types)
+
+    assert es['test_df'].ww.index == 'id'
+
+    # DataFrame that needs the index column added
+    assert 'id' not in needs_idx_df.columns
+    expected_idx_col = [0, 1, 2]
+    es.replace_dataframe('test_df', needs_idx_df)
+
+    assert es['test_df'].ww.index == 'id'
+    assert all(expected_idx_col == to_pandas(es['test_df']['id']))
+
+
+def test_replace_dataframe_created_index_present(es):
+    df = pd.DataFrame({'ints': [3, 4, 5], 'category': ['a', 'b', 'a']})
+    if es.dataframe_type == Library.DASK.value:
+        df = dd.from_pandas(df, npartitions=2)
+    elif es.dataframe_type == Library.KOALAS.value:
+        df = ks.from_pandas(df)
+
+    logical_types = {'ints': Integer,
+                     'category': Categorical}
+    es.add_dataframe(dataframe=df,
+                     dataframe_name='test_df',
+                     index='id',
+                     make_index=True,
+                     logical_types=logical_types)
+
+    # DataFrame that already has the index column
+    has_idx_df = es['test_df'].replace({0: 100})
+    if es.dataframe_type == Library.PANDAS.value:
+        has_idx_df.set_index('id', drop=False, inplace=True)
+
+    assert 'id' in has_idx_df.columns
+
+    original_idx_col = [100, 1, 2]
+
+    es.replace_dataframe('test_df', has_idx_df)
+    assert es['test_df'].ww.index == 'id'
+    assert all(original_idx_col == to_pandas(es['test_df']['id']))
+
+
 def test_index_any_location(df):
     logical_types = {'id': Integer,
                      'category': Categorical}
@@ -486,7 +543,7 @@ def test_extra_column_type(df):
                          logical_types=logical_types, dataframe=df)
 
 
-def test_add_parent_not_index_varible(es):
+def test_add_parent_not_index_column(es):
     error_text = "Parent column 'language' is not the index of dataframe régions"
     with pytest.raises(AttributeError, match=error_text):
         es.add_relationship(u'régions', 'language', 'customers', u'région_id')
@@ -626,9 +683,9 @@ def test_converts_dtype_on_init(df4):
     df4.ww.init(name='test_dataframe', index='id', logical_types=logical_types)
     es.add_dataframe(dataframe=df4)
 
-    entity_df = es['test_dataframe']
-    assert entity_df['ints'].dtype.name == 'int64'
-    assert entity_df['floats'].dtype.name == 'float64'
+    df = es['test_dataframe']
+    assert df['ints'].dtype.name == 'int64'
+    assert df['floats'].dtype.name == 'float64'
 
     # this is infer from pandas dtype
     df = es["test_dataframe"]
@@ -904,7 +961,7 @@ def test_concat_not_inplace(es):
     first_es = copy.deepcopy(es)
     for df in first_es.dataframes:
         new_df = df.loc[[], :]
-        first_es.update_dataframe(df.ww.name, new_df)
+        first_es.replace_dataframe(df.ww.name, new_df)
 
     second_es = copy.deepcopy(es)
 
@@ -923,7 +980,7 @@ def test_concat_inplace(es):
     second_es = copy.deepcopy(es)
     for df in first_es.dataframes:
         new_df = df.loc[[], :]
-        first_es.update_dataframe(df.ww.name, new_df)
+        first_es.replace_dataframe(df.ww.name, new_df)
 
     # set the data description
     es.metadata
@@ -944,7 +1001,7 @@ def test_concat_with_lti(es):
             new_df = df.head(1)
         else:
             new_df = df.loc[[], :]
-        first_es.update_dataframe(df.ww.name, new_df)
+        first_es.replace_dataframe(df.ww.name, new_df)
 
     second_es = copy.deepcopy(es)
 
@@ -987,9 +1044,9 @@ def test_concat_errors(es):
 def test_concat_sort_index_with_time_index(pd_es):
     # only pandas dataframes sort on the index and time index
     es1 = copy.deepcopy(pd_es)
-    es1.update_dataframe(dataframe_name='customers', df=pd_es['customers'].loc[[0, 1], :], already_sorted=True)
+    es1.replace_dataframe(dataframe_name='customers', df=pd_es['customers'].loc[[0, 1], :], already_sorted=True)
     es2 = copy.deepcopy(pd_es)
-    es2.update_dataframe(dataframe_name='customers', df=pd_es['customers'].loc[[2], :], already_sorted=True)
+    es2.replace_dataframe(dataframe_name='customers', df=pd_es['customers'].loc[[2], :], already_sorted=True)
 
     combined_es_order_1 = es1.concat(es2)
     combined_es_order_2 = es2.concat(es1)
@@ -1004,9 +1061,9 @@ def test_concat_sort_index_with_time_index(pd_es):
 def test_concat_sort_index_without_time_index(pd_es):
     # Sorting is only performed on DataFrames with time indices
     es1 = copy.deepcopy(pd_es)
-    es1.update_dataframe(dataframe_name='products', df=pd_es['products'].iloc[[0, 1, 2], :], already_sorted=True)
+    es1.replace_dataframe(dataframe_name='products', df=pd_es['products'].iloc[[0, 1, 2], :], already_sorted=True)
     es2 = copy.deepcopy(pd_es)
-    es2.update_dataframe(dataframe_name='products', df=pd_es['products'].iloc[[3, 4, 5], :], already_sorted=True)
+    es2.replace_dataframe(dataframe_name='products', df=pd_es['products'].iloc[[3, 4, 5], :], already_sorted=True)
 
     combined_es_order_1 = es1.concat(es2)
     combined_es_order_2 = es2.concat(es1)
@@ -1051,7 +1108,7 @@ def test_concat_with_make_index(es):
     assert es.__eq__(es_1, deep=True)
     assert es.__eq__(es_2, deep=True)
 
-    # map of what rows to take from es_1 and es_2 for each entity
+    # map of what rows to take from es_1 and es_2 for each dataframe
     emap = {
         'log': [list(range(10)) + [14, 15, 16], list(range(10, 14)) + [15, 16]],
         'sessions': [[0, 1, 2], [1, 3, 4, 5]],
@@ -1062,7 +1119,7 @@ def test_concat_with_make_index(es):
     for i, _es in enumerate([es_1, es_2]):
         for df_name, rows in emap.items():
             df = _es[df_name]
-            _es.update_dataframe(dataframe_name=df_name, df=df.loc[rows[i]])
+            _es.replace_dataframe(dataframe_name=df_name, df=df.loc[rows[i]])
 
     assert es.__eq__(es_1, deep=False)
     assert es.__eq__(es_2, deep=False)
@@ -1105,7 +1162,7 @@ def transactions_df(request):
 
 
 def test_set_time_type_on_init(transactions_df):
-    # create cards entity
+    # create cards dataframe
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     if isinstance(transactions_df, dd.DataFrame):
         cards_df = dd.from_pandas(cards_df, npartitions=3)
@@ -1123,12 +1180,12 @@ def test_set_time_type_on_init(transactions_df):
         cards_logical_types = None
         transactions_logical_types = None
 
-    entities = {
+    dataframes = {
         "cards": (cards_df, "id", None, cards_logical_types),
         "transactions": (transactions_df, "id", "transaction_time", transactions_logical_types)
     }
     relationships = [("cards", "id", "transactions", "card_id")]
-    es = EntitySet("fraud", entities, relationships)
+    es = EntitySet("fraud", dataframes, relationships)
     # assert time_type is set
     assert es.time_type == 'numeric'
 
@@ -1162,7 +1219,7 @@ def test_sets_time_when_adding_dataframe(transactions_df):
     es = EntitySet("fraud")
     # assert it's not set
     assert getattr(es, "time_type", None) is None
-    # add entity
+    # add dataframe
     es.add_dataframe(transactions_df,
                      dataframe_name="transactions",
                      index="id",
@@ -1170,14 +1227,14 @@ def test_sets_time_when_adding_dataframe(transactions_df):
                      logical_types=transactions_logical_types)
     # assert time_type is set
     assert es.time_type == 'numeric'
-    # add another entity
+    # add another dataframe
     es.normalize_dataframe("transactions",
                            "cards",
                            "card_id",
                            make_time_index=True)
     # assert time_type unchanged
     assert es.time_type == 'numeric'
-    # add wrong time type entity
+    # add wrong time type dataframe
     error_text = "accounts time index is Datetime type which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=error_text):
         es.add_dataframe(accounts_df,
@@ -1252,12 +1309,12 @@ def test_checks_time_type_setting_secondary_time_index(es):
         "transaction_date": [datetime(1989, 2, i) for i in range(1, 7)],
         "fraud": [True, False, False, False, True, True]
     })
-    entities = {
+    dataframes = {
         "cards": (cards_df, "id"),
         "transactions": (transactions_df, "id", "transaction_time")
     }
     relationships = [("cards", "id", "transactions", "card_id")]
-    card_es = EntitySet("fraud", entities, relationships)
+    card_es = EntitySet("fraud", dataframes, relationships)
     assert card_es.time_type == 'numeric'
     # add secondary index that is numeric time type
     new_2nd_ti = {'fraud_decision_time': ['fraud_decision_time', 'fraud']}
@@ -1677,13 +1734,13 @@ def test_use_time_index(index_df):
 
     error_text = re.escape("Cannot add 'time_index' tag directly for column transaction_time. To set a column as the time index, use DataFrame.ww.set_time_index() instead.")
     with pytest.raises(ValueError, match=error_text):
-        es.add_dataframe(dataframe_name="entity",
+        es.add_dataframe(dataframe_name="dataframe",
                          index="id",
                          logical_types=bad_ltypes,
                          semantic_tags=bad_semantic_tags,
                          dataframe=index_df)
 
-    es.add_dataframe(dataframe_name="entity",
+    es.add_dataframe(dataframe_name="dataframe",
                      index="id",
                      time_index="transaction_time",
                      logical_types=logical_types,
@@ -1941,7 +1998,7 @@ def test_entityset_deep_equality(es):
     assert first_es.__eq__(second_es, deep=True)
 
     updated_df = first_es['customers'].loc[[2, 0], :]
-    first_es.update_dataframe('customers', updated_df)
+    first_es.replace_dataframe('customers', updated_df)
 
     assert first_es.__eq__(second_es, deep=False)
     # Uses woodwork equality which only looks at df content for pandas
