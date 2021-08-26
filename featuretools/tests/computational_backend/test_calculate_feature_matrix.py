@@ -577,7 +577,7 @@ def test_include_cutoff_time_without_training_window(es):
         cutoff_time_in_index=True,
         include_cutoff_time=False,
     )
-    actual = actual['COUNT(log)']
+    actual = to_pandas(actual)['COUNT(log)']
     np.testing.assert_array_equal(actual.values, [0, 5])
 
     # Case3. include_cutoff_time = True with single cutoff time value
@@ -589,7 +589,7 @@ def test_include_cutoff_time_without_training_window(es):
         cutoff_time_in_index=True,
         include_cutoff_time=True,
     )
-    actual = actual['COUNT(log)']
+    actual = to_pandas(actual)['COUNT(log)']
     np.testing.assert_array_equal(actual.values, [6])
 
     # Case4. include_cutoff_time = False with single cutoff time value
@@ -601,7 +601,7 @@ def test_include_cutoff_time_without_training_window(es):
         cutoff_time_in_index=True,
         include_cutoff_time=False,
     )
-    actual = actual['COUNT(log)']
+    actual = to_pandas(actual)['COUNT(log)']
     np.testing.assert_array_equal(actual.values, [5])
 
 
