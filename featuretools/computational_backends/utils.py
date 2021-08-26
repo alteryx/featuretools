@@ -303,7 +303,7 @@ def get_ww_types_from_features(features, entityset, pass_columns, cutoff_time):
         names = feature.get_feature_names()
         for name in names:
             logical_types[name] = feature.column_schema.logical_type
-            semantic_tags[name] = feature.column_schema.semantic_tags
+            semantic_tags[name] = feature.column_schema.semantic_tags.copy()
             semantic_tags[name] -= {'index', 'time_index'}
 
             if logical_types[name] is None and "numeric" in semantic_tags[name]:
@@ -314,7 +314,7 @@ def get_ww_types_from_features(features, entityset, pass_columns, cutoff_time):
             origins[name] = "engineered"
     for column in pass_columns:
         logical_types[column] = cutoff_time.ww[column].ww.logical_type
-        semantic_tags[column] = cutoff_time.ww[column].ww.semantic_tags
+        semantic_tags[column] = cutoff_time.ww[column].ww.semantic_tags.copy()
         origins[column] = "base"
 
     if entityset.dataframe_type in (Library.DASK.value, Library.KOALAS.value):
