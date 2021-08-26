@@ -1425,11 +1425,11 @@ class EntitySet(object):
 
         old_column_names = list(self[dataframe_name].columns)
         if len(df.columns) != len(old_column_names):
-            raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(df.columns),
-                                                                                          len(old_column_names)))
+            raise ValueError("New dataframe contains {} columns, expecting {}".format(len(df.columns),
+                                                                                      len(old_column_names)))
         for col_name in old_column_names:
             if col_name not in df.columns:
-                raise ValueError("Updated dataframe is missing new {} column".format(col_name))
+                raise ValueError("New dataframe is missing new {} column".format(col_name))
 
         if df.ww.schema is not None:
             warnings.warn('Woodwork typing information on new dataframe will be replaced '
