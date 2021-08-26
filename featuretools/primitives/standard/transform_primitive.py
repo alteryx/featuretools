@@ -5,6 +5,7 @@ import pandas as pd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import (
     URL,
+    AgeFractional,
     Boolean,
     BooleanNullable,
     Categorical,
@@ -677,7 +678,7 @@ class Age(TransformPrimitive):
     """
     name = "age"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'date_of_birth'})]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    return_type = ColumnSchema(logical_type=AgeFractional, semantic_tags={'numeric'})
     uses_calc_time = True
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "the age from {}"

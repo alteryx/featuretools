@@ -1110,16 +1110,7 @@ class EntitySet(object):
                 # Add the new column to the DataFrame
                 if isinstance(df, dd.DataFrame):
                     new_df = df.merge(lti.reset_index(), on=df.ww.index)
-                    new_df.ww.init(
-                        name=df.ww.name,
-                        index=df.ww.index,
-                        time_index=df.ww.time_index,
-                        logical_types={**df.ww.logical_types, LTI_COLUMN_NAME: lti_ltype},
-                        semantic_tags={col_name: tags - {'index', 'time_index'} for col_name, tags in df.ww.semantic_tags.items()},
-                        table_metadata=df.ww.metadata,
-                        column_metadata={col_name: col_schema.metadata for col_name, col_schema in df.ww.columns.items()},
-                        use_standard_tags=df.ww.use_standard_tags
-                    )
+                    new_df.ww.init(schema=df.ww.schema, logical_types={LTI_COLUMN_NAME: lti_ltype})
 
                     new_idx = new_df[new_df.ww.index]
                     new_idx.name = None
@@ -1127,17 +1118,8 @@ class EntitySet(object):
                     dfs_to_update[df.ww.name] = new_df
                 elif is_instance(df, ks, 'DataFrame'):
                     new_df = df.merge(lti, left_on=df.ww.index, right_index=True)
+                    new_df.ww.init(schema=df.ww.schema, logical_types={LTI_COLUMN_NAME: lti_ltype})
 
-                    new_df.ww.init(
-                        name=df.ww.name,
-                        index=df.ww.index,
-                        time_index=df.ww.time_index,
-                        logical_types={**df.ww.logical_types, LTI_COLUMN_NAME: lti_ltype},
-                        semantic_tags={col_name: tags - {'index', 'time_index'} for col_name, tags in df.ww.semantic_tags.items()},
-                        table_metadata=df.ww.metadata,
-                        column_metadata={col_name: col_schema.metadata for col_name, col_schema in df.ww.columns.items()},
-                        use_standard_tags=df.ww.use_standard_tags
-                    )
                     dfs_to_update[df.ww.name] = new_df
                 else:
                     df.ww[LTI_COLUMN_NAME] = lti
@@ -1167,7 +1149,7 @@ class EntitySet(object):
         ww_schemas = state.pop(WW_SCHEMA_KEY)
         for df_name, df in state.get('dataframe_dict', {}).items():
             if ww_schemas[df_name] is not None:
-                df.ww.init(schema=ww_schemas[df_name], validate=False)
+                df.ww.init_with_full_schema(schema=ww_schemas[df_name], validate=False)
         self.__dict__.update(state)
 
     # ###########################################################################
@@ -1451,31 +1433,21 @@ class EntitySet(object):
 
         old_column_names = list(self[dataframe_name].columns)
         if len(df.columns) != len(old_column_names):
-            raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(df.columns),
-                                                                                          len(old_column_names)))
+            raise ValueError("New dataframe contains {} columns, expecting {}".format(len(df.columns),
+                                                                                      len(old_column_names)))
         for col_name in old_column_names:
             if col_name not in df.columns:
-                raise ValueError("Updated dataframe is missing new {} column".format(col_name))
+                raise ValueError("New dataframe is missing new {} column".format(col_name))
 
         if df.ww.schema is not None:
             warnings.warn('Woodwork typing information on new dataframe will be replaced '
                           f'with existing typing information from {dataframe_name}')
-        # Update the dtypes to match the original dataframe's and transform data if necessary
-        for col_name in df.columns:
-            series = df[col_name]
-            updated_series = self[dataframe_name].ww.logical_types[col_name].transform(series)
-            if updated_series is not series:
-                df[col_name] = updated_series
 
-        df.ww.init(schema=self[dataframe_name].ww._schema)
+        df.ww.init(schema=self[dataframe_name].ww._schema, already_sorted=already_sorted)
         # Make sure column ordering matches original ordering
         df = df.ww[old_column_names]
 
         self.dataframe_dict[dataframe_name] = df
-
-        # Sort the dataframe through Woodwork
-        if self.dataframe_dict[dataframe_name].ww.time_index is not None:
-            self.dataframe_dict[dataframe_name].ww._sort_columns(already_sorted)
 
         if self[dataframe_name].ww.time_index is not None:
             self._check_uniform_time_index(self[dataframe_name])

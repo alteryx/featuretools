@@ -24,6 +24,7 @@ Future Release
         * Allow deep EntitySet equality check (:pr:`1480`)
         * Update ``EntitySet.concat`` to work with Woodwork DataFrames (:pr:`1490`)
         * Add function to list semantic tags (:pr:`1486`)
+        * Initialize Woodwork on feature matrix in ``remove_highly_correlated_features`` if necessary (:pr:`1618`)
         * Remove categorical-encoding as an add-on library (will be added back later) (:pr:`1632`)
         * Remove autonormalize as an add-on library (will be added back later) (:pr:`1636`)
         * Remove tsfresh, nlp_primitives, sklearn_transformer as an add-on library (will be added back later) (:pr:`1638`)
@@ -155,6 +156,18 @@ You can list all the available semantic tags by calling ``featuretools.list_sema
 .. code-block:: python
 
     >>> ft.list_semantic_tags()
+
+
+v0.26.2 Aug 17, 2021
+====================
+    * Documentation Changes
+        * Specify conda channel and Windows exe in graphviz installation instructions (:pr:`1611`)
+        * Remove GA token from the layout html (:pr:`1622`)
+    * Testing Changes
+        * Add additional reviewers to minimum and latest dependency checkers (:pr:`1558`, :pr:`1562`, :pr:`1564`, :pr:`1567`)
+    
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`simha104`
     
 v0.26.1 Jul 23, 2021
 ====================

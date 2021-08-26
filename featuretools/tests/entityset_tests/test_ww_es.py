@@ -16,7 +16,7 @@ from woodwork.logical_types import (
 
 from featuretools.entityset.entityset import LTI_COLUMN_NAME, EntitySet
 from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import import_or_none
+from featuretools.utils.gen_utils import Library, import_or_none
 
 ks = import_or_none('databricks.koalas')
 
@@ -453,11 +453,11 @@ def test_replace_dataframe_errors(es):
     else:
         df['new'] = pd.Series([1, 2, 3])
 
-    error_text = 'Updated dataframe is missing new cohort column'
+    error_text = 'New dataframe is missing new cohort column'
     with pytest.raises(ValueError, match=error_text):
         es.replace_dataframe(dataframe_name='customers', df=df.drop(columns=['cohort']))
 
-    error_text = 'Updated dataframe contains 16 columns, expecting 15'
+    error_text = 'New dataframe contains 16 columns, expecting 15'
     with pytest.raises(ValueError, match=error_text):
         es.replace_dataframe(dataframe_name='customers', df=df)
 
@@ -514,14 +514,26 @@ def test_replace_dataframe_already_sorted(es):
 
 
 def test_replace_dataframe_invalid_schema(es):
-    if not isinstance(es['customers'], pd.DataFrame):
+    if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('Invalid schema checks able to be caught by Woodwork only relevant for Pandas')
     df = es['customers'].copy()
     df['id'] = pd.Series([1, 1, 1])
 
-    error_text = 'Woodwork typing information is not valid for this DataFrame: Index mismatch between DataFrame and typing information'
-    with pytest.raises(ValueError, match=error_text):
+    error_text = 'Index column must be unique'
+    with pytest.raises(IndexError, match=error_text):
         es.replace_dataframe(dataframe_name='customers', df=df)
+
+
+def test_replace_dataframe_mismatched_index(es):
+    if es.dataframe_type != Library.PANDAS.value:
+        pytest.xfail('Only pandas checks whether underlying index matches the Woodwork index')
+    df = es['customers'].copy()
+    df['id'] = pd.Series([99, 88, 77])
+
+    es.replace_dataframe(dataframe_name='customers', df=df)
+
+    assert all([77, 99, 88] == es['customers']['id'])
+    assert all([77, 99, 88] == (es['customers']['id']).index)
 
 
 def test_replace_dataframe_different_dtypes(es):
