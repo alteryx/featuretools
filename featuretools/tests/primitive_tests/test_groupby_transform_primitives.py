@@ -271,7 +271,7 @@ def test_cum_handles_uses_full_dataframe(pd_es):
     for primitive in [CumSum, CumMean, CumMax, CumMin]:
         check(ft.Feature(pd_es['log'].ww['value'], groupby=ft.IdentityFeature(pd_es['log'].ww['session_id']), primitive=primitive))
 
-    check(ft.Feature(ft.Feature(pd_es['log'].ww['product_id']), groupby=ft.Feature(pd_es['log'].ww['product_id']), primitive=CumCount))
+    check(ft.Feature(pd_es['log'].ww['product_id'], groupby=ft.Feature(pd_es['log'].ww['product_id']), primitive=CumCount))
 
 
 def test_cum_mean(pd_es):
