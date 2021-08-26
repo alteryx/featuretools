@@ -1492,13 +1492,17 @@ def test_no_data_for_cutoff_time(mock_customer):
 
     trans_per_session = ft.Feature(ft.Feature(es, "transactions", "transaction_id"), parent_dataframe_name="sessions", primitive=Count)
     trans_per_customer = ft.Feature(ft.Feature(es, "transactions", "transaction_id"), parent_dataframe_name="customers", primitive=Count)
-    features = [trans_per_customer, ft.Feature(trans_per_session, parent_dataframe_name="customers", primitive=Max)]
+    max_count = ft.Feature(trans_per_session, parent_dataframe_name="customers", primitive=Max)
+    features = [trans_per_customer, max_count]
 
     fm = calculate_feature_matrix(features, entityset=es, cutoff_time=cutoff_times)
 
     # due to default values for each primitive
     # count will be 0, but max will nan
-    np.testing.assert_array_equal(fm.values, [[0, np.nan]])
+    answer = pd.DataFrame({trans_per_customer.get_name(): pd.Series([0], dtype="Int64"),
+                            max_count.get_name(): pd.Series([np.nan], dtype="float")})
+    for column in fm.columns:
+        pd.testing.assert_series_equal(fm[column], answer[column], check_index=False, check_names=False)
 
 
 # adding missing instances not supported in Dask or Koalas
