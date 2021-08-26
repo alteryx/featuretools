@@ -69,7 +69,7 @@ def test_make_dfeat(es):
     assert (v == 33)
 
 
-def test_make_agg_feat_of_identity_variable(es):
+def test_make_agg_feat_of_identity_column(es):
     agg_feat = ft.Feature(ft.Feature(es['log'].ww['value']), parent_dataframe_name='sessions', primitive=Sum)
 
     feature_set = FeatureSet([agg_feat])
@@ -113,7 +113,7 @@ def test_full_dataframe_error_dask(dask_es):
         calculator.run(np.array([1]))
 
 
-def test_make_agg_feat_of_identity_index_variable(es):
+def test_make_agg_feat_of_identity_index_column(es):
     agg_feat = ft.Feature(ft.Feature(es['log'].ww['id']), parent_dataframe_name='sessions', primitive=Count)
 
     feature_set = FeatureSet([agg_feat])

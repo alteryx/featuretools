@@ -194,7 +194,7 @@ def test_generic_description(es):
     assert describe_feature(custom_trans) == custom_trans_description
 
 
-def test_variable_description(es):
+def test_column_description(es):
     column_description = 'the name of the device used for each session'
     es['sessions'].ww.columns['device_name'].description = column_description
     identity_feat = IdentityFeature(es['sessions'].ww['device_name'])
