@@ -518,7 +518,7 @@ def boolean_mult_es(request):
 def pd_boolean_mult_es():
     es = ft.EntitySet()
     df = pd.DataFrame({"index": [0, 1, 2],
-                       "bool": [True, False, True],
+                       "bool": pd.Series([True, False, True]),
                        "numeric": [2, 3, np.nan]})
 
     es.add_dataframe(dataframe_name="test",
@@ -556,7 +556,7 @@ def test_boolean_multiply(boolean_mult_es):
     for row in to_test:
         col_name = '{} * {}'.format(row[0], row[1])
         if row[0] == 'bool' and row[1] == 'bool':
-            assert fm[col_name].equals(df[row[0]] & df[row[1]])
+            assert fm[col_name].equals((df[row[0]] & df[row[1]]).astype('boolean'))
         else:
             assert fm[col_name].equals(df[row[0]] * df[row[1]])
 
