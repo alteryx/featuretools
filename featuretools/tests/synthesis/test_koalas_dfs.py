@@ -52,8 +52,8 @@ def test_single_table_ks_entityset():
                    trans_primitives=primitives_list)
 
     ks_computed_fm = ks_fm.to_pandas().set_index('id').loc[fm.index][fm.columns]
-    # NUM_WORDS(strings) is int32 in koalas for some reason
-    pd.testing.assert_frame_equal(fm, ks_computed_fm, check_dtype=False)
+    # Koalas dtypes are different for categorical - set the pandas fm to have the same dtypes before comparing
+    pd.testing.assert_frame_equal(fm.astype(ks_computed_fm.dtypes), ks_computed_fm)
 
 
 @pytest.mark.skipif('not ks')
@@ -98,8 +98,9 @@ def test_single_table_ks_entityset_ids_not_sorted():
                    target_dataframe_name="data",
                    trans_primitives=primitives_list)
 
-    # Make sure both indexes are sorted the same
-    pd.testing.assert_frame_equal(fm, ks_fm.to_pandas().set_index('id').loc[fm.index], check_dtype=False)
+    ks_computed_fm = ks_fm.to_pandas().set_index('id').loc[fm.index]
+    # Koalas dtypes are different for categorical - set the pandas fm to have the same dtypes before comparing
+    pd.testing.assert_frame_equal(fm.astype(ks_computed_fm.dtypes), ks_computed_fm)
 
 
 @pytest.mark.skipif('not ks')
@@ -148,8 +149,9 @@ def test_single_table_ks_entityset_with_instance_ids():
                    trans_primitives=primitives_list,
                    instance_ids=instance_ids)
 
-    # Make sure both indexes are sorted the same
-    pd.testing.assert_frame_equal(fm, ks_fm.to_pandas().set_index('id').loc[fm.index], check_dtype=False)
+    ks_computed_fm = ks_fm.to_pandas().set_index('id').loc[fm.index]
+    # Koalas dtypes are different for categorical - set the pandas fm to have the same dtypes before comparing
+    pd.testing.assert_frame_equal(fm.astype(ks_computed_fm.dtypes), ks_computed_fm)
 
 
 @pytest.mark.skipif('not ks')
@@ -196,8 +198,9 @@ def test_single_table_ks_entityset_single_cutoff_time():
                    trans_primitives=primitives_list,
                    cutoff_time=pd.Timestamp("2019-01-05 04:00"))
 
-    # Make sure both indexes are sorted the same
-    pd.testing.assert_frame_equal(fm, ks_fm.to_pandas().set_index('id').loc[fm.index], check_dtype=False)
+    ks_computed_fm = ks_fm.to_pandas().set_index('id').loc[fm.index]
+    # Koalas dtypes are different for categorical - set the pandas fm to have the same dtypes before comparing
+    pd.testing.assert_frame_equal(fm.astype(ks_computed_fm.dtypes), ks_computed_fm)
 
 
 @pytest.mark.skipif('not ks')
@@ -253,12 +256,11 @@ def test_single_table_ks_entityset_cutoff_time_df():
                    trans_primitives=primitives_list,
                    cutoff_time=cutoff_times)
     # Because row ordering with koalas is not guaranteed, `we need to sort on two columns to make sure that values
-    # for instance id 0 are compared correctly. Also, make sure the boolean column has the same dtype.
+    # for instance id 0 are compared correctly. Also, make sure the boolean columns have the same dtype.
     fm = fm.sort_values(['id', 'labels'])
     ks_fm = ks_fm.to_pandas().set_index('id').sort_values(['id', 'labels'])
-    ks_fm['IS_WEEKEND(dates)'] = ks_fm['IS_WEEKEND(dates)'].astype(fm['IS_WEEKEND(dates)'].dtype)
 
-    pd.testing.assert_frame_equal(fm, ks_fm)
+    pd.testing.assert_frame_equal(fm.astype(ks_fm.dtypes), ks_fm)
 
 
 @pytest.mark.skipif('not ks')
@@ -302,7 +304,8 @@ def test_single_table_ks_entityset_dates_not_sorted():
                    trans_primitives=primitives_list,
                    max_depth=1)
 
-    pd.testing.assert_frame_equal(fm, ks_fm.to_pandas().set_index('id').loc[fm.index])
+    ks_fm = ks_fm.to_pandas().set_index('id').loc[fm.index]
+    pd.testing.assert_frame_equal(fm.astype(ks_fm.dtypes), ks_fm)
 
 
 @pytest.mark.skipif('not ks')
@@ -385,5 +388,14 @@ def test_ks_entityset_secondary_time_index():
                       agg_primitives=["max"],
                       trans_primitives=["month"])
 
-    # Make sure both matrixes are sorted the same
-    pd.testing.assert_frame_equal(fm.sort_values('delay'), ks_fm.to_pandas().set_index('id').sort_values('delay'), check_dtype=False)
+    # Make sure both matrices are sorted the same
+    ks_fm = ks_fm.to_pandas().set_index('id').sort_values('delay')
+    fm = fm.sort_values('delay')
+
+    # Koalas output for MONTH columns will be of string type without decimal points,
+    # while pandas will contain decimals - we need to convert before comparing
+    for column in fm.columns:
+        if fm[column].dtype == 'category':
+            fm[column] = fm[column].astype('Int64').astype('string')
+
+    pd.testing.assert_frame_equal(fm, ks_fm, check_categorical=False)
