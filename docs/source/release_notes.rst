@@ -26,6 +26,7 @@ Future Release
         * Add function to list semantic tags (:pr:`1486`)
     * Documentation Changes
         * Add a Woodwork Typing in Featuretools guide (:pr:`1589`)
+        * Add a resource guide for transitioning to Featuretools 1.0 (:pr:`1627`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
