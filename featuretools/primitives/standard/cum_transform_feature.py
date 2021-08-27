@@ -48,7 +48,7 @@ class CumCount(TransformPrimitive):
         [1, 2, 3, 4, 5, 6]
     """
     name = "cum_count"
-    input_types = [ColumnSchema(semantic_tags={'category'})]
+    input_types = [[ColumnSchema(semantic_tags={'foreign_key'})], [ColumnSchema(semantic_tags={'category'})]]
     return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={'numeric'})
     uses_full_dataframe = True
     description_template = "the cumulative count of {}"

@@ -28,6 +28,7 @@ Future Release
         * Remove categorical-encoding as an add-on library (will be added back later) (:pr:`1632`)
         * Remove autonormalize as an add-on library (will be added back later) (:pr:`1636`)
         * Remove tsfresh, nlp_primitives, sklearn_transformer as an add-on library (will be added back later) (:pr:`1638`)
+        * Update input and return types for ``CumCount`` primitive (:pr:`1651`)
     * Documentation Changes
         * Add a Woodwork Typing in Featuretools guide (:pr:`1589`)
     * Testing Changes
