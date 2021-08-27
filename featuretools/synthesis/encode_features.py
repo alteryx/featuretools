@@ -2,7 +2,9 @@ import logging
 
 import pandas as pd
 
-from featuretools.computational_backends.utils import get_ww_types_from_features
+from featuretools.computational_backends.utils import (
+    get_ww_types_from_features
+)
 from featuretools.utils.gen_utils import make_tqdm_iterator
 
 logger = logging.getLogger('featuretools')

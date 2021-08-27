@@ -71,7 +71,8 @@ def test_init_and_name(es):
     log = es['log']
     rating = ft.Feature(ft.IdentityFeature(es, "products", "rating"), "log")
     log_features = [ft.Feature(es, 'log', col) for col in log.columns] +\
-        [ft.Feature(rating, primitive=GreaterThanScalar(2.5))]
+        [ft.Feature(rating, primitive=GreaterThanScalar(2.5)),
+         ft.Feature(rating, primitive=GreaterThanScalar(3.5))]
     # Add Timedelta feature
     # features.append(pd.Timestamp.now() - ft.Feature(log['datetime']))
     customers_features = [ft.Feature(es, "customers", col) for col in es["customers"].columns]
@@ -89,6 +90,7 @@ def test_init_and_name(es):
         trans_primitives = [prim for prim in trans_primitives if Library.DASK in prim.compatibility]
     if es.dataframe_type == Library.KOALAS.value:
         trans_primitives = [prim for prim in trans_primitives if Library.KOALAS in prim.compatibility]
+
     for transform_prim in trans_primitives:
         # skip automated testing if a few special cases
         features_to_use = log_features
