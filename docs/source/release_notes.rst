@@ -2,16 +2,18 @@
 
 Release Notes
 -------------
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
         * Remove autonormalize, tsfresh, nlp_primitives, sklearn_transformer, caegorical_encoding as an add-on libraries (will be added back later) (:pr:`1644`)
     * Documentation Changes
     * Testing Changes
+        * Update latest dependency checker with proper install command (:pr:`1652`)
 
-.. Thanks to the following people for contributing to this release:
+Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 
 v0.26.2 Aug 17, 2021
