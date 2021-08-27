@@ -36,7 +36,7 @@ def test_remove_low_information_feature_names(feature_matrix):
 
 # remove low information features not supported in Dask
 def test_remove_low_information_features(test_es, feature_matrix):
-    features = [Feature(test_es, 'test', col) for col in test_es['test'].columns]
+    features = [Feature(test_es['test'].ww[col]) for col in test_es['test'].columns]
     feature_matrix, features = ft.selection.remove_low_information_features(feature_matrix,
                                                                             features)
     assert feature_matrix.shape == (3, 5)

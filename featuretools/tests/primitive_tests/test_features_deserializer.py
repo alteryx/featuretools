@@ -11,7 +11,7 @@ from featuretools.feature_base.features_serializer import SCHEMA_VERSION
 
 
 def test_single_feature(es):
-    feature = ft.IdentityFeature(es, 'log', 'value')
+    feature = ft.IdentityFeature(es['log'].ww['value'])
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': SCHEMA_VERSION,
@@ -28,7 +28,7 @@ def test_single_feature(es):
 
 
 def test_multioutput_feature(es):
-    value = ft.IdentityFeature(es, 'log', 'product_id')
+    value = ft.IdentityFeature(es['log'].ww['product_id'])
     threecommon = ft.primitives.NMostCommon()
     tc = ft.Feature(value, parent_dataframe_name="sessions", primitive=threecommon)
 
@@ -58,7 +58,7 @@ def test_multioutput_feature(es):
 
 
 def test_base_features_in_list(es):
-    value = ft.IdentityFeature(es, 'log', 'value')
+    value = ft.IdentityFeature(es['log'].ww['value'])
     max_feat = ft.AggregationFeature(value, 'sessions', ft.primitives.Max)
     dictionary = {
         'ft_version': ft.__version__,
@@ -77,7 +77,7 @@ def test_base_features_in_list(es):
 
 
 def test_base_features_not_in_list(es):
-    value = ft.IdentityFeature(es, 'log', 'value')
+    value = ft.IdentityFeature(es['log'].ww['value'])
     value_x2 = ft.TransformFeature(value,
                                    ft.primitives.MultiplyNumericScalar(value=2))
     max_feat = ft.AggregationFeature(value_x2, 'sessions', ft.primitives.Max)
@@ -162,7 +162,7 @@ def test_unknown_feature_type(es):
 
 
 def test_unknown_primitive_type(es):
-    value = ft.IdentityFeature(es, 'log', 'value')
+    value = ft.IdentityFeature(es['log'].ww['value'])
     max_feat = ft.AggregationFeature(value, 'sessions', ft.primitives.Max)
     max_dict = max_feat.to_dictionary()
     max_dict['arguments']['primitive']['type'] = 'FakePrimitive'
@@ -187,7 +187,7 @@ def test_unknown_primitive_type(es):
 
 
 def test_unknown_primitive_module(es):
-    value = ft.IdentityFeature(es, 'log', 'value')
+    value = ft.IdentityFeature(es['log'].ww['value'])
     max_feat = ft.AggregationFeature(value, 'sessions', ft.primitives.Max)
     max_dict = max_feat.to_dictionary()
     max_dict['arguments']['primitive']['module'] = 'fake.module'
@@ -211,7 +211,7 @@ def test_unknown_primitive_module(es):
 
 
 def test_feature_use_previous_pd_timedelta(es):
-    value = ft.IdentityFeature(es, 'log', 'id')
+    value = ft.IdentityFeature(es['log'].ww['id'])
     td = pd.Timedelta(12, "W")
     count_feature = ft.AggregationFeature(value, 'customers', ft.primitives.Count, use_previous=td)
     dictionary = {
@@ -231,7 +231,7 @@ def test_feature_use_previous_pd_timedelta(es):
 
 
 def test_feature_use_previous_pd_dateoffset(es):
-    value = ft.IdentityFeature(es, 'log', 'id')
+    value = ft.IdentityFeature(es['log'].ww['id'])
     do = pd.DateOffset(months=3)
     count_feature = ft.AggregationFeature(value, 'customers', ft.primitives.Count, use_previous=do)
     dictionary = {
@@ -249,7 +249,7 @@ def test_feature_use_previous_pd_dateoffset(es):
     expected = [count_feature, value]
     assert expected == deserializer.to_list()
 
-    value = ft.IdentityFeature(es, 'log', 'id')
+    value = ft.IdentityFeature(es['log'].ww['id'])
     do = pd.DateOffset(months=3, days=2, minutes=30)
     count_feature = ft.AggregationFeature(value, 'customers', ft.primitives.Count, use_previous=do)
     dictionary = {
