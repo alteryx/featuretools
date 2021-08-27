@@ -17,7 +17,7 @@ jobs:
     - name: Update dependencies
       run: |
         python -m pip install --upgrade pip
-        make installdeps
+        python -m pip install -e . 
         make checkdeps OUTPUT_PATH=featuretools/tests/requirement_files/latest_requirements.txt
     - name: Create Pull Request
       uses: FeatureLabs/create-pull-request@v3
