@@ -224,6 +224,6 @@ def test_encode_features_matches_calculate_feature_matrix():
     features_enc, feature_defs_enc = encode_features(features, feature_defs, to_encode=['category'])
 
     features_calc = calculate_feature_matrix(feature_defs_enc, entityset=pd_es)
-    
+
     pd.testing.assert_frame_equal(features_enc, features_calc)
     assert features_calc.ww._schema == features_enc.ww._schema
