@@ -336,7 +336,7 @@ class NMostCommon(AggregationPrimitive):
     """
     name = "n_most_common"
     input_types = [ColumnSchema(semantic_tags={'category'})]
-    return_type = ColumnSchema(semantic_tags={'category'})
+    return_type = None
 
     def __init__(self, n=3):
         self.n = n
