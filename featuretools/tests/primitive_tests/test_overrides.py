@@ -152,7 +152,7 @@ def test_scalar_overrides(es):
         assert o.unique_name() == f.unique_name()
 
 
-def test_override_cmp_from_variable(es):
+def test_override_cmp_from_column(es):
     count_lo = ft.Feature(es['log'].ww['value']) > 1
 
     to_test = [False, True, True]
