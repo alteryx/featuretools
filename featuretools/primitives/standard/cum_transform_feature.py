@@ -1,6 +1,6 @@
 import numpy as np
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Integer
+from woodwork.logical_types import IntegerNullable
 
 from featuretools.primitives.base import TransformPrimitive
 
@@ -49,7 +49,7 @@ class CumCount(TransformPrimitive):
     """
     name = "cum_count"
     input_types = [[ColumnSchema(semantic_tags={'foreign_key'})], [ColumnSchema(semantic_tags={'category'})]]
-    return_type = ColumnSchema(logical_type=Integer, semantic_tags={'numeric'})
+    return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={'numeric'})
     uses_full_dataframe = True
     description_template = "the cumulative count of {}"
 
