@@ -12,7 +12,7 @@ Future Release
     * Testing Changes
         * Update latest dependency checker with proper install command (:pr:`1652`)
 
-Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
     :user:`gsheni`
 
 
