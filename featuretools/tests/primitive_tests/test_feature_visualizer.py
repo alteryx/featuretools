@@ -20,12 +20,12 @@ from featuretools.primitives import Count, CumMax, Mode, NMostCommon, Year
 
 @pytest.fixture
 def simple_feat(es):
-    return IdentityFeature(es, 'log', 'id')
+    return IdentityFeature(es['log'].ww['id'])
 
 
 @pytest.fixture
 def trans_feat(es):
-    return TransformFeature(IdentityFeature(es, 'customers', 'cancel_date'), Year)
+    return TransformFeature(IdentityFeature(es['customers'].ww['cancel_date']), Year)
 
 
 def test_returns_digraph_object(simple_feat):
@@ -76,7 +76,7 @@ def test_transform(es, trans_feat):
 
 def test_html_symbols(es, tmpdir):
     output_path_template = str(tmpdir.join("test{}.png"))
-    value = IdentityFeature(es, 'log', 'value')
+    value = IdentityFeature(es['log'].ww['value'])
     gt = value > 5
     lt = value < 5
     ge = value >= 5
@@ -90,7 +90,7 @@ def test_html_symbols(es, tmpdir):
 
 
 def test_groupby_transform(es):
-    feat = GroupByTransformFeature(IdentityFeature(es, 'customers', 'age'), CumMax, IdentityFeature(es, 'customers', 'cohort'))
+    feat = GroupByTransformFeature(IdentityFeature(es['customers'].ww['age']), CumMax, IdentityFeature(es['customers'].ww['cohort']))
     graph = graph_feature(feat).source
 
     feat_name = feat.get_name()
@@ -119,8 +119,8 @@ def test_groupby_transform(es):
 
 
 def test_groupby_transform_direct_groupby(es):
-    groupby = DirectFeature(IdentityFeature(es, 'cohorts', 'cohort_name'), 'customers')
-    feat = GroupByTransformFeature(IdentityFeature(es, 'customers', 'age'), CumMax, groupby)
+    groupby = DirectFeature(IdentityFeature(es['cohorts'].ww['cohort_name']), 'customers')
+    feat = GroupByTransformFeature(IdentityFeature(es['customers'].ww['age']), CumMax, groupby)
     graph = graph_feature(feat).source
 
     groupby_name = groupby.get_name()
@@ -166,7 +166,7 @@ def test_groupby_transform_direct_groupby(es):
 
 
 def test_aggregation(es):
-    feat = AggregationFeature(IdentityFeature(es, 'log', 'id'), 'sessions', Count)
+    feat = AggregationFeature(IdentityFeature(es['log'].ww['id']), 'sessions', Count)
     graph = graph_feature(feat).source
 
     feat_name = feat.get_name()
@@ -207,7 +207,7 @@ def test_aggregation(es):
 
 
 def test_multioutput(es):
-    multioutput = AggregationFeature(IdentityFeature(es, 'log', 'zipcode'), 'sessions', NMostCommon)
+    multioutput = AggregationFeature(IdentityFeature(es['log'].ww['zipcode']), 'sessions', NMostCommon)
     feat = FeatureOutputSlice(multioutput, 0)
     graph = graph_feature(feat).source
 
@@ -249,7 +249,7 @@ def test_multioutput(es):
 
 
 def test_direct(es):
-    d1 = DirectFeature(IdentityFeature(es, 'customers', 'engagement_level'), 'sessions')
+    d1 = DirectFeature(IdentityFeature(es['customers'].ww['engagement_level']), 'sessions')
     d2 = DirectFeature(d1, 'log')
     graph = graph_feature(d2).source
 

@@ -29,9 +29,15 @@ Future Release
         * Remove autonormalize as an add-on library (will be added back later) (:pr:`1636`)
         * Remove tsfresh, nlp_primitives, sklearn_transformer as an add-on library (will be added back later) (:pr:`1638`)
         * Update input and return types for ``CumCount`` primitive (:pr:`1651`)
+        * Standardize imports of Woodwork (:pr:`1526`)
+        * Rename target entity to target dataframe (:pr:`1506`)
+        * Replace ``entity_from_dataframe`` with ``add_dataframe`` (:pr:`1504`)
+        * Create features from Woodwork columns (:pr:`1582`)
     * Documentation Changes
         * Add a Woodwork Typing in Featuretools guide (:pr:`1589`)
+        * Update ``using_entitysets`` page to use Woodwork (:pr:`1532`)
     * Testing Changes
+        * Remove entity tests (:pr:`1521`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
