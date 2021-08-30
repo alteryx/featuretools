@@ -3,12 +3,12 @@ from featuretools.primitives.utils import PrimitivesDeserializer
 
 
 def test_relationship_path(es):
-    value = ft.IdentityFeature(es, 'log', 'value')
+    value = ft.IdentityFeature(es['log'].ww['value'])
     assert len(value.relationship_path) == 0
 
 
 def test_serialization(es):
-    value = ft.IdentityFeature(es, 'log', 'value')
+    value = ft.IdentityFeature(es['log'].ww['value'])
 
     dictionary = {
         'name': None,

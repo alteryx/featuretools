@@ -11,6 +11,7 @@ from woodwork.logical_types import Datetime
 
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.relationship import Relationship, RelationshipPath
+from featuretools.feature_base.feature_base import _ES_REF
 from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.utils.plot_utils import (
     check_graphviz,
@@ -110,6 +111,7 @@ class EntitySet(object):
             self.add_relationship(parent_df, parent_column, child_df, child_column)
 
         self.reset_data_description()
+        _ES_REF[self.id] = self
 
     def __sizeof__(self):
         return sum([df.__sizeof__() for df in self.dataframes])
@@ -168,6 +170,9 @@ class EntitySet(object):
                 copied_attr = copy.deepcopy(v, memo)
 
             setattr(result, k, copied_attr)
+
+        for df in result.dataframe_dict.values():
+            result._add_references_to_metadata(df)
         return result
 
     @property
@@ -662,6 +667,7 @@ class EntitySet(object):
 
         self.dataframe_dict[dataframe.ww.name] = dataframe
         self.reset_data_description()
+        self._add_references_to_metadata(dataframe)
         return self
 
     def normalize_dataframe(self, base_dataframe_name, new_dataframe_name, index,
@@ -1127,6 +1133,8 @@ class EntitySet(object):
             self.dataframe_dict[df.ww.name] = df
 
         self.reset_data_description()
+        for df in self.dataframes:
+            self._add_references_to_metadata(df)
 
     # ###########################################################################
     # #  Pickling ###############################################
@@ -1449,6 +1457,7 @@ class EntitySet(object):
         if recalculate_last_time_indexes and last_time_index_column is not None:
             self.add_last_time_indexes(updated_dataframes=[dataframe_name])
         self.reset_data_description()
+        self._add_references_to_metadata(df)
 
     def _check_time_indexes(self):
         for dataframe in self.dataframe_dict.values():
@@ -1493,6 +1502,14 @@ class EntitySet(object):
             info = "%s time index not recognized as numeric or datetime"
             raise TypeError(info % dataframe.ww.name)
         return time_type
+
+    def _add_references_to_metadata(self, dataframe):
+        dataframe.ww.metadata.update(entityset_id=self.id)
+        for column in dataframe.columns:
+            metadata = dataframe.ww._schema.columns[column].metadata
+            metadata.update(dataframe_name=dataframe.ww.name)
+            metadata.update(entityset_id=self.id)
+        _ES_REF[self.id] = self
 
 
 def _vals_to_series(instance_vals, column_id):
