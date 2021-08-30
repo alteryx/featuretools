@@ -8,13 +8,21 @@ Future Release
     * Fixes
     * Changes
         * Remove autonormalize, tsfresh, nlp_primitives, sklearn_transformer, caegorical_encoding as an add-on libraries (will be added back later) (:pr:`1644`)
+        * Emit a warning message when a ``featuretools_primitives`` entrypoint
+          throws an exception (:pr:`1662`)
+        * Throw a ``RuntimeError`` when two primitives with the same name are
+          encountered during ``featuretools_primitives`` entrypoint handling
+          (:pr:`1662`)
+        * Prevent the ``featuretools_primitives`` entrypoint loader from
+          loading non-class objects as well as the ``AggregationPrimitive`` and
+          ``TransformPrimitive`` base classes (:pr:`1662`)
     * Documentation Changes
     * Testing Changes
         * Update latest dependency checker with proper install command (:pr:`1652`)
         * Update isort dependency (:pr:`1654`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`
+    :user:`davesque`, :user:`gsheni`, :user:`rwedge`
 
 
 v0.26.2 Aug 17, 2021
