@@ -18,7 +18,7 @@ from .api import *  # noqa: F403
 # where `LIST_OF_PRIMITIVES` is an iterable of primitive class objects defined
 # in module `other_library`.
 
-for entry_point in pkg_resources.iter_entry_points('featuretools_primitives'):
+for entry_point in pkg_resources.iter_entry_points('featuretools_primitives'):  # pragma: no cover
     try:
         loaded = entry_point.load()
     except Exception as e:
