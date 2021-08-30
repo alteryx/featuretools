@@ -33,12 +33,23 @@ Future Release
         * Rename target entity to target dataframe (:pr:`1506`)
         * Replace ``entity_from_dataframe`` with ``add_dataframe`` (:pr:`1504`)
         * Create features from Woodwork columns (:pr:`1582`)
+        * Move default variable description logic to ``generate_description`` (:pr:`1403`)
+        * Update Woodwork to version 0.4.0 with ``LogicalType.transform`` and LogicalType instances (:pr:`1451`)
+        * Update Woodwork to version 0.4.1 with Ordinal order values and whitespace serialization fix (:pr:`1478`)
+        * Use ``ColumnSchema`` for primitive input and return tyes (:pr:`1411`)
+        * Update features to use Woodwork and remove ``Entity`` and ``Variable`` classes (:pr:`1501`)
+        * Re-add ``make_index`` functionality to EntitySet (:pr:`1507`)
+        * Use ``ColumnSchema`` in DFS primitive matching (:pr:`1523`)
+        * Updates from Featuretools v0.26.0 (:pr:`1539`)
+--> at Update DFS page to use Woodwork (#1557) …
+
     * Documentation Changes
         * Add a Woodwork Typing in Featuretools guide (:pr:`1589`)
         * Update ``using_entitysets`` page to use Woodwork (:pr:`1532`)
         * Update FAQ page to use Woodwork integration (:pr:`1649`)
     * Testing Changes
         * Remove entity tests (:pr:`1521`)
+        * Fix broken ``EntitySet`` tests (:pr:`1548`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
