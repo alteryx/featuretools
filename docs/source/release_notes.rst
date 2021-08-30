@@ -48,41 +48,41 @@ Breaking Changes
 
 * ``Entity.add_interesting_values`` has been removed. To add interesting values for a single
   entity, call ``EntitySet.add_interesting_values`` and pass the name of the dataframe for
-  which to add interesting values in the ``dataframe_name`` parameter.
+  which to add interesting values in the ``dataframe_name`` parameter (:pr:`1405`, :pr:`1370`).
 * ``Entity.set_secondary_time_index`` has been removed and replaced by ``EntitySet.set_secondary_time_index``
-  with an added ``dataframe_name`` parameter to specify the dataframe on which to set the secondary time index.
+  with an added ``dataframe_name`` parameter to specify the dataframe on which to set the secondary time index (:pr:`1405`, :pr:`1370`).
 * ``Relationship`` initialization has been updated to accept four name values for the parent dataframe,
-  parent column, child dataframe and child column instead of accepting two ``Variable`` objects.
+  parent column, child dataframe and child column instead of accepting two ``Variable`` objects  (:pr:`1405`, :pr:`1370`).
 * ``EntitySet.add_relationship`` has been updated to accept dataframe and column name values or a
   ``Relationship`` object. Adding a relationship from a ``Relationship`` object now requires passing
-  the relationship as a keyword argument.
-* ``Entity.update_data`` has been removed. To update the dataframe, call ``EntitySet.replace_dataframe`` and use the ``dataframe_name`` parameter.
+  the relationship as a keyword argument  (:pr:`1405`, :pr:`1370`).
+* ``Entity.update_data`` has been removed. To update the dataframe, call ``EntitySet.replace_dataframe`` and use the ``dataframe_name`` parameter (:pr:`1630`, :pr:`1522`).
 * The data in an ``EntitySet`` is no longer stored in ``Entity`` objects. Instead, dataframes
   with Woodwork typing information are used. Accordingly, most language referring to “entities”
   will now refer to “dataframes”, references to “variables” will now refer to “columns”, and
-  “variable types” will use the Woodwork type system’s “logical types” and “semantic tags”
+  “variable types” will use the Woodwork type system’s “logical types” and “semantic tags” (:pr:`1405`).
 * The dictionary of tuples passed to ``EntitySet.__init__`` has replaced the ``variable_types`` element
-  with separate ``logical_types`` and ``semantic_tags`` dictionaries.
-* ``EntitySet.entity_from_dataframe`` no longer exists. To add new tables to an entityset, use``EntitySet.add_dataframe``.
-* ``EntitySet.normalize_entity`` has been renamed to ``EntitySet.normalize_dataframe``
+  with separate ``logical_types`` and ``semantic_tags`` dictionaries (:pr:`1405`).
+* ``EntitySet.entity_from_dataframe`` no longer exists. To add new tables to an entityset, use``EntitySet.add_dataframe`` (:pr:`1405`).
+* ``EntitySet.normalize_entity`` has been renamed to ``EntitySet.normalize_dataframe`` (:pr:`1405`).
 * Instead of raising an error at ``EntitySet.add_relationship`` when the dtypes of parent and child columns
   do not match, Featuretools will now check whether the Woodwork logical type of the parent and child columns
   match. If they do not match, there will now be a warning raised, and Featuretools will attempt to update
-  the logical type of the child column to match the parent’s.
+  the logical type of the child column to match the parent’s (:pr:`1405`).
 * If no index is specified at ``EntitySet.add_dataframe``, the first column will only be used as index if
   Woodwork has not been initialized on the DataFrame. When adding a dataframe that already has Woodwork
-  initialized, if there is no index set, an error will be raised.
-* Featuretools will no longer re-order columns in DataFrames so that the index column is the first column of the DataFrame. 
+  initialized, if there is no index set, an error will be raised (:pr:`1405`).
+* Featuretools will no longer re-order columns in DataFrames so that the index column is the first column of the DataFrame (:pr:`1405`).
 * Type inference can now be performed on Dask and Koalas dataframes, though a warning will be issued 
-  indicating that this may be computationally intensive.
+  indicating that this may be computationally intensive (:pr:`1405`).
 * EntitySet.time_type is no longer stored as Variable objects. Instead, Woodwork typing is used, and a
   numeric time type will be indicated by the ``'numeric'`` semantic tag string, and a datetime time type
-  will be indicated by the ``Datetime`` logical type.
+  will be indicated by the ``Datetime`` logical type (:pr:`1405`).
 * ``last_time_index``, ``secondary_time_index``, and ``interesting_values`` are no longer attributes
   of an entityset’s tables that can be accessed directly. Now they must be accessed through the metadata
-  of the Woodwork DataFrame, which is a dictionary.
+  of the Woodwork DataFrame, which is a dictionary (:pr:`1405`).
 * The helper function ``list_variable_types`` will be removed in a future release and replaced by ``list_logical_types``.
-  In the meantime, ``list_variable_types`` will return the same output as ``list_logical_types``.
+  In the meantime, ``list_variable_types`` will return the same output as ``list_logical_types`` (:pr:`1447`).
 
 What's New in this Release
 ++++++++++++++++++++++++++
