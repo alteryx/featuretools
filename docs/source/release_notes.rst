@@ -36,6 +36,7 @@ Future Release
     * Documentation Changes
         * Add a Woodwork Typing in Featuretools guide (:pr:`1589`)
         * Update ``using_entitysets`` page to use Woodwork (:pr:`1532`)
+        * Update FAQ page to use Woodwork integration (:pr:`1649`)
     * Testing Changes
         * Remove entity tests (:pr:`1521`)
 
