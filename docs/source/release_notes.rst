@@ -5,6 +5,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        *  Adds support for addition/subtraction operation with Datetime feature and pd.Timedelta. (:pr:`1657`)
     * Fixes
     * Changes
         * Remove autonormalize, tsfresh, nlp_primitives, sklearn_transformer, caegorical_encoding as an add-on libraries (will be added back later) (:pr:`1644`)
