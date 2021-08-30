@@ -418,6 +418,9 @@ class AddNumericScalar(TransformPrimitive):
 
     def __init__(self, value=0):
         self.value = value
+        if isinstance(self.value, pd.Timedelta):
+            AddNumericScalar.input_types = [Datetime]
+            AddNumericScalar.return_type = Datetime
         self.description_template = "the sum of {{}} and {}".format(self.value)
 
     def get_function(self):
@@ -482,6 +485,9 @@ class SubtractNumericScalar(TransformPrimitive):
 
     def __init__(self, value=0):
         self.value = value
+        if isinstance(self.value, pd.Timedelta):
+            SubtractNumericScalar.input_types = [Datetime]
+            SubtractNumericScalar.return_type = Datetime
         self.description_template = "the result of {{}} minus {}".format(self.value)
 
     def get_function(self):
