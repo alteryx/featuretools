@@ -136,7 +136,7 @@ def get_aggregation_groupby(feature, feature_descriptions=None):
     if feature_descriptions is None:
         feature_descriptions = {}
     groupby_name = feature.dataframe.ww.index
-    groupby = ft.IdentityFeature(feature.entityset, feature.dataframe_name, groupby_name)
+    groupby = ft.IdentityFeature(feature.entityset[feature.dataframe_name].ww[groupby_name])
     if groupby in feature_descriptions or groupby.unique_name() in feature_descriptions:
         return (feature_descriptions.get(groupby) or
                 feature_descriptions.get(groupby.unique_name()))

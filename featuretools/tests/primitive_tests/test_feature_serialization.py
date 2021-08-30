@@ -114,28 +114,28 @@ def test_serialized_renamed_features(es):
         deserialized = deserializer.to_list()[0]
         check_names(deserialized, new_name, new_names)
 
-    identity_original = ft.IdentityFeature(es, 'log', 'value')
+    identity_original = ft.IdentityFeature(es['log'].ww['value'])
     assert identity_original.get_name() == 'value'
 
-    value = ft.IdentityFeature(es, 'log', 'value')
+    value = ft.IdentityFeature(es['log'].ww['value'])
 
     primitive = ft.primitives.Max()
     agg_original = ft.AggregationFeature(value, 'customers', primitive)
     assert agg_original.get_name() == 'MAX(log.value)'
 
-    direct_original = ft.DirectFeature(ft.IdentityFeature(es, 'customers', 'age'), 'sessions')
+    direct_original = ft.DirectFeature(ft.IdentityFeature(es['customers'].ww['age']), 'sessions')
     assert direct_original.get_name() == 'customers.age'
 
     primitive = ft.primitives.MultiplyNumericScalar(value=2)
     transform_original = ft.TransformFeature(value, primitive)
     assert transform_original.get_name() == 'value * 2'
 
-    zipcode = ft.IdentityFeature(es, 'log', 'zipcode')
+    zipcode = ft.IdentityFeature(es['log'].ww['zipcode'])
     primitive = CumSum()
     groupby_original = ft.feature_base.GroupByTransformFeature(value, primitive, zipcode)
     assert groupby_original.get_name() == 'CUM_SUM(value) by zipcode'
 
-    multioutput_original = ft.Feature(es, 'log', 'product_id', parent_dataframe_name='customers', primitive=NMostCommon(n=2))
+    multioutput_original = ft.Feature(es['log'].ww['product_id'], parent_dataframe_name='customers', primitive=NMostCommon(n=2))
     assert multioutput_original.get_name() == 'N_MOST_COMMON(log.product_id, n=2)'
 
     featureslice_original = ft.feature_base.FeatureOutputSlice(multioutput_original, 0)

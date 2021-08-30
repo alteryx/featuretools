@@ -47,9 +47,9 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
 
             .. ipython:: python
 
-                f1 = ft.Feature(es, "log", "product_id")
-                f2 = ft.Feature(es, "log", "purchased")
-                f3 = ft.Feature(es, "log", "value")
+                f1 = ft.Feature(es["log"].ww["product_id"])
+                f2 = ft.Feature(es["log"].ww["purchased"])
+                f3 = ft.Feature(es["log"].ww["value"])
 
                 features = [f1, f2, f3]
                 ids = [0, 1, 2, 3, 4, 5]
