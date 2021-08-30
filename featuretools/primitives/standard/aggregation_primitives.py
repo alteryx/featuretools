@@ -279,7 +279,7 @@ class PercentTrue(AggregationPrimitive):
         0.6
     """
     name = "percent_true"
-    input_types = [[ColumnSchema(logical_type=Boolean)], [ColumnSchema(logical_type=BooleanNullable)]]
+    input_types = [[ColumnSchema(logical_type=BooleanNullable)], [ColumnSchema(logical_type=Boolean)]]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     stack_on = []
     stack_on_exclude = []
