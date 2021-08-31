@@ -20,7 +20,7 @@ from featuretools.utils.gen_utils import Library
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_serialization_data_entityset_schema_{}.tar".format(SCHEMA_VERSION)
+TEST_FILE = "test_serialization_data_entityset_schema_{}_2021_8_31.tar".format(SCHEMA_VERSION)
 S3_URL = "s3://featuretools-static/" + TEST_FILE
 URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
