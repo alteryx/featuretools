@@ -206,6 +206,10 @@ def test_all_columns(pd_dataframes, relationships):
 
 
 def test_features_only(dataframes, relationships):
+    if len(dataframes['transactions']) > 3:
+        dataframes['transactions'][3]['fraud'] = "BooleanNullable"
+    else:
+        dataframes['transactions'] += ({'fraud': "BooleanNullable"},)
     features = dfs(dataframes=dataframes,
                    relationships=relationships,
                    target_dataframe_name="transactions",
