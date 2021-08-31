@@ -1,6 +1,12 @@
 import dask.dataframe as dd
 import pandas as pd
-from woodwork.logical_types import Datetime, Double, Integer, IntegerNullable, NaturalLanguage
+from woodwork.logical_types import (
+    Datetime,
+    Double,
+    Integer,
+    IntegerNullable,
+    NaturalLanguage
+)
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
@@ -340,7 +346,6 @@ def test_dask_entityset_secondary_time_index():
         time_index="scheduled_time",
         secondary_time_index={'arrival_time': ['departure_time', 'delay']},
         logical_types=log_ltypes)
-
 
     dask_es.add_dataframe(
         dataframe_name='logs',

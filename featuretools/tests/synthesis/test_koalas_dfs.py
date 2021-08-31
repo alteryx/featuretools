@@ -395,7 +395,7 @@ def test_ks_entityset_secondary_time_index():
     # Koalas output for MONTH columns will be of string type without decimal points,
     # while pandas will contain decimals - we need to convert before comparing
     for column in fm.columns:
-        if fm[column].dtype == 'category':
+        if fm[column].dtype.name == 'category':
             fm[column] = fm[column].astype('Int64').astype('string')
 
     pd.testing.assert_frame_equal(fm, ks_fm, check_categorical=False)
