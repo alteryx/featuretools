@@ -215,7 +215,7 @@ class Week(TransformPrimitive):
         """
     name = "week"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(logical_type=Ordinal(order=list(range(1, 53))), semantic_tags={'category'})
+    return_type = ColumnSchema(logical_type=Ordinal(order=list(range(1, 54))), semantic_tags={'category'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the week of the year of {}"
 
