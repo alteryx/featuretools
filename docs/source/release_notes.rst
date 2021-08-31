@@ -29,7 +29,7 @@ v0.27.0 Aug 31, 2021
         * Update isort dependency (:pr:`1654`)
 
     Thanks to the following people for contributing to this release:
-    :user:`davesque`, :user:`gsheni`, :user:`rwedge`
+    :user:`davesque`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`
 
 v0.26.2 Aug 17, 2021
 ====================
