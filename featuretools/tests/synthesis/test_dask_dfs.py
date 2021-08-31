@@ -1,6 +1,6 @@
 import dask.dataframe as dd
 import pandas as pd
-from woodwork.logical_types import Datetime, Double, Integer, NaturalLanguage
+from woodwork.logical_types import Datetime, Double, Integer, IntegerNullable, NaturalLanguage
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
@@ -207,7 +207,7 @@ def test_single_table_dask_entityset_cutoff_time_df():
                                    "abcdef ghijk"]})
     values_dd = dd.from_pandas(df, npartitions=2)
     ltypes = {
-        "values": Integer,
+        "values": IntegerNullable,
         "dates": Datetime,
         "strings": NaturalLanguage
     }
