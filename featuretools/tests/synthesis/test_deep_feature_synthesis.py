@@ -784,6 +784,7 @@ def test_commutative(es):
 
 def test_transform_consistency(transform_es):
     # Generate features
+    transform_es['first'].ww.set_types(logical_types={'b': "BooleanNullable", 'b1': "BooleanNullable"})
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='first',
                                    entityset=transform_es,
                                    trans_primitives=['and', 'add_numeric', 'or'],
