@@ -8,7 +8,11 @@ Future Release
     * Enhancements
         * Add support for creating EntitySets from Woodwork DataTables (:pr:`1277`)
         * Add ``EntitySet.__deepcopy__`` that retains Woodwork typing information (:pr:`1465`)
+        * Add ``EntitySet.__getstate__`` and ``EntitySet.__setstate__`` to preserve typing when pickling (:pr:`1581`)
     * Fixes
+        * Fix ``DFSTransformer`` Documentation for Featuretools 1.0 (:pr:`1605`)
+        * Fix ``calculate_feature_matrix`` time type check and ``encode_features`` for synthesis tests (:pr:`1580`)
+        * Revert reordering of categories in ``Equal`` and ``NotEqual`` primitives (:pr:`1604`)
     * Changes
         * Remove ``add_interesting_values`` from ``Entity`` (:pr:`1269`)
         * Move ``set_secondary_time_index`` method from ``Entity`` to ``EntitySet`` (:pr:`1280`)
@@ -41,15 +45,37 @@ Future Release
         * Re-add ``make_index`` functionality to EntitySet (:pr:`1507`)
         * Use ``ColumnSchema`` in DFS primitive matching (:pr:`1523`)
         * Updates from Featuretools v0.26.0 (:pr:`1539`)
---> at Update DFS page to use Woodwork (#1557) …
+        * Leverage Woodwork better in ``add_interesting_values`` (:pr:`1550`)
+        * Update ``calculate_feature_matrix`` to use Woodwork (:pr:`1533`)
+        * Update Woodwork to version 0.6.0 with changed categorical inference (:pr:`1597`)
+        * Update ``nlp-primitives`` requirement for Featuretools 1.0 (:pr:`1609`)
+        * Remove remaining references to ``Entity`` and ``Variable`` in code (:pr:`1612`)
+        * Update Woodwork to version 0.7.1 with changed initialization (:pr:`1648`)
 
     * Documentation Changes
         * Add a Woodwork Typing in Featuretools guide (:pr:`1589`)
         * Update ``using_entitysets`` page to use Woodwork (:pr:`1532`)
         * Update FAQ page to use Woodwork integration (:pr:`1649`)
+        * Update DFS page to be Jupyter notebook and use Woodwork integration (:pr:`1557`)
+        * Update Feature Primitives page to be Jupyter notebook and use Woodwork integration (:pr:`1556`)
+        * Update Handling Time page to be Jupyter notebook and use Woodwork integration (:pr:`1552`)
+        * Update Advanced Custom Primitives page to be Jupyter notebook and use Woodwork integration (:pr:`1587`)
+        * Update Deployment page to use Woodwork integration (:pr:`1588`)
+        * Update Using Dask EntitySets page to be Jupyter notebook and use Woodwork integration (:pr:`1590`)
+        * Update Specifying Primitive Options page to be Jupyter notebook and use Woodwork integration (:pr:`1593`)
+        * Update API Reference to match Featuretools 1.0 API (:pr:`1600`)
+        * Update Index page to be Jupyter notebook and use Woodwork integration (:pr:`1602`)
+        * Update Feature Descriptions page to be Jupyter notebook and use Woodwork integration (:pr:`1603`)
+        * Update Using Koalas EntitySets page to be Jupyter notebook and use Woodwork integration (:pr:`1604`)
+        * Update Glossary to use Woodwork integration (:pr:`1608`)
+        * Update Tuning DFS page to be Jupyter notebook and use Woodwork integration (:pr:`1610`)
+        * Fix small formatting issues in Documentation (:pr:`1607`)
+        * Remove Variables page and more references to variables (:pr:`1629`)
+        * Update Feature Selection page to use Woodwork integration (:pr:`1618`)
     * Testing Changes
         * Remove entity tests (:pr:`1521`)
         * Fix broken ``EntitySet`` tests (:pr:`1548`)
+        * Fix broken primitive tests (:pr:`1568`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
