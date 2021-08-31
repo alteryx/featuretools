@@ -12,7 +12,7 @@ Future Release
     * Fixes
         * Fix ``DFSTransformer`` Documentation for Featuretools 1.0 (:pr:`1605`)
         * Fix ``calculate_feature_matrix`` time type check and ``encode_features`` for synthesis tests (:pr:`1580`)
-        * Revert reordering of categories in ``Equal`` and ``NotEqual`` primitives (:pr:`1604`)
+        * Revert reordering of categories in ``Equal`` and ``NotEqual`` primitives (:pr:`1640`)
     * Changes
         * Remove ``add_interesting_values`` from ``Entity`` (:pr:`1269`)
         * Move ``set_secondary_time_index`` method from ``Entity`` to ``EntitySet`` (:pr:`1280`)
@@ -51,7 +51,6 @@ Future Release
         * Update ``nlp-primitives`` requirement for Featuretools 1.0 (:pr:`1609`)
         * Remove remaining references to ``Entity`` and ``Variable`` in code (:pr:`1612`)
         * Update Woodwork to version 0.7.1 with changed initialization (:pr:`1648`)
-
     * Documentation Changes
         * Add a Woodwork Typing in Featuretools guide (:pr:`1589`)
         * Update ``using_entitysets`` page to use Woodwork (:pr:`1532`)
@@ -72,6 +71,7 @@ Future Release
         * Fix small formatting issues in Documentation (:pr:`1607`)
         * Remove Variables page and more references to variables (:pr:`1629`)
         * Update Feature Selection page to use Woodwork integration (:pr:`1618`)
+        * Update Improving Performance page to be Jupyter notebook and use Woodwork integration (:pr:`1591`)
     * Testing Changes
         * Remove entity tests (:pr:`1521`)
         * Fix broken ``EntitySet`` tests (:pr:`1548`)
