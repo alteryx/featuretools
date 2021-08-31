@@ -326,19 +326,22 @@ def test_dask_entityset_secondary_time_index():
     pd_es = ft.EntitySet("flights")
     dask_es = ft.EntitySet("flights_dask")
 
-    pd_es.add_dataframe(
-        dataframe_name='logs',
-        dataframe=log_df,
-        index="id",
-        time_index="scheduled_time",
-        secondary_time_index={'arrival_time': ['departure_time', 'delay']})
-
     log_ltypes = {
         "scheduled_time": Datetime,
         "departure_time": Datetime,
         "arrival_time": Datetime,
         "delay": Double,
     }
+
+    pd_es.add_dataframe(
+        dataframe_name='logs',
+        dataframe=log_df,
+        index="id",
+        time_index="scheduled_time",
+        secondary_time_index={'arrival_time': ['departure_time', 'delay']},
+        logical_types=log_ltypes)
+
+
     dask_es.add_dataframe(
         dataframe_name='logs',
         dataframe=log_dask,
