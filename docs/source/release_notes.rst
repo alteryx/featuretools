@@ -203,7 +203,6 @@ You can list all the available semantic tags by calling ``featuretools.list_sema
 
     >>> ft.list_semantic_tags()
 
-
 v0.27.0 Aug 31, 2021
 ====================
     * Changes
