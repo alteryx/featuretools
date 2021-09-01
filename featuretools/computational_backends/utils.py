@@ -294,11 +294,19 @@ def replace_inf_values(feature_matrix, replacement_value=np.nan, columns=None):
     return feature_matrix
 
 
-def get_ww_types_from_features(features, entityset, pass_columns, cutoff_time):
-    """ TODO """
+def get_ww_types_from_features(features, entityset, pass_columns=None, cutoff_time=None):
+    '''Given a list of features and entityset (and optionally a list of pass
+    through columns and the cutoff time dataframe), returns the logical types,
+    semantic tags,and origin of each column in the feature matrix.  Both
+    pass_columns and cutoff_time will need to be supplied in order to get the
+    type information for the pass through columns
+    '''
+    if pass_columns is None:
+        pass_columns = []
     logical_types = {}
     semantic_tags = {}
     origins = {}
+
     for feature in features:
         names = feature.get_feature_names()
         for name in names:
@@ -312,6 +320,7 @@ def get_ww_types_from_features(features, entityset, pass_columns, cutoff_time):
             origins[name] = "base"
         else:
             origins[name] = "engineered"
+
     for column in pass_columns:
         logical_types[column] = cutoff_time.ww[column].ww.logical_type
         semantic_tags[column] = cutoff_time.ww[column].ww.semantic_tags.copy()
