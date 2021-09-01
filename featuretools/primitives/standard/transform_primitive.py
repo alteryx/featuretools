@@ -162,7 +162,7 @@ class Second(TransformPrimitive):
     """
     name = "second"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(logical_type=Ordinal(list(range(59))), semantic_tags={'category'})
+    return_type = ColumnSchema(logical_type=Ordinal(order=list(range(60))), semantic_tags={'category'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the seconds value of {}"
 
@@ -186,7 +186,7 @@ class Minute(TransformPrimitive):
     """
     name = "minute"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(logical_type=Ordinal(list(range(59))), semantic_tags={'category'})
+    return_type = ColumnSchema(logical_type=Ordinal(order=list(range(60))), semantic_tags={'category'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the minutes value of {}"
 
@@ -244,7 +244,7 @@ class Month(TransformPrimitive):
     """
     name = "month"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(logical_type=Ordinal(order=list(range(1, 12))), semantic_tags={'category'})
+    return_type = ColumnSchema(logical_type=Ordinal(order=list(range(1, 13))), semantic_tags={'category'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the month of {}"
 
