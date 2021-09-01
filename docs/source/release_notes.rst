@@ -2,8 +2,8 @@
 
 Release Notes
 -------------
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
         * Add support for creating EntitySets from Woodwork DataTables (:pr:`1277`)
         * Add ``EntitySet.__deepcopy__`` that retains Woodwork typing information (:pr:`1465`)
@@ -201,15 +201,6 @@ You can list all the available semantic tags by calling ``featuretools.list_sema
 
     >>> ft.list_semantic_tags()
 
-
-v0.26.2 Aug 17, 2021
-====================
-    * Documentation Changes
-        * Specify conda channel and Windows exe in graphviz installation instructions (:pr:`1611`)
-        * Remove GA token from the layout html (:pr:`1622`)
-    * Testing Changes
-
-.. Thanks to the following people for contributing to this release:
 
 v0.27.0 Aug 31, 2021
 ====================
