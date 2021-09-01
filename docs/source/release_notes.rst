@@ -2,8 +2,9 @@
 
 Release Notes
 -------------
-.. Future Release
-  ==============
+
+Future Release
+ ==============
     * Enhancements
         * Add support for creating EntitySets from Woodwork DataTables (:pr:`1277`)
         * Add ``EntitySet.__deepcopy__`` that retains Woodwork typing information (:pr:`1465`)
@@ -201,35 +202,6 @@ You can list all the available semantic tags by calling ``featuretools.list_sema
 .. code-block:: python
 
     >>> ft.list_semantic_tags()
-
-
-v0.27.0 Aug 31, 2021
-====================
-    * Changes
-        * Remove autonormalize, tsfresh, nlp_primitives, sklearn_transformer, caegorical_encoding as an add-on libraries (will be added back later) (:pr:`1644`)
-        * Emit a warning message when a ``featuretools_primitives`` entrypoint
-          throws an exception (:pr:`1662`)
-        * Throw a ``RuntimeError`` when two primitives with the same name are
-          encountered during ``featuretools_primitives`` entrypoint handling
-          (:pr:`1662`)
-        * Prevent the ``featuretools_primitives`` entrypoint loader from
-          loading non-class objects as well as the ``AggregationPrimitive`` and
-          ``TransformPrimitive`` base classes (:pr:`1662`)
-    * Testing Changes
-        * Update latest dependency checker with proper install command (:pr:`1652`)
-        * Update isort dependency (:pr:`1654`)
-
-    Thanks to the following people for contributing to this release:
-    :user:`davesque`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`
-
-v0.26.2 Aug 17, 2021
-====================
-    * Documentation Changes
-        * Specify conda channel and Windows exe in graphviz installation instructions (:pr:`1611`)
-        * Remove GA token from the layout html (:pr:`1622`)
-    * Testing Changes
-
-.. Thanks to the following people for contributing to this release:
 
 v0.27.0 Aug 31, 2021
 ====================
