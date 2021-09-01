@@ -22,6 +22,25 @@
 
 {% endblock %}
 
+{% block docs_body %}
+<section>
+<div class="admonition warning">
+  <p class="admonition-title"> NOTICE</p>
+  <p>
+    The upcoming release of Featuretools 1.0.0 will contain several breaking changes. Users are encouraged to test this version prior
+    to release by installing the release candidate: <code>1.0.0rc1</code>. For details on migrating to the new version, refer
+    to <a href="">Transitioning to Featuretools Version 1.0</a>.
+  </p>
+  <p>
+    Please report any issues by submitting an issue in the <a href="https://github.com/alteryx/featuretools">Featuretools GitHub repo</a>
+    or by messaging in <a href="https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTQ1MjZlOWFmZDk2YzAwMjEzNTkwZTZkN2NmOGFjOGI4YzE5OGMyMGM5NGIxNTE4NjkzYWI3OWEwZjkyZGExYmQ">Alteryx Open Source Slack</a>.
+  </p>
+</div>
+<br>
+</section>
+{{ super() }}
+{% endblock %}
+
 {%- block footer %}
 
 <footer class="footer">
