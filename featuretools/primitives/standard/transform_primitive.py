@@ -138,7 +138,7 @@ class Hour(TransformPrimitive):
     """
     name = "hour"
     input_types = [ColumnSchema(logical_type=Datetime)]
-    return_type = ColumnSchema(logical_type=Ordinal(order=list(range(23))), semantic_tags={'category'})
+    return_type = ColumnSchema(logical_type=Ordinal(order=list(range(24))), semantic_tags={'category'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = 'the hour value of {}'
 
