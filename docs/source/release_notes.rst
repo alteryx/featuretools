@@ -53,6 +53,7 @@ Future Release
         * Update Woodwork to version 0.7.1 with changed initialization (:pr:`1648`)
     * Documentation Changes
         * Add a Woodwork Typing in Featuretools guide (:pr:`1589`)
+        * Add a resource guide for transitioning to Featuretools 1.0 (:pr:`1627`)
         * Update ``using_entitysets`` page to use Woodwork (:pr:`1532`)
         * Update FAQ page to use Woodwork integration (:pr:`1649`)
         * Update DFS page to be Jupyter notebook and use Woodwork integration (:pr:`1557`)
