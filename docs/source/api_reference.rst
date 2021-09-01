@@ -27,8 +27,6 @@ Deep Feature Synthesis
     dfs
     get_valid_primitives
 
-.. DeepFeatureSynthesis
-
 Timedelta
 ~~~~~~~~~
 .. currentmodule:: featuretools
