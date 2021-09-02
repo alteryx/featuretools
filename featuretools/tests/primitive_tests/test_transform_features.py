@@ -71,7 +71,8 @@ def test_init_and_name(es):
     log = es['log']
     rating = ft.Feature(ft.IdentityFeature(es["products"].ww["rating"]), "log")
     log_features = [ft.Feature(es['log'].ww[col]) for col in log.columns] +\
-        [ft.Feature(rating, primitive=GreaterThanScalar(2.5))]
+        [ft.Feature(rating, primitive=GreaterThanScalar(2.5)),
+         ft.Feature(rating, primitive=GreaterThanScalar(3.5))]
     # Add Timedelta feature
     # features.append(pd.Timestamp.now() - ft.Feature(log['datetime']))
     customers_features = [ft.Feature(es["customers"].ww[col]) for col in es["customers"].columns]
@@ -89,6 +90,7 @@ def test_init_and_name(es):
         trans_primitives = [prim for prim in trans_primitives if Library.DASK in prim.compatibility]
     if es.dataframe_type == Library.KOALAS.value:
         trans_primitives = [prim for prim in trans_primitives if Library.KOALAS in prim.compatibility]
+
     for transform_prim in trans_primitives:
         # skip automated testing if a few special cases
         features_to_use = log_features
@@ -275,8 +277,8 @@ def test_diff(pd_es):
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array(range(15)))
 
-    val1 = df[diff1.get_name()].values.tolist()
-    val2 = df[diff2.get_name()].values.tolist()
+    val1 = df[diff1.get_name()].tolist()
+    val2 = df[diff2.get_name()].tolist()
     correct_vals1 = [
         np.nan, 5, 5, 5, 5, np.nan, 1, 1, 1, np.nan, np.nan, 5, np.nan, 7, 7
     ]
@@ -338,7 +340,7 @@ def test_compare_of_identity(es):
                    sort_index=True)
 
     for i, test in enumerate(to_test):
-        v = df[features[i].get_name()].values.tolist()
+        v = df[features[i].get_name()].tolist()
         assert v == test[1]
 
 
@@ -359,7 +361,7 @@ def test_compare_of_direct(es):
     df = to_pandas(df, index='id', sort_index=True)
 
     for i, test in enumerate(to_test):
-        v = df[features[i].get_name()].values.tolist()
+        v = df[features[i].get_name()].tolist()
         assert v == test[1]
 
 
@@ -380,7 +382,7 @@ def test_compare_of_transform(es):
     df = to_pandas(df, index='id', sort_index=True)
 
     for i, test in enumerate(to_test):
-        v = df[features[i].get_name()].values.tolist()
+        v = df[features[i].get_name()].tolist()
         assert v == test[1]
 
 
@@ -402,7 +404,7 @@ def test_compare_of_agg(es):
     df = to_pandas(df, index='id', sort_index=True)
 
     for i, test in enumerate(to_test):
-        v = df[features[i].get_name()].values.tolist()
+        v = df[features[i].get_name()].tolist()
         assert v == test[1]
 
 
@@ -442,11 +444,11 @@ def test_arithmetic_of_val(es):
     df = to_pandas(df, index='id', sort_index=True)
 
     for f, test in zip(features, to_test):
-        v = df[f.get_name()].values.tolist()
+        v = df[f.get_name()].tolist()
         assert v == test[1]
 
     test = [np.nan, np.inf, np.inf, np.inf]
-    v = df[features[-1].get_name()].values.tolist()
+    v = df[features[-1].get_name()].tolist()
     assert (np.isnan(v[0]))
     assert v[1:] == test[1:]
 
@@ -474,10 +476,10 @@ def test_arithmetic_of_identity(es):
     df = to_pandas(df, index='id', sort_index=True)
 
     for i, test in enumerate(to_test[:-1]):
-        v = df[features[i].get_name()].values.tolist()
+        v = df[features[i].get_name()].tolist()
         assert v == test[1]
     i, test = -1, to_test[-1]
-    v = df[features[i].get_name()].values.tolist()
+    v = df[features[i].get_name()].tolist()
     assert (np.isnan(v[0]))
     assert v[1:] == test[1][1:]
 
@@ -504,7 +506,7 @@ def test_arithmetic_of_direct(es):
     df = to_pandas(df, index='id', sort_index=True)
 
     for i, test in enumerate(to_test):
-        v = df[features[i].get_name()].values.tolist()
+        v = df[features[i].get_name()].tolist()
         assert v == test[1]
 
 
@@ -518,7 +520,7 @@ def boolean_mult_es(request):
 def pd_boolean_mult_es():
     es = ft.EntitySet()
     df = pd.DataFrame({"index": [0, 1, 2],
-                       "bool": [True, False, True],
+                       "bool": pd.Series([True, False, True]),
                        "numeric": [2, 3, np.nan]})
 
     es.add_dataframe(dataframe_name="test",
@@ -556,7 +558,7 @@ def test_boolean_multiply(boolean_mult_es):
     for row in to_test:
         col_name = '{} * {}'.format(row[0], row[1])
         if row[0] == 'bool' and row[1] == 'bool':
-            assert fm[col_name].equals(df[row[0]] & df[row[1]])
+            assert fm[col_name].equals((df[row[0]] & df[row[1]]).astype('boolean'))
         else:
             assert fm[col_name].equals(df[row[0]] * df[row[1]])
 
@@ -581,7 +583,7 @@ def test_arithmetic_of_transform(es):
     calculator = FeatureSetCalculator(es, feature_set=feature_set)
     df = calculator.run(np.array([0, 2, 12, 13]))
     for i, test in enumerate(to_test):
-        v = df[features[i].get_name()].values.tolist()
+        v = df[features[i].get_name()].tolist()
         assert np.isnan(v.pop(0))
         assert np.isnan(test[1].pop(0))
         assert v == test[1]
@@ -620,7 +622,7 @@ def test_arithmetic_of_agg(es):
     df = df.loc[ids]
 
     for i, test in enumerate(to_test):
-        v = df[features[i].get_name()].values.tolist()
+        v = df[features[i].get_name()].tolist()
         assert v == test[1]
 
 
@@ -770,7 +772,7 @@ def test_isin_feat(es):
                    index='id',
                    sort_index=True)
     true = [True, True, True, False, False, True, True, True]
-    v = df[isin.get_name()].values.tolist()
+    v = df[isin.get_name()].tolist()
     assert true == v
 
 
@@ -781,7 +783,7 @@ def test_isin_feat_other_syntax(es):
                    index='id',
                    sort_index=True)
     true = [True, True, True, False, False, True, True, True]
-    v = df[isin.get_name()].values.tolist()
+    v = df[isin.get_name()].tolist()
     assert true == v
 
 
@@ -792,7 +794,7 @@ def test_isin_feat_other_syntax_int(es):
                    index='id',
                    sort_index=True)
     true = [False, True, True, False, False, False, False, False]
-    v = df[isin.get_name()].values.tolist()
+    v = df[isin.get_name()].tolist()
     assert true == v
 
 
@@ -821,7 +823,7 @@ def test_isin_feat_custom(es):
                    index='id',
                    sort_index=True)
     true = [True, True, True, False, False, True, True, True]
-    v = df[isin.get_name()].values.tolist()
+    v = df[isin.get_name()].tolist()
     assert true == v
 
     isin = ft.Feature(es['log'].ww['product_id']).isin(["toothpaste", "coke zero"])
@@ -830,7 +832,7 @@ def test_isin_feat_custom(es):
                    index='id',
                    sort_index=True)
     true = [True, True, True, False, False, True, True, True]
-    v = df[isin.get_name()].values.tolist()
+    v = df[isin.get_name()].tolist()
     assert true == v
 
     isin = ft.Feature(es['log'].ww['value']).isin([5, 10])
@@ -839,7 +841,7 @@ def test_isin_feat_custom(es):
                    index='id',
                    sort_index=True)
     true = [False, True, True, False, False, False, False, False]
-    v = df[isin.get_name()].values.tolist()
+    v = df[isin.get_name()].tolist()
     assert true == v
 
 
@@ -853,7 +855,7 @@ def test_isnull_feat(pd_es):
     #     np.nan, 5, 5, 5, 5, np.nan, 1, 1, 1, np.nan, np.nan, 5, np.nan, 7, 7]
     correct_vals = [True, False, False, False, False, True, False, False,
                     False, True, True, False, True, False, False]
-    values = df[isnull.get_name()].values.tolist()
+    values = df[isnull.get_name()].tolist()
     assert correct_vals == values
 
 

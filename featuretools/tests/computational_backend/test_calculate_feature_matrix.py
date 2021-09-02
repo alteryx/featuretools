@@ -254,7 +254,7 @@ def test_cfm_no_cutoff_time_index(pd_es):
                                               approximate=Timedelta(12, 's'),
                                               cutoff_time=cutoff_time)
     assert feature_matrix.index.name == 'id'
-    assert feature_matrix.index.values.tolist() == [0, 2]
+    assert feature_matrix.index.tolist() == [0, 2]
     assert feature_matrix[dfeat.get_name()].tolist() == [10, 10]
     assert feature_matrix[agg_feat.get_name()].tolist() == [5, 1]
 
@@ -350,6 +350,7 @@ def test_cutoff_time_binning():
         ],
         'instance_id': [1, 2, 3]
     })
+    cutoff_time.ww.init()
     binned_cutoff_times = bin_cutoff_times(cutoff_time, Timedelta(4, 'h'))
     labels = [datetime(2011, 4, 9, 12),
               datetime(2011, 4, 10, 8),
@@ -526,7 +527,8 @@ def test_training_window_overlap(pd_es):
         cutoff_time_in_index=True,
         training_window='10 minutes',
         include_cutoff_time=True,
-    )['COUNT(log)']
+    )
+    actual = actual['COUNT(log)']
     np.testing.assert_array_equal(actual.values, [1, 9])
 
     # Case2. include_cutoff_time = False
@@ -537,7 +539,8 @@ def test_training_window_overlap(pd_es):
         cutoff_time_in_index=True,
         training_window='10 minutes',
         include_cutoff_time=False,
-    )['COUNT(log)']
+    )
+    actual = actual['COUNT(log)']
     np.testing.assert_array_equal(actual.values, [0, 9])
 
 
@@ -562,7 +565,8 @@ def test_include_cutoff_time_without_training_window(es):
         cutoff_time=cutoff_time,
         cutoff_time_in_index=True,
         include_cutoff_time=True,
-    )['COUNT(log)']
+    )
+    actual = to_pandas(actual)['COUNT(log)']
     np.testing.assert_array_equal(actual.values, [1, 6])
 
     # Case2. include_cutoff_time = False
@@ -572,7 +576,8 @@ def test_include_cutoff_time_without_training_window(es):
         cutoff_time=cutoff_time,
         cutoff_time_in_index=True,
         include_cutoff_time=False,
-    )['COUNT(log)']
+    )
+    actual = to_pandas(actual)['COUNT(log)']
     np.testing.assert_array_equal(actual.values, [0, 5])
 
     # Case3. include_cutoff_time = True with single cutoff time value
@@ -583,7 +588,8 @@ def test_include_cutoff_time_without_training_window(es):
         instance_ids=[0],
         cutoff_time_in_index=True,
         include_cutoff_time=True,
-    )['COUNT(log)']
+    )
+    actual = to_pandas(actual)['COUNT(log)']
     np.testing.assert_array_equal(actual.values, [6])
 
     # Case4. include_cutoff_time = False with single cutoff time value
@@ -594,7 +600,8 @@ def test_include_cutoff_time_without_training_window(es):
         instance_ids=[0],
         cutoff_time_in_index=True,
         include_cutoff_time=False,
-    )['COUNT(log)']
+    )
+    actual = to_pandas(actual)['COUNT(log)']
     np.testing.assert_array_equal(actual.values, [5])
 
 
@@ -1485,13 +1492,17 @@ def test_no_data_for_cutoff_time(mock_customer):
 
     trans_per_session = ft.Feature(es["transactions"].ww["transaction_id"], parent_dataframe_name="sessions", primitive=Count)
     trans_per_customer = ft.Feature(es["transactions"].ww["transaction_id"], parent_dataframe_name="customers", primitive=Count)
-    features = [trans_per_customer, ft.Feature(trans_per_session, parent_dataframe_name="customers", primitive=Max)]
+    max_count = ft.Feature(trans_per_session, parent_dataframe_name="customers", primitive=Max)
+    features = [trans_per_customer, max_count]
 
     fm = calculate_feature_matrix(features, entityset=es, cutoff_time=cutoff_times)
 
     # due to default values for each primitive
     # count will be 0, but max will nan
-    np.testing.assert_array_equal(fm.values, [[0, np.nan]])
+    answer = pd.DataFrame({trans_per_customer.get_name(): pd.Series([0], dtype="Int64"),
+                           max_count.get_name(): pd.Series([np.nan], dtype="float")})
+    for column in fm.columns:
+        pd.testing.assert_series_equal(fm[column], answer[column], check_index=False, check_names=False)
 
 
 # adding missing instances not supported in Dask or Koalas
@@ -1537,13 +1548,13 @@ def test_some_instances_not_in_data(pd_es):
     fm = calculate_feature_matrix(features,
                                   entityset=pd_es,
                                   cutoff_time=cutoff_time)
-    ifeat_answer = [0, 7, 14, np.nan] + [np.nan] * 6
-    prop_answer = [0, 0, 1, np.nan, 0] + [np.nan] * 5
-    dfeat_answer = [14, 14, 14, np.nan] + [np.nan] * 6
+    ifeat_answer = pd.Series([0, 7, 14, np.nan] + [np.nan] * 6)
+    prop_answer = pd.Series([0, 0, 1, pd.NA, 0] + [pd.NA] * 5, dtype="boolean")
+    dfeat_answer = pd.Series([14, 14, 14, np.nan] + [np.nan] * 6)
 
     assert all(fm.index.values == cutoff_time["instance_id"].values)
     for x, y in zip(fm.columns, [ifeat_answer, prop_answer, dfeat_answer]):
-        np.testing.assert_array_equal(fm[x], y)
+        pd.testing.assert_series_equal(fm[x], y, check_index=False, check_names=False)
 
     fm = calculate_feature_matrix(features,
                                   entityset=pd_es,
@@ -1556,7 +1567,7 @@ def test_some_instances_not_in_data(pd_es):
 
     assert all(fm.index.values == cutoff_time["instance_id"].values)
     for x, y in zip(fm.columns, [ifeat_answer, prop_answer, dfeat_answer]):
-        np.testing.assert_array_equal(fm[x].astype('float64'), y)
+        pd.testing.assert_series_equal(fm[x], y, check_index=False, check_names=False)
 
 
 def test_missing_instances_with_categorical_index(pd_es):

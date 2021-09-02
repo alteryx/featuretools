@@ -617,7 +617,7 @@ def test_make_three_most_common(pd_es):
 
     NMostCommoner = make_agg_primitive(function=pd_top3,
                                        input_types=[ColumnSchema(semantic_tags={'category'})],
-                                       return_type=ColumnSchema(semantic_tags={'category'}),
+                                       return_type=None,
                                        number_output_features=3)
 
     fm, features = ft.dfs(entityset=pd_es,

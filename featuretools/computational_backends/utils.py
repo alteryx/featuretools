@@ -7,18 +7,19 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import psutil
-from woodwork.logical_types import Datetime
+from woodwork.logical_types import Datetime, Double
 
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, DirectFeature
 from featuretools.utils import Trie
+from featuretools.utils.gen_utils import Library
 from featuretools.utils.wrangle import _check_time_type, _check_timedelta
 
 logger = logging.getLogger('featuretools.computational_backend')
 
 
 def bin_cutoff_times(cutoff_time, bin_size):
-    binned_cutoff_time = cutoff_time.copy()
+    binned_cutoff_time = cutoff_time.ww.copy()
     if type(bin_size) == int:
         binned_cutoff_time['time'] = binned_cutoff_time['time'].apply(lambda x: x / bin_size * bin_size)
     else:
@@ -291,3 +292,54 @@ def replace_inf_values(feature_matrix, replacement_value=np.nan, columns=None):
     else:
         feature_matrix[columns] = feature_matrix[columns].replace([np.inf, -np.inf], replacement_value)
     return feature_matrix
+
+
+def get_ww_types_from_features(features, entityset, pass_columns=None, cutoff_time=None):
+    '''Given a list of features and entityset (and optionally a list of pass
+    through columns and the cutoff time dataframe), returns the logical types,
+    semantic tags,and origin of each column in the feature matrix.  Both
+    pass_columns and cutoff_time will need to be supplied in order to get the
+    type information for the pass through columns
+    '''
+    if pass_columns is None:
+        pass_columns = []
+    logical_types = {}
+    semantic_tags = {}
+    origins = {}
+
+    for feature in features:
+        names = feature.get_feature_names()
+        for name in names:
+            logical_types[name] = feature.column_schema.logical_type
+            semantic_tags[name] = feature.column_schema.semantic_tags.copy()
+            semantic_tags[name] -= {'index', 'time_index'}
+
+            if logical_types[name] is None and "numeric" in semantic_tags[name]:
+                logical_types[name] = Double
+        if all([f.primitive is None for f in feature.get_dependencies(deep=True)]):
+            origins[name] = "base"
+        else:
+            origins[name] = "engineered"
+
+    if pass_columns:
+        cutoff_schema = cutoff_time.ww.schema
+        for column in pass_columns:
+            logical_types[column] = cutoff_schema.logical_types[column]
+            semantic_tags[column] = cutoff_schema.semantic_tags[column]
+            origins[column] = "base"
+
+    if entityset.dataframe_type in (Library.DASK.value, Library.KOALAS.value):
+        target_dataframe_name = features[0].dataframe_name
+        table_schema = entityset[target_dataframe_name].ww.schema
+        index_col = table_schema.index
+        logical_types[index_col] = table_schema.logical_types[index_col]
+        semantic_tags[index_col] = table_schema.semantic_tags[index_col]
+        semantic_tags[index_col] -= {"index"}
+        origins[index_col] = "base"
+
+    ww_init = {
+        "logical_types": logical_types,
+        "semantic_tags": semantic_tags,
+        "column_origins": origins
+    }
+    return ww_init

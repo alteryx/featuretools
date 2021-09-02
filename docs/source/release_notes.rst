@@ -9,6 +9,7 @@ Future Release
         * Add support for creating EntitySets from Woodwork DataTables (:pr:`1277`)
         * Add ``EntitySet.__deepcopy__`` that retains Woodwork typing information (:pr:`1465`)
         * Add ``EntitySet.__getstate__`` and ``EntitySet.__setstate__`` to preserve typing when pickling (:pr:`1581`)
+        * Returned feature matrix has woodwork typing information (:pr:`1664`)
     * Fixes
         * Fix ``DFSTransformer`` Documentation for Featuretools 1.0 (:pr:`1605`)
         * Fix ``calculate_feature_matrix`` time type check and ``encode_features`` for synthesis tests (:pr:`1580`)

@@ -5,7 +5,13 @@ import pandas as pd
 from dask import dataframe as dd
 from scipy import stats
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean, BooleanNullable, Datetime
+from woodwork.logical_types import (
+    Boolean,
+    BooleanNullable,
+    Datetime,
+    Double,
+    IntegerNullable
+)
 
 from featuretools.primitives.base.aggregation_primitive_base import (
     AggregationPrimitive
@@ -24,7 +30,7 @@ class Count(AggregationPrimitive):
     """
     name = "count"
     input_types = [ColumnSchema(semantic_tags={'index'})]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={'numeric'})
     stack_on_self = False
     default_value = 0
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
@@ -191,7 +197,7 @@ class NumUnique(AggregationPrimitive):
     """
     name = "num_unique"
     input_types = [ColumnSchema(semantic_tags={'category'})]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={'numeric'})
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the number of unique elements in {}"
@@ -235,7 +241,7 @@ class NumTrue(AggregationPrimitive):
     """
     name = "num_true"
     input_types = [[ColumnSchema(logical_type=Boolean)], [ColumnSchema(logical_type=BooleanNullable)]]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={'numeric'})
     default_value = 0
     stack_on = []
     stack_on_exclude = []
@@ -273,8 +279,8 @@ class PercentTrue(AggregationPrimitive):
         0.6
     """
     name = "percent_true"
-    input_types = [[ColumnSchema(logical_type=Boolean)], [ColumnSchema(logical_type=BooleanNullable)]]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    input_types = [[ColumnSchema(logical_type=BooleanNullable)], [ColumnSchema(logical_type=Boolean)]]
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     stack_on = []
     stack_on_exclude = []
     default_value = 0
@@ -330,7 +336,7 @@ class NMostCommon(AggregationPrimitive):
     """
     name = "n_most_common"
     input_types = [ColumnSchema(semantic_tags={'category'})]
-    return_type = ColumnSchema(semantic_tags={'category'})
+    return_type = None
 
     def __init__(self, n=3):
         self.n = n
@@ -383,7 +389,7 @@ class AvgTimeBetween(AggregationPrimitive):
     """
     name = "avg_time_between"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     description_template = "the average time between each of {}"
 
     def __init__(self, unit="seconds"):
@@ -629,7 +635,7 @@ class TimeSinceLast(AggregationPrimitive):
     """
     name = "time_since_last"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     uses_calc_time = True
     description_template = "the time since the last {}"
 
@@ -679,7 +685,7 @@ class TimeSinceFirst(AggregationPrimitive):
     """
     name = "time_since_first"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     uses_calc_time = True
     description_template = "the time since the first {}"
 

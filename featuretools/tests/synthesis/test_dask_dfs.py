@@ -1,6 +1,12 @@
 import dask.dataframe as dd
 import pandas as pd
-from woodwork.logical_types import Datetime, Double, Integer, NaturalLanguage
+from woodwork.logical_types import (
+    Datetime,
+    Double,
+    Integer,
+    IntegerNullable,
+    NaturalLanguage
+)
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
@@ -207,7 +213,7 @@ def test_single_table_dask_entityset_cutoff_time_df():
                                    "abcdef ghijk"]})
     values_dd = dd.from_pandas(df, npartitions=2)
     ltypes = {
-        "values": Integer,
+        "values": IntegerNullable,
         "dates": Datetime,
         "strings": NaturalLanguage
     }
@@ -326,19 +332,21 @@ def test_dask_entityset_secondary_time_index():
     pd_es = ft.EntitySet("flights")
     dask_es = ft.EntitySet("flights_dask")
 
-    pd_es.add_dataframe(
-        dataframe_name='logs',
-        dataframe=log_df,
-        index="id",
-        time_index="scheduled_time",
-        secondary_time_index={'arrival_time': ['departure_time', 'delay']})
-
     log_ltypes = {
         "scheduled_time": Datetime,
         "departure_time": Datetime,
         "arrival_time": Datetime,
         "delay": Double,
     }
+
+    pd_es.add_dataframe(
+        dataframe_name='logs',
+        dataframe=log_df,
+        index="id",
+        time_index="scheduled_time",
+        secondary_time_index={'arrival_time': ['departure_time', 'delay']},
+        logical_types=log_ltypes)
+
     dask_es.add_dataframe(
         dataframe_name='logs',
         dataframe=log_dask,

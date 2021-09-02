@@ -167,6 +167,8 @@ def test_approximate_features(pd_dataframes, relationships):
     # TODO: Update to use Dask dataframes when issue #985 is closed
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 3, 1, 5, 3, 6],
                                     "time": [11, 16, 16, 26, 17, 22]})
+    # force column to BooleanNullable
+    pd_dataframes['transactions'] += ({'fraud': "BooleanNullable"},)
     feature_matrix, features = dfs(dataframes=pd_dataframes,
                                    relationships=relationships,
                                    target_dataframe_name="transactions",
@@ -204,6 +206,10 @@ def test_all_columns(pd_dataframes, relationships):
 
 
 def test_features_only(dataframes, relationships):
+    if len(dataframes['transactions']) > 3:
+        dataframes['transactions'][3]['fraud'] = "BooleanNullable"
+    else:
+        dataframes['transactions'] += ({'fraud': "BooleanNullable"},)
     features = dfs(dataframes=dataframes,
                    relationships=relationships,
                    target_dataframe_name="transactions",

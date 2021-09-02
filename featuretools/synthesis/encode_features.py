@@ -2,6 +2,9 @@ import logging
 
 import pandas as pd
 
+from featuretools.computational_backends.utils import (
+    get_ww_types_from_features
+)
 from featuretools.utils.gen_utils import make_tqdm_iterator
 
 logger = logging.getLogger('featuretools')
@@ -173,4 +176,7 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
             except (TypeError, ValueError):
                 pass
 
+    entityset = new_feature_list[0].entityset
+    ww_init_kwargs = get_ww_types_from_features(new_feature_list, entityset)
+    new_X.ww.init(**ww_init_kwargs)
     return new_X, new_feature_list

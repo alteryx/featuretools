@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from dask import dataframe as dd
-from numpy.testing import assert_array_equal
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Categorical, Datetime, Double, Integer
 
@@ -644,7 +643,7 @@ def test_trend(pd_es):
 
     true_results = [-0.812730, 4.870378, np.nan]
 
-    np.testing.assert_almost_equal(df[trend.get_name()].values.tolist(), true_results, decimal=5)
+    np.testing.assert_almost_equal(df[trend.get_name()].tolist(), true_results, decimal=5)
 
 
 def test_direct_squared(es):
@@ -800,16 +799,20 @@ def test_empty_child_dataframe(parent_child):
 
     if isinstance(parent_df, pd.DataFrame):
         features = [count, count_where, trend, trend_where, n_most_common, n_most_common_where]
-        names = [count.get_name(), count_where.get_name(),
-                 trend.get_name(), trend_where.get_name(),
-                 *n_most_common.get_feature_names(), *n_most_common_where.get_feature_names()]
-        values = [0, 0,
-                  np.nan, np.nan,
-                  *np.full(n_most_common.number_output_features, np.nan), *np.full(n_most_common_where.number_output_features, np.nan)]
+        data = {count.get_name(): pd.Series([0], dtype="Int64"),
+                count_where.get_name(): pd.Series([0], dtype="Int64"),
+                trend.get_name(): pd.Series([np.nan], dtype="float"),
+                trend_where.get_name(): pd.Series([np.nan], dtype="float")}
+        for name in n_most_common.get_feature_names():
+            data[name] = pd.Series([np.nan], dtype="category")
+        for name in n_most_common_where.get_feature_names():
+            data[name] = pd.Series([np.nan], dtype="category")
     else:
         features = [count, count_where]
-        names = [count.get_name(), count_where.get_name()]
-        values = [0, 0]
+        data = {count.get_name(): pd.Series([0], dtype="Int64"),
+                count_where.get_name(): pd.Series([0], dtype="Int64")}
+
+    answer = pd.DataFrame(data)
 
     # cutoff time before all rows
     fm = ft.calculate_feature_matrix(entityset=es,
@@ -817,24 +820,28 @@ def test_empty_child_dataframe(parent_child):
                                      cutoff_time=pd.Timestamp("12/31/2017"))
     fm = to_pandas(fm)
 
-    assert_array_equal(fm[names], [values])
+    for column in data.keys():
+        pd.testing.assert_series_equal(fm[column], answer[column], check_names=False, check_index=False)
 
     # cutoff time after all rows, but where clause filters all rows
     if isinstance(parent_df, pd.DataFrame):
         features = [count_where, trend_where, n_most_common_where]
-        names = [count_where.get_name(), trend_where.get_name(), *n_most_common_where.get_feature_names()]
-        values = [0, np.nan, *np.full(n_most_common_where.number_output_features, np.nan)]
+        data = {count_where.get_name(): pd.Series([0], dtype="Int64"),
+                trend_where.get_name(): pd.Series([np.nan], dtype="float")}
+        for name in n_most_common_where.get_feature_names():
+            data[name] = pd.Series([np.nan], dtype="category")
     else:
         features = [count_where]
-        names = [count_where.get_name()]
-        values = [0]
+        data = {count_where.get_name(): pd.Series([0], dtype="Int64")}
+    answer = pd.DataFrame(data)
 
     fm2 = ft.calculate_feature_matrix(entityset=es,
                                       features=features,
                                       cutoff_time=pd.Timestamp("1/4/2018"))
     fm2 = to_pandas(fm2)
 
-    assert_array_equal(fm2[names], [values])
+    for column in data.keys():
+        pd.testing.assert_series_equal(fm[column], answer[column], check_names=False, check_index=False)
 
 
 def test_with_features_built_from_es_metadata(es):
