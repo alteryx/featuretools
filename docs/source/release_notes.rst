@@ -2,14 +2,22 @@
 
 Release Notes
 -------------
-Future Release
-==============
+
+.. Future Release
+  ==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
-        * Add banner to docs about upcoming Featuretools 1.0 release (:pr:`1669`)
     * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+
+v0.27.1 Sep 2, 2021
+===================
+    * Documentation Changes
+        * Add banner to docs about upcoming Featuretools 1.0 release (:pr:`1669`)
 
     Thanks to the following people for contributing to this release:
     :user:`thehomebrewnerd`
