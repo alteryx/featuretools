@@ -1,6 +1,12 @@
 import pandas as pd
 import pytest
-from woodwork.logical_types import Datetime, Double, Integer, NaturalLanguage
+from woodwork.logical_types import (
+    Datetime,
+    Double,
+    Integer,
+    IntegerNullable,
+    NaturalLanguage
+)
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
@@ -205,7 +211,6 @@ def test_single_table_ks_entityset_single_cutoff_time():
 
 @pytest.mark.skipif('not ks')
 def test_single_table_ks_entityset_cutoff_time_df():
-    pytest.skip("TODO: Investigate failure root cause and resolve")
     primitives_list = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
 
     ks_es = EntitySet(id="ks_es")
@@ -219,7 +224,7 @@ def test_single_table_ks_entityset_cutoff_time_df():
                                    "abcdef ghijk"]})
     values_dd = ks.from_pandas(df)
     ltypes = {
-        "values": Integer,
+        "values": IntegerNullable,
         "dates": Datetime,
         "strings": NaturalLanguage
     }
@@ -259,6 +264,10 @@ def test_single_table_ks_entityset_cutoff_time_df():
     # for instance id 0 are compared correctly. Also, make sure the boolean columns have the same dtype.
     fm = fm.sort_values(['id', 'labels'])
     ks_fm = ks_fm.to_pandas().set_index('id').sort_values(['id', 'labels'])
+
+    for column in fm.columns:
+        if fm[column].dtype.name == 'category':
+            fm[column] = fm[column].astype('Int64').astype('string')
 
     pd.testing.assert_frame_equal(fm.astype(ks_fm.dtypes), ks_fm)
 
