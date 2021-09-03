@@ -74,6 +74,7 @@ Future Release
         * Remove Variables page and more references to variables (:pr:`1629`)
         * Update Feature Selection page to use Woodwork integration (:pr:`1618`)
         * Update Improving Performance page to be Jupyter notebook and use Woodwork integration (:pr:`1591`)
+        * Fix typos in transition guide (:pr:`1672`)
     * Testing Changes
         * Remove entity tests (:pr:`1521`)
         * Fix broken ``EntitySet`` tests (:pr:`1548`)
