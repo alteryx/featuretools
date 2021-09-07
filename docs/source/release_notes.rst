@@ -3,18 +3,6 @@
 Release Notes
 -------------
 
-Future Release
-==============
-    * Enhancements
-    * Fixes
-    * Changes
-        * Removes outdated workaround code related to a since-resolved pandas issue (:pr:`1677`)
-    * Documentation Changes
-    * Testing Changes
-
-    Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
-
 1.0.0dev
 ========
     * Enhancements
@@ -217,6 +205,18 @@ You can list all the available semantic tags by calling ``featuretools.list_sema
 .. code-block:: python
 
     >>> ft.list_semantic_tags()
+
+Future Release
+==============
+    * Enhancements
+    * Fixes
+    * Changes
+        * Removes outdated workaround code related to a since-resolved pandas issue (:pr:`1677`)
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
 
 v0.27.1 Sep 2, 2021
 ===================
