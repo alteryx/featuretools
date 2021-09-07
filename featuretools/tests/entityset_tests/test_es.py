@@ -206,6 +206,7 @@ def test_add_relationship_different_logical_types_same_dtype(es):
         es.add_relationship(u'products', 'id', 'log2', 'product_id')
     assert isinstance(es['log2'].ww.logical_types['product_id'], Categorical)
     assert isinstance(es['products'].ww.logical_types['id'], Categorical)
+    assert 'foreign_key' in es['log2'].ww.semantic_tags['product_id']
 
 
 def test_add_relationship_different_compatible_dtypes(es):

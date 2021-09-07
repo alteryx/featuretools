@@ -339,8 +339,6 @@ class EntitySet(object):
             raise ValueError(msg.format(child_column, child_df.ww.name))
         parent_df = relationship.parent_dataframe
         parent_column = relationship._parent_column_name
-        if 'foreign_key' not in child_df.ww.semantic_tags[child_column]:
-            child_df.ww.add_semantic_tags({child_column: 'foreign_key'})
 
         if parent_df.ww.index != parent_column:
             parent_df.ww.set_index(parent_column)
@@ -365,6 +363,9 @@ class EntitySet(object):
                           f'parent column {parent_column} logical type {parent_ltype}. {difference_msg}'
                           'Changing child logical type to match parent.')
             child_df.ww.set_types(logical_types={child_column: parent_ltype})
+
+        if 'foreign_key' not in child_df.ww.semantic_tags[child_column]:
+            child_df.ww.add_semantic_tags({child_column: 'foreign_key'})
 
         self.relationships.append(relationship)
         self.reset_data_description()
