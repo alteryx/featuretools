@@ -6,7 +6,6 @@ from collections import defaultdict
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
-
 from woodwork import init_series
 from woodwork.logical_types import Datetime
 
