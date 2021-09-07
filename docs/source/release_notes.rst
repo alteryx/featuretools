@@ -8,7 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
-        * Removes outdated workaround code related to a since-resovled pandas issue (:pr:`1677`)
+        * Removes outdated workaround code related to a since-resolved pandas issue (:pr:`1677`)
     * Documentation Changes
     * Testing Changes
 
