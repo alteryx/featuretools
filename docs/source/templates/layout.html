@@ -22,6 +22,29 @@
 
 {% endblock %}
 
+{% block docs_body %}
+<section>
+<div class="admonition warning">
+  <p class="admonition-title"> NOTICE</p>
+  <p>
+    The upcoming release of Featuretools 1.0.0 contains several breaking changes. Users are encouraged to test this version prior
+    to release by installing from GitHub:
+  </p>
+  <p>
+    <code>pip install https://github.com/alteryx/featuretools/archive/woodwork-integration.zip</code>
+  </p>
+  <p>
+    For details on migrating to the new version, refer to 
+    <a href="https://featuretools.alteryx.com/en/woodwork-integration/resources/transition_to_ft_v1.0.html">Transitioning to Featuretools Version 1.0</a>.
+    Please report any issues in the <a href="https://github.com/alteryx/featuretools">Featuretools GitHub repo</a>
+    or by messaging in <a href="https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTQ1MjZlOWFmZDk2YzAwMjEzNTkwZTZkN2NmOGFjOGI4YzE5OGMyMGM5NGIxNTE4NjkzYWI3OWEwZjkyZGExYmQ">Alteryx Open Source Slack</a>.
+  </p>
+</div>
+<br>
+</section>
+{{ super() }}
+{% endblock %}
+
 {%- block footer %}
 
 <footer class="footer">

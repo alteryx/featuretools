@@ -205,6 +205,14 @@ You can list all the available semantic tags by calling ``featuretools.list_sema
 
     >>> ft.list_semantic_tags()
 
+v0.27.1 Sep 2, 2021
+===================
+    * Documentation Changes
+        * Add banner to docs about upcoming Featuretools 1.0 release (:pr:`1669`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
+
 v0.27.0 Aug 31, 2021
 ====================
     * Changes
