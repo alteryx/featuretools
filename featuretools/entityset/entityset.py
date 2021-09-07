@@ -6,12 +6,9 @@ from collections import defaultdict
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
-<<<<<<< HEAD
+
 from woodwork import init_series
 from woodwork.logical_types import Datetime
-=======
-from pandas.api.types import is_dtype_equal, is_numeric_dtype
->>>>>>> main
 
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.relationship import Relationship, RelationshipPath
