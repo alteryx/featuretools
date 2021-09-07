@@ -14,6 +14,7 @@ Future Release
         * Fix ``DFSTransformer`` Documentation for Featuretools 1.0 (:pr:`1605`)
         * Fix ``calculate_feature_matrix`` time type check and ``encode_features`` for synthesis tests (:pr:`1580`)
         * Revert reordering of categories in ``Equal`` and ``NotEqual`` primitives (:pr:`1640`)
+        * Fix bug in ``EntitySet.add_relationship`` that caused ``foreign_key`` tag to be lost (:pr:`1675`)
     * Changes
         * Remove ``add_interesting_values`` from ``Entity`` (:pr:`1269`)
         * Move ``set_secondary_time_index`` method from ``Entity`` to ``EntitySet`` (:pr:`1280`)
