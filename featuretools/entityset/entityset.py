@@ -1390,14 +1390,6 @@ class EntitySet(object):
             if isinstance(dataframe, pd.DataFrame):
                 df = df.set_index(dataframe.ww.index, drop=False)
 
-            # ensure filtered df has same categories as original
-            # workaround for issue below
-            # github.com/pandas-dev/pandas/issues/22501#issuecomment-415982538
-            # Note: Woodwork stores categorical columns with a `string` dtype for Koalas
-            if dataframe.ww.columns[column_name].is_categorical and not is_instance(df, ks, 'DataFrame'):
-                categories = pd.api.types.CategoricalDtype(categories=dataframe[column_name].cat.categories)
-                df[column_name] = df[column_name].astype(categories)
-
         df = self._handle_time(dataframe_name=dataframe_name,
                                df=df,
                                time_last=time_last,
