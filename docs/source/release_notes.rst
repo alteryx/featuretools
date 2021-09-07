@@ -6,6 +6,18 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+    * Fixes
+    * Changes
+        * Removes outdated workaround code related to a since-resolved pandas issue (:pr:`1677`)
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
+
+1.0.0dev
+========
+    * Enhancements
         * Add support for creating EntitySets from Woodwork DataTables (:pr:`1277`)
         * Add ``EntitySet.__deepcopy__`` that retains Woodwork typing information (:pr:`1465`)
         * Add ``EntitySet.__getstate__`` and ``EntitySet.__setstate__`` to preserve typing when pickling (:pr:`1581`)
@@ -53,7 +65,6 @@ Future Release
         * Update ``nlp-primitives`` requirement for Featuretools 1.0 (:pr:`1609`)
         * Remove remaining references to ``Entity`` and ``Variable`` in code (:pr:`1612`)
         * Update Woodwork to version 0.7.1 with changed initialization (:pr:`1648`)
-        * Removes outdated workaround code related to a since-resolved pandas issue (:pr:`1677`)
     * Documentation Changes
         * Add a Woodwork Typing in Featuretools guide (:pr:`1589`)
         * Add a resource guide for transitioning to Featuretools 1.0 (:pr:`1627`)
