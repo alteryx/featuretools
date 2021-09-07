@@ -6,7 +6,6 @@ from collections import defaultdict
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
-import pandas.api.types as pdtypes
 from pandas.api.types import is_dtype_equal, is_numeric_dtype
 
 import featuretools.variable_types.variable as vtypes
@@ -1086,13 +1085,6 @@ class EntitySet(object):
 
             if isinstance(entity.df, pd.DataFrame):
                 df = df.set_index(entity.index, drop=False)
-
-            # ensure filtered df has same categories as original
-            # workaround for issue below
-            # github.com/pandas-dev/pandas/issues/22501#issuecomment-415982538
-            if pdtypes.is_categorical_dtype(entity.df[variable_id]):
-                categories = pd.api.types.CategoricalDtype(categories=entity.df[variable_id].cat.categories)
-                df[variable_id] = df[variable_id].astype(categories)
 
         df = self._handle_time(entity_id=entity_id,
                                df=df,
