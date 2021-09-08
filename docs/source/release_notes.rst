@@ -206,6 +206,7 @@ You can list all the available semantic tags by calling ``featuretools.list_sema
 
     >>> ft.list_semantic_tags()
 
+
 Future Release
 ==============
     * Enhancements
