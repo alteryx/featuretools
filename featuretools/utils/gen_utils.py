@@ -108,11 +108,6 @@ def import_or_none(library):
         return None
 
 
-def camel_to_snake(s):
-    s = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', s)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s).lower()
-
-
 def is_instance(obj, modules, classnames):
     '''
     Check if the given object is an instance of classname in module(s). Module
