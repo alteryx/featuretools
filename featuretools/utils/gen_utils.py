@@ -1,6 +1,5 @@
 import importlib
 import logging
-import re
 import sys
 import warnings
 from enum import Enum
