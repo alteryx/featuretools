@@ -4,7 +4,6 @@ from functools import partial
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
-import pandas.api.types as pdtypes
 
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.exceptions import UnknownFeature
@@ -710,12 +709,6 @@ class FeatureSetCalculator(object):
                 # rename columns to the correct feature names
                 to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns]
                 to_merge = to_merge[list(agg_rename.values())]
-
-                # workaround for pandas bug where categories are in the wrong order
-                # see: https://github.com/pandas-dev/pandas/issues/22501
-                if pdtypes.is_categorical_dtype(frame.index):
-                    categories = pdtypes.CategoricalDtype(categories=frame.index.categories)
-                    to_merge.index = to_merge.index.astype(object).astype(categories)
 
                 if is_instance(frame, (dd, ks), 'DataFrame'):
                     frame = frame.merge(to_merge, left_on=parent_merge_col, right_index=True, how='left')
