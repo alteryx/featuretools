@@ -113,49 +113,6 @@ def _check_time_type(time):
     return time_type
 
 
-def _dataframes_equal(df1, df2):
-    # ^ means XOR
-    df1_empty = bool(len(df1))
-    df2_empty = bool(len(df2))
-    if df1_empty ^ df2_empty:
-        return False
-    elif not df1_empty and not df2_empty:
-        if not set(df1.columns) == set(df2.columns):
-            return False
-
-        for c in df1:
-            df1c = df1[c]
-            df2c = df2[c]
-            if df1c.dtype == object:
-                df1c = df1c.astype('unicode')
-            if df2c.dtype == object:
-                df2c = df2c.astype('unicode')
-
-            normal_compare = True
-            if df1c.dtype == object:
-                dropped = df1c.dropna()
-                if not dropped.empty:
-                    if isinstance(dropped.iloc[0], tuple):
-                        dropped2 = df2[c].dropna()
-                        normal_compare = False
-                        for i in range(len(dropped.iloc[0])):
-                            try:
-                                equal = dropped.apply(lambda x: x[i]).equals(
-                                    dropped2.apply(lambda x: x[i]))
-                            except IndexError:
-                                raise IndexError("If column data are tuples, they must all be the same length")
-                            if not equal:
-                                return False
-            if normal_compare:
-                # handle nan equality correctly
-                # This way is much faster than df1.equals(df2)
-                result = df1c == df2c
-                result[pd.isnull(df1c) == pd.isnull(df2c)] = True
-                if not result.all():
-                    return False
-    return True
-
-
 def _is_s3(string):
     '''
     Checks if the given string is a s3 path.
