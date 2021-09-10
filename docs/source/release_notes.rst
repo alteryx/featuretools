@@ -54,6 +54,7 @@ Release Notes
         * Remove remaining references to ``Entity`` and ``Variable`` in code (:pr:`1612`)
         * Update Woodwork to version 0.7.1 with changed initialization (:pr:`1648`)
         * Remove unused ``_dataframes_equal`` and ``camel_to_snake`` functions (:pr:`1683`)
+        * Update Woodwork to version 0.8.0 for improved performance (:pr:`1689`)
     * Documentation Changes
         * Add a Woodwork Typing in Featuretools guide (:pr:`1589`)
         * Add a resource guide for transitioning to Featuretools 1.0 (:pr:`1627`)
