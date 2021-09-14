@@ -170,12 +170,6 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
                                       total=len(new_X.columns),
                                       desc="Encoding pass 2",
                                       unit="feature")
-    for c in iterator:
-        if c in encoded_columns:
-            try:
-                new_X[c] = pd.to_numeric(new_X[c], errors='raise')
-            except (TypeError, ValueError):
-                pass
 
     entityset = new_feature_list[0].entityset
     ww_init_kwargs = get_ww_types_from_features(new_feature_list, entityset)
