@@ -104,7 +104,7 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
     new_feature_list = []
     new_columns = []
     encoded_columns = set()
-
+    to_add = []
     for f in iterator:
         # TODO: features with multiple columns are not encoded by this method,
         # which can cause an "encoded" matrix with non-numeric vlaues
@@ -149,7 +149,7 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
             new_feature_list.append(add)
             new_columns.append(add_name)
             encoded_columns.add(add_name)
-            X[add_name] = (X[f.get_name()] == label)
+            to_add.append((X[f.get_name()] == label).rename(add_name))
 
         if include_unknown:
             unknown = f.isin(unique).NOT().rename(f.get_name() + " is unknown")
@@ -157,10 +157,11 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
             new_feature_list.append(unknown)
             new_columns.append(unknown_name)
             encoded_columns.add(unknown_name)
-            X[unknown_name] = (~X[f.get_name()].isin(unique))
+            to_add.append((~X[f.get_name()].isin(unique)).rename(unknown_name))
 
         X.drop(f.get_name(), axis=1, inplace=True)
 
+    X = pd.concat([X] + to_add, axis=1)
     new_columns.extend(pass_through)
     new_X = X[new_columns]
     iterator = new_X.columns
