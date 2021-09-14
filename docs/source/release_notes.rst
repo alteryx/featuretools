@@ -9,6 +9,7 @@ Future Release
     * Fixes
     * Changes
         * Removes outdated workaround code related to a since-resolved pandas issue (:pr:`1677`)
+        * Blah blah (:pr:`1691`)
     * Documentation Changes
     * Testing Changes
 
