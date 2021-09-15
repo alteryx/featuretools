@@ -6,6 +6,7 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
 
 from featuretools import primitives
+from featuretools.entityset.entityset import LTI_COLUMN_NAME
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import (
     AggregationFeature,
@@ -335,7 +336,8 @@ class DeepFeatureSynthesis(object):
         f_keep = []
         for f in features:
             keep = True
-            for contains in self.drop_contains:
+            # Drop features based on drop_contains or features involving the last time index column
+            for contains in self.drop_contains + [LTI_COLUMN_NAME]:
                 if contains in f.get_name():
                     keep = False
                     break

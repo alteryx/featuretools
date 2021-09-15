@@ -6,6 +6,7 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime
 
 import featuretools as ft
+from featuretools.entityset.entityset import LTI_COLUMN_NAME
 from featuretools.feature_base import (
     AggregationFeature,
     DirectFeature,
@@ -1572,3 +1573,15 @@ def test_builds_seed_features_on_foreign_key_col(es):
 
     features = dfs_obj.build_features()
     assert (feature_with_name(features, '-(customer_id)'))
+
+
+def test_does_not_build_features_on_last_time_index_col(es):
+    es.add_last_time_indexes()
+
+    dfs_obj = DeepFeatureSynthesis(target_dataframe_name='log',
+                                   entityset=es)
+
+    features = dfs_obj.build_features()
+
+    for feature in features:
+        assert LTI_COLUMN_NAME not in feature.get_name()
