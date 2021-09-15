@@ -336,8 +336,7 @@ class DeepFeatureSynthesis(object):
         f_keep = []
         for f in features:
             keep = True
-            # Drop features based on drop_contains or features involving the last time index column
-            for contains in self.drop_contains + [LTI_COLUMN_NAME]:
+            for contains in self.drop_contains:
                 if contains in f.get_name():
                     keep = False
                     break
@@ -515,7 +514,7 @@ class DeepFeatureSynthesis(object):
             dataframe (DataFrame): DataFrame to calculate features for.
         """
         for col in dataframe.columns:
-            if col in self.ignore_columns[dataframe.ww.name]:
+            if col in self.ignore_columns[dataframe.ww.name] or col == LTI_COLUMN_NAME:
                 continue
             new_f = IdentityFeature(self.es[dataframe.ww.name].ww[col])
             self._handle_new_feature(all_features=all_features,
