@@ -6,6 +6,7 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
 
 from featuretools import primitives
+from featuretools.entityset.entityset import LTI_COLUMN_NAME
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import (
     AggregationFeature,
@@ -513,7 +514,7 @@ class DeepFeatureSynthesis(object):
             dataframe (DataFrame): DataFrame to calculate features for.
         """
         for col in dataframe.columns:
-            if col in self.ignore_columns[dataframe.ww.name]:
+            if col in self.ignore_columns[dataframe.ww.name] or col == LTI_COLUMN_NAME:
                 continue
             new_f = IdentityFeature(self.es[dataframe.ww.name].ww[col])
             self._handle_new_feature(all_features=all_features,
