@@ -102,7 +102,7 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
         iterator = features
 
     new_feature_list = []
-    new_columns = []
+    kept_columns = []
     encoded_columns = []
 
     for f in iterator:
@@ -115,12 +115,12 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
                                "be encoded.  This may result in a matrix with"
                                " non-numeric values." % (f))
             new_feature_list.append(f)
-            new_columns.extend(f.get_feature_names())
+            kept_columns.extend(f.get_feature_names())
             continue
 
         if to_encode is not None and f.get_name() not in to_encode:
             new_feature_list.append(f)
-            new_columns.extend(f.get_feature_names())
+            kept_columns.extend(f.get_feature_names())
             continue
 
         val_counts = X[f.get_name()].value_counts()
@@ -162,15 +162,23 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
         if inplace:
             X.drop(f.get_name(), axis=1, inplace=True)
 
-    new_columns.extend(pass_through)
+    kept_columns.extend(pass_through)
+
     if inplace:
         for encoded_column in encoded_columns:
             X[encoded_column.name] = encoded_column
     else:
-        X = pd.concat([X[new_columns]] + encoded_columns, axis=1)
+        X = pd.concat([X[kept_columns]] + encoded_columns, axis=1)
 
     entityset = new_feature_list[0].entityset
-    # TODO: can we use fm schema of features we didn't encode to get ww types
     ww_init_kwargs = get_ww_types_from_features(new_feature_list, entityset)
+
+    # Grab ww metadata from feature matrix since it may be more exact
+    for column in kept_columns:
+        column_info = feature_matrix.ww.columns[column]
+        ww_init_kwargs["logical_types"][column] = column_info.logical_type
+        ww_init_kwargs["semantic_tags"][column] = column_info.semantic_tags
+        ww_init_kwargs["column_origins"][column] = column_info.origin
+
     X.ww.init(**ww_init_kwargs)
     return X, new_feature_list
