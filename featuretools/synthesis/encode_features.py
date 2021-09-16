@@ -103,7 +103,7 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
 
     new_feature_list = []
     new_columns = []
-    encoded_columns = set()
+    encoded_columns = []
 
     for f in iterator:
         # TODO: features with multiple columns are not encoded by this method,
@@ -147,30 +147,30 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
             add = f == label
             add_name = add.get_name()
             new_feature_list.append(add)
-            new_columns.append(add_name)
-            encoded_columns.add(add_name)
-            X[add_name] = (X[f.get_name()] == label)
+            new_col = X[f.get_name()] == label
+            new_col.rename(add_name, inplace=True)
+            encoded_columns.append(new_col)
 
         if include_unknown:
             unknown = f.isin(unique).NOT().rename(f.get_name() + " is unknown")
             unknown_name = unknown.get_name()
             new_feature_list.append(unknown)
-            new_columns.append(unknown_name)
-            encoded_columns.add(unknown_name)
-            X[unknown_name] = (~X[f.get_name()].isin(unique))
+            new_col = ~X[f.get_name()].isin(unique)
+            new_col.rename(unknown_name, inplace=True)
+            encoded_columns.append(new_col)
 
-        X.drop(f.get_name(), axis=1, inplace=True)
+        if inplace:
+            X.drop(f.get_name(), axis=1, inplace=True)
 
     new_columns.extend(pass_through)
-    new_X = X[new_columns]
-    iterator = new_X.columns
-    if verbose:
-        iterator = make_tqdm_iterator(iterable=new_X.columns,
-                                      total=len(new_X.columns),
-                                      desc="Encoding pass 2",
-                                      unit="feature")
+    if inplace:
+        for encoded_column in encoded_columns:
+            X[encoded_column.name] = encoded_column
+    else:
+        X = pd.concat([X[new_columns]] + encoded_columns, axis=1)
 
     entityset = new_feature_list[0].entityset
+    # TODO: can we use fm schema of features we didn't encode to get ww types
     ww_init_kwargs = get_ww_types_from_features(new_feature_list, entityset)
-    new_X.ww.init(**ww_init_kwargs)
-    return new_X, new_feature_list
+    X.ww.init(**ww_init_kwargs)
+    return X, new_feature_list
