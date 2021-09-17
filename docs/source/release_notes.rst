@@ -9,7 +9,7 @@ Future Release
     * Fixes
     * Changes
     * Documentation Changes
-       * Update installation instructions for 1.0.0rc1 announcement in docs (:pr:`1707`)
+       * Update installation instructions for 1.0.0rc1 announcement in docs (:pr:`1707`, :pr:`1708`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
