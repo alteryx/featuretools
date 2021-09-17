@@ -916,7 +916,7 @@ def test_approximate_time_split_returns_the_same_result(pd_es):
     divided_matrices = []
     separate_cutoff = [cutoff_df.iloc[0:1], cutoff_df.iloc[1:]]
     # Make sure indexes are different
-    # Not that this step is unecessary and done to showcase the issue here
+    # Note that this step is unnecessary and done to showcase the issue here
     separate_cutoff[0].index = [0]
     separate_cutoff[1].index = [1]
     for ct in separate_cutoff:

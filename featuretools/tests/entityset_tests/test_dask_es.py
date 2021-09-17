@@ -57,14 +57,14 @@ def test_create_entityset_with_mixed_dataframe_types(pd_es, dask_es):
               "Cannot add dataframe of type {} to an entityset with existing dataframes " \
               "of type {}"
 
-    # Test error is raised when trying to add Dask dataframe to entitset with existing pandas dataframes
+    # Test error is raised when trying to add Dask dataframe to entityset with existing pandas dataframes
     with pytest.raises(ValueError, match=err_msg.format(type(dask_df), type(pd_es.dataframes[0]))):
         pd_es.add_dataframe(
             dataframe_name="new_dataframe",
             dataframe=dask_df,
             index="id")
 
-    # Test error is raised when trying to add pandas dataframe to entitset with existing dask dataframes
+    # Test error is raised when trying to add pandas dataframe to entityset with existing dask dataframes
     with pytest.raises(ValueError, match=err_msg.format(type(df), type(dask_es.dataframes[0]))):
         dask_es.add_dataframe(
             dataframe_name="new_dataframe",
