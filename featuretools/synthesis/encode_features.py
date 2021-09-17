@@ -104,6 +104,7 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
     new_feature_list = []
     kept_columns = []
     encoded_columns = []
+    columns_info = feature_matrix.ww.columns
 
     for f in iterator:
         # TODO: features with multiple columns are not encoded by this method,
@@ -175,10 +176,9 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
 
     # Grab ww metadata from feature matrix since it may be more exact
     for column in kept_columns:
-        column_info = feature_matrix.ww.columns[column]
-        ww_init_kwargs["logical_types"][column] = column_info.logical_type
-        ww_init_kwargs["semantic_tags"][column] = column_info.semantic_tags
-        ww_init_kwargs["column_origins"][column] = column_info.origin
+        ww_init_kwargs["logical_types"][column] = columns_info[column].logical_type
+        ww_init_kwargs["semantic_tags"][column] = columns_info[column].semantic_tags
+        ww_init_kwargs["column_origins"][column] = columns_info[column].origin
 
     X.ww.init(**ww_init_kwargs)
     return X, new_feature_list
