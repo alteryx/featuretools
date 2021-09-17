@@ -3,8 +3,8 @@
 Release Notes
 -------------
 
-1.0.0dev
-========
+Future Release
+==============
     * Enhancements
         * Add support for creating EntitySets from Woodwork DataTables (:pr:`1277`)
         * Add ``EntitySet.__deepcopy__`` that retains Woodwork typing information (:pr:`1465`)
@@ -54,6 +54,7 @@ Release Notes
         * Update ``nlp-primitives`` requirement for Featuretools 1.0 (:pr:`1609`)
         * Remove remaining references to ``Entity`` and ``Variable`` in code (:pr:`1612`)
         * Update Woodwork to version 0.7.1 with changed initialization (:pr:`1648`)
+        * Removes outdated workaround code related to a since-resolved pandas issue (:pr:`1677`)
         * Remove unused ``_dataframes_equal`` and ``camel_to_snake`` functions (:pr:`1683`)
         * Update Woodwork to version 0.8.0 for improved performance (:pr:`1689`)
         * Remove redundant typecasting in ``encode_features`` (:pr:`1694`)
@@ -212,19 +213,6 @@ You can list all the available semantic tags by calling ``featuretools.list_sema
 .. code-block:: python
 
     >>> ft.list_semantic_tags()
-
-
-Future Release
-==============
-    * Enhancements
-    * Fixes
-    * Changes
-        * Removes outdated workaround code related to a since-resolved pandas issue (:pr:`1677`)
-    * Documentation Changes
-    * Testing Changes
-
-    Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
 
 v0.27.1 Sep 2, 2021
 ===================
