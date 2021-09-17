@@ -44,7 +44,7 @@ def test_transform(pd_es, dask_es):
         fm = ft.calculate_feature_matrix(features=features[:100], entityset=pd_es, cutoff_time=cutoff_time)
         dask_fm = ft.calculate_feature_matrix(features=dask_features[:100], entityset=dask_es, cutoff_time=cutoff_time)
 
-        # TODO: Remove after returning WW initialized feature matrix
+        # Categorical categories can be ordered differently, this makes sure they are the same
         dask_fm = dask_fm.astype(fm.dtypes)
 
         # Use the same columns and make sure both indexes are sorted the same
@@ -76,7 +76,7 @@ def test_aggregation(pd_es, dask_es):
                             cutoff_time=pd.Timestamp("2019-01-05 04:00"),
                             max_depth=2)
 
-        # TODO: Remove after returning WW initialized feature matrix
+        # Categorical categories can be ordered differently, this makes sure they are the same
         dask_fm = dask_fm.astype(fm.dtypes)
 
         # Use the same columns and make sure both indexes are sorted the same

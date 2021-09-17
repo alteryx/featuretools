@@ -263,22 +263,25 @@ def test_add_relationship_errors_child_v_index(es):
         es.add_relationship('log', 'id', 'log2', 'id')
 
 
-# def test_add_relationship_empty_child_convert_dtype(es):
-#     relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
-#     empty_log_df = pd.DataFrame(columns=es['log'].columns)
-#     # --> schema isn't valid.... not sure what this is testing
-#     empty_log_df.ww.init(schema=es['log'].ww.schema)
+def test_add_relationship_empty_child_convert_dtype(es):
+    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
+    empty_log_df = pd.DataFrame(columns=es['log'].columns)
+    if es.dataframe_type == Library.DASK.value:
+        empty_log_df = dd.from_pandas(empty_log_df, npartitions=2)
+    elif es.dataframe_type == Library.KOALAS.value:
+        empty_log_df = ks.from_pandas(empty_log_df)
 
-#     es.add_dataframe('log', empty_log_df)
+    es.add_dataframe(empty_log_df, 'log')
 
-#     assert len(es['log']) == 0
-#     assert es['log']['session_id'].dtype == 'object'
+    assert len(es['log']) == 0
+    # session_id will be Unknown logical type with dtype string
+    assert es['log']['session_id'].dtype == 'string'
 
-#     es.relationships.remove(relationship)
-#     assert(relationship not in es.relationships)
+    es.relationships.remove(relationship)
+    assert(relationship not in es.relationships)
 
-#     es.add_relationship(relationship=relationship)
-#     assert es['log']['session_id'].dtype == 'int64'
+    es.add_relationship(relationship=relationship)
+    assert es['log']['session_id'].dtype == 'int64'
 
 
 def test_add_relationship_with_relationship_object(es):
