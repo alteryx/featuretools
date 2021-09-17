@@ -902,7 +902,7 @@ def test_handles_primitive_function_name_uniqueness(es):
     assert all(fm[f1.get_name()].sort_index() == value_sum)
     assert all(fm[f2.get_name()].sort_index() == double_value_sum)
 
-    # different primtives, same function returned by get_function,
+    # different primitives, same function returned by get_function,
     # different base features
     f3 = ft.Feature(es["log"].ww["value"],
                     parent_dataframe_name="customers",
@@ -917,7 +917,7 @@ def test_handles_primitive_function_name_uniqueness(es):
     assert all(fm[f4.get_name()].sort_index() == purchased_sum)\
 
 
-    # different primtives, same function returned by get_function,
+    # different primitives, same function returned by get_function,
     # same base feature
     class Sum1(AggregationPrimitive):
         """Sums elements of a numeric or boolean feature."""
@@ -1031,7 +1031,7 @@ def test_calls_progress_callback(es):
     assert np.isclose(mock_progress_callback.total, 1)
 
 
-# precalcualted_features is only used with approximate
+# precalculated_features is only used with approximate
 def test_precalculated_features(pd_es):
     error_msg = 'This primitive should never be used because the features are precalculated'
 

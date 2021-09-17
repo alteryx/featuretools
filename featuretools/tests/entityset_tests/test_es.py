@@ -768,8 +768,8 @@ def datetime1(request):
 
 def test_converts_datetime(datetime1):
     # string converts to datetime correctly
-    # This test fails without defining vtypes.  Entityset
-    # infers time column should be numeric type
+    # This test fails without defining logical types.
+    # Entityset infers time column should be numeric type
     logical_types = {'id': Integer,
                      'time': Datetime}
 
@@ -812,7 +812,7 @@ def datetime2(request):
 
 def test_handles_datetime_format(datetime2):
     # check if we load according to the format string
-    # pass in an ambigious date
+    # pass in an ambiguous date
     datetime_format = "%d-%m-%Y"
     actual = pd.Timestamp('Jan 2, 2011')
 
