@@ -102,8 +102,9 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
         iterator = features
 
     new_feature_list = []
-    new_columns = []
-    encoded_columns = set()
+    kept_columns = []
+    encoded_columns = []
+    columns_info = feature_matrix.ww.columns
 
     for f in iterator:
         # TODO: features with multiple columns are not encoded by this method,
@@ -115,12 +116,12 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
                                "be encoded.  This may result in a matrix with"
                                " non-numeric values." % (f))
             new_feature_list.append(f)
-            new_columns.extend(f.get_feature_names())
+            kept_columns.extend(f.get_feature_names())
             continue
 
         if to_encode is not None and f.get_name() not in to_encode:
             new_feature_list.append(f)
-            new_columns.extend(f.get_feature_names())
+            kept_columns.extend(f.get_feature_names())
             continue
 
         val_counts = X[f.get_name()].value_counts()
@@ -147,30 +148,37 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
             add = f == label
             add_name = add.get_name()
             new_feature_list.append(add)
-            new_columns.append(add_name)
-            encoded_columns.add(add_name)
-            X[add_name] = (X[f.get_name()] == label)
+            new_col = X[f.get_name()] == label
+            new_col.rename(add_name, inplace=True)
+            encoded_columns.append(new_col)
 
         if include_unknown:
             unknown = f.isin(unique).NOT().rename(f.get_name() + " is unknown")
             unknown_name = unknown.get_name()
             new_feature_list.append(unknown)
-            new_columns.append(unknown_name)
-            encoded_columns.add(unknown_name)
-            X[unknown_name] = (~X[f.get_name()].isin(unique))
+            new_col = ~X[f.get_name()].isin(unique)
+            new_col.rename(unknown_name, inplace=True)
+            encoded_columns.append(new_col)
 
-        X.drop(f.get_name(), axis=1, inplace=True)
+        if inplace:
+            X.drop(f.get_name(), axis=1, inplace=True)
 
-    new_columns.extend(pass_through)
-    new_X = X[new_columns]
-    iterator = new_X.columns
-    if verbose:
-        iterator = make_tqdm_iterator(iterable=new_X.columns,
-                                      total=len(new_X.columns),
-                                      desc="Encoding pass 2",
-                                      unit="feature")
+    kept_columns.extend(pass_through)
+
+    if inplace:
+        for encoded_column in encoded_columns:
+            X[encoded_column.name] = encoded_column
+    else:
+        X = pd.concat([X[kept_columns]] + encoded_columns, axis=1)
 
     entityset = new_feature_list[0].entityset
     ww_init_kwargs = get_ww_types_from_features(new_feature_list, entityset)
-    new_X.ww.init(**ww_init_kwargs)
-    return new_X, new_feature_list
+
+    # Grab ww metadata from feature matrix since it may be more exact
+    for column in kept_columns:
+        ww_init_kwargs["logical_types"][column] = columns_info[column].logical_type
+        ww_init_kwargs["semantic_tags"][column] = columns_info[column].semantic_tags
+        ww_init_kwargs["column_origins"][column] = columns_info[column].origin
+
+    X.ww.init(**ww_init_kwargs)
+    return X, new_feature_list
