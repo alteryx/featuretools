@@ -57,6 +57,7 @@ Release Notes
         * Remove unused ``_dataframes_equal`` and ``camel_to_snake`` functions (:pr:`1683`)
         * Update Woodwork to version 0.8.0 for improved performance (:pr:`1689`)
         * Remove redundant typecasting in ``encode_features`` (:pr:`1694`)
+        * Clean up comments and commented out code (:pr:`1701`)
     * Documentation Changes
         * Add a Woodwork Typing in Featuretools guide (:pr:`1589`)
         * Add a resource guide for transitioning to Featuretools 1.0 (:pr:`1627`)
