@@ -626,13 +626,6 @@ def test_arithmetic_of_agg(es):
         assert v == test[1]
 
 
-# TODO latlong is a string in entityset. Asserts in test_latlong fail
-# def latlong_unstringify(latlong):
-#     lat = float(latlong.split(", ")[0].replace("(", ""))
-#     lon = float(latlong.split(", ")[1].replace(")", ""))
-#     return (lat, lon)
-
-
 def test_latlong(pd_es):
     log_latlong_feat = ft.Feature(pd_es['log'].ww['latlong'])
     latitude = ft.Feature(log_latlong_feat, primitive=Latitude)
@@ -851,8 +844,7 @@ def test_isnull_feat(pd_es):
     isnull = ft.Feature(diff, primitive=IsNull)
     features = [isnull]
     df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(15))
-    # correct_vals_diff = [
-    #     np.nan, 5, 5, 5, 5, np.nan, 1, 1, 1, np.nan, np.nan, 5, np.nan, 7, 7]
+
     correct_vals = [True, False, False, False, False, True, False, False,
                     False, True, True, False, True, False, False]
     values = df[isnull.get_name()].tolist()

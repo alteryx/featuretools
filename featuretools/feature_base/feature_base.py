@@ -171,7 +171,7 @@ class FeatureBase(object):
         return self.hash()
 
     @property
-    def column_schema(self):  # typing_info ? typing_schema? schema?
+    def column_schema(self):
         feature = self
         column_schema = self.primitive.return_type
 

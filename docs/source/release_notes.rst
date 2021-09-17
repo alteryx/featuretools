@@ -58,6 +58,7 @@ Release Notes
         * Update Woodwork to version 0.8.0 for improved performance (:pr:`1689`)
         * Remove redundant typecasting in ``encode_features`` (:pr:`1694`)
         * Speed up ``encode_features`` if not inplace, some space cost (:pr:`1699`)
+        * Clean up comments and commented out code (:pr:`1701`)
     * Documentation Changes
         * Add a Woodwork Typing in Featuretools guide (:pr:`1589`)
         * Add a resource guide for transitioning to Featuretools 1.0 (:pr:`1627`)
