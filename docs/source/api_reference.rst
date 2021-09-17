@@ -243,8 +243,8 @@ Saving and Loading Features
 
 .. _api_ref.dataset:
 
-EntitySet, Entity, Relationship, Variable Types
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+EntitySet, Relationship
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Constructors
 ------------
@@ -253,7 +253,6 @@ Constructors
     :toctree: generated/
 
     EntitySet
-    Entity
     Relationship
 
 EntitySet load and prepare data
@@ -261,10 +260,15 @@ EntitySet load and prepare data
 .. autosummary::
     :toctree: generated/
 
-    EntitySet.entity_from_dataframe
-    EntitySet.add_relationship
-    EntitySet.normalize_entity
+    EntitySet.add_dataframe
     EntitySet.add_interesting_values
+    EntitySet.add_last_time_indexes
+    EntitySet.add_relationship
+    EntitySet.add_relationships
+    EntitySet.concat
+    EntitySet.normalize_dataframe
+    EntitySet.set_secondary_time_index
+    EntitySet.replace_dataframe
 
 EntitySet serialization
 -------------------------------
@@ -290,8 +294,9 @@ EntitySet query methods
     EntitySet.__getitem__
     EntitySet.find_backward_paths
     EntitySet.find_forward_paths
-    EntitySet.get_forward_entities
-    EntitySet.get_backward_entities
+    EntitySet.get_forward_dataframes
+    EntitySet.get_backward_dataframes
+    EntitySet.query_by_values
 
 EntitySet visualization
 -----------------------
@@ -300,60 +305,21 @@ EntitySet visualization
 
     EntitySet.plot
 
-
-Entity methods
--------------------
-.. autosummary::
-    :toctree: generated/
-
-    Entity.convert_variable_type
-    Entity.add_interesting_values
-
 Relationship attributes
 -----------------------
 .. autosummary::
     :toctree: generated/
 
-    Relationship.parent_variable
-    Relationship.child_variable
-    Relationship.parent_entity
-    Relationship.child_entity
+    Relationship.parent_column
+    Relationship.child_column
+    Relationship.parent_dataframe
+    Relationship.child_dataframe
 
-Variable types
-----------------
-.. currentmodule:: featuretools.variable_types.variable
-.. autosummary::
-    :toctree: generated/
-
-    Index
-    Id
-    TimeIndex
-    DatetimeTimeIndex
-    NumericTimeIndex
-    Datetime
-    Numeric
-    Categorical
-    Ordinal
-    Boolean
-    NaturalLanguage
-    LatLong
-    ZIPCode
-    IPAddress
-    FullName
-    EmailAddress
-    URL
-    PhoneNumber
-    DateOfBirth
-    CountryCode
-    SubRegionCode
-    FilePath
-
-Variable Utils Methods
+Data Type Util Methods
 ----------------------
-.. currentmodule:: featuretools.variable_types.utils
+.. currentmodule:: featuretools
 .. autosummary::
     :toctree: generated/
 
-    find_variable_types
-    list_variable_types
-    graph_variable_types
+    list_logical_types
+    list_semantic_tags

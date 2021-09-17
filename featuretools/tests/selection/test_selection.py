@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
 import pytest
+from woodwork.logical_types import NaturalLanguage
 
 import featuretools as ft
 from featuretools import Feature
 from featuretools.tests.testing_utils import make_ecommerce_entityset
-from featuretools.variable_types.variable import NaturalLanguage
 
 
 @pytest.fixture
@@ -22,7 +22,7 @@ def feature_matrix():
 
 @pytest.fixture
 def test_es(pd_es, feature_matrix):
-    pd_es.entity_from_dataframe('test', feature_matrix, index='test')
+    pd_es.add_dataframe(dataframe_name='test', dataframe=feature_matrix, index='test')
     return pd_es
 
 
@@ -36,7 +36,7 @@ def test_remove_low_information_feature_names(feature_matrix):
 
 # remove low information features not supported in Dask
 def test_remove_low_information_features(test_es, feature_matrix):
-    features = [Feature(v) for v in test_es['test'].variables]
+    features = [Feature(test_es['test'].ww[col]) for col in test_es['test'].columns]
     feature_matrix, features = ft.selection.remove_low_information_features(feature_matrix,
                                                                             features)
     assert feature_matrix.shape == (3, 5)
@@ -52,8 +52,9 @@ def test_remove_highly_null_features():
                              "all_nulls": [None, None, None, None], 'quarter': ['a', 'b', None, 'c'], 'vals': [True, True, False, False]})
 
     es = ft.EntitySet("data", {'nulls': (nulls_df, 'id')})
+    es['nulls'].ww.set_types(logical_types={'all_nulls': 'categorical', 'quarter': 'categorical'})
     fm, features = ft.dfs(entityset=es,
-                          target_entity="nulls",
+                          target_dataframe_name="nulls",
                           trans_primitives=['is_null'],
                           max_depth=2)
 
@@ -93,11 +94,15 @@ def test_remove_highly_null_features():
 
 def test_remove_single_value_features():
     same_vals_df = pd.DataFrame({'id': [0, 1, 2, 3], 'all_numeric': [88, 88, 88, 88], 'with_nan': [1, 1, None, 1],
-                                 "all_nulls": [None, None, None, None], 'all_categorical': ['a', 'a', 'a', 'a'], 'all_bools': [True, True, True, True], 'diff_vals': ['hi', 'bye', 'bye', 'hi']})
+                                 "all_nulls": [None, None, None, None], 'all_categorical': ['a', 'a', 'a', 'a'],
+                                 'all_bools': [True, True, True, True], 'diff_vals': ['hi', 'bye', 'bye', 'hi']})
 
     es = ft.EntitySet("data", {'single_vals': (same_vals_df, 'id')})
+    es['single_vals'].ww.set_types(logical_types={'all_nulls': 'categorical',
+                                                  'all_categorical': 'categorical',
+                                                  'diff_vals': 'categorical'})
     fm, features = ft.dfs(entityset=es,
-                          target_entity="single_vals",
+                          target_dataframe_name="single_vals",
                           trans_primitives=['is_null'],
                           max_depth=2)
 
@@ -133,7 +138,7 @@ def test_remove_highly_correlated_features():
 
     es = ft.EntitySet("data", {'correlated': (correlated_df, 'id', None, {'words': NaturalLanguage})})
     fm, _ = ft.dfs(entityset=es,
-                   target_entity="correlated",
+                   target_dataframe_name="correlated",
                    trans_primitives=['num_characters'],
                    max_depth=2)
 
@@ -172,22 +177,49 @@ def test_remove_highly_correlated_features():
     assert 'diff_ints' in diff_threshold_cols
 
 
+def test_remove_highly_correlated_features_init_woodwork():
+    correlated_df = pd.DataFrame({
+        "id": [0, 1, 2, 3],
+        "diff_ints": [34, 11, 29, 91],
+        "words": ["test", "this is a short sentence", "foo bar", "baz"],
+        "corr_words": [4, 24, 7, 3],
+        'corr_1': [99, 88, 77, 33],
+        'corr_2': [99, 88, 77, 33]
+    })
+
+    es = ft.EntitySet("data", {'correlated': (correlated_df, 'id', None, {'words': NaturalLanguage})})
+    fm, _ = ft.dfs(entityset=es,
+                   target_dataframe_name="correlated",
+                   trans_primitives=['num_characters'],
+                   max_depth=2)
+
+    no_ww_fm = fm.copy()
+    ww_fm = fm.copy()
+    ww_fm.ww.init()
+
+    new_no_ww_fm = ft.selection.remove_highly_correlated_features(no_ww_fm)
+    new_ww_fm = ft.selection.remove_highly_correlated_features(ww_fm)
+
+    pd.testing.assert_frame_equal(new_no_ww_fm, new_ww_fm)
+
+
 def test_multi_output_selection():
     df1 = pd.DataFrame({'id': [0, 1, 2, 3]})
 
     df2 = pd.DataFrame({'first_id': [0, 1, 1, 3],
                         "all_nulls": [None, None, None, None], 'quarter': ['a', 'b', None, 'c']})
 
-    entities = {
+    dataframes = {
         "first": (df1, 'id'),
         "second": (df2, 'index'),
     }
 
     relationships = [("first", 'id', 'second', 'first_id')]
-    es = ft.EntitySet("data", entities, relationships=relationships)
+    es = ft.EntitySet("data", dataframes, relationships=relationships)
+    es['second'].ww.set_types(logical_types={'all_nulls': 'categorical', 'quarter': 'categorical'})
 
     fm, features = ft.dfs(entityset=es,
-                          target_entity="first",
+                          target_dataframe_name="first",
                           trans_primitives=[],
                           agg_primitives=['n_most_common'],
                           max_depth=2)
@@ -199,14 +231,14 @@ def test_multi_output_selection():
 
     es = make_ecommerce_entityset()
     fm, features = ft.dfs(entityset=es,
-                          target_entity="régions",
+                          target_dataframe_name="régions",
                           trans_primitives=[],
                           agg_primitives=['n_most_common'],
                           max_depth=2)
 
     matrix_with_slices, unsliced_features = ft.selection.remove_highly_null_features(fm, features)
-    assert len(matrix_with_slices.columns) == 22
-    assert len(unsliced_features) == 18
+    assert len(matrix_with_slices.columns) == 18
+    assert len(unsliced_features) == 14
 
     matrix_columns = set(matrix_with_slices.columns)
     for f in unsliced_features:

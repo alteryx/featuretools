@@ -4,6 +4,7 @@ import boto3
 import pytest
 from pympler.asizeof import asizeof
 from smart_open import open
+from woodwork.column_schema import ColumnSchema
 
 import featuretools as ft
 from featuretools.entityset.serialize import \
@@ -38,12 +39,11 @@ from featuretools.primitives import (
     make_agg_primitive
 )
 from featuretools.tests.testing_utils import check_names
-from featuretools.variable_types import Numeric
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}.json".format(SCHEMA_VERSION, ENTITYSET_SCHEMA_VERSION)
+TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}_2021_8_31.json".format(SCHEMA_VERSION, ENTITYSET_SCHEMA_VERSION)
 S3_URL = "s3://featuretools-static/" + TEST_FILE
 URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
 TEST_CONFIG = "CheckConfigPassesOn"
@@ -80,7 +80,7 @@ def pickle_features_test_helper(es_size, features_original, dir_path):
 
 
 def test_pickle_features(es, tmpdir):
-    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+    features_original = ft.dfs(target_dataframe_name='sessions', entityset=es, features_only=True)
     pickle_features_test_helper(asizeof(es), features_original, str(tmpdir))
 
 
@@ -88,11 +88,11 @@ def test_pickle_features_with_custom_primitive(pd_es, tmpdir):
     NewMax = make_agg_primitive(
         lambda x: max(x),
         name="NewMax",
-        input_types=[Numeric],
-        return_type=Numeric,
+        input_types=[ColumnSchema(semantic_tags={'numeric'})],
+        return_type=ColumnSchema(semantic_tags={'numeric'}),
         description="Calculate means ignoring nan values")
 
-    features_original = ft.dfs(target_entity='sessions', entityset=pd_es,
+    features_original = ft.dfs(target_dataframe_name='sessions', entityset=pd_es,
                                agg_primitives=["Last", "Mean", NewMax], features_only=True)
 
     assert any([isinstance(feat.primitive, NewMax) for feat in features_original])
@@ -114,28 +114,28 @@ def test_serialized_renamed_features(es):
         deserialized = deserializer.to_list()[0]
         check_names(deserialized, new_name, new_names)
 
-    identity_original = ft.IdentityFeature(es['log']['value'])
+    identity_original = ft.IdentityFeature(es['log'].ww['value'])
     assert identity_original.get_name() == 'value'
 
-    value = ft.IdentityFeature(es['log']['value'])
+    value = ft.IdentityFeature(es['log'].ww['value'])
 
     primitive = ft.primitives.Max()
-    agg_original = ft.AggregationFeature(value, es['customers'], primitive)
+    agg_original = ft.AggregationFeature(value, 'customers', primitive)
     assert agg_original.get_name() == 'MAX(log.value)'
 
-    direct_original = ft.DirectFeature(es['customers']['age'], es['sessions'])
+    direct_original = ft.DirectFeature(ft.IdentityFeature(es['customers'].ww['age']), 'sessions')
     assert direct_original.get_name() == 'customers.age'
 
     primitive = ft.primitives.MultiplyNumericScalar(value=2)
     transform_original = ft.TransformFeature(value, primitive)
     assert transform_original.get_name() == 'value * 2'
 
-    zipcode = ft.IdentityFeature(es['log']['zipcode'])
+    zipcode = ft.IdentityFeature(es['log'].ww['zipcode'])
     primitive = CumSum()
     groupby_original = ft.feature_base.GroupByTransformFeature(value, primitive, zipcode)
     assert groupby_original.get_name() == 'CUM_SUM(value) by zipcode'
 
-    multioutput_original = ft.Feature(es['log']['product_id'], parent_entity=es['customers'], primitive=NMostCommon(n=2))
+    multioutput_original = ft.Feature(es['log'].ww['product_id'], parent_dataframe_name='customers', primitive=NMostCommon(n=2))
     assert multioutput_original.get_name() == 'N_MOST_COMMON(log.product_id, n=2)'
 
     featureslice_original = ft.feature_base.FeatureOutputSlice(multioutput_original, 0)
@@ -166,7 +166,7 @@ def s3_bucket(s3_client):
 
 
 def test_serialize_features_mock_s3(es, s3_client, s3_bucket):
-    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+    features_original = ft.dfs(target_dataframe_name='sessions', entityset=es, features_only=True)
 
     ft.save_features(features_original, TEST_S3_URL)
 
@@ -178,7 +178,7 @@ def test_serialize_features_mock_s3(es, s3_client, s3_bucket):
 
 
 def test_serialize_features_mock_anon_s3(es, s3_client, s3_bucket):
-    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+    features_original = ft.dfs(target_dataframe_name='sessions', entityset=es, features_only=True)
 
     ft.save_features(features_original, TEST_S3_URL, profile_name=False)
 
@@ -223,7 +223,7 @@ def setup_test_profile(monkeypatch, tmpdir):
 
 
 def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
-    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+    features_original = ft.dfs(target_dataframe_name='sessions', entityset=es, features_only=True)
 
     ft.save_features(features_original, TEST_S3_URL, profile_name='test')
 
@@ -243,7 +243,7 @@ def test_deserialize_features_s3(pd_es, url, profile_name):
     trans_primitives = [Day, Year, Month, Weekday, Haversine, NumWords,
                         NumCharacters]
 
-    features_original = ft.dfs(target_entity='sessions',
+    features_original = ft.dfs(target_dataframe_name='sessions',
                                entityset=pd_es,
                                features_only=True,
                                agg_primitives=agg_primitives,
@@ -253,7 +253,7 @@ def test_deserialize_features_s3(pd_es, url, profile_name):
 
 
 def test_serialize_url(es):
-    features_original = ft.dfs(target_entity='sessions',
+    features_original = ft.dfs(target_dataframe_name='sessions',
                                entityset=es,
                                features_only=True)
     error_text = "Writing to URLs is not supported"

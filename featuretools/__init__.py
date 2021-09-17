@@ -31,6 +31,7 @@ import logging
 import pkg_resources
 import sys
 import traceback
+from woodwork import list_logical_types, list_semantic_tags
 
 logger = logging.getLogger('featuretools')
 

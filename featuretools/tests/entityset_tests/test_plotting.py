@@ -14,7 +14,7 @@ from featuretools.utils.gen_utils import Library
 def pd_simple():
     es = ft.EntitySet("test")
     df = pd.DataFrame({"foo": [1]})
-    es.entity_from_dataframe("test", df)
+    es.add_dataframe(df, dataframe_name='test')
     return es
 
 
@@ -23,7 +23,7 @@ def dd_simple():
     es = ft.EntitySet("test")
     df = pd.DataFrame({"foo": [1]})
     df = dd.from_pandas(df, npartitions=2)
-    es.entity_from_dataframe("test", df)
+    es.add_dataframe(df, dataframe_name='test')
     return es
 
 
@@ -32,7 +32,7 @@ def ks_simple():
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     es = ft.EntitySet("test")
     df = ks.DataFrame({'foo': [1]})
-    es.entity_from_dataframe('test', df)
+    es.add_dataframe(df, dataframe_name='test')
     return es
 
 
@@ -77,7 +77,7 @@ def test_invalid_format(es):
 def test_multiple_rows(es):
     plot_ = es.plot()
     result = re.findall(r"\((\d+\srows?)\)", plot_.source)
-    expected = ["{} rows".format(str(i.shape[0])) for i in es.entities]
+    expected = ["{} rows".format(str(i.shape[0])) for i in es.dataframes]
     if es.dataframe_type == Library.DASK.value:
         # Dask does not list number of rows in plot
         assert result == []

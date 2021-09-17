@@ -6,15 +6,213 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add support for creating EntitySets from Woodwork DataTables (:pr:`1277`)
+        * Add ``EntitySet.__deepcopy__`` that retains Woodwork typing information (:pr:`1465`)
+        * Add ``EntitySet.__getstate__`` and ``EntitySet.__setstate__`` to preserve typing when pickling (:pr:`1581`)
+        * Returned feature matrix has woodwork typing information (:pr:`1664`)
     * Fixes
+        * Fix ``DFSTransformer`` Documentation for Featuretools 1.0 (:pr:`1605`)
+        * Fix ``calculate_feature_matrix`` time type check and ``encode_features`` for synthesis tests (:pr:`1580`)
+        * Revert reordering of categories in ``Equal`` and ``NotEqual`` primitives (:pr:`1640`)
+        * Fix bug in ``EntitySet.add_relationship`` that caused ``foreign_key`` tag to be lost (:pr:`1675`)
+        * Update DFS to not build features on last time index columns in dataframes (:pr:`1695`)
     * Changes
+        * Remove ``add_interesting_values`` from ``Entity`` (:pr:`1269`)
+        * Move ``set_secondary_time_index`` method from ``Entity`` to ``EntitySet`` (:pr:`1280`)
+        * Refactor Relationship creation process (:pr:`1370`)
+        * Replaced ``Entity.update_data`` with ``EntitySet.update_dataframe`` (:pr:`1398`)
+        * Move validation check for uniform time index to ``EntitySet`` (:pr:`1400`)
+        * Replace ``Entity`` objects in ``EntitySet`` with Woodwork dataframes (:pr:`1405`)
+        * Refactor ``EntitySet.plot`` to work with Woodwork dataframes (:pr:`1468`)
+        * Move ``last_time_index`` to be a column on the DataFrame (:pr:`1456`)
+        * Update serialization/deserialization to work with Woodwork (:pr:`1452`)
+        * Refactor ``EntitySet.query_by_values`` to work with Woodwork dataframes (:pr:`1467`)
+        * Replace ``list_variable_types`` with ``list_logical_types`` (:pr:`1477`)
+        * Allow deep EntitySet equality check (:pr:`1480`)
+        * Update ``EntitySet.concat`` to work with Woodwork DataFrames (:pr:`1490`)
+        * Add function to list semantic tags (:pr:`1486`)
+        * Initialize Woodwork on feature matrix in ``remove_highly_correlated_features`` if necessary (:pr:`1618`)
+        * Remove categorical-encoding as an add-on library (will be added back later) (:pr:`1632`)
+        * Remove autonormalize as an add-on library (will be added back later) (:pr:`1636`)
+        * Remove tsfresh, nlp_primitives, sklearn_transformer as an add-on library (will be added back later) (:pr:`1638`)
+        * Update input and return types for ``CumCount`` primitive (:pr:`1651`)
+        * Standardize imports of Woodwork (:pr:`1526`)
+        * Rename target entity to target dataframe (:pr:`1506`)
+        * Replace ``entity_from_dataframe`` with ``add_dataframe`` (:pr:`1504`)
+        * Create features from Woodwork columns (:pr:`1582`)
+        * Move default variable description logic to ``generate_description`` (:pr:`1403`)
+        * Update Woodwork to version 0.4.0 with ``LogicalType.transform`` and LogicalType instances (:pr:`1451`)
+        * Update Woodwork to version 0.4.1 with Ordinal order values and whitespace serialization fix (:pr:`1478`)
+        * Use ``ColumnSchema`` for primitive input and return tyes (:pr:`1411`)
+        * Update features to use Woodwork and remove ``Entity`` and ``Variable`` classes (:pr:`1501`)
+        * Re-add ``make_index`` functionality to EntitySet (:pr:`1507`)
+        * Use ``ColumnSchema`` in DFS primitive matching (:pr:`1523`)
+        * Updates from Featuretools v0.26.0 (:pr:`1539`)
+        * Leverage Woodwork better in ``add_interesting_values`` (:pr:`1550`)
+        * Update ``calculate_feature_matrix`` to use Woodwork (:pr:`1533`)
+        * Update Woodwork to version 0.6.0 with changed categorical inference (:pr:`1597`)
+        * Update ``nlp-primitives`` requirement for Featuretools 1.0 (:pr:`1609`)
+        * Remove remaining references to ``Entity`` and ``Variable`` in code (:pr:`1612`)
+        * Update Woodwork to version 0.7.1 with changed initialization (:pr:`1648`)
         * Removes outdated workaround code related to a since-resolved pandas issue (:pr:`1677`)
+        * Remove unused ``_dataframes_equal`` and ``camel_to_snake`` functions (:pr:`1683`)
+        * Update Woodwork to version 0.8.0 for improved performance (:pr:`1689`)
+        * Remove redundant typecasting in ``encode_features`` (:pr:`1694`)
+        * Speed up ``encode_features`` if not inplace, some space cost (:pr:`1699`)
+        * Clean up comments and commented out code (:pr:`1701`)
+        * Update Woodwork to version 0.8.1 for improved performance (:pr:`1702`)
     * Documentation Changes
+        * Add a Woodwork Typing in Featuretools guide (:pr:`1589`)
+        * Add a resource guide for transitioning to Featuretools 1.0 (:pr:`1627`)
+        * Update ``using_entitysets`` page to use Woodwork (:pr:`1532`)
+        * Update FAQ page to use Woodwork integration (:pr:`1649`)
+        * Update DFS page to be Jupyter notebook and use Woodwork integration (:pr:`1557`)
+        * Update Feature Primitives page to be Jupyter notebook and use Woodwork integration (:pr:`1556`)
+        * Update Handling Time page to be Jupyter notebook and use Woodwork integration (:pr:`1552`)
+        * Update Advanced Custom Primitives page to be Jupyter notebook and use Woodwork integration (:pr:`1587`)
+        * Update Deployment page to use Woodwork integration (:pr:`1588`)
+        * Update Using Dask EntitySets page to be Jupyter notebook and use Woodwork integration (:pr:`1590`)
+        * Update Specifying Primitive Options page to be Jupyter notebook and use Woodwork integration (:pr:`1593`)
+        * Update API Reference to match Featuretools 1.0 API (:pr:`1600`)
+        * Update Index page to be Jupyter notebook and use Woodwork integration (:pr:`1602`)
+        * Update Feature Descriptions page to be Jupyter notebook and use Woodwork integration (:pr:`1603`)
+        * Update Using Koalas EntitySets page to be Jupyter notebook and use Woodwork integration (:pr:`1604`)
+        * Update Glossary to use Woodwork integration (:pr:`1608`)
+        * Update Tuning DFS page to be Jupyter notebook and use Woodwork integration (:pr:`1610`)
+        * Fix small formatting issues in Documentation (:pr:`1607`)
+        * Remove Variables page and more references to variables (:pr:`1629`)
+        * Update Feature Selection page to use Woodwork integration (:pr:`1618`)
+        * Update Improving Performance page to be Jupyter notebook and use Woodwork integration (:pr:`1591`)
+        * Fix typos in transition guide (:pr:`1672`)
     * Testing Changes
+        * Remove entity tests (:pr:`1521`)
+        * Fix broken ``EntitySet`` tests (:pr:`1548`)
+        * Fix broken primitive tests (:pr:`1568`)
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
+Breaking Changes
+++++++++++++++++
+
+* ``Entity.add_interesting_values`` has been removed. To add interesting values for a single
+  entity, call ``EntitySet.add_interesting_values`` and pass the name of the dataframe for
+  which to add interesting values in the ``dataframe_name`` parameter (:pr:`1405`, :pr:`1370`).
+* ``Entity.set_secondary_time_index`` has been removed and replaced by ``EntitySet.set_secondary_time_index``
+  with an added ``dataframe_name`` parameter to specify the dataframe on which to set the secondary time index (:pr:`1405`, :pr:`1370`).
+* ``Relationship`` initialization has been updated to accept four name values for the parent dataframe,
+  parent column, child dataframe and child column instead of accepting two ``Variable`` objects  (:pr:`1405`, :pr:`1370`).
+* ``EntitySet.add_relationship`` has been updated to accept dataframe and column name values or a
+  ``Relationship`` object. Adding a relationship from a ``Relationship`` object now requires passing
+  the relationship as a keyword argument  (:pr:`1405`, :pr:`1370`).
+* ``Entity.update_data`` has been removed. To update the dataframe, call ``EntitySet.replace_dataframe`` and use the ``dataframe_name`` parameter (:pr:`1630`, :pr:`1522`).
+* The data in an ``EntitySet`` is no longer stored in ``Entity`` objects. Instead, dataframes
+  with Woodwork typing information are used. Accordingly, most language referring to “entities”
+  will now refer to “dataframes”, references to “variables” will now refer to “columns”, and
+  “variable types” will use the Woodwork type system’s “logical types” and “semantic tags” (:pr:`1405`).
+* The dictionary of tuples passed to ``EntitySet.__init__`` has replaced the ``variable_types`` element
+  with separate ``logical_types`` and ``semantic_tags`` dictionaries (:pr:`1405`).
+* ``EntitySet.entity_from_dataframe`` no longer exists. To add new tables to an entityset, use``EntitySet.add_dataframe`` (:pr:`1405`).
+* ``EntitySet.normalize_entity`` has been renamed to ``EntitySet.normalize_dataframe`` (:pr:`1405`).
+* Instead of raising an error at ``EntitySet.add_relationship`` when the dtypes of parent and child columns
+  do not match, Featuretools will now check whether the Woodwork logical type of the parent and child columns
+  match. If they do not match, there will now be a warning raised, and Featuretools will attempt to update
+  the logical type of the child column to match the parent’s (:pr:`1405`).
+* If no index is specified at ``EntitySet.add_dataframe``, the first column will only be used as index if
+  Woodwork has not been initialized on the DataFrame. When adding a dataframe that already has Woodwork
+  initialized, if there is no index set, an error will be raised (:pr:`1405`).
+* Featuretools will no longer re-order columns in DataFrames so that the index column is the first column of the DataFrame (:pr:`1405`).
+* Type inference can now be performed on Dask and Koalas dataframes, though a warning will be issued 
+  indicating that this may be computationally intensive (:pr:`1405`).
+* EntitySet.time_type is no longer stored as Variable objects. Instead, Woodwork typing is used, and a
+  numeric time type will be indicated by the ``'numeric'`` semantic tag string, and a datetime time type
+  will be indicated by the ``Datetime`` logical type (:pr:`1405`).
+* ``last_time_index``, ``secondary_time_index``, and ``interesting_values`` are no longer attributes
+  of an entityset’s tables that can be accessed directly. Now they must be accessed through the metadata
+  of the Woodwork DataFrame, which is a dictionary (:pr:`1405`).
+* The helper function ``list_variable_types`` will be removed in a future release and replaced by ``list_logical_types``.
+  In the meantime, ``list_variable_types`` will return the same output as ``list_logical_types`` (:pr:`1447`).
+
+What's New in this Release
+++++++++++++++++++++++++++
+
+**Adding Interesting Values**
+
+To add interesting values for a single entity, call ``EntitySet.add_interesting_values`` passing the
+id of the entity for which interesting values should be added.
+
+.. code-block:: python
+
+    >>> es.add_interesting_values(entity_id='log')
+
+**Setting a Secondary Time Index**
+
+To set a secondary time index for a specific entity, call ``EntitySet.set_secondary_time_index`` passing
+Entity for which to set the secondary time index along with the dictionary mapping the secondary time
+index column to the for which the secondary time index applies.
+
+.. code-block:: python
+
+    >>> customers_secondary_time_index = {'cancel_date': ['cancel_reason']}
+    >>> es.set_secondary_time_index(es['customers'], customers_secondary_time_index)
+
+**Creating a Relationship and Adding to an EntitySet**
+
+Relationships are now created by passing parameters identifying the entityset along with four string values
+specifying the parent dataframe, parent column, child dataframe and child column. Specifying parameter names
+is optional.
+
+.. code-block:: python
+
+    >>> new_relationship = Relationship(
+    ...     entityset=es,
+    ...     parent_dataframe_name='customers',
+    ...     parent_column_name='id',
+    ...     child_dataframe_name='sessions',
+    ...     child_column_name='customer_id'
+    ... )
+
+Relationships can now be added to EntitySets in one of two ways. The first approach is to pass in
+name values for the parent dataframe, parent column, child dataframe and child column. Specifying
+parameter names is optional with this approach.
+
+.. code-block:: python
+
+    >>> es.add_relationship(
+    ...     parent_dataframe_name='customers',
+    ...     parent_column_name='id',
+    ...     child_dataframe_name='sessions',
+    ...     child_column_name='customer_id'
+    ... )
+
+Relationships can also be added by passing in a previously created ``Relationship`` object. When using
+this approach the ``relationship`` parameter name must be included.
+
+.. code-block:: python
+
+    >>> es.add_relationship(relationship=new_relationship)
+
+**Replace DataFrame**
+
+To replace a dataframe in an EntitySet with a new dataframe, call ``EntitySet.replace_dataframe`` and pass in the name of the dataframe to replace along with the new data.
+
+.. code-block:: python
+
+    >>> es.replace_dataframe(dataframe_name='log', df=df)
+
+**List Logical Types and Semantic Tags**
+
+Logical types and semantic tags have replaced variable types to parse and interpret columns. You can list all the available logical types by calling ``featuretools.list_logical_types``.
+
+.. code-block:: python
+
+    >>> ft.list_logical_types()
+
+You can list all the available semantic tags by calling ``featuretools.list_semantic_tags``.
+
+.. code-block:: python
+
+    >>> ft.list_semantic_tags()
 
 v0.27.1 Sep 2, 2021
 ===================
@@ -124,7 +322,7 @@ v0.24.0 Apr 30, 2021
         * Update token for dependency checker PR creation (:pr:`1402`, :pr:`1407`, :pr:`1409`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 v0.23.3 Mar 31, 2021
 ====================

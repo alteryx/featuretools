@@ -7,7 +7,7 @@ from featuretools.utils.s3_utils import (
 from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.version import __version__ as ft_version
 
-SCHEMA_VERSION = "6.0.0"
+SCHEMA_VERSION = "7.0.0"
 
 
 def save_features(features, location=None, profile_name=None):
@@ -42,9 +42,9 @@ def save_features(features, location=None, profile_name=None):
 
         .. code-block:: python
 
-            f1 = ft.Feature(es["log"]["product_id"])
-            f2 = ft.Feature(es["log"]["purchased"])
-            f3 = ft.Feature(es["log"]["value"])
+            f1 = ft.Feature(es["log"].ww["product_id"])
+            f2 = ft.Feature(es["log"].ww["purchased"])
+            f3 = ft.Feature(es["log"].ww["value"])
 
             features = [f1, f2, f3]
 

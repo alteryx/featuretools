@@ -12,10 +12,10 @@ from featuretools.utils import entry_point
 
 
 @entry_point('featuretools_dfs')
-def dfs(entities=None,
+def dfs(dataframes=None,
         relationships=None,
         entityset=None,
-        target_entity=None,
+        target_dataframe_name=None,
         cutoff_time=None,
         instance_ids=None,
         agg_primitives=None,
@@ -23,8 +23,8 @@ def dfs(entities=None,
         groupby_trans_primitives=None,
         allowed_paths=None,
         max_depth=2,
-        ignore_entities=None,
-        ignore_variables=None,
+        ignore_dataframes=None,
+        ignore_columns=None,
         primitive_options=None,
         seed_features=None,
         drop_contains=None,
@@ -40,35 +40,36 @@ def dfs(entities=None,
         n_jobs=1,
         dask_kwargs=None,
         verbose=False,
-        return_variable_types=None,
+        return_types=None,
         progress_callback=None,
         include_cutoff_time=True):
-    '''Calculates a feature matrix and features given a dictionary of entities
+    '''Calculates a feature matrix and features given a dictionary of dataframes
     and a list of relationships.
 
 
     Args:
-        entities (dict[str -> tuple(pd.DataFrame, str, str, dict[str -> Variable])]): dictionary of
-            entities. Entries take the format
-            {entity id -> (dataframe, id column, (time_column), (variable_types))}.
-            Note that time_column and variable_types are optional.
+        dataframes (dict[str -> tuple(DataFrame, str, str, dict[str -> str/Woodwork.LogicalType], dict[str->str/set], boolean)]):
+            Dictionary of DataFrames. Entries take the format
+            {dataframe name -> (dataframe, index column, time_index, logical_types, semantic_tags, make_index)}.
+            Note that only the dataframe is required. If a Woodwork DataFrame is supplied, any other parameters
+            will be ignored.
 
         relationships (list[(str, str, str, str)]): List of relationships
-            between entities. List items are a tuple with the format
-            (parent entity id, parent variable, child entity id, child variable).
+            between dataframes. List items are a tuple with the format
+            (parent dataframe name, parent column, child dataframe name, child column).
 
         entityset (EntitySet): An already initialized entityset. Required if
-            entities and relationships are not defined.
+            dataframes and relationships are not defined.
 
-        target_entity (str): Entity id of entity on which to make predictions.
+        target_dataframe_name (str): Name of dataframe on which to make predictions.
 
         cutoff_time (pd.DataFrame or Datetime): Specifies times at which to calculate
             the features for each instance. The resulting feature matrix will use data
             up to and including the cutoff_time. Can either be a DataFrame or a single
             value. If a DataFrame is passed the instance ids for which to calculate features
-            must be in a column with the same name as the target entity index or a column
+            must be in a column with the same name as the target dataframe index or a column
             named `instance_id`. The cutoff time values in the DataFrame must be in a column with
-            the same name as the target entity time index or a column named `time`. If the
+            the same name as the target dataframe time index or a column named `time`. If the
             DataFrame has more than two columns, any additional columns will be added to the
             resulting feature matrix. If a single value is passed, this value will be used for
             all instances.
@@ -86,52 +87,52 @@ def dfs(entities=None,
 
                 Default: ["day", "year", "month", "weekday", "haversine", "num_words", "num_characters"]
 
-        groupby_trans_primitives (list[str or :class:`.primitives.TransformPrimitive`], optional):
+        groupby_trans_primitives (list[str or TransformPrimitive], optional):
             list of Transform primitives to make GroupByTransformFeatures with
 
-        allowed_paths (list[list[str]]): Allowed entity paths on which to make
+        allowed_paths (list[list[str]]): Allowed dataframe paths on which to make
             features.
 
         max_depth (int) : Maximum allowed depth of features.
 
-        ignore_entities (list[str], optional): List of entities to
+        ignore_dataframes (list[str], optional): List of dataframes to
             blacklist when creating features.
 
-        ignore_variables (dict[str -> list[str]], optional): List of specific
-            variables within each entity to blacklist when creating features.
+        ignore_columns (dict[str -> list[str]], optional): List of specific
+            columns within each dataframe to blacklist when creating features.
 
         primitive_options (list[dict[str or tuple[str] -> dict] or dict[str or tuple[str] -> dict, optional]):
             Specify options for a single primitive or a group of primitives.
             Lists of option dicts are used to specify options per input for primitives
             with multiple inputs. Each option ``dict`` can have the following keys:
 
-            ``"include_entities"``
-                List of entities to be included when creating features for
-                the primitive(s). All other entities will be ignored
+            ``"include_dataframes"``
+                List of dataframes to be included when creating features for
+                the primitive(s). All other dataframes will be ignored
                 (list[str]).
-            ``"ignore_entities"``
-                List of entities to be blacklisted when creating features
+            ``"ignore_dataframes"``
+                List of dataframes to be blacklisted when creating features
                 for the primitive(s) (list[str]).
-            ``"include_variables"``
-                List of specific variables within each entity to include when
-                creating feautres for the primitive(s). All other variables
-                in a given entity will be ignored (dict[str -> list[str]]).
-            ``"ignore_variables"``
-                List of specific variables within each entityt to blacklist
+            ``"include_columns"``
+                List of specific columns within each dataframe to include when
+                creating features for the primitive(s). All other columns
+                in a given dataframe will be ignored (dict[str -> list[str]]).
+            ``"ignore_columns"``
+                List of specific columns within each dataframe to blacklist
                 when creating features for the primitive(s) (dict[str ->
                 list[str]]).
-            ``"include_groupby_entities"``
-                List of Entities to be included when finding groupbys. All
-                other entities will be ignored (list[str]).
-            ``"ignore_groupby_entities"``
-                List of entities to blacklist when finding groupbys
+            ``"include_groupby_dataframes"``
+                List of dataframes to be included when finding groupbys. All
+                other dataframes will be ignored (list[str]).
+            ``"ignore_groupby_dataframes"``
+                List of dataframes to blacklist when finding groupbys
                 (list[str]).
-            ``"include_groupby_variables"``
-                List of specific variables within each entity to include as
-                groupbys, if applicable. All other variables in each
-                entity will be ignored (dict[str -> list[str]]).
-            ``"ignore_groupby_variables"``
-                List of specific variables within each entity to blacklist
+            ``"include_groupby_columns"``
+                List of specific columns within each dataframe to include as
+                groupbys, if applicable. All other columns in each
+                dataframe will be ignored (dict[str -> list[str]]).
+            ``"ignore_groupby_columns"``
+                List of specific columns within each dataframe to blacklist
                 as groupbys (dict[str -> list[str]]).
 
         seed_features (list[:class:`.FeatureBase`]): List of manually defined
@@ -198,10 +199,11 @@ def dfs(entities=None,
 
             Valid keyword arguments for LocalCluster will also be accepted.
 
-        return_variable_types (list[Variable] or str, optional): Types of
-                variables to return. If None, default to
-                Numeric, Discrete, and Boolean. If given as
-                the string 'all', use all available variable types.
+        return_types (list[woodwork.ColumnSchema] or str, optional):
+            List of ColumnSchemas defining the types of
+            columns to return. If None, defaults to returning all
+            numeric, categorical and boolean types. If given as
+            the string 'all', returns all available types.
 
         progress_callback (callable): function to be called with incremental progress updates.
             Has the following parameters:
@@ -222,26 +224,26 @@ def dfs(entities=None,
 
             from featuretools.primitives import Mean
             # cutoff times per instance
-            entities = {
+            dataframes = {
                 "sessions" : (session_df, "id"),
                 "transactions" : (transactions_df, "id", "transaction_time")
             }
             relationships = [("sessions", "id", "transactions", "session_id")]
-            feature_matrix, features = dfs(entities=entities,
+            feature_matrix, features = dfs(dataframes=dataframes,
                                            relationships=relationships,
-                                           target_entity="transactions",
+                                           target_dataframe_name="transactions",
                                            cutoff_time=cutoff_times)
             feature_matrix
 
-            features = dfs(entities=entities,
+            features = dfs(dataframes=dataframes,
                            relationships=relationships,
-                           target_entity="transactions",
+                           target_dataframe_name="transactions",
                            features_only=True)
     '''
     if not isinstance(entityset, EntitySet):
-        entityset = EntitySet("dfs", entities, relationships)
+        entityset = EntitySet("dfs", dataframes, relationships)
 
-    dfs_object = DeepFeatureSynthesis(target_entity, entityset,
+    dfs_object = DeepFeatureSynthesis(target_dataframe_name, entityset,
                                       agg_primitives=agg_primitives,
                                       trans_primitives=trans_primitives,
                                       groupby_trans_primitives=groupby_trans_primitives,
@@ -250,14 +252,14 @@ def dfs(entities=None,
                                       allowed_paths=allowed_paths,
                                       drop_exact=drop_exact,
                                       drop_contains=drop_contains,
-                                      ignore_entities=ignore_entities,
-                                      ignore_variables=ignore_variables,
+                                      ignore_dataframes=ignore_dataframes,
+                                      ignore_columns=ignore_columns,
                                       primitive_options=primitive_options,
                                       max_features=max_features,
                                       seed_features=seed_features)
 
     features = dfs_object.build_features(
-        verbose=verbose, return_variable_types=return_variable_types)
+        verbose=verbose, return_types=return_types)
 
     trans, agg, groupby, where = _categorize_features(features)
 
@@ -302,6 +304,6 @@ def warn_unused_primitives(unused_primitives):
 
     warning_msg = "Some specified primitives were not used during DFS:\n{}".format(unused_string) + \
         "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
-        "or it may indicate no compatible variable types for the primitive were found in the data."
+        "or it may indicate no compatible columns for the primitive were found in the data."
 
     warnings.warn(warning_msg, UnusedPrimitiveWarning)

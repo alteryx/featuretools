@@ -4,15 +4,28 @@ import composeml as cp
 import dask.dataframe as dd
 import pandas as pd
 import pytest
+from distributed.utils_test import cluster
+from woodwork.logical_types import Boolean, Integer
 
 import featuretools as ft
-from featuretools import variable_types as vtypes
 from featuretools.tests.testing_utils import (
     make_ecommerce_entityset,
     to_pandas
 )
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
+
+
+@pytest.fixture()
+def cluster_scheduler():
+    with cluster() as (scheduler, [a, b]):
+        yield scheduler
+
+
+@pytest.fixture()
+def three_worker_scheduler():
+    with cluster(nworkers=3) as (scheduler, [a, b, c]):
+        yield scheduler
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -45,43 +58,72 @@ def pd_es(make_es):
 
 
 @pytest.fixture
-def int_es(make_int_es):
+def pd_int_es(make_int_es):
     return copy.deepcopy(make_int_es)
 
 
 @pytest.fixture
-def dask_es(make_es):
-    es = ft.EntitySet(id=make_es.id)
-    for entity in make_es.entities:
-        es.entity_from_dataframe(entity.id,
-                                 dd.from_pandas(entity.df.reset_index(drop=True), npartitions=4),
-                                 index=entity.index,
-                                 time_index=entity.time_index,
-                                 variable_types=entity.variable_types,
-                                 secondary_time_index=entity.secondary_time_index)
+def dask_int_es(pd_int_es):
+    es = ft.EntitySet(id=pd_int_es.id)
+    for df in pd_int_es.dataframes:
+        dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
+        dd_df.ww.init(schema=df.ww.schema)
+        es.add_dataframe(dd_df)
 
-    for rel in make_es.relationships:
-        es.add_relationship(ft.Relationship(es[rel.parent_entity.id][rel.parent_variable.id],
-                                            es[rel.child_entity.id][rel.child_variable.id]))
+    for rel in pd_int_es.relationships:
+        es.add_relationship(rel.parent_dataframe.ww.name, rel._parent_column_name,
+                            rel.child_dataframe.ww.name, rel._child_column_name)
     return es
 
 
 @pytest.fixture
-def ks_es(make_es):
+def ks_int_es(pd_int_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    es = ft.EntitySet(id=make_es.id)
-    for entity in make_es.entities:
-        cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
-        es.entity_from_dataframe(entity.id,
-                                 ks.from_pandas(cleaned_df),
-                                 index=entity.index,
-                                 time_index=entity.time_index,
-                                 variable_types=entity.variable_types,
-                                 secondary_time_index=entity.secondary_time_index)
+    es = ft.EntitySet(id=pd_int_es.id)
+    for df in pd_int_es.dataframes:
+        cleaned_df = pd_to_ks_clean(df).reset_index(drop=True)
+        ks_df = ks.from_pandas(cleaned_df)
+        ks_df.ww.init(schema=df.ww.schema)
+        es.add_dataframe(ks_df)
 
-    for rel in make_es.relationships:
-        es.add_relationship(ft.Relationship(es[rel.parent_entity.id][rel.parent_variable.id],
-                                            es[rel.child_entity.id][rel.child_variable.id]))
+    for rel in pd_int_es.relationships:
+        es.add_relationship(rel._parent_dataframe_name, rel._parent_column_name,
+                            rel._child_dataframe_name, rel._child_column_name)
+    return es
+
+
+@pytest.fixture(params=['pd_int_es', 'dask_int_es', 'ks_int_es'])
+def int_es(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def dask_es(pd_es):
+    es = ft.EntitySet(id=pd_es.id)
+    for df in pd_es.dataframes:
+        dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
+        dd_df.ww.init(schema=df.ww.schema)
+        es.add_dataframe(dd_df)
+
+    for rel in pd_es.relationships:
+        es.add_relationship(rel.parent_dataframe.ww.name, rel._parent_column_name,
+                            rel.child_dataframe.ww.name, rel._child_column_name)
+    return es
+
+
+@pytest.fixture
+def ks_es(pd_es):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+    es = ft.EntitySet(id=pd_es.id)
+    for df in pd_es.dataframes:
+        cleaned_df = pd_to_ks_clean(df).reset_index(drop=True)
+        ks_df = ks.from_pandas(cleaned_df)
+        ks_df.ww.init(schema=df.ww.schema)
+        es.add_dataframe(ks_df)
+
+    for rel in pd_es.relationships:
+        es.add_relationship(rel._parent_dataframe_name, rel._parent_column_name,
+                            rel._child_dataframe_name, rel._child_column_name)
     return es
 
 
@@ -105,7 +147,7 @@ def pd_diamond_es():
         'id': range(3),
         'country_id': [0, 0, 1],
         'name': ['Northeast', 'South', 'Quebec'],
-    })
+    }).astype({'name': 'category'})
     stores_df = pd.DataFrame({
         'id': range(5),
         'region_id': [0, 1, 2, 2, 1],
@@ -123,7 +165,7 @@ def pd_diamond_es():
         'amount': [100, 40, 45, 83, 13, 94, 27, 81],
     })
 
-    entities = {
+    dataframes = {
         'countries': (countries_df, 'id'),
         'regions': (regions_df, 'id'),
         'stores': (stores_df, 'id'),
@@ -138,37 +180,41 @@ def pd_diamond_es():
         ('customers', 'id', 'transactions', 'customer_id'),
     ]
     return ft.EntitySet(id='ecommerce_diamond',
-                        entities=entities,
+                        dataframes=dataframes,
                         relationships=relationships)
 
 
 @pytest.fixture
 def dask_diamond_es(pd_diamond_es):
-    entities = {}
-    for entity in pd_diamond_es.entities:
-        entities[entity.id] = (dd.from_pandas(entity.df, npartitions=2), entity.index, None, entity.variable_types)
+    dataframes = {}
+    for df in pd_diamond_es.dataframes:
+        dd_df = dd.from_pandas(df, npartitions=2)
+        dd_df.ww.init(schema=df.ww.schema)
+        dataframes[df.ww.name] = (dd_df,)
 
-    relationships = [(rel.parent_entity.id,
-                      rel.parent_variable.name,
-                      rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_diamond_es.relationships]
+    relationships = [(rel._parent_dataframe_name,
+                      rel._parent_column_name,
+                      rel._child_dataframe_name,
+                      rel._child_column_name) for rel in pd_diamond_es.relationships]
 
-    return ft.EntitySet(id=pd_diamond_es.id, entities=entities, relationships=relationships)
+    return ft.EntitySet(id=pd_diamond_es.id, dataframes=dataframes, relationships=relationships)
 
 
 @pytest.fixture
 def ks_diamond_es(pd_diamond_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    entities = {}
-    for entity in pd_diamond_es.entities:
-        entities[entity.id] = (ks.from_pandas(pd_to_ks_clean(entity.df)), entity.index, None, entity.variable_types)
+    dataframes = {}
+    for df in pd_diamond_es.dataframes:
+        ks_df = ks.from_pandas(pd_to_ks_clean(df))
+        ks_df.ww.init(schema=df.ww.schema)
+        dataframes[df.ww.name] = (ks_df,)
 
-    relationships = [(rel.parent_entity.id,
-                      rel.parent_variable.name,
-                      rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_diamond_es.relationships]
+    relationships = [(rel._parent_dataframe_name,
+                      rel._parent_column_name,
+                      rel._child_dataframe_name,
+                      rel._child_column_name) for rel in pd_diamond_es.relationships]
 
-    return ft.EntitySet(id=pd_diamond_es.id, entities=entities, relationships=relationships)
+    return ft.EntitySet(id=pd_diamond_es.id, dataframes=dataframes, relationships=relationships)
 
 
 @pytest.fixture(params=['pd_default_value_es', 'dask_default_value_es', 'ks_default_value_es'])
@@ -189,44 +235,48 @@ def pd_default_value_es():
     })
 
     es = ft.EntitySet()
-    es.entity_from_dataframe(entity_id="transactions",
-                             dataframe=transactions,
-                             index="id")
-    es.entity_from_dataframe(entity_id="sessions",
-                             dataframe=sessions,
-                             index="id")
+    es.add_dataframe(dataframe_name="transactions",
+                     dataframe=transactions,
+                     index="id")
+    es.add_dataframe(dataframe_name="sessions",
+                     dataframe=sessions,
+                     index="id")
 
-    es.add_relationship(ft.Relationship(es["sessions"]["id"], es["transactions"]["session_id"]))
+    es.add_relationship("sessions", "id", "transactions", "session_id")
     return es
 
 
 @pytest.fixture
 def dask_default_value_es(pd_default_value_es):
-    entities = {}
-    for entity in pd_default_value_es.entities:
-        entities[entity.id] = (dd.from_pandas(entity.df, npartitions=4), entity.index, None, entity.variable_types)
+    dataframes = {}
+    for df in pd_default_value_es.dataframes:
+        dd_df = dd.from_pandas(df, npartitions=4)
+        dd_df.ww.init(schema=df.ww.schema)
+        dataframes[df.ww.name] = (dd_df,)
 
-    relationships = [(rel.parent_entity.id,
-                      rel.parent_variable.name,
-                      rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_default_value_es.relationships]
+    relationships = [(rel._parent_dataframe_name,
+                      rel._parent_column_name,
+                      rel._child_dataframe_name,
+                      rel._child_column_name) for rel in pd_default_value_es.relationships]
 
-    return ft.EntitySet(id=pd_default_value_es.id, entities=entities, relationships=relationships)
+    return ft.EntitySet(id=pd_default_value_es.id, dataframes=dataframes, relationships=relationships)
 
 
 @pytest.fixture
 def ks_default_value_es(pd_default_value_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    entities = {}
-    for entity in pd_default_value_es.entities:
-        entities[entity.id] = (ks.from_pandas(pd_to_ks_clean(entity.df)), entity.index, None, entity.variable_types)
+    dataframes = {}
+    for df in pd_default_value_es.dataframes:
+        ks_df = ks.from_pandas(pd_to_ks_clean(df))
+        ks_df.ww.init(schema=df.ww.schema)
+        dataframes[df.ww.name] = (ks_df,)
 
-    relationships = [(rel.parent_entity.id,
-                      rel.parent_variable.name,
-                      rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_default_value_es.relationships]
+    relationships = [(rel._parent_dataframe_name,
+                      rel._parent_column_name,
+                      rel._child_dataframe_name,
+                      rel._child_column_name) for rel in pd_default_value_es.relationships]
 
-    return ft.EntitySet(id=pd_default_value_es.id, entities=entities, relationships=relationships)
+    return ft.EntitySet(id=pd_default_value_es.id, dataframes=dataframes, relationships=relationships)
 
 
 @pytest.fixture(params=['pd_home_games_es', 'dask_home_games_es', 'ks_home_games_es'])
@@ -247,46 +297,48 @@ def pd_home_games_es():
         'home_team_score': [3, 0, 1, 0, 4],
         'away_team_score': [2, 1, 2, 0, 0]
     })
-    entities = {'teams': (teams, 'id'), 'games': (games, 'id')}
+    dataframes = {'teams': (teams, 'id'), 'games': (games, 'id')}
     relationships = [('teams', 'id', 'games', 'home_team_id')]
-    return ft.EntitySet(entities=entities,
+    return ft.EntitySet(dataframes=dataframes,
                         relationships=relationships)
 
 
 @pytest.fixture
 def dask_home_games_es(pd_home_games_es):
-    entities = {}
-    for entity in pd_home_games_es.entities:
-        entities[entity.id] = (dd.from_pandas(entity.df, npartitions=2), entity.index, None, entity.variable_types)
+    dataframes = {}
+    for df in pd_home_games_es.dataframes:
+        dd_df = dd.from_pandas(df, npartitions=2)
+        dd_df.ww.init(schema=df.ww.schema)
+        dataframes[df.ww.name] = (dd_df,)
 
-    relationships = [(rel.parent_entity.id,
-                      rel.parent_variable.name,
-                      rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_home_games_es.relationships]
+    relationships = [(rel._parent_dataframe_name,
+                      rel._parent_column_name,
+                      rel._child_dataframe_name,
+                      rel._child_column_name) for rel in pd_home_games_es.relationships]
 
-    return ft.EntitySet(id=pd_home_games_es.id, entities=entities, relationships=relationships)
+    return ft.EntitySet(id=pd_home_games_es.id, dataframes=dataframes, relationships=relationships)
 
 
 @pytest.fixture
 def ks_home_games_es(pd_home_games_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    entities = {}
-    for entity in pd_home_games_es.entities:
-        entities[entity.id] = (ks.from_pandas(pd_to_ks_clean(entity.df)), entity.index, None, entity.variable_types)
+    dataframes = {}
+    for df in pd_home_games_es.dataframes:
+        ks_df = ks.from_pandas(pd_to_ks_clean(df))
+        ks_df.ww.init(schema=df.ww.schema)
+        dataframes[df.ww.name] = (ks_df,)
 
-    relationships = [(rel.parent_entity.id,
-                      rel.parent_variable.name,
-                      rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_home_games_es.relationships]
+    relationships = [(rel._parent_dataframe_name,
+                      rel._parent_column_name,
+                      rel._child_dataframe_name,
+                      rel._child_column_name) for rel in pd_home_games_es.relationships]
 
-    return ft.EntitySet(id=pd_home_games_es.id, entities=entities, relationships=relationships)
+    return ft.EntitySet(id=pd_home_games_es.id, dataframes=dataframes, relationships=relationships)
 
 
 @pytest.fixture
 def games_es(home_games_es):
-    away_team = ft.Relationship(home_games_es['teams']['id'],
-                                home_games_es['games']['away_team_id'])
-    return home_games_es.add_relationship(away_team)
+    return home_games_es.add_relationship('teams', 'id', 'games', 'away_team_id')
 
 
 @pytest.fixture
@@ -296,38 +348,39 @@ def pd_mock_customer():
 
 @pytest.fixture
 def dd_mock_customer(pd_mock_customer):
-    entities = {}
-    for entity in pd_mock_customer.entities:
-        entities[entity.id] = (dd.from_pandas(entity.df.reset_index(drop=True), npartitions=4),
-                               entity.index,
-                               entity.time_index,
-                               entity.variable_types)
+    dataframes = {}
+    for df in pd_mock_customer.dataframes:
+        dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
+        dd_df.ww.init(schema=df.ww.schema)
+        dataframes[df.ww.name] = (dd_df,
+                                  df.ww.index,
+                                  df.ww.time_index,
+                                  df.ww.logical_types)
+    relationships = [(rel._parent_dataframe_name,
+                      rel._parent_column_name,
+                      rel._child_dataframe_name,
+                      rel._child_column_name) for rel in pd_mock_customer.relationships]
 
-    relationships = [(rel.parent_entity.id,
-                      rel.parent_variable.name,
-                      rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_mock_customer.relationships]
-
-    return ft.EntitySet(id=pd_mock_customer.id, entities=entities, relationships=relationships)
+    return ft.EntitySet(id=pd_mock_customer.id, dataframes=dataframes, relationships=relationships)
 
 
 @pytest.fixture
 def ks_mock_customer(pd_mock_customer):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    entities = {}
-    for entity in pd_mock_customer.entities:
-        cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
-        entities[entity.id] = (ks.from_pandas(cleaned_df),
-                               entity.index,
-                               entity.time_index,
-                               entity.variable_types)
+    dataframes = {}
+    for df in pd_mock_customer.dataframes:
+        cleaned_df = pd_to_ks_clean(df).reset_index(drop=True)
+        dataframes[df.ww.name] = (ks.from_pandas(cleaned_df),
+                                  df.ww.index,
+                                  df.ww.time_index,
+                                  df.ww.logical_types)
 
-    relationships = [(rel.parent_entity.id,
-                      rel.parent_variable.name,
-                      rel.child_entity.id,
-                      rel.child_variable.name) for rel in pd_mock_customer.relationships]
+    relationships = [(rel._parent_dataframe_name,
+                      rel._parent_column_name,
+                      rel._child_dataframe_name,
+                      rel._child_column_name) for rel in pd_mock_customer.relationships]
 
-    return ft.EntitySet(id=pd_mock_customer.id, entities=entities, relationships=relationships)
+    return ft.EntitySet(id=pd_mock_customer.id, dataframes=dataframes, relationships=relationships)
 
 
 @pytest.fixture(params=['pd_mock_customer', 'dd_mock_customer', 'ks_mock_customer'])
@@ -347,7 +400,7 @@ def lt(es):
         window_size='1m'
     )
 
-    df = es['log'].df
+    df = es['log']
     df = to_pandas(df)
     labels = lm.search(
         df,
@@ -357,27 +410,27 @@ def lt(es):
     return labels
 
 
-@pytest.fixture(params=['pd_entities', 'dask_entities', 'koalas_entities'])
-def entities(request):
+@pytest.fixture(params=['pd_dataframes', 'dask_dataframes', 'koalas_dataframes'])
+def dataframes(request):
     return request.getfixturevalue(request.param)
 
 
 @pytest.fixture
-def pd_entities():
+def pd_dataframes():
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                                     "card_id": [1, 2, 1, 3, 4, 5],
                                     "transaction_time": [10, 12, 13, 20, 21, 20],
                                     "fraud": [True, False, False, False, True, True]})
-    entities = {
+    dataframes = {
         "cards": (cards_df, "id"),
         "transactions": (transactions_df, "id", "transaction_time")
     }
-    return entities
+    return dataframes
 
 
 @pytest.fixture
-def dask_entities():
+def dask_dataframes():
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                                     "card_id": [1, 2, 1, 3, 4, 5],
@@ -386,46 +439,46 @@ def dask_entities():
     cards_df = dd.from_pandas(cards_df, npartitions=2)
     transactions_df = dd.from_pandas(transactions_df, npartitions=2)
 
-    cards_vtypes = {
-        'id': vtypes.Index
+    cards_ltypes = {
+        'id': Integer
     }
-    transactions_vtypes = {
-        'id': vtypes.Index,
-        'card_id': vtypes.Id,
-        'transaction_time': vtypes.NumericTimeIndex,
-        'fraud': vtypes.Boolean
+    transactions_ltypes = {
+        'id': Integer,
+        'card_id': Integer,
+        'transaction_time': Integer,
+        'fraud': Boolean
     }
 
-    entities = {
-        "cards": (cards_df, "id", None, cards_vtypes),
-        "transactions": (transactions_df, "id", "transaction_time", transactions_vtypes)
+    dataframes = {
+        "cards": (cards_df, "id", None, cards_ltypes),
+        "transactions": (transactions_df, "id", "transaction_time", transactions_ltypes)
     }
-    return entities
+    return dataframes
 
 
 @pytest.fixture
-def koalas_entities():
+def koalas_dataframes():
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     cards_df = ks.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = ks.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                                     "card_id": [1, 2, 1, 3, 4, 5],
                                     "transaction_time": [10, 12, 13, 20, 21, 20],
                                     "fraud": [True, False, False, False, True, True]})
-    cards_vtypes = {
-        'id': vtypes.Index
+    cards_ltypes = {
+        'id': Integer
     }
-    transactions_vtypes = {
-        'id': vtypes.Index,
-        'card_id': vtypes.Id,
-        'transaction_time': vtypes.NumericTimeIndex,
-        'fraud': vtypes.Boolean
+    transactions_ltypes = {
+        'id': Integer,
+        'card_id': Integer,
+        'transaction_time': Integer,
+        'fraud': Boolean
     }
 
-    entities = {
-        "cards": (cards_df, "id", None, cards_vtypes),
-        "transactions": (transactions_df, "id", "transaction_time", transactions_vtypes)
+    dataframes = {
+        "cards": (cards_df, "id", None, cards_ltypes),
+        "transactions": (transactions_df, "id", "transaction_time", transactions_ltypes)
     }
-    return entities
+    return dataframes
 
 
 @pytest.fixture
@@ -446,9 +499,9 @@ def pd_transform_es():
                        'P': [10, 15, 12]})
     es = ft.EntitySet(id='test')
     # Add dataframe to entityset
-    es.entity_from_dataframe(entity_id='first', dataframe=df,
-                             index='index',
-                             make_index=True)
+    es.add_dataframe(dataframe_name='first', dataframe=df,
+                     index='index',
+                     make_index=True)
 
     return es
 
@@ -456,11 +509,11 @@ def pd_transform_es():
 @pytest.fixture
 def dask_transform_es(pd_transform_es):
     es = ft.EntitySet(id=pd_transform_es.id)
-    for entity in pd_transform_es.entities:
-        es.entity_from_dataframe(entity_id=entity.id,
-                                 dataframe=dd.from_pandas(entity.df, npartitions=2),
-                                 index=entity.index,
-                                 variable_types=entity.variable_types)
+    for df in pd_transform_es.dataframes:
+        es.add_dataframe(dataframe_name=df.ww.name,
+                         dataframe=dd.from_pandas(df, npartitions=2),
+                         index=df.ww.index,
+                         logical_types=df.ww.logical_types)
     return es
 
 
@@ -468,11 +521,11 @@ def dask_transform_es(pd_transform_es):
 def koalas_transform_es(pd_transform_es):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     es = ft.EntitySet(id=pd_transform_es.id)
-    for entity in pd_transform_es.entities:
-        es.entity_from_dataframe(entity_id=entity.id,
-                                 dataframe=ks.from_pandas(entity.df),
-                                 index=entity.index,
-                                 variable_types=entity.variable_types)
+    for df in pd_transform_es.dataframes:
+        es.add_dataframe(dataframe_name=df.ww.name,
+                         dataframe=ks.from_pandas(df),
+                         index=df.ww.index,
+                         logical_types=df.ww.logical_types)
     return es
 
 
@@ -494,11 +547,11 @@ def divide_by_zero_es_pd():
 @pytest.fixture
 def divide_by_zero_es_dask(divide_by_zero_es_pd):
     es = ft.EntitySet(id=divide_by_zero_es_pd.id)
-    for entity in divide_by_zero_es_pd.entities:
-        es.entity_from_dataframe(entity_id=entity.id,
-                                 dataframe=dd.from_pandas(entity.df, npartitions=2),
-                                 index=entity.index,
-                                 variable_types=entity.variable_types)
+    for df in divide_by_zero_es_pd.dataframes:
+        es.add_dataframe(dataframe_name=df.ww.name,
+                         dataframe=dd.from_pandas(df, npartitions=2),
+                         index=df.ww.index,
+                         logical_types=df.ww.logical_types)
     return es
 
 
@@ -506,9 +559,9 @@ def divide_by_zero_es_dask(divide_by_zero_es_pd):
 def divide_by_zero_es_koalas(divide_by_zero_es_pd):
     ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     es = ft.EntitySet(id=divide_by_zero_es_pd.id)
-    for entity in divide_by_zero_es_pd.entities:
-        es.entity_from_dataframe(entity_id=entity.id,
-                                 dataframe=ks.from_pandas(entity.df),
-                                 index=entity.index,
-                                 variable_types=entity.variable_types)
+    for df in divide_by_zero_es_pd.dataframes:
+        es.add_dataframe(dataframe_name=df.ww.name,
+                         dataframe=ks.from_pandas(df),
+                         index=df.ww.index,
+                         logical_types=df.ww.logical_types)
     return es

@@ -1,13 +1,15 @@
 import numpy as np
 import pandas as pd
 import pytest
+from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import Datetime
 
 import featuretools as ft
 from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
     FeatureSetCalculator
 )
-from featuretools.feature_base import DirectFeature, Feature
+from featuretools.feature_base import DirectFeature, Feature, IdentityFeature
 from featuretools.primitives import (
     AggregationPrimitive,
     Day,
@@ -23,65 +25,72 @@ from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
-from featuretools.variable_types import Categorical, Datetime, Numeric
 
 
 def test_direct_from_identity(es):
-    device = es['sessions']['device_type']
-    d = DirectFeature(base_feature=device, child_entity=es['log'])
+    device = Feature(es['sessions'].ww['device_type'])
+    d = DirectFeature(base_feature=device, child_dataframe_name='log')
 
     feature_set = FeatureSet([d])
     calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
     df = calculator.run(np.array([0, 5]))
     df = to_pandas(df, index='id', sort_index=True)
     v = df[d.get_name()].tolist()
-    assert v == [0, 1]
+    if es.dataframe_type == Library.KOALAS.value:
+        expected = ['0', '1']
+    else:
+        expected = [0, 1]
+    assert v == expected
 
 
-def test_direct_from_variable(es):
+def test_direct_from_column(es):
     # should be same behavior as test_direct_from_identity
-    device = es['sessions']['device_type']
+    device = Feature(es['sessions'].ww['device_type'])
     d = DirectFeature(base_feature=device,
-                      child_entity=es['log'])
+                      child_dataframe_name='log')
 
     feature_set = FeatureSet([d])
     calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
     df = calculator.run(np.array([0, 5]))
     df = to_pandas(df, index='id', sort_index=True)
     v = df[d.get_name()].tolist()
-    assert v == [0, 1]
+    if es.dataframe_type == Library.KOALAS.value:
+        expected = ['0', '1']
+    else:
+        expected = [0, 1]
+    assert v == expected
 
 
 def test_direct_rename_multioutput(es):
-    n_common = ft.Feature(es['log']['product_id'],
-                          parent_entity=es['customers'],
-                          primitive=NMostCommon(n=2))
-    feat = DirectFeature(n_common, es['sessions'])
+    n_common = Feature(es['log'].ww['product_id'],
+                       parent_dataframe_name='customers',
+                       primitive=NMostCommon(n=2))
+    feat = DirectFeature(n_common, 'sessions')
     copy_feat = feat.rename("session_test")
     assert feat.unique_name() != copy_feat.unique_name()
     assert feat.get_name() != copy_feat.get_name()
     assert feat.base_features[0].generate_name() == copy_feat.base_features[0].generate_name()
-    assert feat.entity == copy_feat.entity
+    assert feat.dataframe_name == copy_feat.dataframe_name
 
 
 def test_direct_rename(es):
     # should be same behavior as test_direct_from_identity
-    feat = DirectFeature(base_feature=es['sessions']['device_type'],
-                         child_entity=es['log'])
+    feat = DirectFeature(base_feature=IdentityFeature(es['sessions'].ww['device_type']),
+                         child_dataframe_name='log')
     copy_feat = feat.rename("session_test")
     assert feat.unique_name() != copy_feat.unique_name()
     assert feat.get_name() != copy_feat.get_name()
     assert feat.base_features[0].generate_name() == copy_feat.base_features[0].generate_name()
-    assert feat.entity == copy_feat.entity
+    assert feat.dataframe_name == copy_feat.dataframe_name
 
 
 def test_direct_copy(games_es):
     home_team = next(r for r in games_es.relationships
-                     if r.child_variable.id == 'home_team_id')
-    feat = DirectFeature(games_es['teams']['name'], games_es['games'],
+                     if r._child_column_name == 'home_team_id')
+    feat = DirectFeature(IdentityFeature(games_es['teams'].ww['name']), 'games',
                          relationship=home_team)
     copied = feat.copy()
-    assert copied.entity == feat.entity
+    assert copied.dataframe_name == feat.dataframe_name
     assert copied.base_features == feat.base_features
     assert copied.relationship_path == feat.relationship_path
 
@@ -89,12 +98,12 @@ def test_direct_copy(games_es):
 def test_direct_of_multi_output_transform_feat(es):
     # TODO: Update to work with Dask and Koalas
     if es.dataframe_type != Library.PANDAS.value:
-        pytest.xfail("Custom primitive is not compabible with Dask or Koalas")
+        pytest.xfail("Custom primitive is not compatible with Dask or Koalas")
 
     class TestTime(TransformPrimitive):
         name = "test_time"
-        input_types = [Datetime]
-        return_type = Numeric
+        input_types = [ColumnSchema(logical_type=Datetime)]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
         number_output_features = 6
 
         def get_function(self):
@@ -104,22 +113,22 @@ def test_direct_of_multi_output_transform_feat(es):
                 return [times.apply(lambda x: getattr(x, unit)) for unit in units]
             return test_f
 
-    join_time_split = Feature(es["customers"]["signup_date"],
-                              primitive=TestTime)
-    alt_features = [Feature(es["customers"]["signup_date"], primitive=Year),
-                    Feature(es["customers"]["signup_date"], primitive=Month),
-                    Feature(es["customers"]["signup_date"], primitive=Day),
-                    Feature(es["customers"]["signup_date"], primitive=Hour),
-                    Feature(es["customers"]["signup_date"], primitive=Minute),
-                    Feature(es["customers"]["signup_date"], primitive=Second)]
+    base_feature = IdentityFeature(es["customers"].ww["signup_date"])
+    join_time_split = Feature(base_feature, primitive=TestTime)
+    alt_features = [Feature(base_feature, primitive=Year),
+                    Feature(base_feature, primitive=Month),
+                    Feature(base_feature, primitive=Day),
+                    Feature(base_feature, primitive=Hour),
+                    Feature(base_feature, primitive=Minute),
+                    Feature(base_feature, primitive=Second)]
     fm, fl = dfs(
         entityset=es,
-        target_entity="sessions",
+        target_dataframe_name="sessions",
         trans_primitives=[TestTime, Year, Month, Day, Hour, Minute, Second])
 
     # Get column names of for multi feature and normal features
-    subnames = DirectFeature(join_time_split, es["sessions"]).get_feature_names()
-    altnames = [DirectFeature(f, es["sessions"]).get_name() for f in alt_features]
+    subnames = DirectFeature(join_time_split, "sessions").get_feature_names()
+    altnames = [DirectFeature(f, "sessions").get_name() for f in alt_features]
 
     # Check values are equal between
     for col1, col2 in zip(subnames, altnames):
@@ -129,13 +138,15 @@ def test_direct_of_multi_output_transform_feat(es):
 def test_direct_features_of_multi_output_agg_primitives(pd_es):
     class ThreeMostCommonCat(AggregationPrimitive):
         name = "n_most_common_categorical"
-        input_types = [Categorical]
-        return_type = Categorical
+        input_types = [ColumnSchema(semantic_tags={'category'})]
+        return_type = ColumnSchema(semantic_tags={'category'})
         number_output_features = 3
 
         def get_function(self, agg_type='pandas'):
             def pd_top3(x):
-                array = np.array(x.value_counts()[:3].index)
+                counts = x.value_counts()
+                counts = counts[counts > 0]
+                array = np.array(counts.index[:3])
                 if len(array) < 3:
                     filler = np.full(3 - len(array), np.nan)
                     array = np.append(array, filler)
@@ -143,7 +154,7 @@ def test_direct_features_of_multi_output_agg_primitives(pd_es):
             return pd_top3
 
     fm, fl = dfs(entityset=pd_es,
-                 target_entity="log",
+                 target_dataframe_name="log",
                  agg_primitives=[ThreeMostCommonCat],
                  trans_primitives=[],
                  max_depth=3)
@@ -184,37 +195,37 @@ def test_direct_features_of_multi_output_agg_primitives(pd_es):
 
 def test_direct_with_invalid_init_args(diamond_es):
     customer_to_region = diamond_es.get_forward_relationships('customers')[0]
-    error_text = 'child_entity must be the relationship child entity'
+    error_text = 'child_dataframe must be the relationship child dataframe'
     with pytest.raises(AssertionError, match=error_text):
-        ft.DirectFeature(diamond_es['regions']['name'], diamond_es['stores'],
-                         relationship=customer_to_region)
+        DirectFeature(IdentityFeature(diamond_es['regions'].ww['name']), 'stores',
+                      relationship=customer_to_region)
 
     transaction_relationships = diamond_es.get_forward_relationships('transactions')
     transaction_to_store = next(r for r in transaction_relationships
-                                if r.parent_entity.id == 'stores')
-    error_text = 'Base feature must be defined on the relationship parent entity'
+                                if r.parent_dataframe.ww.name == 'stores')
+    error_text = 'Base feature must be defined on the relationship parent dataframe'
     with pytest.raises(AssertionError, match=error_text):
-        ft.DirectFeature(diamond_es['regions']['name'], diamond_es['transactions'],
-                         relationship=transaction_to_store)
+        DirectFeature(IdentityFeature(diamond_es['regions'].ww['name']), 'transactions',
+                      relationship=transaction_to_store)
 
 
 def test_direct_with_multiple_possible_paths(games_es):
-    error_text = "There are multiple relationships to the base entity. " \
+    error_text = "There are multiple relationships to the base dataframe. " \
                  "You must specify a relationship."
     with pytest.raises(RuntimeError, match=error_text):
-        ft.DirectFeature(games_es['teams']['name'], games_es['games'])
+        DirectFeature(IdentityFeature(games_es['teams'].ww['name']), 'games')
 
     # Does not raise if path specified.
     relationship = next(r for r in games_es.get_forward_relationships('games')
-                        if r.child_variable.id == 'home_team_id')
-    feat = ft.DirectFeature(games_es['teams']['name'], games_es['games'],
-                            relationship=relationship)
+                        if r._child_column_name == 'home_team_id')
+    feat = DirectFeature(IdentityFeature(games_es['teams'].ww['name']), 'games',
+                         relationship=relationship)
     assert feat.relationship_path_name() == 'teams[home_team_id]'
     assert feat.get_name() == 'teams[home_team_id].name'
 
 
 def test_direct_with_single_possible_path(es):
-    feat = ft.DirectFeature(es['customers']['age'], es['sessions'])
+    feat = DirectFeature(IdentityFeature(es['customers'].ww['age']), 'sessions')
     assert feat.relationship_path_name() == 'customers'
     assert feat.get_name() == 'customers.age'
 
@@ -222,19 +233,19 @@ def test_direct_with_single_possible_path(es):
 def test_direct_with_no_path(diamond_es):
     error_text = 'No relationship from "regions" to "customers" found.'
     with pytest.raises(RuntimeError, match=error_text):
-        ft.DirectFeature(diamond_es['customers']['name'], diamond_es['regions'])
+        DirectFeature(IdentityFeature(diamond_es['customers'].ww['name']), 'regions')
 
     error_text = 'No relationship from "customers" to "customers" found.'
     with pytest.raises(RuntimeError, match=error_text):
-        ft.DirectFeature(diamond_es['customers']['name'], diamond_es['customers'])
+        DirectFeature(IdentityFeature(diamond_es['customers'].ww['name']), 'customers')
 
 
 def test_serialization(es):
-    value = ft.IdentityFeature(es['products']['rating'])
-    direct = ft.DirectFeature(value, es['log'])
+    value = ft.IdentityFeature(es['products'].ww['rating'])
+    direct = DirectFeature(value, 'log')
 
     log_to_products = next(r for r in es.get_forward_relationships('log')
-                           if r.parent_entity.id == 'products')
+                           if r.parent_dataframe.ww.name == 'products')
     dictionary = {
         'name': None,
         'base_feature': value.unique_name(),
@@ -243,6 +254,6 @@ def test_serialization(es):
 
     assert dictionary == direct.get_arguments()
     assert direct == \
-        ft.DirectFeature.from_dictionary(dictionary, es,
-                                         {value.unique_name(): value},
-                                         PrimitivesDeserializer())
+        DirectFeature.from_dictionary(dictionary, es,
+                                      {value.unique_name(): value},
+                                      PrimitivesDeserializer())

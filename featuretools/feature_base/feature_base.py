@@ -1,5 +1,10 @@
-from featuretools import Relationship, Timedelta, primitives
-from featuretools.entityset.relationship import RelationshipPath
+from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import Boolean
+
+from featuretools import primitives
+from featuretools.entityset.relationship import Relationship, RelationshipPath
+from featuretools.entityset.timedelta import Timedelta
+from featuretools.feature_base.utils import is_valid_input
 from featuretools.primitives.base import (
     AggregationPrimitive,
     PrimitiveBase,
@@ -10,36 +15,28 @@ from featuretools.utils.wrangle import (
     _check_time_against_column,
     _check_timedelta
 )
-from featuretools.variable_types import (
-    Boolean,
-    Categorical,
-    Datetime,
-    DatetimeTimeIndex,
-    Discrete,
-    Id,
-    Index,
-    Numeric,
-    NumericTimeIndex,
-    Variable
-)
+
+_ES_REF = {}
 
 
 class FeatureBase(object):
-    def __init__(self, entity, base_features, relationship_path, primitive, name=None, names=None):
+
+    def __init__(self, dataframe, base_features, relationship_path, primitive, name=None, names=None):
         """Base class for all features
 
         Args:
-            entity (Entity): entity this feature is being calculated for
+            entityset (EntitySet): entityset this feature is being calculated for
+            dataframe (DataFrame): dataframe for calculating this feature
             base_features (list[FeatureBase]): list of base features for primitive
-            relationship_path (RelationshipPath): path from this entity to the
-                entity of the base features.
+            relationship_path (RelationshipPath): path from this dataframe to the
+                dataframe of the base features.
             primitive (:class:`.PrimitiveBase`): primitive to calculate. if not initialized when passed, gets initialized with no arguments
         """
         assert all(isinstance(f, FeatureBase) for f in base_features), \
             "All base features must be features"
 
-        self.entity_id = entity.id
-        self.entityset = entity.entityset.metadata
+        self.dataframe_name = dataframe.ww.name
+        self.entityset = _ES_REF[dataframe.ww.metadata['entityset_id']]
 
         self.base_features = base_features
 
@@ -149,16 +146,16 @@ class FeatureBase(object):
 
             for t in input_types:
                 zipped = list(zip(t, self.base_features))
-                if all([issubclass(f.variable_type, v) for v, f in zipped]):
+                if all([is_valid_input(f.column_schema, t) for t, f in zipped]):
                     return True
         else:
             return True
         return False
 
     @property
-    def entity(self):
-        """Entity this feature belongs too"""
-        return self.entityset[self.entity_id]
+    def dataframe(self):
+        """Dataframe this feature belongs too"""
+        return self.entityset[self.dataframe_name]
 
     @property
     def number_output_features(self):
@@ -168,38 +165,44 @@ class FeatureBase(object):
         return "<Feature: %s>" % (self.get_name())
 
     def hash(self):
-        return hash(self.get_name() + self.entity.id)
+        return hash(self.get_name() + self.dataframe_name)
 
     def __hash__(self):
         return self.hash()
 
     @property
-    def variable_type(self):
+    def column_schema(self):
         feature = self
-        variable_type = self.primitive.return_type
+        column_schema = self.primitive.return_type
 
-        while variable_type is None:
-            # get variable_type of first base feature
+        while column_schema is None:
+            # get column_schema of first base feature
             base_feature = feature.base_features[0]
-            variable_type = base_feature.variable_type
+            column_schema = base_feature.column_schema
 
             # only the original time index should exist
             # so make this feature's return type just a Datetime
-            if variable_type == DatetimeTimeIndex:
-                variable_type = Datetime
-            elif variable_type == NumericTimeIndex:
-                variable_type = Numeric
-            elif variable_type == Index:
-                variable_type = Categorical
+            if 'time_index' in column_schema.semantic_tags:
+                column_schema = ColumnSchema(logical_type=column_schema.logical_type,
+                                             semantic_tags=column_schema.semantic_tags - {"time_index"})
+            elif 'index' in column_schema.semantic_tags:
+                column_schema = ColumnSchema(logical_type=column_schema.logical_type,
+                                             semantic_tags=column_schema.semantic_tags - {"index"})
+                # Need to add back in the numeric standard tag so the schema can get recognized
+                # as a valid return type
+                if column_schema.is_numeric:
+                    column_schema.semantic_tags.add('numeric')
+                if column_schema.is_categorical:
+                    column_schema.semantic_tags.add('category')
 
-            # direct features should keep the Id return type, but all other features should get
-            # converted to Categorical
-            if not isinstance(feature, DirectFeature) and variable_type == Id:
-                variable_type = Categorical
+            # direct features should keep the foreign key tag, but all other features should get converted
+            if not isinstance(feature, DirectFeature) and 'foreign_key' in column_schema.semantic_tags:
+                column_schema = ColumnSchema(logical_type=column_schema.logical_type,
+                                             semantic_tags=column_schema.semantic_tags - {"foreign_key"})
 
             feature = base_feature
 
-        return variable_type
+        return column_schema
 
     @property
     def default_value(self):
@@ -275,7 +278,8 @@ class FeatureBase(object):
     def __mul__(self, other):
         """Multiply by other"""
         if isinstance(other, FeatureBase):
-            if self.variable_type == Boolean and other.variable_type == Boolean:
+            if all([isinstance(f.column_schema.logical_type, Boolean)
+                    for f in (self, other)]):
                 return Feature([self, other], primitive=primitives.MultiplyBoolean)
         return self._handle_binary_comparision(other, primitives.MultiplyNumeric, primitives.MultiplyNumericScalar)
 
@@ -333,20 +337,22 @@ class FeatureBase(object):
         return self.NOT()
 
     def unique_name(self):
-        return u"%s: %s" % (self.entity_id, self.get_name())
+        return u"%s: %s" % (self.dataframe_name, self.get_name())
 
     def relationship_path_name(self):
         return self.relationship_path.name
 
 
 class IdentityFeature(FeatureBase):
-    """Feature for entity that is equivalent to underlying variable"""
+    """Feature for dataframe that is equivalent to underlying column"""
 
-    def __init__(self, variable, name=None):
-        entity_id = variable.entity_id
-        self.variable = variable.entityset.metadata[entity_id][variable.id]
-        self.return_type = type(variable)
-        super(IdentityFeature, self).__init__(entity=variable.entity,
+    def __init__(self, column, name=None):
+        self.column_name = column.ww.name
+        self.return_type = column.ww.schema
+
+        metadata = column.ww.schema._metadata
+        es = _ES_REF[metadata['entityset_id']]
+        super(IdentityFeature, self).__init__(dataframe=es[metadata['dataframe_name']],
                                               base_features=[],
                                               relationship_path=RelationshipPath([]),
                                               primitive=PrimitiveBase,
@@ -354,17 +360,17 @@ class IdentityFeature(FeatureBase):
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
-        entity_id = arguments['entity_id']
-        variable_id = arguments['variable_id']
-        variable = entityset[entity_id][variable_id]
-        return cls(variable=variable, name=arguments['name'])
+        dataframe_name = arguments['dataframe_name']
+        column_name = arguments['column_name']
+        column = entityset[dataframe_name].ww[column_name]
+        return cls(column=column, name=arguments['name'])
 
     def copy(self):
         """Return copy of feature"""
-        return IdentityFeature(self.variable)
+        return IdentityFeature(self.entityset[self.dataframe_name].ww[self.column_name])
 
     def generate_name(self):
-        return self.variable.name
+        return self.column_name
 
     def get_depth(self, stop_at=None):
         return 0
@@ -372,55 +378,54 @@ class IdentityFeature(FeatureBase):
     def get_arguments(self):
         return {
             'name': self._name,
-            'variable_id': self.variable.id,
-            'entity_id': self.variable.entity_id,
+            'column_name': self.column_name,
+            'dataframe_name': self.dataframe_name,
         }
 
     @property
-    def variable_type(self):
-        return type(self.variable)
+    def column_schema(self):
+        return self.return_type
 
 
 class DirectFeature(FeatureBase):
-    """Feature for child entity that inherits
-        a feature value from a parent entity"""
-    input_types = [Variable]
+    """Feature for child dataframe that inherits
+        a feature value from a parent dataframe"""
+    input_types = [ColumnSchema()]
     return_type = None
 
-    def __init__(self, base_feature, child_entity, relationship=None, name=None):
-        base_feature = _check_feature(base_feature)
-
-        self.parent_entity = base_feature.entity
-
-        relationship = self._handle_relationship(child_entity, relationship)
-
-        super(DirectFeature, self).__init__(entity=child_entity,
+    def __init__(self, base_feature, child_dataframe_name, relationship=None, name=None):
+        base_feature = _validate_base_features(base_feature)[0]
+        self.parent_dataframe_name = base_feature.dataframe_name
+        relationship = self._handle_relationship(base_feature.entityset, child_dataframe_name, relationship)
+        child_dataframe = base_feature.entityset[child_dataframe_name]
+        super(DirectFeature, self).__init__(dataframe=child_dataframe,
                                             base_features=[base_feature],
                                             relationship_path=RelationshipPath([(True, relationship)]),
                                             primitive=PrimitiveBase,
                                             name=name)
 
-    def _handle_relationship(self, child_entity, relationship):
+    def _handle_relationship(self, entityset, child_dataframe_name, relationship):
+        child_dataframe = entityset[child_dataframe_name]
         if relationship:
-            relationship_child = relationship.child_entity
-            assert child_entity.id == relationship_child.id, \
-                'child_entity must be the relationship child entity'
+            relationship_child = relationship.child_dataframe
+            assert child_dataframe.ww.name == relationship_child.ww.name, \
+                'child_dataframe must be the relationship child dataframe'
 
-            assert self.parent_entity.id == relationship.parent_entity.id, \
-                'Base feature must be defined on the relationship parent entity'
+            assert self.parent_dataframe_name == relationship.parent_dataframe.ww.name, \
+                'Base feature must be defined on the relationship parent dataframe'
         else:
-            child_relationships = child_entity.entityset.get_forward_relationships(child_entity.id)
+            child_relationships = entityset.get_forward_relationships(child_dataframe.ww.name)
             possible_relationships = (r for r in child_relationships
-                                      if r.parent_entity.id == self.parent_entity.id)
+                                      if r.parent_dataframe.ww.name == self.parent_dataframe_name)
             relationship = next(possible_relationships, None)
 
             if not relationship:
                 raise RuntimeError('No relationship from "%s" to "%s" found.'
-                                   % (child_entity.id, self.parent_entity.id))
+                                   % (child_dataframe.ww.name, self.parent_dataframe_name))
 
             # Check for another path.
             elif next(possible_relationships, None):
-                message = "There are multiple relationships to the base entity. " \
+                message = "There are multiple relationships to the base dataframe. " \
                           "You must specify a relationship."
                 raise RuntimeError(message)
 
@@ -430,15 +435,11 @@ class DirectFeature(FeatureBase):
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         base_feature = dependencies[arguments['base_feature']]
         relationship = Relationship.from_dictionary(arguments['relationship'], entityset)
-        child_entity = relationship.child_entity
+        child_dataframe_name = relationship.child_dataframe.ww.name
         return cls(base_feature=base_feature,
-                   child_entity=child_entity,
+                   child_dataframe_name=child_dataframe_name,
                    relationship=relationship,
                    name=arguments['name'])
-
-    @property
-    def variable(self):
-        return self.base_features[0].variable
 
     @property
     def number_output_features(self):
@@ -451,12 +452,12 @@ class DirectFeature(FeatureBase):
     def copy(self):
         """Return copy of feature"""
         _is_forward, relationship = self.relationship_path[0]
-        return DirectFeature(self.base_features[0], self.entity,
+        return DirectFeature(self.base_features[0], self.dataframe_name,
                              relationship=relationship)
 
     @property
-    def variable_type(self):
-        return self.base_features[0].variable_type
+    def column_schema(self):
+        return self.base_features[0].column_schema
 
     def generate_name(self):
         return self._name_from_base(self.base_features[0].get_name())
@@ -486,77 +487,75 @@ class AggregationFeature(FeatureBase):
     # each time point during calculation
     use_previous = None
 
-    def __init__(self, base_features, parent_entity, primitive,
+    def __init__(self, base_features, parent_dataframe_name, primitive,
                  relationship_path=None, use_previous=None, where=None, name=None):
-        if hasattr(base_features, '__iter__'):
-            base_features = [_check_feature(bf) for bf in base_features]
-            msg = "all base features must share the same entity"
-            assert len(set([bf.entity for bf in base_features])) == 1, msg
-        else:
-            base_features = [_check_feature(base_features)]
+        base_features = _validate_base_features(base_features)
 
         for bf in base_features:
             if bf.number_output_features > 1:
                 raise ValueError("Cannot stack on whole multi-output feature.")
 
-        self.child_entity = base_features[0].entity
-
+        self.child_dataframe_name = base_features[0].dataframe_name
+        entityset = base_features[0].entityset
         relationship_path, self._path_is_unique = \
-            self._handle_relationship_path(parent_entity, relationship_path)
+            self._handle_relationship_path(entityset, parent_dataframe_name, relationship_path)
 
-        self.parent_entity = parent_entity.entityset.metadata[parent_entity.id]
+        self.parent_dataframe_name = parent_dataframe_name
 
         if where is not None:
-            self.where = _check_feature(where)
-            msg = "Where feature must be defined on child entity {}".format(
-                self.child_entity.id)
-            assert self.where.entity.id == self.child_entity.id, msg
+            self.where = _validate_base_features(where)[0]
+            msg = "Where feature must be defined on child dataframe {}".format(
+                self.child_dataframe_name)
+            assert self.where.dataframe_name == self.child_dataframe_name, msg
 
         if use_previous:
-            assert self.child_entity.time_index is not None, (
-                "Applying function that requires time index to entity that "
+            assert entityset[self.child_dataframe_name].ww.time_index is not None, (
+                "Applying function that requires time index to dataframe that "
                 "doesn't have one")
             self.use_previous = _check_timedelta(use_previous)
             assert len(base_features) > 0
-            time_index = base_features[0].entity.time_index
-            time_col = base_features[0].entity[time_index]
+            time_index = base_features[0].dataframe.ww.time_index
+            time_col = base_features[0].dataframe.ww[time_index]
             assert time_index is not None, ("Use previous can only be defined "
-                                            "on entities with a time index")
+                                            "on dataframes with a time index")
             assert _check_time_against_column(self.use_previous, time_col)
 
-        super(AggregationFeature, self).__init__(entity=parent_entity,
+        super(AggregationFeature, self).__init__(dataframe=entityset[parent_dataframe_name],
                                                  base_features=base_features,
                                                  relationship_path=relationship_path,
                                                  primitive=primitive,
                                                  name=name)
 
-    def _handle_relationship_path(self, parent_entity, relationship_path):
+    def _handle_relationship_path(self, entityset, parent_dataframe_name, relationship_path):
+        parent_dataframe = entityset[parent_dataframe_name]
+        child_dataframe = entityset[self.child_dataframe_name]
+
         if relationship_path:
             assert all(not is_forward for is_forward, _r in relationship_path), \
                 'All relationships in path must be backward'
 
             _is_forward, first_relationship = relationship_path[0]
-            first_parent = first_relationship.parent_entity
-            assert parent_entity.id == first_parent.id, \
-                'parent_entity must match first relationship in path.'
+            first_parent = first_relationship.parent_dataframe
+            assert parent_dataframe.ww.name == first_parent.ww.name, \
+                'parent_dataframe must match first relationship in path.'
 
             _is_forward, last_relationship = relationship_path[-1]
-            assert self.child_entity.id == last_relationship.child_entity.id, \
-                'Base feature must be defined on the entity at the end of relationship_path'
+            assert child_dataframe.ww.name == last_relationship.child_dataframe.ww.name, \
+                'Base feature must be defined on the dataframe at the end of relationship_path'
 
-            path_is_unique = parent_entity.entityset \
-                .has_unique_forward_path(self.child_entity.id, parent_entity.id)
+            path_is_unique = entityset \
+                .has_unique_forward_path(child_dataframe.ww.name, parent_dataframe.ww.name)
         else:
-            paths = parent_entity.entityset \
-                .find_backward_paths(parent_entity.id, self.child_entity.id)
+            paths = entityset \
+                .find_backward_paths(parent_dataframe.ww.name, child_dataframe.ww.name)
             first_path = next(paths, None)
 
             if not first_path:
                 raise RuntimeError('No backward path from "%s" to "%s" found.'
-                                   % (parent_entity.id, self.child_entity.id))
+                                   % (parent_dataframe.ww.name, child_dataframe.ww.name))
             # Check for another path.
             elif next(paths, None):
-                message = "There are multiple possible paths to the base entity. " \
+                message = "There are multiple possible paths to the base dataframe. " \
                           "You must specify a relationship path."
                 raise RuntimeError(message)
 
@@ -570,7 +569,7 @@ class AggregationFeature(FeatureBase):
         base_features = [dependencies[name] for name in arguments['base_features']]
         relationship_path = [Relationship.from_dictionary(r, entityset)
                              for r in arguments['relationship_path']]
-        parent_entity = relationship_path[0].parent_entity
+        parent_dataframe_name = relationship_path[0].parent_dataframe.ww.name
         relationship_path = RelationshipPath([(False, r) for r in relationship_path])
 
         primitive = primitives_deserializer.deserialize_primitive(arguments['primitive'])
@@ -581,12 +580,13 @@ class AggregationFeature(FeatureBase):
         where_name = arguments['where']
         where = where_name and dependencies[where_name]
 
-        return cls(base_features=base_features, parent_entity=parent_entity, primitive=primitive, relationship_path=relationship_path,
+        return cls(base_features=base_features, parent_dataframe_name=parent_dataframe_name,
+                   primitive=primitive, relationship_path=relationship_path,
                    use_previous=use_previous, where=where, name=arguments['name'])
 
     def copy(self):
         return AggregationFeature(self.base_features,
-                                  parent_entity=self.parent_entity,
+                                  parent_dataframe_name=self.parent_dataframe_name,
                                   relationship_path=self.relationship_path,
                                   primitive=self.primitive,
                                   use_previous=self.use_previous,
@@ -609,14 +609,14 @@ class AggregationFeature(FeatureBase):
     def generate_name(self):
         return self.primitive.generate_name(base_feature_names=[bf.get_name() for bf in self.base_features],
                                             relationship_path_name=self.relationship_path_name(),
-                                            parent_entity_id=self.parent_entity.id,
+                                            parent_dataframe_name=self.parent_dataframe_name,
                                             where_str=self._where_str(),
                                             use_prev_str=self._use_prev_str())
 
     def generate_names(self):
         return self.primitive.generate_names(base_feature_names=[bf.get_name() for bf in self.base_features],
                                              relationship_path_name=self.relationship_path_name(),
-                                             parent_entity_id=self.parent_entity.id,
+                                             parent_dataframe_name=self.parent_dataframe_name,
                                              where_str=self._where_str(),
                                              use_prev_str=self._use_prev_str())
 
@@ -632,7 +632,7 @@ class AggregationFeature(FeatureBase):
 
     def relationship_path_name(self):
         if self._path_is_unique:
-            return self.child_entity.id
+            return self.child_dataframe_name
         else:
             return self.relationship_path.name
 
@@ -641,18 +641,13 @@ class TransformFeature(FeatureBase):
     def __init__(self, base_features, primitive, name=None):
         # Any edits made to this method should also be made to the
         # new_class_init method in make_trans_primitive
-        if hasattr(base_features, '__iter__'):
-            base_features = [_check_feature(bf) for bf in base_features]
-            msg = "all base features must share the same entity"
-            assert len(set([bf.entity for bf in base_features])) == 1, msg
-        else:
-            base_features = [_check_feature(base_features)]
+        base_features = _validate_base_features(base_features)
 
         for bf in base_features:
             if bf.number_output_features > 1:
                 raise ValueError("Cannot stack on whole multi-output feature.")
-
-        super(TransformFeature, self).__init__(entity=base_features[0].entity,
+        dataframe = base_features[0].entityset[base_features[0].dataframe_name]
+        super(TransformFeature, self).__init__(dataframe=dataframe,
                                                base_features=base_features,
                                                relationship_path=RelationshipPath([]),
                                                primitive=primitive,
@@ -685,13 +680,11 @@ class GroupByTransformFeature(TransformFeature):
     def __init__(self, base_features, primitive, groupby, name=None):
         if not isinstance(groupby, FeatureBase):
             groupby = IdentityFeature(groupby)
-        assert issubclass(groupby.variable_type, Discrete)
+        assert len({"category", "foreign_key"} - groupby.column_schema.semantic_tags) < 2
         self.groupby = groupby
 
-        if hasattr(base_features, '__iter__'):
-            base_features.append(groupby)
-        else:
-            base_features = [base_features, groupby]
+        base_features = _validate_base_features(base_features)
+        base_features.append(groupby)
 
         super(GroupByTransformFeature, self).__init__(base_features=base_features,
                                                       primitive=primitive,
@@ -741,16 +734,16 @@ class Feature(object):
     Alias to create feature. Infers the feature type based on init parameters.
     """
 
-    def __new__(self, base, entity=None, groupby=None, parent_entity=None,
+    def __new__(self, base, dataframe_name=None, groupby=None, parent_dataframe_name=None,
                 primitive=None, use_previous=None, where=None):
         # either direct or identity
-        if primitive is None and entity is None:
+        if primitive is None and dataframe_name is None:
             return IdentityFeature(base)
-        elif primitive is None and entity is not None:
-            return DirectFeature(base, entity)
-        elif primitive is not None and parent_entity is not None:
+        elif primitive is None and dataframe_name is not None:
+            return DirectFeature(base, dataframe_name)
+        elif primitive is not None and parent_dataframe_name is not None:
             assert isinstance(primitive, AggregationPrimitive) or issubclass(primitive, AggregationPrimitive)
-            return AggregationFeature(base, parent_entity=parent_entity,
+            return AggregationFeature(base, parent_dataframe_name=parent_dataframe_name,
                                       use_previous=use_previous, where=where,
                                       primitive=primitive)
         elif primitive is not None:
@@ -785,7 +778,7 @@ class FeatureOutputSlice(FeatureBase):
         self.base_features = base_features
         self.base_feature = base_features[0]
 
-        self.entity_id = base_feature.entity_id
+        self.dataframe_name = base_feature.dataframe_name
         self.entityset = base_feature.entityset
         self.primitive = base_feature.primitive
 
@@ -820,10 +813,15 @@ class FeatureOutputSlice(FeatureBase):
         return FeatureOutputSlice(self.base_feature, self.n)
 
 
-def _check_feature(feature):
-    if isinstance(feature, Variable):
-        return IdentityFeature(feature)
+def _validate_base_features(feature):
+    if 'Series' == type(feature).__name__:
+        return [IdentityFeature(feature)]
+    elif hasattr(feature, '__iter__'):
+        features = [_validate_base_features(f)[0] for f in feature]
+        msg = "all base features must share the same dataframe"
+        assert len(set([bf.dataframe_name for bf in features])) == 1, msg
+        return features
     elif isinstance(feature, FeatureBase):
-        return feature
-
-    raise Exception("Not a feature")
+        return [feature]
+    else:
+        raise Exception("Not a feature")

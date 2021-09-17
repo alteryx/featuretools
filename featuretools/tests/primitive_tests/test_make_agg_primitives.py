@@ -1,11 +1,12 @@
 import numpy as np
 import pandas as pd
+from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import Datetime
 
 import featuretools as ft
 from featuretools.primitives.base.aggregation_primitive_base import (
     make_agg_primitive
 )
-from featuretools.variable_types import Datetime, Numeric
 
 
 # Check the custom agg primitives description
@@ -14,21 +15,21 @@ def test_description_make_agg_primitive():
         return max(column)
 
     Maximum = make_agg_primitive(function=maximum,
-                                 input_types=[Numeric],
-                                 return_type=Numeric)
+                                 input_types=[ColumnSchema(semantic_tags={'numeric'})],
+                                 return_type=ColumnSchema(semantic_tags={'numeric'}))
 
     def maximum(column):
         '''Get the max value of a column.'''
         return max(column)
 
     Maximum2 = make_agg_primitive(function=maximum,
-                                  input_types=[Numeric],
-                                  return_type=Numeric,
+                                  input_types=[ColumnSchema(semantic_tags={'numeric'})],
+                                  return_type=ColumnSchema(semantic_tags={'numeric'}),
                                   description='Get max value of a column.')
 
     Maximum3 = make_agg_primitive(function=maximum,
-                                  input_types=[Numeric],
-                                  return_type=Numeric,
+                                  input_types=[ColumnSchema(semantic_tags={'numeric'})],
+                                  return_type=ColumnSchema(semantic_tags={'numeric'}),
                                   default_value=np.nan)
 
     assert Maximum.__doc__ != Maximum2.__doc__
@@ -48,23 +49,27 @@ def test_default_value_make_agg_primitive(pd_mock_customer):
         df = pd.DataFrame({'numeric': numeric, 'time': days})
         return df[df['time'] == 6]['numeric'].mean()
 
-    MeanSunday = make_agg_primitive(function=mean_sunday,
-                                    input_types=[Numeric, Datetime],
-                                    return_type=Numeric)
+    MeanSunday = make_agg_primitive(
+        function=mean_sunday,
+        input_types=[ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(logical_type=Datetime)],
+        return_type=ColumnSchema(semantic_tags={'numeric'})
+    )
 
     feature_matrix, features = ft.dfs(entityset=pd_mock_customer,
-                                      target_entity="sessions",
+                                      target_dataframe_name="sessions",
                                       agg_primitives=[MeanSunday],
                                       trans_primitives=[],
                                       max_depth=1)
 
-    MeanSundayDefault = make_agg_primitive(function=mean_sunday,
-                                           input_types=[Numeric, Datetime],
-                                           return_type=Numeric,
-                                           default_value=0)
+    MeanSundayDefault = make_agg_primitive(
+        function=mean_sunday,
+        input_types=[ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(logical_type=Datetime)],
+        return_type=ColumnSchema(semantic_tags={'numeric'}),
+        default_value=0
+    )
 
     feature_matrix2, features = ft.dfs(entityset=pd_mock_customer,
-                                       target_entity="sessions",
+                                       target_dataframe_name="sessions",
                                        agg_primitives=[MeanSundayDefault],
                                        trans_primitives=[],
                                        max_depth=1)

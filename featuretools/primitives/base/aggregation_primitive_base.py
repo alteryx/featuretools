@@ -14,7 +14,7 @@ class AggregationPrimitive(PrimitiveBase):
     stack_on_self = True  # whether or not it can be in input_types of self
 
     def generate_name(self, base_feature_names, relationship_path_name,
-                      parent_entity_id, where_str, use_prev_str):
+                      parent_dataframe_name, where_str, use_prev_str):
         base_features_str = ", ".join(base_feature_names)
         return u"%s(%s.%s%s%s%s)" % (
             self.name.upper(),
@@ -26,11 +26,11 @@ class AggregationPrimitive(PrimitiveBase):
         )
 
     def generate_names(self, base_feature_names, relationship_path_name,
-                       parent_entity_id, where_str, use_prev_str):
+                       parent_dataframe_name, where_str, use_prev_str):
         n = self.number_output_features
         base_name = self.generate_name(base_feature_names,
                                        relationship_path_name,
-                                       parent_entity_id,
+                                       parent_dataframe_name,
                                        where_str,
                                        use_prev_str)
         return [base_name + "[%s]" % i for i in range(n)]
@@ -50,9 +50,9 @@ def make_agg_primitive(function, input_types, return_type, name=None,
         function (function): Function that takes in a series and applies some
             transformation to it.
 
-        input_types (list[Variable]): Variable types of the inputs.
+        input_types (list[ColumnSchema]): ColumnSchema of the inputs.
 
-        return_type (Variable): Variable type of return.
+        return_type (ColumnSchema): ColumnSchema of returned feature.
 
         name (str): Name of the function.  If no name is provided, the name
             of `function` will be used.
@@ -80,7 +80,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
             calculated at will be passed to the function as the keyword
             argument 'time'.
 
-        default_value (Variable): Default value when creating the primitive to
+        default_value (int, float): Default value when creating the primitive to
             avoid the inference step. If no default value if provided, the
             inference happen.
 
@@ -94,7 +94,8 @@ def make_agg_primitive(function, input_types, return_type, name=None,
         .. ipython :: python
 
             from featuretools.primitives import make_agg_primitive
-            from featuretools.variable_types import DatetimeTimeIndex, Numeric
+            from woodwork.column_schema import ColumnSchema
+            from woodwork.logical_types import Datetime
 
             def time_since_last(values, time=None):
                 time_since = time - values.iloc[-1]
@@ -102,8 +103,8 @@ def make_agg_primitive(function, input_types, return_type, name=None,
 
             TimeSinceLast = make_agg_primitive(
                 function=time_since_last,
-                input_types=[DatetimeTimeIndex],
-                return_type=Numeric,
+                input_types=[ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})],
+                return_type=ColumnSchema(semantic_tags={'numeric'}),
                 description="Time since last related instance",
                 uses_calc_time=True)
 

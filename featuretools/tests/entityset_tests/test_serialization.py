@@ -7,111 +7,23 @@ from urllib.request import urlretrieve
 import boto3
 import pandas as pd
 import pytest
+import woodwork.type_sys.type_system as ww_type_system
+from woodwork.logical_types import Datetime, LogicalType, Ordinal
+from woodwork.serialize import typing_info_to_dict
+from woodwork.type_sys.utils import list_logical_types
 
-from featuretools import variable_types
-from featuretools.entityset import (
-    EntitySet,
-    Relationship,
-    deserialize,
-    serialize
-)
+from featuretools.entityset import EntitySet, deserialize, serialize
 from featuretools.entityset.serialize import SCHEMA_VERSION
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
-from featuretools.variable_types import (
-    Categorical,
-    Index,
-    TimeIndex,
-    find_variable_types
-)
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_serialization_data_entityset_schema_{}.tar".format(SCHEMA_VERSION)
+TEST_FILE = "test_serialization_data_entityset_schema_{}_2021_8_31.tar".format(SCHEMA_VERSION)
 S3_URL = "s3://featuretools-static/" + TEST_FILE
 URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
-
-
-def test_all_variable_descriptions():
-    variable_types = find_variable_types()
-    es = EntitySet()
-    dataframe = pd.DataFrame(columns=list(variable_types))
-    es.entity_from_dataframe(
-        'variable_types',
-        dataframe,
-        index='index',
-        time_index='datetime_time_index',
-        variable_types=variable_types,
-    )
-    entity = es['variable_types']
-    for variable in entity.variables:
-        description = variable.to_data_description()
-        _variable = deserialize.description_to_variable(description, entity=entity)
-        assert variable.__eq__(_variable)
-
-
-def test_custom_variable_descriptions():
-
-    class ItemList(Categorical):
-        type_string = "item_list"
-        _default_pandas_dtype = list
-
-    es = EntitySet()
-    variables = {'item_list': ItemList, 'time_index': TimeIndex, 'index': Index}
-    dataframe = pd.DataFrame(columns=list(variables))
-    es.entity_from_dataframe(
-        'custom_variable', dataframe, index='index',
-        time_index='time_index', variable_types=variables)
-    entity = es['custom_variable']
-    for variable in entity.variables:
-        description = variable.to_data_description()
-        _variable = deserialize.description_to_variable(description, entity=entity)
-        assert variable.__eq__(_variable)
-
-
-def test_variable_descriptions(es):
-    for entity in es.entities:
-        for variable in entity.variables:
-            description = variable.to_data_description()
-            _variable = deserialize.description_to_variable(description, entity=entity)
-            assert variable.__eq__(_variable)
-
-
-def test_unknown_variable_description(es):
-    description = {'type': 'some_unknown_type', 'id': 'some_unknown_id', 'properties': {'name': 'some_unknown_type', 'interesting_values': '{}'}}
-    variable = deserialize.description_to_variable(description, entity=es.entities[0])
-    assert(variable.dtype == 'unknown')
-
-
-def test_custom_description_variable_description(es):
-    for entity in es.entities:
-        for variable in entity.variables:
-            variable.description = 'a custom description'
-            description = variable.to_data_description()
-            _variable = deserialize.description_to_variable(description, entity=entity)
-            assert _variable.description == 'a custom description'
-
-
-def test_entity_descriptions(es):
-    _es = EntitySet(es.id)
-    for entity in es.metadata.entities:
-        description = serialize.entity_to_description(entity)
-        deserialize.description_to_entity(description, _es)
-        _entity = _es[description['id']]
-        _entity.last_time_index = entity.last_time_index
-        assert entity.__eq__(_entity, deep=True)
-
-
-def test_dask_entity_descriptions(dask_es):
-    _es = EntitySet(dask_es.id)
-    for entity in dask_es.metadata.entities:
-        description = serialize.entity_to_description(entity)
-        deserialize.description_to_entity(description, _es)
-        _entity = _es[description['id']]
-        _entity.last_time_index = entity.last_time_index
-        assert entity.__eq__(_entity, deep=True)
 
 
 def test_entityset_description(es):
@@ -120,55 +32,101 @@ def test_entityset_description(es):
     assert es.metadata.__eq__(_es, deep=True)
 
 
-def test_dask_entityset_description(dask_es):
-    description = serialize.entityset_to_description(dask_es)
+def test_all_ww_logical_types():
+    logical_types = list_logical_types()['type_string'].to_list()
+    dataframe = pd.DataFrame(columns=logical_types)
+    es = EntitySet()
+    ltype_dict = {ltype: ltype for ltype in logical_types}
+    ltype_dict['ordinal'] = Ordinal(order=[])
+    es.add_dataframe(dataframe=dataframe, dataframe_name='all_types', index='integer', logical_types=ltype_dict)
+    description = serialize.entityset_to_description(es)
     _es = deserialize.description_to_entityset(description)
-    assert dask_es.metadata.__eq__(_es, deep=True)
+    assert es.__eq__(_es, deep=True)
 
 
-def test_invalid_formats(es, tmpdir):
+def test_with_custom_ww_logical_type():
+    class CustomLogicalType(LogicalType):
+        pass
+
+    ww_type_system.add_type(CustomLogicalType)
+    columns = ['integer', 'natural_language', 'custom_logical_type']
+    dataframe = pd.DataFrame(columns=columns)
+    es = EntitySet()
+    ltype_dict = {
+        'integer': 'integer',
+        'natural_language': 'natural_language',
+        'custom_logical_type': CustomLogicalType,
+    }
+    es.add_dataframe(dataframe=dataframe, dataframe_name='custom_type', index='integer', logical_types=ltype_dict)
+    description = serialize.entityset_to_description(es)
+    _es = deserialize.description_to_entityset(description)
+    assert isinstance(_es['custom_type'].ww.logical_types['custom_logical_type'], CustomLogicalType)
+    assert es.__eq__(_es, deep=True)
+
+
+def test_serialize_invalid_formats(es, tmpdir):
     error_text = 'must be one of the following formats: {}'
     error_text = error_text.format(', '.join(serialize.FORMATS))
     with pytest.raises(ValueError, match=error_text):
-        serialize.write_entity_data(es.entities[0], path=str(tmpdir), format='')
-    with pytest.raises(ValueError, match=error_text):
-        entity = {'loading_info': {'location': 'data', 'type': ''}}
-        deserialize.read_entity_data(entity, path='.')
+        serialize.write_data_description(es, path=str(tmpdir), format='')
 
 
 def test_empty_dataframe(es):
-    for entity in es.entities:
-        description = serialize.entity_to_description(entity)
+    for df in es.dataframes:
+        description = typing_info_to_dict(df)
         dataframe = deserialize.empty_dataframe(description)
         assert dataframe.empty
+        assert all(dataframe.columns == df.columns)
 
 
 def test_to_csv(es, tmpdir):
     es.to_csv(str(tmpdir), encoding='utf-8', engine='python')
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
-    df = to_pandas(es['log'].df, index='id')
-    new_df = to_pandas(new_es['log'].df, index='id')
+    df = to_pandas(es['log'], index='id')
+    new_df = to_pandas(new_es['log'], index='id')
     assert type(df['latlong'][0]) in (tuple, list)
     assert type(new_df['latlong'][0]) in (tuple, list)
 
 
-# Dask does not support to_pickle
+# Dask/Koalas don't support auto setting of interesting values with es.add_interesting_values()
+def test_to_csv_interesting_values(pd_es, tmpdir):
+    pd_es.add_interesting_values()
+    pd_es.to_csv(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert pd_es.__eq__(new_es, deep=True)
+
+
+def test_to_csv_manual_interesting_values(es, tmpdir):
+    es.add_interesting_values(dataframe_name='log', values={'product_id': ['coke_zero']})
+    es.to_csv(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert es.__eq__(new_es, deep=True)
+    assert new_es['log'].ww['product_id'].ww.metadata['interesting_values'] == ['coke_zero']
+
+
+# Dask/Koalas do not support to_pickle
 def test_to_pickle(pd_es, tmpdir):
     pd_es.to_pickle(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert pd_es.__eq__(new_es, deep=True)
-    assert type(pd_es['log'].df['latlong'][0]) == tuple
-    assert type(new_es['log'].df['latlong'][0]) == tuple
+    assert type(pd_es['log']['latlong'][0]) == tuple
+    assert type(new_es['log']['latlong'][0]) == tuple
 
 
 def test_to_pickle_errors_dask(dask_es, tmpdir):
-    msg = 'Cannot serialize Dask EntitySet to pickle'
+    msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
     with pytest.raises(ValueError, match=msg):
         dask_es.to_pickle(str(tmpdir))
 
 
-# Dask does not support to_pickle
+def test_to_pickle_errors_koalas(ks_es, tmpdir):
+    msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
+    with pytest.raises(ValueError, match=msg):
+        ks_es.to_pickle(str(tmpdir))
+
+
+# Dask/Koalas do not support to_pickle
 def test_to_pickle_interesting_values(pd_es, tmpdir):
     pd_es.add_interesting_values()
     pd_es.to_pickle(str(tmpdir))
@@ -176,40 +134,34 @@ def test_to_pickle_interesting_values(pd_es, tmpdir):
     assert pd_es.__eq__(new_es, deep=True)
 
 
-# Dask does not support to_pickle
+# Dask/Koalas do not support to_pickle
 def test_to_pickle_manual_interesting_values(pd_es, tmpdir):
-    pd_es['log']['product_id'].interesting_values = ["coke_zero"]
+    pd_es.add_interesting_values(dataframe_name='log', values={'product_id': ['coke_zero']})
     pd_es.to_pickle(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert pd_es.__eq__(new_es, deep=True)
+    assert new_es['log'].ww['product_id'].ww.metadata['interesting_values'] == ['coke_zero']
 
 
 def test_to_parquet(es, tmpdir):
     es.to_parquet(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
-    df = to_pandas(es['log'].df)
-    new_df = to_pandas(new_es['log'].df)
+    df = to_pandas(es['log'])
+    new_df = to_pandas(new_es['log'])
     assert type(df['latlong'][0]) in (tuple, list)
     assert type(new_df['latlong'][0]) in (tuple, list)
 
 
 def test_to_parquet_manual_interesting_values(es, tmpdir):
-    es['log']['product_id'].interesting_values = ["coke_zero"]
+    es.add_interesting_values(dataframe_name='log', values={'product_id': ['coke_zero']})
     es.to_parquet(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
+    assert new_es['log'].ww['product_id'].ww.metadata['interesting_values'] == ['coke_zero']
 
 
-# Dask does not support es.add_interesting_values
-def test_dask_to_parquet_manual_interesting_values(dask_es, tmpdir):
-    dask_es['log']['product_id'].interesting_values = ["coke_zero"]
-    dask_es.to_parquet(str(tmpdir))
-    new_es = deserialize.read_entityset(str(tmpdir))
-    assert dask_es.__eq__(new_es, deep=True)
-
-
-# Dask doesn't support es.add_interesting_values
+# Dask/Koalas don't support auto setting of interesting values with es.add_interesting_values()
 def test_to_parquet_interesting_values(pd_es, tmpdir):
     pd_es.add_interesting_values()
     pd_es.to_parquet(str(tmpdir))
@@ -255,7 +207,7 @@ def make_public(s3_client, s3_bucket):
     s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
 
 
-# TODO: tmp file disappears after deserialize step, cannot check equality with Dask
+# TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
 def test_serialize_s3_csv(es, s3_client, s3_bucket):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
@@ -293,7 +245,7 @@ def test_serialize_s3_anon_csv(es, s3_client, s3_bucket):
     assert es.__eq__(new_es, deep=True)
 
 
-# Dask does not support to_pickle
+# Dask/Koalas do not support to_pickle
 def test_serialize_s3_anon_pickle(pd_es, s3_client, s3_bucket):
     pd_es.to_pickle(TEST_S3_URL, profile_name=False)
     make_public(s3_client, s3_bucket)
@@ -301,7 +253,7 @@ def test_serialize_s3_anon_pickle(pd_es, s3_client, s3_bucket):
     assert pd_es.__eq__(new_es, deep=True)
 
 
-# TODO: tmp file disappears after deserialize step, cannot check equality with Dask
+# TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
 def test_serialize_s3_anon_parquet(es, s3_client, s3_bucket):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
@@ -408,35 +360,34 @@ def test_operations_invalidate_metadata(es):
     assert new_es._data_description is None
     assert new_es.metadata is not None  # generated after access
     assert new_es._data_description is not None
-    if not isinstance(es['customers'].df, pd.DataFrame):
-        customers_vtypes = es["customers"].variable_types
-        customers_vtypes['signup_date'] = variable_types.Datetime
+    if not isinstance(es['customers'], pd.DataFrame):
+        customers_ltypes = es["customers"].ww.logical_types
+        customers_ltypes['signup_date'] = Datetime
     else:
-        customers_vtypes = None
-    new_es.entity_from_dataframe("customers",
-                                 es["customers"].df,
-                                 index=es["customers"].index,
-                                 variable_types=customers_vtypes)
-    if not isinstance(es['sessions'].df, pd.DataFrame):
-        sessions_vtypes = es["sessions"].variable_types
+        customers_ltypes = None
+    new_es.add_dataframe(es["customers"],
+                         "customers",
+                         index=es["customers"].index,
+                         logical_types=customers_ltypes)
+    if not isinstance(es['sessions'], pd.DataFrame):
+        sessions_ltypes = es["sessions"].ww.logical_types
     else:
-        sessions_vtypes = None
-    new_es.entity_from_dataframe("sessions",
-                                 es["sessions"].df,
-                                 index=es["sessions"].index,
-                                 variable_types=sessions_vtypes)
+        sessions_ltypes = None
+    new_es.add_dataframe(es["sessions"],
+                         "sessions",
+                         index=es["sessions"].index,
+                         logical_types=sessions_ltypes)
+
     assert new_es._data_description is None
     assert new_es.metadata is not None
     assert new_es._data_description is not None
 
-    r = Relationship(new_es["customers"]["id"],
-                     new_es["sessions"]["customer_id"])
-    new_es = new_es.add_relationship(r)
+    new_es = new_es.add_relationship("customers", "id", "sessions", "customer_id")
     assert new_es._data_description is None
     assert new_es.metadata is not None
     assert new_es._data_description is not None
 
-    new_es = new_es.normalize_entity("customers", "cohort", "cohort")
+    new_es = new_es.normalize_dataframe("customers", "cohort", "cohort")
     assert new_es._data_description is None
     assert new_es.metadata is not None
     assert new_es._data_description is not None
@@ -503,12 +454,12 @@ def test_earlier_schema_version(es, caplog):
 
 
 def _check_schema_version(version, es, warning_text, caplog, warning_type=None):
-    entities = {entity.id: serialize.entity_to_description(entity) for entity in es.entities}
+    dataframes = {dataframe.ww.name: typing_info_to_dict(dataframe) for dataframe in es.dataframes}
     relationships = [relationship.to_dictionary() for relationship in es.relationships]
     dictionary = {
         'schema_version': version,
         'id': es.id,
-        'entities': entities,
+        'dataframes': dataframes,
         'relationships': relationships,
     }
 

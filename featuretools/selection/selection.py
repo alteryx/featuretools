@@ -1,4 +1,4 @@
-from featuretools import variable_types as vtypes
+from woodwork.logical_types import Boolean, BooleanNullable
 
 
 def remove_low_information_features(feature_matrix, features=None):
@@ -89,7 +89,9 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
 
         Args:
             feature_matrix (:class:`pd.DataFrame`): DataFrame whose columns are feature
-                        names and rows are instances.
+                        names and rows are instances. If Woodwork is not initalized, will
+                        perform Woodwork initialization, which may result in slightly different
+                        types than those in the original feature matrix created by Featuretools.
             features (list[:class:`featuretools.FeatureBase`] or list[str], optional):
                         List of features to select.
             pct_corr_threshold (float): The correlation threshold to be considered highly
@@ -109,11 +111,14 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
                 the feature list will not be returned. For consistent results,
                 do not change the order of features outputted by dfs.
     """
+    if feature_matrix.ww.schema is None:
+        feature_matrix.ww.init()
+
     if pct_corr_threshold < 0 or pct_corr_threshold > 1:
         raise ValueError("pct_corr_threshold must be a float between 0 and 1, inclusive.")
 
     if features_to_check is None:
-        features_to_check = feature_matrix.columns
+        features_to_check = list(feature_matrix.columns)
     else:
         for f_name in features_to_check:
             assert f_name in feature_matrix.columns, "feature named {} is not in feature matrix".format(f_name)
@@ -121,11 +126,9 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
     if features_to_keep is None:
         features_to_keep = []
 
-    boolean = ['bool']
-    numeric_and_boolean_dtypes = vtypes.PandasTypes._pandas_numerics + boolean
-
-    fm_to_check = (feature_matrix[features_to_check]).select_dtypes(
-        include=numeric_and_boolean_dtypes)
+    to_select = ['numeric', Boolean, BooleanNullable]
+    fm = feature_matrix.ww[features_to_check]
+    fm_to_check = fm.ww.select(include=to_select)
 
     dropped = set()
     columns_to_check = fm_to_check.columns

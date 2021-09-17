@@ -1,4 +1,5 @@
 import pytest
+from woodwork.column_schema import ColumnSchema
 
 from featuretools.primitives import (
     AggregationPrimitive,
@@ -10,7 +11,6 @@ from featuretools.primitives import (
 )
 from featuretools.synthesis.get_valid_primitives import get_valid_primitives
 from featuretools.utils.gen_utils import Library
-from featuretools.variable_types import Categorical, Numeric
 
 
 def test_get_valid_primitives_selected_primitives(es):
@@ -41,12 +41,12 @@ def test_get_valid_primitives_selected_primitives_strings(es):
 
 def test_invalid_primitive(es):
     with pytest.raises(ValueError, match="'foobar' is not a recognized primitive name"):
-        get_valid_primitives(es, target_entity='log', selected_primitives=['foobar'])
+        get_valid_primitives(es, target_dataframe_name='log', selected_primitives=['foobar'])
 
-    msg = ("Selected primitive <class 'featuretools.variable_types.variable.Numeric'> "
+    msg = ("Selected primitive <enum 'Library'> "
            "is not an AggregationPrimitive, TransformPrimitive, or str")
     with pytest.raises(ValueError, match=msg):
-        get_valid_primitives(es, target_entity='log', selected_primitives=[Numeric])
+        get_valid_primitives(es, target_dataframe_name='log', selected_primitives=[Library])
 
 
 def test_primitive_compatibility(es):
@@ -61,14 +61,16 @@ def test_primitive_compatibility(es):
 def test_get_valid_primitives_custom_primitives(pd_es):
     class ThreeMostCommonCat(AggregationPrimitive):
         name = "n_most_common_categorical"
-        input_types = [Categorical]
-        return_type = Categorical
+        input_types = [ColumnSchema(semantic_tags={"category"})]
+        return_type = ColumnSchema(semantic_tags={"category"})
         number_output_features = 3
 
     class AddThree(TransformPrimitive):
         name = 'add_three'
-        input_types = [Numeric, Numeric, Numeric]
-        return_type = Numeric
+        input_types = [ColumnSchema(semantic_tags="numeric"),
+                       ColumnSchema(semantic_tags="numeric"),
+                       ColumnSchema(semantic_tags="numeric")]
+        return_type = ColumnSchema(semantic_tags="numeric")
         commutative = True
         compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
@@ -87,7 +89,7 @@ def test_get_valid_primitives_all_primitives(es):
 
 
 def test_get_valid_primitives_single_table(transform_es):
-    msg = "Only one entity in entityset, changing max_depth to 1 since deeper features cannot be created"
+    msg = "Only one dataframe in entityset, changing max_depth to 1 since deeper features cannot be created"
     with pytest.warns(UserWarning, match=msg):
         agg_prims, trans_prims = get_valid_primitives(transform_es, "first")
 

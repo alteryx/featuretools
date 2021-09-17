@@ -4,8 +4,8 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+from woodwork.logical_types import Datetime, Ordinal
 
-from featuretools import variable_types
 from featuretools.entityset.timedelta import Timedelta
 
 
@@ -77,8 +77,8 @@ def _check_time_against_column(time, time_column):
     '''
     Check to make sure that time is compatible with time_column,
     where time could be a timestamp, or a Timedelta, number, or None,
-    and time_column is a Variable. Compatibility means that
-    arithmetic can be performed between time and elements of time_columnj
+    and time_column is a Woodwork initialized column. Compatibility means that
+    arithmetic can be performed between time and elements of time_column
 
     If time is None, then we don't care if arithmetic can be performed
     (presumably it won't ever be performed)
@@ -86,73 +86,31 @@ def _check_time_against_column(time, time_column):
     if time is None:
         return True
     elif isinstance(time, (int, float)):
-        return isinstance(time_column,
-                          variable_types.Numeric)
+        return time_column.ww.schema.is_numeric
     elif isinstance(time, (pd.Timestamp, datetime, pd.DateOffset)):
-        return isinstance(time_column,
-                          variable_types.Datetime)
+        return time_column.ww.schema.is_datetime
     elif isinstance(time, Timedelta):
-        return (isinstance(time_column, (variable_types.Datetime, variable_types.DatetimeTimeIndex)) or
-                (isinstance(time_column, (variable_types.Ordinal, variable_types.Numeric, variable_types.TimeIndex)) and
-                 time.unit not in Timedelta._time_units))
-    else:
-        return False
+        if time_column.ww.schema.is_datetime:
+            return True
+        elif time.unit not in Timedelta._time_units:
+            if (isinstance(time_column.ww.logical_type, Ordinal) or
+                    'numeric' in time_column.ww.semantic_tags or
+                    'time_index' in time_column.ww.semantic_tags):
+                return True
+    return False
 
 
 def _check_time_type(time):
     '''
     Checks if `time` is an instance of common int, float, or datetime types.
-    Returns "numeric", "datetime", or "unknown" based on results
+    Returns "numeric" or Datetime based on results
     '''
     time_type = None
     if isinstance(time, (datetime, np.datetime64)):
-        time_type = variable_types.DatetimeTimeIndex
+        time_type = Datetime
     elif isinstance(time, (int, float)) or np.issubdtype(time, np.integer) or np.issubdtype(time, np.floating):
-        time_type = variable_types.NumericTimeIndex
+        time_type = "numeric"
     return time_type
-
-
-def _dataframes_equal(df1, df2):
-    # ^ means XOR
-    df1_empty = bool(len(df1))
-    df2_empty = bool(len(df2))
-    if df1_empty ^ df2_empty:
-        return False
-    elif not df1_empty and not df2_empty:
-        if not set(df1.columns) == set(df2.columns):
-            return False
-
-        for c in df1:
-            df1c = df1[c]
-            df2c = df2[c]
-            if df1c.dtype == object:
-                df1c = df1c.astype('unicode')
-            if df2c.dtype == object:
-                df2c = df2c.astype('unicode')
-
-            normal_compare = True
-            if df1c.dtype == object:
-                dropped = df1c.dropna()
-                if not dropped.empty:
-                    if isinstance(dropped.iloc[0], tuple):
-                        dropped2 = df2[c].dropna()
-                        normal_compare = False
-                        for i in range(len(dropped.iloc[0])):
-                            try:
-                                equal = dropped.apply(lambda x: x[i]).equals(
-                                    dropped2.apply(lambda x: x[i]))
-                            except IndexError:
-                                raise IndexError("If column data are tuples, they must all be the same length")
-                            if not equal:
-                                return False
-            if normal_compare:
-                # handle nan equality correctly
-                # This way is much faster than df1.equals(df2)
-                result = df1c == df2c
-                result[pd.isnull(df1c) == pd.isnull(df2c)] = True
-                if not result.all():
-                    return False
-    return True
 
 
 def _is_s3(string):

@@ -2,8 +2,8 @@ import pandas as pd
 import pytest
 from dateutil.relativedelta import relativedelta
 
-import featuretools as ft
 from featuretools.entityset import Timedelta
+from featuretools.feature_base import Feature
 from featuretools.primitives import Count
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.wrangle import _check_timedelta
@@ -40,9 +40,9 @@ def test_delta_with_observations(es):
 
 def test_delta_with_time_unit_matches_pandas(es):
     customer_id = 0
-    sessions_df = to_pandas(es['sessions'].df)
+    sessions_df = to_pandas(es['sessions'])
     sessions_df = sessions_df[sessions_df['customer_id'] == customer_id]
-    log_df = to_pandas(es['log'].df)
+    log_df = to_pandas(es['log'])
     log_df = log_df[log_df['session_id'].isin(sessions_df['id'])]
     all_times = log_df['datetime'].sort_values().tolist()
 
@@ -102,16 +102,16 @@ def test_string_timedelta_args():
 
 
 def test_feature_takes_timedelta_string(es):
-    feature = ft.Feature(es['log']['id'], parent_entity=es['customers'],
-                         use_previous="1 day", primitive=Count)
+    feature = Feature(Feature(es['log'].ww['id']), parent_dataframe_name='customers',
+                      use_previous="1 day", primitive=Count)
     assert feature.use_previous == Timedelta(1, 'd')
 
 
 def test_deltas_week(es):
     customer_id = 0
-    sessions_df = to_pandas(es['sessions'].df)
+    sessions_df = to_pandas(es['sessions'])
     sessions_df = sessions_df[sessions_df['customer_id'] == customer_id]
-    log_df = to_pandas(es['log'].df)
+    log_df = to_pandas(es['log'])
     log_df = log_df[log_df['session_id'].isin(sessions_df['id'])]
     all_times = log_df['datetime'].sort_values().tolist()
     delta_week = Timedelta(1, "w")

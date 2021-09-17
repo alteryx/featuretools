@@ -1,6 +1,5 @@
 import importlib
 import logging
-import re
 import sys
 import warnings
 from enum import Enum
@@ -21,12 +20,12 @@ def make_tqdm_iterator(**kwargs):
     return iterator
 
 
-def get_relationship_variable_id(path):
+def get_relationship_column_id(path):
     _, r = path[0]
-    child_link_name = r.child_variable.id
+    child_link_name = r._child_column_name
     for _, r in path[1:]:
         parent_link_name = child_link_name
-        child_link_name = '%s.%s' % (r.parent_entity.id,
+        child_link_name = '%s.%s' % (r.parent_name,
                                      parent_link_name)
     return child_link_name
 
@@ -106,11 +105,6 @@ def import_or_none(library):
         return importlib.import_module(library)
     except ImportError:
         return None
-
-
-def camel_to_snake(s):
-    s = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', s)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s).lower()
 
 
 def is_instance(obj, modules, classnames):

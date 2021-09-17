@@ -1,7 +1,8 @@
 import numpy as np
+from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import IntegerNullable
 
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.variable_types import Discrete, Id, Numeric
 
 
 class CumSum(TransformPrimitive):
@@ -20,9 +21,9 @@ class CumSum(TransformPrimitive):
         [1.0, 3.0, 6.0, 10.0, nan, 15.0]
     """
     name = "cum_sum"
-    input_types = [Numeric]
-    return_type = Numeric
-    uses_full_entity = True
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
+    uses_full_dataframe = True
     description_template = "the cumulative sum of {}"
 
     def get_function(self):
@@ -47,9 +48,9 @@ class CumCount(TransformPrimitive):
         [1, 2, 3, 4, 5, 6]
     """
     name = "cum_count"
-    input_types = [[Id], [Discrete]]
-    return_type = Numeric
-    uses_full_entity = True
+    input_types = [[ColumnSchema(semantic_tags={'foreign_key'})], [ColumnSchema(semantic_tags={'category'})]]
+    return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={'numeric'})
+    uses_full_dataframe = True
     description_template = "the cumulative count of {}"
 
     def get_function(self):
@@ -75,9 +76,9 @@ class CumMean(TransformPrimitive):
         [1.0, 1.5, 2.0, 2.5, nan, 2.5]
     """
     name = "cum_mean"
-    input_types = [Numeric]
-    return_type = Numeric
-    uses_full_entity = True
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
+    uses_full_dataframe = True
     description_template = "the cumulative mean of {}"
 
     def get_function(self):
@@ -103,9 +104,9 @@ class CumMin(TransformPrimitive):
         [1.0, 1.0, -3.0, -3.0, nan, -3.0]
     """
     name = "cum_min"
-    input_types = [Numeric]
-    return_type = Numeric
-    uses_full_entity = True
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
+    uses_full_dataframe = True
     description_template = "the cumulative minimum of {}"
 
     def get_function(self):
@@ -131,9 +132,9 @@ class CumMax(TransformPrimitive):
         [1.0, 2.0, 3.0, 4.0, nan, 5.0]
     """
     name = "cum_max"
-    input_types = [Numeric]
-    return_type = Numeric
-    uses_full_entity = True
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
+    uses_full_dataframe = True
     description_template = "the cumulative maximum of {}"
 
     def get_function(self):

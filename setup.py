@@ -14,7 +14,7 @@ extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
 setup(
     name='featuretools',
-    version='0.27.1',
+    version='1.0.0.dev0',
     packages=find_packages(),
     description='a framework for automated feature engineering',
     url='http://featuretools.com',

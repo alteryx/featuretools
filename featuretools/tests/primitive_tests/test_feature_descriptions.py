@@ -2,6 +2,7 @@ import json
 import os
 
 import pytest
+from woodwork.column_schema import ColumnSchema
 
 from featuretools import describe_feature
 from featuretools.feature_base import (
@@ -24,31 +25,30 @@ from featuretools.primitives import (
     Sum,
     TransformPrimitive
 )
-from featuretools.variable_types import Discrete
 
 
 def test_identity_description(es):
-    feature = IdentityFeature(es['log']['session_id'])
+    feature = IdentityFeature(es['log'].ww['session_id'])
     description = 'The "session_id".'
 
     assert describe_feature(feature) == description
 
 
 def test_direct_description(es):
-    feature = DirectFeature(es['customers']['loves_ice_cream'], es['sessions'])
+    feature = DirectFeature(IdentityFeature(es['customers'].ww['loves_ice_cream']), 'sessions')
     description = 'The "loves_ice_cream" for the instance of "customers" associated ' \
                   'with this instance of "sessions".'
     assert describe_feature(feature) == description
 
-    deep_direct = DirectFeature(feature, es['log'])
+    deep_direct = DirectFeature(feature, 'log')
     deep_description = 'The "loves_ice_cream" for the instance of "customers" ' \
                        'associated with the instance of "sessions" associated with ' \
                        'this instance of "log".'
     assert describe_feature(deep_direct) == deep_description
 
-    agg = AggregationFeature(es['log']['purchased'], es['sessions'], PercentTrue)
-    complicated_direct = DirectFeature(agg, es['log'])
-    agg_on_direct = AggregationFeature(complicated_direct, es['products'], Mean)
+    agg = AggregationFeature(IdentityFeature(es['log'].ww['purchased']), 'sessions', PercentTrue)
+    complicated_direct = DirectFeature(agg, 'log')
+    agg_on_direct = AggregationFeature(complicated_direct, 'products', Mean)
 
     complicated_description = 'The average of the percentage of true values in ' \
         'the "purchased" of all instances of "log" for each "id" in "sessions" for ' \
@@ -58,32 +58,32 @@ def test_direct_description(es):
 
 
 def test_transform_description(es):
-    feature = TransformFeature(es['log']['value'], Absolute)
+    feature = TransformFeature(IdentityFeature(es['log'].ww['value']), Absolute)
     description = 'The absolute value of the "value".'
     assert describe_feature(feature) == description
 
 
 def test_groupby_transform_description(es):
-    feature = GroupByTransformFeature(es['log']['value'], CumMean, es['log']['session_id'])
+    feature = GroupByTransformFeature(IdentityFeature(es['log'].ww['value']), CumMean, IdentityFeature(es['log'].ww['session_id']))
     description = 'The cumulative mean of the "value" for each "session_id".'
 
     assert describe_feature(feature) == description
 
 
 def test_aggregation_description(es):
-    feature = AggregationFeature(es['log']['value'], es['sessions'], Mean)
+    feature = AggregationFeature(IdentityFeature(es['log'].ww['value']), 'sessions', Mean)
     description = 'The average of the "value" of all instances of "log" for each "id" in "sessions".'
     assert describe_feature(feature) == description
 
-    stacked_agg = AggregationFeature(feature, es['customers'], Sum)
+    stacked_agg = AggregationFeature(feature, 'customers', Sum)
     stacked_description = 'The sum of t{} of all instances of "sessions" for each "id" ' \
                           'in "customers".'.format(description[1:-1])
     assert describe_feature(stacked_agg) == stacked_description
 
 
 def test_aggregation_description_where(es):
-    where_feature = TransformFeature(es['log']['countrycode'], EqualScalar('US'))
-    feature = AggregationFeature(es['log']['value'], es['sessions'],
+    where_feature = TransformFeature(IdentityFeature(es['log'].ww['countrycode']), EqualScalar('US'))
+    feature = AggregationFeature(IdentityFeature(es['log'].ww['value']), 'sessions',
                                  Mean, where=where_feature)
     description = 'The average of the "value" of all instances of "log" where the ' \
                   '"countrycode" is US for each "id" in "sessions".'
@@ -92,7 +92,7 @@ def test_aggregation_description_where(es):
 
 
 def test_aggregation_description_use_previous(es):
-    feature = AggregationFeature(es['log']['value'], es['sessions'],
+    feature = AggregationFeature(IdentityFeature(es['log'].ww['value']), 'sessions',
                                  Mean, use_previous='5d')
     description = 'The average of the "value" of the previous 5 days of "log" for each "id" in "sessions".'
 
@@ -101,7 +101,7 @@ def test_aggregation_description_use_previous(es):
 
 def test_multioutput_description(es):
     n_most_common = NMostCommon(2)
-    n_most_common_feature = AggregationFeature(es['log']['zipcode'], es['sessions'], n_most_common)
+    n_most_common_feature = AggregationFeature(IdentityFeature(es['log'].ww['zipcode']), 'sessions', n_most_common)
     first_most_common_slice = n_most_common_feature[0]
     second_most_common_slice = n_most_common_feature[1]
 
@@ -117,12 +117,12 @@ def test_multioutput_description(es):
 
     class CustomMultiOutput(TransformPrimitive):
         name = "custom_multioutput"
-        input_types = [Discrete]
-        return_type = Discrete
+        input_types = [ColumnSchema(semantic_tags={'category'})]
+        return_type = ColumnSchema(semantic_tags={'category'})
 
         number_output_features = 4
 
-    custom_feat = TransformFeature(es['log']['zipcode'], CustomMultiOutput)
+    custom_feat = TransformFeature(IdentityFeature(es['log'].ww['zipcode']), CustomMultiOutput)
 
     generic_base = 'The result of applying CUSTOM_MULTIOUTPUT to the "zipcode".'
     generic_first = 'The 1st output from applying CUSTOM_MULTIOUTPUT to the "zipcode".'
@@ -161,8 +161,8 @@ def test_multioutput_description(es):
 
 def test_generic_description(es):
     class NoName(TransformPrimitive):
-        input_types = [Discrete]
-        output_type = Discrete
+        input_types = [ColumnSchema(semantic_tags={'category'})]
+        output_type = ColumnSchema(semantic_tags={'category'})
 
         def generate_name(self, base_feature_names):
             return u"%s(%s%s)" % (
@@ -173,48 +173,48 @@ def test_generic_description(es):
 
     class CustomAgg(AggregationPrimitive):
         name = 'custom_aggregation'
-        input_types = [Discrete]
-        output_type = Discrete
+        input_types = [ColumnSchema(semantic_tags={'category'})]
+        output_type = ColumnSchema(semantic_tags={'category'})
 
     class CustomTrans(TransformPrimitive):
         name = 'custom_transform'
-        input_types = [Discrete]
-        output_type = Discrete
+        input_types = [ColumnSchema(semantic_tags={'category'})]
+        output_type = ColumnSchema(semantic_tags={'category'})
 
-    no_name = TransformFeature(es['log']['zipcode'], NoName)
+    no_name = TransformFeature(IdentityFeature(es['log'].ww['zipcode']), NoName)
     no_name_description = 'The result of applying NoName to the "zipcode".'
     assert describe_feature(no_name) == no_name_description
 
-    custom_agg = AggregationFeature(es['log']['zipcode'], es['customers'], CustomAgg)
+    custom_agg = AggregationFeature(IdentityFeature(es['log'].ww['zipcode']), 'customers', CustomAgg)
     custom_agg_description = 'The result of applying CUSTOM_AGGREGATION to the "zipcode" of all instances of "log" for each "id" in "customers".'
     assert describe_feature(custom_agg) == custom_agg_description
 
-    custom_trans = TransformFeature(es['log']['zipcode'], CustomTrans)
+    custom_trans = TransformFeature(IdentityFeature(es['log'].ww['zipcode']), CustomTrans)
     custom_trans_description = 'The result of applying CUSTOM_TRANSFORM to the "zipcode".'
     assert describe_feature(custom_trans) == custom_trans_description
 
 
-def test_variable_description(es):
-    variable_description = 'the name of the device used for each session'
-    es['sessions']['device_name'].description = variable_description
-    identity_feat = IdentityFeature(es['sessions']['device_name'])
-    assert describe_feature(identity_feat) == variable_description[0].upper() + variable_description[1:] + '.'
+def test_column_description(es):
+    column_description = 'the name of the device used for each session'
+    es['sessions'].ww.columns['device_name'].description = column_description
+    identity_feat = IdentityFeature(es['sessions'].ww['device_name'])
+    assert describe_feature(identity_feat) == column_description[0].upper() + column_description[1:] + '.'
 
 
 def test_metadata(es, tmpdir):
     identity_feature_descriptions = {'sessions: device_name': 'the name of the device used for each session',
                                      'customers: id': "the customer's id"}
-    agg_feat = AggregationFeature(es['sessions']['device_name'], es['customers'], NumUnique)
+    agg_feat = AggregationFeature(IdentityFeature(es['sessions'].ww['device_name']), 'customers', NumUnique)
     agg_description = 'The number of unique elements in the name of the device used for each '\
                       'session of all instances of "sessions" for each customer\'s id.'
     assert describe_feature(agg_feat, feature_descriptions=identity_feature_descriptions) == agg_description
 
-    transform_feat = GroupByTransformFeature(es['log']['value'], CumMean, es['log']['session_id'])
+    transform_feat = GroupByTransformFeature(IdentityFeature(es['log'].ww['value']), CumMean, IdentityFeature(es['log'].ww['session_id']))
     transform_description = 'The running average of the "value" for each "session_id".'
     primitive_templates = {"cum_mean": "the running average of {}"}
     assert describe_feature(transform_feat, primitive_templates=primitive_templates) == transform_description
 
-    custom_agg = AggregationFeature(es['log']['zipcode'], es['sessions'], Mode)
+    custom_agg = AggregationFeature(IdentityFeature(es['log'].ww['zipcode']), 'sessions', Mode)
     auto_description = 'The most frequently occurring value of the "zipcode" of all instances of "log" for each "id" in "sessions".'
     custom_agg_description = "the most frequently used zipcode"
     custom_feature_description = custom_agg_description[0].upper() + custom_agg_description[1:] + '.'

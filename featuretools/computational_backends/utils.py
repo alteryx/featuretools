@@ -7,22 +7,19 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import psutil
+from woodwork.logical_types import Datetime, Double
 
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, DirectFeature
 from featuretools.utils import Trie
+from featuretools.utils.gen_utils import Library
 from featuretools.utils.wrangle import _check_time_type, _check_timedelta
-from featuretools.variable_types import (
-    DatetimeTimeIndex,
-    NumericTimeIndex,
-    PandasTypes
-)
 
 logger = logging.getLogger('featuretools.computational_backend')
 
 
 def bin_cutoff_times(cutoff_time, bin_size):
-    binned_cutoff_time = cutoff_time.copy()
+    binned_cutoff_time = cutoff_time.ww.copy()
     if type(bin_size) == int:
         binned_cutoff_time['time'] = binned_cutoff_time['time'].apply(lambda x: x / bin_size * bin_size)
     else:
@@ -92,7 +89,7 @@ def gather_approximate_features(feature_set):
     approximate_feature_trie = Trie(default=set, path_constructor=RelationshipPath)
 
     for feature in feature_set.target_features:
-        if feature_set.uses_full_entity(feature, check_dependents=True):
+        if feature_set.uses_full_dataframe(feature, check_dependents=True):
             continue
 
         if isinstance(feature, DirectFeature):
@@ -112,7 +109,7 @@ def gather_approximate_features(feature_set):
 
 def gen_empty_approx_features_df(approx_features):
     df = pd.DataFrame(columns=[f.get_name() for f in approx_features])
-    df.index.name = approx_features[0].entity.index
+    df.index.name = approx_features[0].dataframe.ww.index
     return df
 
 
@@ -207,7 +204,7 @@ def get_client_cluster():
     return Client, LocalCluster
 
 
-def _validate_cutoff_time(cutoff_time, target_entity):
+def _validate_cutoff_time(cutoff_time, target_dataframe):
     """
     Verify that the cutoff time is a single value or a pandas dataframe with the proper columns
     containing no duplicate rows
@@ -222,28 +219,28 @@ def _validate_cutoff_time(cutoff_time, target_entity):
         cutoff_time = cutoff_time.reset_index(drop=True)
 
         if "instance_id" not in cutoff_time.columns:
-            if target_entity.index not in cutoff_time.columns:
+            if target_dataframe.ww.index not in cutoff_time.columns:
                 raise AttributeError('Cutoff time DataFrame must contain a column with either the same name'
-                                     ' as the target entity index or a column named "instance_id"')
+                                     ' as the target dataframe index or a column named "instance_id"')
             # rename to instance_id
-            cutoff_time.rename(columns={target_entity.index: "instance_id"}, inplace=True)
+            cutoff_time.rename(columns={target_dataframe.ww.index: "instance_id"}, inplace=True)
 
         if "time" not in cutoff_time.columns:
-            if target_entity.time_index and target_entity.time_index not in cutoff_time.columns:
+            if target_dataframe.ww.time_index and target_dataframe.ww.time_index not in cutoff_time.columns:
                 raise AttributeError('Cutoff time DataFrame must contain a column with either the same name'
-                                     ' as the target entity time_index or a column named "time"')
+                                     ' as the target dataframe time_index or a column named "time"')
             # rename to time
-            cutoff_time.rename(columns={target_entity.time_index: "time"}, inplace=True)
+            cutoff_time.rename(columns={target_dataframe.ww.time_index: "time"}, inplace=True)
 
         # Make sure user supplies only one valid name for instance id and time columns
-        if "instance_id" in cutoff_time.columns and target_entity.index in cutoff_time.columns and \
-                "instance_id" != target_entity.index:
+        if "instance_id" in cutoff_time.columns and target_dataframe.ww.index in cutoff_time.columns and \
+                "instance_id" != target_dataframe.ww.index:
             raise AttributeError('Cutoff time DataFrame cannot contain both a column named "instance_id" and a column'
-                                 ' with the same name as the target entity index')
-        if "time" in cutoff_time.columns and target_entity.time_index in cutoff_time.columns and \
-                "time" != target_entity.time_index:
+                                 ' with the same name as the target dataframe index')
+        if "time" in cutoff_time.columns and target_dataframe.ww.time_index in cutoff_time.columns and \
+                "time" != target_dataframe.ww.time_index:
             raise AttributeError('Cutoff time DataFrame cannot contain both a column named "time" and a column'
-                                 ' with the same name as the target entity time index')
+                                 ' with the same name as the target dataframe time index')
 
         assert (cutoff_time[['instance_id', 'time']].duplicated().sum() == 0), \
             "Duplicated rows in cutoff time dataframe."
@@ -262,17 +259,17 @@ def _check_cutoff_time_type(cutoff_time, es_time_type):
     if isinstance(cutoff_time, tuple):
         cutoff_time_value = cutoff_time[0]
         time_type = _check_time_type(cutoff_time_value)
-        is_numeric = time_type == NumericTimeIndex
-        is_datetime = time_type == DatetimeTimeIndex
+        is_numeric = time_type == 'numeric'
+        is_datetime = time_type == Datetime
     else:
-        cutoff_time_dtype = cutoff_time['time'].dtype.name
-        is_numeric = cutoff_time_dtype in PandasTypes._pandas_numerics
-        is_datetime = cutoff_time_dtype in PandasTypes._pandas_datetimes
+        cutoff_time_col = cutoff_time.ww['time']
+        is_numeric = cutoff_time_col.ww.schema.is_numeric
+        is_datetime = cutoff_time_col.ww.schema.is_datetime
 
-    if es_time_type == NumericTimeIndex and not is_numeric:
+    if es_time_type == "numeric" and not is_numeric:
         raise TypeError("cutoff_time times must be numeric: try casting "
                         "via pd.to_numeric()")
-    if es_time_type == DatetimeTimeIndex and not is_datetime:
+    if es_time_type == Datetime and not is_datetime:
         raise TypeError("cutoff_time times must be datetime type: try casting "
                         "via pd.to_datetime()")
 
@@ -295,3 +292,54 @@ def replace_inf_values(feature_matrix, replacement_value=np.nan, columns=None):
     else:
         feature_matrix[columns] = feature_matrix[columns].replace([np.inf, -np.inf], replacement_value)
     return feature_matrix
+
+
+def get_ww_types_from_features(features, entityset, pass_columns=None, cutoff_time=None):
+    '''Given a list of features and entityset (and optionally a list of pass
+    through columns and the cutoff time dataframe), returns the logical types,
+    semantic tags,and origin of each column in the feature matrix.  Both
+    pass_columns and cutoff_time will need to be supplied in order to get the
+    type information for the pass through columns
+    '''
+    if pass_columns is None:
+        pass_columns = []
+    logical_types = {}
+    semantic_tags = {}
+    origins = {}
+
+    for feature in features:
+        names = feature.get_feature_names()
+        for name in names:
+            logical_types[name] = feature.column_schema.logical_type
+            semantic_tags[name] = feature.column_schema.semantic_tags.copy()
+            semantic_tags[name] -= {'index', 'time_index'}
+
+            if logical_types[name] is None and "numeric" in semantic_tags[name]:
+                logical_types[name] = Double
+        if all([f.primitive is None for f in feature.get_dependencies(deep=True)]):
+            origins[name] = "base"
+        else:
+            origins[name] = "engineered"
+
+    if pass_columns:
+        cutoff_schema = cutoff_time.ww.schema
+        for column in pass_columns:
+            logical_types[column] = cutoff_schema.logical_types[column]
+            semantic_tags[column] = cutoff_schema.semantic_tags[column]
+            origins[column] = "base"
+
+    if entityset.dataframe_type in (Library.DASK.value, Library.KOALAS.value):
+        target_dataframe_name = features[0].dataframe_name
+        table_schema = entityset[target_dataframe_name].ww.schema
+        index_col = table_schema.index
+        logical_types[index_col] = table_schema.logical_types[index_col]
+        semantic_tags[index_col] = table_schema.semantic_tags[index_col]
+        semantic_tags[index_col] -= {"index"}
+        origins[index_col] = "base"
+
+    ww_init = {
+        "logical_types": logical_types,
+        "semantic_tags": semantic_tags,
+        "column_origins": origins
+    }
+    return ww_init

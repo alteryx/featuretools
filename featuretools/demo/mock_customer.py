@@ -1,9 +1,9 @@
 import pandas as pd
 from numpy import random
 from numpy.random import choice
+from woodwork.logical_types import Categorical, PostalCode
 
 import featuretools as ft
-from featuretools.variable_types import Categorical, ZIPCode
 
 
 def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transactions=500,
@@ -48,33 +48,30 @@ def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transaction
         return transactions_df.merge(sessions_df).merge(customers_df).merge(products_df).reset_index(drop=True)
     elif return_entityset:
         es = ft.EntitySet(id="transactions")
-        es = es.entity_from_dataframe(entity_id="transactions",
-                                      dataframe=transactions_df,
-                                      index="transaction_id",
-                                      time_index="transaction_time",
-                                      variable_types={"product_id": Categorical})
+        es = es.add_dataframe(dataframe_name="transactions",
+                              dataframe=transactions_df,
+                              index="transaction_id",
+                              time_index="transaction_time",
+                              logical_types={"product_id": Categorical})
 
-        es = es.entity_from_dataframe(entity_id="products",
-                                      dataframe=products_df,
-                                      index="product_id")
+        es = es.add_dataframe(dataframe_name="products",
+                              dataframe=products_df,
+                              index="product_id")
 
-        es = es.entity_from_dataframe(entity_id="sessions",
-                                      dataframe=sessions_df,
-                                      index="session_id",
-                                      time_index="session_start")
+        es = es.add_dataframe(dataframe_name="sessions",
+                              dataframe=sessions_df,
+                              index="session_id",
+                              time_index="session_start")
 
-        es = es.entity_from_dataframe(entity_id="customers",
-                                      dataframe=customers_df,
-                                      index="customer_id",
-                                      time_index="join_date",
-                                      variable_types={"zip_code": ZIPCode})
+        es = es.add_dataframe(dataframe_name="customers",
+                              dataframe=customers_df,
+                              index="customer_id",
+                              time_index="join_date",
+                              logical_types={"zip_code": PostalCode})
 
-        rels = [ft.Relationship(es["products"]["product_id"],
-                                es["transactions"]["product_id"]),
-                ft.Relationship(es["sessions"]["session_id"],
-                                es["transactions"]["session_id"]),
-                ft.Relationship(es["customers"]["customer_id"],
-                                es["sessions"]["customer_id"])]
+        rels = [("products", "product_id", "transactions", "product_id"),
+                ("sessions", "session_id", "transactions", "session_id"),
+                ("customers", "customer_id", "sessions", "customer_id")]
         es = es.add_relationships(rels)
         es.add_last_time_indexes()
         return es

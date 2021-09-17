@@ -4,21 +4,20 @@ import numpy as np
 import pandas as pd
 from dask import dataframe as dd
 from scipy import stats
+from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import (
+    Boolean,
+    BooleanNullable,
+    Datetime,
+    Double,
+    IntegerNullable
+)
 
 from featuretools.primitives.base.aggregation_primitive_base import (
     AggregationPrimitive
 )
 from featuretools.utils import convert_time_units
 from featuretools.utils.gen_utils import Library
-from featuretools.variable_types import (
-    Boolean,
-    Categorical,
-    DatetimeTimeIndex,
-    Discrete,
-    Index,
-    Numeric,
-    Variable
-)
 
 
 class Count(AggregationPrimitive):
@@ -30,8 +29,8 @@ class Count(AggregationPrimitive):
         5
     """
     name = "count"
-    input_types = [[Index]]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'index'})]
+    return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={'numeric'})
     stack_on_self = False
     default_value = 0
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
@@ -44,7 +43,7 @@ class Count(AggregationPrimitive):
         return pd.Series.count
 
     def generate_name(self, base_feature_names, relationship_path_name,
-                      parent_entity_id, where_str, use_prev_str):
+                      parent_dataframe_name, where_str, use_prev_str):
         return u"COUNT(%s%s%s)" % (relationship_path_name,
                                    where_str, use_prev_str)
 
@@ -58,8 +57,8 @@ class Sum(AggregationPrimitive):
         15.0
     """
     name = "sum"
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     stack_on_self = False
     stack_on_exclude = [Count]
     default_value = 0
@@ -92,8 +91,8 @@ class Mean(AggregationPrimitive):
         nan
     """
     name = "mean"
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the average of {}"
 
@@ -128,7 +127,7 @@ class Mode(AggregationPrimitive):
         'blue'
     """
     name = "mode"
-    input_types = [Discrete]
+    input_types = [ColumnSchema(semantic_tags={'category'})]
     return_type = None
     description_template = "the most frequently occurring value of {}"
 
@@ -148,8 +147,8 @@ class Min(AggregationPrimitive):
         1.0
     """
     name = "min"
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the minimum of {}"
@@ -170,8 +169,8 @@ class Max(AggregationPrimitive):
         5.0
     """
     name = "max"
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the maximum of {}"
@@ -197,8 +196,8 @@ class NumUnique(AggregationPrimitive):
         4
     """
     name = "num_unique"
-    input_types = [Discrete]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'category'})]
+    return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={'numeric'})
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the number of unique elements in {}"
@@ -241,8 +240,8 @@ class NumTrue(AggregationPrimitive):
         3
     """
     name = "num_true"
-    input_types = [Boolean]
-    return_type = Numeric
+    input_types = [[ColumnSchema(logical_type=Boolean)], [ColumnSchema(logical_type=BooleanNullable)]]
+    return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={'numeric'})
     default_value = 0
     stack_on = []
     stack_on_exclude = []
@@ -280,8 +279,8 @@ class PercentTrue(AggregationPrimitive):
         0.6
     """
     name = "percent_true"
-    input_types = [Boolean]
-    return_type = Numeric
+    input_types = [[ColumnSchema(logical_type=BooleanNullable)], [ColumnSchema(logical_type=Boolean)]]
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     stack_on = []
     stack_on_exclude = []
     default_value = 0
@@ -336,8 +335,8 @@ class NMostCommon(AggregationPrimitive):
         ['orange', 'apple']
     """
     name = "n_most_common"
-    input_types = [Discrete]
-    return_type = Discrete
+    input_types = [ColumnSchema(semantic_tags={'category'})]
+    return_type = None
 
     def __init__(self, n=3):
         self.n = n
@@ -350,7 +349,11 @@ class NMostCommon(AggregationPrimitive):
 
     def get_function(self, agg_type=Library.PANDAS):
         def n_most_common(x):
-            array = np.array(x.value_counts().index[:self.n])
+            # Counts of 0 remain in value_counts output if dtype is category
+            # so we need to remove them
+            counts = x.value_counts()
+            counts = counts[counts > 0]
+            array = np.array(counts.index[:self.n])
             if len(array) < self.n:
                 filler = np.full(self.n - len(array), np.nan)
                 array = np.append(array, filler)
@@ -385,8 +388,8 @@ class AvgTimeBetween(AggregationPrimitive):
         6.25
     """
     name = "avg_time_between"
-    input_types = [DatetimeTimeIndex]
-    return_type = Numeric
+    input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     description_template = "the average time between each of {}"
 
     def __init__(self, unit="seconds"):
@@ -437,8 +440,8 @@ class Median(AggregationPrimitive):
         3.0
     """
     name = "median"
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     description_template = "the median of {}"
 
     def get_function(self, agg_type=Library.PANDAS):
@@ -459,8 +462,8 @@ class Skew(AggregationPrimitive):
         1.0437603722639681
     """
     name = "skew"
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     stack_on = []
     stack_on_self = False
     description_template = "the skewness of {}"
@@ -478,8 +481,8 @@ class Std(AggregationPrimitive):
         1.414
     """
     name = "std"
-    input_types = [Numeric]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the standard deviation of {}"
@@ -500,7 +503,7 @@ class First(AggregationPrimitive):
         1.0
     """
     name = "first"
-    input_types = [Variable]
+    input_types = [ColumnSchema()]
     return_type = None
     stack_on_self = False
     description_template = "the first instance of {}"
@@ -521,7 +524,7 @@ class Last(AggregationPrimitive):
         nan
     """
     name = "last"
-    input_types = [Variable]
+    input_types = [ColumnSchema()]
     return_type = None
     stack_on_self = False
     description_template = "the last instance of {}"
@@ -546,8 +549,8 @@ class Any(AggregationPrimitive):
         True
     """
     name = "any"
-    input_types = [Boolean]
-    return_type = Boolean
+    input_types = [[ColumnSchema(logical_type=Boolean)], [ColumnSchema(logical_type=BooleanNullable)]]
+    return_type = ColumnSchema(logical_type=Boolean)
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "whether any of {} are true"
@@ -578,8 +581,8 @@ class All(AggregationPrimitive):
         False
     """
     name = "all"
-    input_types = [Boolean]
-    return_type = Boolean
+    input_types = [[ColumnSchema(logical_type=Boolean)], [ColumnSchema(logical_type=BooleanNullable)]]
+    return_type = ColumnSchema(logical_type=Boolean)
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "whether all of {} are true"
@@ -631,8 +634,8 @@ class TimeSinceLast(AggregationPrimitive):
 
     """
     name = "time_since_last"
-    input_types = [DatetimeTimeIndex]
-    return_type = Numeric
+    input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     uses_calc_time = True
     description_template = "the time since the last {}"
 
@@ -681,8 +684,8 @@ class TimeSinceFirst(AggregationPrimitive):
 
     """
     name = "time_since_first"
-    input_types = [DatetimeTimeIndex]
-    return_type = Numeric
+    input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     uses_calc_time = True
     description_template = "the time since the first {}"
 
@@ -698,7 +701,7 @@ class TimeSinceFirst(AggregationPrimitive):
 
 
 class Trend(AggregationPrimitive):
-    """Calculates the trend of a variable over time.
+    """Calculates the trend of a column over time.
 
     Description:
         Given a list of values and a corresponding list of
@@ -717,8 +720,8 @@ class Trend(AggregationPrimitive):
         -0.053
     """
     name = "trend"
-    input_types = [Numeric, DatetimeTimeIndex]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     description_template = "the linear trend of {} over time"
 
     def get_function(self, agg_type=Library.PANDAS):
@@ -780,11 +783,11 @@ def find_dividend_by_unit(time):
 
 
 class Entropy(AggregationPrimitive):
-    """Calculates the entropy for a categorical variable
+    """Calculates the entropy for a categorical column
 
     Description:
         Given a list of observations from a categorical
-        variable return the entropy of the distribution.
+        column return the entropy of the distribution.
         NaN values can be treated as a category or
         dropped.
 
@@ -800,8 +803,8 @@ class Entropy(AggregationPrimitive):
         1.3862943611198906
     """
     name = "entropy"
-    input_types = [Categorical]
-    return_type = Numeric
+    input_types = [ColumnSchema(semantic_tags={'category'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
     stack_on_self = False
     description_template = "the entropy of {}"
 
