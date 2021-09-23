@@ -1,6 +1,7 @@
-import click
 import json
 import os
+
+import click
 
 DOCS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "source")
 
