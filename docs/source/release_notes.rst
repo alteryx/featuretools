@@ -10,6 +10,7 @@ Future Release
     * Changes
     * Documentation Changes
        * Update installation instructions for 1.0.0rc1 announcement in docs (:pr:`1707`, :pr:`1708`, :pr:`1713`, :pr:`1716`)
+       * Update ``contributing.md`` to improve instructions for external contributors (:pr:`1723`)
     * Testing Changes
         * Added Jupyter notebook cleaner to the linters (:pr:`1719`)
         * Update reviewers for minimum and latest dependency checkers (:pr:`1715`)
