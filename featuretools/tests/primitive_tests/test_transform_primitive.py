@@ -12,7 +12,8 @@ from featuretools.primitives import (
     URLToDomain,
     URLToProtocol,
     URLToTLD,
-    Week
+    Week,
+    get_transform_primitives
 )
 
 
@@ -373,3 +374,9 @@ def test_email_address_to_domain_all_nan():
     answers = pd.Series(email_address_to_domain(array))
     correct_answers = pd.Series([np.nan, np.nan], dtype=object)
     pd.testing.assert_series_equal(answers, correct_answers)
+
+
+def test_trans_primitives_can_init_without_params():
+    trans_primitives = get_transform_primitives().values()
+    for trans_primitive in trans_primitives:
+        trans_primitive()
