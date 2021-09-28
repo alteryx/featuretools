@@ -66,13 +66,13 @@ Before starting major work, you should touch base with the maintainers of Featur
 #### 3. Submit your Pull Request
 
 * Once your changes are ready to be submitted, make sure to push your changes to GitHub before creating a pull request.
-* If you need to update your code with the latest changes from the main Featuure repo, you can do that by running the following commands, which will merge the latest changes from the Featuretools `main` branch into your current local branch. You may need to resolve merge conflicts if there are conflicts between your changes and the upstream changes. After the merge, you will need to push the updates to your forked repo after running these commands.
+* If you need to update your code with the latest changes from the main Featuretools repo, you can do that by running the commands below, which will merge the latest changes from the Featuretools `main` branch into your current local branch. You may need to resolve merge conflicts if there are conflicts between your changes and the upstream changes. After the merge, you will need to push the updates to your forked repo after running these commands.
   ```bash
   git fetch upstream
   git merge upstream/main
   ```
-* Create a pull request, to merge the changes from your forked repo branch into the Featuretools `main` branch and our continuous integration will run automatically.
-* If this is your first contribution, you will need to sign the Contributor License Agreement
+* Create a pull request to merge the changes from your forked repo branch into the Featuretools `main` branch. Creating the pull request will automatically run our continuous integration.
+* If this is your first contribution, you will need to sign the Contributor License Agreement as directed.
 * Update the "Future Release" section of the release notes (`docs/source/release_notes.rst`) to include your pull request and add your github username to the list of contributors.  Add a description of your PR to the subsection that most closely matches your contribution:
     * Enhancements: new features or additions to Featuretools.
     * Fixes: things like bugfixes or adding more descriptive error messages.
