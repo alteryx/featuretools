@@ -14,10 +14,11 @@ Future Release
     * Testing Changes
         * Added Jupyter notebook cleaner to the linters (:pr:`1719`)
         * Update reviewers for minimum and latest dependency checkers (:pr:`1715`)
+        * Full coverage for EntitySet.__eq__ method (:pr:`1725`)
         * Add tests to verify all primitives can be initialized without parameter values (:pr:`1726`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`bchen1116`
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`bchen1116`, :user:`HenryRocha`
 
 v1.0.0rc1 Sep 17, 2021
 ======================
