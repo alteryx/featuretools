@@ -81,7 +81,7 @@ Featuretools contains many [different types of built-in primitives](https://prim
 ## Demos
 **Predict Next Purchase**
 
-[Repository](https://github.com/alteryx/open_source_demos/blob/main/predict-next-purchase/)) | [Notebook](https://github.com/alteryx/open_source_demos/blob/main/predict-next-purchase/Tutorial.ipynb)
+[Repository](https://github.com/alteryx/open_source_demos/blob/main/predict-next-purchase/) | [Notebook](https://github.com/alteryx/open_source_demos/blob/main/predict-next-purchase/Tutorial.ipynb)
 
 In this demonstration, we use a multi-table dataset of 3 million online grocery orders from Instacart to predict what a customer will buy next. We show how to generate features with automated feature engineering and build an accurate machine learning pipeline using Featuretools, which can be reused for multiple prediction problems. For more advanced users, we show how to scale that pipeline to a large dataset using Dask.
 
