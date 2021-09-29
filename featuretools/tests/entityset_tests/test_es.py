@@ -1933,6 +1933,93 @@ def test_entityset_equality(es):
     assert first_es == second_es
 
 
+def test_entityset_dataframe_dict_and_relationship_equality(es):
+    first_es = EntitySet()
+    second_es = EntitySet()
+
+    first_es.add_dataframe(
+        dataframe_name="sessions",
+        dataframe=es["sessions"].copy(),
+        index="id",
+        logical_types=es["sessions"].ww.logical_types,
+        semantic_tags=get_df_tags(es["sessions"]),
+    )
+
+    # Tests if two entity sets are not equal if they have a different
+    # number of dataframes attached.
+    # first_es has 1 dataframe, second_es has 0 dataframes attached.
+    assert first_es != second_es
+
+    second_es.add_dataframe(
+        dataframe_name="customers",
+        dataframe=es["customers"].copy(),
+        index="id",
+        logical_types=es["customers"].ww.logical_types,
+        semantic_tags=get_df_tags(es["customers"]),
+    )
+
+    # Tests if two entity sets are not equal if they have a different
+    # dataframes attached.
+    # first_es has the sessions dataframe attached,
+    # second_es has the customers dataframe attached.
+    assert first_es != second_es
+
+    first_es.add_dataframe(
+        dataframe_name="customers",
+        dataframe=es["customers"].copy(),
+        index="id",
+        logical_types=es["customers"].ww.logical_types,
+        semantic_tags=get_df_tags(es["customers"]),
+    )
+    first_es.add_dataframe(
+        dataframe_name="stores",
+        dataframe=es["stores"].copy(),
+        index="id",
+        logical_types=es["stores"].ww.logical_types,
+        semantic_tags=get_df_tags(es["stores"]),
+    )
+    first_es.add_dataframe(
+        dataframe_name="régions",
+        dataframe=es["régions"].copy(),
+        index="id",
+        logical_types=es["régions"].ww.logical_types,
+        semantic_tags=get_df_tags(es["régions"]),
+    )
+
+    second_es.add_dataframe(
+        dataframe_name="sessions",
+        dataframe=es["sessions"].copy(),
+        index="id",
+        logical_types=es["sessions"].ww.logical_types,
+        semantic_tags=get_df_tags(es["sessions"]),
+    )
+    second_es.add_dataframe(
+        dataframe_name="stores",
+        dataframe=es["stores"].copy(),
+        index="id",
+        logical_types=es["stores"].ww.logical_types,
+        semantic_tags=get_df_tags(es["stores"]),
+    )
+    second_es.add_dataframe(
+        dataframe_name="régions",
+        dataframe=es["régions"].copy(),
+        index="id",
+        logical_types=es["régions"].ww.logical_types,
+        semantic_tags=get_df_tags(es["régions"]),
+    )
+
+    # Now the two entity sets should be equal,
+    # since they have the same dataframes.
+    assert first_es == second_es
+
+    first_es.add_relationship("customers", "id", "sessions", "customer_id")
+    second_es.add_relationship("régions", "id", "stores", "région_id")
+
+    # Test if two entity sets are not equal
+    # if they have different relationships.
+    assert first_es != second_es
+
+
 def test_entityset_id_equality():
     first_es = EntitySet(id='first')
     first_es_copy = EntitySet(id='first')
