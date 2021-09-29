@@ -19,7 +19,7 @@ Future Release
         * Add tests to verify all primitives can be initialized without parameter values (:pr:`1726`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`bchen1116`, :user:`HenryRocha`
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`bchen1116`, :user:`HenryRocha`, :user:`VaishnaviNandakumar`
 
 v1.0.0rc1 Sep 17, 2021
 ======================
