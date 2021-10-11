@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+       * Fix `get_unused_primitives` only recognizes lowercase primitive strings (:pr:`1733`)
     * Changes
     * Documentation Changes
        * Update installation instructions for 1.0.0rc1 announcement in docs (:pr:`1707`, :pr:`1708`, :pr:`1713`, :pr:`1716`)
