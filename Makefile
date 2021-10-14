@@ -8,7 +8,7 @@ clean:
 .PHONY: lint
 lint:
 	flake8 featuretools && isort --check-only featuretools
-	python docs/notebook_cleaners.py check-execution
+	python docs/notebook_cleaner.py check-execution
 
 .PHONY: lint-fix
 lint-fix:
