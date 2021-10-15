@@ -23,6 +23,11 @@ Update checker:
 
         python -m pip install "featuretools[update_checker]"
 
+NLP Primitives:
+    Use Natural Language Processing Primitives in Featuretools::
+
+        python -m pip install "featuretools[nlp_primitives]"
+
 .. _graphviz:
 
 Installing Graphviz
