@@ -37,13 +37,19 @@ conda install -c conda-forge featuretools
 You can install add-ons individually or all at once by running
 
 ```
-python -m pip install featuretools[complete]
+python -m pip install "featuretools[complete]"
 ```
 
 **Update checker** - Receive automatic notifications of new Featuretools releases
 
 ```
-python -m pip install featuretools[update_checker]
+python -m pip install "featuretools[update_checker]"
+```
+
+**NLP Primitives** - Use Natural Language Processing Primitives:
+
+```
+python -m pip install "featuretools[nlp_primitives]"
 ```
 
 ## Example
