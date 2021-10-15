@@ -7,11 +7,11 @@ from featuretools.feature_base import (
     AggregationFeature,
     FeatureOutputSlice,
     GroupByTransformFeature,
-    TransformFeature
+    TransformFeature,
 )
 from featuretools.utils import Trie
 
-logger = logging.getLogger('featuretools.computational_backend')
+logger = logging.getLogger("featuretools.computational_backend")
 
 
 class FeatureSet(object):
@@ -35,8 +35,9 @@ class FeatureSet(object):
         self.target_feature_names = {f.unique_name() for f in features}
 
         if not approximate_feature_trie:
-            approximate_feature_trie = Trie(default=list,
-                                            path_constructor=RelationshipPath)
+            approximate_feature_trie = Trie(
+                default=list, path_constructor=RelationshipPath
+            )
         self.approximate_feature_trie = approximate_feature_trie
 
         # Maps the unique name of each feature to the actual feature. This is necessary
@@ -58,7 +59,8 @@ class FeatureSet(object):
         # feature names (keys) and the features that rely on them (values).
         self.feature_dependents = {
             fname: [self.features_by_name[dname] for dname in feature_dependents[fname]]
-            for fname, f in self.features_by_name.items()}
+            for fname, f in self.features_by_name.items()
+        }
 
         self._feature_trie = None
 
@@ -86,24 +88,30 @@ class FeatureSet(object):
         """
         Build the feature trie by adding the target features and their dependencies recursively.
         """
-        feature_trie = Trie(default=lambda: (False, set(), set()),
-                            path_constructor=RelationshipPath)
+        feature_trie = Trie(
+            default=lambda: (False, set(), set()), path_constructor=RelationshipPath
+        )
 
         for f in self.target_features:
-            self._add_feature_to_trie(feature_trie,
-                                      f,
-                                      self.approximate_feature_trie)
+            self._add_feature_to_trie(feature_trie, f, self.approximate_feature_trie)
 
         return feature_trie
 
-    def _add_feature_to_trie(self, trie, feature, approximate_feature_trie,
-                             ancestor_needs_full_dataframe=False):
+    def _add_feature_to_trie(
+        self,
+        trie,
+        feature,
+        approximate_feature_trie,
+        ancestor_needs_full_dataframe=False,
+    ):
         """
         Add the given feature to the root of the trie, and recurse on its dependencies. If it is in
         approximate_feature_trie then it will not be added and we will not recurse on its dependencies.
         """
         node_needs_full_dataframe, full_features, not_full_features = trie.value
-        needs_full_dataframe = ancestor_needs_full_dataframe or self.uses_full_dataframe(feature)
+        needs_full_dataframe = (
+            ancestor_needs_full_dataframe or self.uses_full_dataframe(feature)
+        )
 
         name = feature.unique_name()
 
@@ -137,8 +145,12 @@ class FeatureSet(object):
         for dep_feat in feature.get_dependencies():
             if isinstance(dep_feat, FeatureOutputSlice):
                 dep_feat = dep_feat.base_feature
-            self._add_feature_to_trie(sub_trie, dep_feat, sub_ignored_trie,
-                                      ancestor_needs_full_dataframe=needs_full_dataframe)
+            self._add_feature_to_trie(
+                sub_trie,
+                dep_feat,
+                sub_ignored_trie,
+                ancestor_needs_full_dataframe=needs_full_dataframe,
+            )
 
     def group_features(self, feature_names):
         """
@@ -149,19 +161,22 @@ class FeatureSet(object):
         depths = self._get_feature_depths(features)
 
         def key_func(f):
-            return (depths[f.unique_name()],
-                    f.relationship_path_name(),
-                    str(f.__class__),
-                    _get_use_previous(f),
-                    _get_where(f),
-                    self.uses_full_dataframe(f),
-                    _get_groupby(f))
+            return (
+                depths[f.unique_name()],
+                f.relationship_path_name(),
+                str(f.__class__),
+                _get_use_previous(f),
+                _get_where(f),
+                self.uses_full_dataframe(f),
+                _get_groupby(f),
+            )
 
         # Sort the list of features by the complex key function above, then
         # group them by the same key
         sort_feats = sorted(features, key=key_func)
-        feature_groups = [list(g) for _, g in
-                          itertools.groupby(sort_feats, key=key_func)]
+        feature_groups = [
+            list(g) for _, g in itertools.groupby(sort_feats, key=key_func)
+        ]
 
         return feature_groups
 
@@ -183,14 +198,18 @@ class FeatureSet(object):
             if not f.relationship_path:
                 dependencies = f.get_dependencies()
                 for dep in dependencies:
-                    order[dep.unique_name()] = \
-                        min(order[f.unique_name()] - 1, order[dep.unique_name()])
+                    order[dep.unique_name()] = min(
+                        order[f.unique_name()] - 1, order[dep.unique_name()]
+                    )
                     queue.append(dep)
 
         return depths
 
     def uses_full_dataframe(self, feature, check_dependents=False):
-        if isinstance(feature, TransformFeature) and feature.primitive.uses_full_dataframe:
+        if (
+            isinstance(feature, TransformFeature)
+            and feature.primitive.uses_full_dataframe
+        ):
             return True
         return check_dependents and self._dependent_uses_full_dataframe(feature)
 
@@ -200,10 +219,13 @@ class FeatureSet(object):
                 return True
         return False
 
+
 # These functions are used for sorting and grouping features
 
 
-def _get_use_previous(f):  # TODO Sort and group features for DateOffset with two different temporal values
+def _get_use_previous(
+    f,
+):  # TODO Sort and group features for DateOffset with two different temporal values
     if isinstance(f, AggregationFeature) and f.use_previous is not None:
         if len(f.use_previous.times.keys()) > 1:
             return ("", -1)
@@ -219,11 +241,11 @@ def _get_where(f):
     if isinstance(f, AggregationFeature) and f.where is not None:
         return f.where.unique_name()
     else:
-        return ''
+        return ""
 
 
 def _get_groupby(f):
     if isinstance(f, GroupByTransformFeature):
         return f.groupby.unique_name()
     else:
-        return ''
+        return ""

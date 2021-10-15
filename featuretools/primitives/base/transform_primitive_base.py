@@ -8,15 +8,16 @@ from featuretools.primitives.base.utils import inspect_function_args
 
 class TransformPrimitive(PrimitiveBase):
     """Feature for dataframe that is a based off one or more other features
-        in that dataframe."""
+    in that dataframe."""
+
     # (bool) If True, feature function depends on all values of dataframe
     #   (and will receive these values as input, regardless of specified instance ids)
     uses_full_dataframe = False
 
     def generate_name(self, base_feature_names):
-        return u"%s(%s%s)" % (
+        return "%s(%s%s)" % (
             self.name.upper(),
-            u", ".join(base_feature_names),
+            ", ".join(base_feature_names),
             self.get_args_string(),
         )
 
@@ -26,11 +27,18 @@ class TransformPrimitive(PrimitiveBase):
         return [base_name + "[%s]" % i for i in range(n)]
 
 
-def make_trans_primitive(function, input_types, return_type, name=None,
-                         description=None, cls_attributes=None,
-                         uses_calc_time=False, commutative=False,
-                         number_output_features=1):
-    '''Returns a new transform primitive class
+def make_trans_primitive(
+    function,
+    input_types,
+    return_type,
+    name=None,
+    description=None,
+    cls_attributes=None,
+    uses_calc_time=False,
+    commutative=False,
+    number_output_features=1,
+):
+    """Returns a new transform primitive class
 
     Args:
         function (function): Function that takes in a series and applies some
@@ -82,9 +90,9 @@ def make_trans_primitive(function, input_types, return_type, name=None,
                 description="For each value of the base feature, checks "
                 "whether it is in a list that provided.",
                 cls_attributes={"generate_name": isin_generate_name})
-    '''
+    """
     if description is None:
-        default_description = 'A custom transform primitive'
+        default_description = "A custom transform primitive"
         doc = inspect.getdoc(function)
         description = doc if doc is not None else default_description
     # dictionary that holds attributes for class
@@ -100,9 +108,9 @@ def make_trans_primitive(function, input_types, return_type, name=None,
     new_class.return_type = return_type
     new_class.commutative = commutative
     new_class.number_output_features = number_output_features
-    new_class, default_kwargs = inspect_function_args(new_class,
-                                                      function,
-                                                      uses_calc_time)
+    new_class, default_kwargs = inspect_function_args(
+        new_class, function, uses_calc_time
+    )
 
     if len(default_kwargs) > 0:
         new_class.default_kwargs = default_kwargs

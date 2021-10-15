@@ -8,18 +8,18 @@ def use_smartopen_es(file_path, path, transport_params=None, read=True):
     open = import_or_raise("smart_open", SMART_OPEN_ERR_MSG).open
     if read:
         with open(path, "rb", transport_params=transport_params) as fin:
-            with open(file_path, 'wb') as fout:
+            with open(file_path, "wb") as fout:
                 shutil.copyfileobj(fin, fout)
     else:
-        with open(file_path, 'rb') as fin:
-            with open(path, 'wb', transport_params=transport_params) as fout:
+        with open(file_path, "rb") as fin:
+            with open(path, "wb", transport_params=transport_params) as fout:
                 shutil.copyfileobj(fin, fout)
 
 
 def use_smartopen_features(path, features_dict=None, transport_params=None, read=True):
     open = import_or_raise("smart_open", SMART_OPEN_ERR_MSG).open
     if read:
-        with open(path, 'r', encoding='utf-8', transport_params=transport_params) as f:
+        with open(path, "r", encoding="utf-8", transport_params=transport_params) as f:
             features_dict = json.load(f)
             return features_dict
     else:
@@ -34,11 +34,11 @@ def get_transport_params(profile_name):
 
     if isinstance(profile_name, str):
         session = boto3.Session(profile_name=profile_name)
-        transport_params = {'client': session.client('s3')}
+        transport_params = {"client": session.client("s3")}
     elif profile_name is False or boto3.Session().get_credentials() is None:
         session = boto3.Session()
-        client = session.client('s3', config=Config(signature_version=UNSIGNED))
-        transport_params = {'client': client}
+        client = session.client("s3", config=Config(signature_version=UNSIGNED))
+        transport_params = {"client": client}
     else:
         transport_params = None
     return transport_params

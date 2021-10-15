@@ -13,10 +13,16 @@ class AggregationPrimitive(PrimitiveBase):
     base_of_exclude = None  # primitives this primitive can't be input for
     stack_on_self = True  # whether or not it can be in input_types of self
 
-    def generate_name(self, base_feature_names, relationship_path_name,
-                      parent_dataframe_name, where_str, use_prev_str):
+    def generate_name(
+        self,
+        base_feature_names,
+        relationship_path_name,
+        parent_dataframe_name,
+        where_str,
+        use_prev_str,
+    ):
         base_features_str = ", ".join(base_feature_names)
-        return u"%s(%s.%s%s%s%s)" % (
+        return "%s(%s.%s%s%s%s)" % (
             self.name.upper(),
             relationship_path_name,
             base_features_str,
@@ -25,25 +31,43 @@ class AggregationPrimitive(PrimitiveBase):
             self.get_args_string(),
         )
 
-    def generate_names(self, base_feature_names, relationship_path_name,
-                       parent_dataframe_name, where_str, use_prev_str):
+    def generate_names(
+        self,
+        base_feature_names,
+        relationship_path_name,
+        parent_dataframe_name,
+        where_str,
+        use_prev_str,
+    ):
         n = self.number_output_features
-        base_name = self.generate_name(base_feature_names,
-                                       relationship_path_name,
-                                       parent_dataframe_name,
-                                       where_str,
-                                       use_prev_str)
+        base_name = self.generate_name(
+            base_feature_names,
+            relationship_path_name,
+            parent_dataframe_name,
+            where_str,
+            use_prev_str,
+        )
         return [base_name + "[%s]" % i for i in range(n)]
 
 
-def make_agg_primitive(function, input_types, return_type, name=None,
-                       stack_on_self=True, stack_on=None,
-                       stack_on_exclude=None, base_of=None,
-                       base_of_exclude=None, description=None,
-                       cls_attributes=None, uses_calc_time=False,
-                       default_value=None, commutative=False,
-                       number_output_features=1):
-    '''Returns a new aggregation primitive class. The primitive infers default
+def make_agg_primitive(
+    function,
+    input_types,
+    return_type,
+    name=None,
+    stack_on_self=True,
+    stack_on=None,
+    stack_on_exclude=None,
+    base_of=None,
+    base_of_exclude=None,
+    description=None,
+    cls_attributes=None,
+    uses_calc_time=False,
+    default_value=None,
+    commutative=False,
+    number_output_features=1,
+):
+    """Returns a new aggregation primitive class. The primitive infers default
     values by passing in empty data.
 
     Args:
@@ -108,9 +132,9 @@ def make_agg_primitive(function, input_types, return_type, name=None,
                 description="Time since last related instance",
                 uses_calc_time=True)
 
-    '''
+    """
     if description is None:
-        default_description = 'A custom primitive'
+        default_description = "A custom primitive"
         doc = inspect.getdoc(function)
         description = doc if doc is not None else default_description
     cls = {"__doc__": description}
@@ -128,9 +152,9 @@ def make_agg_primitive(function, input_types, return_type, name=None,
     new_class.base_of_exclude = base_of_exclude
     new_class.commutative = commutative
     new_class.number_output_features = number_output_features
-    new_class, default_kwargs = inspect_function_args(new_class,
-                                                      function,
-                                                      uses_calc_time)
+    new_class, default_kwargs = inspect_function_args(
+        new_class, function, uses_calc_time
+    )
 
     if len(default_kwargs) > 0:
         new_class.default_kwargs = default_kwargs

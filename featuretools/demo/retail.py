@@ -4,8 +4,8 @@ from woodwork.logical_types import NaturalLanguage
 import featuretools as ft
 
 
-def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
-    '''Returns the retail entityset example.
+def load_retail(id="demo_retail_data", nrows=None, return_single_table=False):
+    """Returns the retail entityset example.
     The original dataset can be found `here <https://archive.ics.uci.edu/ml/datasets/online+retail>`_.
 
     We have also made some modifications to the data. We
@@ -56,44 +56,53 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
                 products (shape = [606, 3])
                 customers (shape = [50, 2])
                 order_products (shape = [1000, 7])
-
-'''
+    """
     es = ft.EntitySet(id)
-    csv_s3_gz = "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv.gz?library=featuretools&version=" + ft.__version__
-    csv_s3 = "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv?library=featuretools&version=" + ft.__version__
+    csv_s3_gz = (
+        "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv.gz?library=featuretools&version="
+        + ft.__version__
+    )
+    csv_s3 = (
+        "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv?library=featuretools&version="
+        + ft.__version__
+    )
     # Try to read in gz compressed file
     try:
-        df = pd.read_csv(csv_s3_gz,
-                         nrows=nrows,
-                         parse_dates=["order_date"])
+        df = pd.read_csv(csv_s3_gz, nrows=nrows, parse_dates=["order_date"])
     # Fall back to uncompressed
     except Exception:
-        df = pd.read_csv(csv_s3,
-                         nrows=nrows,
-                         parse_dates=["order_date"])
+        df = pd.read_csv(csv_s3, nrows=nrows, parse_dates=["order_date"])
     if return_single_table:
         return df
 
-    es.add_dataframe(dataframe_name="order_products",
-                     dataframe=df,
-                     index="order_product_id",
-                     make_index=True,
-                     time_index="order_date",
-                     logical_types={'description': NaturalLanguage})
+    es.add_dataframe(
+        dataframe_name="order_products",
+        dataframe=df,
+        index="order_product_id",
+        make_index=True,
+        time_index="order_date",
+        logical_types={"description": NaturalLanguage},
+    )
 
-    es.normalize_dataframe(new_dataframe_name="products",
-                           base_dataframe_name="order_products",
-                           index="product_id",
-                           additional_columns=["description"])
+    es.normalize_dataframe(
+        new_dataframe_name="products",
+        base_dataframe_name="order_products",
+        index="product_id",
+        additional_columns=["description"],
+    )
 
-    es.normalize_dataframe(new_dataframe_name="orders",
-                           base_dataframe_name="order_products",
-                           index="order_id",
-                           additional_columns=["customer_name", "country", "cancelled"])
+    es.normalize_dataframe(
+        new_dataframe_name="orders",
+        base_dataframe_name="order_products",
+        index="order_id",
+        additional_columns=["customer_name", "country", "cancelled"],
+    )
 
-    es.normalize_dataframe(new_dataframe_name="customers",
-                           base_dataframe_name="orders",
-                           index="customer_name")
+    es.normalize_dataframe(
+        new_dataframe_name="customers",
+        base_dataframe_name="orders",
+        index="customer_name",
+    )
     es.add_last_time_indexes()
 
     return es

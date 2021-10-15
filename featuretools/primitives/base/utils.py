@@ -6,10 +6,12 @@ def inspect_function_args(new_class, function, uses_calc_time):
     kwargs = {}
     args = signature(function).parameters.values()
     for arg in args:
-        if arg.name == 'time':
+        if arg.name == "time":
             if not uses_calc_time:
-                raise ValueError("'time' is a restricted keyword.  Please"
-                                 " use a different keyword.")
+                raise ValueError(
+                    "'time' is a restricted keyword.  Please"
+                    " use a different keyword."
+                )
             else:
                 new_class.uses_calc_time = True
         if arg.default is not arg.empty:

@@ -8,7 +8,7 @@ import featuretools
 from featuretools.primitives.base import (
     AggregationPrimitive,
     PrimitiveBase,
-    TransformPrimitive
+    TransformPrimitive,
 )
 from featuretools.utils.gen_utils import Library, find_descendents
 
@@ -19,8 +19,7 @@ def get_aggregation_primitives():
     for attribute_string in dir(featuretools.primitives):
         attribute = getattr(featuretools.primitives, attribute_string)
         if isclass(attribute):
-            if issubclass(attribute,
-                          featuretools.primitives.AggregationPrimitive):
+            if issubclass(attribute, featuretools.primitives.AggregationPrimitive):
                 if attribute.name:
                     aggregation_primitives.add(attribute)
     return {prim.name.lower(): prim for prim in aggregation_primitives}
@@ -32,71 +31,100 @@ def get_transform_primitives():
     for attribute_string in dir(featuretools.primitives):
         attribute = getattr(featuretools.primitives, attribute_string)
         if isclass(attribute):
-            if issubclass(attribute,
-                          featuretools.primitives.TransformPrimitive):
+            if issubclass(attribute, featuretools.primitives.TransformPrimitive):
                 if attribute.name:
                     transform_primitives.add(attribute)
     return {prim.name.lower(): prim for prim in transform_primitives}
 
 
 def list_primitives():
-    trans_names, trans_primitives, valid_inputs, return_type = _get_names_primitives(get_transform_primitives)
-    trans_dask = [Library.DASK in primitive.compatibility for primitive in trans_primitives]
-    trans_koalas = [Library.KOALAS in primitive.compatibility for primitive in trans_primitives]
-    transform_df = pd.DataFrame({'name': trans_names,
-                                 'description': _get_descriptions(trans_primitives),
-                                 'dask_compatible': trans_dask,
-                                 'koalas_compatible': trans_koalas,
-                                 'valid_inputs': valid_inputs,
-                                 'return_type': return_type})
-    transform_df['type'] = 'transform'
+    trans_names, trans_primitives, valid_inputs, return_type = _get_names_primitives(
+        get_transform_primitives
+    )
+    trans_dask = [
+        Library.DASK in primitive.compatibility for primitive in trans_primitives
+    ]
+    trans_koalas = [
+        Library.KOALAS in primitive.compatibility for primitive in trans_primitives
+    ]
+    transform_df = pd.DataFrame(
+        {
+            "name": trans_names,
+            "description": _get_descriptions(trans_primitives),
+            "dask_compatible": trans_dask,
+            "koalas_compatible": trans_koalas,
+            "valid_inputs": valid_inputs,
+            "return_type": return_type,
+        }
+    )
+    transform_df["type"] = "transform"
 
-    agg_names, agg_primitives, valid_inputs, return_type = _get_names_primitives(get_aggregation_primitives)
+    agg_names, agg_primitives, valid_inputs, return_type = _get_names_primitives(
+        get_aggregation_primitives
+    )
     agg_dask = [Library.DASK in primitive.compatibility for primitive in agg_primitives]
-    agg_koalas = [Library.KOALAS in primitive.compatibility for primitive in agg_primitives]
-    agg_df = pd.DataFrame({'name': agg_names,
-                           'description': _get_descriptions(agg_primitives),
-                           'dask_compatible': agg_dask,
-                           'koalas_compatible': agg_koalas,
-                           'valid_inputs': valid_inputs,
-                           'return_type': return_type})
-    agg_df['type'] = 'aggregation'
+    agg_koalas = [
+        Library.KOALAS in primitive.compatibility for primitive in agg_primitives
+    ]
+    agg_df = pd.DataFrame(
+        {
+            "name": agg_names,
+            "description": _get_descriptions(agg_primitives),
+            "dask_compatible": agg_dask,
+            "koalas_compatible": agg_koalas,
+            "valid_inputs": valid_inputs,
+            "return_type": return_type,
+        }
+    )
+    agg_df["type"] = "aggregation"
 
-    columns = ['name', 'type', 'dask_compatible', 'koalas_compatible', 'description', 'valid_inputs', 'return_type']
+    columns = [
+        "name",
+        "type",
+        "dask_compatible",
+        "koalas_compatible",
+        "description",
+        "valid_inputs",
+        "return_type",
+    ]
     return pd.concat([agg_df, transform_df], ignore_index=True)[columns]
 
 
 def get_default_aggregation_primitives():
-    agg_primitives = [featuretools.primitives.Sum,
-                      featuretools.primitives.Std,
-                      featuretools.primitives.Max,
-                      featuretools.primitives.Skew,
-                      featuretools.primitives.Min,
-                      featuretools.primitives.Mean,
-                      featuretools.primitives.Count,
-                      featuretools.primitives.PercentTrue,
-                      featuretools.primitives.NumUnique,
-                      featuretools.primitives.Mode]
+    agg_primitives = [
+        featuretools.primitives.Sum,
+        featuretools.primitives.Std,
+        featuretools.primitives.Max,
+        featuretools.primitives.Skew,
+        featuretools.primitives.Min,
+        featuretools.primitives.Mean,
+        featuretools.primitives.Count,
+        featuretools.primitives.PercentTrue,
+        featuretools.primitives.NumUnique,
+        featuretools.primitives.Mode,
+    ]
     return agg_primitives
 
 
 def get_default_transform_primitives():
     # featuretools.primitives.TimeSince
-    trans_primitives = [featuretools.primitives.Age,
-                        featuretools.primitives.Day,
-                        featuretools.primitives.Year,
-                        featuretools.primitives.Month,
-                        featuretools.primitives.Weekday,
-                        featuretools.primitives.Haversine,
-                        featuretools.primitives.NumWords,
-                        featuretools.primitives.NumCharacters]
+    trans_primitives = [
+        featuretools.primitives.Age,
+        featuretools.primitives.Day,
+        featuretools.primitives.Year,
+        featuretools.primitives.Month,
+        featuretools.primitives.Weekday,
+        featuretools.primitives.Haversine,
+        featuretools.primitives.NumWords,
+        featuretools.primitives.NumCharacters,
+    ]
     return trans_primitives
 
 
 def _get_descriptions(primitives):
     descriptions = []
     for prim in primitives:
-        description = ''
+        description = ""
         if prim.__doc__ is not None:
             description = prim.__doc__.split("\n")[0]
         descriptions.append(description)
@@ -112,8 +140,8 @@ def _get_names_primitives(primitive_func):
         names.append(name)
         primitives.append(primitive)
         input_types = _get_unique_input_types(primitive.input_types)
-        valid_inputs.append(', '.join(input_types))
-        return_type.append(getattr(primitive.return_type, '__name__', None))
+        valid_inputs.append(", ".join(input_types))
+        return_type.append(getattr(primitive.return_type, "__name__", None))
     return names, primitives, valid_inputs, return_type
 
 
@@ -161,10 +189,11 @@ def load_primitive_from_file(filepath):
     primitives = []
     for primitive_name in vars(module):
         primitive_class = getattr(module, primitive_name)
-        if (isclass(primitive_class) and
-                issubclass(primitive_class, PrimitiveBase) and
-                primitive_class not in (AggregationPrimitive,
-                                        TransformPrimitive)):
+        if (
+            isclass(primitive_class)
+            and issubclass(primitive_class, PrimitiveBase)
+            and primitive_class not in (AggregationPrimitive, TransformPrimitive)
+        ):
             primitives.append((primitive_name, primitive_class))
 
     if len(primitives) == 0:
@@ -180,9 +209,9 @@ def serialize_primitive(primitive):
     args_dict = {name: val for name, val in primitive.get_arguments()}
     cls = type(primitive)
     return {
-        'type': cls.__name__,
-        'module': cls.__module__,
-        'arguments': args_dict,
+        "type": cls.__name__,
+        "module": cls.__module__,
+        "arguments": args_dict,
     }
 
 
@@ -204,8 +233,8 @@ class PrimitivesDeserializer(object):
         Construct a primitive from the given dictionary (output from
         serialize_primitive).
         """
-        class_name = primitive_dict['type']
-        module_name = primitive_dict['module']
+        class_name = primitive_dict["type"]
+        module_name = primitive_dict["module"]
         cache_key = (class_name, module_name)
 
         if cache_key in self.class_cache:
@@ -214,10 +243,12 @@ class PrimitivesDeserializer(object):
             cls = self._find_class_in_descendants(cache_key)
 
             if not cls:
-                raise RuntimeError('Primitive "%s" in module "%s" not found' %
-                                   (class_name, module_name))
+                raise RuntimeError(
+                    'Primitive "%s" in module "%s" not found'
+                    % (class_name, module_name)
+                )
 
-        arguments = primitive_dict['arguments']
+        arguments = primitive_dict["arguments"]
         return cls(**arguments)
 
     def _find_class_in_descendants(self, search_key):

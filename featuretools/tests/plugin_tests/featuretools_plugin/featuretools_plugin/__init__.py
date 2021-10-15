@@ -1,1 +1,1 @@
-raise NotImplementedError('plugin not implemented')
+raise NotImplementedError("plugin not implemented")
