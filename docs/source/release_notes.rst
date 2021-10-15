@@ -12,6 +12,7 @@ Future Release
     * Testing Changes
         * Modify CI to run unit test with latest dependencies on python 3.9 (:pr:`1738`)
         * Added Python version standardizer to Jupyter notebook linting (:pr:`1741`)
+        * Add black linting package and remove autopep8 (:pr:`1742`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`bchen1116`
