@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Restrict from using pandas 1.3.4 (:pr:`1746`)
     * Documentation Changes
     * Testing Changes
         * Modify CI to run unit test with latest dependencies on python 3.9 (:pr:`1738`)
