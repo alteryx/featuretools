@@ -1603,13 +1603,13 @@ def test_base_of_exclude():
         def get_function(self):
             return sum
 
-        es = ft.demo.load_mock_customer(return_entityset=True)
+    es = ft.demo.load_mock_customer(return_entityset=True)
 
-        fd = ft.dfs(
-            entityset=es,
-            features_only=True,
-            agg_primitives=[Sum],
-            target_dataframe_name='customers',
-        )
+    fd = ft.dfs(
+        entityset=es,
+        features_only=True,
+        agg_primitives=[Sum],
+        target_dataframe_name='customers',
+    )
 
-        assert len(fd) == 10
+    assert len(fd) == 10
