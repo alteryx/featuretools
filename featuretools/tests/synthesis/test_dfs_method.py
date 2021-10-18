@@ -326,6 +326,19 @@ def test_warns_with_unused_primitives(es):
     assert not record
 
 
+def test_no_warns_with_different_case_string_primitives(es):
+    for agg_primitive in ["Count", 'count', 'cOunT']:
+        # Should not raise a UnusedPrimitiveWarning warning
+        with pytest.warns(None) as record:
+            dfs(entityset=es,
+                target_dataframe_name='customers',
+                agg_primitives=[agg_primitive],
+                max_depth=1,
+                features_only=True)
+
+        assert not record
+
+
 def test_does_not_warn_with_stacking_feature(pd_es):
     with pytest.warns(None) as record:
         dfs(entityset=pd_es,
