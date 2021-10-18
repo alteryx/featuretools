@@ -1585,3 +1585,31 @@ def test_does_not_build_features_on_last_time_index_col(es):
 
     for feature in features:
         assert LTI_COLUMN_NAME not in feature.get_name()
+
+
+def test_base_of_exclude():
+    class Abs(ft.primitives.TransformPrimitive):
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        name = 'abs'
+
+        def get_function(self):
+            return abs
+
+    class Sum(ft.primitives.AggregationPrimitive):
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        base_of_exclude = [Abs]
+        name = 'sum'
+
+        def get_function(self):
+            return sum
+
+        es = ft.demo.load_mock_customer(return_entityset=True)
+
+        fd = ft.dfs(
+            entityset=es,
+            features_only=True,
+            agg_primitives=[Sum],
+            target_dataframe_name='customers',
+        )
+
+        assert len(fd) == 10
