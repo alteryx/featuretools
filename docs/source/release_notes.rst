@@ -7,7 +7,8 @@ Future Release
 ==============
     * Enhancements
     * Fixes
-        * Check ``base_of_exclude`` attribute on primitive
+        * Check ``base_of_exclude`` attribute on primitive instead feature class (:pr:`1749`)
+        * Pin upper bound for pyspark (:pr:`1748`)
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -15,7 +16,7 @@ Future Release
         * Added Python version standardizer to Jupyter notebook linting (:pr:`1741`)
 
     Thanks to the following people for contributing to this release:
-    :user:`bchen1116`, :user:`gsheni`, :user:`jeff-hernandez`
+    :user:`bchen1116`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`
 
 v1.0.0 Oct 12, 2021
 ====================
