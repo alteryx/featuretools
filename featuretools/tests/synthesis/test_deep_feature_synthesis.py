@@ -1609,7 +1609,8 @@ def test_base_of_exclude():
         entityset=es,
         features_only=True,
         agg_primitives=[Sum],
+        trans_primitives=[Abs],
         target_dataframe_name='customers',
     )
 
-    assert len(fd) == 10
+    assert isinstance(fd, list)
