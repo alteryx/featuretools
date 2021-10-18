@@ -874,7 +874,7 @@ def check_stacking(primitive, inputs):
 
     for f in inputs:
         if f.primitive.base_of_exclude is not None:
-            if primitive in f.base_of_exclude:
+            if primitive in f.primitive.base_of_exclude:
                 return False
 
     for f in inputs:
