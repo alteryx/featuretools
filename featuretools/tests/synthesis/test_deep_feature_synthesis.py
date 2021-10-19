@@ -1588,29 +1588,30 @@ def test_does_not_build_features_on_last_time_index_col(es):
 
 
 def test_base_of_exclude():
-    class Abs(ft.primitives.TransformPrimitive):
-        input_types = [ColumnSchema(semantic_tags={'numeric'})]
-        name = 'abs'
-
-        def get_function(self):
-            return abs
-
-    class Sum(ft.primitives.AggregationPrimitive):
-        input_types = [ColumnSchema(semantic_tags={'numeric'})]
-        base_of_exclude = [Abs]
-        name = 'sum'
-
-        def get_function(self):
-            return sum
-
+    base_of_exclude = ft.primitives.Absolute.base_of_exclude
     es = ft.demo.load_mock_customer(return_entityset=True)
 
     fd = ft.dfs(
         entityset=es,
         features_only=True,
-        agg_primitives=[Sum],
-        trans_primitives=[Abs],
-        target_dataframe_name='customers',
+        agg_primitives=[ft.primitives.Sum],
+        trans_primitives=[ft.primitives.Absolute],
+        target_dataframe_name='sessions',
     )
 
-    assert isinstance(fd, list)
+    names = [feature.get_name() for feature in fd]
+    assert 'SUM(transactions.ABSOLUTE(amount))' in names
+
+    ft.primitives.Absolute.base_of_exclude = [ft.primitives.Sum]
+
+    fd = ft.dfs(
+        entityset=es,
+        features_only=True,
+        agg_primitives=[ft.primitives.Sum],
+        trans_primitives=[ft.primitives.Absolute],
+        target_dataframe_name='sessions',
+    )
+
+    names = [feature.get_name() for feature in fd]
+    assert 'SUM(transactions.ABSOLUTE(amount))' not in names
+    ft.primitives.Absolute.base_of_exclude = base_of_exclude
