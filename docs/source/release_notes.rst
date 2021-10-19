@@ -10,6 +10,7 @@ Future Release
         * Check ``base_of_exclude`` attribute on primitive instead feature class (:pr:`1749`)
         * Pin upper bound for pyspark (:pr:`1748`)
     * Changes
+        * Add new version of nlp_primitives as an add-on library (:pr:`1743`)
     * Documentation Changes
     * Testing Changes
         * Modify CI to run unit test with latest dependencies on python 3.9 (:pr:`1738`)
