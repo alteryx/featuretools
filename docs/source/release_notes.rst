@@ -7,24 +7,20 @@ Future Release
 ==============
     * Enhancements
     * Fixes
-       * Fix `get_unused_primitives` only recognizes lowercase primitive strings (:pr:`1733`)
+        * Pin upper bound for pyspark (:pr:`1748`)
+        * Fix `get_unused_primitives` only recognizes lowercase primitive strings (:pr:`1733`)
     * Changes
+        * Add new version of nlp_primitives as an add-on library (:pr:`1743`)
     * Documentation Changes
-       * Update installation instructions for 1.0.0rc1 announcement in docs (:pr:`1707`, :pr:`1708`, :pr:`1713`, :pr:`1716`)
-       * Fixed broken link for Demo notebook in README.md (:pr:`1728`)
-       * Update ``contributing.md`` to improve instructions for external contributors (:pr:`1723`)
     * Testing Changes
-        * Added Jupyter notebook cleaner to the linters (:pr:`1719`)
-        * Update reviewers for minimum and latest dependency checkers (:pr:`1715`)
-        * Full coverage for EntitySet.__eq__ method (:pr:`1725`)
-        * Add tests to verify all primitives can be initialized without parameter values (:pr:`1726`)
-        * Add unit test for `get_unused_primitives` to account for different case strings (:pr:`1733`)
+        * Modify CI to run unit test with latest dependencies on python 3.9 (:pr:`1738`)
+        * Added Python version standardizer to Jupyter notebook linting (:pr:`1741`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`bchen1116`, :user:`HenryRocha`, :user:`VaishnaviNandakumar`
+    :user:`gsheni`, :user:`bchen1116`, :user:`rwedge`, :user:`HenryRocha`
 
-v1.0.0rc1 Sep 17, 2021
-======================
+v1.0.0 Oct 12, 2021
+====================
     * Enhancements
         * Add support for creating EntitySets from Woodwork DataTables (:pr:`1277`)
         * Add ``EntitySet.__deepcopy__`` that retains Woodwork typing information (:pr:`1465`)
@@ -63,7 +59,7 @@ v1.0.0rc1 Sep 17, 2021
         * Move default variable description logic to ``generate_description`` (:pr:`1403`)
         * Update Woodwork to version 0.4.0 with ``LogicalType.transform`` and LogicalType instances (:pr:`1451`)
         * Update Woodwork to version 0.4.1 with Ordinal order values and whitespace serialization fix (:pr:`1478`)
-        * Use ``ColumnSchema`` for primitive input and return tyes (:pr:`1411`)
+        * Use ``ColumnSchema`` for primitive input and return types (:pr:`1411`)
         * Update features to use Woodwork and remove ``Entity`` and ``Variable`` classes (:pr:`1501`)
         * Re-add ``make_index`` functionality to EntitySet (:pr:`1507`)
         * Use ``ColumnSchema`` in DFS primitive matching (:pr:`1523`)
@@ -104,13 +100,21 @@ v1.0.0rc1 Sep 17, 2021
         * Update Feature Selection page to use Woodwork integration (:pr:`1618`)
         * Update Improving Performance page to be Jupyter notebook and use Woodwork integration (:pr:`1591`)
         * Fix typos in transition guide (:pr:`1672`)
+        * Update installation instructions for 1.0.0rc1 announcement in docs (:pr:`1707`, :pr:`1708`, :pr:`1713`, :pr:`1716`)
+        * Fixed broken link for Demo notebook in README.md (:pr:`1728`)
+        * Update ``contributing.md`` to improve instructions for external contributors (:pr:`1723`)
+        * Manually revert changes made by :pr:`1677` and :pr:`1679`.  The related bug in pandas still exists. (:pr:`1731`)
     * Testing Changes
         * Remove entity tests (:pr:`1521`)
         * Fix broken ``EntitySet`` tests (:pr:`1548`)
         * Fix broken primitive tests (:pr:`1568`)
+        * Added Jupyter notebook cleaner to the linters (:pr:`1719`)
+        * Update reviewers for minimum and latest dependency checkers (:pr:`1715`)
+        * Full coverage for EntitySet.__eq__ method (:pr:`1725`)
+        * Add tests to verify all primitives can be initialized without parameter values (:pr:`1726`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`bchen1116`, :user:`gsheni`, :user:`HenryRocha`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`VaishnaviNandakumar`
 
 Breaking Changes
 ++++++++++++++++
@@ -159,22 +163,22 @@ What's New in this Release
 **Adding Interesting Values**
 
 To add interesting values for a single entity, call ``EntitySet.add_interesting_values`` passing the
-id of the entity for which interesting values should be added.
+id of the dataframe for which interesting values should be added.
 
 .. code-block:: python
 
-    >>> es.add_interesting_values(entity_id='log')
+    >>> es.add_interesting_values(dataframe_name='log')
 
 **Setting a Secondary Time Index**
 
-To set a secondary time index for a specific entity, call ``EntitySet.set_secondary_time_index`` passing
-Entity for which to set the secondary time index along with the dictionary mapping the secondary time
+To set a secondary time index for a specific dataframe, call ``EntitySet.set_secondary_time_index`` passing
+the dataframe name for which to set the secondary time index along with the dictionary mapping the secondary time
 index column to the for which the secondary time index applies.
 
 .. code-block:: python
 
     >>> customers_secondary_time_index = {'cancel_date': ['cancel_reason']}
-    >>> es.set_secondary_time_index(es['customers'], customers_secondary_time_index)
+    >>> es.set_secondary_time_index(dataframe_name='customers', customers_secondary_time_index)
 
 **Creating a Relationship and Adding to an EntitySet**
 

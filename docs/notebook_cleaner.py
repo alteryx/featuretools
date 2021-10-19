@@ -44,6 +44,22 @@ def _check_execution_and_output(notebook):
     return True
 
 
+def _check_python_version(notebook, default_version):
+    with open(notebook, "r") as f:
+        source = json.load(f)
+    if source["metadata"]["language_info"]["version"] != default_version:
+        return False
+    return True
+
+
+def _fix_python_version(notebook, default_version):
+    with open(notebook, "r") as f:
+        source = json.load(f)
+    source["metadata"]["language_info"]["version"] = default_version
+    with open(notebook, "w") as f:
+        json.dump(source, f, ensure_ascii=False, indent=1)
+
+
 def _fix_execution_and_output(notebook):
     with open(notebook, "r") as f:
         source = json.load(f)
@@ -57,15 +73,23 @@ def _fix_execution_and_output(notebook):
         json.dump(source, f, ensure_ascii=False, indent=1)
 
 
-def _get_notebooks_with_executions_and_empty(notebooks):
+def _get_notebooks_with_executions_and_empty(notebooks, default_version="3.8.2"):
     executed = []
     empty_last_cell = []
+    versions = []
     for notebook in notebooks:
         if not _check_execution_and_output(notebook):
             executed.append(notebook)
         if not _check_delete_empty_cell(notebook, delete=False):
             empty_last_cell.append(notebook)
-    return (executed, empty_last_cell)
+        if not _check_python_version(notebook, default_version):
+            versions.append(notebook)
+    return (executed, empty_last_cell, versions)
+
+
+def _fix_versions(notebooks, default_version="3.8.2"):
+    for notebook in notebooks:
+        _fix_python_version(notebook, default_version)
 
 
 def _remove_notebook_empty_last_cell(notebooks):
@@ -86,7 +110,7 @@ def cli():
 @cli.command()
 def standardize():
     notebooks = _get_ipython_notebooks(DOCS_PATH)
-    executed_notebooks, empty_cells = _get_notebooks_with_executions_and_empty(notebooks)
+    executed_notebooks, empty_cells, versions = _get_notebooks_with_executions_and_empty(notebooks)
     if executed_notebooks:
         _standardize_outputs(executed_notebooks)
         executed_notebooks = ["\t" + notebook for notebook in executed_notebooks]
@@ -101,12 +125,19 @@ def standardize():
         click.echo(
             f"Removed the empty cells for:\n {empty_cells}"
         )
+    if versions:
+        _fix_versions(versions)
+        versions = ["\t" + notebook for notebook in versions]
+        versions = "\n".join(versions)
+        click.echo(
+            f"Fixed python versions for:\n {versions}"
+        )
 
 
 @cli.command()
 def check_execution():
     notebooks = _get_ipython_notebooks(DOCS_PATH)
-    executed_notebooks, empty_cells = _get_notebooks_with_executions_and_empty(notebooks)
+    executed_notebooks, empty_cells, versions = _get_notebooks_with_executions_and_empty(notebooks)
     if executed_notebooks:
         executed_notebooks = ["\t" + notebook for notebook in executed_notebooks]
         executed_notebooks = "\n".join(executed_notebooks)
@@ -121,7 +152,13 @@ def check_execution():
             f"The following notebooks have empty cells at the end:\n {empty_cells}\n"
             "Please run make lint-fix to fix this."
         )
-
+    if versions:
+        versions = ["\t" + notebook for notebook in versions]
+        versions = "\n".join(versions)
+        raise SystemExit(
+            f"The following notebooks have the wrong Python version: \n {versions}\n"
+            "Please run make lint-fix to fix this."
+        )
 
 if __name__ == "__main__":
     cli()
