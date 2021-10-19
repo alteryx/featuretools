@@ -8,6 +8,7 @@ with open(path.join(dirname, 'README.md')) as f:
 
 extras_require = {
     'update_checker': ['alteryx-open-src-update-checker >= 2.0.0'],
+    'nlp_primitives': ['nlp-primitives[complete] >= 2.0.0'],
     'koalas': open('koalas-requirements.txt').readlines(),
 }
 extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
