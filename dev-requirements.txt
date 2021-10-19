@@ -11,4 +11,5 @@ nbconvert==6.0.6
 nbsphinx==0.8.5
 Sphinx==3.2.1
 pydata_sphinx_theme==0.4.0
+nlp_primitives>=2.0.0
 -r koalas-requirements.txt
