@@ -1,2 +1,2 @@
 pyspark>=3.0.0
-koalas>=1.8.3
+koalas>=1.8.2
