@@ -8,7 +8,7 @@ Future Release
     * Enhancements
     * Fixes
         * Pin upper bound for pyspark (:pr:`1748`)
-        * Fix `get_unused_primitives` only recognizes lowercase primitive strings (:pr:`1733`)
+        * Fix ``get_unused_primitives`` only recognizes lowercase primitive strings (:pr:`1733`)
     * Changes
         * Add new version of nlp_primitives as an add-on library (:pr:`1743`)
     * Documentation Changes
