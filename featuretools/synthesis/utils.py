@@ -52,5 +52,8 @@ def get_unused_primitives(specified, used):
     """Get a list of unused primitives based on a list of specified primitives and a list of output features"""
     if not specified:
         return []
-    specified = {primitive if isinstance(primitive, str) else primitive.name for primitive in specified}
+    specified = {
+        primitive.lower() if isinstance(primitive, str) else primitive.name
+        for primitive in specified
+    }
     return sorted(list(specified.difference(used)))
