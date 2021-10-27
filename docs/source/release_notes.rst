@@ -12,6 +12,7 @@ Future Release
     * Changes
         * Add new version of nlp_primitives as an add-on library (:pr:`1743`)
     * Documentation Changes
+        * Upgrade Sphinx and fix docs configuration error (:pr:`1760`)
     * Testing Changes
         * Modify CI to run unit test with latest dependencies on python 3.9 (:pr:`1738`)
         * Added Python version standardizer to Jupyter notebook linting (:pr:`1741`)
