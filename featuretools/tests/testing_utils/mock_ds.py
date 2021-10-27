@@ -240,7 +240,7 @@ def make_semantic_tags():
     store_semantic_tags = {u'région_id': 'foreign_key'}
 
     customer_semantic_tags = {u'région_id': 'foreign_key',
-                              'birthday': 'birthday'}
+                              'birthday': 'date_of_birth'}
 
     session_semantic_tags = {'customer_id': 'foreign_key'}
 

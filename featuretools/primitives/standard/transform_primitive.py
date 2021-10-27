@@ -677,7 +677,7 @@ class Age(TransformPrimitive):
         [19.013698630136986, 35.61643835616438, 21.221917808219178]
     """
     name = "age"
-    input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'birthday'})]
+    input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'date_of_birth'})]
     return_type = ColumnSchema(logical_type=AgeFractional, semantic_tags={'numeric'})
     uses_calc_time = True
     compatibility = [Library.PANDAS, Library.DASK]
