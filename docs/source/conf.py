@@ -66,7 +66,6 @@ templates_path = ['templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 # source_suffix = ['.rst', '.md']
-source_suffix = ['.rst', '.ipynb']
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'

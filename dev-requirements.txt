@@ -1,15 +1,15 @@
 -r test-requirements.txt
 scikit-learn>=0.20.0,!=0.22
-codecov==2.1.8
-flake8==3.7.8
-autopep8==1.4.4
-ipython==7.18.1;
+codecov==2.1.12
+flake8==3.9.2
+autopep8==1.5.7
+ipython==7.28.0
 isort==5.9.3
 jupyter==1.0.0
 matplotlib==3.2.2  # koalas and composeml pinned below 3.3.0
-nbconvert==6.0.6
-nbsphinx==0.8.5
-Sphinx==3.2.1
-pydata_sphinx_theme==0.4.0
+nbconvert==6.2.0
+nbsphinx==0.8.7
+Sphinx==4.2.0
+pydata_sphinx_theme==0.7.1
 nlp_primitives>=2.0.0
 -r koalas-requirements.txt
