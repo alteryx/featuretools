@@ -9,15 +9,18 @@ Future Release
     * Fixes
         * Check ``base_of_exclude`` attribute on primitive instead feature class (:pr:`1749`)
         * Pin upper bound for pyspark (:pr:`1748`)
+        * Fix ``get_unused_primitives`` only recognizes lowercase primitive strings (:pr:`1733`)
+        * Require newer versions of dask and distributed (:pr:`1762`)
     * Changes
         * Add new version of nlp_primitives as an add-on library (:pr:`1743`)
     * Documentation Changes
+        * Upgrade Sphinx and fix docs configuration error (:pr:`1760`)
     * Testing Changes
         * Modify CI to run unit test with latest dependencies on python 3.9 (:pr:`1738`)
         * Added Python version standardizer to Jupyter notebook linting (:pr:`1741`)
 
     Thanks to the following people for contributing to this release:
-    :user:`bchen1116`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`
+    :user:`bchen1116`, :user:`gsheni`, :user:`HenryRocha`, :user:`jeff-hernandez`, :user:`rwedge`
 
 v1.0.0 Oct 12, 2021
 ====================
