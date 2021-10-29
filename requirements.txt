@@ -1,5 +1,5 @@
 scipy>=1.3.2
-numpy>=1.17.5
+numpy>=1.18.0
 pandas>=1.3.0,<2.0.0
 tqdm>=4.32.0
 pyyaml>=5.4
