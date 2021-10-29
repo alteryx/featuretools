@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Check ``base_of_exclude`` attribute on primitive instead feature class (:pr:`1749`)
         * Pin upper bound for pyspark (:pr:`1748`)
         * Fix ``get_unused_primitives`` only recognizes lowercase primitive strings (:pr:`1733`)
         * Require newer versions of dask and distributed (:pr:`1762`)
@@ -19,7 +20,7 @@ Future Release
         * Added Python version standardizer to Jupyter notebook linting (:pr:`1741`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`bchen1116`, :user:`rwedge`, :user:`HenryRocha`
+    :user:`bchen1116`, :user:`gsheni`, :user:`HenryRocha`, :user:`jeff-hernandez`, :user:`rwedge`
 
 v1.0.0 Oct 12, 2021
 ====================
