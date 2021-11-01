@@ -11,6 +11,7 @@ Future Release
         * Pin upper bound for pyspark (:pr:`1748`)
         * Fix ``get_unused_primitives`` only recognizes lowercase primitive strings (:pr:`1733`)
         * Require newer versions of dask and distributed (:pr:`1762`)
+        * Fix bug with pass-through columns of cutoff_time df when n_jobs > 1 (:pr:`1765`)
     * Changes
         * Add new version of nlp_primitives as an add-on library (:pr:`1743`)
         * Change name of date_of_birth (column name) to birthday in mock dataset (:pr:`1754`)

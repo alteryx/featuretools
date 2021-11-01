@@ -336,7 +336,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
 def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate, training_window,
                     save_progress, no_unapproximated_aggs, cutoff_df_time_col, target_time,
-                    pass_columns, progress_bar=None, progress_callback=None, include_cutoff_time=True):
+                    pass_columns, progress_bar=None, progress_callback=None, include_cutoff_time=True, schema=None):
 
     if not isinstance(feature_set, FeatureSet):
         feature_set = cloudpickle.loads(feature_set)
@@ -374,6 +374,8 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
         feature_matrix.append(_feature_matrix)
 
     else:
+        if schema:
+            cutoff_time.ww.init_with_full_schema(schema=schema)
         for _, group in cutoff_time.groupby(cutoff_df_time_col):
             # if approximating, calculate the approximate features
             if approximate is not None:
@@ -618,7 +620,9 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
         num_scattered_workers = len(client.who_has([Future(es_token)]).get(es_token, []))
         num_workers = len(client.scheduler_info()['workers'].values())
 
+        schema = None
         if isinstance(cutoff_time, pd.DataFrame):
+            schema = cutoff_time.ww.schema
             chunks = cutoff_time.groupby(cutoff_df_time_col)
             cutoff_time_len = cutoff_time.shape[0]
         else:
@@ -663,7 +667,8 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
                              pass_columns=pass_columns,
                              progress_bar=None,
                              progress_callback=progress_callback,
-                             include_cutoff_time=include_cutoff_time)
+                             include_cutoff_time=include_cutoff_time,
+                             schema=schema)
 
         feature_matrix = []
         iterator = as_completed(_chunks).batches()

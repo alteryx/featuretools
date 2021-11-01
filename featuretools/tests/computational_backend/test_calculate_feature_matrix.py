@@ -1338,6 +1338,28 @@ def test_n_jobs():
         n_jobs_to_workers(0)
 
 
+def test_parallel_cutoff_time_column_pass_through(pd_es, cluster_scheduler):
+    times = ([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
+             [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
+             [datetime(2011, 4, 9, 10, 40, 0)] +
+             [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
+             [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
+             [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
+    labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17), 'labels': labels})
+    property_feature = IdentityFeature(pd_es['log'].ww['value']) > 10
+
+    dkwargs = {'cluster': cluster_scheduler['address']}
+    feature_matrix = calculate_feature_matrix([property_feature],
+                                              entityset=pd_es,
+                                              cutoff_time=cutoff_time,
+                                              verbose=True,
+                                              dask_kwargs=dkwargs,
+                                              approximate='1 hour')
+
+    assert (feature_matrix[property_feature.get_name()] == feature_matrix['labels']).values.all()
+
+
 def test_integer_time_index(int_es):
     if int_es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('Dask and Koalas do not retain time column')
