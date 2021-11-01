@@ -200,6 +200,11 @@ def test_base_of_and_stack_on_heuristic(es, test_primitive):
     child.primitive.base_of = [test_primitive]
     assert check_stacking(test_primitive(), [child])
 
+    test_primitive.stack_on = None
+    child.primitive.base_of = None
+    child.primitive.base_of_exclude = [test_primitive]
+    assert not check_stacking(test_primitive(), [child])
+
 
 def test_stack_on_self(es, test_primitive):
     # test stacks on self
