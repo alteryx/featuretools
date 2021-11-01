@@ -565,3 +565,24 @@ def divide_by_zero_es_koalas(divide_by_zero_es_pd):
                          index=df.ww.index,
                          logical_types=df.ww.logical_types)
     return es
+
+
+@pytest.fixture(params=['rolling_series_pd', 'rolling_series_dask', 'rolling_series_koalas'])
+def rolling_series(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def rolling_series_pd():
+    return pd.Series(range(20))
+
+
+@pytest.fixture
+def rolling_series_dask(rolling_series_pd):
+    return dd.from_pandas(rolling_series_pd, npartitions=2)
+
+
+@pytest.fixture
+def rolling_series_koalas(rolling_series_pd):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+    return ks.from_pandas(rolling_series_pd)

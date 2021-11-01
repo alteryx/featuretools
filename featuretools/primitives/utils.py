@@ -231,6 +231,8 @@ class PrimitivesDeserializer(object):
 
 
 def roll_series_with_gap(series, window_size, gap=0, min_periods=1):
+    """--> add docstring
+    """
     gap_applied = series
     if gap > 0:
         gap_applied = series.shift(gap)

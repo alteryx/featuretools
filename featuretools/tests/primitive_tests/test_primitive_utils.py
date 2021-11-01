@@ -1,5 +1,7 @@
 import os
 
+import pandas as pd
+import numpy as np
 import pytest
 
 from featuretools import list_primitives
@@ -34,8 +36,10 @@ from featuretools.primitives.utils import (
     _get_descriptions,
     _get_unique_input_types,
     list_primitive_files,
-    load_primitive_from_file
+    load_primitive_from_file,
+    roll_series_with_gap
 )
+from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
 
 
@@ -135,3 +139,50 @@ def test_errors_no_primitive_in_file(bad_primitives_files_dir):
     with pytest.raises(RuntimeError) as excinfo:
         load_primitive_from_file(primitive_file)
     assert str(excinfo.value) == error_text
+
+
+def test_roll_series_with_gap(rolling_series):
+    window_length = 3
+    gap = 2
+    rolling_max = to_pandas(roll_series_with_gap(rolling_series, window_length, gap=gap).max())
+    rolling_min = to_pandas(roll_series_with_gap(rolling_series, window_length, gap=gap).min())
+
+    assert len(rolling_max) == len(rolling_series)
+
+    for i in range(len(rolling_series)):
+        start_idx = i - gap - window_length + 1
+        end_idx = i - gap
+
+        if start_idx < 0 and end_idx < 0:
+            assert pd.isnull(rolling_max.loc[i])
+            continue
+
+        if start_idx < 0:
+            start_idx = 0
+        if end_idx < 0:
+            end_idx = 0
+
+        # Because the row values are a range from 0 to 20, the rolling min will be the start index
+        # and the rolling max will be the end idx
+        assert rolling_min.loc[i] == start_idx
+        assert rolling_max.loc[i] == end_idx
+
+
+def test_roll_series_with_no_gap(rolling_series):
+    window_length = 3
+    gap = 0
+    actual_rolling = roll_series_with_gap(rolling_series, window_length, gap=gap).mean()
+    expected_rolling = rolling_series.rolling(window_length, min_periods=1).mean()
+
+    # --> might be better to do some more creative way of testing this?
+    pd.testing.assert_series_equal(to_pandas(actual_rolling), to_pandas(expected_rolling))
+
+
+def test_roll_series_with_gap_early_values():
+    # try using gap to see how many values get used with different settings of
+    pass
+
+
+def test_roll_series_with_gap_min_periods():
+    # confirm min periods changes the early values
+    pass
