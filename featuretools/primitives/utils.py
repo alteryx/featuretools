@@ -2,6 +2,7 @@ import importlib.util
 import os
 from inspect import isclass
 
+import numpy as np
 import pandas as pd
 
 import featuretools
@@ -227,3 +228,45 @@ class PrimitivesDeserializer(object):
 
             if cls_key == search_key:
                 return cls
+
+
+class CustomGapIndexer(pd.api.indexers.BaseIndexer):
+    """
+    Custom indexer to be used by pandas' rolling objects. Allows for rolling over windows that include
+    a gap between the row and the beginning of the window.
+    """
+
+    def __init__(
+        self,
+        index_array=None,
+        window_size=0,
+        gap=0,
+        **kwargs,
+    ):
+        """
+        Args:
+            index_array ():
+            window_size (int):
+            gap (int, optional):
+        """
+        super().__init__(index_array, window_size, **kwargs)
+        self.gap = gap
+
+    def get_window_bounds(self, num_values, min_periods, center, closed):
+        start = np.zeros(num_values, dtype=np.int64)
+        end = np.zeros(num_values, dtype=np.int64)
+        for i in range(num_values):
+            start[i] = i - self.window_size - self.gap
+            end[i] = i - self.gap
+
+        print(start)
+        print(end)
+        return start, end
+
+
+def roll_series_with_int_params(series, window_size, gap=0, min_periods=None):
+    gap_applied = series
+    if gap > 0:
+        gap_applied = series.shift(gap)
+
+    return gap_applied.rolling(window_size, min_periods)
