@@ -1138,7 +1138,7 @@ def test_primitive_options(es):
                 assert not (identity_base.dataframe_name == 'customers' and
                             identity_base.get_name() == 'engagement_level')
 
-    options = {'month': {'ignore_columns': {'customers': ['date_of_birth']}},
+    options = {'month': {'ignore_columns': {'customers': ['birthday']}},
                'day': {'include_columns': {'customers': ['signup_date', 'upgrade_date']}},
                'num_characters': {'ignore_dataframes': ['customers']},
                'year': {'include_dataframes': ['customers']}}
@@ -1156,7 +1156,7 @@ def test_primitive_options(es):
         if isinstance(f.primitive, Month):
             for identity_base in columns:
                 assert not (identity_base.dataframe_name == 'customers' and
-                            identity_base.get_name() == 'date_of_birth')
+                            identity_base.get_name() == 'birthday')
         if isinstance(f.primitive, Day):
             for identity_base in columns:
                 if identity_base.dataframe_name == 'customers':

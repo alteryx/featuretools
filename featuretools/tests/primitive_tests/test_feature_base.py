@@ -291,7 +291,7 @@ def test_multi_output_base_error_trans(es):
         return_type = ColumnSchema(semantic_tags={'numeric'})
         number_output_features = 6
 
-    tc = ft.Feature(es['customers'].ww['date_of_birth'], primitive=TestTime)
+    tc = ft.Feature(es['customers'].ww['birthday'], primitive=TestTime)
 
     error_text = "Cannot stack on whole multi-output feature."
     with pytest.raises(ValueError, match=error_text):

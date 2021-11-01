@@ -107,14 +107,14 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
                          datetime(2011, 4, 7)],
         'cancel_date': [datetime(2011, 6, 8), datetime(2011, 10, 9),
                         datetime(2012, 1, 6)],
-        'date_of_birth': [datetime(1993, 3, 8), datetime(1926, 8, 2),
-                          datetime(1993, 4, 20)]
+        'birthday': [datetime(1993, 3, 8), datetime(1926, 8, 2),
+                     datetime(1993, 4, 20)]
     }
     if with_integer_time_index:
         customer_times['signup_date'] = [6, 7, 4]
         customer_times['upgrade_date'] = [18, 26, 5]
         customer_times['cancel_date'] = [27, 28, 29]
-        customer_times['date_of_birth'] = [2, 1, 3]
+        customer_times['birthday'] = [2, 1, 3]
 
     customer_df = pd.DataFrame({
         'id': pd.Categorical([0, 1, 2]),
@@ -136,7 +136,7 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
         'full_name': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown'],
         'email': ['john.smith@example.com', np.nan, 'team@featuretools.com'],
         'phone_number': ['555-555-5555', '555-555-5555', '1-(555)-555-5555'],
-        'date_of_birth': customer_times['date_of_birth'],
+        'birthday': customer_times['birthday'],
     })
 
     ips = ['192.168.0.1', '2001:4860:4860::8888', '0.0.0.0',
@@ -240,7 +240,7 @@ def make_semantic_tags():
     store_semantic_tags = {u'région_id': 'foreign_key'}
 
     customer_semantic_tags = {u'région_id': 'foreign_key',
-                              'date_of_birth': 'date_of_birth'}
+                              'birthday': 'date_of_birth'}
 
     session_semantic_tags = {'customer_id': 'foreign_key'}
 
@@ -288,7 +288,7 @@ def make_logical_types(with_integer_time_index=False):
         'full_name': PersonFullName,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
-        'date_of_birth': Datetime(datetime_format='%Y-%m-%d'),
+        'birthday': Datetime(datetime_format='%Y-%m-%d'),
         'cohort_name': Categorical,
     }
 
@@ -325,7 +325,7 @@ def make_logical_types(with_integer_time_index=False):
         customer_logical_types['signup_date'] = Integer
         customer_logical_types['upgrade_date'] = Integer
         customer_logical_types['cancel_date'] = Integer
-        customer_logical_types['date_of_birth'] = Integer
+        customer_logical_types['birthday'] = Integer
 
     return {
         'customers': customer_logical_types,
