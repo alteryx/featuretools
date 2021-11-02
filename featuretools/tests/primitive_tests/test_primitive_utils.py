@@ -1,4 +1,5 @@
 import os
+from dask.array.routines import roll
 
 import pandas as pd
 import numpy as np
@@ -153,6 +154,7 @@ def test_roll_series_with_gap(rolling_series):
         start_idx = i - gap - window_length + 1
         end_idx = i - gap
 
+        # If start and end are negative, they're entirely before
         if start_idx < 0 and end_idx < 0:
             assert pd.isnull(rolling_max.loc[i])
             continue
@@ -176,20 +178,6 @@ def test_roll_series_with_no_gap(rolling_series):
 
     # --> might be better to do some more creative way of testing this?
     pd.testing.assert_series_equal(to_pandas(actual_rolling), to_pandas(expected_rolling))
-
-
-def test_roll_series_with_gap_early_values():
-    # try using gap to see how many values get used with different settings of
-    pass
-
-
-def test_roll_series_with_no_window():
-    pass
-
-
-def test_roll_series_with_too_long_window():
-    # --> this may be just testing rolling's behavior
-    pass
 
 
 def test_roll_series_with_gap_early_values(rolling_series):
@@ -220,14 +208,33 @@ def test_roll_series_with_gap_early_values(rolling_series):
     # Count treats nans in a window as values that don't get counted,
     # so the gap rows get included in the count for whether a window has "min periods".
     # This is different than max, for example, which does not count nans in a window as values towards "min periods"
+    # --> koalas doesn't seem to do anything for count and mean for early values - doesnt replace with nan
     assert num_null_aggregates == window_length - 1
     assert num_partial_aggregates == gap
 
 
-def test_roll_series_with_gap_min_periods():
-    # confirm min periods changes the early values
-    pass
+# def test_roll_series_with_no_window():
+#     pass
 
 
-def test_roll_series_with_gap_nullable_types():
-    pass
+# def test_roll_series_with_too_long_window():
+#     # --> this may be just testing rolling's behavior
+#     pass
+
+
+def test_roll_series_with_gap_nullable_types(rolling_series):
+    window_length = 3
+    gap = 2
+    # Because we're inserting nans, confirm that nullability of the dtype doesn't have an impact on the results
+    nullable_series = rolling_series.astype('Int64')
+    non_nullable_series = rolling_series.astype('int64')
+
+    nullable_rolling_max = roll_series_with_gap(nullable_series, window_length, gap=gap).max()
+    non_nullable_rolling_max = roll_series_with_gap(non_nullable_series, window_length, gap=gap).max()
+
+    pd.testing.assert_series_equal(to_pandas(nullable_rolling_max), to_pandas(non_nullable_rolling_max))
+
+
+# def test_roll_series_with_gap_datetime_index():
+#     # since we'll always pass the series in with datetime index wince that's a requirement for offset strings
+#     pass

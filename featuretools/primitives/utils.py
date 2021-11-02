@@ -230,13 +230,19 @@ class PrimitivesDeserializer(object):
                 return cls
 
 
-def roll_series_with_gap(series, window_size, gap=0, min_periods=1):
+def roll_series_with_gap(series, window_size, gap=0, min_periods=0):
     """--> add docstring
     """
     # --> FutureWarning: min_periods=None will default to the size of window consistent with other methods in a future version. Specify min_periods=0 instead.
     # --> inclue note about primitives needing to handle early values if they don't want the nan values counted as values in windows
+    # Workaround for pandas' fixed but unreleased bug: https://github.com/pandas-dev/pandas/issues/43016
+    # Can remove when upgraded to pandas 1.4.0
+    if str(series.dtype) == 'Int64':
+        series = series.astype('float64')
+
     gap_applied = series
     if gap > 0:
+        # --> confirm tail isn't lost in the result?
         gap_applied = series.shift(gap)
 
     return gap_applied.rolling(window_size, min_periods)
