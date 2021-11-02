@@ -230,6 +230,7 @@ class PrimitivesDeserializer(object):
                 return cls
 
 
+# --> make private
 def roll_series_with_gap(series, window_size, gap=0, min_periods=0):
     """--> add docstring
     """

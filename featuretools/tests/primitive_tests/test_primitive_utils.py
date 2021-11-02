@@ -226,6 +226,4 @@ def test_roll_series_with_gap_nullable_types(rolling_series):
     pd.testing.assert_series_equal(to_pandas(nullable_rolling_max), to_pandas(non_nullable_rolling_max))
 
 
-# def test_roll_series_with_gap_datetime_index():
-#     # since we'll always pass the series in with datetime index wince that's a requirement for offset strings
-#     pass
+# --> warning being emitted No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
