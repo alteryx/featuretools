@@ -233,6 +233,8 @@ class PrimitivesDeserializer(object):
 def roll_series_with_gap(series, window_size, gap=0, min_periods=1):
     """--> add docstring
     """
+    # --> FutureWarning: min_periods=None will default to the size of window consistent with other methods in a future version. Specify min_periods=0 instead.
+    # --> inclue note about primitives needing to handle early values if they don't want the nan values counted as values in windows
     gap_applied = series
     if gap > 0:
         gap_applied = series.shift(gap)

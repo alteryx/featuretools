@@ -183,6 +183,51 @@ def test_roll_series_with_gap_early_values():
     pass
 
 
+def test_roll_series_with_no_window():
+    pass
+
+
+def test_roll_series_with_too_long_window():
+    # --> this may be just testing rolling's behavior
+    pass
+
+
+def test_roll_series_with_gap_early_values(rolling_series):
+    # --> is this redundant for what rolling already does? Maybe because we're just passing it along
+    # but bc we're doing different default
+    window_length = 6
+    gap = 2
+
+    # Default min periods is 0 - will include all
+    default_partial_values = to_pandas(roll_series_with_gap(rolling_series,
+                                                            window_length,
+                                                            gap=gap).count())
+    num_empty_aggregates = len(default_partial_values.loc[default_partial_values == 0])
+    num_partial_aggregates = len((default_partial_values
+                                  .loc[default_partial_values != 0])
+                                 .loc[default_partial_values < window_length])
+    assert num_empty_aggregates == gap
+    assert num_partial_aggregates == window_length - 1
+
+    # Make min periods the size of the window
+    no_partial_values = to_pandas(roll_series_with_gap(rolling_series,
+                                                       window_length,
+                                                       gap=gap,
+                                                       min_periods=window_length).count())
+    num_null_aggregates = len(no_partial_values.loc[pd.isna(no_partial_values)])
+    num_partial_aggregates = len(no_partial_values.loc[no_partial_values < window_length])
+    # because we shift, gap is included as nan values in the series.
+    # Count treats nans in a window as values that don't get counted,
+    # so the gap rows get included in the count for whether a window has "min periods".
+    # This is different than max, for example, which does not count nans in a window as values towards "min periods"
+    assert num_null_aggregates == window_length - 1
+    assert num_partial_aggregates == gap
+
+
 def test_roll_series_with_gap_min_periods():
     # confirm min periods changes the early values
+    pass
+
+
+def test_roll_series_with_gap_nullable_types():
     pass
