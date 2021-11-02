@@ -574,7 +574,7 @@ def rolling_series(request):
 
 @pytest.fixture
 def rolling_series_pd():
-    return pd.Series(range(20))
+    return pd.Series(range(20), index=pd.date_range(start='2020-01-01', end='2020-01-20'))
 
 
 @pytest.fixture

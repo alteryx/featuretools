@@ -156,7 +156,7 @@ def test_roll_series_with_gap(rolling_series):
 
         # If start and end are negative, they're entirely before
         if start_idx < 0 and end_idx < 0:
-            assert pd.isnull(rolling_max.loc[i])
+            assert pd.isnull(rolling_max.iloc[i])
             continue
 
         if start_idx < 0:
@@ -166,8 +166,8 @@ def test_roll_series_with_gap(rolling_series):
 
         # Because the row values are a range from 0 to 20, the rolling min will be the start index
         # and the rolling max will be the end idx
-        assert rolling_min.loc[i] == start_idx
-        assert rolling_max.loc[i] == end_idx
+        assert rolling_min.iloc[i] == start_idx
+        assert rolling_max.iloc[i] == end_idx
 
 
 def test_roll_series_with_no_gap(rolling_series):
@@ -211,15 +211,6 @@ def test_roll_series_with_gap_early_values(rolling_series):
     # --> koalas doesn't seem to do anything for count and mean for early values - doesnt replace with nan
     assert num_null_aggregates == window_length - 1
     assert num_partial_aggregates == gap
-
-
-# def test_roll_series_with_no_window():
-#     pass
-
-
-# def test_roll_series_with_too_long_window():
-#     # --> this may be just testing rolling's behavior
-#     pass
 
 
 def test_roll_series_with_gap_nullable_types(rolling_series):
