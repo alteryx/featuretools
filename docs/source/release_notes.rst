@@ -13,7 +13,7 @@ Release Notes
 
 .. Thanks to the following people for contributing to this release:
 
-v1.1.0 Nov 1, 2021
+v1.1.0 Nov 2, 2021
 ==================
     * Fixes
         * Check ``base_of_exclude`` attribute on primitive instead feature class (:pr:`1749`)
