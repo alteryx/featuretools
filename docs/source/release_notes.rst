@@ -3,9 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.1.0 Nov 2, 2021
+==================
     * Fixes
         * Check ``base_of_exclude`` attribute on primitive instead feature class (:pr:`1749`)
         * Pin upper bound for pyspark (:pr:`1748`)
