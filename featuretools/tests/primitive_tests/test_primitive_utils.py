@@ -174,13 +174,10 @@ def test_roll_series_with_no_gap(rolling_series):
     actual_rolling = roll_series_with_gap(rolling_series, window_length, gap=gap).mean()
     expected_rolling = rolling_series.rolling(window_length, min_periods=1).mean()
 
-    # --> might be better to do some more creative way of testing this?
     pd.testing.assert_series_equal(to_pandas(actual_rolling), to_pandas(expected_rolling))
 
 
 def test_roll_series_with_gap_early_values(rolling_series):
-    # --> is this redundant for what rolling already does? Maybe because we're just passing it along
-    # but bc we're doing different default
     window_length = 6
     gap = 2
 

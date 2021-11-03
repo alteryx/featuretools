@@ -242,7 +242,6 @@ def roll_series_with_gap(series, window_size, gap=0, min_periods=0):
 
     gap_applied = series
     if gap > 0:
-        # --> confirm tail isn't lost in the result?
         gap_applied = series.shift(gap)
 
     return gap_applied.rolling(window_size, min_periods)

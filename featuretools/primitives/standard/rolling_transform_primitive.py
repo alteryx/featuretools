@@ -14,7 +14,6 @@ from featuretools.utils.gen_utils import Library
 
 
 class RollingMax(TransformPrimitive):
-    # --> maybe put in its own file? either a time series or a rolling file
     """Determines the maximum of entries over a given timeframe.
 
     Description:
@@ -250,6 +249,7 @@ class RollingCount(TransformPrimitive):
         [1.0, 2.0, 2.0, 2.0, 2.0]
     """
     name = "rolling_count"
+    # --> test that it works with non numeric!!!
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]

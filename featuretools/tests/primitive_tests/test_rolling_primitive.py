@@ -24,7 +24,6 @@ def test_rolling_max(rolling_series_pd):
 
     assert actual_vals.isna().sum() == gap + window_length - 1
     pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
-    # --> maybe test early values that they're as expected
 
 
 def test_rolling_min(rolling_series_pd):
@@ -43,7 +42,6 @@ def test_rolling_min(rolling_series_pd):
 
     assert actual_vals.isna().sum() == gap + window_length - 1
     pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
-    # --> maybe test early values that they're as expected
 
 
 def test_rolling_mean(rolling_series_pd):
@@ -62,7 +60,6 @@ def test_rolling_mean(rolling_series_pd):
 
     assert actual_vals.isna().sum() == gap + window_length - 1
     pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
-    # --> maybe test early values that they're as expected
 
 
 def test_rolling_std(rolling_series_pd):
@@ -81,7 +78,6 @@ def test_rolling_std(rolling_series_pd):
 
     assert actual_vals.isna().sum() == gap + window_length - 1
     pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
-    # --> maybe test early values that they're as expected
 
 
 def test_rolling_count(rolling_series_pd):
@@ -104,6 +100,7 @@ def test_rolling_count(rolling_series_pd):
     pd.testing.assert_series_equal(pd.Series(expected_vals).iloc[num_nans:], actual_vals.iloc[num_nans:])
 
 
+# --> parameterize this and one below with min periods and expected num nulls
 def test_rolling_count_primitive_min_periods_nans(rolling_series_pd):
     window_length = 5
     gap = 2
@@ -136,17 +133,3 @@ def test_rolling_count_with_no_gap(rolling_series_pd):
         else:
             num_nans = gap + min_periods - 1
         assert vals.isna().sum() == num_nans
-# def test_nan():
-#     datetime = pd.date_range(
-#         start='2019-01-01',
-#         freq='1min',
-#         name='datetime',
-#         periods=5,
-#     ).to_series().reset_index(drop=True)
-#     numeric = pd.Series(range(5), name='numeric', dtype='float')
-#     numeric.iloc[[0, 3]] = np.nan
-#     primitive_instance = self.primitive(time_frame='1h')
-#     primitive_func = primitive_instance.get_function()
-#     given_answer = pd.Series(primitive_func(datetime, numeric))
-#     answer = pd.Series([np.nan, 1, 1, 1, 1], dtype='float')
-#     pd.testing.assert_series_equal(given_answer, answer)
