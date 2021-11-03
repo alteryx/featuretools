@@ -104,19 +104,38 @@ def test_rolling_count(rolling_series_pd):
     pd.testing.assert_series_equal(pd.Series(expected_vals).iloc[num_nans:], actual_vals.iloc[num_nans:])
 
 
-# def test_rolling_count_primitive_min_periods(rolling_series_pd):
-#     window_length = 5
-#     gap = 2
+def test_rolling_count_primitive_min_periods_nans(rolling_series_pd):
+    window_length = 5
+    gap = 2
 
-#     expected_vals = roll_series_with_gap(rolling_series_pd,
-#                                          window_length,
-#                                          gap=gap,
-#                                          min_periods=window_length).count().values
+    for min_periods in range(window_length + 1):
+        primitive_instance = RollingCount(window_length=window_length, gap=gap, min_periods=min_periods)
+        primitive_func = primitive_instance.get_function()
+        vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
 
-#     primitive_instance = RollingCount(window_length=window_length, gap=gap, min_periods=window_length)
-#     primitive_func = primitive_instance.get_function()
-#     actual_vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
-#     breakpoint()
+        if min_periods == 0:
+            # when min periods is 0 it's treated the same as if it's 1
+            num_nans = gap
+        else:
+            num_nans = gap + min_periods - 1
+        assert vals.isna().sum() == num_nans
+
+
+def test_rolling_count_with_no_gap(rolling_series_pd):
+    window_length = 5
+    gap = 0
+
+    for min_periods in range(window_length + 1):
+        primitive_instance = RollingCount(window_length=window_length, gap=gap, min_periods=min_periods)
+        primitive_func = primitive_instance.get_function()
+        vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
+
+        if min_periods == 0:
+            # when min periods is 0 it's treated the same as if it's 1
+            num_nans = gap
+        else:
+            num_nans = gap + min_periods - 1
+        assert vals.isna().sum() == num_nans
 # def test_nan():
 #     datetime = pd.date_range(
 #         start='2019-01-01',

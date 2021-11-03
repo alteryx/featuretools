@@ -270,6 +270,11 @@ class RollingCount(TransformPrimitive):
             # Rolling.count will include the NaNs from the shift
             # --> account for gap=0 and min periods = 0 vs 1 vs None
             # --> get working for dask or remove from compatibility
-            rolling_count_series.iloc[range(self.min_periods - 1 + self.gap)] = np.nan
+            if not self.min_periods:
+                # when min periods is 0 or None it's treated the same as if it's 1
+                num_nans = self.gap
+            else:
+                num_nans = self.min_periods - 1 + self.gap
+            rolling_count_series.iloc[range(num_nans)] = np.nan
             return rolling_count_series.values
         return rolling_count
