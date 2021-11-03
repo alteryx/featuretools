@@ -1,9 +1,10 @@
 import numpy as np
+from numpy.core.numeric import roll
 import pandas as pd
 import pytest
 
 # --> just add to primitives import
-from featuretools.primitives.standard.rolling_transform_primitive import RollingMax, RollingMin, RollingMean, RollingSTD
+from featuretools.primitives.standard.rolling_transform_primitive import RollingCount, RollingMax, RollingMin, RollingMean, RollingSTD
 from featuretools.primitives.utils import roll_series_with_gap
 
 
@@ -81,6 +82,41 @@ def test_rolling_std(rolling_series_pd):
     assert actual_vals.isna().sum() == gap + window_length - 1
     pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
     # --> maybe test early values that they're as expected
+
+
+def test_rolling_count(rolling_series_pd):
+    window_length = 5
+    gap = 2
+
+    expected_vals = roll_series_with_gap(rolling_series_pd,
+                                         window_length,
+                                         gap=gap,
+                                         min_periods=window_length).count().values
+
+    primitive_instance = RollingCount(window_length=window_length, gap=gap, min_periods=window_length)
+    primitive_func = primitive_instance.get_function()
+
+    actual_vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
+
+    # Count
+    num_nans = gap + window_length - 1
+    assert actual_vals.isna().sum() == num_nans
+    pd.testing.assert_series_equal(pd.Series(expected_vals).iloc[num_nans:], actual_vals.iloc[num_nans:])
+
+
+# def test_rolling_count_primitive_min_periods(rolling_series_pd):
+#     window_length = 5
+#     gap = 2
+
+#     expected_vals = roll_series_with_gap(rolling_series_pd,
+#                                          window_length,
+#                                          gap=gap,
+#                                          min_periods=window_length).count().values
+
+#     primitive_instance = RollingCount(window_length=window_length, gap=gap, min_periods=window_length)
+#     primitive_func = primitive_instance.get_function()
+#     actual_vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
+#     breakpoint()
 # def test_nan():
 #     datetime = pd.date_range(
 #         start='2019-01-01',

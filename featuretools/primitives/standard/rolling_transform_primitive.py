@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from woodwork.column_schema import ColumnSchema
@@ -9,6 +10,7 @@ from featuretools.primitives.utils import roll_series_with_gap
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
 )
+from featuretools.utils.gen_utils import Library
 
 
 class RollingMax(TransformPrimitive):
@@ -47,6 +49,7 @@ class RollingMax(TransformPrimitive):
     name = "rolling_max"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, window_length=1, gap=0, min_periods=0):
         #     --> confirm default window length - 1 seems possibly a bad idea bc youre not getting windows
@@ -98,6 +101,7 @@ class RollingMin(TransformPrimitive):
     name = "rolling_min"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, window_length=1, gap=0, min_periods=0):
         self.window_length = window_length
@@ -149,6 +153,7 @@ class RollingMean(TransformPrimitive):
     name = "rolling_mean"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, window_length=1, gap=0, min_periods=0):
         self.window_length = window_length
@@ -198,19 +203,7 @@ class RollingSTD(TransformPrimitive):
     name = "rolling_std"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-
-    def __init__(self, time_frame='1d'):
-        try:
-            pd.tseries.frequencies.to_offset(time_frame).nanos
-            self.time_frame = time_frame
-        except Exception:
-            raise ValueError('must be a valid time frame in seconds, minutes, hours, or days (e.g. 1s, 5min, 4h, 7d, etc.)')
-
-    def get_function(self):
-        def rolling_std(datetime, numeric):
-            x = pd.Series(numeric.values, index=datetime.values)
-            return x.rolling(self.time_frame).std().values
-        return rolling_std
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, window_length=1, gap=0, min_periods=0):
         self.window_length = window_length
@@ -226,3 +219,57 @@ class RollingSTD(TransformPrimitive):
                                                  min_periods=self.min_periods)
             return rolled_series.std().values
         return rolling_std
+
+
+class RollingCount(TransformPrimitive):
+    """Determines a rolling count of events over a given timeframe.
+
+    Description:
+        Given a list of datetimes, return a rolling count starting
+        at the current row and looking backward over the specified
+        time window (`time_frame`).
+
+        Input datetimes should be monotonic.
+
+    Args:
+        time_frame (str): The time period of each frame. Time frames
+            should be in seconds, minutes, hours, or days (e.g. 1s,
+            5min, 4h, 7d, etc.). Defaults to 1 day.
+
+    Examples:
+        >>> import pandas as pd
+        >>> rolling_count = RollingCount()
+        >>> rolling_count(pd.date_range(start='2019-01-01', freq='1d', periods=5)).tolist()
+        [1.0, 1.0, 1.0, 1.0, 1.0]
+
+        We can control the time frame of the rolling calculation.
+
+        >>> import pandas as pd
+        >>> rolling_count = RollingCount(time_frame='2h')
+        >>> rolling_count(pd.date_range(start='2019-01-01', freq='1h', periods=5)).tolist()
+        [1.0, 2.0, 2.0, 2.0, 2.0]
+    """
+    name = "rolling_count"
+    input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+
+    def __init__(self, window_length=1, gap=0, min_periods=0):
+        self.window_length = window_length
+        self.gap = gap
+        self.min_periods = min_periods
+
+    def get_function(self):
+        def rolling_count(datetime, numeric):
+            x = pd.Series(numeric.values, index=datetime.values)
+            rolled_series = roll_series_with_gap(x,
+                                                 self.window_length,
+                                                 gap=self.gap,
+                                                 min_periods=self.min_periods)
+            rolling_count_series = rolled_series.count()
+            # Rolling.count will include the NaNs from the shift
+            # --> account for gap=0 and min periods = 0 vs 1 vs None
+            # --> get working for dask or remove from compatibility
+            rolling_count_series.iloc[range(self.min_periods - 1 + self.gap)] = np.nan
+            return rolling_count_series.values
+        return rolling_count
