@@ -2,7 +2,6 @@ import importlib.util
 import os
 from inspect import isclass
 
-import numpy as np
 import pandas as pd
 
 import featuretools

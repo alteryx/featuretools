@@ -1,8 +1,6 @@
 import os
-from dask.array.routines import roll
 
 import pandas as pd
-import numpy as np
 import pytest
 
 from featuretools import list_primitives
