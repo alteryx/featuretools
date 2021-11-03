@@ -3,32 +3,84 @@ import pandas as pd
 import pytest
 
 # --> just add to primitives import
-from featuretools.primitives.standard.rolling_transform_primitive import RollingMax
+from featuretools.primitives.standard.rolling_transform_primitive import RollingMax, RollingMin, RollingMean, RollingSTD
 from featuretools.primitives.utils import roll_series_with_gap
 
 
-def test_rolling_max_defaults():
-    pass
-
-
-def test_regular(rolling_series_pd):
+def test_rolling_max(rolling_series_pd):
     window_length = 5
     gap = 2
-    min_periods = 5
 
     expected_vals = roll_series_with_gap(rolling_series_pd,
                                          window_length,
                                          gap=gap,
-                                         min_periods=min_periods).max().values
+                                         min_periods=window_length).max().values
 
-    primitive_instance = RollingMax(window_length=window_length, gap=gap, min_periods=min_periods)
+    primitive_instance = RollingMax(window_length=window_length, gap=gap, min_periods=window_length)
     primitive_func = primitive_instance.get_function()
 
     actual_vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
 
+    assert actual_vals.isna().sum() == gap + window_length - 1
     pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
+    # --> maybe test early values that they're as expected
 
 
+def test_rolling_min(rolling_series_pd):
+    window_length = 5
+    gap = 2
+
+    expected_vals = roll_series_with_gap(rolling_series_pd,
+                                         window_length,
+                                         gap=gap,
+                                         min_periods=window_length).min().values
+
+    primitive_instance = RollingMin(window_length=window_length, gap=gap, min_periods=window_length)
+    primitive_func = primitive_instance.get_function()
+
+    actual_vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
+
+    assert actual_vals.isna().sum() == gap + window_length - 1
+    pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
+    # --> maybe test early values that they're as expected
+
+
+def test_rolling_mean(rolling_series_pd):
+    window_length = 5
+    gap = 2
+
+    expected_vals = roll_series_with_gap(rolling_series_pd,
+                                         window_length,
+                                         gap=gap,
+                                         min_periods=window_length).mean().values
+
+    primitive_instance = RollingMean(window_length=window_length, gap=gap, min_periods=window_length)
+    primitive_func = primitive_instance.get_function()
+
+    actual_vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
+
+    assert actual_vals.isna().sum() == gap + window_length - 1
+    pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
+    # --> maybe test early values that they're as expected
+
+
+def test_rolling_std(rolling_series_pd):
+    window_length = 5
+    gap = 2
+
+    expected_vals = roll_series_with_gap(rolling_series_pd,
+                                         window_length,
+                                         gap=gap,
+                                         min_periods=window_length).std().values
+
+    primitive_instance = RollingSTD(window_length=window_length, gap=gap, min_periods=window_length)
+    primitive_func = primitive_instance.get_function()
+
+    actual_vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
+
+    assert actual_vals.isna().sum() == gap + window_length - 1
+    pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
+    # --> maybe test early values that they're as expected
 # def test_nan():
 #     datetime = pd.date_range(
 #         start='2019-01-01',
