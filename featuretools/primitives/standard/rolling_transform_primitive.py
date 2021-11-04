@@ -59,7 +59,7 @@ class RollingMax(TransformPrimitive):
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
-    def __init__(self, window_length, gap=0, min_periods=1):
+    def __init__(self, window_length=3, gap=0, min_periods=1):
         self.window_length = window_length
         self.gap = gap
         self.min_periods = min_periods
@@ -122,7 +122,7 @@ class RollingMin(TransformPrimitive):
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
-    def __init__(self, window_length, gap=0, min_periods=1):
+    def __init__(self, window_length=3, gap=0, min_periods=1):
         self.window_length = window_length
         self.gap = gap
         self.min_periods = min_periods
@@ -187,7 +187,7 @@ class RollingMean(TransformPrimitive):
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
-    def __init__(self, window_length, gap=0, min_periods=0):
+    def __init__(self, window_length=3, gap=0, min_periods=0):
         self.window_length = window_length
         self.gap = gap
         self.min_periods = min_periods
@@ -251,7 +251,7 @@ class RollingSTD(TransformPrimitive):
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
-    def __init__(self, window_length, gap=0, min_periods=1):
+    def __init__(self, window_length=3, gap=0, min_periods=1):
         self.window_length = window_length
         self.gap = gap
         self.min_periods = min_periods
@@ -317,7 +317,7 @@ class RollingCount(TransformPrimitive):
     # And Dask has issues with how we replace with NaNs below
     compatibility = [Library.PANDAS]
 
-    def __init__(self, window_length, gap=0, min_periods=0):
+    def __init__(self, window_length=3, gap=0, min_periods=0):
         self.window_length = window_length
         self.gap = gap
         self.min_periods = min_periods
