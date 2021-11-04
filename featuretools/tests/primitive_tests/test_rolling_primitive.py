@@ -108,8 +108,7 @@ def test_rolling_count(rolling_series_pd):
 @pytest.mark.parametrize(
     "min_periods, expected_num_nams",
     [
-        (None, 2),  # None, 0, and 1 all get treated the same
-        (0, 2),
+        (0, 2),  # 0 and 1 get treated the same
         (1, 2),
         (3, 4),
         (5, 6)
@@ -129,8 +128,7 @@ def test_rolling_count_primitive_min_periods_nans(min_periods, expected_num_nams
 @pytest.mark.parametrize(
     "min_periods, expected_num_nams",
     [
-        (None, 0),  # None, 0, and 1 all get treated the same
-        (0, 0),
+        (0, 0),  # 0 and 1 get treated the same
         (1, 0),
         (3, 2),
         (5, 4)

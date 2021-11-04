@@ -63,7 +63,6 @@ class RollingMax(TransformPrimitive):
         self.window_length = window_length
         self.gap = gap
         self.min_periods = min_periods
-        # -->determine if we need to add the uses_full_dataframe = True right now
 
     def get_function(self):
         def rolling_max(datetime, numeric):

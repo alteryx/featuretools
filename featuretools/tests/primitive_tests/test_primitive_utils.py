@@ -233,6 +233,3 @@ def test_roll_series_with_gap_nullable_types(rolling_series):
     non_nullable_rolling_max = _roll_series_with_gap(non_nullable_series, window_length, gap=gap).max()
 
     pd.testing.assert_series_equal(to_pandas(nullable_rolling_max), to_pandas(non_nullable_rolling_max))
-
-
-# --> warning being emitted No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
