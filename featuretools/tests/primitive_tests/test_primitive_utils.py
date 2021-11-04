@@ -142,9 +142,15 @@ def test_errors_no_primitive_in_file(bad_primitives_files_dir):
     assert str(excinfo.value) == error_text
 
 
-def test_roll_series_with_gap(rolling_series):
-    window_length = 3
-    gap = 2
+@pytest.mark.parametrize(
+    "window_length, gap",
+    [
+        (3, 2),
+        (3, 4),  # gap larger than window
+        (2, 0),  # gap explicitly set to 0
+    ],
+)
+def test_roll_series_with_gap(window_length, gap, rolling_series):
     rolling_max = to_pandas(_roll_series_with_gap(rolling_series, window_length, gap=gap).max())
     rolling_min = to_pandas(_roll_series_with_gap(rolling_series, window_length, gap=gap).min())
 
@@ -179,11 +185,15 @@ def test_roll_series_with_no_gap(rolling_series):
     pd.testing.assert_series_equal(to_pandas(actual_rolling), to_pandas(expected_rolling))
 
 
-def test_roll_series_with_gap_early_values(rolling_series):
-    window_length = 6
-    gap = 2
-
-    # Default min periods is 0 - will include all
+@pytest.mark.parametrize(
+    "window_length, gap",
+    [
+        (6, 2),
+        (6, 0)  # No gap - changes early values
+    ]
+)
+def test_roll_series_with_gap_early_values(window_length, gap, rolling_series):
+    # Default min periods is 1 - will include all
     default_partial_values = to_pandas(_roll_series_with_gap(rolling_series,
                                                              window_length,
                                                              gap=gap).count())
@@ -226,4 +236,3 @@ def test_roll_series_with_gap_nullable_types(rolling_series):
 
 
 # --> warning being emitted No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
-# --> test passing in negative arguments????

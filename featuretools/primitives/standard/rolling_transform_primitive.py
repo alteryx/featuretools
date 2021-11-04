@@ -312,7 +312,6 @@ class RollingCount(TransformPrimitive):
         [NaN, NaN, 3.0, 3.0, 3.0]
     """
     name = "rolling_count"
-    # --> test that it works with non numeric in dfs!!!
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     # Only compatible with pandas because Koalas' count has unexpected behavior when min_periods is not 1
@@ -330,7 +329,6 @@ class RollingCount(TransformPrimitive):
             rolled_series = _roll_series_with_gap(x,
                                                   self.window_length,
                                                   gap=self.gap,
-                                                  # --> get working for dask or remove from compatibility
                                                   min_periods=self.min_periods)
             rolling_count_series = rolled_series.count()
             # The shift made to account for gap adds NaNs to the rolled series
