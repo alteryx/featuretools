@@ -141,7 +141,7 @@ class RollingMin(TransformPrimitive):
 
 
 class RollingMean(TransformPrimitive):
-    """Calculates the mean of entries over a given timeframe.
+    """Calculates the mean of entries over a given window.
 
     Description:
         Given a list of numbers and a corresponding list of
@@ -206,7 +206,7 @@ class RollingMean(TransformPrimitive):
 
 
 class RollingSTD(TransformPrimitive):
-    """Calculates the standard deviation of entries over a given timeframe.
+    """Calculates the standard deviation of entries over a given window.
 
     Description:
         Given a list of numbers and a corresponding list of
@@ -270,7 +270,7 @@ class RollingSTD(TransformPrimitive):
 
 
 class RollingCount(TransformPrimitive):
-    """Determines a rolling count of events over a given timeframe.
+    """Determines a rolling count of events over a given window.
 
     Description:
         Given a list of datetimes, return a rolling count starting

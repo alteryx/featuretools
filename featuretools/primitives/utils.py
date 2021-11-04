@@ -229,12 +229,37 @@ class PrimitivesDeserializer(object):
                 return cls
 
 
-# --> make private
-def _roll_series_with_gap(series, window_size, gap=0, min_periods=0):
-    """--> add docstring
+def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
+    """Provide rolling window calculations with window specified with both a window length
+        and a gap that indicates the amount of time between each instance and its window.
+
+    Args:
+        series (Series): The series over which the windows will be created. Must be numeric in nature
+            and have a datetime64[ns] index.
+        window_length (int): The number of rows to be included in each window. For data
+            with a uniform sampling frequency, for example of one day, the window_length will
+            correspond to a period of time, in this case, 7 days for a window_length of 7.
+        gap (int, optional): The number of rows prior to each instance to be skipped before
+            beginning the window. Defaults to 0, which will include each instance in the window.
+        min_periods (int, optional): Minimum number of observations required for performing calculations
+            over the window. Can only be as large as window_length. Defaults to 1.
+
+    Returns:
+        pandas.core.window.rolling.Rolling: The Rolling object for the series passed in.
+
+    Note:
+        Certain operations, like `pandas.core.window.rolling.Rolling.count` that can be performed
+        on the Rolling object returned here may treat NaNs as periods to include in window calculations.
+        So a window [NaN, 1, 3]  when `min_periods=3` will proceed with count, saying there are three periods
+        but only two values wnd would return count=2. The calculation `max` on the other hand, 
+        would say that there are not three periods in that window and would return max=NaN. 
+        Most rolling calculations act this way. The implication of that here is that in order to
+        achieve the gap, we insert NaNs at the beinning of the series, which would cause `count` to calculate
+        on windows that technically should not have the correct number of periods. In the RollingCount primitive,
+        we handle this case manually, replacing those values with NaNs. Any primitive that uses this function
+        should determine whether this kind of handling is also necessary.
+
     """
-    # --> FutureWarning: min_periods=None will default to the size of window consistent with other methods in a future version. Specify min_periods=0 instead.
-    # --> inclue note about primitives needing to handle early values if they don't want the nan values counted as values in windows
     # Workaround for pandas' fixed but unreleased bug: https://github.com/pandas-dev/pandas/issues/43016
     # Can remove when upgraded to pandas 1.4.0
     if str(series.dtype) == 'Int64':
