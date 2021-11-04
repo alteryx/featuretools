@@ -14,43 +14,55 @@ from featuretools.utils.gen_utils import Library
 
 
 class RollingMax(TransformPrimitive):
-    """Determines the maximum of entries over a given timeframe.
+    """Determines the maximum of entries over a given window.
 
     Description:
         Given a list of numbers and a corresponding list of
         datetimes, return a rolling maximum of the numeric values,
-        starting at the current row and looking backward
-        over the specified time window (`time_frame`).
+        starting at the row `gap` rows away from the current row and looking backward
+        over the specified window (by `window_length` and `gap`). 
 
         Input datetimes should be monotonic.
 
     Args:
-    # --> update
-        time_frame (str): The time period of each frame. Time frames
-            should be in seconds, minutes, hours, or days (e.g. 1s,
-            5min, 4h, 7d, etc.). Defaults to 1 day.
+        window_length (int): The number of rows to be included in each frame. For data
+            with a uniform sampling frequency, for example of one day, the window_length will
+            correspond to a period of time, in this case, 7 days for a window_length of 7.
+        gap (int, optional): The number of rows prior to each instance to be skipped before
+            beginning the window over which the maximum is determined. Defaults to 0, which
+            will include each instance in the window.
+        min_periods (int, optional): Minimum number of observations required for a window to have a value.
+            Can only be as large as window_length. Defaults to 1.
 
     Examples:
         >>> import pandas as pd
-        >>> rolling_max = RollingMax()
+        >>> rolling_max = RollingMax(window_length=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_max(times, [4, 3, 2, 1, 0]).tolist()
-        [4.0, 4.0, 4.0, 4.0, 4.0]
+        [4.0, 4.0, 4.0, 3.0, 2.0]
 
-        We can control the time frame of the rolling calculation.
+        We can also control the gap before the rolling calculation.
 
         >>> import pandas as pd
-        >>> rolling_max = RollingMax(time_frame='2min')
+        >>> rolling_max = RollingMax(window_length=3, gap=1)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_max(times, [4, 3, 2, 1, 0]).tolist()
-        [4.0, 4.0, 3.0, 2.0, 1.0]
+        [NaN, 4.0, 4.0, 3.0, 2.0]
+
+        We can also control the minimum number of periods required for the rolling calculation.
+
+        >>> import pandas as pd
+        >>> rolling_max = RollingMax(window_length=3, min_periods=3)
+        >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
+        >>> rolling_max(times, [4, 3, 2, 1, 0]).tolist()
+        [NaN, NaN, 4.0, 3.0, 2.0]
     """
     name = "rolling_max"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
-    def __init__(self, window_length=1, gap=0, min_periods=0):
+    def __init__(self, window_length, gap=0, min_periods=1):
         #     --> confirm default window length - 1 seems possibly a bad idea bc youre not getting windows
         self.window_length = window_length
         self.gap = gap
@@ -69,40 +81,53 @@ class RollingMax(TransformPrimitive):
 
 
 class RollingMin(TransformPrimitive):
-    """Determines the minimum of entries over a given timeframe.
+    """Determines the minimum of entries over a given window.
 
     Description:
         Given a list of numbers and a corresponding list of
         datetimes, return a rolling minimum of the numeric values,
-        starting at the current row and looking backward
-        over the specified time window (`time_frame`).
+        starting at the row `gap` rows away from the current row and looking backward
+        over the specified window (by `window_length` and `gap`).
         Input datetimes should be monotonic.
 
     Args:
-        time_frame (str): The time period of each frame. Time frames
-            should be in seconds, minutes, hours, or days (e.g. 1s,
-            5min, 4h, 7d, etc.). Defaults to 1 day.
-
+        window_length (int): The number of rows to be included in each frame. For data
+            with a uniform sampling frequency, for example of one day, the window_length will
+            correspond to a period of time, in this case, 7 days for a window_length of 7.
+        gap (int, optional): The number of rows prior to each instance to be skipped before
+            beginning the window over which the minimum is determined. Defaults to 0, which
+            will include each instance in the window.
+        min_periods (int, optional): Minimum number of observations required for a window to have a value.
+            Defaults to 1.
     Examples:
         >>> import pandas as pd
+        >>> rolling_min = RollingMin(window_length=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
-        >>> rolling_min = RollingMin()
-        >>> rolling_min(times, [0, 1, 2, 3, 4]).tolist()
-        [0.0, 0.0, 0.0, 0.0, 0.0]
+        >>> rolling_min(times, [4, 3, 2, 1, 0]).tolist()
+        [4.0, 3.0, 2.0, 1.0, 0.0]
 
-        We can control the time frame of the rolling calculation.
+        We can also control the gap before the rolling calculation.
 
         >>> import pandas as pd
-        >>> rolling_min = RollingMin(time_frame='2min')
-        >>> rolling_min(times, [0, 1, 2, 3, 4]).tolist()
-        [0.0, 0.0, 1.0, 2.0, 3.0]
+        >>> rolling_min = RollingMin(window_length=3, gap=1)
+        >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
+        >>> rolling_min(times, [4, 3, 2, 1, 0]).tolist()
+        [NaN, 3.0, 2.0, 1.0, 0.0]
+
+        We can also control the minimum number of periods required for the rolling calculation.
+
+        >>> import pandas as pd
+        >>> rolling_min = RollingMin(window_length=3, min_periods=3)
+        >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
+        >>> rolling_min(times, [4, 3, 2, 1, 0]).tolist()
+        [NaN, NaN, 2.0, 1.0, 0.0]
     """
     name = "rolling_min"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
-    def __init__(self, window_length=1, gap=0, min_periods=0):
+    def __init__(self, window_length, gap=0, min_periods=1):
         self.window_length = window_length
         self.gap = gap
         self.min_periods = min_periods
@@ -124,37 +149,50 @@ class RollingMean(TransformPrimitive):
     Description:
         Given a list of numbers and a corresponding list of
         datetimes, return a rolling mean of the numeric values,
-        starting at the current row and looking backward
-        over the specified time window (`time_frame`).
+        starting at the row `gap` rows away from the current row and looking backward
+        over the specified time window (by `window_length` and `gap`).
 
         Input datetimes should be monotonic.
 
     Args:
-        time_frame (str): The time period of each frame. Time frames
-            should be in seconds, minutes, hours, or days (e.g. 1s,
-            5min, 4h, 7d, etc.). Defaults to 1 day.
+        window_length (int): The number of rows to be included in each frame. For data
+            with a uniform sampling frequency, for example of one day, the window_length will
+            correspond to a period of time, in this case, 7 days for a window_length of 7.
+        gap (int, optional): The number of rows prior to each instance to be skipped before
+            beginning the window over which the mean is determined. Defaults to 0, which
+            will include each instance in the window.
+        min_periods (int, optional): Minimum number of observations required for a window to have a value.
+            Can only be as large as window_length. Defaults to 1.
 
     Examples:
         >>> import pandas as pd
-        >>> rolling_mean = RollingMean()
+        >>> rolling_mean = RollingMean(window_length=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_mean(times, [4, 3, 2, 1, 0]).tolist()
-        [4.0, 3.5, 3.0, 2.5, 2.0]
+        [4.0, 3.5, 3.0, 2.0, 1.0]
 
-        We can control the time frame of the rolling calculation.
+        We can also control the gap before the rolling calculation.
 
         >>> import pandas as pd
-        >>> rolling_mean = RollingMean(time_frame='2min')
+        >>> rolling_mean = RollingMean(window_length=3, gap=1)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_mean(times, [4, 3, 2, 1, 0]).tolist()
-        [4.0, 3.5, 2.5, 1.5, 0.5]
+        [NaN, 4.0, 3.5, 3.0, 2.0]
+
+        We can also control the minimum number of periods required for the rolling calculation.
+
+        >>> import pandas as pd
+        >>> rolling_mean = RollingMean(window_length=3, min_periods=3)
+        >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
+        >>> rolling_mean(times, [4, 3, 2, 1, 0]).tolist()
+        [NaN, NaN, 3.0, 2.0, 1.0]
     """
     name = "rolling_mean"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
-    def __init__(self, window_length=1, gap=0, min_periods=0):
+    def __init__(self, window_length, gap=0, min_periods=0):
         self.window_length = window_length
         self.gap = gap
         self.min_periods = min_periods
@@ -176,35 +214,49 @@ class RollingSTD(TransformPrimitive):
     Description:
         Given a list of numbers and a corresponding list of
         datetimes, return a rolling standard deviation of
-        the numeric values, starting at the current row and
-        looking backward over the specified time window
-        (`time_frame`). Input datetimes should be monotonic.
+        the numeric values, starting at the row `gap` rows away from the current row and
+        looking backward over the specified time window 
+        (by `window_length` and `gap`). Input datetimes should be monotonic.
 
     Args:
-        time_frame (str): The time period of each frame. Time frames
-            should be in seconds, minutes, hours, or days (e.g. 1s,
-            5min, 4h, 7d, etc.). Defaults to 1 day.
+        window_length (int): The number of rows to be included in each frame. For data
+            with a uniform sampling frequency, for example of one day, the window_length will
+            correspond to a period of time, in this case, 7 days for a window_length of 7.
+        gap (int, optional): The number of rows prior to each instance to be skipped before
+            beginning the window over which the standard deviation is determined. Defaults to 0, which
+            will include each instance in the window.
+        min_periods (int, optional): Minimum number of observations required for a window to have a value.
+            Can only be as large as window_length. Defaults to 1.
 
     Examples:
         >>> import pandas as pd
+        >>> rolling_std = RollingSTD(window_length=4)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
-        >>> rolling_std = RollingSTD()
-        >>> rolling_std(times, [1, 7, 3, 9, 5]).tolist()
-        [nan, 4.242640687119285, 3.0550504633038935, 3.6514837167011076, 3.1622776601683795]
+        >>> rolling_std(times, [4, 3, 2, 1, 0]).tolist()
+        [nan, 0.7071067811865476, 1.0, 1.2909944487358056, 1.2909944487358056]
 
-        We can control the time frame of the rolling calculation.
+        We can also control the gap before the rolling calculation.
 
         >>> import pandas as pd
-        >>> rolling_std = RollingSTD(time_frame='2min')
-        >>> rolling_std(times, [1, 7, 3, 9, 5]).tolist()
-        [nan, 4.242640687119285, 2.8284271247461903, 4.242640687119285, 2.8284271247461903]
+        >>> rolling_std = RollingSTD(window_length=4, gap=1)
+        >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
+        >>> rolling_std(times, [4, 3, 2, 1, 0]).tolist()
+        [nan, nan, 0.7071067811865476, 1.0, 1.2909944487358056]
+
+        We can also control the minimum number of periods required for the rolling calculation.
+
+        >>> import pandas as pd
+        >>> rolling_std = RollingSTD(window_length=4, min_periods=4)
+        >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
+        >>> rolling_std(times, [4, 3, 2, 1, 0]).tolist()
+        [nan, nan, nan, 1.2909944487358056, 1.2909944487358056]
     """
     name = "rolling_std"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
-    def __init__(self, window_length=1, gap=0, min_periods=0):
+    def __init__(self, window_length, gap=0, min_periods=1):
         self.window_length = window_length
         self.gap = gap
         self.min_periods = min_periods
@@ -225,36 +277,51 @@ class RollingCount(TransformPrimitive):
 
     Description:
         Given a list of datetimes, return a rolling count starting
-        at the current row and looking backward over the specified
-        time window (`time_frame`).
+        at the row `gap` rows away from the current row and looking backward over the specified
+        time window (by `window_length` and `gap`).
 
         Input datetimes should be monotonic.
 
     Args:
-        time_frame (str): The time period of each frame. Time frames
-            should be in seconds, minutes, hours, or days (e.g. 1s,
-            5min, 4h, 7d, etc.). Defaults to 1 day.
+        window_length (int): The number of rows to be included in each frame. For data
+            with a uniform sampling frequency, for example of one day, the window_length will
+            correspond to a period of time, in this case, 7 days for a window_length of 7.
+        gap (int, optional): The number of rows prior to each instance to be skipped before
+            beginning the window over which the count is determined. Defaults to 0, which
+            will include each instance in the window.
+        min_periods (int, optional): Minimum number of observations required for a window to have a value.
+            Can only be as large as window_length. Defaults to 1.
 
     Examples:
         >>> import pandas as pd
-        >>> rolling_count = RollingCount()
-        >>> rolling_count(pd.date_range(start='2019-01-01', freq='1d', periods=5)).tolist()
-        [1.0, 1.0, 1.0, 1.0, 1.0]
+        >>> rolling_count = RollingCount(window_length=3)
+        >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
+        >>> rolling_count(times, [4, 3, 2, 1, 0]).tolist()
+        [1.0, 2.0, 3.0, 3.0, 3.0]
 
-        We can control the time frame of the rolling calculation.
+        We can also control the gap before the rolling calculation.
 
         >>> import pandas as pd
-        >>> rolling_count = RollingCount(time_frame='2h')
-        >>> rolling_count(pd.date_range(start='2019-01-01', freq='1h', periods=5)).tolist()
-        [1.0, 2.0, 2.0, 2.0, 2.0]
+        >>> rolling_count = RollingCount(window_length=3, gap=1)
+        >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
+        >>> rolling_count(times, [4, 3, 2, 1, 0]).tolist()
+        [NaN, 1.0, 2.0, 3.0, 3.0]
+
+        We can also control the minimum number of periods required for the rolling calculation.
+
+        >>> import pandas as pd
+        >>> rolling_count = RollingCount(window_length=3, min_periods=3)
+        >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
+        >>> rolling_count(times, [4, 3, 2, 1, 0]).tolist()
+        [NaN, NaN, 3.0, 3.0, 3.0]
     """
     name = "rolling_count"
-    # --> test that it works with non numeric!!!
+    # --> test that it works with non numeric in dfs!!!
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
-    def __init__(self, window_length=1, gap=0, min_periods=0):
+    def __init__(self, window_length, gap=0, min_periods=0):
         self.window_length = window_length
         self.gap = gap
         self.min_periods = min_periods

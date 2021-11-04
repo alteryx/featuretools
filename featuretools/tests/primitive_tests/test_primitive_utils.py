@@ -222,3 +222,4 @@ def test_roll_series_with_gap_nullable_types(rolling_series):
 
 
 # --> warning being emitted No Partition Defined for Window operation! Moving all data to a single partition, this can cause serious performance degradation.
+# --> test passing in negative arguments????
