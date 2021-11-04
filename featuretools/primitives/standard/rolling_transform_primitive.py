@@ -44,7 +44,7 @@ class RollingMax(TransformPrimitive):
         >>> rolling_max = RollingMax(window_length=3, gap=1)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_max(times, [4, 3, 2, 1, 0]).tolist()
-        [nan, 4.0, 4.0, 3.0, 2.0]
+        [nan, 4.0, 4.0, 4.0, 3.0]
 
         We can also control the minimum number of periods required for the rolling calculation.
 
@@ -57,7 +57,7 @@ class RollingMax(TransformPrimitive):
     name = "rolling_max"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.KOALAS]
 
     def __init__(self, window_length=3, gap=0, min_periods=1):
         self.window_length = window_length
@@ -107,7 +107,7 @@ class RollingMin(TransformPrimitive):
         >>> rolling_min = RollingMin(window_length=3, gap=1)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_min(times, [4, 3, 2, 1, 0]).tolist()
-        [nan, 3.0, 2.0, 1.0, 0.0]
+        [nan, 4.0, 3.0, 2.0, 1.0]
 
         We can also control the minimum number of periods required for the rolling calculation.
 
@@ -120,7 +120,7 @@ class RollingMin(TransformPrimitive):
     name = "rolling_min"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.KOALAS]
 
     def __init__(self, window_length=3, gap=0, min_periods=1):
         self.window_length = window_length
@@ -185,7 +185,7 @@ class RollingMean(TransformPrimitive):
     name = "rolling_mean"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.KOALAS]
 
     def __init__(self, window_length=3, gap=0, min_periods=0):
         self.window_length = window_length
@@ -291,7 +291,7 @@ class RollingCount(TransformPrimitive):
         >>> import pandas as pd
         >>> rolling_count = RollingCount(window_length=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
-        >>> rolling_count(times, [4, 3, 2, 1, 0]).tolist()
+        >>> rolling_count(times).tolist()
         [1.0, 2.0, 3.0, 3.0, 3.0]
 
         We can also control the gap before the rolling calculation.
@@ -299,7 +299,7 @@ class RollingCount(TransformPrimitive):
         >>> import pandas as pd
         >>> rolling_count = RollingCount(window_length=3, gap=1)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
-        >>> rolling_count(times, [4, 3, 2, 1, 0]).tolist()
+        >>> rolling_count(times).tolist()
         [nan, 1.0, 2.0, 3.0, 3.0]
 
         We can also control the minimum number of periods required for the rolling calculation.
@@ -307,7 +307,7 @@ class RollingCount(TransformPrimitive):
         >>> import pandas as pd
         >>> rolling_count = RollingCount(window_length=3, min_periods=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
-        >>> rolling_count(times, [4, 3, 2, 1, 0]).tolist()
+        >>> rolling_count(times).tolist()
         [nan, nan, 3.0, 3.0, 3.0]
     """
     name = "rolling_count"
