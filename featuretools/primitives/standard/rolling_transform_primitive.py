@@ -325,8 +325,8 @@ class RollingCount(TransformPrimitive):
         self.min_periods = min_periods
 
     def get_function(self):
-        def rolling_count(datetime, numeric):
-            x = pd.Series(numeric.values, index=datetime.values)
+        def rolling_count(datetime):
+            x = pd.Series(1, index=datetime)
             rolled_series = _roll_series_with_gap(x,
                                                   self.window_length,
                                                   gap=self.gap,

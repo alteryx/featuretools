@@ -36,11 +36,15 @@ from featuretools.primitives import (
     NotEqual,
     NumCharacters,
     NumUnique,
+    RollingMax,
     Sum,
     TimeSincePrevious,
     TransformPrimitive,
     Trend,
     Year
+)
+from featuretools.primitives.standard.rolling_transform_primitive import (
+    RollingCount
 )
 from featuretools.primitives.standard.transform_primitive import Negate
 from featuretools.synthesis import DeepFeatureSynthesis
@@ -410,6 +414,28 @@ def test_bad_groupby_feature(es):
                              agg_primitives=['sum'],
                              trans_primitives=[],
                              groupby_trans_primitives=['max'])
+
+
+def test_make_rolling_features(es):
+    rolling_max = RollingMax(window_length=7, gap=3, min_periods=5)
+    dfs_obj = DeepFeatureSynthesis(target_dataframe_name='log',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[rolling_max])
+    features = dfs_obj.build_features()
+    rolling_transform_name = u"ROLLING_MAX(datetime, value_many_nans, window_length=7, gap=3, min_periods=5)"
+    assert feature_with_name(features, rolling_transform_name)
+
+
+def test_make_rolling_count_off_datetime_feature(pd_es):
+    rolling_count = RollingCount(window_length=5, min_periods=3)
+    dfs_obj = DeepFeatureSynthesis(target_dataframe_name='log',
+                                   entityset=pd_es,
+                                   agg_primitives=[],
+                                   trans_primitives=[rolling_count])
+    features = dfs_obj.build_features()
+    rolling_transform_name = u"ROLLING_COUNT(datetime, window_length=5, min_periods=3)"
+    assert feature_with_name(features, rolling_transform_name)
 
 
 def test_abides_by_max_depth_param(es):
@@ -1585,5 +1611,3 @@ def test_does_not_build_features_on_last_time_index_col(es):
 
     for feature in features:
         assert LTI_COLUMN_NAME not in feature.get_name()
-
-# --> add a test for rolling primitives that they work!

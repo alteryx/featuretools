@@ -94,7 +94,7 @@ def test_rolling_count(rolling_series_pd):
     primitive_instance = RollingCount(window_length=window_length, gap=gap, min_periods=window_length)
     primitive_func = primitive_instance.get_function()
 
-    actual_vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
+    actual_vals = pd.Series(primitive_func(rolling_series_pd.index))
 
     num_nans = gap + window_length - 1
     assert actual_vals.isna().sum() == num_nans
@@ -111,7 +111,7 @@ def test_rolling_count_primitive_min_periods_nans(rolling_series_pd):
     for min_periods in range(window_length + 1):
         primitive_instance = RollingCount(window_length=window_length, gap=gap, min_periods=min_periods)
         primitive_func = primitive_instance.get_function()
-        vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
+        vals = pd.Series(primitive_func(rolling_series_pd.index))
 
         if min_periods == 0:
             # when min periods is 0 it's treated the same as if it's 1
@@ -128,7 +128,7 @@ def test_rolling_count_with_no_gap(rolling_series_pd):
     for min_periods in range(window_length + 1):
         primitive_instance = RollingCount(window_length=window_length, gap=gap, min_periods=min_periods)
         primitive_func = primitive_instance.get_function()
-        vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
+        vals = pd.Series(primitive_func(rolling_series_pd.index))
 
         if min_periods == 0:
             # when min periods is 0 it's treated the same as if it's 1
