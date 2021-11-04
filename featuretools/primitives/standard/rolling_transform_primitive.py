@@ -249,7 +249,7 @@ class RollingSTD(TransformPrimitive):
     name = "rolling_std"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.KOALAS]
 
     def __init__(self, window_length=3, gap=0, min_periods=1):
         self.window_length = window_length
