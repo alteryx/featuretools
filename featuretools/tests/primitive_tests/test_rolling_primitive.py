@@ -1,21 +1,18 @@
-import numpy as np
-from numpy.core.numeric import roll
 import pandas as pd
-import pytest
 
 # --> just add to primitives import
 from featuretools.primitives.standard.rolling_transform_primitive import RollingCount, RollingMax, RollingMin, RollingMean, RollingSTD
-from featuretools.primitives.utils import roll_series_with_gap
+from featuretools.primitives.utils import _roll_series_with_gap
 
 
 def test_rolling_max(rolling_series_pd):
     window_length = 5
     gap = 2
 
-    expected_vals = roll_series_with_gap(rolling_series_pd,
-                                         window_length,
-                                         gap=gap,
-                                         min_periods=window_length).max().values
+    expected_vals = _roll_series_with_gap(rolling_series_pd,
+                                          window_length,
+                                          gap=gap,
+                                          min_periods=window_length).max().values
 
     primitive_instance = RollingMax(window_length=window_length, gap=gap, min_periods=window_length)
     primitive_func = primitive_instance.get_function()
@@ -30,10 +27,10 @@ def test_rolling_min(rolling_series_pd):
     window_length = 5
     gap = 2
 
-    expected_vals = roll_series_with_gap(rolling_series_pd,
-                                         window_length,
-                                         gap=gap,
-                                         min_periods=window_length).min().values
+    expected_vals = _roll_series_with_gap(rolling_series_pd,
+                                          window_length,
+                                          gap=gap,
+                                          min_periods=window_length).min().values
 
     primitive_instance = RollingMin(window_length=window_length, gap=gap, min_periods=window_length)
     primitive_func = primitive_instance.get_function()
@@ -48,10 +45,10 @@ def test_rolling_mean(rolling_series_pd):
     window_length = 5
     gap = 2
 
-    expected_vals = roll_series_with_gap(rolling_series_pd,
-                                         window_length,
-                                         gap=gap,
-                                         min_periods=window_length).mean().values
+    expected_vals = _roll_series_with_gap(rolling_series_pd,
+                                          window_length,
+                                          gap=gap,
+                                          min_periods=window_length).mean().values
 
     primitive_instance = RollingMean(window_length=window_length, gap=gap, min_periods=window_length)
     primitive_func = primitive_instance.get_function()
@@ -66,10 +63,10 @@ def test_rolling_std(rolling_series_pd):
     window_length = 5
     gap = 2
 
-    expected_vals = roll_series_with_gap(rolling_series_pd,
-                                         window_length,
-                                         gap=gap,
-                                         min_periods=window_length).std().values
+    expected_vals = _roll_series_with_gap(rolling_series_pd,
+                                          window_length,
+                                          gap=gap,
+                                          min_periods=window_length).std().values
 
     primitive_instance = RollingSTD(window_length=window_length, gap=gap, min_periods=window_length)
     primitive_func = primitive_instance.get_function()
@@ -84,10 +81,10 @@ def test_rolling_count(rolling_series_pd):
     window_length = 5
     gap = 2
 
-    expected_vals = roll_series_with_gap(rolling_series_pd,
-                                         window_length,
-                                         gap=gap,
-                                         min_periods=window_length).count().values
+    expected_vals = _roll_series_with_gap(rolling_series_pd,
+                                          window_length,
+                                          gap=gap,
+                                          min_periods=window_length).count().values
 
     primitive_instance = RollingCount(window_length=window_length, gap=gap, min_periods=window_length)
     primitive_func = primitive_instance.get_function()

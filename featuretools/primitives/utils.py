@@ -230,7 +230,7 @@ class PrimitivesDeserializer(object):
 
 
 # --> make private
-def roll_series_with_gap(series, window_size, gap=0, min_periods=0):
+def _roll_series_with_gap(series, window_size, gap=0, min_periods=0):
     """--> add docstring
     """
     # --> FutureWarning: min_periods=None will default to the size of window consistent with other methods in a future version. Specify min_periods=0 instead.

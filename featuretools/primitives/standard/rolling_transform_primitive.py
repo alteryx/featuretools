@@ -6,7 +6,7 @@ from woodwork.logical_types import (
     Double,
     Datetime
 )
-from featuretools.primitives.utils import roll_series_with_gap
+from featuretools.primitives.utils import _roll_series_with_gap
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
 )
@@ -20,7 +20,7 @@ class RollingMax(TransformPrimitive):
         Given a list of numbers and a corresponding list of
         datetimes, return a rolling maximum of the numeric values,
         starting at the row `gap` rows away from the current row and looking backward
-        over the specified window (by `window_length` and `gap`). 
+        over the specified window (by `window_length` and `gap`).
 
         Input datetimes should be monotonic.
 
@@ -72,10 +72,10 @@ class RollingMax(TransformPrimitive):
     def get_function(self):
         def rolling_max(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = roll_series_with_gap(x,
-                                                 self.window_length,
-                                                 gap=self.gap,
-                                                 min_periods=self.min_periods)
+            rolled_series = _roll_series_with_gap(x,
+                                                  self.window_length,
+                                                  gap=self.gap,
+                                                  min_periods=self.min_periods)
             return rolled_series.max().values
         return rolling_max
 
@@ -135,10 +135,10 @@ class RollingMin(TransformPrimitive):
     def get_function(self):
         def rolling_min(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = roll_series_with_gap(x,
-                                                 self.window_length,
-                                                 gap=self.gap,
-                                                 min_periods=self.min_periods)
+            rolled_series = _roll_series_with_gap(x,
+                                                  self.window_length,
+                                                  gap=self.gap,
+                                                  min_periods=self.min_periods)
             return rolled_series.min().values
         return rolling_min
 
@@ -200,10 +200,10 @@ class RollingMean(TransformPrimitive):
     def get_function(self):
         def rolling_mean(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = roll_series_with_gap(x,
-                                                 self.window_length,
-                                                 gap=self.gap,
-                                                 min_periods=self.min_periods)
+            rolled_series = _roll_series_with_gap(x,
+                                                  self.window_length,
+                                                  gap=self.gap,
+                                                  min_periods=self.min_periods)
             return rolled_series.mean().values
         return rolling_mean
 
@@ -215,7 +215,7 @@ class RollingSTD(TransformPrimitive):
         Given a list of numbers and a corresponding list of
         datetimes, return a rolling standard deviation of
         the numeric values, starting at the row `gap` rows away from the current row and
-        looking backward over the specified time window 
+        looking backward over the specified time window
         (by `window_length` and `gap`). Input datetimes should be monotonic.
 
     Args:
@@ -264,10 +264,10 @@ class RollingSTD(TransformPrimitive):
     def get_function(self):
         def rolling_std(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = roll_series_with_gap(x,
-                                                 self.window_length,
-                                                 gap=self.gap,
-                                                 min_periods=self.min_periods)
+            rolled_series = _roll_series_with_gap(x,
+                                                  self.window_length,
+                                                  gap=self.gap,
+                                                  min_periods=self.min_periods)
             return rolled_series.std().values
         return rolling_std
 
@@ -329,10 +329,10 @@ class RollingCount(TransformPrimitive):
     def get_function(self):
         def rolling_count(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = roll_series_with_gap(x,
-                                                 self.window_length,
-                                                 gap=self.gap,
-                                                 min_periods=self.min_periods)
+            rolled_series = _roll_series_with_gap(x,
+                                                  self.window_length,
+                                                  gap=self.gap,
+                                                  min_periods=self.min_periods)
             rolling_count_series = rolled_series.count()
             # Rolling.count will include the NaNs from the shift
             # --> account for gap=0 and min periods = 0 vs 1 vs None

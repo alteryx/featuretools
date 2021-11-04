@@ -36,7 +36,7 @@ from featuretools.primitives.utils import (
     _get_unique_input_types,
     list_primitive_files,
     load_primitive_from_file,
-    roll_series_with_gap
+    _roll_series_with_gap
 )
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
@@ -143,8 +143,8 @@ def test_errors_no_primitive_in_file(bad_primitives_files_dir):
 def test_roll_series_with_gap(rolling_series):
     window_length = 3
     gap = 2
-    rolling_max = to_pandas(roll_series_with_gap(rolling_series, window_length, gap=gap).max())
-    rolling_min = to_pandas(roll_series_with_gap(rolling_series, window_length, gap=gap).min())
+    rolling_max = to_pandas(_roll_series_with_gap(rolling_series, window_length, gap=gap).max())
+    rolling_min = to_pandas(_roll_series_with_gap(rolling_series, window_length, gap=gap).min())
 
     assert len(rolling_max) == len(rolling_series)
 
@@ -171,7 +171,7 @@ def test_roll_series_with_gap(rolling_series):
 def test_roll_series_with_no_gap(rolling_series):
     window_length = 3
     gap = 0
-    actual_rolling = roll_series_with_gap(rolling_series, window_length, gap=gap).mean()
+    actual_rolling = _roll_series_with_gap(rolling_series, window_length, gap=gap).mean()
     expected_rolling = rolling_series.rolling(window_length, min_periods=1).mean()
 
     pd.testing.assert_series_equal(to_pandas(actual_rolling), to_pandas(expected_rolling))
@@ -182,9 +182,9 @@ def test_roll_series_with_gap_early_values(rolling_series):
     gap = 2
 
     # Default min periods is 0 - will include all
-    default_partial_values = to_pandas(roll_series_with_gap(rolling_series,
-                                                            window_length,
-                                                            gap=gap).count())
+    default_partial_values = to_pandas(_roll_series_with_gap(rolling_series,
+                                                             window_length,
+                                                             gap=gap).count())
     num_empty_aggregates = len(default_partial_values.loc[default_partial_values == 0])
     num_partial_aggregates = len((default_partial_values
                                   .loc[default_partial_values != 0])
@@ -193,10 +193,10 @@ def test_roll_series_with_gap_early_values(rolling_series):
     assert num_partial_aggregates == window_length - 1
 
     # Make min periods the size of the window
-    no_partial_values = to_pandas(roll_series_with_gap(rolling_series,
-                                                       window_length,
-                                                       gap=gap,
-                                                       min_periods=window_length).count())
+    no_partial_values = to_pandas(_roll_series_with_gap(rolling_series,
+                                                        window_length,
+                                                        gap=gap,
+                                                        min_periods=window_length).count())
     num_null_aggregates = len(no_partial_values.loc[pd.isna(no_partial_values)])
     num_partial_aggregates = len(no_partial_values.loc[no_partial_values < window_length])
     # because we shift, gap is included as nan values in the series.
@@ -215,8 +215,8 @@ def test_roll_series_with_gap_nullable_types(rolling_series):
     nullable_series = rolling_series.astype('Int64')
     non_nullable_series = rolling_series.astype('int64')
 
-    nullable_rolling_max = roll_series_with_gap(nullable_series, window_length, gap=gap).max()
-    non_nullable_rolling_max = roll_series_with_gap(non_nullable_series, window_length, gap=gap).max()
+    nullable_rolling_max = _roll_series_with_gap(nullable_series, window_length, gap=gap).max()
+    non_nullable_rolling_max = _roll_series_with_gap(non_nullable_series, window_length, gap=gap).max()
 
     pd.testing.assert_series_equal(to_pandas(nullable_rolling_max), to_pandas(non_nullable_rolling_max))
 
