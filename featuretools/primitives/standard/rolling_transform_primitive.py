@@ -44,7 +44,7 @@ class RollingMax(TransformPrimitive):
         >>> rolling_max = RollingMax(window_length=3, gap=1)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_max(times, [4, 3, 2, 1, 0]).tolist()
-        [NaN, 4.0, 4.0, 3.0, 2.0]
+        [nan, 4.0, 4.0, 3.0, 2.0]
 
         We can also control the minimum number of periods required for the rolling calculation.
 
@@ -52,7 +52,7 @@ class RollingMax(TransformPrimitive):
         >>> rolling_max = RollingMax(window_length=3, min_periods=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_max(times, [4, 3, 2, 1, 0]).tolist()
-        [NaN, NaN, 4.0, 3.0, 2.0]
+        [nan, nan, 4.0, 3.0, 2.0]
     """
     name = "rolling_max"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
@@ -107,7 +107,7 @@ class RollingMin(TransformPrimitive):
         >>> rolling_min = RollingMin(window_length=3, gap=1)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_min(times, [4, 3, 2, 1, 0]).tolist()
-        [NaN, 3.0, 2.0, 1.0, 0.0]
+        [nan, 3.0, 2.0, 1.0, 0.0]
 
         We can also control the minimum number of periods required for the rolling calculation.
 
@@ -115,7 +115,7 @@ class RollingMin(TransformPrimitive):
         >>> rolling_min = RollingMin(window_length=3, min_periods=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_min(times, [4, 3, 2, 1, 0]).tolist()
-        [NaN, NaN, 2.0, 1.0, 0.0]
+        [nan, nan, 2.0, 1.0, 0.0]
     """
     name = "rolling_min"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
@@ -172,7 +172,7 @@ class RollingMean(TransformPrimitive):
         >>> rolling_mean = RollingMean(window_length=3, gap=1)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_mean(times, [4, 3, 2, 1, 0]).tolist()
-        [NaN, 4.0, 3.5, 3.0, 2.0]
+        [nan, 4.0, 3.5, 3.0, 2.0]
 
         We can also control the minimum number of periods required for the rolling calculation.
 
@@ -180,7 +180,7 @@ class RollingMean(TransformPrimitive):
         >>> rolling_mean = RollingMean(window_length=3, min_periods=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_mean(times, [4, 3, 2, 1, 0]).tolist()
-        [NaN, NaN, 3.0, 2.0, 1.0]
+        [nan, nan, 3.0, 2.0, 1.0]
     """
     name = "rolling_mean"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
@@ -300,7 +300,7 @@ class RollingCount(TransformPrimitive):
         >>> rolling_count = RollingCount(window_length=3, gap=1)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_count(times, [4, 3, 2, 1, 0]).tolist()
-        [NaN, 1.0, 2.0, 3.0, 3.0]
+        [nan, 1.0, 2.0, 3.0, 3.0]
 
         We can also control the minimum number of periods required for the rolling calculation.
 
@@ -308,7 +308,7 @@ class RollingCount(TransformPrimitive):
         >>> rolling_count = RollingCount(window_length=3, min_periods=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_count(times, [4, 3, 2, 1, 0]).tolist()
-        [NaN, NaN, 3.0, 3.0, 3.0]
+        [nan, nan, 3.0, 3.0, 3.0]
     """
     name = "rolling_count"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
