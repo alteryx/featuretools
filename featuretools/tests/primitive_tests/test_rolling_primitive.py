@@ -1,7 +1,13 @@
 import pandas as pd
 
 # --> just add to primitives import
-from featuretools.primitives.standard.rolling_transform_primitive import RollingCount, RollingMax, RollingMin, RollingMean, RollingSTD
+from featuretools.primitives.standard.rolling_transform_primitive import (
+    RollingCount,
+    RollingMax,
+    RollingMean,
+    RollingMin,
+    RollingSTD
+)
 from featuretools.primitives.utils import _roll_series_with_gap
 
 

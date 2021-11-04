@@ -34,9 +34,9 @@ from featuretools.primitives.base import PrimitiveBase
 from featuretools.primitives.utils import (
     _get_descriptions,
     _get_unique_input_types,
+    _roll_series_with_gap,
     list_primitive_files,
-    load_primitive_from_file,
-    _roll_series_with_gap
+    load_primitive_from_file
 )
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library

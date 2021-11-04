@@ -1,15 +1,12 @@
 import numpy as np
 import pandas as pd
-
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import (
-    Double,
-    Datetime
-)
-from featuretools.primitives.utils import _roll_series_with_gap
+from woodwork.logical_types import Datetime, Double
+
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
 )
+from featuretools.primitives.utils import _roll_series_with_gap
 from featuretools.utils.gen_utils import Library
 
 
