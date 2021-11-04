@@ -96,9 +96,10 @@ def test_rolling_count(rolling_series_pd):
 
     actual_vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
 
-    # Count
     num_nans = gap + window_length - 1
     assert actual_vals.isna().sum() == num_nans
+    # RollingCount will not match the exact _roll_series_with_gap call,
+    # because it handles the min_periods difference within the primitive
     pd.testing.assert_series_equal(pd.Series(expected_vals).iloc[num_nans:], actual_vals.iloc[num_nans:])
 
 

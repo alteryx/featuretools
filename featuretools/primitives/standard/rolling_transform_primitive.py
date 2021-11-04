@@ -315,7 +315,9 @@ class RollingCount(TransformPrimitive):
     # --> test that it works with non numeric in dfs!!!
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    # Only compatible with pandas because Koalas' count has unexpected behavior when min_periods is not 1
+    # And Dask has issues with how we replace with NaNs below
+    compatibility = [Library.PANDAS]
 
     def __init__(self, window_length, gap=0, min_periods=0):
         self.window_length = window_length

@@ -39,7 +39,9 @@ from featuretools.primitives.utils import (
     load_primitive_from_file
 )
 from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import Library
+from featuretools.utils.gen_utils import Library, import_or_none
+
+ks = import_or_none('databricks.koalas')
 
 
 def test_list_primitives_order():
@@ -199,13 +201,15 @@ def test_roll_series_with_gap_early_values(rolling_series):
                                                         min_periods=window_length).count())
     num_null_aggregates = len(no_partial_values.loc[pd.isna(no_partial_values)])
     num_partial_aggregates = len(no_partial_values.loc[no_partial_values < window_length])
-    # because we shift, gap is included as nan values in the series.
-    # Count treats nans in a window as values that don't get counted,
-    # so the gap rows get included in the count for whether a window has "min periods".
-    # This is different than max, for example, which does not count nans in a window as values towards "min periods"
-    # --> koalas doesn't seem to do anything for count and mean for early values - doesnt replace with nan
-    assert num_null_aggregates == window_length - 1
-    assert num_partial_aggregates == gap
+
+    # Koalas doesn't handle min_periods for count
+    if not isinstance(rolling_series, ks.Series):
+        # because we shift, gap is included as nan values in the series.
+        # Count treats nans in a window as values that don't get counted,
+        # so the gap rows get included in the count for whether a window has "min periods".
+        # This is different than max, for example, which does not count nans in a window as values towards "min periods"
+        assert num_null_aggregates == window_length - 1
+        assert num_partial_aggregates == gap
 
 
 def test_roll_series_with_gap_nullable_types(rolling_series):
