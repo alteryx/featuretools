@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
+        * Add new version of featuretools_tsfresh_primitives as an add-on library (:pr:`1772`)
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`tamargrey`
 
 v1.1.0 Nov 2, 2021
 ==================
