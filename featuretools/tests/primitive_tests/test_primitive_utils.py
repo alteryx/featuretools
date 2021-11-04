@@ -213,7 +213,7 @@ def test_roll_series_with_gap_early_values(window_length, gap, rolling_series):
     num_partial_aggregates = len(no_partial_values.loc[no_partial_values < window_length])
 
     # Koalas doesn't handle min_periods for count
-    if not isinstance(rolling_series, ks.Series):
+    if ks and not isinstance(rolling_series, ks.Series):
         # because we shift, gap is included as nan values in the series.
         # Count treats nans in a window as values that don't get counted,
         # so the gap rows get included in the count for whether a window has "min periods".
