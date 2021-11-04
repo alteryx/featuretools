@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add Rolling Transform primitives with integer parameters (:pr:`1770`)
     * Fixes
     * Changes
         * Add new version of featuretools_tsfresh_primitives as an add-on library (:pr:`1772`)
