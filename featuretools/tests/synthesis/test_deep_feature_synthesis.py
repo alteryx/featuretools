@@ -1585,3 +1585,5 @@ def test_does_not_build_features_on_last_time_index_col(es):
 
     for feature in features:
         assert LTI_COLUMN_NAME not in feature.get_name()
+
+# --> add a test for rolling primitives that they work!

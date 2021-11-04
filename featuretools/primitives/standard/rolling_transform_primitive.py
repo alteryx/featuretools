@@ -60,7 +60,6 @@ class RollingMax(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, window_length, gap=0, min_periods=1):
-        #     --> confirm default window length - 1 seems possibly a bad idea bc youre not getting windows
         self.window_length = window_length
         self.gap = gap
         self.min_periods = min_periods
@@ -329,11 +328,12 @@ class RollingCount(TransformPrimitive):
             rolled_series = _roll_series_with_gap(x,
                                                   self.window_length,
                                                   gap=self.gap,
+                                                  # --> get working for dask or remove from compatibility
                                                   min_periods=self.min_periods)
             rolling_count_series = rolled_series.count()
-            # Rolling.count will include the NaNs from the shift
-            # --> account for gap=0 and min periods = 0 vs 1 vs None
-            # --> get working for dask or remove from compatibility
+            # The shift made to account for gap adds NaNs to the rolled series
+            # Those values get counted towards min_periods when they shouldn't.
+            # So we need to replace any of those partial values with NaNs
             if not self.min_periods:
                 # when min periods is 0 or None it's treated the same as if it's 1
                 num_nans = self.gap
