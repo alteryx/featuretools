@@ -416,12 +416,10 @@ def test_bad_groupby_feature(es):
                              groupby_trans_primitives=['max'])
 
 
-def test_make_rolling_features(es):
-    if es.dataframe_type == Library.DASK.value:
-        pytest.xfail("Dask EntitySets are not currently supported by rolling primitives")
+def test_make_rolling_features(pd_es):
     rolling_max = RollingMax(window_length=7, gap=3, min_periods=5)
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='log',
-                                   entityset=es,
+                                   entityset=pd_es,
                                    agg_primitives=[],
                                    trans_primitives=[rolling_max])
     features = dfs_obj.build_features()

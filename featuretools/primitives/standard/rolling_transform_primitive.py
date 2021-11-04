@@ -7,7 +7,6 @@ from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
 )
 from featuretools.primitives.utils import _roll_series_with_gap
-from featuretools.utils.gen_utils import Library
 
 
 class RollingMax(TransformPrimitive):
@@ -57,7 +56,6 @@ class RollingMax(TransformPrimitive):
     name = "rolling_max"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.KOALAS]
 
     def __init__(self, window_length=3, gap=0, min_periods=1):
         self.window_length = window_length
@@ -120,7 +118,6 @@ class RollingMin(TransformPrimitive):
     name = "rolling_min"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.KOALAS]
 
     def __init__(self, window_length=3, gap=0, min_periods=1):
         self.window_length = window_length
@@ -185,7 +182,6 @@ class RollingMean(TransformPrimitive):
     name = "rolling_mean"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.KOALAS]
 
     def __init__(self, window_length=3, gap=0, min_periods=0):
         self.window_length = window_length
@@ -249,7 +245,6 @@ class RollingSTD(TransformPrimitive):
     name = "rolling_std"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.KOALAS]
 
     def __init__(self, window_length=3, gap=0, min_periods=1):
         self.window_length = window_length
@@ -313,9 +308,6 @@ class RollingCount(TransformPrimitive):
     name = "rolling_count"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    # Only compatible with pandas because Koalas' count has unexpected behavior when min_periods is not 1
-    # And Dask has issues with how we replace with NaNs below
-    compatibility = [Library.PANDAS]
 
     def __init__(self, window_length=3, gap=0, min_periods=0):
         self.window_length = window_length
