@@ -28,6 +28,11 @@ NLP Primitives:
 
         python -m pip install "featuretools[nlp_primitives]"
 
+TSFresh Primitives:
+    Use 60+ primitives from `tsfresh <https://tsfresh.readthedocs.io/en/latest/>`__ in Featuretools::
+
+        python -m pip install "featuretools[tsfresh]"
+        
 .. _graphviz:
 
 Installing Graphviz
