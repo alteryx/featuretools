@@ -155,6 +155,7 @@ def test_roll_series_with_gap(window_length, gap, rolling_series):
     rolling_min = to_pandas(_roll_series_with_gap(rolling_series, window_length, gap=gap).min())
 
     assert len(rolling_max) == len(rolling_series)
+    assert len(rolling_min) == len(rolling_series)
 
     for i in range(len(rolling_series)):
         start_idx = i - gap - window_length + 1
@@ -163,12 +164,11 @@ def test_roll_series_with_gap(window_length, gap, rolling_series):
         # If start and end are negative, they're entirely before
         if start_idx < 0 and end_idx < 0:
             assert pd.isnull(rolling_max.iloc[i])
+            assert pd.isnull(rolling_min.iloc[i])
             continue
 
         if start_idx < 0:
             start_idx = 0
-        if end_idx < 0:
-            end_idx = 0
 
         # Because the row values are a range from 0 to 20, the rolling min will be the start index
         # and the rolling max will be the end idx
