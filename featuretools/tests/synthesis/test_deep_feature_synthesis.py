@@ -36,15 +36,13 @@ from featuretools.primitives import (
     NotEqual,
     NumCharacters,
     NumUnique,
+    RollingCount,
     RollingMax,
     Sum,
     TimeSincePrevious,
     TransformPrimitive,
     Trend,
     Year
-)
-from featuretools.primitives.standard.rolling_transform_primitive import (
-    RollingCount
 )
 from featuretools.primitives.standard.transform_primitive import Negate
 from featuretools.synthesis import DeepFeatureSynthesis
