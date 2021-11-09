@@ -239,8 +239,9 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
         window_length (int): The number of rows to be included in each window. For data
             with a uniform sampling frequency, for example of one day, the window_length will
             correspond to a period of time, in this case, 7 days for a window_length of 7.
-        gap (int, optional): The number of rows prior to each instance to be skipped before
-            beginning the window. Defaults to 0, which will include each instance in the window.
+        gap (int, optional): The number of rows backward from the target instance before the
+            window of usable data begins. Defaults to 0, which will include the target instance
+            in the window.
         min_periods (int, optional): Minimum number of observations required for performing calculations
             over the window. Can only be as large as window_length. Defaults to 1.
 

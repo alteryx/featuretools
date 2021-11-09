@@ -24,9 +24,9 @@ class RollingMax(TransformPrimitive):
         window_length (int): The number of rows to be included in each frame. For data
             with a uniform sampling frequency, for example of one day, the window_length will
             correspond to a period of time, in this case, 7 days for a window_length of 7.
-        gap (int, optional): The number of rows prior to each instance to be skipped before
-            beginning the window over which the maximum is determined. Defaults to 0, which
-            will include each instance in the window.
+        gap (int, optional): The number of rows backward from the target instance before the
+            window of usable data begins. Defaults to 0, which will include the target instance
+            in the window.
         min_periods (int, optional): Minimum number of observations required for a window to have a value.
             Can only be as large as window_length. Defaults to 1.
 
@@ -87,9 +87,9 @@ class RollingMin(TransformPrimitive):
         window_length (int): The number of rows to be included in each frame. For data
             with a uniform sampling frequency, for example of one day, the window_length will
             correspond to a period of time, in this case, 7 days for a window_length of 7.
-        gap (int, optional): The number of rows prior to each instance to be skipped before
-            beginning the window over which the minimum is determined. Defaults to 0, which
-            will include each instance in the window.
+        gap (int, optional): The number of rows backward from the target instance before the
+            window of usable data begins. Defaults to 0, which will include the target instance
+            in the window.
         min_periods (int, optional): Minimum number of observations required for a window to have a value.
             Defaults to 1.
     Examples:
@@ -150,9 +150,9 @@ class RollingMean(TransformPrimitive):
         window_length (int): The number of rows to be included in each frame. For data
             with a uniform sampling frequency, for example of one day, the window_length will
             correspond to a period of time, in this case, 7 days for a window_length of 7.
-        gap (int, optional): The number of rows prior to each instance to be skipped before
-            beginning the window over which the mean is determined. Defaults to 0, which
-            will include each instance in the window.
+        gap (int, optional): The number of rows backward from the target instance before the
+            window of usable data begins. Defaults to 0, which will include the target instance
+            in the window.
         min_periods (int, optional): Minimum number of observations required for a window to have a value.
             Can only be as large as window_length. Defaults to 1.
 
@@ -213,9 +213,9 @@ class RollingSTD(TransformPrimitive):
         window_length (int): The number of rows to be included in each frame. For data
             with a uniform sampling frequency, for example of one day, the window_length will
             correspond to a period of time, in this case, 7 days for a window_length of 7.
-        gap (int, optional): The number of rows prior to each instance to be skipped before
-            beginning the window over which the standard deviation is determined. Defaults to 0, which
-            will include each instance in the window.
+        gap (int, optional): The number of rows backward from the target instance before the
+            window of usable data begins. Defaults to 0, which will include the target instance
+            in the window.
         min_periods (int, optional): Minimum number of observations required for a window to have a value.
             Can only be as large as window_length. Defaults to 1.
 
@@ -276,9 +276,9 @@ class RollingCount(TransformPrimitive):
         window_length (int): The number of rows to be included in each frame. For data
             with a uniform sampling frequency, for example of one day, the window_length will
             correspond to a period of time, in this case, 7 days for a window_length of 7.
-        gap (int, optional): The number of rows prior to each instance to be skipped before
-            beginning the window over which the count is determined. Defaults to 0, which
-            will include each instance in the window.
+        gap (int, optional): The number of rows backward from the target instance before the
+            window of usable data begins. Defaults to 0, which will include the target instance
+            in the window.
         min_periods (int, optional): Minimum number of observations required for a window to have a value.
             Can only be as large as window_length. Defaults to 1.
 
