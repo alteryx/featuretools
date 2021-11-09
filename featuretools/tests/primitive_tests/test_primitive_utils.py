@@ -39,7 +39,7 @@ from featuretools.primitives.utils import (
     load_primitive_from_file
 )
 from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import Library, import_or_none
+from featuretools.utils.gen_utils import Library
 
 
 def test_list_primitives_order():
