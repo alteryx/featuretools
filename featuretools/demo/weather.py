@@ -10,12 +10,9 @@ def load_weather(nrows=None,
 
     Args:
 
-        nrows (int): Passed to nrows in ``pd.read_csv``. Used before filtering.
+        nrows (int): Passed to nrows in ``pd.read_csv``.
         return_single_table (bool): Exit the function early and return a dataframe.
-        verbose (bool): Show a progress bar while loading the data.
 
-    Returns:
-        (pd.Dataframe, pd.Series): X and y
     '''
     filename = "daily-min-temperatures.csv"
     print('Downloading data ...')

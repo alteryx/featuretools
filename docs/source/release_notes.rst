@@ -9,7 +9,7 @@ Future Release
     * Fixes
     * Changes
         * Add new version of featuretools_tsfresh_primitives as an add-on library (:pr:`1772`)
-        * Add daily min temperatures as demo dataset for time series :pr:`1777`
+        * Add ``load_weather`` as demo dataset for time series :pr:`1777`
     * Documentation Changes
     * Testing Changes
 
