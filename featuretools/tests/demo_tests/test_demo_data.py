@@ -66,5 +66,3 @@ def test_weather():
         assert es[name].shape == realvals[i]
     es = load_weather(return_single_table=True)
     assert isinstance(es, pd.DataFrame)
-
-
