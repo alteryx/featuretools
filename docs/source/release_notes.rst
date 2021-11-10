@@ -9,11 +9,12 @@ Future Release
     * Fixes
     * Changes
         * Add new version of featuretools_tsfresh_primitives as an add-on library (:pr:`1772`)
+        * Add ``load_weather`` as demo dataset for time series :pr:`1777`
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`
+    :user:`gsheni`, :user:`tamargrey`
 
 v1.1.0 Nov 2, 2021
 ==================
