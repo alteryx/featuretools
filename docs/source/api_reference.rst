@@ -16,6 +16,7 @@ Demo Datasets
     load_retail
     load_mock_customer
     load_flight
+    load_weather
 
 Deep Feature Synthesis
 ~~~~~~~~~~~~~~~~~~~~~~
