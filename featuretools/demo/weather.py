@@ -6,7 +6,7 @@ import featuretools as ft
 def load_weather(nrows=None,
                  return_single_table=False):
     '''
-    Load the Australian daily-min-termperatures weather dataset.
+    Load the Australian daily-min-temperatures weather dataset.
 
     Args:
 
