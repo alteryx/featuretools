@@ -11,11 +11,11 @@ from featuretools.primitives import (
 from featuretools.primitives.utils import _roll_series_with_gap
 
 
-def test_rolling_max(rolling_series):
+def test_rolling_max(rolling_series_pd):
     window_length = 5
     gap = 2
 
-    expected_vals = _roll_series_with_gap(rolling_series,
+    expected_vals = _roll_series_with_gap(rolling_series_pd,
                                           window_length,
                                           gap=gap,
                                           min_periods=window_length).max().values
@@ -23,17 +23,17 @@ def test_rolling_max(rolling_series):
     primitive_instance = RollingMax(window_length=window_length, gap=gap, min_periods=window_length)
     primitive_func = primitive_instance.get_function()
 
-    actual_vals = pd.Series(primitive_func(rolling_series.index, pd.Series(rolling_series.values)))
+    actual_vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
 
     assert actual_vals.isna().sum() == gap + window_length - 1
     pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
 
 
-def test_rolling_min(rolling_series):
+def test_rolling_min(rolling_series_pd):
     window_length = 5
     gap = 2
 
-    expected_vals = _roll_series_with_gap(rolling_series,
+    expected_vals = _roll_series_with_gap(rolling_series_pd,
                                           window_length,
                                           gap=gap,
                                           min_periods=window_length).min().values
@@ -41,17 +41,17 @@ def test_rolling_min(rolling_series):
     primitive_instance = RollingMin(window_length=window_length, gap=gap, min_periods=window_length)
     primitive_func = primitive_instance.get_function()
 
-    actual_vals = pd.Series(primitive_func(rolling_series.index, pd.Series(rolling_series.values)))
+    actual_vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
 
     assert actual_vals.isna().sum() == gap + window_length - 1
     pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
 
 
-def test_rolling_mean(rolling_series):
+def test_rolling_mean(rolling_series_pd):
     window_length = 5
     gap = 2
 
-    expected_vals = _roll_series_with_gap(rolling_series,
+    expected_vals = _roll_series_with_gap(rolling_series_pd,
                                           window_length,
                                           gap=gap,
                                           min_periods=window_length).mean().values
@@ -59,17 +59,17 @@ def test_rolling_mean(rolling_series):
     primitive_instance = RollingMean(window_length=window_length, gap=gap, min_periods=window_length)
     primitive_func = primitive_instance.get_function()
 
-    actual_vals = pd.Series(primitive_func(rolling_series.index, pd.Series(rolling_series.values)))
+    actual_vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
 
     assert actual_vals.isna().sum() == gap + window_length - 1
     pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
 
 
-def test_rolling_std(rolling_series):
+def test_rolling_std(rolling_series_pd):
     window_length = 5
     gap = 2
 
-    expected_vals = _roll_series_with_gap(rolling_series,
+    expected_vals = _roll_series_with_gap(rolling_series_pd,
                                           window_length,
                                           gap=gap,
                                           min_periods=window_length).std().values
@@ -77,17 +77,17 @@ def test_rolling_std(rolling_series):
     primitive_instance = RollingSTD(window_length=window_length, gap=gap, min_periods=window_length)
     primitive_func = primitive_instance.get_function()
 
-    actual_vals = pd.Series(primitive_func(rolling_series.index, pd.Series(rolling_series.values)))
+    actual_vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
 
     assert actual_vals.isna().sum() == gap + window_length - 1
     pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
 
 
-def test_rolling_count(rolling_series):
+def test_rolling_count(rolling_series_pd):
     window_length = 5
     gap = 2
 
-    expected_vals = _roll_series_with_gap(rolling_series,
+    expected_vals = _roll_series_with_gap(rolling_series_pd,
                                           window_length,
                                           gap=gap,
                                           min_periods=window_length).count().values
@@ -95,7 +95,7 @@ def test_rolling_count(rolling_series):
     primitive_instance = RollingCount(window_length=window_length, gap=gap, min_periods=window_length)
     primitive_func = primitive_instance.get_function()
 
-    actual_vals = pd.Series(primitive_func(rolling_series.index))
+    actual_vals = pd.Series(primitive_func(rolling_series_pd.index))
 
     num_nans = gap + window_length - 1
     assert actual_vals.isna().sum() == num_nans
@@ -113,13 +113,13 @@ def test_rolling_count(rolling_series):
         (5, 6)
     ]
 )
-def test_rolling_count_primitive_min_periods_nans(min_periods, expected_num_nams, rolling_series):
+def test_rolling_count_primitive_min_periods_nans(min_periods, expected_num_nams, rolling_series_pd):
     window_length = 5
     gap = 2
 
     primitive_instance = RollingCount(window_length=window_length, gap=gap, min_periods=min_periods)
     primitive_func = primitive_instance.get_function()
-    vals = pd.Series(primitive_func(rolling_series.index))
+    vals = pd.Series(primitive_func(rolling_series_pd.index))
 
     assert vals.isna().sum() == expected_num_nams
 
@@ -133,12 +133,12 @@ def test_rolling_count_primitive_min_periods_nans(min_periods, expected_num_nams
         (5, 4)
     ]
 )
-def test_rolling_count_with_no_gap(min_periods, expected_num_nams, rolling_series):
+def test_rolling_count_with_no_gap(min_periods, expected_num_nams, rolling_series_pd):
     window_length = 5
     gap = 0
 
     primitive_instance = RollingCount(window_length=window_length, gap=gap, min_periods=min_periods)
     primitive_func = primitive_instance.get_function()
-    vals = pd.Series(primitive_func(rolling_series.index))
+    vals = pd.Series(primitive_func(rolling_series_pd.index))
 
     assert vals.isna().sum() == expected_num_nams
