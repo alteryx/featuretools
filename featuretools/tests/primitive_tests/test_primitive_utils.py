@@ -241,3 +241,14 @@ def test_roll_series_with_gap_nullable_types_with_nans(rolling_series_pd):
     nullable_floats_rolling_max = _roll_series_with_gap(nullable_floats, window_length, gap=gap).max()
 
     pd.testing.assert_series_equal(nullable_ints_rolling_max, nullable_floats_rolling_max)
+
+    expected_early_values = ([np.nan, np.nan, 0, 0, 2, 2, 4] +
+                             list(range(7 - gap, len(rolling_series_pd) - gap)))
+    for i in range(len(rolling_series_pd)):
+        actual = nullable_floats_rolling_max.iloc[i]
+        expected = expected_early_values[i]
+
+        if pd.isnull(actual):
+            assert pd.isnull(expected)
+        else:
+            assert actual == expected
