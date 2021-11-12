@@ -252,7 +252,7 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
         Certain operations, like `pandas.core.window.rolling.Rolling.count` that can be performed
         on the Rolling object returned here may treat NaNs as periods to include in window calculations.
         So a window [NaN, 1, 3]  when `min_periods=3` will proceed with count, saying there are three periods
-        but only two values wnd would return count=2. The calculation `max` on the other hand,
+        but only two values and would return count=2. The calculation `max` on the other hand,
         would say that there are not three periods in that window and would return max=NaN.
         Most rolling calculations act this way. The implication of that here is that in order to
         achieve the gap, we insert NaNs at the beinning of the series, which would cause `count` to calculate
