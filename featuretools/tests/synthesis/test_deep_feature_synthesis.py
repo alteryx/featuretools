@@ -38,6 +38,9 @@ from featuretools.primitives import (
     NumUnique,
     RollingCount,
     RollingMax,
+    RollingMean,
+    RollingMin,
+    RollingSTD,
     Sum,
     TimeSincePrevious,
     TransformPrimitive,
@@ -414,14 +417,23 @@ def test_bad_groupby_feature(es):
                              groupby_trans_primitives=['max'])
 
 
-def test_make_rolling_features(pd_es):
-    rolling_max = RollingMax(window_length=7, gap=3, min_periods=5)
+@pytest.mark.parametrize(
+    "rolling_primitive",
+    [
+        RollingMax,
+        RollingMean,
+        RollingMin,
+        RollingSTD,
+    ]
+)
+def test_make_rolling_features(rolling_primitive, pd_es):
+    rolling_primitive_obj = rolling_primitive(window_length=7, gap=3, min_periods=5)
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='log',
                                    entityset=pd_es,
                                    agg_primitives=[],
-                                   trans_primitives=[rolling_max])
+                                   trans_primitives=[rolling_primitive_obj])
     features = dfs_obj.build_features()
-    rolling_transform_name = u"ROLLING_MAX(datetime, value_many_nans, window_length=7, gap=3, min_periods=5)"
+    rolling_transform_name = f"{rolling_primitive.name.upper()}(datetime, value_many_nans, window_length=7, gap=3, min_periods=5)"
     assert feature_with_name(features, rolling_transform_name)
 
 
