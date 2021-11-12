@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -228,3 +229,15 @@ def test_roll_series_with_gap_nullable_types(rolling_series_pd):
     non_nullable_rolling_max = _roll_series_with_gap(non_nullable_series, window_length, gap=gap).max()
 
     pd.testing.assert_series_equal(nullable_rolling_max, non_nullable_rolling_max)
+
+
+def test_roll_series_with_gap_nullable_types_with_nans(rolling_series_pd):
+    window_length = 3
+    gap = 2
+    nullable_floats = rolling_series_pd.astype('float64').replace({1: np.nan, 3: np.nan})
+    nullable_ints = nullable_floats.astype('Int64')
+
+    nullable_ints_rolling_max = _roll_series_with_gap(nullable_ints, window_length, gap=gap).max()
+    nullable_floats_rolling_max = _roll_series_with_gap(nullable_floats, window_length, gap=gap).max()
+
+    pd.testing.assert_series_equal(nullable_ints_rolling_max, nullable_floats_rolling_max)
