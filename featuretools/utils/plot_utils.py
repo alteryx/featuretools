@@ -34,11 +34,7 @@ def get_graphviz_format(graphviz, to_file):
                              " so that the format can be inferred")
 
         format_ = split_path[-1]
-        try:
-            valid_formats = graphviz.backend.FORMATS
-        except AttributeError:
-            from graphviz.parameters import FORMATS
-            valid_formats = FORMATS
+        valid_formats = graphviz.FORMATS
         if format_ not in valid_formats:
             raise ValueError("Unknown format. Make sure your format is" +
                              " amongst the following: %s" % valid_formats)
