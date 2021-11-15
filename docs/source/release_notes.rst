@@ -13,8 +13,8 @@ Release Notes
 
 .. Thanks to the following people for contributing to this release:
 
-v1.2.0 November 15, 2021
-========================
+v1.2.0 Nov 15, 2021
+===================
     * Enhancements
         * Add Rolling Transform primitives with integer parameters (:pr:`1770`)
     * Fixes
