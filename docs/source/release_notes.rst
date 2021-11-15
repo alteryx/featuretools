@@ -3,8 +3,19 @@
 Release Notes
 -------------
 
-Future Release
-==============
+..Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+..Thanks to the following people for contributing to this release:
+
+
+v1.2.0 November 15, 2021
+========================
     * Enhancements
         * Add Rolling Transform primitives with integer parameters (:pr:`1770`)
     * Fixes
@@ -12,8 +23,6 @@ Future Release
     * Changes
         * Add new version of featuretools_tsfresh_primitives as an add-on library (:pr:`1772`)
         * Add ``load_weather`` as demo dataset for time series :pr:`1777`
-    * Documentation Changes
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`
