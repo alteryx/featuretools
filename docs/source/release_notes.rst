@@ -6,7 +6,9 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add Rolling Transform primitives with integer parameters (:pr:`1770`)
     * Fixes
+        * Handle new graphviz FORMATS import (:pr:`1770`)
     * Changes
         * Add new version of featuretools_tsfresh_primitives as an add-on library (:pr:`1772`)
         * Add ``load_weather`` as demo dataset for time series :pr:`1777`

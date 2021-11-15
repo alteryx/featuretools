@@ -565,3 +565,8 @@ def divide_by_zero_es_koalas(divide_by_zero_es_pd):
                          index=df.ww.index,
                          logical_types=df.ww.logical_types)
     return es
+
+
+@pytest.fixture
+def rolling_series_pd():
+    return pd.Series(range(20), index=pd.date_range(start='2020-01-01', end='2020-01-20'))

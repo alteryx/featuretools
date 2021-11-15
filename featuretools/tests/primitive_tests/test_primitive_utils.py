@@ -1,5 +1,7 @@
 import os
 
+import numpy as np
+import pandas as pd
 import pytest
 
 from featuretools import list_primitives
@@ -33,6 +35,7 @@ from featuretools.primitives.base import PrimitiveBase
 from featuretools.primitives.utils import (
     _get_descriptions,
     _get_unique_input_types,
+    _roll_series_with_gap,
     list_primitive_files,
     load_primitive_from_file
 )
@@ -135,3 +138,117 @@ def test_errors_no_primitive_in_file(bad_primitives_files_dir):
     with pytest.raises(RuntimeError) as excinfo:
         load_primitive_from_file(primitive_file)
     assert str(excinfo.value) == error_text
+
+
+@pytest.mark.parametrize(
+    "window_length, gap",
+    [
+        (3, 2),
+        (3, 4),  # gap larger than window
+        (2, 0),  # gap explicitly set to 0
+    ],
+)
+def test_roll_series_with_gap(window_length, gap, rolling_series_pd):
+    rolling_max = _roll_series_with_gap(rolling_series_pd, window_length, gap=gap).max()
+    rolling_min = _roll_series_with_gap(rolling_series_pd, window_length, gap=gap).min()
+
+    assert len(rolling_max) == len(rolling_series_pd)
+    assert len(rolling_min) == len(rolling_series_pd)
+
+    for i in range(len(rolling_series_pd)):
+        start_idx = i - gap - window_length + 1
+        end_idx = i - gap
+
+        # If start and end are negative, they're entirely before
+        if start_idx < 0 and end_idx < 0:
+            assert pd.isnull(rolling_max.iloc[i])
+            assert pd.isnull(rolling_min.iloc[i])
+            continue
+
+        if start_idx < 0:
+            start_idx = 0
+
+        # Because the row values are a range from 0 to 20, the rolling min will be the start index
+        # and the rolling max will be the end idx
+        assert rolling_min.iloc[i] == start_idx
+        assert rolling_max.iloc[i] == end_idx
+
+
+def test_roll_series_with_no_gap(rolling_series_pd):
+    window_length = 3
+    gap = 0
+    actual_rolling = _roll_series_with_gap(rolling_series_pd, window_length, gap=gap).mean()
+    expected_rolling = rolling_series_pd.rolling(window_length, min_periods=1).mean()
+
+    pd.testing.assert_series_equal(actual_rolling, expected_rolling)
+
+
+@pytest.mark.parametrize(
+    "window_length, gap",
+    [
+        (6, 2),
+        (6, 0)  # No gap - changes early values
+    ]
+)
+def test_roll_series_with_gap_early_values(window_length, gap, rolling_series_pd):
+    # Default min periods is 1 - will include all
+    default_partial_values = _roll_series_with_gap(rolling_series_pd,
+                                                   window_length,
+                                                   gap=gap).count()
+    num_empty_aggregates = len(default_partial_values.loc[default_partial_values == 0])
+    num_partial_aggregates = len((default_partial_values
+                                  .loc[default_partial_values != 0])
+                                 .loc[default_partial_values < window_length])
+    assert num_empty_aggregates == gap
+    assert num_partial_aggregates == window_length - 1
+
+    # Make min periods the size of the window
+    no_partial_values = _roll_series_with_gap(rolling_series_pd,
+                                              window_length,
+                                              gap=gap,
+                                              min_periods=window_length).count()
+    num_null_aggregates = len(no_partial_values.loc[pd.isna(no_partial_values)])
+    num_partial_aggregates = len(no_partial_values.loc[no_partial_values < window_length])
+
+    # because we shift, gap is included as nan values in the series.
+    # Count treats nans in a window as values that don't get counted,
+    # so the gap rows get included in the count for whether a window has "min periods".
+    # This is different than max, for example, which does not count nans in a window as values towards "min periods"
+    assert num_null_aggregates == window_length - 1
+    assert num_partial_aggregates == gap
+
+
+def test_roll_series_with_gap_nullable_types(rolling_series_pd):
+    window_length = 3
+    gap = 2
+    # Because we're inserting nans, confirm that nullability of the dtype doesn't have an impact on the results
+    nullable_series = rolling_series_pd.astype('Int64')
+    non_nullable_series = rolling_series_pd.astype('int64')
+
+    nullable_rolling_max = _roll_series_with_gap(nullable_series, window_length, gap=gap).max()
+    non_nullable_rolling_max = _roll_series_with_gap(non_nullable_series, window_length, gap=gap).max()
+
+    pd.testing.assert_series_equal(nullable_rolling_max, non_nullable_rolling_max)
+
+
+def test_roll_series_with_gap_nullable_types_with_nans(rolling_series_pd):
+    window_length = 3
+    gap = 2
+    nullable_floats = rolling_series_pd.astype('float64').replace({1: np.nan, 3: np.nan})
+    nullable_ints = nullable_floats.astype('Int64')
+
+    nullable_ints_rolling_max = _roll_series_with_gap(nullable_ints, window_length, gap=gap).max()
+    nullable_floats_rolling_max = _roll_series_with_gap(nullable_floats, window_length, gap=gap).max()
+
+    pd.testing.assert_series_equal(nullable_ints_rolling_max, nullable_floats_rolling_max)
+
+    expected_early_values = ([np.nan, np.nan, 0, 0, 2, 2, 4] +
+                             list(range(7 - gap, len(rolling_series_pd) - gap)))
+    for i in range(len(rolling_series_pd)):
+        actual = nullable_floats_rolling_max.iloc[i]
+        expected = expected_early_values[i]
+
+        if pd.isnull(actual):
+            assert pd.isnull(expected)
+        else:
+            assert actual == expected

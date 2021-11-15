@@ -137,20 +137,16 @@ Datetime Transform Primitives
     Month
     Year
 
-.. _api_ref.cumulative_features:
-
-Cumulative Transform Primitives
+Rolling Transform Primitives
 *******************************
 .. autosummary::
     :toctree: generated/
 
-    Diff
-    TimeSincePrevious
-    CumCount
-    CumSum
-    CumMean
-    CumMin
-    CumMax
+    RollingCount
+    RollingMax
+    RollingMean
+    RollingMin
+    RollingSTD
 
 NaturalLanguage Transform Primitives
 ************************************
@@ -168,6 +164,21 @@ Location Transform Primitives
    Latitude
    Longitude
    Haversine
+
+.. _api_ref.cumulative_features:
+
+Cumulative Transform Primitives
+*******************************
+.. autosummary::
+    :toctree: generated/
+
+    Diff
+    TimeSincePrevious
+    CumCount
+    CumSum
+    CumMean
+    CumMin
+    CumMax
 
 .. currentmodule:: nlp_primitives
 
