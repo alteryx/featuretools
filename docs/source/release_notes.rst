@@ -3,7 +3,7 @@
 Release Notes
 -------------
 
-..Future Release
+.. Future Release
   ==============
     * Enhancements
     * Fixes
@@ -11,8 +11,7 @@ Release Notes
     * Documentation Changes
     * Testing Changes
 
-..Thanks to the following people for contributing to this release:
-
+.. Thanks to the following people for contributing to this release:
 
 v1.2.0 November 15, 2021
 ========================
