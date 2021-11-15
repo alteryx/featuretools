@@ -261,7 +261,7 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
         should determine whether this kind of handling is also necessary.
 
     """
-    # Workaround for pandas' fixed but unreleased bug: https://github.com/pandas-dev/pandas/issues/43016
+    # Workaround for pandas' bug: https://github.com/pandas-dev/pandas/issues/43016
     # Can remove when upgraded to pandas 1.4.0
     if str(series.dtype) == 'Int64':
         series = series.astype('float64')
