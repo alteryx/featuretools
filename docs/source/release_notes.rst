@@ -9,9 +9,11 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Add Docker install instructions and documentation on the install page. (:pr:`1785`)
     * Testing Changes
 
 .. Thanks to the following people for contributing to this release:
+   :user:`HenryRocha`
 
 v1.2.0 Nov 15, 2021
 ===================
