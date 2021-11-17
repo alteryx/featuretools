@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
+        * Update install page on documentation with correct python version (:pr:`1784`)
     * Testing Changes
-
-.. Thanks to the following people for contributing to this release:
+  
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 v1.2.0 Nov 15, 2021
 ===================
