@@ -1,7 +1,7 @@
 Install
 *******
 
-Featuretools available for Python 3.7, 3.8, and 3.9. It can be installed from PyPI, conda, or from source.::
+Featuretools available for Python 3.7, 3.8, and 3.9. It can be installed from pip, conda, or from source.::
 
     python -m pip install featuretools
 
