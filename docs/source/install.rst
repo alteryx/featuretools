@@ -9,7 +9,6 @@ or from the Conda-forge channel on `anaconda.org <https://anaconda.org/conda-for
 
     conda install -c conda-forge featuretools
 
-
 .. _addons:
 
 Add-ons
@@ -88,6 +87,20 @@ or use ``pip`` locally if you want to install all dependencies as well::
 You can view the list of all dependencies within the ``extras_require`` field
 of ``setup.py``.
 
+.. _docker:
+
+Docker
+------
+
+It is also possible to run Featuretools inside a Docker container. 
+You can do so by installing it as a package inside a container (following the normal install guide) or 
+creating a new image with Featuretools pre-installed, using the following commands in your ``Dockerfile``::
+
+    FROM python:3.8-slim-buster
+    RUN apt-get update && apt-get -y update
+    RUN apt-get install -y build-essential python3-pip python3-dev
+    RUN pip -q install pip --upgrade
+    RUN pip install featuretools
 
 
 Development

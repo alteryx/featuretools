@@ -9,12 +9,13 @@ Future Release
     * Fixes
     * Changes
     * Documentation Changes
+        * Add Docker install instructions and documentation on the install page. (:pr:`1785`)
         * Update install page on documentation with correct python version (:pr:`1784`)
         * Fix formatting in Improving Computational Performance guide (:pr:`1786`)
     * Testing Changes
   
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`HenryRocha`, :user:`thehomebrewnerd`
 
 v1.2.0 Nov 15, 2021
 ===================
