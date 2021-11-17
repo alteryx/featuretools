@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
-        * Don't close user-created Dask client when doing distributed calculation of feature matrix (:pr:`1786`)
+        * Don't close user-created Dask client when performing distributed calculation of feature matrix (:pr:`1786`)
     * Changes
     * Documentation Changes
     * Testing Changes
