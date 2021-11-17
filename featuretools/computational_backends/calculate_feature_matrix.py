@@ -686,11 +686,11 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
     except Exception:
         raise
     finally:
-        if client is not None:
-            client.close()
-
-        if 'cluster' not in dask_kwargs and cluster is not None:
-            cluster.close()
+        if 'cluster' not in dask_kwargs:
+            if cluster is not None:
+                cluster.close()
+            if client is not None:
+                client.close()
 
     ww_init_kwargs = get_ww_types_from_features(feature_set.target_features, entityset, pass_columns, cutoff_time)
     feature_matrix = init_ww_and_concat_fm(feature_matrix, ww_init_kwargs)
