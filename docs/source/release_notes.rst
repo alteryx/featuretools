@@ -3,17 +3,18 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
         * Add Docker install instructions and documentation on the install page. (:pr:`1785`)
+        * Update install page on documentation with correct python version (:pr:`1784`)
     * Testing Changes
-
-.. Thanks to the following people for contributing to this release:
-   :user:`HenryRocha`
+  
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`HenryRocha`
 
 v1.2.0 Nov 15, 2021
 ===================
