@@ -10,10 +10,11 @@ Future Release
         * Don't close user-created Dask client when performing distributed calculation of feature matrix (:pr:`1786`)
     * Changes
     * Documentation Changes
+        * Update install page on documentation with correct python version (:pr:`1784`)
     * Testing Changes
-
+  
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`thehomebrewnerd`
 
 v1.2.0 Nov 15, 2021
 ===================
