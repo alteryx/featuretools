@@ -488,6 +488,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                 feature_matrix.append(_feature_matrix)
 
     ww_init_kwargs = get_ww_types_from_features(feature_set.target_features, entityset, pass_columns, cutoff_time)
+    # --> the call that breaks after we use Integer
     feature_matrix = init_ww_and_concat_fm(feature_matrix, ww_init_kwargs)
     return feature_matrix
 

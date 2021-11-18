@@ -8,6 +8,7 @@ from featuretools.primitives import (
     Age,
     EmailAddressToDomain,
     IsFreeEmailDomain,
+    Lag,
     TimeSince,
     URLToDomain,
     URLToProtocol,
@@ -380,3 +381,18 @@ def test_trans_primitives_can_init_without_params():
     trans_primitives = get_transform_primitives().values()
     for trans_primitive in trans_primitives:
         trans_primitive()
+
+
+def test_lag_primitive_non_nullable():
+    from featuretools.demo.weather import load_weather
+    import featuretools as ft
+    es = load_weather()
+
+    trans_prims = []
+    gap = 2
+    window_length = 3
+    for i in range(window_length):
+        trans_prims.append(Lag(periods=i + gap))
+
+    fm, f = ft.dfs(entityset=es, target_dataframe_name='temperatures',
+                   trans_primitives=trans_prims, max_depth=1)
