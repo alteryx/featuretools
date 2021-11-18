@@ -863,3 +863,45 @@ class EmailAddressToDomain(TransformPrimitive):
                 emails_df['domain'] = emails_df['email'].str.strip().str.split('@', expand=True)[1]
             return emails_df.domain.values
         return email_address_to_domain
+
+
+class Lag(TransformPrimitive):
+    """Shifts an array of values by a specified number of periods.
+
+    Args:
+        periods (int): The number of periods by which to shift the input.
+            Default is 1. Periods correspond to rows.
+
+        # --> cant use same fill value for different types - string wont work for an otherwise numeric column
+        fill_value (int, float, string, bool): The value to use to fill in
+            the gaps left after shifting the input. Default is None.
+
+    Examples:
+        >>> lag = Lag()
+        >>> lag([1, 2, 3, 4, 5]).tolist()
+        [nan, 1.0, 2.0, 3.0, 4.0]
+
+        You can specify the number of periods to shift the values
+
+        >>> lag_periods = Lag(periods=3)
+        >>> lag_periods([1, 2, 3, 4, 5]).tolist()
+        [nan, nan, nan, 1.0, 2.0]
+
+        You can specify the fill value to use
+
+        >>> lag_fill_value = Lag(fill_value=100)
+        >>> lag_fill_value([1, 2, 3, 4]).tolist()
+        [100, 1, 2, 3]
+    """
+    name = "lag"
+    input_types = [ColumnSchema()]
+    return_type = None
+
+    def __init__(self, periods=1, fill_value=None):
+        self.periods = periods
+        self.fill_value = fill_value
+
+    def get_function(self):
+        def lag(x):
+            return x.shift(periods=self.periods, fill_value=self.fill_value)
+        return lag
