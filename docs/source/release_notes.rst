@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Update pip to 21.3.1 for test requirements (:pr:`1789`)
     * Documentation Changes
         * Add Docker install instructions and documentation on the install page. (:pr:`1785`)
         * Update install page on documentation with correct python version (:pr:`1784`)
