@@ -8,7 +8,7 @@ from featuretools.primitives import (
     Age,
     EmailAddressToDomain,
     IsFreeEmailDomain,
-    Lag,
+    NumericLag,
     TimeSince,
     URLToDomain,
     URLToProtocol,
@@ -392,7 +392,7 @@ def test_lag_primitive_non_nullable():
     gap = 2
     window_length = 3
     for i in range(window_length):
-        trans_prims.append(Lag(periods=i + gap))
+        trans_prims.append(NumericLag(periods=i + gap))
 
     fm, f = ft.dfs(entityset=es, target_dataframe_name='temperatures',
                    trans_primitives=trans_prims, max_depth=1)

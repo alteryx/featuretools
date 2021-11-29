@@ -865,15 +865,14 @@ class EmailAddressToDomain(TransformPrimitive):
         return email_address_to_domain
 
 
-class Lag(TransformPrimitive):
+class NumericLag(TransformPrimitive):
     """Shifts an array of values by a specified number of periods.
 
     Args:
         periods (int): The number of periods by which to shift the input.
             Default is 1. Periods correspond to rows.
 
-        # --> cant use same fill value for different types - string wont work for an otherwise numeric column
-        fill_value (int, float, string, bool): The value to use to fill in
+        fill_value (int, float, optional): The value to use to fill in
             the gaps left after shifting the input. Default is None.
 
     Examples:
@@ -894,8 +893,8 @@ class Lag(TransformPrimitive):
         [100, 1, 2, 3]
     """
     name = "lag"
-    input_types = [ColumnSchema()]
-    return_type = None
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
 
     def __init__(self, periods=1, fill_value=None):
         self.periods = periods
