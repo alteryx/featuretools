@@ -877,19 +877,19 @@ class NumericLag(TransformPrimitive):
             the gaps left after shifting the input. Default is None.
 
     Examples:
-        >>> lag = Lag()
+        >>> lag = NumericLag()
         >>> lag([1, 2, 3, 4, 5]).tolist()
         [nan, 1.0, 2.0, 3.0, 4.0]
 
         You can specify the number of periods to shift the values
 
-        >>> lag_periods = Lag(periods=3)
+        >>> lag_periods = NumericLag(periods=3)
         >>> lag_periods([1, 2, 3, 4, 5]).tolist()
         [nan, nan, nan, 1.0, 2.0]
 
         You can specify the fill value to use
 
-        >>> lag_fill_value = Lag(fill_value=100)
+        >>> lag_fill_value = NumericLag(fill_value=100)
         >>> lag_fill_value([1, 2, 3, 4]).tolist()
         [100, 1, 2, 3]
     """
