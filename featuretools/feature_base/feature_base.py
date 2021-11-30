@@ -179,7 +179,6 @@ class FeatureBase(object):
             # get column_schema of first base feature
             base_feature = feature.base_features[0]
             column_schema = base_feature.column_schema
-            # --> sets the logical type when return type is None
 
             # only the original time index should exist
             # so make this feature's return type just a Datetime

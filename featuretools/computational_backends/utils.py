@@ -315,7 +315,6 @@ def get_ww_types_from_features(features, entityset, pass_columns=None, cutoff_ti
             semantic_tags[name] -= {'index', 'time_index'}
 
             if logical_types[name] is None and "numeric" in semantic_tags[name]:
-                # --> sets to double if numeric is present
                 logical_types[name] = Double
         if all([f.primitive is None for f in feature.get_dependencies(deep=True)]):
             origins[name] = "base"

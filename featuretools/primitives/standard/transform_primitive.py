@@ -894,7 +894,7 @@ class NumericLag(TransformPrimitive):
         [100, 1, 2, 3]
     """
     name = "numeric_lag"
-    input_types = [ColumnSchema(logical_type=Datetime), ColumnSchema(semantic_tags={'numeric'})]
+    input_types = [ColumnSchema(semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
@@ -903,7 +903,7 @@ class NumericLag(TransformPrimitive):
         self.fill_value = fill_value
 
     def get_function(self):
-        def lag(datetime, numeric):
-            x = pd.Series(numeric.values, index=datetime.values)
+        def lag(time_index, numeric):
+            x = pd.Series(numeric.values, index=time_index.values)
             return x.shift(periods=self.periods, fill_value=self.fill_value).values
         return lag
