@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ``NumericLag`` transform primitive (:pr:`1797`)
     * Fixes
     * Changes
         * Update pip to 21.3.1 for test requirements (:pr:`1789`)
@@ -16,7 +17,7 @@ Future Release
     * Testing Changes
   
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`HenryRocha`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`HenryRocha`, :user:`tamargrey` :user:`thehomebrewnerd`
 
 v1.2.0 Nov 15, 2021
 ===================
