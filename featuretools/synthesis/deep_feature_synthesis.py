@@ -418,6 +418,7 @@ class DeepFeatureSynthesis(object):
         """
         Step 4 - Create transform features of identity and aggregation features
         """
+
         self._build_transform_features(all_features, dataframe, max_depth=max_depth)
 
         """

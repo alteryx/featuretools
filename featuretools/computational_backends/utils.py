@@ -320,6 +320,7 @@ def get_ww_types_from_features(features, entityset, pass_columns=None, cutoff_ti
             origins[name] = "base"
         else:
             origins[name] = "engineered"
+
     if pass_columns:
         cutoff_schema = cutoff_time.ww.schema
         for column in pass_columns:
