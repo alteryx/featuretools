@@ -893,9 +893,10 @@ class NumericLag(TransformPrimitive):
         >>> lag_fill_value([1, 2, 3, 4]).tolist()
         [100, 1, 2, 3]
     """
-    name = "lag"
+    name = "numeric_lag"
     input_types = [ColumnSchema(logical_type=Datetime), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, periods=1, fill_value=None):
         self.periods = periods
