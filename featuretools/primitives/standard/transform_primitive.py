@@ -10,6 +10,7 @@ from woodwork.logical_types import (
     BooleanNullable,
     Categorical,
     Datetime,
+    Double,
     EmailAddress,
     LatLong,
     NaturalLanguage,
@@ -893,14 +894,15 @@ class NumericLag(TransformPrimitive):
         [100, 1, 2, 3]
     """
     name = "lag"
-    input_types = [ColumnSchema(semantic_tags={'numeric'})]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    input_types = [ColumnSchema(logical_type=Datetime), ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
 
     def __init__(self, periods=1, fill_value=None):
         self.periods = periods
         self.fill_value = fill_value
 
     def get_function(self):
-        def lag(x):
-            return x.shift(periods=self.periods, fill_value=self.fill_value)
+        def lag(datetime, numeric):
+            x = pd.Series(numeric.values, index=datetime.values)
+            return x.shift(periods=self.periods, fill_value=self.fill_value).values
         return lag
