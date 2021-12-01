@@ -896,7 +896,6 @@ class NumericLag(TransformPrimitive):
     name = "numeric_lag"
     input_types = [ColumnSchema(semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, periods=1, fill_value=None):
         self.periods = periods

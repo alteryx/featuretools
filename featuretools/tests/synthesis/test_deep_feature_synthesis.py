@@ -449,24 +449,24 @@ def test_make_rolling_count_off_datetime_feature(pd_es):
     assert feature_with_name(features, rolling_transform_name)
 
 
-def test_numeric_lag_works_with_non_nullable(es):
+def test_numeric_lag_works_with_non_nullable(pd_es):
     # fill nans so we can use non nullable numeric logical type in the EntitySet
-    new_log = es['log'].copy()
+    new_log = pd_es['log'].copy()
     new_log['value'] = new_log['value'].fillna(0)
     new_log.ww.init(logical_types={'value': 'Integer',
                                    "product_id": "Categorical"},
                     index='id', time_index='datetime',
                     name='new_log')
-    es.add_dataframe(new_log)
+    pd_es.add_dataframe(new_log)
     rels = [('sessions', 'id', 'new_log', 'session_id'),
             ('products', 'id', 'new_log', 'product_id')]
-    es = es.add_relationships(rels)
+    pd_es = pd_es.add_relationships(rels)
 
-    assert isinstance(es['new_log'].ww.logical_types['value'], Integer)
+    assert isinstance(pd_es['new_log'].ww.logical_types['value'], Integer)
 
     lag_primitive = NumericLag(periods=5)
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='new_log',
-                                   entityset=es,
+                                   entityset=pd_es,
                                    agg_primitives=[],
                                    trans_primitives=[lag_primitive])
     features = dfs_obj.build_features()
