@@ -3,8 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.3.0 Dec 2, 2021
+==================
     * Enhancements
         * Add ``NumericLag`` transform primitive (:pr:`1797`)
     * Fixes
