@@ -10,7 +10,6 @@ from woodwork.logical_types import (
     BooleanNullable,
     Categorical,
     Datetime,
-    Double,
     EmailAddress,
     LatLong,
     NaturalLanguage,

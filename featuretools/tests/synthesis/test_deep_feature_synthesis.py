@@ -3,7 +3,7 @@ import copy
 import pandas as pd
 import pytest
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Datetime, Integer
+from woodwork.logical_types import Datetime
 
 import featuretools as ft
 from featuretools.entityset.entityset import LTI_COLUMN_NAME
@@ -36,7 +36,6 @@ from featuretools.primitives import (
     NMostCommon,
     NotEqual,
     NumCharacters,
-    NumericLag,
     NumUnique,
     RollingCount,
     RollingMax,
@@ -447,35 +446,6 @@ def test_make_rolling_count_off_datetime_feature(pd_es):
     features = dfs_obj.build_features()
     rolling_transform_name = u"ROLLING_COUNT(datetime, window_length=5, min_periods=3)"
     assert feature_with_name(features, rolling_transform_name)
-
-
-def test_numeric_lag_works_with_non_nullable(pd_es):
-    # fill nans so we can use non nullable numeric logical type in the EntitySet
-    new_log = pd_es['log'].copy()
-    new_log['value'] = new_log['value'].fillna(0)
-    new_log.ww.init(logical_types={'value': 'Integer',
-                                   "product_id": "Categorical"},
-                    index='id', time_index='datetime',
-                    name='new_log')
-    pd_es.add_dataframe(new_log)
-    rels = [('sessions', 'id', 'new_log', 'session_id'),
-            ('products', 'id', 'new_log', 'product_id')]
-    pd_es = pd_es.add_relationships(rels)
-
-    assert isinstance(pd_es['new_log'].ww.logical_types['value'], Integer)
-
-    lag_primitive = NumericLag(periods=5)
-    dfs_obj = DeepFeatureSynthesis(target_dataframe_name='new_log',
-                                   entityset=pd_es,
-                                   agg_primitives=[],
-                                   trans_primitives=[lag_primitive])
-    features = dfs_obj.build_features()
-
-    # Non nullable
-    assert feature_with_name(features, "NUMERIC_LAG(datetime, value, periods=5)")
-    # Nullable
-    assert feature_with_name(features, "NUMERIC_LAG(datetime, value_2, periods=5)")
-    assert feature_with_name(features, "NUMERIC_LAG(datetime, products.rating, periods=5)")
 
 
 def test_abides_by_max_depth_param(es):
