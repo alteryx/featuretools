@@ -32,6 +32,7 @@ from featuretools.primitives import (
     Mean,
     Mode,
     Month,
+    Negate,
     NMostCommon,
     NotEqual,
     NumCharacters,
@@ -47,7 +48,6 @@ from featuretools.primitives import (
     Trend,
     Year
 )
-from featuretools.primitives.standard.transform_primitive import Negate
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.tests.testing_utils import (
     feature_with_name,

@@ -8,6 +8,7 @@ from featuretools.primitives import (
     Age,
     EmailAddressToDomain,
     IsFreeEmailDomain,
+    NumericLag,
     TimeSince,
     URLToDomain,
     URLToProtocol,
@@ -380,3 +381,81 @@ def test_trans_primitives_can_init_without_params():
     trans_primitives = get_transform_primitives().values()
     for trans_primitive in trans_primitives:
         trans_primitive()
+
+
+def test_lag_regular():
+    primitive_instance = NumericLag()
+    primitive_func = primitive_instance.get_function()
+
+    array = pd.Series([1, 2, 3, 4])
+    time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq='D'))
+
+    answer = pd.Series(primitive_func(time_array, array))
+
+    correct_answer = pd.Series([np.nan, 1, 2, 3])
+    pd.testing.assert_series_equal(answer, correct_answer)
+
+
+def test_lag_period():
+    primitive_instance = NumericLag(periods=3)
+    primitive_func = primitive_instance.get_function()
+
+    array = pd.Series([1, 2, 3, 4])
+    time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq='D'))
+
+    answer = pd.Series(primitive_func(time_array, array))
+
+    correct_answer = pd.Series([np.nan, np.nan, np.nan, 1])
+    pd.testing.assert_series_equal(answer, correct_answer)
+
+
+def test_lag_negative_period():
+    primitive_instance = NumericLag(periods=-2)
+    primitive_func = primitive_instance.get_function()
+
+    array = pd.Series([1, 2, 3, 4])
+    time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq='D'))
+
+    answer = pd.Series(primitive_func(time_array, array))
+
+    correct_answer = pd.Series([3, 4, np.nan, np.nan])
+    pd.testing.assert_series_equal(answer, correct_answer)
+
+
+def test_lag_fill_value():
+    primitive_instance = NumericLag(fill_value=10)
+    primitive_func = primitive_instance.get_function()
+
+    array = pd.Series([1, 2, 3, 4])
+    time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq='D'))
+
+    answer = pd.Series(primitive_func(time_array, array))
+
+    correct_answer = pd.Series([10, 1, 2, 3])
+    pd.testing.assert_series_equal(answer, correct_answer)
+
+
+def test_lag_starts_with_nan():
+    primitive_instance = NumericLag()
+    primitive_func = primitive_instance.get_function()
+
+    array = pd.Series([np.nan, 2, 3, 4])
+    time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq='D'))
+
+    answer = pd.Series(primitive_func(time_array, array))
+
+    correct_answer = pd.Series([np.nan, np.nan, 2, 3])
+    pd.testing.assert_series_equal(answer, correct_answer)
+
+
+def test_lag_ends_with_nan():
+    primitive_instance = NumericLag()
+    primitive_func = primitive_instance.get_function()
+
+    array = pd.Series([1, 2, 3, np.nan])
+    time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq='D'))
+
+    answer = pd.Series(primitive_func(time_array, array))
+
+    correct_answer = pd.Series([np.nan, 1, 2, 3])
+    pd.testing.assert_series_equal(answer, correct_answer)
