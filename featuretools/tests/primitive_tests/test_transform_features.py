@@ -1131,18 +1131,19 @@ def test_cfm_with_lag_and_non_nullable_column(pd_es):
 
     assert isinstance(pd_es['new_log'].ww.logical_types['value'], Integer)
 
-    lag_primitive = NumericLag(periods=5)
+    periods = 5
+    lag_primitive = NumericLag(periods=periods)
     fm, _ = ft.dfs(target_dataframe_name='new_log',
                    entityset=pd_es,
                    agg_primitives=[],
                    trans_primitives=[lag_primitive])
 
     # Non nullable
-    assert fm["NUMERIC_LAG(datetime, value, periods=5)"].head(5).isnull().all()
-    assert fm["NUMERIC_LAG(datetime, value, periods=5)"].isnull().sum() == 5
+    assert fm["NUMERIC_LAG(datetime, value, periods=5)"].head(periods).isnull().all()
+    assert fm["NUMERIC_LAG(datetime, value, periods=5)"].isnull().sum() == periods
     # Nullable
     assert "NUMERIC_LAG(datetime, value_2, periods=5)" in fm.columns
-    assert fm["NUMERIC_LAG(datetime, products.rating, periods=5)"].head(5).isnull().all()
+    assert fm["NUMERIC_LAG(datetime, products.rating, periods=5)"].head(periods).isnull().all()
 
     assert "NUMERIC_LAG(datetime, products.rating, periods=5)" in fm.columns
-    assert fm["NUMERIC_LAG(datetime, products.rating, periods=5)"].head(5).isnull().all()
+    assert fm["NUMERIC_LAG(datetime, products.rating, periods=5)"].head(periods).isnull().all()
