@@ -3,18 +3,26 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.3.0 Dec 2, 2021
+==================
     * Enhancements
         * Add ``NumericLag`` transform primitive (:pr:`1797`)
-    * Fixes
     * Changes
         * Update pip to 21.3.1 for test requirements (:pr:`1789`)
     * Documentation Changes
         * Add Docker install instructions and documentation on the install page. (:pr:`1785`)
         * Update install page on documentation with correct python version (:pr:`1784`)
         * Fix formatting in Improving Computational Performance guide (:pr:`1786`)
-    * Testing Changes
   
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`HenryRocha`, :user:`tamargrey` :user:`thehomebrewnerd`
