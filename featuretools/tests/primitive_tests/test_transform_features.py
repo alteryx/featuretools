@@ -1133,10 +1133,12 @@ def test_cfm_with_lag_and_non_nullable_column(pd_es):
 
     periods = 5
     lag_primitive = NumericLag(periods=periods)
+    cutoff_times = pd_es['new_log'][['id', 'datetime']]
     fm, _ = ft.dfs(target_dataframe_name='new_log',
                    entityset=pd_es,
                    agg_primitives=[],
-                   trans_primitives=[lag_primitive])
+                   trans_primitives=[lag_primitive],
+                   cutoff_time=cutoff_times)
 
     # Non nullable
     assert fm["NUMERIC_LAG(datetime, value, periods=5)"].head(periods).isnull().all()
