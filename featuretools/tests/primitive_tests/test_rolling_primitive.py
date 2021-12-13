@@ -149,11 +149,8 @@ def test_rolling_count(window_length, gap, rolling_series_pd):
         (5, 6)
     ]
 )
-def test_rolling_count_primitive_min_periods_nans(min_periods, expected_num_nams, rolling_series_pd):
-    # --> add test with just integers as well
-    window_length = '5d'
-    gap = '2d'
-
+@pytest.mark.parametrize("window_length, gap", [('5d', '2d'), (5, 2)])
+def test_rolling_count_primitive_min_periods_nans(window_length, gap, min_periods, expected_num_nams, rolling_series_pd):
     primitive_instance = RollingCount(window_length=window_length, gap=gap, min_periods=min_periods)
     primitive_func = primitive_instance.get_function()
     vals = pd.Series(primitive_func(rolling_series_pd.index))
@@ -170,10 +167,8 @@ def test_rolling_count_primitive_min_periods_nans(min_periods, expected_num_nams
         (5, 4)
     ]
 )
-def test_rolling_count_with_no_gap(min_periods, expected_num_nams, rolling_series_pd):
-    window_length = '5d'
-    gap = '0d'
-
+@pytest.mark.parametrize("window_length, gap", [('5d', '0d'), (5, 0)])
+def test_rolling_count_with_no_gap(window_length, gap, min_periods, expected_num_nams, rolling_series_pd):
     primitive_instance = RollingCount(window_length=window_length, gap=gap, min_periods=min_periods)
     primitive_func = primitive_instance.get_function()
     vals = pd.Series(primitive_func(rolling_series_pd.index))
