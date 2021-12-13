@@ -150,6 +150,7 @@ def test_rolling_count(window_length, gap, rolling_series_pd):
     ]
 )
 def test_rolling_count_primitive_min_periods_nans(min_periods, expected_num_nams, rolling_series_pd):
+    # --> add test with just integers as well
     window_length = '5d'
     gap = '2d'
 

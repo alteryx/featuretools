@@ -6,7 +6,7 @@ from woodwork.logical_types import Datetime, Double
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
 )
-from featuretools.primitives.utils import _roll_series_with_gap
+from featuretools.primitives.utils import _get_num_gap_rows_from_offset, _roll_series_with_gap
 
 
 class RollingMax(TransformPrimitive):
@@ -241,6 +241,7 @@ class RollingSTD(TransformPrimitive):
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_std(times, [4, 3, 2, 1, 0]).tolist()
         [nan, nan, nan, 1.2909944487358056, 1.2909944487358056]
+        # --> add an example with offset strings for each 
     """
     name = "rolling_std"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
@@ -322,14 +323,19 @@ class RollingCount(TransformPrimitive):
                                                   gap=self.gap,
                                                   min_periods=self.min_periods)
             rolling_count_series = rolled_series.count()
+
+            num_gap_rows = self.gap
+            if isinstance(self.gap, str):
+                num_gap_rows = _get_num_gap_rows_from_offset(x, self.gap)
+
             # The shift made to account for gap adds NaNs to the rolled series
             # Those values get counted towards min_periods when they shouldn't.
             # So we need to replace any of those partial values with NaNs
             if not self.min_periods:
                 # when min periods is 0 or None it's treated the same as if it's 1
-                num_nans = self.gap
+                num_nans = num_gap_rows
             else:
-                num_nans = self.min_periods - 1 + self.gap
+                num_nans = self.min_periods - 1 + num_gap_rows
             rolling_count_series.iloc[range(num_nans)] = np.nan
             return rolling_count_series.values
         return rolling_count

@@ -274,13 +274,21 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
     # --> window length must be a fixed freq
     gap_applied = series
     if isinstance(gap, str):
-        first_date = series.index[0]
-        offset = pd.tseries.frequencies.to_offset(gap)
         # Count the number of rows that are within the gap's bounds
         # Assumes series has a datetime index and is sorted by that index
-        gap = series.loc[series.index < (first_date + offset)].count()
+        gap = _get_num_gap_rows_from_offset(series, gap)
 
     if gap > 0:
         gap_applied = series.shift(gap)
 
     return gap_applied.rolling(window_size, min_periods)
+
+
+# -->test this
+def _get_num_gap_rows_from_offset(series, offset_string):
+    first_date = series.index[0]
+    offset = pd.tseries.frequencies.to_offset(offset_string)
+
+    # Count the number of rows that are within the offset's bounds
+    # Assumes series has a datetime index and is sorted by that index
+    return series.loc[series.index < (first_date + offset)].count()
