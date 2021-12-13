@@ -270,21 +270,57 @@ def test_roll_series_with_gap_nullable_types_with_nans(rolling_series_pd):
             assert actual == expected
 
 
-def test_roll_series_with_gap_offest_strings(rolling_series_pd):
-    window_length = '3d'
-    gap = '2d'
+def test_roll_series_with_gap_and_non_fixed_offset_gap():
+    # --> clean up more
+    # The offset of 1W is <Week: weekday=6>, so the gap will make the start
+    # the first 6th day of the week after the first datetime, not 7 days after the first datetime
+    starts_on_sunday = pd.Series(range(40), index=pd.date_range(start='2017-1-15', freq='1D', periods=40))
+
+    rolled_series = _roll_series_with_gap(starts_on_sunday, "5D", gap="1M", min_periods=1).max()
+    assert rolled_series.isna().sum() == 16
+
+    rolled_series = _roll_series_with_gap(starts_on_sunday, "5D", gap="1W", min_periods=1).max()
+    assert rolled_series.isna().sum() == 7
+
+    starts_on_monday = pd.Series(range(40), index=pd.date_range(start='2017-01-16', freq='1D', periods=40))
+
+    rolled_series = _roll_series_with_gap(starts_on_monday, "5D", gap="1W", min_periods=1).max()
+    assert rolled_series.isna().sum() == 6
+
+    rolled_series = _roll_series_with_gap(starts_on_monday, "5D", gap="1M", min_periods=1).max()
+    assert rolled_series.isna().sum() == 15
+
+
+def test_roll_series_with_gap_non_uniform_impact_gap():
+    # When there is a large distance between the first and second rows
+    # the gap will still use the first value, so this impacts the number of rows of nans we get
+    datetimes = list(pd.date_range(start='2020-01-01', freq='1d', periods=20))
+    datetimes[0] = datetimes[0] - pd.Timedelta('10D')
+    no_freq_series = pd.Series(range(20), index=datetimes)
+
+    assert pd.infer_freq(no_freq_series.index) is None
+
+    window_length = '5d'
+
+    # Only one is within the bounds
+    rolled_series = _roll_series_with_gap(no_freq_series, window_length, gap="1W", min_periods=1).max()
+    assert rolled_series.isna().sum() == 1
+
+    # 2 weeks starts to include some other data
+    rolled_series = _roll_series_with_gap(no_freq_series, window_length, gap="2W", min_periods=1).max()
+    assert rolled_series.isna().sum() == 4
+
+    # 3 weeks is where we get a full week for the first time
+    rolled_series = _roll_series_with_gap(no_freq_series, window_length, gap="3W", min_periods=1).max()
+    assert rolled_series.isna().sum() == 11
+
+
+def test_roll_series_with_gap_non_uniform_impacts_window_length():
+    # When the data isn't uniform, this impacts the number of values in each rolling window
+    pass
 
 
 def test_roll_series_with_gap_invalid_offset_strings():
-    pass
-
-
-def test_roll_series_with_gap_mix_param_types():
-    # can have mix of types - since gap will need to be a multiple of the inferred frequency
-    pass
-
-
-def test_roll_series_with_gap_non_uniform():
     pass
 
 
@@ -293,7 +329,7 @@ def test_roll_series_with_gap_offsets_gap_isnt_multiple_of_data_freq():
     pass
 
 
-def test_roll_series_with_gap_offsets_larget_than_data_freq():
+def test_roll_series_with_gap_offsets_larger_than_data_freq():
     pass
 
 

@@ -266,12 +266,18 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
     if str(series.dtype) == 'Int64':
         series = series.astype('float64')
 
+    # --> add catching of non offset string except Exception:
+        # raise ValueError('must be a valid time frame in seconds, minutes, hours, or days (e.g. 1s, 5min, 4h, 7d, etc.)')
+    # --> handle situation where no datetime is present? maybe not necessary bc only used internally! just add a note in the docstring about needinst a datetime if you want to allow offset strings
+    # --> add note that the gap is most predictable when it's a fixed frequency (like hour or day) rather than one that can be a variable nubmer of days (like year or month)
+        # The gap will just use the offset of that string, so if it's variable,
     gap_applied = series
     if isinstance(gap, str):
         first_date = series.index[0]
+        offset = pd.tseries.frequencies.to_offset(gap)
         # Count the number of rows that are within the gap's bounds
         # Assumes series is sorted and has a datetime index
-        gap = series.loc[series.index < first_date + pd.Timedelta(gap)].count()
+        gap = series.loc[series.index < (first_date + offset)].count()
 
     if gap > 0:
         gap_applied = series.shift(gap)
