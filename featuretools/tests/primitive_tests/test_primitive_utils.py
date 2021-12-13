@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+from numpy.core.numeric import roll
 import pandas as pd
 import pytest
 
@@ -298,7 +299,7 @@ def test_roll_series_with_gap_non_uniform_impact_gap():
     datetimes[0] = datetimes[0] - pd.Timedelta('10D')
     no_freq_series = pd.Series(range(20), index=datetimes)
 
-    assert pd.infer_freq(no_freq_series.index) is None
+    assert pd.infer_freq(no_freq_series) is None
 
     window_length = '5d'
 
@@ -306,37 +307,39 @@ def test_roll_series_with_gap_non_uniform_impact_gap():
     rolled_series = _roll_series_with_gap(no_freq_series, window_length, gap="1W", min_periods=1).max()
     assert rolled_series.isna().sum() == 1
 
-    # 2 weeks starts to include some other data
     rolled_series = _roll_series_with_gap(no_freq_series, window_length, gap="2W", min_periods=1).max()
     assert rolled_series.isna().sum() == 4
 
-    # 3 weeks is where we get a full week for the first time
     rolled_series = _roll_series_with_gap(no_freq_series, window_length, gap="3W", min_periods=1).max()
     assert rolled_series.isna().sum() == 11
 
 
-def test_roll_series_with_gap_non_uniform_impacts_window_length():
+def test_roll_series_with_gap_non_uniform_impacts_window_contents():
     # When the data isn't uniform, this impacts the number of values in each rolling window
-    pass
+    datetimes = list(pd.date_range(start='2017-01-01', freq='1W', periods=20))
+    # pick rows that should be pushed backwards to be one day after the previous day
+    # this means that with a window length of 7D, when we get to those rows, there's another value within the 7 days window
+    # where there are none for the rest of the rows
+    datetimes[2] = datetimes[2] - pd.Timedelta('6D')
+    datetimes[6] = datetimes[6] - pd.Timedelta('6D')
+    datetimes[12] = datetimes[12] - pd.Timedelta('6D')
+    no_freq_series = pd.Series(range(20), index=datetimes)
+
+    assert pd.infer_freq(no_freq_series.index) is None
+    rolled_series = _roll_series_with_gap(no_freq_series, "7D", min_periods=1).count()
+
+    counts = rolled_series.value_counts()
+    assert counts[1] == 17
+    assert counts[2] == 3
+
+    assert rolled_series.iloc[2] == 2
+    assert rolled_series.iloc[6] == 2
+    assert rolled_series.iloc[12] == 2
 
 
 def test_roll_series_with_gap_invalid_offset_strings():
     pass
 
 
-def test_roll_series_with_gap_offsets_gap_isnt_multiple_of_data_freq():
-    # will produce odd results since shift will move all the index values weirdly
-    pass
-
-
-def test_roll_series_with_gap_offsets_larger_than_data_freq():
-    pass
-
-
 def test_roll_series_with_gap_no_datetime():
-    pass
-
-
-def test_roll_series_with_gap_different_freq():
-    # confirm different frequencies of data and
     pass
