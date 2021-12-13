@@ -146,6 +146,9 @@ def test_errors_no_primitive_in_file(bad_primitives_files_dir):
         (3, 2),
         (3, 4),  # gap larger than window
         (2, 0),  # gap explicitly set to 0
+        ('3d', '2d'),  # using offset aliases
+        (4, '1d'),  # using mixture of integer and offset aliases
+        ('2d', 2)  # using mixture of integer and offset aliases
     ],
 )
 def test_roll_series_with_gap(window_length, gap, rolling_series_pd):
@@ -156,6 +159,11 @@ def test_roll_series_with_gap(window_length, gap, rolling_series_pd):
     assert len(rolling_min) == len(rolling_series_pd)
 
     for i in range(len(rolling_series_pd)):
+        if isinstance(gap, str):
+            gap = int(gap[0])
+        if isinstance(window_length, str):
+            window_length = int(window_length[0])
+
         start_idx = i - gap - window_length + 1
         end_idx = i - gap
 
@@ -252,3 +260,39 @@ def test_roll_series_with_gap_nullable_types_with_nans(rolling_series_pd):
             assert pd.isnull(expected)
         else:
             assert actual == expected
+
+
+def test_roll_series_with_gap_offest_strings(rolling_series_pd):
+    window_length = '3d'
+    gap = '2d'
+
+
+def test_roll_series_with_gap_invalid_offset_strings():
+    pass
+
+
+def test_roll_series_with_gap_mix_param_types():
+    # can have mix of types - since gap will need to be a multiple of the inferred frequency
+    pass
+
+
+def test_roll_series_with_gap_non_uniform():
+    pass
+
+
+def test_roll_series_with_gap_offsets_gap_isnt_multiple_of_data_freq():
+    # will produce odd results since shift will move all the index values weirdly
+    pass
+
+
+def test_roll_series_with_gap_offsets_larget_than_data_freq():
+    pass
+
+
+def test_roll_series_with_gap_no_datetime():
+    pass
+
+
+def test_roll_series_with_gap_different_freq():
+    # confirm different frequencies of data and
+    pass

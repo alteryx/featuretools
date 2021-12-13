@@ -267,6 +267,12 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
         series = series.astype('float64')
 
     gap_applied = series
+    if isinstance(gap, str):
+        first_date = series.index[0]
+        # Count the number of rows that are within the gap's bounds
+        # Assumes series is sorted and has a datetime index
+        gap = series.loc[series.index < first_date + pd.Timedelta(gap)].count()
+
     if gap > 0:
         gap_applied = series.shift(gap)
 
