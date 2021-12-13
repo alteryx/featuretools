@@ -9,95 +9,131 @@ from featuretools.primitives import (
     RollingSTD
 )
 from featuretools.primitives.utils import _roll_series_with_gap
+from featuretools.tests.primitive_tests.utils import get_number_of_days
 
 
-def test_rolling_max(rolling_series_pd):
-    window_length = 5
-    gap = 2
+@pytest.mark.parametrize(
+    "window_length, gap",
+    [
+        (5, 2),
+        ('6d', '7d'),
+    ]
+)
+def test_rolling_max(window_length, gap, rolling_series_pd):
+    gap_num = get_number_of_days(gap)
+    window_length_num = get_number_of_days(window_length)
 
     expected_vals = _roll_series_with_gap(rolling_series_pd,
                                           window_length,
                                           gap=gap,
-                                          min_periods=window_length).max().values
+                                          min_periods=window_length_num).max().values
 
-    primitive_instance = RollingMax(window_length=window_length, gap=gap, min_periods=window_length)
+    primitive_instance = RollingMax(window_length=window_length, gap=gap, min_periods=window_length_num)
     primitive_func = primitive_instance.get_function()
 
     actual_vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
 
-    assert actual_vals.isna().sum() == gap + window_length - 1
+    assert actual_vals.isna().sum() == gap_num + window_length_num - 1
     pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
 
 
-def test_rolling_min(rolling_series_pd):
-    window_length = 5
-    gap = 2
+@pytest.mark.parametrize(
+    "window_length, gap",
+    [
+        (5, 2),
+        ('6d', '7d'),
+    ]
+)
+def test_rolling_min(window_length, gap, rolling_series_pd):
+    gap_num = get_number_of_days(gap)
+    window_length_num = get_number_of_days(window_length)
 
     expected_vals = _roll_series_with_gap(rolling_series_pd,
                                           window_length,
                                           gap=gap,
-                                          min_periods=window_length).min().values
+                                          min_periods=window_length_num).min().values
 
-    primitive_instance = RollingMin(window_length=window_length, gap=gap, min_periods=window_length)
+    primitive_instance = RollingMin(window_length=window_length, gap=gap, min_periods=window_length_num)
     primitive_func = primitive_instance.get_function()
 
     actual_vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
 
-    assert actual_vals.isna().sum() == gap + window_length - 1
+    assert actual_vals.isna().sum() == gap_num + window_length_num - 1
     pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
 
 
-def test_rolling_mean(rolling_series_pd):
-    window_length = 5
-    gap = 2
+@pytest.mark.parametrize(
+    "window_length, gap",
+    [
+        (5, 2),
+        ('6d', '7d'),
+    ]
+)
+def test_rolling_mean(window_length, gap, rolling_series_pd):
+    gap_num = get_number_of_days(gap)
+    window_length_num = get_number_of_days(window_length)
 
     expected_vals = _roll_series_with_gap(rolling_series_pd,
                                           window_length,
                                           gap=gap,
-                                          min_periods=window_length).mean().values
+                                          min_periods=window_length_num).mean().values
 
-    primitive_instance = RollingMean(window_length=window_length, gap=gap, min_periods=window_length)
+    primitive_instance = RollingMean(window_length=window_length, gap=gap, min_periods=window_length_num)
     primitive_func = primitive_instance.get_function()
 
     actual_vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
 
-    assert actual_vals.isna().sum() == gap + window_length - 1
+    assert actual_vals.isna().sum() == gap_num + window_length_num - 1
     pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
 
 
-def test_rolling_std(rolling_series_pd):
-    window_length = 5
-    gap = 2
+@pytest.mark.parametrize(
+    "window_length, gap",
+    [
+        (5, 2),
+        ('6d', '7d'),
+    ]
+)
+def test_rolling_std(window_length, gap, rolling_series_pd):
+    gap_num = get_number_of_days(gap)
+    window_length_num = get_number_of_days(window_length)
 
     expected_vals = _roll_series_with_gap(rolling_series_pd,
                                           window_length,
                                           gap=gap,
-                                          min_periods=window_length).std().values
+                                          min_periods=window_length_num).std().values
 
-    primitive_instance = RollingSTD(window_length=window_length, gap=gap, min_periods=window_length)
+    primitive_instance = RollingSTD(window_length=window_length, gap=gap, min_periods=window_length_num)
     primitive_func = primitive_instance.get_function()
 
     actual_vals = pd.Series(primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)))
 
-    assert actual_vals.isna().sum() == gap + window_length - 1
+    assert actual_vals.isna().sum() == gap_num + window_length_num - 1
     pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
 
 
-def test_rolling_count(rolling_series_pd):
-    window_length = 5
-    gap = 2
+@pytest.mark.parametrize(
+    "window_length, gap",
+    [
+        (5, 2),
+        ('6d', '7d'),
+    ]
+)
+def test_rolling_count(window_length, gap, rolling_series_pd):
+    gap_num = get_number_of_days(gap)
+    window_length_num = get_number_of_days(window_length)
 
     expected_vals = _roll_series_with_gap(rolling_series_pd,
                                           window_length,
                                           gap=gap,
-                                          min_periods=window_length).count().values
+                                          min_periods=window_length_num).count().values
 
-    primitive_instance = RollingCount(window_length=window_length, gap=gap, min_periods=window_length)
+    primitive_instance = RollingCount(window_length=window_length, gap=gap, min_periods=window_length_num)
     primitive_func = primitive_instance.get_function()
 
     actual_vals = pd.Series(primitive_func(rolling_series_pd.index))
 
-    num_nans = gap + window_length - 1
+    num_nans = gap_num + window_length_num - 1
     assert actual_vals.isna().sum() == num_nans
     # RollingCount will not match the exact _roll_series_with_gap call,
     # because it handles the min_periods difference within the primitive
@@ -114,8 +150,8 @@ def test_rolling_count(rolling_series_pd):
     ]
 )
 def test_rolling_count_primitive_min_periods_nans(min_periods, expected_num_nams, rolling_series_pd):
-    window_length = 5
-    gap = 2
+    window_length = '5d'
+    gap = '2d'
 
     primitive_instance = RollingCount(window_length=window_length, gap=gap, min_periods=min_periods)
     primitive_func = primitive_instance.get_function()
@@ -134,8 +170,8 @@ def test_rolling_count_primitive_min_periods_nans(min_periods, expected_num_nams
     ]
 )
 def test_rolling_count_with_no_gap(min_periods, expected_num_nams, rolling_series_pd):
-    window_length = 5
-    gap = 0
+    window_length = '5d'
+    gap = '0d'
 
     primitive_instance = RollingCount(window_length=window_length, gap=gap, min_periods=min_periods)
     primitive_func = primitive_instance.get_function()

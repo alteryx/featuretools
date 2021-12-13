@@ -40,6 +40,7 @@ from featuretools.primitives.utils import (
     list_primitive_files,
     load_primitive_from_file
 )
+from featuretools.tests.primitive_tests.utils import get_number_of_days
 from featuretools.utils.gen_utils import Library
 
 
@@ -139,13 +140,6 @@ def test_errors_no_primitive_in_file(bad_primitives_files_dir):
     with pytest.raises(RuntimeError) as excinfo:
         load_primitive_from_file(primitive_file)
     assert str(excinfo.value) == error_text
-
-
-def get_number_of_days(offset):
-    if isinstance(offset, str):
-        return int(offset[0])
-    else:
-        return offset
 
 
 @pytest.mark.parametrize(
@@ -299,7 +293,7 @@ def test_roll_series_with_gap_non_uniform_impact_gap():
     datetimes[0] = datetimes[0] - pd.Timedelta('10D')
     no_freq_series = pd.Series(range(20), index=datetimes)
 
-    assert pd.infer_freq(no_freq_series) is None
+    assert pd.infer_freq(no_freq_series.index) is None
 
     window_length = '5d'
 
