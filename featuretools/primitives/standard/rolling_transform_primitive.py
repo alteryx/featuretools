@@ -1,13 +1,15 @@
 import numpy as np
 import pandas as pd
-
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, Double
 
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
 )
-from featuretools.primitives.utils import _get_num_gap_rows_from_offset, _roll_series_with_gap, _apply_roll_with_offset_gap
+from featuretools.primitives.utils import (
+    _apply_roll_with_offset_gap,
+    _roll_series_with_gap
+)
 
 
 class RollingMax(TransformPrimitive):
@@ -262,7 +264,7 @@ class RollingSTD(TransformPrimitive):
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_std(times, [4, 3, 2, 1, 0]).tolist()
         [nan, nan, nan, 1.2909944487358056, 1.2909944487358056]
-        # --> add an example with offset strings for each 
+        # --> add an example with offset strings for each
     """
     name = "rolling_std"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]

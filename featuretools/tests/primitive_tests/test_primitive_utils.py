@@ -1,7 +1,6 @@
 import os
 
 import numpy as np
-from numpy.core.numeric import roll
 import pandas as pd
 import pytest
 

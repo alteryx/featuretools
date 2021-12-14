@@ -2,9 +2,8 @@ import importlib.util
 import os
 from inspect import isclass
 
-import pandas as pd
 import numpy as np
-
+import pandas as pd
 from pandas.tseries.frequencies import to_offset
 
 import featuretools
@@ -289,7 +288,7 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
 
 
 def _get_num_gap_rows_from_offset(series, offset_string):
-    """Determines how many rows of the series 
+    """Determines how many rows of the series
     """
     # --> make sure this hanldes empty series case
     if not len(series):
@@ -305,7 +304,7 @@ def _get_num_gap_rows_from_offset(series, offset_string):
 
 def _apply_roll_with_offset_gap(rolled_sub_series, offset_gap, reducer_fn, min_periods):
     """Takes in a series to which an offset gap will be applied, removing however many
-    rows fall under the gap before applying the reducing function. 
+    rows fall under the gap before applying the reducing function.
     """
     # Determines how many rows there are between the first date in the series and the gap
     num_rows_to_skip = _get_num_gap_rows_from_offset(rolled_sub_series, offset_gap)
