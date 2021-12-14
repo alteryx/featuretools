@@ -435,6 +435,7 @@ def test_apply_roll_with_offset_gap_non_uniform():
     for i in rows_to_change:
         assert rolling_count_series.iloc[i] == 1
 
+# --> add test with min periods being huge bc the offset strings are way too big - min_p = 20, freq = hourly, window_size = 1d
 
 # def test_roll_series_with_gap_invalid_offset_strings():
 #     pass
