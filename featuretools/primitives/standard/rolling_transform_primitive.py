@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 
-from pandas.tseries.frequencies import to_offset
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, Double
 
@@ -30,7 +29,7 @@ class RollingMax(TransformPrimitive):
             window of usable data begins. Defaults to 0, which will include the target instance
             in the window.
         min_periods (int, optional): Minimum number of observations required for a window to have a value.
-            Can only be as large as window_length. Defaults to 1.
+            Can only be as large as window_length. Defaults to 1. --> min periods doesnt really make sense with offset str bc there can be any number
 
     Examples:
         >>> import pandas as pd
@@ -70,16 +69,9 @@ class RollingMax(TransformPrimitive):
     def get_function(self):
         def rolling_max(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
-            has_offset_gap = isinstance(self.gap, str)
-
-            functional_window_length = self.window_length
-            if has_offset_gap:
-                # --> gap and window length must both be fixed tobe added to one another
-                functional_window_length = to_offset(self.window_length) + to_offset(self.gap)
-                # --> restrict min periods/check if it's too big
 
             rolled_series = _roll_series_with_gap(x,
-                                                  functional_window_length,
+                                                  self.window_length,
                                                   gap=self.gap,
                                                   min_periods=self.min_periods)
             if isinstance(self.gap, str):

@@ -5,6 +5,8 @@ from inspect import isclass
 import pandas as pd
 import numpy as np
 
+from pandas.tseries.frequencies import to_offset
+
 import featuretools
 from featuretools.primitives.base import (
     AggregationPrimitive,
@@ -268,17 +270,22 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
         series = series.astype('float64')
 
     # --> add catching of non offset string except Exception:
-        # raise ValueError('must be a valid time frame in seconds, minutes, hours, or days (e.g. 1s, 5min, 4h, 7d, etc.)')
+    # raise ValueError('must be a valid time frame in seconds, minutes, hours, or days (e.g. 1s, 5min, 4h, 7d, etc.)')
     # --> handle situation where no datetime is present? maybe not necessary bc only used internally! just add a note in the docstring about needinst a datetime if you want to allow offset strings
     # --> add note that the gap is most predictable when it's a fixed frequency (like hour or day) rather than one that can be a variable nubmer of days (like year or month)
-        # The gap will just use the offset of that string, so if it's variable,
+    # The gap will just use the offset of that string, so if it's variable,
     # --> window length must be a fixed freq
 
     # If gap is an offset string, it'll get applied at the primitive call
-    if not isinstance(gap, str) and gap > 0:
+    functional_window_length = window_size
+    # --> gap and window length must both be fixed tobe added to one another
+    # --> and they're assumed to be the same type
+    if isinstance(gap, str):
+        functional_window_length = to_offset(window_size) + to_offset(gap)
+    elif gap > 0:
         series = series.shift(gap)
 
-    return series.rolling(window_size, min_periods)
+    return series.rolling(functional_window_length, min_periods)
 
 
 def _get_num_gap_rows_from_offset(series, offset_string):
@@ -310,9 +317,6 @@ def _apply_roll_with_offset_gap(rolled_sub_series, offset_gap, reducer_fn, min_p
         min_periods = 1
 
     if len(rolled_sub_series) < min_periods or not len(rolled_sub_series):
-        return np.NaN
-
-    # if not len(rolled_sub_series):
-    #     return default
+        return default
 
     return reducer_fn(rolled_sub_series)
