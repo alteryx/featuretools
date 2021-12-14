@@ -272,16 +272,12 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
     # --> add note that the gap is most predictable when it's a fixed frequency (like hour or day) rather than one that can be a variable nubmer of days (like year or month)
         # The gap will just use the offset of that string, so if it's variable,
     # --> window length must be a fixed freq
-    gap_applied = series
-    if isinstance(gap, str):
-        # Count the number of rows that are within the gap's bounds
-        # Assumes series has a datetime index and is sorted by that index
-        gap = _get_num_gap_rows_from_offset(series, gap)
 
-    if gap > 0:
-        gap_applied = series.shift(gap)
+    # If gap is an offset string, it'll get applied at the primitive call
+    if not isinstance(gap, str) and gap > 0:
+        series = series.shift(gap)
 
-    return gap_applied.rolling(window_size, min_periods)
+    return series.rolling(window_size, min_periods)
 
 
 def _get_num_gap_rows_from_offset(series, offset_string):
