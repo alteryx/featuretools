@@ -3,6 +3,7 @@ import os
 from inspect import isclass
 
 import pandas as pd
+import numpy as np
 
 import featuretools
 from featuretools.primitives.base import (
@@ -295,18 +296,23 @@ def _get_num_gap_rows_from_offset(series, offset_string):
     return series.loc[series.index < (first_date + offset)].count()
 
 
-def _apply_roll_with_offset_gap(rolled_sub_series, offset_gap, reducer_fn, default=None):
+def _apply_roll_with_offset_gap(rolled_sub_series, offset_gap, reducer_fn, min_periods, default=None):
     """Takes in a series to which an offset gap will be applied, removing however many
     rows fall under the gap before applying the reducing function. 
     """
-
     # Determines how many rows there are between the first date in the series and the gap
     num_rows_to_skip = _get_num_gap_rows_from_offset(rolled_sub_series, offset_gap)
 
     if num_rows_to_skip:
         rolled_sub_series = rolled_sub_series.iloc[:-num_rows_to_skip]
 
-    if not len(rolled_sub_series):
-        return default
+    if min_periods is None:
+        min_periods = 1
+
+    if len(rolled_sub_series) < min_periods or not len(rolled_sub_series):
+        return np.NaN
+
+    # if not len(rolled_sub_series):
+    #     return default
 
     return reducer_fn(rolled_sub_series)

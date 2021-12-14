@@ -1,12 +1,14 @@
 import numpy as np
 import pandas as pd
+
+from pandas.tseries.frequencies import to_offset
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, Double
 
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
 )
-from featuretools.primitives.utils import _get_num_gap_rows_from_offset, _roll_series_with_gap
+from featuretools.primitives.utils import _get_num_gap_rows_from_offset, _roll_series_with_gap, _apply_roll_with_offset_gap
 
 
 class RollingMax(TransformPrimitive):
@@ -62,13 +64,27 @@ class RollingMax(TransformPrimitive):
         self.gap = gap
         self.min_periods = min_periods
 
+    def _offset_max(self, series):
+        return _apply_roll_with_offset_gap(series, self.gap, len, self.min_periods, default=np.NaN)
+
     def get_function(self):
         def rolling_max(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
+            has_offset_gap = isinstance(self.gap, str)
+
+            functional_window_length = self.window_length
+            if has_offset_gap:
+                # --> gap and window length must both be fixed tobe added to one another
+                functional_window_length = to_offset(self.window_length) + to_offset(self.gap)
+                # --> restrict min periods/check if it's too big
+
             rolled_series = _roll_series_with_gap(x,
-                                                  self.window_length,
+                                                  functional_window_length,
                                                   gap=self.gap,
                                                   min_periods=self.min_periods)
+            if isinstance(self.gap, str):
+                return rolled_series.apply(self._offset_max).values
+
             return rolled_series.max().values
         return rolling_max
 
