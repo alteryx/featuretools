@@ -34,6 +34,7 @@ from featuretools.primitives import (
 )
 from featuretools.primitives.base import PrimitiveBase
 from featuretools.primitives.utils import (
+    _apply_roll_with_offset_gap,
     _get_descriptions,
     _get_unique_input_types,
     _roll_series_with_gap,
@@ -287,6 +288,7 @@ def test_roll_series_with_gap_and_non_fixed_offset_gap():
 
 
 def test_roll_series_with_gap_non_uniform_impact_gap():
+    # -->incorrect
     # When there is a large distance between the first and second rows
     # the gap will still use the first value, so this impacts the number of rows of nans we get
     datetimes = list(pd.date_range(start='2020-01-01', freq='1d', periods=20))
@@ -320,6 +322,7 @@ def test_roll_series_with_gap_non_uniform_impacts_window_contents():
     no_freq_series = pd.Series(range(20), index=datetimes)
 
     assert pd.infer_freq(no_freq_series.index) is None
+    # --> correct when gap is 0 but not when gap is not zero
     rolled_series = _roll_series_with_gap(no_freq_series, "7D", min_periods=1).count()
 
     counts = rolled_series.value_counts()
@@ -337,3 +340,56 @@ def test_roll_series_with_gap_invalid_offset_strings():
 
 def test_roll_series_with_gap_no_datetime():
     pass
+
+
+def test_roll_series_with_mismatched_parameters(rolling_series_pd):
+    # --> maybe no longer necessary to fail there
+    error = 'Cannot roll series when window_length, 4 is and gap is 2d; parameters are not the same type.'
+    with pytest.raises(TypeError, match=error):
+        _roll_series_with_gap(rolling_series_pd, 4, gap="2d")
+
+    error = 'Cannot roll series when window_length is 4d, and gap is 2; parameters are not the same type.'
+    with pytest.raises(TypeError, match=error):
+        _roll_series_with_gap(rolling_series_pd, "4d", gap=2)
+    # --> check when no gap passed in
+
+
+@pytest.mark.parametrize(
+    "window_length",
+    [
+        4,
+        "4d"
+    ]
+)
+def test_roll_series_with_no_gap_parameter_set(window_length, rolling_series_pd):
+    # --> confirm both are the same
+    _roll_series_with_gap(rolling_series_pd, window_length)
+
+
+def test_apply_roll_with_offset_gap():
+    # When the data isn't uniform, this impacts the number of values in each rolling window
+    datetimes = list(pd.date_range(start='2017-01-01', freq='1W', periods=20))
+    # pick rows that should be pushed backwards to be one day after the previous day
+    # this means that with a window length of 7D, when we get to those rows, there's another value within the 7 days window
+    # where there are none for the rest of the rows
+    datetimes[2] = datetimes[2] - pd.Timedelta('6D')
+    datetimes[6] = datetimes[6] - pd.Timedelta('6D')
+    datetimes[12] = datetimes[12] - pd.Timedelta('6D')
+    no_freq_series = pd.Series(range(20), index=datetimes)
+
+    assert pd.infer_freq(no_freq_series.index) is None
+    # --> correct when gap is 0 but not when gap is not zero
+    rolled_obj = _roll_series_with_gap(no_freq_series, "3D", min_periods=1)
+
+    def wrapper(sub_series):
+        return _apply_roll_with_offset_gap(sub_series, "1D", len, default=0)
+
+    rolled_series_with_gap = rolled_obj.apply(wrapper)
+
+    counts = rolled_series_with_gap.value_counts()
+    assert counts[0] == 17
+    assert counts[1] == 3
+
+    assert rolled_series_with_gap.iloc[2] == 1
+    assert rolled_series_with_gap.iloc[6] == 1
+    assert rolled_series_with_gap.iloc[12] == 1

@@ -284,11 +284,33 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
     return gap_applied.rolling(window_size, min_periods)
 
 
-# -->test this
 def _get_num_gap_rows_from_offset(series, offset_string):
+    """Determines how many rows of the series 
+    """
+    # --> make sure this hanldes empty series case
+    if not len(series):
+        return 0
+
     first_date = series.index[0]
     offset = pd.tseries.frequencies.to_offset(offset_string)
 
     # Count the number of rows that are within the offset's bounds
     # Assumes series has a datetime index and is sorted by that index
     return series.loc[series.index < (first_date + offset)].count()
+
+
+def _apply_roll_with_offset_gap(rolled_sub_series, offset_gap, reducer_fn, default=None):
+    """Takes in a series to which an offset gap will be applied, removing however many
+    rows fall under the gap before applying the reducing function. 
+    """
+
+    # Determines how many rows there are between the first date in the series and the gap
+    num_rows_to_skip = _get_num_gap_rows_from_offset(rolled_sub_series, offset_gap)
+
+    if num_rows_to_skip:
+        rolled_sub_series = rolled_sub_series.iloc[:-num_rows_to_skip]
+
+    if not len(rolled_sub_series):
+        return default
+
+    return reducer_fn(rolled_sub_series)
