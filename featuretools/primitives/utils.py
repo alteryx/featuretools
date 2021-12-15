@@ -234,18 +234,18 @@ class PrimitivesDeserializer(object):
 def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
     """Provide rolling window calculations where the windows are determined using both a gap parameter
     that indicates the amount of time between each instance and its window and a window length parameter
-    that determines the amount of data in each window. 
+    that determines the amount of data in each window.
 
     Args:
-        series (Series): The series over which the windows will be created. Must be numeric in nature
+        series (Series): The series over which rolling windows will be created. Must be numeric in nature
             and have a DatetimeIndex.
         window_length (int, string): Specifies the amount of data included in each window.
             If an integer is provided, will correspond to a number of rows. For data with a uniform sampling frequency,
             for example of one day, the window_length will correspond to a period of time, in this case,
-            7 days for a window_length of 7. 
+            7 days for a window_length of 7.
             If a string is provided, it must be one of pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time that each window should span.
-            The list of available offset aliases, can be found at 
+            The list of available offset aliases, can be found at
             https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
         gap (int, string, optional): Specifies a gap backwards from each instance before the
             window of usable data begins. If an integer is provided, will correspond to a number of rows.
@@ -274,10 +274,11 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
         should determine whether this kind of handling is also necessary.
 
     Note:
-        Offset aliases used must have fixed frequencie. This means that aliases such as `M` or `W` cannot
-        be used, as they can indicate different numbers of days ('M', because different months are different
-        numbers of days; 'W' because week will indicate a certain day of the week, likse W-Wed, so that will
-        indicate a different number of days depending on the anchoring date.). 
+        Only offset aliases with fixed frequencies can be used when defining gap and window_lengt.
+        This means that aliases such as `M` or `W` cannot be used, as they can indicate different
+        numbers of days. ('M', because different months are different numbers of days;
+        'W' because week will indicate a certain day of the week, like W-Wed, so that will
+        indicate a different number of days depending on the anchoring date.)
 
     """
     # Workaround for pandas' bug: https://github.com/pandas-dev/pandas/issues/43016

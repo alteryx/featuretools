@@ -27,10 +27,10 @@ class RollingMax(TransformPrimitive):
         window_length (int, string, optional): Specifies the amount of data included in each window.
             If an integer is provided, will correspond to a number of rows. For data with a uniform sampling frequency,
             for example of one day, the window_length will correspond to a period of time, in this case,
-            7 days for a window_length of 7. 
+            7 days for a window_length of 7.
             If a string is provided, it must be one of pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time that each window should span.
-            The list of available offset aliases, can be found at 
+            The list of available offset aliases, can be found at
             https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases.
             Defaults to 3.
         gap (int, string, optional): Specifies a gap backwards from each instance before the
@@ -49,7 +49,7 @@ class RollingMax(TransformPrimitive):
         This means that aliases such as `M` or `W` cannot be used, as they can indicate different
         numbers of days. ('M', because different months are different numbers of days;
         'W' because week will indicate a certain day of the week, like W-Wed, so that will
-        indicate a different number of days depending on the anchoring date.) 
+        indicate a different number of days depending on the anchoring date.)
 
     Examples:
         >>> import pandas as pd
@@ -122,10 +122,10 @@ class RollingMin(TransformPrimitive):
         window_length (int, string, optional): Specifies the amount of data included in each window.
             If an integer is provided, will correspond to a number of rows. For data with a uniform sampling frequency,
             for example of one day, the window_length will correspond to a period of time, in this case,
-            7 days for a window_length of 7. 
+            7 days for a window_length of 7.
             If a string is provided, it must be one of pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time that each window should span.
-            The list of available offset aliases, can be found at 
+            The list of available offset aliases, can be found at
             https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases.
             Defaults to 3.
         gap (int, string, optional): Specifies a gap backwards from each instance before the
@@ -144,7 +144,7 @@ class RollingMin(TransformPrimitive):
         This means that aliases such as `M` or `W` cannot be used, as they can indicate different
         numbers of days. ('M', because different months are different numbers of days;
         'W' because week will indicate a certain day of the week, like W-Wed, so that will
-        indicate a different number of days depending on the anchoring date.) 
+        indicate a different number of days depending on the anchoring date.)
 
     Examples:
         >>> import pandas as pd
@@ -172,10 +172,10 @@ class RollingMin(TransformPrimitive):
         We can also set the window_length and gap using offset alias strings.
 
         >>> import pandas as pd
-        >>> rolling_min = RollingMin(window_length='3min', gap='1min)
+        >>> rolling_min = RollingMin(window_length='3min', gap='1min')
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_min(times, [4, 3, 2, 1, 0]).tolist()
-        [nan, 4.0, 3.0, 2.0, 1.0] 
+        [nan, 4.0, 3.0, 2.0, 1.0]
     """
     name = "rolling_min"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
@@ -218,10 +218,10 @@ class RollingMean(TransformPrimitive):
         window_length (int, string, optional): Specifies the amount of data included in each window.
             If an integer is provided, will correspond to a number of rows. For data with a uniform sampling frequency,
             for example of one day, the window_length will correspond to a period of time, in this case,
-            7 days for a window_length of 7. 
+            7 days for a window_length of 7.
             If a string is provided, it must be one of pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time that each window should span.
-            The list of available offset aliases, can be found at 
+            The list of available offset aliases, can be found at
             https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases.
             Defaults to 3.
         gap (int, string, optional): Specifies a gap backwards from each instance before the
@@ -240,7 +240,7 @@ class RollingMean(TransformPrimitive):
         This means that aliases such as `M` or `W` cannot be used, as they can indicate different
         numbers of days. ('M', because different months are different numbers of days;
         'W' because week will indicate a certain day of the week, like W-Wed, so that will
-        indicate a different number of days depending on the anchoring date.) 
+        indicate a different number of days depending on the anchoring date.)
 
     Examples:
         >>> import pandas as pd
@@ -308,10 +308,10 @@ class RollingSTD(TransformPrimitive):
         window_length (int, string, optional): Specifies the amount of data included in each window.
             If an integer is provided, will correspond to a number of rows. For data with a uniform sampling frequency,
             for example of one day, the window_length will correspond to a period of time, in this case,
-            7 days for a window_length of 7. 
+            7 days for a window_length of 7.
             If a string is provided, it must be one of pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time that each window should span.
-            The list of available offset aliases, can be found at 
+            The list of available offset aliases, can be found at
             https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases.
             Defaults to 3.
         gap (int, string, optional): Specifies a gap backwards from each instance before the
@@ -330,7 +330,7 @@ class RollingSTD(TransformPrimitive):
         This means that aliases such as `M` or `W` cannot be used, as they can indicate different
         numbers of days. ('M', because different months are different numbers of days;
         'W' because week will indicate a certain day of the week, like W-Wed, so that will
-        indicate a different number of days depending on the anchoring date.) 
+        indicate a different number of days depending on the anchoring date.)
 
     Examples:
         >>> import pandas as pd
@@ -360,7 +360,7 @@ class RollingSTD(TransformPrimitive):
         >>> rolling_std = RollingSTD(window_length='4min', gap='1min')
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_std(times, [4, 3, 2, 1, 0]).tolist()
-        [nan, nan, 0.7071067811865476, 1.0, 1.2909944487358056]    
+        [nan, nan, 0.7071067811865476, 1.0, 1.2909944487358056]
     """
     name = "rolling_std"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
@@ -405,10 +405,10 @@ class RollingCount(TransformPrimitive):
         window_length (int, string, optional): Specifies the amount of data included in each window.
             If an integer is provided, will correspond to a number of rows. For data with a uniform sampling frequency,
             for example of one day, the window_length will correspond to a period of time, in this case,
-            7 days for a window_length of 7. 
+            7 days for a window_length of 7.
             If a string is provided, it must be one of pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time that each window should span.
-            The list of available offset aliases, can be found at 
+            The list of available offset aliases, can be found at
             https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases.
             Defaults to 3.
         gap (int, string, optional): Specifies a gap backwards from each instance before the
@@ -427,7 +427,7 @@ class RollingCount(TransformPrimitive):
         This means that aliases such as `M` or `W` cannot be used, as they can indicate different
         numbers of days. ('M', because different months are different numbers of days;
         'W' because week will indicate a certain day of the week, like W-Wed, so that will
-        indicate a different number of days depending on the anchoring date.) 
+        indicate a different number of days depending on the anchoring date.)
 
     Examples:
         >>> import pandas as pd
