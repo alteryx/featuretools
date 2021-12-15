@@ -287,30 +287,32 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
     return series.rolling(functional_window_length, min_periods)
 
 
-def _get_num_gap_rows_from_offset(series, offset_string):
+def _get_rolled_series_without_gap(series, offset_string):
     """Determines how many rows of the series
     """
-    # --> make sure this hanldes empty series case
     if not len(series):
-        return 0
+        return series
 
-    first_date = series.index[0]
-    offset = pd.tseries.frequencies.to_offset(offset_string)
+    window_start_date = series.index[0]
+    window_end_date = series.index[-1]
 
-    # Count the number of rows that are within the offset's bounds
+    gap_bound = window_end_date - to_offset(offset_string)
+
+    # If the gap is larger than the series, no rows are left in the wndow
+    if gap_bound < window_start_date:
+        return pd.Series()
+
+    # Only return the rows that are within the offset's bounds
     # Assumes series has a datetime index and is sorted by that index
-    return series.loc[series.index < (first_date + offset)].count()
+    return series[series.index <= gap_bound]
 
 
 def _apply_roll_with_offset_gap(rolled_sub_series, offset_gap, reducer_fn, min_periods):
     """Takes in a series to which an offset gap will be applied, removing however many
     rows fall under the gap before applying the reducing function.
     """
-    # Determines how many rows there are between the first date in the series and the gap
-    num_rows_to_skip = _get_num_gap_rows_from_offset(rolled_sub_series, offset_gap)
-
-    if num_rows_to_skip:
-        rolled_sub_series = rolled_sub_series.iloc[:-num_rows_to_skip]
+    # Gets the sub series without the gap component
+    rolled_sub_series = _get_rolled_series_without_gap(rolled_sub_series, offset_gap)
 
     if min_periods is None:
         min_periods = 1

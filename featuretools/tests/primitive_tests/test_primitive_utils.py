@@ -35,7 +35,7 @@ from featuretools.primitives.base import PrimitiveBase
 from featuretools.primitives.utils import (
     _apply_roll_with_offset_gap,
     _get_descriptions,
-    _get_num_gap_rows_from_offset,
+    _get_rolled_series_without_gap,
     _get_unique_input_types,
     _roll_series_with_gap,
     list_primitive_files,
@@ -143,23 +143,34 @@ def test_errors_no_primitive_in_file(bad_primitives_files_dir):
     assert str(excinfo.value) == error_text
 
 
-def test_get_num_gap_rows_from_offset(rolling_series_pd):
+def test_get_rolled_series_without_gap(rolling_series_pd):
     # Data is daily, so number of rows should be number of days
+    assert len(_get_rolled_series_without_gap(rolling_series_pd, "11D")) == 9
+    assert len(_get_rolled_series_without_gap(rolling_series_pd, "0D")) == 20
+    assert len(_get_rolled_series_without_gap(rolling_series_pd, "48H")) == 18
+    assert len(_get_rolled_series_without_gap(rolling_series_pd, "4H")) == 19
 
-    assert _get_num_gap_rows_from_offset(rolling_series_pd, "10D") == 10
-    assert _get_num_gap_rows_from_offset(rolling_series_pd, "0D") == 0
-    assert _get_num_gap_rows_from_offset(rolling_series_pd, "48H") == 2
-    assert _get_num_gap_rows_from_offset(rolling_series_pd, "4H") == 1
 
-
-def test_get_num_gap_rows_from_offset_not_uniform(rolling_series_pd):
+def test_get_rolled_series_without_gap_not_uniform(rolling_series_pd):
     non_uniform_series = rolling_series_pd.iloc[[0, 2, 5, 6, 8, 9]]
 
-    assert _get_num_gap_rows_from_offset(non_uniform_series, "10D") == 6
-    assert _get_num_gap_rows_from_offset(non_uniform_series, "0D") == 0
-    assert _get_num_gap_rows_from_offset(non_uniform_series, "48H") == 1
-    assert _get_num_gap_rows_from_offset(non_uniform_series, "4H") == 1
-    assert _get_num_gap_rows_from_offset(non_uniform_series, "5D") == 2
+    assert len(_get_rolled_series_without_gap(non_uniform_series, "10D")) == 0
+    assert len(_get_rolled_series_without_gap(non_uniform_series, "0D")) == 6
+    assert len(_get_rolled_series_without_gap(non_uniform_series, "48H")) == 4
+    assert len(_get_rolled_series_without_gap(non_uniform_series, "4H")) == 5
+    assert len(_get_rolled_series_without_gap(non_uniform_series, "4D")) == 3
+    assert len(_get_rolled_series_without_gap(non_uniform_series, "4D2H")) == 2
+
+
+def test_get_rolled_series_without_gap_empty_series(rolling_series_pd):
+    empty_series = pd.Series()
+    assert len(_get_rolled_series_without_gap(empty_series, "1D")) == 0
+    assert len(_get_rolled_series_without_gap(empty_series, "0D")) == 0
+
+
+def test_get_rolled_series_without_gap_large_bound(rolling_series_pd):
+    assert len(_get_rolled_series_without_gap(rolling_series_pd, "100D")) == 0
+    assert len(_get_rolled_series_without_gap(rolling_series_pd.iloc[[0, 2, 5, 6, 8, 9]], "20D")) == 0
 
 
 @pytest.mark.parametrize(
@@ -466,24 +477,3 @@ def test_apply_roll_with_offset_gap_non_uniform():
 # def test_roll_series_with_no_gap_parameter_set(window_length, rolling_series_pd):
 #     # --> confirm both are the same
 #     _roll_series_with_gap(rolling_series_pd, window_length)
-
-# --> will fail till updated - may no longer be possible to use non fixed so maye remoce
-# def test_roll_series_with_gap_and_non_fixed_offset_gap():
-#     # --> clean up more
-#     # The offset of 1W is <Week: weekday=6>, so the gap will make the start
-#     # the first 6th day of the week after the first datetime, not 7 days after the first datetime
-#     starts_on_sunday = pd.Series(range(40), index=pd.date_range(start='2017-1-15', freq='1D', periods=40))
-
-#     rolled_series = _roll_series_with_gap(starts_on_sunday, "5D", gap="1M", min_periods=1).max()
-#     assert rolled_series.isna().sum() == 16
-
-#     rolled_series = _roll_series_with_gap(starts_on_sunday, "5D", gap="1W", min_periods=1).max()
-#     assert rolled_series.isna().sum() == 7
-
-#     starts_on_monday = pd.Series(range(40), index=pd.date_range(start='2017-01-16', freq='1D', periods=40))
-
-#     rolled_series = _roll_series_with_gap(starts_on_monday, "5D", gap="1W", min_periods=1).max()
-#     assert rolled_series.isna().sum() == 6
-
-#     rolled_series = _roll_series_with_gap(starts_on_monday, "5D", gap="1M", min_periods=1).max()
-#     assert rolled_series.isna().sum() == 15
