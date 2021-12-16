@@ -144,7 +144,7 @@ def test_errors_no_primitive_in_file(bad_primitives_files_dir):
 
 
 def test_get_rolled_series_without_gap(rolling_series_pd):
-    # Data is daily, so number of rows should be number of days
+    # Data is daily, so number of rows should be number of days not included in the gap
     assert len(_get_rolled_series_without_gap(rolling_series_pd, "11D")) == 9
     assert len(_get_rolled_series_without_gap(rolling_series_pd, "0D")) == 20
     assert len(_get_rolled_series_without_gap(rolling_series_pd, "48H")) == 18
@@ -180,7 +180,7 @@ def test_get_rolled_series_without_gap_large_bound(rolling_series_pd):
         (3, 4),  # gap larger than window
         (2, 0),  # gap explicitly set to 0
         ('3d', '2d'),  # using offset aliases
-        ('3d', '4d'),  # using offset aliases
+        ('3d', '4d'),
         ('4d', '0d'),
     ],
 )
@@ -238,7 +238,7 @@ def test_roll_series_with_no_gap(window_length, rolling_series_pd):
         (6, 2),
         (6, 0),  # No gap - changes early values
         ('6d', '0d'),  # Uses offset aliases
-        ('6d', '2d')  # Uses offset aliases
+        ('6d', '2d')
     ]
 )
 def test_roll_series_with_gap_early_values(window_length, gap, rolling_series_pd):
@@ -275,7 +275,7 @@ def test_roll_series_with_gap_early_values(window_length, gap, rolling_series_pd
     # This is different than max, for example, which does not count nans in a window as values towards "min periods"
     assert num_null_aggregates == window_length_num - 1
     if isinstance(gap, str):
-        # gap isn't handled, so we'll never have any partial aggregates that would have come in the gap'
+        # gap isn't handled, so we'll never have any partial aggregates
         assert num_partial_aggregates == 0
     else:
         assert num_partial_aggregates == gap_num
@@ -329,11 +329,11 @@ def test_apply_roll_with_offset_gap(window_length, gap, rolling_series_pd):
     def max_wrapper(sub_s):
         return _apply_roll_with_offset_gap(sub_s, gap, max, min_periods=1)
 
-    def min_wrapper(sub_s):
-        return _apply_roll_with_offset_gap(sub_s, gap, min, min_periods=1)
-
     rolling_max_obj = _roll_series_with_gap(rolling_series_pd, window_length, gap=gap)
     rolling_max_series = rolling_max_obj.apply(max_wrapper)
+
+    def min_wrapper(sub_s):
+        return _apply_roll_with_offset_gap(sub_s, gap, min, min_periods=1)
 
     rolling_min_obj = _roll_series_with_gap(rolling_series_pd, window_length, gap=gap)
     rolling_min_series = rolling_min_obj.apply(min_wrapper)
@@ -345,7 +345,7 @@ def test_apply_roll_with_offset_gap(window_length, gap, rolling_series_pd):
     window_length_num = get_number_of_days(window_length)
     for i in range(len(rolling_series_pd)):
         start_idx = i - gap_num - window_length_num + 1
-        # Now this acts as expected
+        # Now that we have the _apply call, this acts as expected
         end_idx = i - gap_num
 
         # If start and end are negative, they're entirely before
@@ -379,7 +379,7 @@ def test_apply_roll_with_offset_gap_default_min_periods(min_periods, rolling_ser
     rolling_count_obj = _roll_series_with_gap(rolling_series_pd, window_length, gap=gap)
     rolling_count_series = rolling_count_obj.apply(count_wrapper)
 
-    # gap essentially creates rolling series that have no elements; which should be nan
+    # gap essentially creates a rolling series that has no elements; which should be nan
     # to differentiate from when a window only has null values
     num_empty_aggregates = rolling_count_series.isna().sum()
     num_partial_aggregates = len((rolling_count_series
@@ -424,8 +424,8 @@ def test_apply_roll_with_offset_gap_non_uniform():
 
     # When the data isn't uniform, this impacts the number of values in each rolling window
     # pick rows that should be pushed backwards to be one day after the previous day
-    # this means that with a window length of 7D, when we get to those rows, there's another value within the 7 days window
-    # where there are none for the rest of the rows
+    # this means that with a window length of 7D, when we get to those rows, there's another value
+    # within the 7 days window where there are none for the rest of the rows
     datetimes = list(pd.date_range(start='2017-01-01', freq='1W', periods=20))
     for i in rows_to_change:
         datetimes[i] = datetimes[i] - pd.Timedelta('6D')
@@ -439,8 +439,8 @@ def test_apply_roll_with_offset_gap_non_uniform():
     rolling_count_series = rolling_count_obj.apply(count_wrapper)
 
     counts = rolling_count_series.value_counts()
-    assert counts[1] == 3
-    assert rolling_count_series.isna().sum() == 17
+    assert counts[1] == len(rows_to_change)
+    assert rolling_count_series.isna().sum() == (len(no_freq_series) - len(rows_to_change))
 
     for i in rows_to_change:
         assert rolling_count_series.iloc[i] == 1
