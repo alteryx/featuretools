@@ -392,6 +392,7 @@ class RollingSTD(TransformPrimitive):
 
 
 class RollingCount(TransformPrimitive):
+    # --> add note about mismatched inputs
     """Determines a rolling count of events over a given window.
 
     Description:

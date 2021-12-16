@@ -2,7 +2,6 @@ import os
 
 import numpy as np
 import pandas as pd
-import py
 import pytest
 
 from featuretools import list_primitives
@@ -42,7 +41,6 @@ from featuretools.primitives.utils import (
     list_primitive_files,
     load_primitive_from_file
 )
-from featuretools.tests.conftest import rolling_series_pd
 from featuretools.tests.primitive_tests.utils import get_number_of_days
 from featuretools.utils.gen_utils import Library
 
