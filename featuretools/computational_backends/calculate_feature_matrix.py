@@ -10,6 +10,7 @@ import cloudpickle
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
+from woodwork.logical_types import Age, AgeNullable, Boolean, BooleanNullable, Integer, IntegerNullable
 
 from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
@@ -759,7 +760,27 @@ def update_progress_callback_parameters(progress_bar, previous_progress):
 
 
 def init_ww_and_concat_fm(feature_matrix, ww_init_kwargs):
+    cols_to_check = {col for col, ltype in
+                     ww_init_kwargs["logical_types"].items()
+                     if isinstance(ltype, (Age, Boolean, Integer))}
+    replacement_type = {
+        "age": AgeNullable(),
+        "boolean": BooleanNullable(),
+        "integer": IntegerNullable(),
+    }
     for fm in feature_matrix:
+        updated_cols = set()
+        for col in cols_to_check:
+            # Only convert types for pandas if null values are present
+            # Always convert for Dask/Koalas to avoid pulling data into memory for null check
+            is_pandas_df_with_null = isinstance(fm, pd.DataFrame) and fm[col].isnull().any()
+            is_dask_df = isinstance(fm, dd.DataFrame)
+            is_koalas_df = is_instance(fm, ks, 'DataFrame')
+            if is_pandas_df_with_null or is_dask_df or is_koalas_df:
+                current_type = ww_init_kwargs["logical_types"][col].type_string
+                ww_init_kwargs["logical_types"][col] = replacement_type[current_type]
+                updated_cols.add(col)
+        cols_to_check = cols_to_check - updated_cols
         fm.ww.init(**ww_init_kwargs)
 
     if any(isinstance(fm, dd.DataFrame) for fm in feature_matrix):
