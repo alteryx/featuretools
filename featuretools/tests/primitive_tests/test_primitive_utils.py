@@ -446,12 +446,52 @@ def test_apply_roll_with_offset_gap_non_uniform():
         assert rolling_count_series.iloc[i] == 1
 
 
-# --> add test with min periods being huge bc the offset strings are way too big - min_p = 20, freq = hourly, window_size = 1d
+def test_apply_roll_with_offset_data_frequency_higher_than_parameters_frequency():
+    window_length = '5D'  # 120 hours
+    window_length_num = 5
+    # In order for min periods to be the length of the window, we multiply 24hours*5
+    min_periods = window_length_num * 24
 
+    datetimes = list(pd.date_range(start='2017-01-01', freq='1H', periods=200))
+    high_frequency_series = pd.Series(range(200), index=datetimes)
+
+    # Check without gap
+    gap = "0d"
+    gap_num = 0
+
+    def max_wrapper(sub_s):
+        return _apply_roll_with_offset_gap(sub_s, gap, max, min_periods=min_periods)
+    rolling_max_obj = _roll_series_with_gap(high_frequency_series, window_length, min_periods=min_periods, gap=gap)
+    rolling_max_series = rolling_max_obj.apply(max_wrapper)
+
+    assert rolling_max_series.isna().sum() == (min_periods - 1) + gap_num
+
+    # Check with small gap
+    gap = '3H'
+    gap_num = 3
+
+    def max_wrapper(sub_s):
+        return _apply_roll_with_offset_gap(sub_s, gap, max, min_periods=min_periods)
+    rolling_max_obj = _roll_series_with_gap(high_frequency_series, window_length, min_periods=min_periods, gap=gap)
+    rolling_max_series = rolling_max_obj.apply(max_wrapper)
+
+    assert rolling_max_series.isna().sum() == (min_periods - 1) + gap_num
+
+    # Check with large gap - in terms of days, so we'll multiply by 24hours for number of nans
+    gap = '2D'
+    gap_num = 2
+
+    def max_wrapper(sub_s):
+        return _apply_roll_with_offset_gap(sub_s, gap, max, min_periods=min_periods)
+    rolling_max_obj = _roll_series_with_gap(high_frequency_series, window_length, min_periods=min_periods, gap=gap)
+    rolling_max_series = rolling_max_obj.apply(max_wrapper)
+
+    assert rolling_max_series.isna().sum() == (min_periods - 1) + (gap_num * 24)
 
 # --> test with negative numbers
 
 # --> test with non fixed freq?
+
 
 def test_roll_series_with_gap_different_input_types_same_result_uniform(rolling_series_pd):
     # Offset inputs will only produce the same results as numeric inputs
