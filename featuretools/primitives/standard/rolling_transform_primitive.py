@@ -51,6 +51,12 @@ class RollingMax(TransformPrimitive):
         'W' because week will indicate a certain day of the week, like W-Wed, so that will
         indicate a different number of days depending on the anchoring date.)
 
+    Note:
+        When using an offset alias to define `gap`, an offset alias must also be used to define `window_lengt`.
+        This limitation does not exist when using an offset alias to define `window_length`. In fact,
+        if the data has a uniform sampling frequency, it is preferable to use a numeric `gap` as it is more
+        efficient.
+
     Examples:
         >>> import pandas as pd
         >>> rolling_max = RollingMax(window_length=3)
@@ -145,6 +151,12 @@ class RollingMin(TransformPrimitive):
         numbers of days. ('M', because different months are different numbers of days;
         'W' because week will indicate a certain day of the week, like W-Wed, so that will
         indicate a different number of days depending on the anchoring date.)
+
+    Note:
+        When using an offset alias to define `gap`, an offset alias must also be used to define `window_lengt`.
+        This limitation does not exist when using an offset alias to define `window_length`. In fact,
+        if the data has a uniform sampling frequency, it is preferable to use a numeric `gap` as it is more
+        efficient.
 
     Examples:
         >>> import pandas as pd
@@ -242,6 +254,12 @@ class RollingMean(TransformPrimitive):
         'W' because week will indicate a certain day of the week, like W-Wed, so that will
         indicate a different number of days depending on the anchoring date.)
 
+    Note:
+        When using an offset alias to define `gap`, an offset alias must also be used to define `window_lengt`.
+        This limitation does not exist when using an offset alias to define `window_length`. In fact,
+        if the data has a uniform sampling frequency, it is preferable to use a numeric `gap` as it is more
+        efficient.
+
     Examples:
         >>> import pandas as pd
         >>> rolling_mean = RollingMean(window_length=3)
@@ -332,6 +350,12 @@ class RollingSTD(TransformPrimitive):
         'W' because week will indicate a certain day of the week, like W-Wed, so that will
         indicate a different number of days depending on the anchoring date.)
 
+    Note:
+        When using an offset alias to define `gap`, an offset alias must also be used to define `window_lengt`.
+        This limitation does not exist when using an offset alias to define `window_length`. In fact,
+        if the data has a uniform sampling frequency, it is preferable to use a numeric `gap` as it is more
+        efficient.
+
     Examples:
         >>> import pandas as pd
         >>> rolling_std = RollingSTD(window_length=4)
@@ -392,7 +416,6 @@ class RollingSTD(TransformPrimitive):
 
 
 class RollingCount(TransformPrimitive):
-    # --> add note about mismatched inputs
     """Determines a rolling count of events over a given window.
 
     Description:
@@ -429,6 +452,12 @@ class RollingCount(TransformPrimitive):
         numbers of days. ('M', because different months are different numbers of days;
         'W' because week will indicate a certain day of the week, like W-Wed, so that will
         indicate a different number of days depending on the anchoring date.)
+
+    Note:
+        When using an offset alias to define `gap`, an offset alias must also be used to define `window_lengt`.
+        This limitation does not exist when using an offset alias to define `window_length`. In fact,
+        if the data has a uniform sampling frequency, it is preferable to use a numeric `gap` as it is more
+        efficient.
 
     Examples:
         >>> import pandas as pd
@@ -471,7 +500,6 @@ class RollingCount(TransformPrimitive):
         self.min_periods = min_periods
 
     def _offset_count(self, series):
-        # --> len will include nans which .count doesnt, so don't sue it
         return _apply_roll_with_offset_gap(series, self.gap, len, self.min_periods)
 
     def get_function(self):

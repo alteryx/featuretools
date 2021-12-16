@@ -280,6 +280,12 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
         'W' because week will indicate a certain day of the week, like W-Wed, so that will
         indicate a different number of days depending on the anchoring date.)
 
+    Note:
+        When using an offset alias to define `gap`, an offset alias must also be used to define `window_size`.
+        This limitation does not exist when using an offset alias to define `window_size`. In fact,
+        if the data has a uniform sampling frequency, it is preferable to use a numeric `gap` as it is more
+        efficient.
+
     """
     _check_rolling_inputs(window_size, gap)
 
