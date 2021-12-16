@@ -1,6 +1,6 @@
-from mock import patch
 import pandas as pd
 import pytest
+from mock import patch
 
 from featuretools.primitives import (
     RollingCount,
