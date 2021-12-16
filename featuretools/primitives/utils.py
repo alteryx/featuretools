@@ -281,27 +281,20 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
         indicate a different number of days depending on the anchoring date.)
 
     """
+    _check_rolling_inputs(window_size, gap)
+
     # Workaround for pandas' bug: https://github.com/pandas-dev/pandas/issues/43016
     # Can remove when upgraded to pandas 1.4.0
     if str(series.dtype) == 'Int64':
         series = series.astype('float64')
 
-    # --> add catching of non offset string except Exception:
-    # raise ValueError('must be a valid time frame in seconds, minutes, hours, or days (e.g. 1s, 5min, 4h, 7d, etc.)')
-    # --> handle situation where no datetime is present? maybe not necessary bc only used internally! just add a note in the docstring about needinst a datetime if you want to allow offset strings
-    # --> add note that the gap is most predictable when it's a fixed frequency (like hour or day) rather than one that can be a variable nubmer of days (like year or month)
     # The gap will just use the offset of that string, so if it's variable,
     # --> window length must be a fixed freq
 
     # If gap is an offset string, it'll get applied at the primitive call
     functional_window_length = window_size
     # --> gap and window length must both be fixed tobe added to one another
-    # --> and they're assumed to be the same type
     if isinstance(gap, str):
-        if not isinstance(window_size, str):
-            raise TypeError(f"Cannot roll series with offset gap, {gap}, and numeric window length, {window_size}."
-                            "If an offset alias is used for gap, the window length must also be defined as an offset alias."
-                            "Please either change gap to be numeric or change window length to be an offset alias.")
         functional_window_length = to_offset(window_size) + to_offset(gap)
     elif gap > 0:
         series = series.shift(gap)
@@ -343,3 +336,21 @@ def _apply_roll_with_offset_gap(rolled_sub_series, offset_gap, reducer_fn, min_p
         return np.nan
 
     return reducer_fn(rolled_sub_series)
+
+
+def _check_rolling_inputs(window_size, gap):
+    if isinstance(window_size, str):
+        try:
+            to_offset(window_size)
+        except ValueError:
+            raise ValueError(f"Cannot roll series. Window length, {window_size}, is not a valid offset alias.")
+
+    if isinstance(gap, str):
+        if not isinstance(window_size, str):
+            raise TypeError(f"Cannot roll series with offset gap, {gap}, and numeric window length, {window_size}. "
+                            "If an offset alias is used for gap, the window length must also be defined as an offset alias. "
+                            "Please either change gap to be numeric or change window length to be an offset alias.")
+        try:
+            to_offset(gap)
+        except ValueError:
+            raise ValueError(f"Cannot roll series. Gap, {gap}, is not a valid offset alias.")

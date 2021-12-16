@@ -46,8 +46,6 @@ def test_rolling_max(min_periods, window_length, gap, rolling_series_pd):
     assert actual_vals.isna().sum() == gap_num + num_nans_from_min_periods - 1
     pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
 
-# --> test primitives with non uniformity
-
 
 @pytest.mark.parametrize(
     "window_length, gap",
@@ -285,3 +283,6 @@ def test_rolling_std_non_uniform_data():
         assert not pd.isna(window_6_series.iloc[i])
     # The remainder are null values
     assert window_6_series.isna().sum() == 14
+
+# --> test a mock for whether the shift or the get num gap rows is used
+# --> test count prim with nans
