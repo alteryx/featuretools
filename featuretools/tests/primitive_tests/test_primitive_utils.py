@@ -488,9 +488,21 @@ def test_apply_roll_with_offset_data_frequency_higher_than_parameters_frequency(
 
     assert rolling_max_series.isna().sum() == (min_periods - 1) + (gap_num * 24)
 
-# --> test with negative numbers
 
-# --> test with non fixed freq?
+def test_apply_roll_with_offset_data_min_periods_too_big(rolling_series_pd):
+    window_length = '5D'
+    gap = "2d"
+
+    # Since the data has a daily frequency, there will only be, at most, 5 rows in the window
+    min_periods = 6
+
+    def max_wrapper(sub_s):
+        return _apply_roll_with_offset_gap(sub_s, gap, max, min_periods=min_periods)
+    rolling_max_obj = _roll_series_with_gap(rolling_series_pd, window_length, min_periods=min_periods, gap=gap)
+    rolling_max_series = rolling_max_obj.apply(max_wrapper)
+
+    # The resulting series is comprised entirely of nans
+    assert rolling_max_series.isna().sum() == len(rolling_series_pd)
 
 
 def test_roll_series_with_gap_different_input_types_same_result_uniform(rolling_series_pd):

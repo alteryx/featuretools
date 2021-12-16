@@ -288,12 +288,8 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
     if str(series.dtype) == 'Int64':
         series = series.astype('float64')
 
-    # The gap will just use the offset of that string, so if it's variable,
-    # --> window length must be a fixed freq
-
     # If gap is an offset string, it'll get applied at the primitive call
     functional_window_length = window_size
-    # --> gap and window length must both be fixed tobe added to one another
     if isinstance(gap, str):
         functional_window_length = to_offset(window_size) + to_offset(gap)
     elif gap > 0:
@@ -303,7 +299,8 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
 
 
 def _get_rolled_series_without_gap(series, offset_string):
-    """Determines how many rows of the series
+    """Applies the gap offset_string to the rolled window, returning a window
+    that is the correct length of time away from the original instance.
     """
     if not len(series):
         return series
