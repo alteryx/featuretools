@@ -274,7 +274,7 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
         should determine whether this kind of handling is also necessary.
 
     Note:
-        Only offset aliases with fixed frequencies can be used when defining gap and window_lengt.
+        Only offset aliases with fixed frequencies can be used when defining gap and window_length.
         This means that aliases such as `M` or `W` cannot be used, as they can indicate different
         numbers of days. ('M', because different months are different numbers of days;
         'W' because week will indicate a certain day of the week, like W-Wed, so that will

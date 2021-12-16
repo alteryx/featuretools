@@ -45,14 +45,14 @@ class RollingMax(TransformPrimitive):
             Defaults to 1.
 
     Note:
-        Only offset aliases with fixed frequencies can be used when defining gap and window_lengt.
+        Only offset aliases with fixed frequencies can be used when defining gap and window_length.
         This means that aliases such as `M` or `W` cannot be used, as they can indicate different
         numbers of days. ('M', because different months are different numbers of days;
         'W' because week will indicate a certain day of the week, like W-Wed, so that will
         indicate a different number of days depending on the anchoring date.)
 
     Note:
-        When using an offset alias to define `gap`, an offset alias must also be used to define `window_lengt`.
+        When using an offset alias to define `gap`, an offset alias must also be used to define `window_length`.
         This limitation does not exist when using an offset alias to define `window_length`. In fact,
         if the data has a uniform sampling frequency, it is preferable to use a numeric `gap` as it is more
         efficient.
@@ -146,14 +146,14 @@ class RollingMin(TransformPrimitive):
             Defaults to 1.
 
     Note:
-        Only offset aliases with fixed frequencies can be used when defining gap and window_lengt.
+        Only offset aliases with fixed frequencies can be used when defining gap and window_length.
         This means that aliases such as `M` or `W` cannot be used, as they can indicate different
         numbers of days. ('M', because different months are different numbers of days;
         'W' because week will indicate a certain day of the week, like W-Wed, so that will
         indicate a different number of days depending on the anchoring date.)
 
     Note:
-        When using an offset alias to define `gap`, an offset alias must also be used to define `window_lengt`.
+        When using an offset alias to define `gap`, an offset alias must also be used to define `window_length`.
         This limitation does not exist when using an offset alias to define `window_length`. In fact,
         if the data has a uniform sampling frequency, it is preferable to use a numeric `gap` as it is more
         efficient.
@@ -248,14 +248,14 @@ class RollingMean(TransformPrimitive):
             Defaults to 1.
 
     Note:
-        Only offset aliases with fixed frequencies can be used when defining gap and window_lengt.
+        Only offset aliases with fixed frequencies can be used when defining gap and window_length.
         This means that aliases such as `M` or `W` cannot be used, as they can indicate different
         numbers of days. ('M', because different months are different numbers of days;
         'W' because week will indicate a certain day of the week, like W-Wed, so that will
         indicate a different number of days depending on the anchoring date.)
 
     Note:
-        When using an offset alias to define `gap`, an offset alias must also be used to define `window_lengt`.
+        When using an offset alias to define `gap`, an offset alias must also be used to define `window_length`.
         This limitation does not exist when using an offset alias to define `window_length`. In fact,
         if the data has a uniform sampling frequency, it is preferable to use a numeric `gap` as it is more
         efficient.
@@ -344,14 +344,14 @@ class RollingSTD(TransformPrimitive):
             Defaults to 1.
 
     Note:
-        Only offset aliases with fixed frequencies can be used when defining gap and window_lengt.
+        Only offset aliases with fixed frequencies can be used when defining gap and window_length.
         This means that aliases such as `M` or `W` cannot be used, as they can indicate different
         numbers of days. ('M', because different months are different numbers of days;
         'W' because week will indicate a certain day of the week, like W-Wed, so that will
         indicate a different number of days depending on the anchoring date.)
 
     Note:
-        When using an offset alias to define `gap`, an offset alias must also be used to define `window_lengt`.
+        When using an offset alias to define `gap`, an offset alias must also be used to define `window_length`.
         This limitation does not exist when using an offset alias to define `window_length`. In fact,
         if the data has a uniform sampling frequency, it is preferable to use a numeric `gap` as it is more
         efficient.
@@ -447,14 +447,14 @@ class RollingCount(TransformPrimitive):
             Defaults to 1.
 
     Note:
-        Only offset aliases with fixed frequencies can be used when defining gap and window_lengt.
+        Only offset aliases with fixed frequencies can be used when defining gap and h.
         This means that aliases such as `M` or `W` cannot be used, as they can indicate different
         numbers of days. ('M', because different months are different numbers of days;
         'W' because week will indicate a certain day of the week, like W-Wed, so that will
         indicate a different number of days depending on the anchoring date.)
 
     Note:
-        When using an offset alias to define `gap`, an offset alias must also be used to define `window_lengt`.
+        When using an offset alias to define `gap`, an offset alias must also be used to define `window_length`.
         This limitation does not exist when using an offset alias to define `window_length`. In fact,
         if the data has a uniform sampling frequency, it is preferable to use a numeric `gap` as it is more
         efficient.
