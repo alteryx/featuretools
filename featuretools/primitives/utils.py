@@ -294,51 +294,73 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
     if str(series.dtype) == 'Int64':
         series = series.astype('float64')
 
-    # If gap is an offset string, it'll get applied at the primitive call
     functional_window_length = window_size
     if isinstance(gap, str):
+        # Add the window_size and gap so that the rolling operation correctly takes gap into account.
+        # That way, we can later remove the gap rows in order to apply the primitive function
+        # to the correct window
         functional_window_length = to_offset(window_size) + to_offset(gap)
     elif gap > 0:
+        # When gap is numeric, we can apply a shift to incorporate gap right now
+        # since the gap will be the same number of rows for the whole dataset
         series = series.shift(gap)
 
     return series.rolling(functional_window_length, min_periods)
 
 
-def _get_rolled_series_without_gap(series, offset_string):
+def _get_rolled_series_without_gap(window, gap_offset):
     """Applies the gap offset_string to the rolled window, returning a window
     that is the correct length of time away from the original instance.
+
+     Args:
+        window (Series): A rolling window that includes both the window length and gap spans of time.
+        gap_offset (string): The pandas offset alias that determines how much time at the end of the window
+            should be removed.
+
+    Returns:
+        Series: The window with gap rows removed
     """
-    if not len(series):
-        return series
+    if not len(window):
+        return window
 
-    window_start_date = series.index[0]
-    window_end_date = series.index[-1]
+    window_start_date = window.index[0]
+    window_end_date = window.index[-1]
 
-    gap_bound = window_end_date - to_offset(offset_string)
+    gap_bound = window_end_date - to_offset(gap_offset)
 
-    # If the gap is larger than the series, no rows are left in the wndow
+    # If the gap is larger than the series, no rows are left in the window
     if gap_bound < window_start_date:
         return pd.Series()
 
     # Only return the rows that are within the offset's bounds
-    # Assumes series has a datetime index and is sorted by that index
-    return series[series.index <= gap_bound]
+    return window[window.index <= gap_bound]
 
 
-def _apply_roll_with_offset_gap(rolled_sub_series, offset_gap, reducer_fn, min_periods):
+def _apply_roll_with_offset_gap(window, gap_offset, reducer_fn, min_periods):
     """Takes in a series to which an offset gap will be applied, removing however many
     rows fall under the gap before applying the reducing function.
+
+    Args:
+        window (Series):  A rolling window that includes both the window length and gap spans of time.
+        gap_offset (string): The pandas offset alias that determines how much time at the end of the window
+            should be removed.
+        reducer_fn (callable[Series -> float]): The function to be applied to the window in order to produce
+            the aggregate that will be included in the resulting feature.
+        min_periods (int): Minimum number of observations required for performing calculations
+            over the window.
+
+    Returns:
+        float: The aggregate value to be used as a feature value.
     """
-    # Gets the sub series without the gap component
-    rolled_sub_series = _get_rolled_series_without_gap(rolled_sub_series, offset_gap)
+    window = _get_rolled_series_without_gap(window, gap_offset)
 
     if min_periods is None:
         min_periods = 1
 
-    if len(rolled_sub_series) < min_periods or not len(rolled_sub_series):
+    if len(window) < min_periods or not len(window):
         return np.nan
 
-    return reducer_fn(rolled_sub_series)
+    return reducer_fn(window)
 
 
 def _check_rolling_inputs(window_size, gap):
