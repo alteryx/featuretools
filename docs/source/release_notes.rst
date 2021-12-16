@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ability to use offset alias strings as inputs to rolling primitives (:pr:`1809`)
     * Fixes
     * Changes
     * Documentation Changes
@@ -13,7 +14,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`tamargrey`
     
 v1.3.0 Dec 2, 2021
 ==================
