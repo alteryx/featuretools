@@ -41,6 +41,7 @@ from featuretools.primitives.utils import (
     list_primitive_files,
     load_primitive_from_file
 )
+from featuretools.tests.conftest import rolling_series_pd
 from featuretools.tests.primitive_tests.utils import get_number_of_days
 from featuretools.utils.gen_utils import Library
 
@@ -445,6 +446,7 @@ def test_apply_roll_with_offset_gap_non_uniform():
     for i in rows_to_change:
         assert rolling_count_series.iloc[i] == 1
 
+
 # --> add test with min periods being huge bc the offset strings are way too big - min_p = 20, freq = hourly, window_size = 1d
 
 # def test_roll_series_with_gap_invalid_offset_strings():
@@ -453,18 +455,6 @@ def test_apply_roll_with_offset_gap_non_uniform():
 
 # def test_roll_series_with_gap_no_datetime():
 #     pass
-
-
-# def test_roll_series_with_mismatched_parameters(rolling_series_pd):
-#     # --> maybe no longer necessary to fail there
-#     error = 'Cannot roll series when window_length, 4 is and gap is 2d; parameters are not the same type.'
-#     with pytest.raises(TypeError, match=error):
-#         _roll_series_with_gap(rolling_series_pd, 4, gap="2d")
-
-#     error = 'Cannot roll series when window_length is 4d, and gap is 2; parameters are not the same type.'
-#     with pytest.raises(TypeError, match=error):
-#         _roll_series_with_gap(rolling_series_pd, "4d", gap=2)
-#     # --> check when no gap passed in
 
 
 # @pytest.mark.parametrize(
@@ -477,3 +467,51 @@ def test_apply_roll_with_offset_gap_non_uniform():
 # def test_roll_series_with_no_gap_parameter_set(window_length, rolling_series_pd):
 #     # --> confirm both are the same
 #     _roll_series_with_gap(rolling_series_pd, window_length)
+
+# def test_non_offset_inputs(rolling_series_pd):
+#     # Rolling series' with matching input types
+#     expected_rolling_numeric = _roll_series_with_gap(rolling_series_pd,
+#                                                      window_size='test',
+#                                                      gap='gap test')
+
+# --> test with negative numbers
+def test_roll_series_with_gap_different_input_types_same_result_uniform(rolling_series_pd):
+    # Offset inputs will only produce the same results as numeric inputs
+    # when the data has a uniform frequency
+    def count_wrapper(sub_s):
+        return _apply_roll_with_offset_gap(sub_s, offset_gap, max, min_periods=1)
+
+    offset_gap = '2d'
+    offset_window_length = '5d'
+    int_gap = 2
+    int_window_length = 5
+
+    # Rolling series' with matching input types
+    expected_rolling_numeric = _roll_series_with_gap(rolling_series_pd,
+                                                     window_size=int_window_length,
+                                                     gap=int_gap).max()
+
+    rolling_count_obj = _roll_series_with_gap(rolling_series_pd,
+                                              window_size=offset_window_length,
+                                              gap=offset_gap)
+    expected_rolling_offset = rolling_count_obj.apply(count_wrapper)
+
+    # confirm that the offset and gap results are equal to one another
+    pd.testing.assert_series_equal(expected_rolling_numeric, expected_rolling_offset)
+
+    # Rolling series' with mismatched input types
+    mismatched_numeric_gap = _roll_series_with_gap(rolling_series_pd,
+                                                   window_size=offset_window_length,
+                                                   gap=int_gap).max()
+    # Confirm the mismatched results also produce the same results
+    pd.testing.assert_series_equal(expected_rolling_numeric, mismatched_numeric_gap)
+
+
+def test_roll_series_with_gap_offset_gap_with_numeric_window_length_error(rolling_series_pd):
+    error = (f"Cannot roll series with offset gap, 2d, and numeric window length, 7."
+             "If an offset alias is used for gap, the window length must also be defined as an offset alias."
+             "Please either change gap to be numeric or change window length to be an offset alias.")
+    with pytest.raises(TypeError, match=error):
+        _roll_series_with_gap(rolling_series_pd,
+                              window_size=7,
+                              gap='2d').max()

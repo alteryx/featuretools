@@ -239,7 +239,7 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
     Args:
         series (Series): The series over which rolling windows will be created. Must be numeric in nature
             and have a DatetimeIndex.
-        window_length (int, string): Specifies the amount of data included in each window.
+        window_size (int, string): Specifies the amount of data included in each window.
             If an integer is provided, will correspond to a number of rows. For data with a uniform sampling frequency,
             for example of one day, the window_length will correspond to a period of time, in this case,
             7 days for a window_length of 7.
@@ -298,6 +298,10 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
     # --> gap and window length must both be fixed tobe added to one another
     # --> and they're assumed to be the same type
     if isinstance(gap, str):
+        if not isinstance(window_size, str):
+            raise TypeError(f"Cannot roll series with offset gap, {gap}, and numeric window length, {window_size}."
+                            "If an offset alias is used for gap, the window length must also be defined as an offset alias."
+                            "Please either change gap to be numeric or change window length to be an offset alias.")
         functional_window_length = to_offset(window_size) + to_offset(gap)
     elif gap > 0:
         series = series.shift(gap)
