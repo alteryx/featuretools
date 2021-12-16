@@ -10,7 +10,14 @@ import cloudpickle
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
-from woodwork.logical_types import Age, AgeNullable, Boolean, BooleanNullable, Integer, IntegerNullable
+from woodwork.logical_types import (
+    Age,
+    AgeNullable,
+    Boolean,
+    BooleanNullable,
+    Integer,
+    IntegerNullable
+)
 
 from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
