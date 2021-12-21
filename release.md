@@ -80,8 +80,12 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
 
 #### Test with conda-forge CI
 1. Install conda
-    1. If using pyenv, `pyenv install miniconda3-latest`
-    2. Otherwise follow instructions in [conda docs](https://conda.io/projects/conda/en/latest/user-guide/install/index.html)
+    1. If using pyenv:
+        ```bash
+        pyenv install miniconda3-latest
+        pyenv local miniconda3-latest
+        ```
+    3. Otherwise follow instructions in [conda docs](https://conda.io/projects/conda/en/latest/user-guide/install/index.html)
 2. Install conda-smithy (conda-forge tool to update boilerplate in repo)
     ```bash
     conda install -n root -c conda-forge conda-smithy
