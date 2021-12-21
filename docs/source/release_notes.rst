@@ -9,10 +9,12 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Remove testing on conda forge in release.md (:pr:`1811`)
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
-
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
+    
 v1.3.0 Dec 2, 2021
 ==================
     * Enhancements
