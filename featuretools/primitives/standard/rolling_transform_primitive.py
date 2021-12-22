@@ -386,9 +386,6 @@ class RollingSTD(TransformPrimitive):
         self.gap = gap
         self.min_periods = min_periods
 
-    def _pandas_std(self, series):
-        return series.std()
-
     def get_function(self):
         def rolling_std(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
@@ -398,7 +395,10 @@ class RollingSTD(TransformPrimitive):
                                                   min_periods=self.min_periods)
 
             if isinstance(self.gap, str):
-                additional_args = (self.gap, self._pandas_std, self.min_periods)
+                def _pandas_std(series):
+                    return series.std()
+                additional_args = (self.gap, _pandas_std, self.min_periods)
+
                 return rolled_series.apply(_apply_roll_with_offset_gap, args=additional_args).values
             return rolled_series.std().values
         return rolling_std

@@ -192,7 +192,6 @@ def test_rolling_count(window_length, gap, rolling_series_pd):
     [
         (0, 2),  # 0 and 1 get treated the same
         (1, 2),
-        (1, 2),
         (3, 4),
         (5, 6)
     ]
