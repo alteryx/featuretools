@@ -10,7 +10,7 @@ from featuretools.primitives import (
     RollingSTD
 )
 from featuretools.primitives.utils import _roll_series_with_gap
-from featuretools.tests.primitive_tests.utils import get_number_of_days
+from featuretools.tests.primitive_tests.utils import get_number_from_offset
 
 
 @pytest.mark.parametrize(
@@ -27,8 +27,8 @@ from featuretools.tests.primitive_tests.utils import get_number_of_days
     [1, 0, 2, 5]
 )
 def test_rolling_max(min_periods, window_length, gap, rolling_series_pd):
-    gap_num = get_number_of_days(gap)
-    window_length_num = get_number_of_days(window_length)
+    gap_num = get_number_from_offset(gap)
+    window_length_num = get_number_from_offset(window_length)
     # Since we're using a uniform series we can check correctness using numeric parameters
     expected_vals = _roll_series_with_gap(rolling_series_pd,
                                           window_length_num,
@@ -61,8 +61,8 @@ def test_rolling_max(min_periods, window_length, gap, rolling_series_pd):
     [1, 0, 2, 5]
 )
 def test_rolling_min(min_periods, window_length, gap, rolling_series_pd):
-    gap_num = get_number_of_days(gap)
-    window_length_num = get_number_of_days(window_length)
+    gap_num = get_number_from_offset(gap)
+    window_length_num = get_number_from_offset(window_length)
 
     # Since we're using a uniform series we can check correctness using numeric parameters
     expected_vals = _roll_series_with_gap(rolling_series_pd,
@@ -96,8 +96,8 @@ def test_rolling_min(min_periods, window_length, gap, rolling_series_pd):
     [1, 0, 2, 5]
 )
 def test_rolling_mean(min_periods, window_length, gap, rolling_series_pd):
-    gap_num = get_number_of_days(gap)
-    window_length_num = get_number_of_days(window_length)
+    gap_num = get_number_from_offset(gap)
+    window_length_num = get_number_from_offset(window_length)
 
     # Since we're using a uniform series we can check correctness using numeric parameters
     expected_vals = _roll_series_with_gap(rolling_series_pd,
@@ -131,8 +131,8 @@ def test_rolling_mean(min_periods, window_length, gap, rolling_series_pd):
     [1, 0, 2, 5]
 )
 def test_rolling_std(min_periods, window_length, gap, rolling_series_pd):
-    gap_num = get_number_of_days(gap)
-    window_length_num = get_number_of_days(window_length)
+    gap_num = get_number_from_offset(gap)
+    window_length_num = get_number_from_offset(window_length)
 
     # Since we're using a uniform series we can check correctness using numeric parameters
     expected_vals = _roll_series_with_gap(rolling_series_pd,
@@ -167,8 +167,8 @@ def test_rolling_std(min_periods, window_length, gap, rolling_series_pd):
     ]
 )
 def test_rolling_count(window_length, gap, rolling_series_pd):
-    gap_num = get_number_of_days(gap)
-    window_length_num = get_number_of_days(window_length)
+    gap_num = get_number_from_offset(gap)
+    window_length_num = get_number_from_offset(window_length)
 
     expected_vals = _roll_series_with_gap(rolling_series_pd,
                                           window_length_num,

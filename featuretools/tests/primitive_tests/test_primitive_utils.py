@@ -41,7 +41,7 @@ from featuretools.primitives.utils import (
     list_primitive_files,
     load_primitive_from_file
 )
-from featuretools.tests.primitive_tests.utils import get_number_of_days
+from featuretools.tests.primitive_tests.utils import get_number_from_offset
 from featuretools.utils.gen_utils import Library
 
 
@@ -191,8 +191,8 @@ def test_roll_series_with_gap(window_length, gap, rolling_series_pd):
     assert len(rolling_max) == len(rolling_series_pd)
     assert len(rolling_min) == len(rolling_series_pd)
 
-    gap_num = get_number_of_days(gap)
-    window_length_num = get_number_of_days(window_length)
+    gap_num = get_number_from_offset(gap)
+    window_length_num = get_number_from_offset(window_length)
     for i in range(len(rolling_series_pd)):
         start_idx = i - gap_num - window_length_num + 1
 
@@ -242,8 +242,8 @@ def test_roll_series_with_no_gap(window_length, rolling_series_pd):
     ]
 )
 def test_roll_series_with_gap_early_values(window_length, gap, rolling_series_pd):
-    gap_num = get_number_of_days(gap)
-    window_length_num = get_number_of_days(window_length)
+    gap_num = get_number_from_offset(gap)
+    window_length_num = get_number_from_offset(window_length)
 
     # Default min periods is 1 - will include all
     default_partial_values = _roll_series_with_gap(rolling_series_pd,
@@ -341,8 +341,8 @@ def test_apply_roll_with_offset_gap(window_length, gap, rolling_series_pd):
     assert len(rolling_max_series) == len(rolling_series_pd)
     assert len(rolling_min_series) == len(rolling_series_pd)
 
-    gap_num = get_number_of_days(gap)
-    window_length_num = get_number_of_days(window_length)
+    gap_num = get_number_from_offset(gap)
+    window_length_num = get_number_from_offset(window_length)
     for i in range(len(rolling_series_pd)):
         start_idx = i - gap_num - window_length_num + 1
         # Now that we have the _apply call, this acts as expected
