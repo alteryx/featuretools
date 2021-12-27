@@ -17,7 +17,6 @@ from woodwork.logical_types import (
     Ordinal
 )
 
-
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
 )
@@ -967,15 +966,15 @@ class GeoMidpoint(TransformPrimitive):
     commutative = True
 
     def get_function(self):
-        def geomidpoint_func(latlong_1, latlong2):
+        def geomidpoint_func(latlong_1, latlong_2):
             if latlong_1.hasnans:
                 latlong_1 = np.where(latlong_1.isnull(), pd.Series([(np.nan, np.nan)] * len(latlong_1)), latlong_1)
             if latlong_2.hasnans:
                 latlong_2 = np.where(latlong_2.isnull(), pd.Series([(np.nan, np.nan)] * len(latlong_2)), latlong_2)
-            lat_1s = np.array([x[0] for x in latlong1])
-            lon_1s = np.array([x[1] for x in latlong1])
-            lat_2s = np.array([x[0] for x in latlong2])
-            lon_2s = np.array([x[1] for x in latlong2])
+            lat_1s = np.array([x[0] for x in latlong_1])
+            lon_1s = np.array([x[1] for x in latlong_1])
+            lat_2s = np.array([x[0] for x in latlong_2])
+            lon_2s = np.array([x[1] for x in latlong_2])
             lat_middle = np.array([lat_1s, lat_2s]).transpose().mean(axis=1)
             lon_middle = np.array([lon_1s, lon_2s]).transpose().mean(axis=1)
             return list(zip(lat_middle, lon_middle))
