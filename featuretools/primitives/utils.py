@@ -231,6 +231,39 @@ class PrimitivesDeserializer(object):
                 return cls
 
 
+def _roll_series_with_numeric_gap(series, window_size, gap=0, min_periods=1):
+    _check_window_size(window_size)
+
+    # Workaround for pandas' bug: https://github.com/pandas-dev/pandas/issues/43016
+    # Can remove when upgraded to pandas 1.4.0
+    if str(series.dtype) == 'Int64':
+        series = series.astype('float64')
+
+    if gap > 0:
+        # Apply a shift to incorporate gap before rolling
+        # since the gap will be the same number of rows for the whole dataset
+        series = series.shift(gap)
+
+    return series.rolling(window_size, min_periods)
+
+
+def _roll_series_with_offset_gap(series, window_size, gap=0, min_periods=1):
+    _check_window_size(gap)
+    _check_gap(window_size, gap)
+
+    # Workaround for pandas' bug: https://github.com/pandas-dev/pandas/issues/43016
+    # Can remove when upgraded to pandas 1.4.0
+    if str(series.dtype) == 'Int64':
+        series = series.astype('float64')
+
+    # Add the window_size and gap so that the rolling operation correctly takes gap into account.
+    # That way, we can later remove the gap rows in order to apply the primitive function
+    # to the correct window
+    functional_window_length = to_offset(window_size) + to_offset(gap)
+
+    return series.rolling(functional_window_length, min_periods)
+
+
 def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
     """Provide rolling window calculations where the windows are determined using both a gap parameter
     that indicates the amount of time between each instance and its window and a window length parameter
@@ -400,3 +433,23 @@ def _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_2s, unit):
         radius_earth = 6371.0088
     distances = radius_earth * 2 * np.arcsin(np.sqrt(a))
     return distances
+
+
+def _check_window_size(window_size):
+    if isinstance(window_size, str):
+        try:
+            to_offset(window_size)
+        except ValueError:
+            raise ValueError(f"Cannot roll series. Window length, {window_size}, is not a valid offset alias.")
+
+
+def _check_gap(window_size, gap):
+    if isinstance(gap, str):
+        if not isinstance(window_size, str):
+            raise TypeError(f"Cannot roll series with offset gap, {gap}, and numeric window length, {window_size}. "
+                            "If an offset alias is used for gap, the window length must also be defined as an offset alias. "
+                            "Please either change gap to be numeric or change window length to be an offset alias.")
+        try:
+            to_offset(gap)
+        except ValueError:
+            raise ValueError(f"Cannot roll series. Gap, {gap}, is not a valid offset alias.")

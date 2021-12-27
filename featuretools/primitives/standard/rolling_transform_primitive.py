@@ -8,7 +8,9 @@ from featuretools.primitives.base.transform_primitive_base import (
 )
 from featuretools.primitives.utils import (
     _apply_roll_with_offset_gap,
-    _roll_series_with_gap
+    _roll_series_with_gap,
+    _roll_series_with_offset_gap,
+    _roll_series_with_numeric_gap
 )
 
 
@@ -100,15 +102,21 @@ class RollingMax(TransformPrimitive):
     def get_function(self):
         def rolling_max(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = _roll_series_with_gap(x,
-                                                  self.window_length,
-                                                  gap=self.gap,
-                                                  min_periods=self.min_periods)
 
             if isinstance(self.gap, str):
+                rolled_series = _roll_series_with_offset_gap(x,
+                                                             self.window_length,
+                                                             gap=self.gap,
+                                                             min_periods=self.min_periods)
                 additional_args = (self.gap, max, self.min_periods)
                 return rolled_series.apply(_apply_roll_with_offset_gap, args=additional_args).values
-            return rolled_series.max().values
+            else:
+                rolled_series = _roll_series_with_numeric_gap(x,
+                                                              self.window_length,
+                                                              gap=self.gap,
+                                                              min_periods=self.min_periods)
+
+                return rolled_series.max().values
         return rolling_max
 
 
@@ -491,27 +499,33 @@ class RollingCount(TransformPrimitive):
     def get_function(self):
         def rolling_count(datetime):
             x = pd.Series(1, index=datetime)
-            rolled_series = _roll_series_with_gap(x,
-                                                  self.window_length,
-                                                  gap=self.gap,
-                                                  min_periods=self.min_periods)
 
             if isinstance(self.gap, str):
+                rolled_series = _roll_series_with_offset_gap(x,
+                                                             self.window_length,
+                                                             gap=self.gap,
+                                                             min_periods=self.min_periods)
+
                 # Since _apply_roll_with_offset_gap doesn't artificially add nans before rolling,
                 # it produces correct results
                 additional_args = (self.gap, len, self.min_periods)
                 return rolled_series.apply(_apply_roll_with_offset_gap, args=additional_args).values
-
-            rolling_count_series = rolled_series.count()
-
-            # The shift made to account for gap adds NaNs to the rolled series
-            # Those values get counted towards min_periods when they shouldn't.
-            # So we need to replace any of those partial values with NaNs
-            if not self.min_periods:
-                # when min periods is 0 or None it's treated the same as if it's 1
-                num_nans = self.gap
             else:
-                num_nans = self.min_periods - 1 + self.gap
-            rolling_count_series.iloc[range(num_nans)] = np.nan
-            return rolling_count_series.values
+                rolled_series = _roll_series_with_numeric_gap(x,
+                                                              self.window_length,
+                                                              gap=self.gap,
+                                                              min_periods=self.min_periods)
+
+                rolling_count_series = rolled_series.count()
+
+                # The shift made to account for gap adds NaNs to the rolled series
+                # Those values get counted towards min_periods when they shouldn't.
+                # So we need to replace any of those partial values with NaNs
+                if not self.min_periods:
+                    # when min periods is 0 or None it's treated the same as if it's 1
+                    num_nans = self.gap
+                else:
+                    num_nans = self.min_periods - 1 + self.gap
+                rolling_count_series.iloc[range(num_nans)] = np.nan
+                return rolling_count_series.values
         return rolling_count
