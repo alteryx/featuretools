@@ -65,8 +65,8 @@ def test_midpoint_zeros():
 
 
 def test_midpoint_nan():
-    all_nan = pd.Series([(np.nan, np.nan), (np.nan, np.nan), np.nan])
-    latlong1 = pd.Series([(0, 0), (0, 0), np.nan])
+    all_nan = pd.Series([(np.nan, np.nan), (np.nan, np.nan)])
+    latlong1 = pd.Series([(0, 0), (0, 0)])
     function = GeoMidpoint().get_function()
     answer = function(all_nan, latlong1)
     for lat, longi in answer:
@@ -76,14 +76,13 @@ def test_midpoint_nan():
 
 def test_isingeobox():
     latlong = pd.Series([(1, 2), (5, 7), (-5, 4), (2, 3), (0, 0),
-                         (np.nan, np.nan), (-2, np.nan), (np.nan, 1),
-                         np.nan])
+                         (np.nan, np.nan), (-2, np.nan), (np.nan, 1)])
     bottomleft = (-5, -5)
     topright = (5, 5)
     primitive = IsInGeoBox(bottomleft, topright)
     function = primitive.get_function()
     primitive_answer = function(latlong)
-    answer = pd.Series([True, False, True, True, True, False, False, False, False])
+    answer = pd.Series([True, False, True, True, True, False, False, False])
     assert np.array_equal(primitive_answer, answer)
 
 
