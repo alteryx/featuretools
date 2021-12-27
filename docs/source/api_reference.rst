@@ -131,6 +131,9 @@ Datetime Transform Primitives
     Minute
     Weekday
     IsWeekend
+    IsRushHour
+    IsNoonHour
+    IsNightHour
     Hour
     Day
     Week

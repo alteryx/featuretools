@@ -906,3 +906,84 @@ class NumericLag(TransformPrimitive):
             x = pd.Series(numeric.values, index=time_index.values)
             return x.shift(periods=self.periods, fill_value=self.fill_value).values
         return lag
+
+
+class IsRushHour(TransformPrimitive):
+    """Determines the minutes value of a datetime.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 3, 1),
+        ...          datetime(2019, 3, 3, 11, 10, 50),
+        ...          datetime(2019, 3, 31, 19, 45, 15)]
+        >>> minute = Minute()
+        >>> minute(dates).tolist()
+        [0, 10, 45]
+    """
+    name = "is_rush_hour"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=Boolean)
+    uses_full_dataframe = True
+
+    def __init__(self, start_hour=7, end_hour=11):
+        self.start_hour = start_hour
+        self.end_hour = end_hour
+
+    def get_function(self):
+        def is_rush_hour(self, datetime):
+            hour = pd.DatetimeIndex(datetime).hour
+            return (hour >= self.start_hour) & (hour <= self.end_hour)
+        return is_rush_hour
+
+
+class IsNoonHour(TransformPrimitive):
+    """Determines the minutes value of a datetime.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 3, 1),
+        ...          datetime(2019, 3, 3, 11, 10, 50),
+        ...          datetime(2019, 3, 31, 19, 45, 15)]
+        >>> minute = Minute()
+        >>> minute(dates).tolist()
+        [0, 10, 45]
+    """
+    name = "is_noon_hour"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=Boolean)
+    uses_full_dataframe = True
+
+    def get_function(self):
+        def is_noon_hour(datetime):
+            hour = pd.DatetimeIndex(datetime).hour
+            return (hour >= 11) & (hour <= 13)
+        return is_noon_hour
+
+
+class IsNightHour(TransformPrimitive):
+    """Determines the minutes value of a datetime.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 3, 1),
+        ...          datetime(2019, 3, 3, 11, 10, 50),
+        ...          datetime(2019, 3, 31, 19, 45, 15)]
+        >>> minute = Minute()
+        >>> minute(dates).tolist()
+        [0, 10, 45]
+    """
+    name = "is_night_hour"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=Boolean)
+    uses_full_dataframe = True
+
+    def __init__(self, start_hour=18, end_hour=23):
+        self.start_hour = start_hour
+        self.end_hour = end_hour
+
+    def get_function(self):
+        def is_night_hour(datetime):
+            hour = pd.DatetimeIndex(datetime).hour
+            return (hour >= self.start_hour) & (hour <= self.end_hour)
+        return is_night_hour
+
