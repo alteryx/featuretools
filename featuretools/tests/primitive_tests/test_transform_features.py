@@ -114,7 +114,7 @@ def test_init_and_name(es):
 
             # try to get name and calculate
             instance.get_name()
-            ft.calculate_feature_matrix([instance], entityset=es)
+            ft.calculate_feature_umatrix([instance], entityset=es)
 
 
 def test_relationship_path(es):
