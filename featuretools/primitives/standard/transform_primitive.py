@@ -990,16 +990,20 @@ class CityblockDistance(TransformPrimitive):
             be miles or kilometers. Default is miles.
 
     Examples:
+        >>>
         >>> cityblock_distance = CityblockDistance()
         >>> DC = (38, -77)
         >>> Boston = (43, -71)
         >>> NYC = (40, -74)
-        >>> cityblock_distance([DC, DC], [NYC, Boston]).tolist()
-        [301.51883606126523, 672.0886239902864]
+        >>> distances_mi = cityblock_distance([DC, DC], [NYC, Boston])
+        >>> np.round(distances_mi, 3).tolist()
+        [301.519, 672.089]
+
         We can also change the units in which the distance is calculated.
         >>> cityblock_distance_kilometers = CityblockDistance(unit='kilometers')
-        >>> cityblock_distance_kilometers([DC, DC], [NYC, Boston]).tolist()
-        [485.24753384652865, 1081.621803724818]
+        >>> distances_km = cityblock_distance_kilometers([DC, DC], [NYC, Boston])
+        >>> np.round(distances_km, 3).tolist()
+        [485.248, 1081.622]
     """
     name = "cityblock_distance"
     input_types = [ColumnSchema(logical_type=LatLong), ColumnSchema(logical_type=LatLong)]
