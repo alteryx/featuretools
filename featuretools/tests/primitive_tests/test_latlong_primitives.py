@@ -1,11 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from featuretools.primitives import (
-    CityblockDistance,
-    GeoMidpoint,
-    IsInGeoBox,
-)
+from featuretools.primitives import CityblockDistance, GeoMidpoint, IsInGeoBox
 
 
 def test_cityblock():
