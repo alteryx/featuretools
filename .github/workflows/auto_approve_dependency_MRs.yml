@@ -1,7 +1,7 @@
 name: Auto Approve Dependency MRs
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '*/10 * * * *'
 jobs:
   build:
     runs-on: ubuntu-latest
