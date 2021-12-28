@@ -20,7 +20,7 @@ jobs:
         python -m pip install -e . 
         python -m pip install -r test-requirements.txt
         make checkdeps OUTPUT_PATH=featuretools/tests/requirement_files/latest_requirements.txt
-    - name: Create Pull Request
+    - name: Create pull request
       id: cpr
       uses: peter-evans/create-pull-request@v3
       with:
@@ -34,8 +34,10 @@ jobs:
         branch-suffix: short-commit-hash
         base: main
         reviewers: thehomebrewnerd, tamargrey, jeff-hernandez, tuethan1999, davesque
-    - name: Enable auto-merge for Pull Request
-      run: gh pr merge ${{ steps.cpr.outputs.pull-request-url }} --auto --squash 
+    - name: Approve pull request and enable auto-merge
+      run: |
+        gh pr review ${{ steps.cpr.outputs.pull-request-url }} --approve
+        gh pr merge ${{ steps.cpr.outputs.pull-request-url }} --auto --squash 
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
       
