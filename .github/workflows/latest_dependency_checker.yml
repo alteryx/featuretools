@@ -35,7 +35,7 @@ jobs:
         base: main
         reviewers: thehomebrewnerd, tamargrey, jeff-hernandez, tuethan1999, davesque
     - name: Enable auto-merge for Pull Request
-      run: gh pr merge --auto --squash ${{ steps.cpr.outputs.pull-request-url }} 
+      run: gh pr merge ${{ steps.cpr.outputs.pull-request-url }} --auto --squash 
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
       
