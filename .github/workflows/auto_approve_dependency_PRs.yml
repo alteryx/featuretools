@@ -14,7 +14,7 @@ jobs:
         DEP_PULL_REQUEST_URL=$(cat dep_MRs_waiting_approval.json | grep -Eo "(https)://[a-zA-Z0-9./?=_%:-]*")
         if [[ ${#DEP_PULL_REQUEST_URL} -gt 8 ]]; then echo "::set-output name=DEP_PULL_REQUEST_URL::$(DEP_PULL_REQUEST_URL)"; fi
     - name: Approve dependency MRs and enable auto-merge 
-      if: ${{ steps.find_mrs.outputs.DEP_PULL_REQUEST_URL }}
+      if: steps.find_mrs.outputs.DEP_PULL_REQUEST_URL && steps.find_mrs.outputs.DEP_PULL_REQUEST_URL != null
       run: |
         gh pr review $DEP_PULL_REQUEST_URL --approve --comment --body "auto approve"
         gh pr merge $DEP_PULL_REQUEST_URL --auto --squash
