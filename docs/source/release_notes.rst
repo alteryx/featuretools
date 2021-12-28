@@ -12,6 +12,7 @@ Future Release
         * Remove testing on conda forge in release.md (:pr:`1811`)
     * Testing Changes
         * Enable auto-merge for minimum and latest dependency merge requests (:pr:`1818`)
+        
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
     
