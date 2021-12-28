@@ -76,8 +76,3 @@ jobs:
           branch-suffix: short-commit-hash
           base: main
           reviewers: thehomebrewnerd, tamargrey, jeff-hernandez, tuethan1999, davesque
-      - name: Enable auto-merge for Pull Request
-        if: steps.cpr.outputs.pull-request-number != null && steps.cpr.outputs.pull-request-operation == 'created'
-        run: gh pr merge ${{ steps.cpr.outputs.pull-request-url }} --auto --squash 
-        env:
-          GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
