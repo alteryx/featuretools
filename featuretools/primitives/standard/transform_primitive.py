@@ -941,8 +941,8 @@ class IsInGeoBox(TransformPrimitive):
 
     def get_function(self):
         def geobox(latlongs):
-            # if latlongs.hasnans:
-            #     latlongs = np.where(latlongs.isnull(), pd.Series([(np.nan, np.nan)] * len(latlongs)), latlongs)
+            if latlongs.hasnans:
+                latlongs = np.where(latlongs.isnull(), pd.Series([(np.nan, np.nan)] * len(latlongs)), latlongs)
             transposed = np.transpose([list(latlon) for latlon in latlongs])
             lats = (self.lats[0] <= transposed[0]) & \
                    (self.lats[1] >= transposed[0])
@@ -967,14 +967,10 @@ class GeoMidpoint(TransformPrimitive):
 
     def get_function(self):
         def geomidpoint_func(latlong_1, latlong_2):
-            # if latlong_1.hasnans:
-            #     latlong_1 = np.where(latlong_1.isnull(), pd.Series([(np.nan, np.nan)] * len(latlong_1)), latlong_1)
-            # if latlong_2.hasnans:
-            #     latlong_2 = np.where(latlong_2.isnull(), pd.Series([(np.nan, np.nan)] * len(latlong_2)), latlong_2)
-            lat_1s = np.array([x[0] for x in latlong_1])
-            lon_1s = np.array([x[1] for x in latlong_1])
-            lat_2s = np.array([x[0] for x in latlong_2])
-            lon_2s = np.array([x[1] for x in latlong_2])
+            lat_1s = np.array([x[0] if isinstance(x, tuple) else np.nan for x in latlong_1])
+            lon_1s = np.array([x[1] if isinstance(x, tuple) else np.nan for x in latlong_1])
+            lat_2s = np.array([x[0] if isinstance(x, tuple) else np.nan for x in latlong_2])
+            lon_2s = np.array([x[1] if isinstance(x, tuple) else np.nan for x in latlong_2])
             lat_middle = np.array([lat_1s, lat_2s]).transpose().mean(axis=1)
             lon_middle = np.array([lon_1s, lon_2s]).transpose().mean(axis=1)
             return list(zip(lat_middle, lon_middle))
@@ -1036,14 +1032,10 @@ class CityblockDistance(TransformPrimitive):
             return distances
 
         def cityblock(latlong_1, latlong_2, unit=self.unit):
-            # if latlong_1.hasnans:
-            #     latlong_1 = np.where(latlong_1.isnull(), pd.Series([(np.nan, np.nan)] * len(latlong_1)), latlong_1)
-            # if latlong_2.hasnans:
-            #     latlong_2 = np.where(latlong_2.isnull(), pd.Series([(np.nan, np.nan)] * len(latlong_2)), latlong_2)
-            lat_1 = [x[0] for x in latlong_1]
-            long_1 = [x[1] for x in latlong_1]
-            lat_2 = [x[0] for x in latlong_2]
-            long_2 = [x[1] for x in latlong_2]
+            lat_1 = [x[0] if isinstance(x, tuple) else np.nan for x in latlong_1]
+            long_1 = [x[1] if isinstance(x, tuple) else np.nan for x in latlong_1]
+            lat_2 = [x[0] if isinstance(x, tuple) else np.nan for x in latlong_2]
+            long_2 = [x[1] if isinstance(x, tuple) else np.nan for x in latlong_2]
             lon_dis = haversine(lat_1, long_1, lat_1, long_2,
                                 unit=unit)
             lat_dist = haversine(lat_1, long_1, lat_2, long_1,
