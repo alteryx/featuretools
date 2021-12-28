@@ -930,7 +930,7 @@ class IsRushHour(TransformPrimitive):
         self.end_hour = end_hour
 
     def get_function(self):
-        def is_rush_hour(self, datetime):
+        def is_rush_hour(datetime):
             hour = pd.DatetimeIndex(datetime).hour
             return (hour >= self.start_hour) & (hour <= self.end_hour)
         return is_rush_hour
@@ -986,4 +986,3 @@ class IsNightHour(TransformPrimitive):
             hour = pd.DatetimeIndex(datetime).hour
             return (hour >= self.start_hour) & (hour <= self.end_hour)
         return is_night_hour
-
