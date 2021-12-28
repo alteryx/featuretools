@@ -16,8 +16,8 @@ jobs:
     - name: Approve dependency PRs and enable auto-merge 
       if: steps.find_mrs.outputs.DEP_PULL_REQUEST_URL && steps.find_mrs.outputs.DEP_PULL_REQUEST_URL != null
       run: |
-        gh pr review $DEP_PULL_REQUEST_URL --approve --comment --body "auto approve"
-        gh pr merge $DEP_PULL_REQUEST_URL --auto --squash
+        gh pr review ${{ steps.find_mrs.outputs.DEP_PULL_REQUEST_URL }} --approve --comment --body "auto approve"
+        gh pr merge ${{ steps.find_mrs.outputs.DEP_PULL_REQUEST_URL }} --auto --squash
         rm dep_PRs_waiting_approval.json
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
