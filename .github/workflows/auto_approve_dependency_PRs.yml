@@ -17,17 +17,17 @@ jobs:
         DEP_PULL_REQUEST_URL=$(cat dep_PRs_waiting_approval.json | grep -Eo "(https)://[a-zA-Z0-9./?=_%:-]*")
         echo DEP_PULL_REQUEST_URL
         if [[ "${DEP_PULL_REQUEST_URL}" -gt 8 ]]; then
-          echo ::set-output name=DEP_PULL_REQUEST_URL::${DEP_PULL_REQUEST_URL}
+          echo ::set-output name=dep_pull_request_url::${DEP_PULL_REQUEST_URL}
         else 
           echo No matching PR found;
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
     - name: Approve dependency PRs and enable auto-merge 
-      if: steps.find_prs.outputs.DEP_PULL_REQUEST_URL && steps.find_prs.outputs.DEP_PULL_REQUEST_URL != null
+      if: steps.find_prs.outputs.dep_pull_request_url && steps.find_prs.outputs.dep_pull_request_url != null
       run: |
-        gh pr review ${{ steps.find_prs.outputs.DEP_PULL_REQUEST_URL }} --approve --comment --body "auto approve"
-        gh pr merge ${{ steps.find_prs.outputs.DEP_PULL_REQUEST_URL }} --auto --squash
+        gh pr review ${{ steps.find_prs.outputs.dep_pull_request_url }} --approve --comment --body "auto approve"
+        gh pr merge ${{ steps.find_prs.outputs.dep_pull_request_url }} --auto --squash
         rm dep_PRs_waiting_approval.json
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
