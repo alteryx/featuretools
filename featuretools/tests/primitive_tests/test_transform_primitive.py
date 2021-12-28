@@ -8,6 +8,9 @@ from featuretools.primitives import (
     Age,
     EmailAddressToDomain,
     IsFreeEmailDomain,
+    IsNightHour,
+    IsNoonHour,
+    IsRushHour,
     NumericLag,
     TimeSince,
     URLToDomain,
@@ -459,3 +462,38 @@ def test_lag_ends_with_nan():
 
     correct_answer = pd.Series([np.nan, 1, 2, 3])
     pd.testing.assert_series_equal(answer, correct_answer)
+
+
+def test_is_rush_hour():
+    is_rush_hour = IsRushHour()
+    datetimes = [datetime(2021, 3, 1, 3),
+                 datetime(2021, 3, 3, 8),
+                 datetime(2021, 3, 31, 14),
+                 np.nan, pd.NaT]
+    correct_answer = [False, True, False, False, False]
+    results = is_rush_hour(datetimes)
+    np.testing.assert_array_equal(results, correct_answer)
+
+
+def test_is_noon_hour():
+    is_noon_hour = IsNoonHour()
+    datetimes = [datetime(2021, 3, 1, 10),
+                 datetime(2021, 3, 3, 12),
+                 datetime(2021, 3, 31, 14),
+                 np.nan, pd.NaT]
+    correct_answer = [False, True, False, False, False]
+    results = is_noon_hour(datetimes)
+    np.testing.assert_array_equal(results, correct_answer)
+
+
+def test_is_night_hour():
+    is_noon_hour = IsNightHour()
+    datetimes = [datetime(2021, 3, 1, 17),
+                 datetime(2021, 3, 3, 18),
+                 datetime(2021, 3, 31, 23),
+                 np.nan, pd.NaT]
+    correct_answer = [False, True, True, False, False]
+    results = is_noon_hour(datetimes)
+    np.testing.assert_array_equal(results, correct_answer)
+
+
