@@ -3,8 +3,8 @@
 
 name: Latest Dependency Checker
 on:
-  schedule:
-    - cron: '0 * * * *'
+  pull_request:
+    types: [opened, synchronize]
 jobs:
   build:
     runs-on: ubuntu-latest
