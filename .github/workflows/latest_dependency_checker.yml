@@ -20,8 +20,9 @@ jobs:
         python -m pip install -e . 
         python -m pip install -r test-requirements.txt
         make checkdeps OUTPUT_PATH=featuretools/tests/requirement_files/latest_requirements.txt
-    - name: Create Pull Request
-      uses: FeatureLabs/create-pull-request@v3
+    - name: Create pull request
+      id: cpr
+      uses: peter-evans/create-pull-request@v3
       with:
         token: ${{ secrets.REPO_SCOPED_TOKEN }}
         commit-message: Update latest dependencies
