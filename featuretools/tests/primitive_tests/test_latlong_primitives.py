@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 
 from featuretools.primitives import CityblockDistance, GeoMidpoint, IsInGeoBox
 
@@ -32,6 +33,12 @@ def test_cityblock_nans():
                                   [np.nan] * 4))
     answer = primitive_func(lats_longs_1, lats_longs_2)
     np.testing.assert_allclose(given_answer, answer, rtol=1e-09)
+
+
+def test_cityblock_error():
+    error_text = 'Invalid unit given'
+    with pytest.raises(ValueError, match=error_text):
+        CityblockDistance(unit='invalid')
 
 
 def test_midpoint():
