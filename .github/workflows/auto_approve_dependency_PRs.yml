@@ -18,7 +18,7 @@ jobs:
         if [[ "${DEP_PULL_REQUEST_URL}" -gt 8 ]]; then
           echo "::set-output name=DEP_PULL_REQUEST_URL::$(DEP_PULL_REQUEST_URL)"
         else 
-          echo "No matching PR found"
+          echo No matching PR found;
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
