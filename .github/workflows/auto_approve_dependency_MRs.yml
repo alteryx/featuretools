@@ -13,5 +13,6 @@ jobs:
         DEP_PULL_REQUEST_URL=$(cat dep_MRs_waiting_approval.json | grep -Eo "(https)://[a-zA-Z0-9./?=_%:-]*")
         gh pr review $DEP_PULL_REQUEST_URL --approve --comment --body "auto approve"
         gh pr merge $DEP_PULL_REQUEST_URL --auto --squash
+        rm dep_MRs_waiting_approval.json
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
