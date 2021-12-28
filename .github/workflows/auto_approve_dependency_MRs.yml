@@ -1,0 +1,17 @@
+name: Auto Approve Dependency MRs
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Find dependency MRs and approve pull request and enable auto-merge 
+      run: |
+        gh pr list --author "machineFL" --base main --state open --search "status:success review:required" --limit 1 --json url > dep_MRs_waiting_approval.json
+        DEP_PULL_REQUEST_URL=$(cat dep_MRs_waiting_approval.json | grep -Eo "(https)://[a-zA-Z0-9./?=_%:-]*")
+        gh pr review $DEP_PULL_REQUEST_URL --approve --comment --body "auto approve"
+        gh pr merge $DEP_PULL_REQUEST_URL --auto --squash
+      env:
+        GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
