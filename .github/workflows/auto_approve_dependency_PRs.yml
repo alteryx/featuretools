@@ -1,10 +1,7 @@
 name: Auto Approve Dependency PRs
 on:
-  pull_request:
-    types: [opened, synchronize]
-  push:
-    branches:
-      - main
+  schedule:
+    - cron: '*/10 * * * *'
 jobs:
   build:
     runs-on: ubuntu-latest
