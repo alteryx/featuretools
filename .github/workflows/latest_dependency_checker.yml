@@ -22,7 +22,7 @@ jobs:
         make checkdeps OUTPUT_PATH=featuretools/tests/requirement_files/latest_requirements.txt
     - name: Create Pull Request
       id: cpr
-      uses: FeatureLabs/create-pull-request@v3
+      uses: peter-evans/create-pull-request@v3
       with:
         token: ${{ secrets.REPO_SCOPED_TOKEN }}
         commit-message: Update latest dependencies
@@ -35,5 +35,5 @@ jobs:
         base: main
         reviewers: thehomebrewnerd, tamargrey, jeff-hernandez, tuethan1999, davesque
     - name: Enable auto-merge for Pull Request
-      run: gh pr merge --auto --squash ${{ steps.cpr.outputs.pull-request-url }}"
+      run: gh pr merge --auto --squash ${{ steps.cpr.outputs.pull-request-url }}
       
