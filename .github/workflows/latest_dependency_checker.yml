@@ -36,6 +36,6 @@ jobs:
         reviewers: thehomebrewnerd, tamargrey, jeff-hernandez, tuethan1999, davesque
     - name: Enable auto-merge for Pull Request
       run: |
-        gh auto login --with-token ${{ secrets.REPO_SCOPED_TOKEN }}
+        gh auth login --with-token ${{ secrets.REPO_SCOPED_TOKEN }}
         gh pr merge --auto --squash ${{ steps.cpr.outputs.pull-request-url }} 
       
