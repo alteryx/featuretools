@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add Datetime transform primitives - ```IsRushHour``, ``IsNoonHour``, ``IsNightHour`` (:pr:`1814`)
     * Fixes
     * Changes
     * Documentation Changes
