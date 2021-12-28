@@ -14,10 +14,10 @@ jobs:
       id: find_prs
       run: |
         gh pr list --author "machineFL" --base main --state open --search "status:success review:required" --limit 1 --json url > dep_PRs_waiting_approval.json
-        DEP_PULL_REQUEST_URL=$(cat dep_PRs_waiting_approval.json | grep -Eo "(https)://[a-zA-Z0-9./?=_%:-]*")
-        echo DEP_PULL_REQUEST_URL
-        if [[ "${DEP_PULL_REQUEST_URL}" -gt 8 ]]; then
-          echo ::set-output name=dep_pull_request_url::${DEP_PULL_REQUEST_URL}
+        echo "dep_pull_request_url=$(cat dep_PRs_waiting_approval.json | grep -Eo "(https)://[a-zA-Z0-9./?=_%:-]*")" >> $GITHUB_ENV
+        echo "${{ env.dep_pull_request_url }}"
+        if [[ "${{ env.dep_pull_request_url }}" -gt 8 ]]; then
+          echo ::set-output name=dep_pull_request_url::${dep_pull_request_url}
         else 
           echo No matching PR found;
         fi
