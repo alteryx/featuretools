@@ -20,7 +20,10 @@ from woodwork.logical_types import (
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
 )
-from featuretools.primitives.utils import _deconstrct_latlongs
+from featuretools.primitives.utils import (
+    _deconstrct_latlongs,
+    _haversine_calculate
+)
 from featuretools.utils import convert_time_units
 from featuretools.utils.common_tld_utils import COMMON_TLDS
 from featuretools.utils.gen_utils import Library
@@ -631,21 +634,10 @@ class Haversine(TransformPrimitive):
         self.description_template = "the haversine distance in {} between {{}} and {{}}".format(self.unit)
 
     def get_function(self):
-        def haversine(latlong1, latlong2):
-            lat_1s = np.array([x[0] if isinstance(x, tuple) else np.nan for x in latlong1])
-            lon_1s = np.array([x[1] if isinstance(x, tuple) else np.nan for x in latlong1])
-            lat_2s = np.array([x[0] if isinstance(x, tuple) else np.nan for x in latlong2])
-            lon_2s = np.array([x[1] if isinstance(x, tuple) else np.nan for x in latlong2])
-            lon1, lat1, lon2, lat2 = map(
-                np.radians, [lon_1s, lat_1s, lon_2s, lat_2s])
-            dlon = lon2 - lon1
-            dlat = lat2 - lat1
-            a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * \
-                np.cos(lat2) * np.sin(dlon / 2.0)**2
-            radius_earth = 3958.7613
-            if self.unit == 'kilometers':
-                radius_earth = 6371.0088
-            distance = radius_earth * 2 * np.arcsin(np.sqrt(a))
+        def haversine(latlong_1, latlong_2):
+            lat_1s, lon_1s = _deconstrct_latlongs(latlong_1)
+            lat_2s, lon_2s = _deconstrct_latlongs(latlong_2)
+            distance = _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_2s, self.unit)
             return distance
         return haversine
 
@@ -1017,27 +1009,12 @@ class CityblockDistance(TransformPrimitive):
         self.unit = unit
 
     def get_function(self):
-        def haversine(lat_1s, lon_1s, lat_2s, lon_2s, unit):
-            # https://stackoverflow.com/a/29546836/2512385
-            lon1, lat1, lon2, lat2 = map(
-                np.radians, [lon_1s, lat_1s, lon_2s, lat_2s])
-            dlon = lon2 - lon1
-            dlat = lat2 - lat1
-            a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * \
-                np.cos(lat2) * np.sin(dlon / 2.0)**2
-            radius_earth = 3958.7613
-            if unit == 'kilometers':
-                radius_earth = 6371.0088
-            distances = radius_earth * 2 * np.arcsin(np.sqrt(a))
-            return distances
-
         def cityblock(latlong_1, latlong_2):
             lat_1s, lon_1s = _deconstrct_latlongs(latlong_1)
             lat_2s, lon_2s = _deconstrct_latlongs(latlong_2)
-
-            lon_dis = haversine(lat_1s, lon_1s, lat_1s, lon_2s,
-                                self.unit)
-            lat_dist = haversine(lat_1s, lon_1s, lat_2s, lon_1s,
-                                 self.unit)
+            lon_dis = _haversine_calculate(lat_1s, lon_1s, lat_1s, lon_2s,
+                                           self.unit)
+            lat_dist = _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_1s,
+                                            self.unit)
             return pd.Series(lon_dis + lat_dist)
         return cityblock
