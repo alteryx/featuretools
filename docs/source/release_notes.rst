@@ -13,9 +13,10 @@ Future Release
         * Remove testing on conda forge in release.md (:pr:`1811`)
     * Testing Changes
         * Enable auto-merge for minimum and latest dependency merge requests (:pr:`1818`, :pr:`1821`, :pr:`1822`)
-        
+        * Test deserializing from S3 with mocked S3 fixtures only (:pr:`1825`)
+
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`rwedge`
     
 v1.3.0 Dec 2, 2021
 ==================
