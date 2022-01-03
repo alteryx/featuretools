@@ -2,6 +2,7 @@ import importlib.util
 import os
 from inspect import isclass
 
+import numpy as np
 import pandas as pd
 
 import featuretools
@@ -271,3 +272,9 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
         gap_applied = series.shift(gap)
 
     return gap_applied.rolling(window_size, min_periods)
+
+
+def _deconstrct_latlongs(latlongs):
+    lats = np.array([x[0] if isinstance(x, tuple) else np.nan for x in latlongs])
+    longs = np.array([x[1] if isinstance(x, tuple) else np.nan for x in latlongs])
+    return lats, longs

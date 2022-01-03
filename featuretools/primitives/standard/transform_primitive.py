@@ -20,6 +20,7 @@ from woodwork.logical_types import (
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
 )
+from featuretools.primitives.utils import _deconstrct_latlongs
 from featuretools.utils import convert_time_units
 from featuretools.utils.common_tld_utils import COMMON_TLDS
 from featuretools.utils.gen_utils import Library
@@ -967,10 +968,8 @@ class GeoMidpoint(TransformPrimitive):
 
     def get_function(self):
         def geomidpoint_func(latlong_1, latlong_2):
-            lat_1s = np.array([x[0] if isinstance(x, tuple) else np.nan for x in latlong_1])
-            lon_1s = np.array([x[1] if isinstance(x, tuple) else np.nan for x in latlong_1])
-            lat_2s = np.array([x[0] if isinstance(x, tuple) else np.nan for x in latlong_2])
-            lon_2s = np.array([x[1] if isinstance(x, tuple) else np.nan for x in latlong_2])
+            lat_1s, lon_1s = _deconstrct_latlongs(latlong_1)
+            lat_2s, lon_2s = _deconstrct_latlongs(latlong_1)
             lat_middle = np.array([lat_1s, lat_2s]).transpose().mean(axis=1)
             lon_middle = np.array([lon_1s, lon_2s]).transpose().mean(axis=1)
             return list(zip(lat_middle, lon_middle))
@@ -1019,6 +1018,7 @@ class CityblockDistance(TransformPrimitive):
 
     def get_function(self):
         def haversine(lat_1s, lon_1s, lat_2s, lon_2s, unit):
+            # https://stackoverflow.com/a/29546836/2512385
             lon1, lat1, lon2, lat2 = map(
                 np.radians, [lon_1s, lat_1s, lon_2s, lat_2s])
             dlon = lon2 - lon1
@@ -1032,13 +1032,12 @@ class CityblockDistance(TransformPrimitive):
             return distances
 
         def cityblock(latlong_1, latlong_2, unit=self.unit):
-            lat_1 = [x[0] if isinstance(x, tuple) else np.nan for x in latlong_1]
-            long_1 = [x[1] if isinstance(x, tuple) else np.nan for x in latlong_1]
-            lat_2 = [x[0] if isinstance(x, tuple) else np.nan for x in latlong_2]
-            long_2 = [x[1] if isinstance(x, tuple) else np.nan for x in latlong_2]
-            lon_dis = haversine(lat_1, long_1, lat_1, long_2,
+            lat_1s, lon_1s = _deconstrct_latlongs(latlong_1)
+            lat_2s, lon_2s = _deconstrct_latlongs(latlong_2)
+
+            lon_dis = haversine(lat_1s, lon_1s, lat_1s, lon_2s,
                                 unit=unit)
-            lat_dist = haversine(lat_1, long_1, lat_2, long_1,
+            lat_dist = haversine(lat_1s, lon_1s, lat_2s, lon_1s,
                                  unit=unit)
             return pd.Series(lon_dis + lat_dist)
         return cityblock
