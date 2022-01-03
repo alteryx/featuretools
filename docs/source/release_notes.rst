@@ -7,12 +7,14 @@ Future Release
 ==============
     * Enhancements
         * Add ability to use offset alias strings as inputs to rolling primitives (:pr:`1809`)
+        * Add LatLong transform primitives - GeoMidpoint, IsInGeoBox, CityblockDistance (:pr:`1814`)
     * Fixes
     * Changes
     * Documentation Changes
         * Remove testing on conda forge in release.md (:pr:`1811`)
     * Testing Changes
-
+        * Enable auto-merge for minimum and latest dependency merge requests (:pr:`1818`, :pr:`1821`, :pr:`1822`)
+        
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`
     

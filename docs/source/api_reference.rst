@@ -161,9 +161,12 @@ Location Transform Primitives
 .. autosummary::
    :toctree: generated/
 
+   CityblockDistance
+   GeoMidpoint
+   Haversine
+   IsInGeoBox
    Latitude
    Longitude
-   Haversine
 
 .. _api_ref.cumulative_features:
 

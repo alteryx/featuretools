@@ -10,6 +10,7 @@ from woodwork.logical_types import (
     BooleanNullable,
     Categorical,
     Datetime,
+    Double,
     EmailAddress,
     LatLong,
     NaturalLanguage,
@@ -18,6 +19,10 @@ from woodwork.logical_types import (
 
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
+)
+from featuretools.primitives.utils import (
+    _deconstrct_latlongs,
+    _haversine_calculate
 )
 from featuretools.utils import convert_time_units
 from featuretools.utils.common_tld_utils import COMMON_TLDS
@@ -629,21 +634,10 @@ class Haversine(TransformPrimitive):
         self.description_template = "the haversine distance in {} between {{}} and {{}}".format(self.unit)
 
     def get_function(self):
-        def haversine(latlong1, latlong2):
-            lat_1s = np.array([x[0] if isinstance(x, tuple) else np.nan for x in latlong1])
-            lon_1s = np.array([x[1] if isinstance(x, tuple) else np.nan for x in latlong1])
-            lat_2s = np.array([x[0] if isinstance(x, tuple) else np.nan for x in latlong2])
-            lon_2s = np.array([x[1] if isinstance(x, tuple) else np.nan for x in latlong2])
-            lon1, lat1, lon2, lat2 = map(
-                np.radians, [lon_1s, lat_1s, lon_2s, lat_2s])
-            dlon = lon2 - lon1
-            dlat = lat2 - lat1
-            a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * \
-                np.cos(lat2) * np.sin(dlon / 2.0)**2
-            radius_earth = 3958.7613
-            if self.unit == 'kilometers':
-                radius_earth = 6371.0088
-            distance = radius_earth * 2 * np.arcsin(np.sqrt(a))
+        def haversine(latlong_1, latlong_2):
+            lat_1s, lon_1s = _deconstrct_latlongs(latlong_1)
+            lat_2s, lon_2s = _deconstrct_latlongs(latlong_2)
+            distance = _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_2s, self.unit)
             return distance
         return haversine
 
@@ -906,3 +900,121 @@ class NumericLag(TransformPrimitive):
             x = pd.Series(numeric.values, index=time_index.values)
             return x.shift(periods=self.periods, fill_value=self.fill_value).values
         return lag
+
+
+class IsInGeoBox(TransformPrimitive):
+    """Determines if coordinates are inside a box defined by two
+    corner coordinate points.
+
+    Description:
+        Coordinate values should be specified as (latitude, longitude)
+        tuples. This primitive is unable to handle coordinates and boxes
+        at the poles, and near +/- 180 degrees latitude.
+
+    Args:
+        point1 (tuple(float, float)): The coordinates
+            of the first corner of the box. Defaults to (0, 0).
+        point2 (tuple(float, float)): The coordinates
+            of the diagonal corner of the box. Defaults to (0, 0).
+
+    Example:
+        >>> is_in_geobox = IsInGeoBox((40.7128, -74.0060), (42.2436, -71.1677))
+        >>> is_in_geobox([(41.034, -72.254), (39.125, -87.345)]).tolist()
+        [True, False]
+    """
+    name = "is_in_geobox"
+    input_types = [ColumnSchema(logical_type=LatLong)]
+    return_type = ColumnSchema(logical_type=BooleanNullable)
+
+    def __init__(self, point1=(0, 0), point2=(0, 0)):
+        self.point1 = point1
+        self.point2 = point2
+        self.lats = np.sort(np.array([point1[0], point2[0]]))
+        self.lons = np.sort(np.array([point1[1], point2[1]]))
+
+    def get_function(self):
+        def geobox(latlongs):
+            if latlongs.hasnans:
+                latlongs = np.where(latlongs.isnull(), pd.Series([(np.nan, np.nan)] * len(latlongs)), latlongs)
+            transposed = np.transpose([list(latlon) for latlon in latlongs])
+            lats = (self.lats[0] <= transposed[0]) & \
+                   (self.lats[1] >= transposed[0])
+            longs = (self.lons[0] <= transposed[1]) & \
+                    (self.lons[1] >= transposed[1])
+            return lats & longs
+        return geobox
+
+
+class GeoMidpoint(TransformPrimitive):
+    """Determines the geographic center of two coordinates.
+
+    Examples:
+        >>> geomidpoint = GeoMidpoint()
+        >>> geomidpoint([(42.4, -71.1)], [(40.0, -122.4)])
+        [(41.2, -96.75)]
+    """
+    name = "geomidpoint"
+    input_types = [ColumnSchema(logical_type=LatLong), ColumnSchema(logical_type=LatLong)]
+    return_type = ColumnSchema(logical_type=LatLong)
+    commutative = True
+
+    def get_function(self):
+        def geomidpoint_func(latlong_1, latlong_2):
+            lat_1s, lon_1s = _deconstrct_latlongs(latlong_1)
+            lat_2s, lon_2s = _deconstrct_latlongs(latlong_2)
+            lat_middle = np.array([lat_1s, lat_2s]).transpose().mean(axis=1)
+            lon_middle = np.array([lon_1s, lon_2s]).transpose().mean(axis=1)
+            return list(zip(lat_middle, lon_middle))
+        return geomidpoint_func
+
+
+class CityblockDistance(TransformPrimitive):
+    """Calculates the distance between points in a city road grid.
+
+    Description:
+        This distance is calculated using the haversine formula, which
+        takes into account the curvature of the Earth.
+        If either input data contains `NaN`s, the calculated
+        distance with be `NaN`.
+        This calculation is also known as the Mahnattan distance.
+
+    Args:
+        unit (str): Determines the unit value to output. Could
+            be miles or kilometers. Default is miles.
+
+    Examples:
+        >>> cityblock_distance = CityblockDistance()
+        >>> DC = (38, -77)
+        >>> Boston = (43, -71)
+        >>> NYC = (40, -74)
+        >>> distances_mi = cityblock_distance([DC, DC], [NYC, Boston])
+        >>> np.round(distances_mi, 3).tolist()
+        [301.519, 672.089]
+
+        We can also change the units in which the distance is calculated.
+
+        >>> cityblock_distance_kilometers = CityblockDistance(unit='kilometers')
+        >>> distances_km = cityblock_distance_kilometers([DC, DC], [NYC, Boston])
+        >>> np.round(distances_km, 3).tolist()
+        [485.248, 1081.622]
+    """
+    name = "cityblock_distance"
+    input_types = [ColumnSchema(logical_type=LatLong), ColumnSchema(logical_type=LatLong)]
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
+    commutative = True
+
+    def __init__(self, unit='miles'):
+        if unit not in ['miles', 'kilometers']:
+            raise ValueError("Invalid unit given")
+        self.unit = unit
+
+    def get_function(self):
+        def cityblock(latlong_1, latlong_2):
+            lat_1s, lon_1s = _deconstrct_latlongs(latlong_1)
+            lat_2s, lon_2s = _deconstrct_latlongs(latlong_2)
+            lon_dis = _haversine_calculate(lat_1s, lon_1s, lat_1s, lon_2s,
+                                           self.unit)
+            lat_dist = _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_1s,
+                                            self.unit)
+            return pd.Series(lon_dis + lat_dist)
+        return cityblock
