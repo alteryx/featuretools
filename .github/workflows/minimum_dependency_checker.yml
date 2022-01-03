@@ -63,7 +63,8 @@ jobs:
         run: |
           printf "${{ steps.min_dep_gen_koalas.outputs.min_reqs }}" > featuretools/tests/requirement_files/minimum_koalas_requirements.txt
       - name: Create Pull Request
-        uses: FeatureLabs/create-pull-request@v3
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.REPO_SCOPED_TOKEN }}
           commit-message: Update minimum dependencies
