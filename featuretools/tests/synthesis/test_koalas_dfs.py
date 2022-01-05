@@ -261,15 +261,16 @@ def test_single_table_ks_entityset_cutoff_time_df():
                    trans_primitives=primitives_list,
                    cutoff_time=cutoff_times)
     # Because row ordering with koalas is not guaranteed, `we need to sort on two columns to make sure that values
-    # for instance id 0 are compared correctly. Also, make sure the boolean columns have the same dtype.
+    # for instance id 0 are compared correctly. Also, make sure the index column has the same dtype.
     fm = fm.sort_values(['id', 'labels'])
-    ks_fm = ks_fm.to_pandas().set_index('id').sort_values(['id', 'labels'])
+    ks_fm = ks_fm.to_pandas().astype({'id': 'int64'})
+    ks_fm = ks_fm.set_index('id').sort_values(['id', 'labels'])
 
     for column in fm.columns:
         if fm[column].dtype.name == 'category':
             fm[column] = fm[column].astype('Int64').astype('string')
 
-    pd.testing.assert_frame_equal(fm.astype(ks_fm.dtypes), ks_fm)
+    pd.testing.assert_frame_equal(fm.astype(ks_fm.dtypes), ks_fm, check_dtype=False)
 
 
 @pytest.mark.skipif('not ks')
@@ -398,7 +399,9 @@ def test_ks_entityset_secondary_time_index():
                       trans_primitives=["month"])
 
     # Make sure both matrices are sorted the same
-    ks_fm = ks_fm.to_pandas().set_index('id').sort_values('delay')
+    # Also make sure index has same dtype
+    ks_fm = ks_fm.to_pandas().astype({'id': 'int64'})
+    ks_fm = ks_fm.set_index('id').sort_values('delay')
     fm = fm.sort_values('delay')
 
     # Koalas output for MONTH columns will be of string type without decimal points,
@@ -407,4 +410,4 @@ def test_ks_entityset_secondary_time_index():
         if fm[column].dtype.name == 'category':
             fm[column] = fm[column].astype('Int64').astype('string')
 
-    pd.testing.assert_frame_equal(fm, ks_fm, check_categorical=False)
+    pd.testing.assert_frame_equal(fm, ks_fm, check_categorical=False, check_dtype=False)
