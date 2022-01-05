@@ -1,30 +1,37 @@
 name: Auto Approve Dependency PRs
 on:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Find dependency PRs
-      id: find_prs
-      run: |
-        gh pr list --author "machineFL" --base main --state open --search "status:success review:required" --limit 1 --json url > dep_PRs_waiting_approval.json
-        echo "dep_pull_request_url=$(cat dep_PRs_waiting_approval.json | grep -Eo "(https)://[a-zA-Z0-9./?=_%:-]*")" >> $GITHUB_ENV
-        echo "${{ env.dep_pull_request_url }}"
-        if [[ "${{ env.dep_pull_request_url }}" -gt 8 ]]; then
-          echo ::set-output name=dep_pull_request_url::${dep_pull_request_url}
-        else 
-          echo No matching PR found;
-        fi
-      env:
-        GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
-    - name: Approve dependency PRs and enable auto-merge 
-      if: steps.find_prs.outputs.dep_pull_request_url && steps.find_prs.outputs.dep_pull_request_url != null
-      run: |
-        gh pr review ${{ steps.find_prs.outputs.dep_pull_request_url }} --approve --comment --body "auto approve"
-        gh pr merge ${{ steps.find_prs.outputs.dep_pull_request_url }} --auto --squash
-        rm dep_PRs_waiting_approval.json
-      env:
-        GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
+      - uses: actions/checkout@v2
+      - name: Find dependency PRs
+        id: find_prs
+        run: |
+          gh auth status
+          rm -f dep_PRs_waiting_approval.json
+          gh pr list --repo "${{ github.repository }}" --author "machineFL" --base main --state open --search "status:success review:required" --limit 1 --json number > dep_PRs_waiting_approval.json
+          cat dep_PRs_waiting_approval.json
+          dep_pull_request=$(cat dep_PRs_waiting_approval.json | grep -Eo "[0-9]*")
+          echo $dep_pull_request
+          echo ::set-output name=dep_pull_request::${dep_pull_request}
+        env:
+          GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
+      - name: Approve dependency PRs and enable auto-merge
+        id: approve_prs
+        if: >-
+          ${{
+            steps.find_prs.outputs.dep_pull_request != '' &&
+            steps.find_prs.outputs.dep_pull_request != null &&
+            steps.find_prs.outputs.dep_pull_request > 1
+          }}
+        run: |
+          echo ${{ steps.find_prs.outputs.dep_pull_request }}
+          gh pr review --repo "${{ github.repository }}" --comment --body "auto approve" ${{ steps.find_prs.outputs.dep_pull_request }}
+          gh pr review --repo "${{ github.repository }}" --approve ${{ steps.find_prs.outputs.dep_pull_request }}
+          gh pr merge --repo "${{ github.repository }}" --auto --squash ${{ steps.find_prs.outputs.dep_pull_request }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
