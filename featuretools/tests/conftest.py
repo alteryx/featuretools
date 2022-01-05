@@ -25,7 +25,7 @@ def cluster_scheduler():
 @pytest.fixture()
 def three_worker_scheduler():
     with cluster(nworkers=3) as (scheduler, [a, b, c]):
-        yield scheduler
+        yield scheduler # pragma: no cover
 
 
 @pytest.fixture(scope='session', autouse=True)
