@@ -1238,8 +1238,8 @@ class TestCreateClientAndCluster(object):
                             get_mock_client_cluster)
         try:
             cpus = len(psutil.Process().cpu_affinity())
-        except AttributeError: # pragma: no cover
-            cpus = psutil.cpu_count() # pragma: no cover
+        except AttributeError:  # pragma: no cover
+            cpus = psutil.cpu_count()  # pragma: no cover
 
         # jobs < tasks case
         client, cluster = create_client_and_cluster(n_jobs=2,
@@ -1306,25 +1306,25 @@ def test_parallel_failure_raises_correct_error(pd_es):
 
 
 def test_warning_not_enough_chunks(pd_es, capsys, three_worker_scheduler):
-    property_feature = IdentityFeature(pd_es['log'].ww['value']) > 10 # pragma: no cover
+    property_feature = IdentityFeature(pd_es['log'].ww['value']) > 10  # pragma: no cover
 
-    dkwargs = {'cluster': three_worker_scheduler['address']} # pragma: no cover
-    calculate_feature_matrix([property_feature], # pragma: no cover
-                             entityset=pd_es, # pragma: no cover
-                             chunk_size=.5, # pragma: no cover
-                             verbose=True, # pragma: no cover
-                             dask_kwargs=dkwargs) # pragma: no cover
+    dkwargs = {'cluster': three_worker_scheduler['address']}  # pragma: no cover
+    calculate_feature_matrix([property_feature],  # pragma: no cover
+                             entityset=pd_es,  # pragma: no cover
+                             chunk_size=.5,  # pragma: no cover
+                             verbose=True,  # pragma: no cover
+                             dask_kwargs=dkwargs)  # pragma: no cover
 
-    captured = capsys.readouterr() # pragma: no cover
-    pattern = r'Fewer chunks \([0-9]+\), than workers \([0-9]+\) consider reducing the chunk size' # pragma: no cover
-    assert re.search(pattern, captured.out) is not None # pragma: no cover
+    captured = capsys.readouterr()  # pragma: no cover
+    pattern = r'Fewer chunks \([0-9]+\), than workers \([0-9]+\) consider reducing the chunk size'  # pragma: no cover
+    assert re.search(pattern, captured.out) is not None  # pragma: no cover
 
 
 def test_n_jobs():
     try:
         cpus = len(psutil.Process().cpu_affinity())
-    except AttributeError: # pragma: no cover
-        cpus = psutil.cpu_count() # pragma: no cover
+    except AttributeError:  # pragma: no cover
+        cpus = psutil.cpu_count()  # pragma: no cover
 
     assert n_jobs_to_workers(1) == 1
     assert n_jobs_to_workers(-1) == cpus
@@ -1743,7 +1743,7 @@ def test_closes_tqdm(es):
         calculate_feature_matrix([value, error_feature],
                                  es,
                                  verbose=True)
-        assert False # pragma: no cover
+        assert False  # pragma: no cover
     except RuntimeError as e:
         assert e.args[0] == "This primitive has errored"
     finally:
