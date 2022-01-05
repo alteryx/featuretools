@@ -339,7 +339,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                     pass_columns, progress_bar=None, progress_callback=None, include_cutoff_time=True, schema=None):
 
     if not isinstance(feature_set, FeatureSet):
-        feature_set = cloudpickle.loads(feature_set)
+        feature_set = cloudpickle.loads(feature_set) # pragma: no cover
 
     feature_matrix = []
     if no_unapproximated_aggs and approximate is not None:
@@ -375,7 +375,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
     else:
         if schema:
-            cutoff_time.ww.init_with_full_schema(schema=schema)
+            cutoff_time.ww.init_with_full_schema(schema=schema) # pragma: no cover
         for _, group in cutoff_time.groupby(cutoff_df_time_col):
             # if approximating, calculate the approximate features
             if approximate is not None:
@@ -637,9 +637,9 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
         chunks = [df for _, df in chunks]
 
         if len(chunks) < num_workers:
-            chunk_warning = "Fewer chunks ({}), than workers ({}) consider reducing the chunk size"
-            warning_string = chunk_warning.format(len(chunks), num_workers)
-            progress_bar.write(warning_string)
+            chunk_warning = "Fewer chunks ({}), than workers ({}) consider reducing the chunk size" # pragma: no cover
+            warning_string = chunk_warning.format(len(chunks), num_workers) # pragma: no cover
+            progress_bar.write(warning_string) # pragma: no cover
 
         scatter_warning(num_scattered_workers, num_workers)
         end = time.time()
@@ -690,7 +690,7 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
             client.close()
 
         if 'cluster' not in dask_kwargs and cluster is not None:
-            cluster.close()
+            cluster.close() # pragma: no cover
 
     ww_init_kwargs = get_ww_types_from_features(feature_set.target_features, entityset, pass_columns, cutoff_time)
     feature_matrix = init_ww_and_concat_fm(feature_matrix, ww_init_kwargs)
