@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 jobs:
   run-performance-analysis:
     runs-on: ubuntu-latest
