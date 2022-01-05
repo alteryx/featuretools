@@ -339,7 +339,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                     pass_columns, progress_bar=None, progress_callback=None, include_cutoff_time=True, schema=None):
 
     if not isinstance(feature_set, FeatureSet):
-        feature_set = cloudpickle.loads(feature_set)  # pragma: no cover
+        feature_set = cloudpickle.loads(feature_set)   # pragma: no cover
 
     feature_matrix = []
     if no_unapproximated_aggs and approximate is not None:

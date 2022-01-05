@@ -1310,10 +1310,10 @@ def test_warning_not_enough_chunks(pd_es, capsys, three_worker_scheduler):
 
     dkwargs = {'cluster': three_worker_scheduler['address']}  # pragma: no cover
     calculate_feature_matrix([property_feature],  # pragma: no cover
-                             entityset=pd_es,  # pragma: no cover
-                             chunk_size=.5,  # pragma: no cover
-                             verbose=True,  # pragma: no cover
-                             dask_kwargs=dkwargs)  # pragma: no cover
+                             entityset=pd_es,
+                             chunk_size=.5,
+                             verbose=True,
+                             dask_kwargs=dkwargs)
 
     captured = capsys.readouterr()  # pragma: no cover
     pattern = r'Fewer chunks \([0-9]+\), than workers \([0-9]+\) consider reducing the chunk size'  # pragma: no cover
@@ -1324,7 +1324,7 @@ def test_n_jobs():
     try:
         cpus = len(psutil.Process().cpu_affinity())
     except AttributeError:  # pragma: no cover
-        cpus = psutil.cpu_count()  # pragma: no cover
+        cpus = psutil.cpu_count()
 
     assert n_jobs_to_workers(1) == 1
     assert n_jobs_to_workers(-1) == cpus
