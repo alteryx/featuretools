@@ -17,7 +17,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
       - name: Approve dependency PRs and enable auto-merge
-        id: approve_prs
         if: ${{ steps.find_prs.outputs.dep_pull_request > 1 }}
         run: |
           gh pr review --repo "${{ github.repository }}" --comment --body "auto approve" ${{ steps.find_prs.outputs.dep_pull_request }}
