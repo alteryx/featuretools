@@ -7,29 +7,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - name: Find dependency PRs
         id: find_prs
         run: |
           gh auth status
-          rm -f dep_PRs_waiting_approval.json
           gh pr list --repo "${{ github.repository }}" --author "machineFL" --base main --state open --search "status:success review:required" --limit 1 --json number > dep_PRs_waiting_approval.json
-          cat dep_PRs_waiting_approval.json
           dep_pull_request=$(cat dep_PRs_waiting_approval.json | grep -Eo "[0-9]*")
-          echo $dep_pull_request
           echo ::set-output name=dep_pull_request::${dep_pull_request}
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
       - name: Approve dependency PRs and enable auto-merge
         id: approve_prs
-        if: >-
-          ${{
-            steps.find_prs.outputs.dep_pull_request != '' &&
-            steps.find_prs.outputs.dep_pull_request != null &&
-            steps.find_prs.outputs.dep_pull_request > 1
-          }}
+        if: ${{ steps.find_prs.outputs.dep_pull_request > 1 }}
         run: |
-          echo ${{ steps.find_prs.outputs.dep_pull_request }}
           gh pr review --repo "${{ github.repository }}" --comment --body "auto approve" ${{ steps.find_prs.outputs.dep_pull_request }}
           gh pr review --repo "${{ github.repository }}" --approve ${{ steps.find_prs.outputs.dep_pull_request }}
           gh pr merge --repo "${{ github.repository }}" --auto --squash ${{ steps.find_prs.outputs.dep_pull_request }}
