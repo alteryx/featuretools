@@ -9,6 +9,7 @@ Future Release
         * Add LatLong transform primitives - GeoMidpoint, IsInGeoBox, CityblockDistance (:pr:`1814`)
     * Fixes
     * Changes
+        * Skip code coverage for specific dask usage lines (:pr:`1829`)
     * Documentation Changes
         * Remove testing on conda forge in release.md (:pr:`1811`)
     * Testing Changes
