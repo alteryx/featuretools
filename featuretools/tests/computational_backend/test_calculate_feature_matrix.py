@@ -1239,7 +1239,7 @@ class TestCreateClientAndCluster(object):
         try:
             cpus = len(psutil.Process().cpu_affinity())
         except AttributeError:  # pragma: no cover
-            cpus = psutil.cpu_count()  # pragma: no cover
+            cpus = psutil.cpu_count()
 
         # jobs < tasks case
         client, cluster = create_client_and_cluster(n_jobs=2,
@@ -1305,19 +1305,19 @@ def test_parallel_failure_raises_correct_error(pd_es):
                                  approximate='1 hour')
 
 
-def test_warning_not_enough_chunks(pd_es, capsys, three_worker_scheduler):
-    property_feature = IdentityFeature(pd_es['log'].ww['value']) > 10  # pragma: no cover
+def test_warning_not_enough_chunks(pd_es, capsys, three_worker_scheduler):  # pragma: no cover
+    property_feature = IdentityFeature(pd_es['log'].ww['value']) > 10
 
-    dkwargs = {'cluster': three_worker_scheduler['address']}  # pragma: no cover
-    calculate_feature_matrix([property_feature],  # pragma: no cover
+    dkwargs = {'cluster': three_worker_scheduler['address']}
+    calculate_feature_matrix([property_feature],
                              entityset=pd_es,
                              chunk_size=.5,
                              verbose=True,
                              dask_kwargs=dkwargs)
 
-    captured = capsys.readouterr()  # pragma: no cover
-    pattern = r'Fewer chunks \([0-9]+\), than workers \([0-9]+\) consider reducing the chunk size'  # pragma: no cover
-    assert re.search(pattern, captured.out) is not None  # pragma: no cover
+    captured = capsys.readouterr()
+    pattern = r'Fewer chunks \([0-9]+\), than workers \([0-9]+\) consider reducing the chunk size'
+    assert re.search(pattern, captured.out) is not None
 
 
 def test_n_jobs():

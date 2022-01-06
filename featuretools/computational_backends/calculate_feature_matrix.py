@@ -636,10 +636,10 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
 
         chunks = [df for _, df in chunks]
 
-        if len(chunks) < num_workers:
-            chunk_warning = "Fewer chunks ({}), than workers ({}) consider reducing the chunk size"  # pragma: no cover
-            warning_string = chunk_warning.format(len(chunks), num_workers)  # pragma: no cover
-            progress_bar.write(warning_string)  # pragma: no cover
+        if len(chunks) < num_workers:  # pragma: no cover
+            chunk_warning = "Fewer chunks ({}), than workers ({}) consider reducing the chunk size"
+            warning_string = chunk_warning.format(len(chunks), num_workers)
+            progress_bar.write(warning_string)
 
         scatter_warning(num_scattered_workers, num_workers)
         end = time.time()
