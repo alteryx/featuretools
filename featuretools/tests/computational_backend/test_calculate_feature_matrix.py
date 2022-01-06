@@ -1739,15 +1739,12 @@ def test_closes_tqdm(es):
 
     assert len(tqdm._instances) == 0
 
-    try:
+    match = "This primitive has errored"
+    with pytest.raises(RuntimeError, match=match):
         calculate_feature_matrix([value, error_feature],
                                  es,
                                  verbose=True)
-        assert False  # pragma: no cover
-    except RuntimeError as e:
-        assert e.args[0] == "This primitive has errored"
-    finally:
-        assert len(tqdm._instances) == 0
+    assert len(tqdm._instances) == 0
 
 
 def test_approximate_with_single_cutoff_warns(pd_es):
