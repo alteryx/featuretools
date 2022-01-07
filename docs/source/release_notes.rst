@@ -7,7 +7,6 @@ Future Release
 ==============
     * Enhancements
         * Add LatLong transform primitives - GeoMidpoint, IsInGeoBox, CityblockDistance (:pr:`1814`)
-        * Enable auto-merge for minimum and latest dependency merge requests (:pr:`1818`, :pr:`1821`, :pr:`1822`)
         * Add issue templates for bugs, feature requests and documentation improvements (:pr:`1834`)
     * Fixes
         * Fix bug where Woodwork initialization could fail on feature matrix if cutoff times caused null values to be introduced (:pr:`1810`)
