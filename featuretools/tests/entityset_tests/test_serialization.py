@@ -208,58 +208,33 @@ def make_public(s3_client, s3_bucket):
 
 
 # TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
-def test_serialize_s3_csv(es, s3_client, s3_bucket):
+@pytest.mark.parametrize("profile_name", [None, False])
+def test_serialize_s3_csv(es, s3_client, s3_bucket, profile_name):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
-    es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python')
+    es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=profile_name)
     make_public(s3_client, s3_bucket)
-    new_es = deserialize.read_entityset(TEST_S3_URL)
+    new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=profile_name)
     assert es.__eq__(new_es, deep=True)
 
 
 # Dask and Koalas do not support to_pickle
-def test_serialize_s3_pickle(pd_es, s3_client, s3_bucket):
-    pd_es.to_pickle(TEST_S3_URL)
+@pytest.mark.parametrize("profile_name", [None, False])
+def test_serialize_s3_pickle(pd_es, s3_client, s3_bucket, profile_name):
+    pd_es.to_pickle(TEST_S3_URL, profile_name=profile_name)
     make_public(s3_client, s3_bucket)
-    new_es = deserialize.read_entityset(TEST_S3_URL)
+    new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=profile_name)
     assert pd_es.__eq__(new_es, deep=True)
 
 
 # TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
-def test_serialize_s3_parquet(es, s3_client, s3_bucket):
+@pytest.mark.parametrize("profile_name", [None, False])
+def test_serialize_s3_parquet(es, s3_client, s3_bucket, profile_name):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask or Koalas')
-    es.to_parquet(TEST_S3_URL)
+    es.to_parquet(TEST_S3_URL, profile_name=profile_name)
     make_public(s3_client, s3_bucket)
-    new_es = deserialize.read_entityset(TEST_S3_URL)
-    assert es.__eq__(new_es, deep=True)
-
-
-# TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
-def test_serialize_s3_anon_csv(es, s3_client, s3_bucket):
-    if es.dataframe_type != Library.PANDAS.value:
-        pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask or Koalas')
-    es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
-    make_public(s3_client, s3_bucket)
-    new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
-    assert es.__eq__(new_es, deep=True)
-
-
-# Dask/Koalas do not support to_pickle
-def test_serialize_s3_anon_pickle(pd_es, s3_client, s3_bucket):
-    pd_es.to_pickle(TEST_S3_URL, profile_name=False)
-    make_public(s3_client, s3_bucket)
-    new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
-    assert pd_es.__eq__(new_es, deep=True)
-
-
-# TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
-def test_serialize_s3_anon_parquet(es, s3_client, s3_bucket):
-    if es.dataframe_type != Library.PANDAS.value:
-        pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
-    es.to_parquet(TEST_S3_URL, profile_name=False)
-    make_public(s3_client, s3_bucket)
-    new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
+    new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=profile_name)
     assert es.__eq__(new_es, deep=True)
 
 
@@ -344,12 +319,7 @@ def test_deserialize_url_csv(es):
     assert es.__eq__(new_es, deep=True)
 
 
-def test_default_s3_csv(es):
-    new_es = deserialize.read_entityset(S3_URL)
-    assert es.__eq__(new_es, deep=True)
-
-
-def test_anon_s3_csv(es):
+def test_deserialize_s3_csv(es):
     new_es = deserialize.read_entityset(S3_URL, profile_name=False)
     assert es.__eq__(new_es, deep=True)
 

@@ -10,13 +10,16 @@ Future Release
         * Add LatLong transform primitives - GeoMidpoint, IsInGeoBox, CityblockDistance (:pr:`1814`)
     * Fixes
     * Changes
+        * Skip code coverage for specific dask usage lines (:pr:`1829`)
     * Documentation Changes
         * Remove testing on conda forge in release.md (:pr:`1811`)
     * Testing Changes
         * Enable auto-merge for minimum and latest dependency merge requests (:pr:`1818`, :pr:`1821`, :pr:`1822`)
-        
+        * Change auto approve workfow to use PR number and run every 30 minutes (:pr:`1827`)
+        * Test deserializing from S3 with mocked S3 fixtures only (:pr:`1825`)
+
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tamargrey`
+    :user:`gsheni`, :user:`rwedge`, :user:`tamargrey`
     
 v1.3.0 Dec 2, 2021
 ==================

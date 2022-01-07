@@ -222,7 +222,8 @@ def setup_test_profile(monkeypatch, tmpdir):
     os.remove(test_path_config)
 
 
-def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
+@pytest.mark.parametrize("profile_name", ["test", False])
+def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile, profile_name):
     features_original = ft.dfs(target_dataframe_name='sessions', entityset=es, features_only=True)
 
     ft.save_features(features_original, TEST_S3_URL, profile_name='test')
@@ -230,11 +231,11 @@ def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
     obj = list(s3_bucket.objects.all())[0].key
     s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
 
-    features_deserialized = ft.load_features(TEST_S3_URL, profile_name='test')
+    features_deserialized = ft.load_features(TEST_S3_URL, profile_name=profile_name)
     assert_features(features_original, features_deserialized)
 
 
-@pytest.mark.parametrize("url,profile_name", [(S3_URL, None), (S3_URL, False),
+@pytest.mark.parametrize("url,profile_name", [(S3_URL, False),
                                               (URL, None)])
 def test_deserialize_features_s3(pd_es, url, profile_name):
     agg_primitives = [Sum, Std, Max, Skew, Min, Mean, Count, PercentTrue,
