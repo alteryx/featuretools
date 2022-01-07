@@ -287,7 +287,8 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
         efficient.
 
     """
-    _check_rolling_inputs(window_size, gap)
+    _check_window_size(window_size)
+    _check_gap(window_size, gap)
 
     # Workaround for pandas' bug: https://github.com/pandas-dev/pandas/issues/43016
     # Can remove when upgraded to pandas 1.4.0
@@ -363,13 +364,23 @@ def _apply_roll_with_offset_gap(window, gap_offset, reducer_fn, min_periods):
     return reducer_fn(window)
 
 
-def _check_rolling_inputs(window_size, gap):
+def _check_window_size(window_size):
+    # Window length must either be a valid offset alias
     if isinstance(window_size, str):
         try:
             to_offset(window_size)
         except ValueError:
-            raise ValueError(f"Cannot roll series. Window length, {window_size}, is not a valid offset alias.")
+            raise ValueError(f"Cannot roll series. The specified window length, {window_size}, is not a valid offset alias.")
+    # Or an integer greater than zero
+    elif isinstance(window_size, int):
+        if window_size <= 0:
+            raise ValueError("Window length must be greater than zero.")
+    else:
+        raise TypeError("Window length must be either an offset string or an integer.")
 
+
+def _check_gap(window_size, gap):
+    # Gap must either be a valid offset string that also has an offset string window length
     if isinstance(gap, str):
         if not isinstance(window_size, str):
             raise TypeError(f"Cannot roll series with offset gap, {gap}, and numeric window length, {window_size}. "
@@ -378,7 +389,13 @@ def _check_rolling_inputs(window_size, gap):
         try:
             to_offset(gap)
         except ValueError:
-            raise ValueError(f"Cannot roll series. Gap, {gap}, is not a valid offset alias.")
+            raise ValueError(f"Cannot roll series. The specified gap, {gap}, is not a valid offset alias.")
+    # Or an integer greater than or equal to zero
+    elif isinstance(gap, int):
+        if gap < 0:
+            raise ValueError("Gap must be greater than or equal to zero.")
+    else:
+        raise TypeError("Gap must be either an offset string or an integer.")
 
 
 def _deconstrct_latlongs(latlongs):

@@ -536,7 +536,48 @@ def test_roll_series_with_gap_different_input_types_same_result_uniform(rolling_
     pd.testing.assert_series_equal(expected_rolling_numeric, mismatched_numeric_gap)
 
 
-def test_roll_series_with_gap_offset_gap_with_numeric_window_length_error(rolling_series_pd):
+def test_roll_series_with_gap_incorrect_types(rolling_series_pd):
+    error = "Window length must be either an offset string or an integer."
+    with pytest.raises(TypeError, match=error):
+        _roll_series_with_gap(rolling_series_pd,
+                              window_size=4.2,
+                              gap=4)
+
+    error = "Gap must be either an offset string or an integer."
+    with pytest.raises(TypeError, match=error):
+        _roll_series_with_gap(rolling_series_pd,
+                              window_size=4,
+                              gap=4.2)
+
+
+def test_roll_series_with_gap_negative_inputs(rolling_series_pd):
+    error = "Window length must be greater than zero."
+    with pytest.raises(ValueError, match=error):
+        _roll_series_with_gap(rolling_series_pd,
+                              window_size=-4,
+                              gap=4)
+
+    error = "Gap must be greater than or equal to zero."
+    with pytest.raises(ValueError, match=error):
+        _roll_series_with_gap(rolling_series_pd,
+                              window_size=4,
+                              gap=-4)
+
+
+def test_roll_series_with_non_offset_string_inputs(rolling_series_pd):
+    error = "Cannot roll series. The specified gap, test, is not a valid offset alias."
+    with pytest.raises(ValueError, match=error):
+        _roll_series_with_gap(rolling_series_pd,
+                              window_size='4D',
+                              gap='test')
+
+    error = "Cannot roll series. The specified window length, test, is not a valid offset alias."
+    with pytest.raises(ValueError, match=error):
+        _roll_series_with_gap(rolling_series_pd,
+                              window_size='test',
+                              gap='7D')
+
+    # Test mismatched types error
     error = ("Cannot roll series with offset gap, 2d, and numeric window length, 7. "
              "If an offset alias is used for gap, the window length must also be defined as an offset alias. "
              "Please either change gap to be numeric or change window length to be an offset alias.")
@@ -544,17 +585,3 @@ def test_roll_series_with_gap_offset_gap_with_numeric_window_length_error(rollin
         _roll_series_with_gap(rolling_series_pd,
                               window_size=7,
                               gap='2d').max()
-
-
-def test_roll_series_with_gap_non_offset_input_errors(rolling_series_pd):
-    error = "Cannot roll series. Gap, test, is not a valid offset alias."
-    with pytest.raises(ValueError, match=error):
-        _roll_series_with_gap(rolling_series_pd,
-                              window_size='4D',
-                              gap='test')
-
-    error = "Cannot roll series. Window length, test, is not a valid offset alias."
-    with pytest.raises(ValueError, match=error):
-        _roll_series_with_gap(rolling_series_pd,
-                              window_size='test',
-                              gap='7D')
