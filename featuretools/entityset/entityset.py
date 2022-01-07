@@ -226,7 +226,7 @@ class EntitySet(object):
 
             Args:
                 path (str): location on disk to write to (will be created as a directory)
-                engine (str) : Name of the engine to use. Possible values are: {'auto', 'pyarrow', 'fastparquet'}.
+                engine (str) : Name of the engine to use. Possible values are: {'auto', 'pyarrow'}.
                 compression (str) : Name of the compression to use. Possible values are: {'snappy', 'gzip', 'brotli', None}.
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         '''

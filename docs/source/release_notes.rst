@@ -12,12 +12,15 @@ Future Release
         * Fix bug where Woodwork initialization could fail on feature matrix if cutoff times caused null values to be introduced (:pr:`1810`)
     * Changes
         * Skip code coverage for specific dask usage lines (:pr:`1829`)
+        * Increase minimum required numpy version to 1.21.0, scipy to 1.3.3, koalas to 1.8.1 (:pr:`1833`)
+        * Remove pyyaml as a requirement (:pr:`1833`)
     * Documentation Changes
         * Remove testing on conda forge in release.md (:pr:`1811`)
     * Testing Changes
         * Enable auto-merge for minimum and latest dependency merge requests (:pr:`1818`, :pr:`1821`, :pr:`1822`)
         * Change auto approve workfow to use PR number and run every 30 minutes (:pr:`1827`)
         * Test deserializing from S3 with mocked S3 fixtures only (:pr:`1825`)
+        * Remove fastparquet as a test requirement (:pr:`1833`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`

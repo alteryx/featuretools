@@ -30,9 +30,8 @@ def test_installed_packages():
     installed_set = {name.lower().replace('-', '_')
                      for name in installed_packages.keys()}
     requirements = ["pandas", "numpy", "tqdm",
-                    "pyyaml", "cloudpickle",
-                    "dask", "distributed", "psutil",
-                    "click"]
+                    "cloudpickle", "dask", "distributed",
+                    "psutil", "click"]
     assert set(requirements).issubset(installed_set)
 
 
