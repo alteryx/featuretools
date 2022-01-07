@@ -1,7 +1,7 @@
 name: Auto Approve Dependency PRs
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 jobs:
   build:

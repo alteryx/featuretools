@@ -55,7 +55,7 @@ def test_single_table_dask_entityset():
 
     # Use the same columns and make sure both indexes are sorted the same
     dask_computed_fm = dask_fm.compute().set_index('id').loc[fm.index][fm.columns]
-    pd.testing.assert_frame_equal(fm, dask_computed_fm)
+    pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
 
 
 def test_single_table_dask_entityset_ids_not_sorted():
@@ -100,7 +100,7 @@ def test_single_table_dask_entityset_ids_not_sorted():
                    trans_primitives=primitives_list)
 
     # Make sure both indexes are sorted the same
-    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id').loc[fm.index])
+    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id').loc[fm.index], check_dtype=False)
 
 
 def test_single_table_dask_entityset_with_instance_ids():
@@ -149,7 +149,7 @@ def test_single_table_dask_entityset_with_instance_ids():
                    instance_ids=instance_ids)
 
     # Make sure both indexes are sorted the same
-    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id').loc[fm.index])
+    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id').loc[fm.index], check_dtype=False)
 
 
 def test_single_table_dask_entityset_single_cutoff_time():
@@ -196,7 +196,7 @@ def test_single_table_dask_entityset_single_cutoff_time():
                    cutoff_time=pd.Timestamp("2019-01-05 04:00"))
 
     # Make sure both indexes are sorted the same
-    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id').loc[fm.index])
+    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id').loc[fm.index], check_dtype=False)
 
 
 def test_single_table_dask_entityset_cutoff_time_df():
@@ -250,11 +250,11 @@ def test_single_table_dask_entityset_cutoff_time_df():
                    trans_primitives=primitives_list,
                    cutoff_time=cutoff_times)
     # Because row ordering with Dask is not guaranteed, we need to sort on two columns to make sure that values
-    # for instance id 0 are compared correctly. Also, make sure the boolean column has the same dtype.
+    # for instance id 0 are compared correctly. Also, make sure the index column has the same dtype.
     fm = fm.sort_values(['id', 'labels'])
-    dask_fm = dask_fm.compute().set_index('id').sort_values(['id', 'labels'])
-    dask_fm['IS_WEEKEND(dates)'] = dask_fm['IS_WEEKEND(dates)'].astype(fm['IS_WEEKEND(dates)'].dtype)
-    pd.testing.assert_frame_equal(fm, dask_fm)
+    dask_fm = dask_fm.compute().astype({'id': 'int64'})
+    dask_fm = dask_fm.set_index('id').sort_values(['id', 'labels'])
+    pd.testing.assert_frame_equal(fm, dask_fm, check_dtype=False)
 
 
 def test_single_table_dask_entityset_dates_not_sorted():
@@ -297,7 +297,7 @@ def test_single_table_dask_entityset_dates_not_sorted():
                    trans_primitives=primitives_list,
                    max_depth=1)
 
-    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id').loc[fm.index])
+    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id').loc[fm.index], check_dtype=False)
 
 
 def test_dask_entityset_secondary_time_index():
@@ -380,4 +380,6 @@ def test_dask_entityset_secondary_time_index():
                         trans_primitives=["month"])
 
     # Make sure both matrixes are sorted the same
-    pd.testing.assert_frame_equal(fm.sort_values('delay'), dask_fm.compute().set_index('id').sort_values('delay'))
+    # Also need to account for index differences
+    dask_fm_computed = dask_fm.compute().astype({'id': 'int64'}).set_index('id')
+    pd.testing.assert_frame_equal(fm.sort_values('delay'), dask_fm_computed.sort_values('delay'), check_dtype=False)
