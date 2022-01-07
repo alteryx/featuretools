@@ -1246,7 +1246,7 @@ class TestCreateClientAndCluster(object):
                             get_mock_client_cluster)
         try:
             cpus = len(psutil.Process().cpu_affinity())
-        except AttributeError:
+        except AttributeError:  # pragma: no cover
             cpus = psutil.cpu_count()
 
         # jobs < tasks case
@@ -1313,7 +1313,7 @@ def test_parallel_failure_raises_correct_error(pd_es):
                                  approximate='1 hour')
 
 
-def test_warning_not_enough_chunks(pd_es, capsys, three_worker_scheduler):
+def test_warning_not_enough_chunks(pd_es, capsys, three_worker_scheduler):  # pragma: no cover
     property_feature = IdentityFeature(pd_es['log'].ww['value']) > 10
 
     dkwargs = {'cluster': three_worker_scheduler['address']}
@@ -1331,7 +1331,7 @@ def test_warning_not_enough_chunks(pd_es, capsys, three_worker_scheduler):
 def test_n_jobs():
     try:
         cpus = len(psutil.Process().cpu_affinity())
-    except AttributeError:
+    except AttributeError:  # pragma: no cover
         cpus = psutil.cpu_count()
 
     assert n_jobs_to_workers(1) == 1
@@ -1747,15 +1747,12 @@ def test_closes_tqdm(es):
 
     assert len(tqdm._instances) == 0
 
-    try:
+    match = "This primitive has errored"
+    with pytest.raises(RuntimeError, match=match):
         calculate_feature_matrix([value, error_feature],
                                  es,
                                  verbose=True)
-        assert False
-    except RuntimeError as e:
-        assert e.args[0] == "This primitive has errored"
-    finally:
-        assert len(tqdm._instances) == 0
+    assert len(tqdm._instances) == 0
 
 
 def test_approximate_with_single_cutoff_warns(pd_es):
