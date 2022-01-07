@@ -11,6 +11,7 @@ Future Release
         * Fix bug where Woodwork initialization could fail on feature matrix if cutoff times caused null values to be introduced (:pr:`1810`)
     * Changes
         * Skip code coverage for specific dask usage lines (:pr:`1829`)
+        * Increase minimum required numpy version to 1.21.0 (:pr:`1833`)
     * Documentation Changes
         * Remove testing on conda forge in release.md (:pr:`1811`)
     * Testing Changes
