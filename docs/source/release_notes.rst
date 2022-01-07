@@ -12,6 +12,7 @@ Future Release
     * Changes
         * Skip code coverage for specific dask usage lines (:pr:`1829`)
         * Increase minimum required numpy version to 1.21.0 (:pr:`1833`)
+        * Remove fastparquet as a test requirement (:pr:`1833`)
     * Documentation Changes
         * Remove testing on conda forge in release.md (:pr:`1811`)
     * Testing Changes
