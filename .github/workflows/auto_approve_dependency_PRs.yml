@@ -1,7 +1,5 @@
 name: Auto Approve Dependency PRs
 on:
-  schedule:
-    - cron: '*/5 * * * *'
   workflow_dispatch:
   workflow_run:
     workflows: ["Unit Tests - Latest Dependencies"]
