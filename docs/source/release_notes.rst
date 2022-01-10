@@ -19,6 +19,7 @@ Future Release
     * Testing Changes
         * Enable auto-merge for minimum and latest dependency merge requests (:pr:`1818`, :pr:`1821`, :pr:`1822`)
         * Change auto approve workfow to use PR number and run every 30 minutes (:pr:`1827`)
+        * Add auto approve workflow to run when unit tests complete (:pr:`1837`)
         * Test deserializing from S3 with mocked S3 fixtures only (:pr:`1825`)
         * Remove fastparquet as a test requirement (:pr:`1833`)
 

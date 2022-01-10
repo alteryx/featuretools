@@ -1,8 +1,13 @@
 name: Auto Approve Dependency PRs
 on:
-  schedule:
-    - cron: '*/5 * * * *'
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Unit Tests - Latest Dependencies"]
+    branches:    
+      - 'latest-dep-update-[a-f0-9]+'
+      - 'min-dep-update-[a-f0-9]+'
+    types:
+      - completed
 jobs:
   build:
     runs-on: ubuntu-latest
