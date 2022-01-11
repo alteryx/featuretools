@@ -200,11 +200,12 @@ class DeepFeatureSynthesis(object):
         agg_prim_dict = primitives.get_aggregation_primitives()
         for a in agg_primitives:
             if isinstance(a, str):
-                if a.lower() not in agg_prim_dict:
+                a_formatted = a.replace("_", "").lower()
+                if a_formatted not in agg_prim_dict:
                     raise ValueError("Unknown aggregation primitive {}. ".format(a),
                                      "Call ft.primitives.list_primitives() to get",
                                      " a list of available primitives")
-                a = agg_prim_dict[a.lower()]
+                a = agg_prim_dict[a_formatted]
             a = handle_primitive(a)
             if not isinstance(a, AggregationPrimitive):
                 raise ValueError("Primitive {} in agg_primitives is not an "
@@ -225,7 +226,8 @@ class DeepFeatureSynthesis(object):
         self.where_primitives = []
         for p in where_primitives:
             if isinstance(p, str):
-                prim_obj = agg_prim_dict.get(p.lower(), None)
+                p_formatted = p.replace("_", "").lower()
+                prim_obj = agg_prim_dict.get(p_formatted, None)
                 if prim_obj is None:
                     raise ValueError("Unknown where primitive {}. ".format(p),
                                      "Call ft.primitives.list_primitives() to get",
@@ -951,14 +953,14 @@ def handle_primitive(primitive):
 
 
 def check_trans_primitive(primitive):
-    trans_prim_dict = primitives.get_transform_primitives()
-
+    trans_prim_dict = { k.replace("_", "").lower(): v for k, v in primitives.get_transform_primitives().items()}
     if isinstance(primitive, str):
-        if primitive.lower() not in trans_prim_dict:
+        primitive_formatted = primitive.replace("_", "").lower()
+        if primitive_formatted not in trans_prim_dict:
             raise ValueError("Unknown transform primitive {}. ".format(primitive),
                              "Call ft.primitives.list_primitives() to get",
                              " a list of available primitives")
-        primitive = trans_prim_dict[primitive.lower()]
+        primitive = trans_prim_dict[primitive_formatted]
     primitive = handle_primitive(primitive)
     if not isinstance(primitive, TransformPrimitive):
         raise ValueError("Primitive {} in trans_primitives or "

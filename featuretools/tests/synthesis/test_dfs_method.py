@@ -339,6 +339,29 @@ def test_no_warns_with_different_case_string_primitives(es):
         assert not record
 
 
+def test_no_warns_with_and_without_snakecase_string_primitives(es):
+    # Should not raise a UnusedPrimitiveWarning warnings
+    for trans_primitive in ["is_null", "isNull", 'IsNull', 'iSnuLl', 'i_s_n_u_L_l']:
+        with pytest.warns(None) as record:
+            dfs(entityset=es,
+                target_dataframe_name='customers',
+                trans_primitives=[trans_primitive],
+                max_depth=1,
+                features_only=True)
+
+        assert not record
+
+    for agg_primitive in ["num_true", 'numTrue', "NumTrue", "nuMtRUE", "n_u_m_t_r_U_e"]:
+        with pytest.warns(None) as record:
+            dfs(entityset=es,
+                target_dataframe_name='customers',
+                agg_primitives=[agg_primitive],
+                max_depth=2,
+                features_only=True)
+
+        assert not record
+
+
 def test_does_not_warn_with_stacking_feature(pd_es):
     with pytest.warns(None) as record:
         dfs(entityset=pd_es,

@@ -24,7 +24,7 @@ def get_aggregation_primitives():
                           featuretools.primitives.AggregationPrimitive):
                 if attribute.name:
                     aggregation_primitives.add(attribute)
-    return {prim.name.lower(): prim for prim in aggregation_primitives}
+    return {prim.name.replace("_", "").lower(): prim for prim in aggregation_primitives}
 
 
 # returns all transform primitives, regardless of compatibility
@@ -37,7 +37,7 @@ def get_transform_primitives():
                           featuretools.primitives.TransformPrimitive):
                 if attribute.name:
                     transform_primitives.add(attribute)
-    return {prim.name.lower(): prim for prim in transform_primitives}
+    return {prim.name.replace("_", "").lower(): prim for prim in transform_primitives}
 
 
 def list_primitives():
