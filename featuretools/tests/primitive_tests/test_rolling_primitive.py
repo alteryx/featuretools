@@ -284,6 +284,47 @@ def test_rolling_std_non_uniform_data():
     assert window_6_series.isna().sum() == 14
 
 
+@pytest.mark.parametrize("primitive", [RollingCount, RollingMax, RollingMin, RollingMean])
+def test_rolling_primitives_non_uniform_multiple_observations(primitive):
+    # When the data isn't uniform, this impacts the number of values in each rolling window
+    datetimes = (list(pd.date_range(start='2017-01-01', freq='1d', periods=3)) +
+                 list(pd.date_range(start='2017-01-10', freq='2d', periods=4)) +
+                 list(pd.date_range(start='2017-01-22', freq='1d', periods=7)))
+    no_freq_series = pd.Series(range(len(datetimes)), index=datetimes)
+
+    # Should match RollingCount exactly and have same nan values as other primitives
+    expected_series = pd.Series([None, 1, 2] +
+                                [None, 1, 1, 1] +
+                                [None, 1, 2, 3, 3, 3, 3])
+
+    primitive_instance = primitive(window_length='3d', gap='1d')
+    if isinstance(primitive_instance, RollingCount):
+        rolled_series = pd.Series(primitive_instance(no_freq_series.index))
+        pd.testing.assert_series_equal(rolled_series, expected_series)
+    else:
+        rolled_series = pd.Series(primitive_instance(no_freq_series.index, pd.Series(no_freq_series.values)))
+        pd.testing.assert_series_equal(expected_series.isna(), rolled_series.isna())
+
+
+def test_rolling_std_non_uniform_multiple_observations():
+    # When the data isn't uniform, this impacts the number of values in each rolling window
+    datetimes = (list(pd.date_range(start='2017-01-01', freq='1d', periods=3)) +
+                 list(pd.date_range(start='2017-01-10', freq='2d', periods=4)) +
+                 list(pd.date_range(start='2017-01-22', freq='1d', periods=7)))
+    no_freq_series = pd.Series(range(len(datetimes)), index=datetimes)
+
+    # There will be at least two null values at the beginning of each range's rows, the first for the
+    # row skipped by the gap, and the second because pandas' std returns NaN if there's only one row
+    expected_series = pd.Series([None, None, 0.707107] +
+                                [None, None, None, None] +  # Because the freq was 2 days, there will never be more than 1 observation
+                                [None, None, 0.707107, 1.0, 1.0, 1.0, 1.0])
+
+    primitive_instance = RollingSTD(window_length='3d', gap='1d')
+    rolled_series = pd.Series(primitive_instance(no_freq_series.index, pd.Series(no_freq_series.values)))
+
+    pd.testing.assert_series_equal(rolled_series, expected_series)
+
+
 @pytest.mark.parametrize("primitive", [RollingCount, RollingMax, RollingMin, RollingMean, RollingSTD])
 @patch("featuretools.primitives.rolling_transform_primitive._apply_roll_with_offset_gap")
 def test_no_call_to_apply_roll_with_offset_gap_with_numeric(mock_apply_roll, primitive, rolling_series_pd):
