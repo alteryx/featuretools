@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Make all primitive string matching case and underscore insensitive (:pr: `1841`)
+        * Make all primitive string matching case and underscore insensitive (:pr:`1841`)
     * Fixes
     * Changes
     * Documentation Changes
