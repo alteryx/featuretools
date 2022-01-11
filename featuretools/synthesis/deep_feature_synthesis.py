@@ -953,7 +953,7 @@ def handle_primitive(primitive):
 
 
 def check_trans_primitive(primitive):
-    trans_prim_dict = { k.replace("_", "").lower(): v for k, v in primitives.get_transform_primitives().items()}
+    trans_prim_dict = {k.replace("_", "").lower(): v for k, v in primitives.get_transform_primitives().items()}
     if isinstance(primitive, str):
         primitive_formatted = primitive.replace("_", "").lower()
         if primitive_formatted not in trans_prim_dict:
