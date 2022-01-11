@@ -9,6 +9,9 @@ Future Release
         * Make all primitive string matching case and underscore insensitive (:pr: `1841`)
     * Fixes
     * Changes
+    * Fixes
+    * Changes
+        * add autonormalize as an add-on library (:pr:`1840`)
     * Documentation Changes
     * Testing Changes
 
