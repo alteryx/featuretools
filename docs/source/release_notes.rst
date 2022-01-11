@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-   ==============
-       * Enhancements
-       * Fixes
-       * Changes
-       * Documentation Changes
-       * Testing Changes
-   
-       Thanks to the following people for contributing to this release:
+Future Release
+==============
+    * Enhancements
+        * Make all primitive string matching case and underscore insensitive (:pr: `1841`)
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`tuethan1999`
 
 v1.4.0 Jan 10, 2022
 ===================
