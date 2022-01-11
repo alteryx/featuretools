@@ -3,8 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+   ==============
+       * Enhancements
+       * Fixes
+       * Changes
+       * Documentation Changes
+       * Testing Changes
+   
+       Thanks to the following people for contributing to this release:
+
+v1.4.0 Jan 10, 2022
+===================
     * Enhancements
         * Add LatLong transform primitives - GeoMidpoint, IsInGeoBox, CityblockDistance (:pr:`1814`)
         * Add issue templates for bugs, feature requests and documentation improvements (:pr:`1834`)
@@ -24,7 +34,7 @@ Future Release
         * Remove fastparquet as a test requirement (:pr:`1833`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`davesque`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
     
 
 v1.3.0 Dec 2, 2021
