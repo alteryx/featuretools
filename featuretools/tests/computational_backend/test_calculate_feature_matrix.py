@@ -13,6 +13,14 @@ import pytest
 from dask import dataframe as dd
 from tqdm import tqdm
 from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import (
+    Age,
+    AgeNullable,
+    Boolean,
+    BooleanNullable,
+    Integer,
+    IntegerNullable
+)
 
 import featuretools as ft
 from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
@@ -1865,3 +1873,24 @@ def test_cfm_with_invalid_time_index(es):
     match += "which differs from other entityset time indexes"
     with pytest.raises(TypeError, match=match):
         calculate_feature_matrix(features=features, entityset=es)
+
+
+def test_cfm_introduces_nan_values_in_direct_feats(es):
+    es["customers"].ww.set_types(logical_types={"age": "Age",
+                                                "engagement_level": "Integer"})
+    age_feat = ft.Feature(es["customers"].ww["age"])
+    engagement_feat = ft.Feature(es["customers"].ww["engagement_level"])
+    loves_ice_cream_feat = ft.Feature(es["customers"].ww["loves_ice_cream"])
+    features = [age_feat, engagement_feat, loves_ice_cream_feat]
+    fm = calculate_feature_matrix(features=features,
+                                  entityset=es,
+                                  cutoff_time=pd.Timestamp("2010-04-08 04:00"),
+                                  instance_ids=[1])
+
+    assert isinstance(es["customers"].ww.logical_types["age"], Age)
+    assert isinstance(es["customers"].ww.logical_types["engagement_level"], Integer)
+    assert isinstance(es["customers"].ww.logical_types["loves_ice_cream"], Boolean)
+
+    assert isinstance(fm.ww.logical_types["age"], AgeNullable)
+    assert isinstance(fm.ww.logical_types["engagement_level"], IntegerNullable)
+    assert isinstance(fm.ww.logical_types["loves_ice_cream"], BooleanNullable)

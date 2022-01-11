@@ -11,12 +11,13 @@ extras_require = {
     'update_checker': ['alteryx-open-src-update-checker >= 2.0.0'],
     'nlp_primitives': ['nlp-primitives[complete] >= 2.0.0'],
     'koalas': open('koalas-requirements.txt').readlines(),
+    'autonormalize': ['autonormalize >= 1.0.2'],
 }
 extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
 setup(
     name='featuretools',
-    version='1.3.0',
+    version='1.4.0',
     packages=find_packages(),
     description='a framework for automated feature engineering',
     url='https://featuretools.com',
