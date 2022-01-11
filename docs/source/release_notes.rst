@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-   ==============
-       * Enhancements
-       * Fixes
-       * Changes
-       * Documentation Changes
-       * Testing Changes
-   
-       Thanks to the following people for contributing to this release:
+Future Release
+==============
+    * Enhancements
+    * Fixes
+    * Changes
+        * add autonormalize as an add-on library (:pr:`1840`)
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`tuethan1999`
 
 v1.4.0 Jan 10, 2022
 ===================
