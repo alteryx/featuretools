@@ -418,32 +418,26 @@ def test_apply_roll_with_offset_gap_min_periods(min_periods, rolling_series_pd):
 
 
 def test_apply_roll_with_offset_gap_non_uniform():
-    rows_to_change = [2, 6, 12]
     window_length = '3d'
-    gap = '1d'
-
+    gap = '3d'
     # When the data isn't uniform, this impacts the number of values in each rolling window
-    # pick rows that should be pushed backwards to be one day after the previous day
-    # this means that with a window length of 7D, when we get to those rows, there's another value
-    # within the 7 days window where there are none for the rest of the rows
-    datetimes = list(pd.date_range(start='2017-01-01', freq='1W', periods=20))
-    for i in rows_to_change:
-        datetimes[i] = datetimes[i] - pd.Timedelta('6D')
-    no_freq_series = pd.Series(range(20), index=datetimes)
+    datetimes = (list(pd.date_range(start='2017-01-01', freq='1d', periods=7)) +
+                 list(pd.date_range(start='2017-02-01', freq='2d', periods=7)) +
+                 list(pd.date_range(start='2017-03-01', freq='1d', periods=7)))
+    no_freq_series = pd.Series(range(len(datetimes)), index=datetimes)
 
     assert pd.infer_freq(no_freq_series.index) is None
+
+    expected_series = pd.Series([None, None, None, 1, 2, 3, 3] +
+                                [None, None, 1, 1, 1, 1, 1] +
+                                [None, None, None, 1, 2, 3, 3], index=datetimes)
 
     def count_wrapper(sub_s):
         return _apply_roll_with_offset_gap(sub_s, gap, len, min_periods=1)
     rolling_count_obj = _roll_series_with_gap(no_freq_series, window_length, gap=gap)
     rolling_count_series = rolling_count_obj.apply(count_wrapper)
 
-    counts = rolling_count_series.value_counts()
-    assert counts[1] == len(rows_to_change)
-    assert rolling_count_series.isna().sum() == (len(no_freq_series) - len(rows_to_change))
-
-    for i in rows_to_change:
-        assert rolling_count_series.iloc[i] == 1
+    pd.testing.assert_series_equal(rolling_count_series, expected_series)
 
 
 def test_apply_roll_with_offset_data_frequency_higher_than_parameters_frequency():

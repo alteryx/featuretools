@@ -224,68 +224,7 @@ def test_rolling_count_with_no_gap(window_length, gap, min_periods, expected_num
 
 
 @pytest.mark.parametrize("primitive", [RollingCount, RollingMax, RollingMin, RollingMean])
-def test_rolling_primitives_non_uniform_data(primitive):
-    rows_to_change = [i for i in range(20) if i % 3 == 2]
-
-    # When the data isn't uniform, this impacts the number of values in each rolling window
-    datetimes = list(pd.date_range(start='2017-01-01', freq='4d', periods=20))
-    for i in rows_to_change:
-        # Push the specified rows back two days, so instead of an even 4 days between rows,
-        # some intervals between rows are 2 days, some are 4, and some are 6 days
-        datetimes[i] = datetimes[i] - pd.Timedelta('2D')
-    no_freq_series = pd.Series(range(20), index=datetimes)
-
-    window_3_primitive = primitive(window_length='3d', gap='1d')
-    window_3_func = window_3_primitive.get_function()
-    if isinstance(window_3_primitive, RollingCount):
-        window_3_series = pd.Series(window_3_func(no_freq_series.index))
-    else:
-        window_3_series = pd.Series(window_3_func(no_freq_series.index, pd.Series(no_freq_series.values)))
-
-    for i in rows_to_change:
-        # The only 6 rows that aren't null are the ones that got pushed closer to the row before it
-        # Since the interval there is 2, which is less than the window length
-        assert not pd.isna(window_3_series.iloc[i])
-    # The remainder are null values
-    assert window_3_series.isna().sum() == 14
-
-    # By increasing the window length to 4, we also get values for the length 4 intervals.
-    window_4_primitive = primitive(window_length='4d', gap='1d')
-    window_4_func = window_4_primitive.get_function()
-    if isinstance(window_4_primitive, RollingCount):
-        window_4_series = pd.Series(window_4_func(no_freq_series.index))
-    else:
-        window_4_series = pd.Series(window_4_func(no_freq_series.index, pd.Series(no_freq_series.values)))
-
-    for i in rows_to_change:
-        assert not pd.isna(window_4_series.iloc[i - 1])
-        assert not pd.isna(window_4_series.iloc[i])
-    assert window_4_series.isna().sum() == 7
-
-
-def test_rolling_std_non_uniform_data():
-    rows_to_change = [i for i in range(20) if i % 3 == 1]
-
-    # When the data isn't uniform, this impacts the number of values in each rolling window
-    datetimes = list(pd.date_range(start='2017-01-01', freq='4d', periods=20))
-    for i in rows_to_change:
-        datetimes[i] = datetimes[i] - pd.Timedelta('2D')
-    no_freq_series = pd.Series(range(20), index=datetimes)
-
-    window_6_primitive = RollingSTD(window_length='6d', gap='2d')
-    window_6_func = window_6_primitive.get_function()
-    window_6_series = pd.Series(window_6_func(no_freq_series.index, pd.Series(no_freq_series.values)))
-
-    # The first element of rows_to_change, 1, is null because it's too early in the series to have two values in its window
-    # which is required for pandas' std calculation
-    for i in rows_to_change[1:]:
-        assert not pd.isna(window_6_series.iloc[i])
-    # The remainder are null values
-    assert window_6_series.isna().sum() == 14
-
-
-@pytest.mark.parametrize("primitive", [RollingCount, RollingMax, RollingMin, RollingMean])
-def test_rolling_primitives_non_uniform_multiple_observations(primitive):
+def test_rolling_primitives_non_uniform(primitive):
     # When the data isn't uniform, this impacts the number of values in each rolling window
     datetimes = (list(pd.date_range(start='2017-01-01', freq='1d', periods=3)) +
                  list(pd.date_range(start='2017-01-10', freq='2d', periods=4)) +
@@ -306,7 +245,7 @@ def test_rolling_primitives_non_uniform_multiple_observations(primitive):
         pd.testing.assert_series_equal(expected_series.isna(), rolled_series.isna())
 
 
-def test_rolling_std_non_uniform_multiple_observations():
+def test_rolling_std_non_uniform():
     # When the data isn't uniform, this impacts the number of values in each rolling window
     datetimes = (list(pd.date_range(start='2017-01-01', freq='1d', periods=3)) +
                  list(pd.date_range(start='2017-01-10', freq='2d', periods=4)) +
