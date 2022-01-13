@@ -341,7 +341,7 @@ def test_no_warns_with_different_case_string_primitives(es):
 
 def test_no_warns_with_and_without_snakecase_string_primitives(es):
     # Should not raise a UnusedPrimitiveWarning warnings
-    for trans_primitive in ["is_null", "isNull", 'IsNull', 'iSnuLl', 'i_s_n_u_L_l']:
+    for trans_primitive in ["is_null", "isNull", "IsNull", "_iSnu__Ll_", "i_s_n_u_L_l"]:
         with pytest.warns(None) as record:
             dfs(entityset=es,
                 target_dataframe_name='customers',
@@ -351,7 +351,7 @@ def test_no_warns_with_and_without_snakecase_string_primitives(es):
 
         assert not record
 
-    for agg_primitive in ["num_true", 'numTrue', "NumTrue", "nuMtRUE", "n_u_m_t_r_U_e"]:
+    for agg_primitive in ["num_unique", 'numUnique', "NumUnique", "_nuMuNi__Que_", "n_u_m_u_n_i_q_u_e"]:
         with pytest.warns(None) as record:
             dfs(entityset=es,
                 target_dataframe_name='customers',
