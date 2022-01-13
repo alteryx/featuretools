@@ -4,6 +4,7 @@ from itertools import permutations
 
 from featuretools import primitives
 from featuretools.feature_base import IdentityFeature
+from featuretools.primitives.utils import format_primitive_name
 
 logger = logging.getLogger('featuretools')
 
@@ -107,8 +108,9 @@ def _init_primitive_options(primitive_options, es):
         if isinstance(options, list):
             for primitive_key in primitive_keys:
                 if isinstance(primitive_key, str):
-                    primitive = primitives.get_aggregation_primitives().get(primitive_key) or \
-                        primitives.get_transform_primitives().get(primitive_key)
+                    primitive_key_formatted = format_primitive_name(primitive_key)
+                    primitive = primitives.get_aggregation_primitives().get(primitive_key_formatted) or \
+                        primitives.get_transform_primitives().get(primitive_key_formatted)
                     if not primitive:
                         msg = "Unknown primitive with name '{}'".format(primitive_key)
                         raise ValueError(msg)

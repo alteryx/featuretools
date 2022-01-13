@@ -24,7 +24,7 @@ def get_aggregation_primitives():
                           featuretools.primitives.AggregationPrimitive):
                 if attribute.name:
                     aggregation_primitives.add(attribute)
-    return {prim.name.replace("_", "").lower(): prim for prim in aggregation_primitives}
+    return {format_primitive_name(prim.name): prim for prim in aggregation_primitives}
 
 
 # returns all transform primitives, regardless of compatibility
@@ -37,7 +37,7 @@ def get_transform_primitives():
                           featuretools.primitives.TransformPrimitive):
                 if attribute.name:
                     transform_primitives.add(attribute)
-    return {prim.name.replace("_", "").lower(): prim for prim in transform_primitives}
+    return {format_primitive_name(prim.name): prim for prim in transform_primitives}
 
 
 def list_primitives():
@@ -293,3 +293,7 @@ def _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_2s, unit):
         radius_earth = 6371.0088
     distances = radius_earth * 2 * np.arcsin(np.sqrt(a))
     return distances
+
+
+def format_primitive_name(name):
+    return name.replace("_", "").lower()

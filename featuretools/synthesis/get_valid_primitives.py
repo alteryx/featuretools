@@ -1,5 +1,6 @@
 from featuretools.primitives import AggregationPrimitive, TransformPrimitive
 from featuretools.primitives.utils import (
+    format_primitive_name,
     get_aggregation_primitives,
     get_transform_primitives
 )
@@ -85,8 +86,8 @@ def get_valid_primitives(entityset, target_dataframe_name, max_depth=2, selected
     agg_unused = get_unused_primitives(agg_primitives, agg)
 
     # switch from str to class
-    agg_unused = [available_aggs[name] for name in agg_unused]
-    trans_unused = [available_trans[name] for name in trans_unused]
+    agg_unused = [available_aggs[format_primitive_name(name)] for name in agg_unused]
+    trans_unused = [available_trans[format_primitive_name(name)] for name in trans_unused]
 
     used_agg_prims = set(agg_primitives).difference(set(agg_unused))
     used_trans_prims = set(trans_primitives).difference(set(trans_unused))

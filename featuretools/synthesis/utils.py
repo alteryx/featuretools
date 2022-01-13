@@ -4,6 +4,7 @@ from featuretools.feature_base import (
     GroupByTransformFeature,
     TransformFeature
 )
+from featuretools.primitives.utils import format_primitive_name
 
 
 def _categorize_features(features):
@@ -54,7 +55,11 @@ def get_unused_primitives(specified, used):
         return []
     used = {p.replace("_", "") for p in used}
     specified = {
-        primitive.replace("_", "").lower() if isinstance(primitive, str) else primitive.name
+        (primitive, format_primitive_name(primitive)) if isinstance(primitive, str) else (primitive.name, format_primitive_name(primitive.name))
         for primitive in specified
     }
-    return sorted(list(specified.difference(used)))
+    ret = []
+    for (original, formatted) in specified:
+        if formatted not in used:
+            ret.append(original)
+    return sorted(ret)

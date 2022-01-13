@@ -8,8 +8,8 @@ from featuretools.primitives import (
 )
 from featuretools.utils.gen_utils import Library
 
-UNSUPPORTED = [p.name for p in get_transform_primitives().values() if Library.DASK not in p.compatibility]
-UNSUPPORTED += [p.name for p in get_aggregation_primitives().values() if Library.DASK not in p.compatibility]
+UNSUPPORTED = [name for name, p in get_transform_primitives().items() if Library.DASK not in p.compatibility]
+UNSUPPORTED += [name for name, p in get_aggregation_primitives().items() if Library.DASK not in p.compatibility]
 
 
 def test_transform(pd_es, dask_es):
@@ -57,7 +57,6 @@ def test_aggregation(pd_es, dask_es):
     trans_primitives = []
     agg_list = primitives[primitives['type'] == 'aggregation']['name'].tolist()
     agg_primitives = [prim for prim in agg_list if prim not in UNSUPPORTED]
-
     assert pd_es == dask_es
 
     # Run DFS using each dataframe as a target and confirm results match

@@ -27,6 +27,7 @@ from featuretools.primitives.options_utils import (
     generate_all_primitive_options,
     ignore_dataframe_for_primitive
 )
+from featuretools.primitives.utils import format_primitive_name
 from featuretools.utils.gen_utils import Library
 
 logger = logging.getLogger('featuretools')
@@ -200,7 +201,7 @@ class DeepFeatureSynthesis(object):
         agg_prim_dict = primitives.get_aggregation_primitives()
         for a in agg_primitives:
             if isinstance(a, str):
-                a_formatted = a.replace("_", "").lower()
+                a_formatted = format_primitive_name(a)
                 if a_formatted not in agg_prim_dict:
                     raise ValueError("Unknown aggregation primitive {}. ".format(a),
                                      "Call ft.primitives.list_primitives() to get",
@@ -226,7 +227,7 @@ class DeepFeatureSynthesis(object):
         self.where_primitives = []
         for p in where_primitives:
             if isinstance(p, str):
-                p_formatted = p.replace("_", "").lower()
+                p_formatted = format_primitive_name(p)
                 prim_obj = agg_prim_dict.get(p_formatted, None)
                 if prim_obj is None:
                     raise ValueError("Unknown where primitive {}. ".format(p),
@@ -953,9 +954,9 @@ def handle_primitive(primitive):
 
 
 def check_trans_primitive(primitive):
-    trans_prim_dict = {k.replace("_", "").lower(): v for k, v in primitives.get_transform_primitives().items()}
+    trans_prim_dict = {format_primitive_name(k): v for k, v in primitives.get_transform_primitives().items()}
     if isinstance(primitive, str):
-        primitive_formatted = primitive.replace("_", "").lower()
+        primitive_formatted = format_primitive_name(primitive)
         if primitive_formatted not in trans_prim_dict:
             raise ValueError("Unknown transform primitive {}. ".format(primitive),
                              "Call ft.primitives.list_primitives() to get",
