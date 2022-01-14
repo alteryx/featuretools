@@ -8,12 +8,14 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
-        * add autonormalize as an add-on library (:pr:`1840`)
+        * Add autonormalize as an add-on library (:pr:`1840`)
     * Documentation Changes
     * Testing Changes
+        * Add check for package conflicts with install workflow (:pr:`1843`)
+        * Change auto approve workflow to use assignee (:pr:`1843`)
 
     Thanks to the following people for contributing to this release:
-    :user:`tuethan1999`
+    :user:`gsheni`, :user:`tuethan1999`
 
 v1.4.0 Jan 10, 2022
 ===================
