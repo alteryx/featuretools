@@ -16,7 +16,7 @@ jobs:
         id: find_prs
         run: |
           gh auth status
-          gh pr list --repo "${{ github.repository }}" --author "machineFL" --base main --state open --search "status:success review:required" --limit 1 --json number > dep_PRs_waiting_approval.json
+          gh pr list --repo "${{ github.repository }}" --assignee "machineFL" --base main --state open --search "status:success review:required" --limit 1 --json number > dep_PRs_waiting_approval.json
           dep_pull_request=$(cat dep_PRs_waiting_approval.json | grep -Eo "[0-9]*")
           echo ::set-output name=dep_pull_request::${dep_pull_request}
         env:
