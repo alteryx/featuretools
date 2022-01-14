@@ -33,3 +33,6 @@ jobs:
           python -c "import alteryx_open_src_update_checker"
         env:
           ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
+      - name: Check package conflicts
+        run: |
+          python -m pip check

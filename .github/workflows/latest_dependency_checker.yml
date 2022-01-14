@@ -22,7 +22,6 @@ jobs:
         python -m pip install -r test-requirements.txt
         make checkdeps OUTPUT_PATH=featuretools/tests/requirement_files/latest_requirements.txt
     - name: Create pull request
-      id: cpr
       uses: peter-evans/create-pull-request@v3
       with:
         token: ${{ secrets.REPO_SCOPED_TOKEN }}
@@ -34,4 +33,5 @@ jobs:
         branch: latest-dep-update
         branch-suffix: short-commit-hash
         base: main
-        reviewers: thehomebrewnerd, tamargrey, jeff-hernandez, tuethan1999, davesque
+        assignees: machineFL
+        reviewers: machineAYX
