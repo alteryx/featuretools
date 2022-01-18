@@ -16,7 +16,9 @@ def test_datetoholiday():
 
     holiday_series = date_to_holiday(dates).tolist()
 
+    print(holiday_series[1])
+
     assert holiday_series[0] == "New Year's Day"
-    # assert holiday_series[1] == np.nan
+    assert np.isnan(holiday_series[1])
     assert holiday_series[2] == "Memorial Day"
     assert holiday_series[3] == "Independence Day"
