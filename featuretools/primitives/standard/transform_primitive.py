@@ -1143,7 +1143,6 @@ class DistanceToHoliday(TransformPrimitive):
             raise ValueError(error)
 
     def get_function(self):
-
         def distance_to_holiday(x):
             holiday_df = pd.DataFrame(sorted(self.federal_holidays.items()),
                                       columns=['holiday_date', 'holiday'])
