@@ -9,6 +9,7 @@ Future Release
     * Fixes
     * Changes
         * Add autonormalize as an add-on library (:pr:`1840`)
+        * Add DateToHoliday Transform Primitive (:pr:`1848`)
     * Documentation Changes
     * Testing Changes
         * Add check for package conflicts with install workflow (:pr:`1843`)
