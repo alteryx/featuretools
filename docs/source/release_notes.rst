@@ -15,7 +15,7 @@ Future Release
         * Change auto approve workflow to use assignee (:pr:`1843`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tuethan1999`
+    :user:`gsheni`, :user:`tuethan1999`, :user:`dvreed77`
 
 v1.4.0 Jan 10, 2022
 ===================
