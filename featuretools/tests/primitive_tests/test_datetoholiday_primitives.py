@@ -2,6 +2,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from featuretools.primitives.standard.transform_primitive import DateToHoliday
 
@@ -21,3 +22,9 @@ def test_datetoholiday():
     assert np.isnan(holiday_series[1])
     assert holiday_series[2] == "Memorial Day"
     assert holiday_series[3] == "Independence Day"
+
+
+def test_datetoholiday_error():
+    error_text = r"must be one of the available countries.*"
+    with pytest.raises(ValueError, match=error_text):
+        DateToHoliday(country='UNK')
