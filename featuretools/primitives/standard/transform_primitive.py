@@ -1,8 +1,8 @@
 import warnings
 
+import holidays
 import numpy as np
 import pandas as pd
-import holidays
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import (
     URL,
@@ -1020,6 +1020,7 @@ class CityblockDistance(TransformPrimitive):
             return pd.Series(lon_dis + lat_dist)
         return cityblock
 
+
 class DateToHoliday(TransformPrimitive):
     """Transforms time of an instance into the holiday name, if there is one.
 
@@ -1044,12 +1045,12 @@ class DateToHoliday(TransformPrimitive):
 
         We can also change the country.
 
-        >>> date_to_holiday_cananda = DateToHoliday(country='Canada')
+        >>> date_to_holiday_canada = DateToHoliday(country='Canada')
         >>> dates = pd.Series([datetime(2016, 7, 1),
         ...          datetime(2016, 11, 15),
         ...          datetime(2017, 12, 26),
         ...          datetime(2018, 9, 3)])
-        >>> date_to_holiday_cananda(dates).tolist()
+        >>> date_to_holiday_canada(dates).tolist()
         ['Canada Day', nan, 'Boxing Day', 'Labour Day']
     """
     name = "date_to_holiday"

@@ -1,6 +1,7 @@
 from datetime import datetime
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 
 from featuretools.primitives.standard.transform_primitive import DateToHoliday
 
