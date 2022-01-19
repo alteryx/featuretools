@@ -14,4 +14,3 @@ pydata_sphinx_theme==0.7.1
 nlp_primitives>=2.0.0
 autonormalize >= 1.0.2
 -r koalas-requirements.txt
-holidays>=0.12
