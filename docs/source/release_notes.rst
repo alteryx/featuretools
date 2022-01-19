@@ -14,6 +14,7 @@ Future Release
     * Testing Changes
         * Add check for package conflicts with install workflow (:pr:`1843`)
         * Change auto approve workflow to use assignee (:pr:`1843`)
+        * Update auto approve workflow to delete branch and change on trigger (:pr:`1852`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tuethan1999`, :user:`dvreed77`
