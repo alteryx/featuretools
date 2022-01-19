@@ -34,24 +34,41 @@ Before starting major work, you should touch base with the maintainers of Featur
   ```
 * Once you have obtained a copy of the code, you should create a development environment that is separate from your existing Python environment so that you can make and test changes without compromising your own work environment. You can run the following steps to create a separate virtual environment, and install Featuretools in editable mode. 
   ```bash
-  virtualenv venv
+  python -m venv venv
   source venv/bin/activate
-  python -m pip install -e .
-  python -m pip install -r dev-requirements.txt
+  make installdeps
+  git checkout -b issue####-branch_name
   ```
+
+* You will need to install Spark, Scala, and GraphViz to run all unit tests:
+
+     **macOS** (use [Homebrew](https://brew.sh/)):
+     ```bash
+     brew tap AdoptOpenJDK/openjdk
+     brew install --cask adoptopenjdk11
+     brew install scala
+     brew install apache-spark
+     brew install graphviz
+     ```
+
+     **Ubuntu**:
+     ```bash
+     sudo apt install openjdk-11-jre openjdk-11-jdk scala graphviz -y
+     ```
+    
 #### 2. Implement your Pull Request
 
 * Implement your pull request. If needed, add new tests or update the documentation.
 * Before submitting to GitHub, verify the tests run and the code lints properly
   ```bash
-  # runs test
-  make test
-
   # runs linting
   make lint
 
   # will fix some common linting issues automatically
   make lint-fix
+
+  # runs test
+  make test
   ```
 * If you made changes to the documentation, build the documentation locally.
   ```bash

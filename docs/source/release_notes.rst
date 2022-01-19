@@ -9,13 +9,14 @@ Future Release
     * Fixes
     * Changes
         * Add autonormalize as an add-on library (:pr:`1840`)
+        * Add DateToHoliday Transform Primitive (:pr:`1848`)
     * Documentation Changes
     * Testing Changes
         * Add check for package conflicts with install workflow (:pr:`1843`)
         * Change auto approve workflow to use assignee (:pr:`1843`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tuethan1999`
+    :user:`gsheni`, :user:`tuethan1999`, :user:`dvreed77`
 
 v1.4.0 Jan 10, 2022
 ===================
