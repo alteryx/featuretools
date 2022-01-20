@@ -1,8 +1,5 @@
-from woodwork.logical_types import Categorical, Datetime
-from featuretools.primitives.base import TransformPrimitive
 import warnings
 
-import holidays
 import numpy as np
 import pandas as pd
 from woodwork.column_schema import ColumnSchema
@@ -20,10 +17,9 @@ from woodwork.logical_types import (
     Ordinal
 )
 
-from featuretools.primitives.base.transform_primitive_base import (
-    TransformPrimitive
-)
+from featuretools.primitives.base import TransformPrimitive
 from featuretools.primitives.utils import (
+    HolidayUtil,
     _deconstrct_latlongs,
     _haversine_calculate
 )
@@ -1061,23 +1057,15 @@ class DateToHoliday(TransformPrimitive):
 
     def __init__(self, country='US'):
         self.country = country
-        try:
-            self.holidays = holidays.CountryHoliday(self.country)
-        except KeyError:
-            available_countries = 'https://github.com/dr-prodigy/python-holidays#available-countries'
-            error = 'must be one of the available countries:\n%s' % available_countries
-            raise ValueError(error)
-        years_list = [1950 + x for x in range(150)]
-        self.federal_holidays = getattr(holidays, country)(years=years_list)
+        self.holidayUtil = HolidayUtil(country)
 
     def get_function(self):
         def date_to_holiday(x):
-            holidays_df = pd.DataFrame(sorted(self.federal_holidays.items()),
-                                       columns=['dates', 'names'])
-            holidays_df.dates = holidays_df.dates.astype('datetime64')
-            df = pd.DataFrame({'dates': x})
-            df.dates = df.dates.dt.normalize().astype('datetime64')
-            df = df.merge(holidays_df, how='left')
+            holiday_df = self.holidayUtil.to_df()
+            df = pd.DataFrame({'date': x})
+            df.date = df.date.dt.normalize().astype('datetime64')
+
+            df = df.merge(holiday_df, how='left', left_on='date', right_on='holiday_date')
             return df.names.values
         return date_to_holiday
 
@@ -1130,35 +1118,28 @@ class DistanceToHoliday(TransformPrimitive):
     def __init__(self, holiday="New Year's Day", country="US"):
         self.country = country
         self.holiday = holiday
-        try:
-            self.holidays = holidays.CountryHoliday(self.country)
-        except KeyError:
-            available_countries = 'https://github.com/dr-prodigy/python-holidays#available-countries'
-            error = 'must be one of the available countries:\n%s' % available_countries
-            raise ValueError(error)
-        self.federal_holidays = getattr(holidays, country)(years=range(1950, 2100))
-        available_holidays = list(set(self.federal_holidays.values()))
+        self.holidayUtil = HolidayUtil(country)
+
+        available_holidays = list(set(self.holidayUtil.federal_holidays.values()))
         if self.holiday not in available_holidays:
             error = 'must be one of the available holidays:\n%s' % available_holidays
             raise ValueError(error)
 
     def get_function(self):
         def distance_to_holiday(x):
-            holiday_df = pd.DataFrame(sorted(self.federal_holidays.items()),
-                                      columns=['holiday_date', 'holiday'])
-            holiday_df.holiday_date = holiday_df.holiday_date.astype('datetime64')
-            holiday_df = holiday_df[holiday_df.holiday == self.holiday]
+            holiday_df = self.holidayUtil.to_df()
+            holiday_df = holiday_df[holiday_df.names == self.holiday]
 
-            df = pd.DataFrame({'dates': x})
+            df = pd.DataFrame({'date': x})
             df['x_index'] = df.index  # store original index as a column
             df = df.dropna()
-            df = df.sort_values('dates')
-            df.dates = df.dates.dt.normalize()
+            df = df.sort_values('date')
+            df.date = df.date.dt.normalize()
 
-            matches = pd.merge_asof(df, holiday_df, left_on='dates', right_on='holiday_date',
+            matches = pd.merge_asof(df, holiday_df, left_on='date', right_on='holiday_date',
                                     direction='nearest', tolerance=pd.Timedelta('365d'))
             matches = matches.set_index('x_index')
-            matches['days_diff'] = (matches.holiday_date - matches.dates).dt.days
+            matches['days_diff'] = (matches.holiday_date - matches.date).dt.days
 
             return matches.days_diff.reindex_like(x)
         return distance_to_holiday

@@ -4,7 +4,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from featuretools.primitives.standard.transform_primitive import DistanceToHoliday
+from featuretools.primitives.standard.transform_primitive import (
+    DistanceToHoliday
+)
 
 
 def test_distanceholiday():
