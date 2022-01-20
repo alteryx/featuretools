@@ -210,7 +210,7 @@ class DeepFeatureSynthesis(object):
 
         if groupby_trans_primitives is None:
             groupby_trans_primitives = []
-        self.groupby_trans_primitives = sorted([check_primitive(p, "groupby_transform") for p in groupby_trans_primitives])
+        self.groupby_trans_primitives = sorted([check_primitive(p, "groupby transform") for p in groupby_trans_primitives])
 
         if primitive_options is None:
             primitive_options = {}
@@ -920,7 +920,7 @@ def handle_primitive(primitive):
 
 
 def check_primitive(primitive, prim_type):
-    if prim_type == "transform" or prim_type == "groupby_transform":
+    if prim_type == "transform" or prim_type == "groupby transform":
         prim_dict = primitives.get_transform_primitives()
         supertype = TransformPrimitive
         arg_name = "trans_primitives" if prim_type == "transform" else "groupby_trans_primitives"
@@ -934,9 +934,9 @@ def check_primitive(primitive, prim_type):
     if isinstance(primitive, str):
         prim_string = camel_and_title_to_snake(primitive)
         if prim_string not in prim_dict:
-            raise ValueError("Unknown {} primitive {}. ".format(prim_type, primitive),
-                             "Call ft.primitives.list_primitives() to get",
-                             " a list of available primitives")
+            raise ValueError("Unknown {} primitive {}. " \
+                             "Call ft.primitives.list_primitives() to get" \
+                             " a list of available primitives".format(prim_type, primitive))
         primitive = prim_dict[prim_string]
     primitive = handle_primitive(primitive)
     if not isinstance(primitive, supertype):

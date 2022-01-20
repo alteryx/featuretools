@@ -1,4 +1,5 @@
 import copy
+import re
 
 import pandas as pd
 import pytest
@@ -408,7 +409,9 @@ def test_make_groupby_features_with_agg(pd_es):
 
 
 def test_bad_groupby_feature(es):
-    msg = "Unknown transform primitive max"
+    msg = re.escape("Unknown groupby transform primitive max. "
+                    "Call ft.primitives.list_primitives() to get "\
+                    "a list of available primitives")
     with pytest.raises(ValueError, match=msg):
         DeepFeatureSynthesis(target_dataframe_name='customers',
                              entityset=es,
@@ -934,8 +937,8 @@ def test_checks_primitives_correct_type(es):
                              trans_primitives=[])
 
     error_text = "Primitive <class \\'featuretools\\.primitives\\.standard\\."\
-                 "aggregation_primitives\\.Sum\\'> in trans_primitives or "\
-                 "groupby_trans_primitives is not a transform primitive"
+                 "aggregation_primitives\\.Sum\\'> in trans_primitives "\
+                 "is not a transform primitive"
     with pytest.raises(ValueError, match=error_text):
         DeepFeatureSynthesis(target_dataframe_name="sessions",
                              entityset=es,
