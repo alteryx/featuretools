@@ -7,7 +7,7 @@ on:
       - main
 jobs:
   py37_unit_tests_minimum_dependencies:
-    name: 3.7 unit tests minimum dependencies
+    name: Unit Tests - 3.7 Minimum Dependencies
     runs-on: ubuntu-latest
     strategy:
       matrix:
