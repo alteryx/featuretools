@@ -934,8 +934,8 @@ def check_primitive(primitive, prim_type):
     if isinstance(primitive, str):
         prim_string = camel_and_title_to_snake(primitive)
         if prim_string not in prim_dict:
-            raise ValueError("Unknown {} primitive {}. " \
-                             "Call ft.primitives.list_primitives() to get" \
+            raise ValueError("Unknown {} primitive {}. "
+                             "Call ft.primitives.list_primitives() to get"
                              " a list of available primitives".format(prim_type, primitive))
         primitive = prim_dict[prim_string]
     primitive = handle_primitive(primitive)
