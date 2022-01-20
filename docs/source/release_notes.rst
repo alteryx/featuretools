@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Allow only snake camel and title case for primitives (:pr:`1854`)
         * Add autonormalize as an add-on library (:pr:`1840`)
         * Add DateToHoliday Transform Primitive (:pr:`1848`)
     * Documentation Changes
