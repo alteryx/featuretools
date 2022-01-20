@@ -27,6 +27,7 @@ from featuretools.primitives.options_utils import (
     generate_all_primitive_options,
     ignore_dataframe_for_primitive
 )
+from featuretools.primitives.utils import camel_and_title_to_snake
 from featuretools.utils.gen_utils import Library
 
 logger = logging.getLogger('featuretools')
@@ -197,51 +198,19 @@ class DeepFeatureSynthesis(object):
         if agg_primitives is None:
             agg_primitives = [p for p in primitives.get_default_aggregation_primitives() if df_library in p.compatibility]
         self.agg_primitives = []
-        agg_prim_dict = primitives.get_aggregation_primitives()
-        for a in agg_primitives:
-            if isinstance(a, str):
-                if a.lower() not in agg_prim_dict:
-                    raise ValueError("Unknown aggregation primitive {}. ".format(a),
-                                     "Call ft.primitives.list_primitives() to get",
-                                     " a list of available primitives")
-                a = agg_prim_dict[a.lower()]
-            a = handle_primitive(a)
-            if not isinstance(a, AggregationPrimitive):
-                raise ValueError("Primitive {} in agg_primitives is not an "
-                                 "aggregation primitive".format(type(a)))
-            self.agg_primitives.append(a)
-        self.agg_primitives.sort()
+        self.agg_primitives = sorted([check_primitive(p, "aggregation") for p in agg_primitives])
 
         if trans_primitives is None:
             trans_primitives = [p for p in primitives.get_default_transform_primitives() if df_library in p.compatibility]
-        self.trans_primitives = []
-        for t in trans_primitives:
-            t = check_trans_primitive(t)
-            self.trans_primitives.append(t)
-        self.trans_primitives.sort()
+        self.trans_primitives = sorted([check_primitive(p, "transform") for p in trans_primitives])
 
         if where_primitives is None:
             where_primitives = [primitives.Count]
-        self.where_primitives = []
-        for p in where_primitives:
-            if isinstance(p, str):
-                prim_obj = agg_prim_dict.get(p.lower(), None)
-                if prim_obj is None:
-                    raise ValueError("Unknown where primitive {}. ".format(p),
-                                     "Call ft.primitives.list_primitives() to get",
-                                     " a list of available primitives")
-                p = prim_obj
-            p = handle_primitive(p)
-            self.where_primitives.append(p)
-        self.where_primitives.sort()
+        self.where_primitives = sorted([check_primitive(p, "where") for p in where_primitives])
 
         if groupby_trans_primitives is None:
             groupby_trans_primitives = []
-        self.groupby_trans_primitives = []
-        for p in groupby_trans_primitives:
-            p = check_trans_primitive(p)
-            self.groupby_trans_primitives.append(p)
-        self.groupby_trans_primitives.sort()
+        self.groupby_trans_primitives = sorted([check_primitive(p, "groupby_transform") for p in groupby_trans_primitives])
 
         if primitive_options is None:
             primitive_options = {}
@@ -950,20 +919,29 @@ def handle_primitive(primitive):
     return primitive
 
 
-def check_trans_primitive(primitive):
-    trans_prim_dict = primitives.get_transform_primitives()
+def check_primitive(primitive, prim_type):
+    if prim_type == "transform" or prim_type == "groupby_transform":
+        prim_dict = primitives.get_transform_primitives()
+        supertype = TransformPrimitive
+        arg_name = "trans_primitives" if prim_type == "transform" else "groupby_trans_primitives"
+        s = "a transform"
+    if prim_type == "aggregation" or prim_type == "where":
+        prim_dict = primitives.get_aggregation_primitives()
+        supertype = AggregationPrimitive
+        arg_name = "agg_primitives" if prim_type == "aggregation" else "where_primitives"
+        s = "an aggregation"
 
     if isinstance(primitive, str):
-        if primitive.lower() not in trans_prim_dict:
-            raise ValueError("Unknown transform primitive {}. ".format(primitive),
+        prim_string = camel_and_title_to_snake(primitive)
+        if prim_string not in prim_dict:
+            raise ValueError("Unknown {} primitive {}. ".format(prim_type, primitive),
                              "Call ft.primitives.list_primitives() to get",
                              " a list of available primitives")
-        primitive = trans_prim_dict[primitive.lower()]
+        primitive = prim_dict[prim_string]
     primitive = handle_primitive(primitive)
-    if not isinstance(primitive, TransformPrimitive):
-        raise ValueError("Primitive {} in trans_primitives or "
-                         "groupby_trans_primitives is not a transform "
-                         "primitive".format(type(primitive)))
+    if not isinstance(primitive, supertype):
+        raise ValueError("Primitive {} in {} is not {} "
+                         "primitive".format(type(primitive), arg_name, s))
     return primitive
 
 

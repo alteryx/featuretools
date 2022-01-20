@@ -1,5 +1,6 @@
 import importlib.util
 import os
+import re
 from inspect import isclass
 
 import numpy as np
@@ -38,6 +39,11 @@ def get_transform_primitives():
                 if attribute.name:
                     transform_primitives.add(attribute)
     return {prim.name.lower(): prim for prim in transform_primitives}
+
+
+def camel_and_title_to_snake(name):
+    name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower()
 
 
 def list_primitives():
