@@ -7,10 +7,11 @@ Future Release
 ==============
     * Changes
         * Temporarily restrict woodwork max version (:pr:`1872`)
+    * Testing Changes
+        * Upgrade tests to use compose version 0.8.0 (:pr:`1856`)
 
     Thanks to the following people for contributing to this release:
     :user:`thehomebrewnerd`
-
 
 v1.4.0 Jan 10, 2022
 ===================
@@ -35,7 +36,6 @@ v1.4.0 Jan 10, 2022
     Thanks to the following people for contributing to this release:
     :user:`davesque`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
     
-
 v1.3.0 Dec 2, 2021
 ==================
     * Enhancements

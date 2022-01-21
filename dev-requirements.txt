@@ -6,7 +6,7 @@ autopep8==1.5.7
 ipython==7.28.0
 isort==5.9.3
 jupyter==1.0.0
-matplotlib==3.2.2  # koalas and composeml pinned below 3.3.0
+matplotlib==3.3.3
 nbconvert==6.2.0
 nbsphinx==0.8.7
 Sphinx==4.2.0
