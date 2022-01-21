@@ -11,17 +11,29 @@ from featuretools.primitives.standard.transform_primitive import (
 
 def test_distanceholiday():
     distance_to_holiday = DistanceToHoliday("New Year's Day")
-    dates = [datetime(2010, 1, 1),
-             datetime(2012, 5, 31),
-             datetime(2017, 7, 31),
-             datetime(2020, 12, 31)]
+    dates = pd.Series([datetime(2010, 1, 1),
+                       datetime(2012, 5, 31),
+                       datetime(2017, 7, 31),
+                       datetime(2020, 12, 31)])
 
-    distance_list = distance_to_holiday(dates).tolist()
+    expected = [0, -151, 154, 1]
+    output = distance_to_holiday(dates).tolist()
+    np.testing.assert_array_equal(output, expected)
 
-    assert distance_list[0] == 0
-    assert distance_list[1] == -151
-    assert distance_list[2] == 154
-    assert distance_list[3] == 1
+
+def test_holiday_out_of_range():
+    date_to_holiday = DistanceToHoliday("Boxing Day", country='Canada')
+
+    array = pd.Series([datetime(2010, 1, 1),
+                       datetime(2012, 5, 31),
+                       datetime(2017, 7, 31),
+                       datetime(2020, 12, 31)])
+    answer = pd.Series([np.nan, 209, 148, np.nan])
+    pd.testing.assert_series_equal(
+        date_to_holiday(array),
+        answer,
+        check_names=False
+    )
 
 
 def test_unknown_country_error():
