@@ -63,7 +63,6 @@ jobs:
         run: |
           printf "${{ steps.min_dep_gen_koalas.outputs.min_reqs }}" > featuretools/tests/requirement_files/minimum_koalas_requirements.txt
       - name: Create Pull Request
-        id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.REPO_SCOPED_TOKEN }}
@@ -75,4 +74,5 @@ jobs:
           branch: min-dep-update
           branch-suffix: short-commit-hash
           base: main
-          reviewers: thehomebrewnerd, tamargrey, jeff-hernandez, tuethan1999, davesque
+          assignees: machineFL
+          reviewers: machineAYX

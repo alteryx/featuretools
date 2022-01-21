@@ -9,12 +9,18 @@ Future Release
         * Add ability to use offset alias strings as inputs to rolling primitives (:pr:`1809`)
     * Fixes
     * Changes
-        * add autonormalize as an add-on library (:pr:`1840`)
+        * Add autonormalize as an add-on library (:pr:`1840`)
+        * Add DateToHoliday Transform Primitive (:pr:`1848`)
     * Documentation Changes
+        * Bump ipython version (:pr:`1857`)
     * Testing Changes
+        * Add check for package conflicts with install workflow (:pr:`1843`)
+        * Change auto approve workflow to use assignee (:pr:`1843`)
+        * Update auto approve workflow to delete branch and change on trigger (:pr:`1852`)
+        * Upgrade tests to use compose version 0.8.0 (:pr:`1856`)
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`tuethan1999`
+    :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`,:user:`tuethan1999`
 
 v1.4.0 Jan 10, 2022
 ===================
