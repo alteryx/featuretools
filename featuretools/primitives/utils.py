@@ -2,6 +2,7 @@ import importlib.util
 import os
 from inspect import isclass
 
+import holidays
 import numpy as np
 import pandas as pd
 
@@ -293,3 +294,21 @@ def _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_2s, unit):
         radius_earth = 6371.0088
     distances = radius_earth * 2 * np.arcsin(np.sqrt(a))
     return distances
+
+
+class HolidayUtil(object):
+    def __init__(self, country='US'):
+        try:
+            holidays.CountryHoliday(country)
+        except KeyError:
+            available_countries = 'https://github.com/dr-prodigy/python-holidays#available-countries'
+            error = 'must be one of the available countries:\n%s' % available_countries
+            raise ValueError(error)
+
+        self.federal_holidays = getattr(holidays, country)(years=range(1950, 2100))
+
+    def to_df(self):
+        holidays_df = pd.DataFrame(sorted(self.federal_holidays.items()),
+                                   columns=['holiday_date', 'names'])
+        holidays_df.holiday_date = holidays_df.holiday_date.astype('datetime64')
+        return holidays_df
