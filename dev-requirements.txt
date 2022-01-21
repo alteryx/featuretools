@@ -3,7 +3,7 @@ scikit-learn>=0.20.0,!=0.22
 codecov==2.1.12
 flake8==3.9.2
 autopep8==1.5.7
-ipython==7.28.0
+ipython==7.31.1
 isort==5.9.3
 jupyter==1.0.0
 matplotlib==3.3.3
