@@ -31,6 +31,9 @@ from featuretools.tests.testing_utils import get_df_tags, to_pandas
 from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
 
+from mock import patch
+
+
 ks = import_or_none('databricks.koalas')
 
 
@@ -2185,3 +2188,11 @@ def test_empty_es_pickling():
     unpickled = pickle.loads(pkl)
 
     assert es.__eq__(unpickled, deep=True)
+
+
+def test_setitem():
+    es = ft.EntitySet()
+    with patch.object(es, 'add_dataframe', wraps=es.add_dataframe) as wrapped_es:
+        df = pd.DataFrame()
+        es['new_df'] = df
+        wrapped_es.assert_called_with('new_df', df)
