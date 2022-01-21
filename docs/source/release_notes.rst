@@ -15,9 +15,10 @@ Future Release
         * Add check for package conflicts with install workflow (:pr:`1843`)
         * Change auto approve workflow to use assignee (:pr:`1843`)
         * Update auto approve workflow to delete branch and change on trigger (:pr:`1852`)
+        * Upgrade tests to use compose version 0.8.0 (:pr:`1856`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tuethan1999`, :user:`dvreed77`
+    :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 v1.4.0 Jan 10, 2022
 ===================
