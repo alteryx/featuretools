@@ -24,10 +24,16 @@ def test_distanceholiday():
     assert distance_list[3] == 1
 
 
-def test_distanceholiday_error():
+def test_unknown_country_error():
     error_text = r"must be one of the available countries.*"
     with pytest.raises(ValueError, match=error_text):
         DistanceToHoliday("Victoria Day", country='UNK')
+
+
+def test_unknown_holiday_error():
+    error_text = r"must be one of the available holidays.*"
+    with pytest.raises(ValueError, match=error_text):
+        DistanceToHoliday("Alteryx Day")
 
 
 def test_nat():
