@@ -218,13 +218,7 @@ def test_roll_series_with_gap(window_length, gap, rolling_series_pd):
         assert rolling_max.iloc[i] == end_idx
 
 
-@pytest.mark.parametrize(
-    "window_length",
-    [
-        3,
-        "3d"
-    ]
-)
+@pytest.mark.parametrize("window_length", [3, "3d"])
 def test_roll_series_with_no_gap(window_length, rolling_series_pd):
     actual_rolling = _roll_series_with_gap(rolling_series_pd, window_length).mean()
     expected_rolling = rolling_series_pd.rolling(window_length, min_periods=1).mean()
