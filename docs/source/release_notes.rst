@@ -12,6 +12,7 @@ Future Release
         * Add DateToHoliday Transform Primitive (:pr:`1848`)
         * Add DistanceToHoliday Transform Primitive (:pr:`1853`)
     * Documentation Changes
+        * Bump ipython version (:pr:`1857`)
     * Testing Changes
         * Add check for package conflicts with install workflow (:pr:`1843`)
         * Change auto approve workflow to use assignee (:pr:`1843`)
