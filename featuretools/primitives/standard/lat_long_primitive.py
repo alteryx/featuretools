@@ -1,8 +1,6 @@
 import numpy as np
-
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import LatLong
-
 from featuretools.primitives.base import TransformPrimitive
 
 
@@ -48,4 +46,3 @@ class Longitude(TransformPrimitive):
         def longitude(latlong):
             return latlong.map(lambda x: x[1] if isinstance(x, tuple) else np.nan)
         return longitude
-        
