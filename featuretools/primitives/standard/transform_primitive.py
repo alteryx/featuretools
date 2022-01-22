@@ -553,9 +553,6 @@ class Percentile(TransformPrimitive):
         return lambda array: array.rank(pct=True)
 
 
-
-
-
 class Haversine(TransformPrimitive):
     """Calculates the approximate haversine distance between two LatLong columns.
 

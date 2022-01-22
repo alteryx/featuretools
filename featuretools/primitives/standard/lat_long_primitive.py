@@ -6,7 +6,6 @@ from woodwork.logical_types import LatLong
 from featuretools.primitives.base import TransformPrimitive
 
 
-
 class Latitude(TransformPrimitive):
     """Returns the first tuple value in a list of LatLong tuples.
        For use with the LatLong logical type.
@@ -49,3 +48,4 @@ class Longitude(TransformPrimitive):
         def longitude(latlong):
             return latlong.map(lambda x: x[1] if isinstance(x, tuple) else np.nan)
         return longitude
+        
