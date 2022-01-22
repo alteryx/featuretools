@@ -1,3 +1,10 @@
+import numpy as np
+
+from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import LatLong
+
+from featuretools.primitives.base import TransformPrimitive
+
 class Latitude(TransformPrimitive):
     """Returns the first tuple value in a list of LatLong tuples.
        For use with the LatLong logical type.
