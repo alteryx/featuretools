@@ -4,7 +4,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import LatLong
 
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.utils.common_tld_utils import COMMON_TLDS
 
 
 
