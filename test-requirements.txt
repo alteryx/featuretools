@@ -11,3 +11,4 @@ boto3>=1.17.46
 composeml>=0.8.0
 urllib3>=1.26.5
 pyarrow>=3.0.0
+mock>=4.0.3

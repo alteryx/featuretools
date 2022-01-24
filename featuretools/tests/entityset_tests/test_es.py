@@ -8,6 +8,7 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
+from mock import patch
 from woodwork.logical_types import (
     URL,
     Boolean,
@@ -30,9 +31,6 @@ from featuretools.entityset.entityset import LTI_COLUMN_NAME, WW_SCHEMA_KEY
 from featuretools.tests.testing_utils import get_df_tags, to_pandas
 from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
-
-from mock import patch
-
 
 ks = import_or_none('databricks.koalas')
 
@@ -2190,9 +2188,10 @@ def test_empty_es_pickling():
     assert es.__eq__(unpickled, deep=True)
 
 
-def test_setitem():
+@patch("featuretools.EntitySet.add_dataframe")
+def test_setitem(add_dataframe):
     es = ft.EntitySet()
-    with patch.object(es, 'add_dataframe', wraps=es.add_dataframe) as wrapped_es:
-        df = pd.DataFrame()
-        es['new_df'] = df
-        wrapped_es.assert_called_with('new_df', df)
+    df = pd.DataFrame()
+    es['new_df'] = df
+    assert add_dataframe.called
+    add_dataframe.assert_called_with(dataframe=df, dataframe_name="new_df")
