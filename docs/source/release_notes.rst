@@ -33,6 +33,7 @@ v1.4.0 Jan 10, 2022
         * Skip code coverage for specific dask usage lines (:pr:`1829`)
         * Increase minimum required numpy version to 1.21.0, scipy to 1.3.3, koalas to 1.8.1 (:pr:`1833`)
         * Remove pyyaml as a requirement (:pr:`1833`)
+        * Adds `__setitem__` method to overload `add_dataframe` method on EntitySet (:pr:`1862`)
     * Documentation Changes
         * Remove testing on conda forge in release.md (:pr:`1811`)
     * Testing Changes
@@ -43,7 +44,7 @@ v1.4.0 Jan 10, 2022
         * Remove fastparquet as a test requirement (:pr:`1833`)
 
     Thanks to the following people for contributing to this release:
-    :user:`davesque`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`davesque`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`dvreed77`
     
 
 v1.3.0 Dec 2, 2021
