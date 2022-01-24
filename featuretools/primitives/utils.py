@@ -41,11 +41,6 @@ def get_transform_primitives():
     return {prim.name.lower(): prim for prim in transform_primitives}
 
 
-def camel_and_title_to_snake(name):
-    name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower()
-
-
 def list_primitives():
     trans_names, trans_primitives, valid_inputs, return_type = _get_names_primitives(get_transform_primitives)
     trans_dask = [Library.DASK in primitive.compatibility for primitive in trans_primitives]

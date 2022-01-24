@@ -1,5 +1,6 @@
 import importlib
 import logging
+import re
 import sys
 import warnings
 from enum import Enum
@@ -130,6 +131,12 @@ def is_instance(obj, modules, classnames):
         raise ValueError('Number of modules does not match number of classnames')
     to_check = tuple(getattr(mod, classname, mod) for mod, classname in zip(modules, classnames) if mod)
     return isinstance(obj, to_check)
+
+
+def camel_and_title_to_snake(name):
+    name = re.sub(r"(\d+)", r"_\1_", name)
+    name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower()
 
 
 class Library(Enum):

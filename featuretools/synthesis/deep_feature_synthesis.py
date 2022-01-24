@@ -27,8 +27,7 @@ from featuretools.primitives.options_utils import (
     generate_all_primitive_options,
     ignore_dataframe_for_primitive
 )
-from featuretools.primitives.utils import camel_and_title_to_snake
-from featuretools.utils.gen_utils import Library
+from featuretools.utils.gen_utils import camel_and_title_to_snake, Library
 
 logger = logging.getLogger('featuretools')
 

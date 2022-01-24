@@ -4,7 +4,7 @@ from featuretools.feature_base import (
     GroupByTransformFeature,
     TransformFeature
 )
-from featuretools.primitives.utils import camel_and_title_to_snake
+from featuretools.utils.gen_utils import camel_and_title_to_snake
 
 
 def _categorize_features(features):

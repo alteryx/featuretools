@@ -7,7 +7,8 @@ import featuretools as ft
 from featuretools.utils.gen_utils import (
     import_or_none,
     import_or_raise,
-    is_instance
+    is_instance,
+    camel_and_title_to_snake
 )
 
 
@@ -68,3 +69,10 @@ def test_list_semantic_tags():
     ft_semantic_tags = ft.list_semantic_tags()
     ww_semantic_tags = list_semantic_tags()
     assert ft_semantic_tags.equals(ww_semantic_tags)
+
+
+def test_camel_and_title_to_snake():
+    assert camel_and_title_to_snake("Top3Words") == "top_3_words"
+    assert camel_and_title_to_snake("AlteryxMachineLearning") == "alteryx_machine_learning"
+    assert camel_and_title_to_snake("USDValue") == "usd_value"
+    # assert camel_and_title_to_snake("AlteryMachineLearning") == "top_3_words"
