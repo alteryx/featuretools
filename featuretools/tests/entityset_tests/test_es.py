@@ -8,7 +8,7 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
-from mock import patch
+from unittest.mock import patch
 from woodwork.logical_types import (
     URL,
     Boolean,
