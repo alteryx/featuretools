@@ -73,6 +73,12 @@ def test_list_semantic_tags():
 
 def test_camel_and_title_to_snake():
     assert camel_and_title_to_snake("Top3Words") == "top_3_words"
+    assert camel_and_title_to_snake("top3Words") == "top_3_words"
+    assert camel_and_title_to_snake("Top100Words") == "top_100_words"
+    assert camel_and_title_to_snake("top100Words") == "top_100_words"
+    assert camel_and_title_to_snake("Sum41") == "sum_41"
+    assert camel_and_title_to_snake("sum41") == "sum_41"
+    assert camel_and_title_to_snake("99LuftBallons") == "99_luft_ballons"
     assert camel_and_title_to_snake("AlteryxMachineLearning") == "alteryx_machine_learning"
+    assert camel_and_title_to_snake("alteryxMachineLearning") == "alteryx_machine_learning"
     assert camel_and_title_to_snake("USDValue") == "usd_value"
-    # assert camel_and_title_to_snake("AlteryMachineLearning") == "top_3_words"
