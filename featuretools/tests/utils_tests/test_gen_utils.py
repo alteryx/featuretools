@@ -5,10 +5,10 @@ from woodwork import list_logical_types, list_semantic_tags
 
 import featuretools as ft
 from featuretools.utils.gen_utils import (
+    camel_and_title_to_snake,
     import_or_none,
     import_or_raise,
-    is_instance,
-    camel_and_title_to_snake
+    is_instance
 )
 
 

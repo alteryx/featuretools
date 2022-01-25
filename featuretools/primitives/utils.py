@@ -1,6 +1,5 @@
 import importlib.util
 import os
-import re
 from inspect import isclass
 
 import holidays
