@@ -23,7 +23,7 @@ setup(
     url='https://featuretools.com',
     license='BSD 3-clause',
     author='Feature Labs, Inc.',
-    author_email='support@featurelabs.com',
+    author_email='open_source_support@alteryx.com',
     classifiers=[
          'Development Status :: 5 - Production/Stable',
          'Intended Audience :: Science/Research',
