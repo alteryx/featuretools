@@ -3,12 +3,12 @@ import logging
 import pickle
 import re
 from datetime import datetime
+from unittest.mock import patch
 
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
-from unittest.mock import patch
 from woodwork.logical_types import (
     URL,
     Boolean,
