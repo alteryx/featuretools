@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ability to use offset alias strings as inputs to rolling primitives (:pr:`1809`)
     * Fixes
     * Changes
         * Allow only snake camel and title case for primitives (:pr:`1854`)
@@ -22,7 +23,7 @@ Future Release
         * Upgrade tests to use compose version 0.8.0 (:pr:`1856`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tuethan1999`
+    :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`,:user:`tuethan1999`
 
 v1.4.0 Jan 10, 2022
 ===================

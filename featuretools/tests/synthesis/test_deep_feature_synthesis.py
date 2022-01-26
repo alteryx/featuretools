@@ -418,25 +418,41 @@ def test_bad_groupby_feature(es):
         RollingSTD,
     ]
 )
-def test_make_rolling_features(rolling_primitive, pd_es):
-    rolling_primitive_obj = rolling_primitive(window_length=7, gap=3, min_periods=5)
+@pytest.mark.parametrize(
+    "window_length, gap",
+    [
+        (7, 3),
+        ('7d', '3d'),
+    ]
+)
+def test_make_rolling_features(window_length, gap, rolling_primitive, pd_es):
+    rolling_primitive_obj = rolling_primitive(window_length=window_length,
+                                              gap=gap,
+                                              min_periods=5)
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='log',
                                    entityset=pd_es,
                                    agg_primitives=[],
                                    trans_primitives=[rolling_primitive_obj])
     features = dfs_obj.build_features()
-    rolling_transform_name = f"{rolling_primitive.name.upper()}(datetime, value_many_nans, window_length=7, gap=3, min_periods=5)"
+    rolling_transform_name = f"{rolling_primitive.name.upper()}(datetime, value_many_nans, window_length={window_length}, gap={gap}, min_periods=5)"
     assert feature_with_name(features, rolling_transform_name)
 
 
-def test_make_rolling_count_off_datetime_feature(pd_es):
-    rolling_count = RollingCount(window_length=5, min_periods=3)
+@pytest.mark.parametrize(
+    "window_length, gap",
+    [
+        (7, 3),
+        ('7d', '3d'),
+    ]
+)
+def test_make_rolling_count_off_datetime_feature(window_length, gap, pd_es):
+    rolling_count = RollingCount(window_length=window_length, min_periods=gap)
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='log',
                                    entityset=pd_es,
                                    agg_primitives=[],
                                    trans_primitives=[rolling_count])
     features = dfs_obj.build_features()
-    rolling_transform_name = u"ROLLING_COUNT(datetime, window_length=5, min_periods=3)"
+    rolling_transform_name = f"ROLLING_COUNT(datetime, window_length={window_length}, min_periods={gap})"
     assert feature_with_name(features, rolling_transform_name)
 
 
