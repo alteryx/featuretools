@@ -12,7 +12,7 @@ Future Release
         * Add DateToHoliday Transform Primitive (:pr:`1848`)
         * Add DistanceToHoliday Transform Primitive (:pr:`1853`)
         * Temporarily restrict pandas and koalas max versions (:pr:`1863`)
-        * Split date, time, latitude and longitude primitives into separate files (:pr:`1861`)
+        * Split Datetime and LatLong primitives into separate files (:pr:`1861`)
     * Documentation Changes
         * Bump ipython version (:pr:`1857`)
     * Testing Changes
