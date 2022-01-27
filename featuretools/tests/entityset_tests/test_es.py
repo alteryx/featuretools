@@ -3,6 +3,7 @@ import logging
 import pickle
 import re
 from datetime import datetime
+from unittest.mock import patch
 
 import dask.dataframe as dd
 import numpy as np
@@ -2185,3 +2186,12 @@ def test_empty_es_pickling():
     unpickled = pickle.loads(pkl)
 
     assert es.__eq__(unpickled, deep=True)
+
+
+@patch("featuretools.EntitySet.add_dataframe")
+def test_setitem(add_dataframe):
+    es = ft.EntitySet()
+    df = pd.DataFrame()
+    es['new_df'] = df
+    assert add_dataframe.called
+    add_dataframe.assert_called_with(dataframe=df, dataframe_name="new_df")
