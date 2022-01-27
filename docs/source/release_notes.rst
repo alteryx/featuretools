@@ -13,6 +13,7 @@ Future Release
         * Add DateToHoliday Transform Primitive (:pr:`1848`)
         * Add DistanceToHoliday Transform Primitive (:pr:`1853`)
         * Temporarily restrict pandas and koalas max versions (:pr:`1863`)
+        * Add ``__setitem__`` method to overload ``add_dataframe`` method on EntitySet (:pr:`1862`)
     * Documentation Changes
         * Bump ipython version (:pr:`1857`)
     * Testing Changes
@@ -22,7 +23,7 @@ Future Release
         * Upgrade tests to use compose version 0.8.0 (:pr:`1856`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`,:user:`tuethan1999`
+    :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`, :user:`tuethan1999`
 
 v1.4.0 Jan 10, 2022
 ===================

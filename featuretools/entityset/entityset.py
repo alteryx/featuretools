@@ -671,6 +671,9 @@ class EntitySet(object):
         self._add_references_to_metadata(dataframe)
         return self
 
+    def __setitem__(self, key, value):
+        self.add_dataframe(dataframe=value, dataframe_name=key)
+
     def normalize_dataframe(self, base_dataframe_name, new_dataframe_name, index,
                             additional_columns=None, copy_columns=None,
                             make_time_index=None,
