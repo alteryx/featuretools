@@ -845,6 +845,9 @@ class EntitySet(object):
             column_metadata[col_name] = copy.deepcopy(metadata)
             column_descriptions[col_name] = description
 
+        mask_na = new_dataframe[index].isna()
+        new_dataframe = new_dataframe[mask_na]
+
         new_dataframe.ww.init(name=new_dataframe_name, index=index,
                               already_sorted=already_sorted,
                               time_index=new_dataframe_time_index,
