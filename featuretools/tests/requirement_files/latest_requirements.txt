@@ -7,4 +7,4 @@ pandas==1.3.5
 psutil==5.9.0
 scipy==1.7.3
 tqdm==4.62.3
-woodwork==0.11.1
+woodwork==0.12.0
