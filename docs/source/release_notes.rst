@@ -3,13 +3,23 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+   ==============
+       * Enhancements
+       * Fixes
+       * Changes
+       * Documentation Changes
+       * Testing Changes
+   
+       Thanks to the following people for contributing to this release:
+
+v1.4.1 Jan 28, 2022
+===================
     * Changes
         * Temporarily restrict woodwork max version (:pr:`1872`)
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`dvreed77`, :user:`thehomebrewnerd`
 
 
 v1.4.0 Jan 10, 2022
