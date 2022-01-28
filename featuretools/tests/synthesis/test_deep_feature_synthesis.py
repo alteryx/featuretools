@@ -1,4 +1,5 @@
 import copy
+import re
 
 import pandas as pd
 import pytest
@@ -75,17 +76,6 @@ def test_makes_agg_features_from_mixed_str(es):
     features = dfs_obj.build_features()
     assert (feature_with_name(features, 'SUM(log.value)'))
     assert (feature_with_name(features, 'COUNT(log)'))
-
-
-def test_case_insensitive(es):
-    dfs_obj = DeepFeatureSynthesis(target_dataframe_name='sessions',
-                                   entityset=es,
-                                   agg_primitives=['MiN'],
-                                   trans_primitives=['AbsOlute'])
-
-    features = dfs_obj.build_features()
-    assert (feature_with_name(features, 'MIN(log.value)'))
-    assert (feature_with_name(features, 'ABSOLUTE(MIN(log.value_many_nans))'))
 
 
 def test_makes_agg_features(es):
@@ -408,7 +398,9 @@ def test_make_groupby_features_with_agg(pd_es):
 
 
 def test_bad_groupby_feature(es):
-    msg = "Unknown transform primitive max"
+    msg = re.escape("Unknown groupby transform primitive max. "
+                    "Call ft.primitives.list_primitives() to get "
+                    "a list of available primitives")
     with pytest.raises(ValueError, match=msg):
         DeepFeatureSynthesis(target_dataframe_name='customers',
                              entityset=es,
@@ -950,8 +942,8 @@ def test_checks_primitives_correct_type(es):
                              trans_primitives=[])
 
     error_text = "Primitive <class \\'featuretools\\.primitives\\.standard\\."\
-                 "aggregation_primitives\\.Sum\\'> in trans_primitives or "\
-                 "groupby_trans_primitives is not a transform primitive"
+                 "aggregation_primitives\\.Sum\\'> in trans_primitives "\
+                 "is not a transform primitive"
     with pytest.raises(ValueError, match=error_text):
         DeepFeatureSynthesis(target_dataframe_name="sessions",
                              entityset=es,

@@ -9,6 +9,7 @@ Future Release
         * Add ability to use offset alias strings as inputs to rolling primitives (:pr:`1809`)
     * Fixes
     * Changes
+        * Allow only snake camel and title case for primitives (:pr:`1854`)
         * Add autonormalize as an add-on library (:pr:`1840`)
         * Add DateToHoliday Transform Primitive (:pr:`1848`)
         * Add DistanceToHoliday Transform Primitive (:pr:`1853`)

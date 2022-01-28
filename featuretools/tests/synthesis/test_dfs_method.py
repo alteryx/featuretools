@@ -326,14 +326,25 @@ def test_warns_with_unused_primitives(es):
     assert not record
 
 
-def test_no_warns_with_different_case_string_primitives(es):
-    for agg_primitive in ["Count", 'count', 'cOunT']:
+def test_no_warns_with_camel_and_title_case(es):
+    for trans_primitive in ["isNull", 'IsNull']:
+        # Should not raise a UnusedPrimitiveWarning warning
+        with pytest.warns(None) as record:
+            dfs(entityset=es,
+                target_dataframe_name='customers',
+                trans_primitives=[trans_primitive],
+                max_depth=1,
+                features_only=True)
+
+        assert not record
+
+    for agg_primitive in ["numUnique", 'NumUnique']:
         # Should not raise a UnusedPrimitiveWarning warning
         with pytest.warns(None) as record:
             dfs(entityset=es,
                 target_dataframe_name='customers',
                 agg_primitives=[agg_primitive],
-                max_depth=1,
+                max_depth=2,
                 features_only=True)
 
         assert not record
