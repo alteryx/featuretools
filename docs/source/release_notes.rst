@@ -9,7 +9,7 @@ Future Release
         * Temporarily restrict woodwork max version (:pr:`1872`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`thehomebrewnerd`
+    :user:`thehomebrewnerd`
 
 
 v1.4.0 Jan 10, 2022
