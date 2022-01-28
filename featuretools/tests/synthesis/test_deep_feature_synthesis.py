@@ -941,7 +941,7 @@ def test_return_types(es):
 
 def test_checks_primitives_correct_type(es):
     error_text = "Primitive <class \\'featuretools\\.primitives\\.standard\\."\
-                 "transform_primitive\\.Hour\\'> in agg_primitives is not an "\
+                 "datetime_transform_primitives\\.Hour\\'> in agg_primitives is not an "\
                  "aggregation primitive"
     with pytest.raises(ValueError, match=error_text):
         DeepFeatureSynthesis(target_dataframe_name="sessions",

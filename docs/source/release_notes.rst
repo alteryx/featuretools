@@ -15,6 +15,7 @@ Future Release
         * Temporarily restrict pandas and koalas max versions (:pr:`1863`)
         * Add ``__setitem__`` method to overload ``add_dataframe`` method on EntitySet (:pr:`1862`)
         * Temporarily restrict woodwork max version (:pr:`1872`)
+        * Split Datetime and LatLong primitives into separate files (:pr:`1861`)
     * Documentation Changes
         * Bump ipython version (:pr:`1857`)
     * Testing Changes
@@ -22,9 +23,10 @@ Future Release
         * Change auto approve workflow to use assignee (:pr:`1843`)
         * Update auto approve workflow to delete branch and change on trigger (:pr:`1852`)
         * Upgrade tests to use compose version 0.8.0 (:pr:`1856`)
+        * Updated deep feature synthesis and feature serialization tests to use new primitive files (:pr:`1861`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`, :user:`tuethan1999`
+    :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`, :user:`tuethan1999`, :user:`jacobboney`
 
 v1.4.0 Jan 10, 2022
 ===================
