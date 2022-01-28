@@ -16,7 +16,7 @@ Release Notes
 v1.4.1 Jan 28, 2022
 ===================
     * Changes
-        * Temporarily restrict woodwork max version (:pr:`1872`)
+        * Set upper bound for compatible Woodwork version (:pr:`1872`)
         * Restrict pandas and koalas max versions (:pr:`1863`)
     * Testing Changes
         * Upgrade tests to use compose version 0.8.0 (:pr:`1856`)
