@@ -26,7 +26,7 @@ Future Release
         * Updated deep feature synthesis and feature serialization tests to use new primitive files (:pr:`1861`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`,:user:`tuethan1999`,:user:`jacobboney`
+    :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`, :user:`tuethan1999`, :user:`jacobboney`
 
 v1.4.0 Jan 10, 2022
 ===================
