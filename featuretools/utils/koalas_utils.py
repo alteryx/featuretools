@@ -34,7 +34,7 @@ def replace_categorical_columns(pdf):
 
 
 def pd_to_ks_clean(pdf):
-    steps = [replace_tuple_columns, replace_nan_with_flag, replace_categorical_columns]
+    steps = [replace_tuple_columns, replace_categorical_columns]
     intermediate_df = pdf
     for f in steps:
         intermediate_df = f(intermediate_df)
