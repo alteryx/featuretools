@@ -57,7 +57,8 @@ def test_single_table_ks_entityset():
                    target_dataframe_name="data",
                    trans_primitives=primitives_list)
 
-    ks_computed_fm = ks_fm.to_pandas().set_index('id').loc[fm.index][fm.columns]
+    ks_fm = ks_fm.to_pandas().astype({'id': 'int64'})
+    ks_computed_fm = ks_fm.set_index('id').loc[fm.index][fm.columns]
     # Koalas dtypes are different for categorical - set the pandas fm to have the same dtypes before comparing
     pd.testing.assert_frame_equal(fm.astype(ks_computed_fm.dtypes), ks_computed_fm)
 
@@ -104,7 +105,8 @@ def test_single_table_ks_entityset_ids_not_sorted():
                    target_dataframe_name="data",
                    trans_primitives=primitives_list)
 
-    ks_computed_fm = ks_fm.to_pandas().set_index('id').loc[fm.index]
+    ks_fm = ks_fm.to_pandas().astype({'id': 'int64'})
+    ks_computed_fm = ks_fm.set_index('id').loc[fm.index]
     # Koalas dtypes are different for categorical - set the pandas fm to have the same dtypes before comparing
     pd.testing.assert_frame_equal(fm.astype(ks_computed_fm.dtypes), ks_computed_fm)
 
@@ -155,7 +157,8 @@ def test_single_table_ks_entityset_with_instance_ids():
                    trans_primitives=primitives_list,
                    instance_ids=instance_ids)
 
-    ks_computed_fm = ks_fm.to_pandas().set_index('id').loc[fm.index]
+    ks_fm = ks_fm.to_pandas().astype({'id': 'int64'})
+    ks_computed_fm = ks_fm.set_index('id').loc[fm.index]
     # Koalas dtypes are different for categorical - set the pandas fm to have the same dtypes before comparing
     pd.testing.assert_frame_equal(fm.astype(ks_computed_fm.dtypes), ks_computed_fm)
 
@@ -204,7 +207,8 @@ def test_single_table_ks_entityset_single_cutoff_time():
                    trans_primitives=primitives_list,
                    cutoff_time=pd.Timestamp("2019-01-05 04:00"))
 
-    ks_computed_fm = ks_fm.to_pandas().set_index('id').loc[fm.index]
+    ks_fm = ks_fm.to_pandas().astype({'id': 'int64'})
+    ks_computed_fm = ks_fm.set_index('id').loc[fm.index]
     # Koalas dtypes are different for categorical - set the pandas fm to have the same dtypes before comparing
     pd.testing.assert_frame_equal(fm.astype(ks_computed_fm.dtypes), ks_computed_fm)
 
@@ -314,7 +318,8 @@ def test_single_table_ks_entityset_dates_not_sorted():
                    trans_primitives=primitives_list,
                    max_depth=1)
 
-    ks_fm = ks_fm.to_pandas().set_index('id').loc[fm.index]
+    ks_fm = ks_fm.to_pandas().astype({'id': 'int64'})
+    ks_fm = ks_fm.set_index('id').loc[fm.index]
     pd.testing.assert_frame_equal(fm.astype(ks_fm.dtypes), ks_fm)
 
 
