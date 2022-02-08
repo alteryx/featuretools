@@ -5,6 +5,9 @@ Release Notes
 
 Future Release
 ==============
+    .. warning::
+        The next non-bugfix release of Featuretools will not support Python 3.7
+
     * Enhancements
         * Add ability to use offset alias strings as inputs to rolling primitives (:pr:`1809`)
     * Fixes
