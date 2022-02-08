@@ -10,6 +10,7 @@ Future Release
 
     * Enhancements
         * Add ability to use offset alias strings as inputs to rolling primitives (:pr:`1809`)
+        * Update to add support for pandas version 1.4.0 (:pr:`1881`)
     * Fixes
     * Changes
         * Allow only snake camel and title case for primitives (:pr:`1854`)
@@ -20,7 +21,6 @@ Future Release
         * Add ``__setitem__`` method to overload ``add_dataframe`` method on EntitySet (:pr:`1862`)
         * Temporarily restrict woodwork max version (:pr:`1872`)
         * Split Datetime and LatLong primitives into separate files (:pr:`1861`)
-        * Update to add support for pandas version 1.4.0 (:pr:`1881`)
     * Documentation Changes
         * Bump ipython version (:pr:`1857`)
     * Testing Changes
