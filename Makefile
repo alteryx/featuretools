@@ -17,11 +17,11 @@ lint-fix:
 	python docs/notebook_cleaner.py standardize
 
 .PHONY: test
-test: lint
+test:
 	pytest featuretools/
 
 .PHONY: testcoverage
-testcoverage: lint
+testcoverage:
 	pytest featuretools/ --cov=featuretools
 
 .PHONY: installdeps
