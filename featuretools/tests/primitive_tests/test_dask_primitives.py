@@ -79,6 +79,9 @@ def test_aggregation(pd_es, dask_es):
         # Categorical categories can be ordered differently, this makes sure they are the same
         dask_fm = dask_fm.astype(fm.dtypes)
 
+        dask_fm = dask_fm.compute()
+        if dask_fm[df.ww.index].dtype != fm.index.dtype:
+            dask_fm = dask_fm.astype({df.ww.index: fm.index.dtype})
         # Use the same columns and make sure both indexes are sorted the same
-        dask_computed_fm = dask_fm.compute().set_index(df.ww.index).loc[fm.index][fm.columns]
+        dask_computed_fm = dask_fm.set_index(df.ww.index).loc[fm.index][fm.columns]
         pd.testing.assert_frame_equal(fm, dask_computed_fm)
