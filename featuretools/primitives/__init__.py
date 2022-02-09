@@ -37,14 +37,13 @@ def _load_primitives():
 
             if (
                 inspect.isclass(primitive) and
-                issubclass(primitive, base_primitives) and  # noqa: F405
-                primitive not in base_primitives  # noqa: F405
+                issubclass(primitive, base_primitives) and
+                primitive not in base_primitives
             ):
                 scope = globals()
                 if primitive.__name__ in scope:
                     error = f"primitive with name \"{primitive.__name__}\" already exists"
                     raise RuntimeError(error)
-
                 else:
                     scope[primitive.__name__] = primitive
 
