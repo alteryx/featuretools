@@ -5,8 +5,12 @@ Release Notes
 
 Future Release
 ==============
+    .. warning::
+        The next non-bugfix release of Featuretools will not support Python 3.7
+
     * Enhancements
         * Add ability to use offset alias strings as inputs to rolling primitives (:pr:`1809`)
+        * Update to add support for pandas version 1.4.0 (:pr:`1881`)
     * Fixes
     * Changes
         * Allow only snake camel and title case for primitives (:pr:`1854`)
