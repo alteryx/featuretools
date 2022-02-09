@@ -18,7 +18,7 @@ def _load_primitives():
         where `LIST_OF_PRIMITIVES` is an iterable of primitive class objects defined
         in module `other_library`.
     """
-    base_primitives = (AggregationPrimitive, TransformPrimitive)
+    base_primitives = (AggregationPrimitive, TransformPrimitive)  # noqa: F405
     msg = "entry point \"%s\" in package \"%s\" threw exception while loading: %s",
     for entry_point in pkg_resources.iter_entry_points('featuretools_primitives'):  # pragma: no cover
         try:
