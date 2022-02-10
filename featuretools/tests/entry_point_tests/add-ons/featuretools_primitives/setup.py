@@ -1,8 +1,8 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 
 setup(
     name='featuretools_primitives',
-    packages=['featuretools_primitives'],
+    packages=find_packages(),
     entry_points={
         'featuretools_primitives': [
             'new = featuretools_primitives.new_primitive',
