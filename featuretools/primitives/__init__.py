@@ -29,6 +29,7 @@ def _load_primitives():
 
         where `other_library` is a top-level module containing all the primitives.
     """
+    logger = logging.getLogger('featuretools')
     base_primitives = (AggregationPrimitive, TransformPrimitive)  # noqa: F405
     msg = "entry point \"%s\" in package \"%s\" threw exception while loading: %s",
     for entry_point in pkg_resources.iter_entry_points('featuretools_primitives'):  # pragma: no cover
@@ -43,20 +44,24 @@ def _load_primitives():
             )
             continue
 
-        for attr in dir(loaded):
-            primitive = getattr(loaded, attr)
+        for key in dir(loaded):
+            primitive = getattr(loaded, key, None)
 
             if (
                 inspect.isclass(primitive) and
                 issubclass(primitive, base_primitives) and
                 primitive not in base_primitives
             ):
+                name = primitive.__name__
                 scope = globals()
-                if primitive.__name__ in scope:
-                    error = f"primitive with name \"{primitive.__name__}\" already exists"
-                    raise RuntimeError(error)
+
+                if name in scope:
+                    this_module, that_module = primitive.__module__, scope[name].__module__
+                    message = f'Ignoring primitive "{name}" from "{this_module}" '
+                    message += f'because it already exists in "{that_module}"'
+                    logger.warning(message)
                 else:
-                    scope[primitive.__name__] = primitive
+                    scope[name] = primitive
 
 
 _load_primitives()
