@@ -9,7 +9,7 @@ from .api import *  # noqa: F403
 def _load_primitives():
     """Load in a list of primitives registered by other libraries into Featuretools.
 
-        Example entry_points definition for a library using this entry point in:
+        Example entry_points definition for a library using this entry point either in:
 
             - setup.py:
 
