@@ -1,20 +1,23 @@
 from featuretools.tests.entry_point_tests.utils import (
     import_featuretools,
     install_featuretools_primitives,
+    python,
     uninstall_featuretools_primitives
 )
 
 
 def test_entry_point():
     install_featuretools_primitives()
-    subprocess = import_featuretools('debug')
+    featuretools_log = import_featuretools('debug').stdout.decode()
+    new_primitive = python('-c', 'from featuretools.primitives import NewPrimitive')
     uninstall_featuretools_primitives()
-    log = subprocess.stdout.decode()
+    assert new_primitive.returncode == 0
 
     invalid_primitive = 'Featuretools failed to load "invalid" primitives from "featuretools_primitives.invalid_primitive". '
     invalid_primitive += 'For a full stack trace, set logging to debug.'
-    assert invalid_primitive in log
+    assert invalid_primitive in featuretools_log
 
-    existing_primitive = 'Ignoring primitive "Sum" from "featuretools_primitives.existing_primitive" because it '
-    existing_primitive += 'already exists in "featuretools.primitives.standard.aggregation_primitives"'
-    assert existing_primitive in log
+    existing_primitive = 'While loading primitives via "existing" entry point, '
+    existing_primitive += 'ignored primitive "Sum" from "featuretools_primitives.existing_primitive" because a primitive '
+    existing_primitive += 'with that name already exists in "featuretools.primitives.standard.aggregation_primitives"'
+    assert existing_primitive in featuretools_log

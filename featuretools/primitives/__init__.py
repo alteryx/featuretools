@@ -56,8 +56,9 @@ def _load_primitives():
 
                 if name in scope:
                     this_module, that_module = primitive.__module__, scope[name].__module__
-                    message = f'Ignoring primitive "{name}" from "{this_module}" '
-                    message += f'because it already exists in "{that_module}"'
+                    message = f'While loading primitives via "{entry_point.name}" entry point, '
+                    message += f'ignored primitive "{name}" from "{this_module}" because '
+                    message += f'a primitive with that name already exists in "{that_module}"'
                     logger.warning(message)
                 else:
                     scope[name] = primitive
