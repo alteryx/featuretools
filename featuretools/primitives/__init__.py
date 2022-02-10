@@ -10,11 +10,19 @@ def _load_primitives():
     """Load in a list of primitives registered by other libraries into Featuretools.
 
         Example entry_points definition for a library using this entry point:
+        If using setup.py:
+        
         entry_points={
             "featuretools_primitives": [
-                other_library = other_library:LIST_OF_PRIMITIVES
+                other_library = other_library
             ]
         }
+        
+        If using setup.cfg:
+        
+            [options.entry_points]
+            featuretools_primitives =
+                other_library = other_library
         where `LIST_OF_PRIMITIVES` is an iterable of primitive class objects defined
         in module `other_library`.
     """
