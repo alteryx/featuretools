@@ -2,6 +2,7 @@ import inspect
 import logging
 
 import pkg_resources
+import traceback
 
 from .api import *  # noqa: F403
 
@@ -30,18 +31,16 @@ def _load_primitives():
         where `other_library` is a top-level module containing all the primitives.
     """
     logger = logging.getLogger('featuretools')
-    base_primitives = (AggregationPrimitive, TransformPrimitive)  # noqa: F405
-    msg = "entry point \"%s\" in package \"%s\" threw exception while loading: %s",
-    for entry_point in pkg_resources.iter_entry_points('featuretools_primitives'):  # pragma: no cover
+    base_primitives = AggregationPrimitive, TransformPrimitive  # noqa: F405
+
+    for entry_point in pkg_resources.iter_entry_points('featuretools_primitives'):
         try:
             loaded = entry_point.load()
-        except Exception as e:
-            logging.warning(
-                msg,
-                entry_point.name,
-                entry_point.dist.project_name,
-                repr(e),
-            )
+        except Exception:
+            message = f'Featuretools failed to load "{entry_point.name}" primitives from "{entry_point.module_name}". '
+            message += "For a full stack trace, set logging to debug."
+            logger.warning(message)
+            logger.debug(traceback.format_exc())
             continue
 
         for key in dir(loaded):

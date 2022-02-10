@@ -7,10 +7,10 @@ from featuretools.tests.entry_point_tests.utils import (
 
 def test_entry_point():
     install_featuretools_primitives()
-    process = import_featuretools('warning')
+    process = import_featuretools('debug')
     uninstall_featuretools_primitives()
 
-    expected = 'Ignoring primitive "Sum" from "featuretools_primitives" because it '
+    expected = 'Ignoring primitive "Sum" from "featuretools_primitives.existing_primitive" because it '
     expected += 'already exists in "featuretools.primitives.standard.aggregation_primitives"'
     actual = process.stdout.decode()
     assert expected in actual
