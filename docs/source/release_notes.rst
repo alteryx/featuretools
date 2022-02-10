@@ -23,6 +23,7 @@ Future Release
         * Split Datetime and LatLong primitives into separate files (:pr:`1861`)
     * Documentation Changes
         * Bump ipython version (:pr:`1857`)
+        * Update README.md with Alteryx link (:pr:`1886`)
     * Testing Changes
         * Add check for package conflicts with install workflow (:pr:`1843`)
         * Change auto approve workflow to use assignee (:pr:`1843`)
