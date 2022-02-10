@@ -803,6 +803,7 @@ class EntitySet(object):
 
         new_dataframe2 = new_dataframe. \
             drop_duplicates(index, keep='first')[selected_columns]
+        new_dataframe2 = new_dataframe2.dropna(subset=[index])
 
         if make_time_index:
             new_dataframe2 = new_dataframe2.rename(columns={base_time_index: new_dataframe_time_index})
