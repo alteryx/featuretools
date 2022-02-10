@@ -1,16 +1,16 @@
 from featuretools.tests.entry_point_tests.utils import (
-    import_featuretools,
-    install_featuretools_primitives,
-    python,
-    uninstall_featuretools_primitives
+    _import_featuretools,
+    _install_featuretools_primitives,
+    _python,
+    _uninstall_featuretools_primitives
 )
 
 
 def test_entry_point():
-    install_featuretools_primitives()
-    featuretools_log = import_featuretools('debug').stdout.decode()
-    new_primitive = python('-c', 'from featuretools.primitives import NewPrimitive')
-    uninstall_featuretools_primitives()
+    _install_featuretools_primitives()
+    featuretools_log = _import_featuretools('debug').stdout.decode()
+    new_primitive = _python('-c', 'from featuretools.primitives import NewPrimitive')
+    _uninstall_featuretools_primitives()
     assert new_primitive.returncode == 0
 
     invalid_primitive = 'Featuretools failed to load "invalid" primitives from "featuretools_primitives.invalid_primitive". '
