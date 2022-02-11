@@ -21,6 +21,7 @@ Future Release
         * Add ``__setitem__`` method to overload ``add_dataframe`` method on EntitySet (:pr:`1862`)
         * Temporarily restrict woodwork max version (:pr:`1872`)
         * Split Datetime and LatLong primitives into separate files (:pr:`1861`)
+        * Null values will not be included in index of normalized dataframe (:pr:`1897`)
     * Documentation Changes
         * Bump ipython version (:pr:`1857`)
         * Update README.md with Alteryx link (:pr:`1886`)
@@ -32,7 +33,11 @@ Future Release
         * Updated deep feature synthesis and feature serialization tests to use new primitive files (:pr:`1861`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`, :user:`tuethan1999`, :user:`jacobboney`
+    :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`, :user:`tuethan1999`, :user:`jacobboney`, :user:`rwedge`
+
+Breaking Changes
+++++++++++++++++
+* When using ``normalize_dataframe`` to create a new dataframe, the new dataframe's index will not include a null value.
 
 v1.4.0 Jan 10, 2022
 ===================
