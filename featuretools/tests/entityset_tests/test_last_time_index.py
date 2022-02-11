@@ -116,7 +116,7 @@ class TestLastTimeIndex(object):
         values_es.add_last_time_indexes()
         values = values_es['values']
         lti_name = values.ww.metadata.get('last_time_index')
-        assert len(values[lti_name]) == 11
+        assert len(values[lti_name]) == 10
         sorted_lti = to_pandas(values[lti_name]).sort_index()
         for v1, v2 in zip(sorted_lti, true_values_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
@@ -146,7 +146,7 @@ class TestLastTimeIndex(object):
 
         values = values_es['values']
         lti_name = values.ww.metadata.get('last_time_index')
-        assert len(values[lti_name]) == 12
+        assert len(values[lti_name]) == 11
         sorted_lti = values[lti_name].sort_index()
         for v1, v2 in zip(sorted_lti, true_values_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
