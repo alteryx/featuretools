@@ -1,0 +1,1 @@
+raise NotImplementedError('invalid primitive')
