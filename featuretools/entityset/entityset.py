@@ -801,6 +801,7 @@ class EntitySet(object):
             [col for col in additional_columns] +\
             [col for col in copy_columns]
 
+        new_dataframe = new_dataframe.dropna(subset=[index])
         new_dataframe2 = new_dataframe. \
             drop_duplicates(index, keep='first')[selected_columns]
 
@@ -1153,7 +1154,7 @@ class EntitySet(object):
         ww_schemas = state.pop(WW_SCHEMA_KEY)
         for df_name, df in state.get('dataframe_dict', {}).items():
             if ww_schemas[df_name] is not None:
-                df.ww.init_with_full_schema(schema=ww_schemas[df_name], validate=False)
+                df.ww.init(schema=ww_schemas[df_name], validate=False)
         self.__dict__.update(state)
 
     # ###########################################################################
