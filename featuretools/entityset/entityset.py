@@ -1154,7 +1154,7 @@ class EntitySet(object):
         ww_schemas = state.pop(WW_SCHEMA_KEY)
         for df_name, df in state.get('dataframe_dict', {}).items():
             if ww_schemas[df_name] is not None:
-                df.ww.init_with_full_schema(schema=ww_schemas[df_name], validate=False)
+                df.ww.init(schema=ww_schemas[df_name], validate=False)
         self.__dict__.update(state)
 
     # ###########################################################################
