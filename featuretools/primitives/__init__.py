@@ -2,44 +2,66 @@ import inspect
 import logging
 
 import pkg_resources
+import traceback
 
 from .api import *  # noqa: F403
 
-# Load in a list of primitives registered by other libraries into Featuretools.
-#
-# Example entry_points definition for a library using this entry point:
-#
-#    entry_points={
-#        "featuretools_primitives": [
-#            other_library = other_library:LIST_OF_PRIMITIVES
-#        ]
-#    }
-#
-# where `LIST_OF_PRIMITIVES` is an iterable of primitive class objects defined
-# in module `other_library`.
 
-for entry_point in pkg_resources.iter_entry_points('featuretools_primitives'):  # pragma: no cover
-    try:
-        loaded = entry_point.load()
-    except Exception as e:
-        logging.warning(
-            "entry point \"%s\" in package \"%s\" threw exception while loading: %s",
-            entry_point.name,
-            entry_point.dist.project_name,
-            repr(e),
-        )
-        continue
+def _load_primitives():
+    """Load in a list of primitives registered by other libraries into Featuretools.
 
-    for primitive in loaded:
-        if primitive.__name__ in globals():
-            raise RuntimeError(
-                f"primitive with name \"{primitive.__name__}\" already exists"
-            )
+        Example entry_points definition for a library using this entry point either in:
 
-        if (
-            inspect.isclass(primitive) and
-            issubclass(primitive, (AggregationPrimitive, TransformPrimitive)) and  # noqa: F405
-            primitive is not AggregationPrimitive and  # noqa: F405
-            primitive is not TransformPrimitive  # noqa: F405
-        ):
-            globals()[primitive.__name__] = primitive
+            - setup.py:
+
+                setup(
+                    entry_points={
+                        'featuretools_primitives': [
+                            'other_library = other_library',
+                        ],
+                    },
+                )
+
+            - setup.cfg:
+
+                [options.entry_points]
+                featuretools_primitives =
+                    other_library = other_library
+
+        where `other_library` is a top-level module containing all the primitives.
+    """
+    logger = logging.getLogger('featuretools')
+    base_primitives = AggregationPrimitive, TransformPrimitive  # noqa: F405
+
+    for entry_point in pkg_resources.iter_entry_points('featuretools_primitives'):
+        try:
+            loaded = entry_point.load()
+        except Exception:
+            message = f'Featuretools failed to load "{entry_point.name}" primitives from "{entry_point.module_name}". '
+            message += "For a full stack trace, set logging to debug."
+            logger.warning(message)
+            logger.debug(traceback.format_exc())
+            continue
+
+        for key in dir(loaded):
+            primitive = getattr(loaded, key, None)
+
+            if (
+                inspect.isclass(primitive) and
+                issubclass(primitive, base_primitives) and
+                primitive not in base_primitives
+            ):
+                name = primitive.__name__
+                scope = globals()
+
+                if name in scope:
+                    this_module, that_module = primitive.__module__, scope[name].__module__
+                    message = f'While loading primitives via "{entry_point.name}" entry point, '
+                    message += f'ignored primitive "{name}" from "{this_module}" because '
+                    message += f'a primitive with that name already exists in "{that_module}"'
+                    logger.warning(message)
+                else:
+                    scope[name] = primitive
+
+
+_load_primitives()
