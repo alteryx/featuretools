@@ -20,7 +20,7 @@ Future Release
         * Add DistanceToHoliday Transform Primitive (:pr:`1853`)
         * Temporarily restrict pandas and koalas max versions (:pr:`1863`)
         * Add ``__setitem__`` method to overload ``add_dataframe`` method on EntitySet (:pr:`1862`)
-        * Temporarily restrict woodwork max version (:pr:`1872`)
+        * Add support for woodwork 0.12.0 (:pr:`1872`, :pr:`1897`)
         * Split Datetime and LatLong primitives into separate files (:pr:`1861`)
         * Null values will not be included in index of normalized dataframe (:pr:`1897`)
     * Documentation Changes
