@@ -3,8 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+      ==============
+        * Enhancements
+        * Fixes
+        * Changes
+        * Documentation Changes
+        * Testing Changes
+
+    .. Thanks to the following people for contributing to this release:
+
+v1.5.0 Feb 14, 2022
+===================
     .. warning::
         Featuretools may not support Python 3.7 in next non-bugfix release.
 
@@ -34,7 +44,7 @@ Future Release
         * Updated deep feature synthesis and feature serialization tests to use new primitive files (:pr:`1861`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`, :user:`tamargrey`, :user:`tuethan1999`, :user:`jacobboney`, :user:`rwedge`
+    :user:`dvreed77`, :user:`gsheni`, :user:`jacobboney`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 Breaking Changes
 ++++++++++++++++
@@ -62,7 +72,6 @@ v1.4.0 Jan 10, 2022
 
     Thanks to the following people for contributing to this release:
     :user:`davesque`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
-    
 
 v1.3.0 Dec 2, 2021
 ==================
