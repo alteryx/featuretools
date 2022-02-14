@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-      ==============
-        * Enhancements
-        * Fixes
-        * Changes
-        * Documentation Changes
-        * Testing Changes
+Future Release
+==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+        * Add in-line tabs and copy-paste functionality to docs (:pr:`1905`)
+    * Testing Changes
 
-    .. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`jeff-hernandez`
 
 v1.5.0 Feb 14, 2022
 ===================
