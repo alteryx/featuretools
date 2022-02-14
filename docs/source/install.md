@@ -20,6 +20,11 @@ $ conda install -c conda-forge featuretools
 
 Featuretools allows users to install add-ons individually or all at once:
 
+```{hint}
+Be sure to install [Scala and Spark](#scala-and-spark) if you want to use Koalas
+```
+
+````{tab} PyPI
 ```{tab} All Add-ons
 ```console
 $ python -m pip install "featuretools[complete]"
@@ -28,17 +33,50 @@ $ python -m pip install "featuretools[complete]"
 ```console
 $ python -m pip install "featuretools[nlp_primitives]"
 ```
+```{tab} Koalas
+```console
+$ python -m pip install "featuretools[koalas]"
+```
 ```{tab} TSFresh Primitives
 ```console
 $ python -m pip install "featuretools[tsfresh]"
+```
+```{tab} AutoNormalize
+```console
+$ python -m pip install "featuretools[autonormalize]"
 ```
 ```{tab} Update Checker
 ```console
 $ python -m pip install "featuretools[update_checker]"
 ```
+````
+````{tab} Conda
+```{tab} All Add-ons
+```console
+$ conda install -c conda-forge nlp-primitives featuretools-tsfresh-primitives koalas pyspark alteryx-open-src-update-checker
+```
+```{tab} NLP Primitives
+```console
+$ conda install -c conda-forge nlp-primitives
+```
+```{tab} TSFresh Primitives
+```console
+$ conda install -c conda-forge featuretools-tsfresh-primitives
+```
+```{tab} Koalas
+```console
+$ conda install -c conda-forge koalas pyspark
+```
+```{tab} Update Checker
+```console
+$ conda install -c conda-forge alteryx-open-src-update-checker
+```
+````
 
 - **NLP Primitives**: Use Natural Language Processing Primitives in Featuretools
-- **Koalas**: Use 60+ primitives from [tsfresh](https://tsfresh.readthedocs.io/en/latest/) in Featuretools
+- **TSFresh Primitives**: Use 60+ primitives from [tsfresh](https://tsfresh.readthedocs.io/en/latest/) in Featuretools
+- **Koalas**: Use Woodwork with Koalas DataFrames
+- **AutoNormalize**: Automated creation of normalized `EntitySet` from denormalized data
 - **Update Checker**: Receive automatic notifications of new Featuretools releases
 
 ## Installing Graphviz
