@@ -46,7 +46,7 @@ Before starting major work, you should touch base with the maintainers of Featur
      ```console
      brew tap AdoptOpenJDK/openjdk
      brew install --cask adoptopenjdk11
-     brew install scala apache-spark
+     brew install scala apache-spark graphviz
      echo 'export JAVA_HOME=$(/usr/libexec/java_home)' >> ~/.zshrc
      echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
      ```
