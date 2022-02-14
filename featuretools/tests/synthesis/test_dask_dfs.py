@@ -54,7 +54,9 @@ def test_single_table_dask_entityset():
                    trans_primitives=primitives_list)
 
     # Use the same columns and make sure both indexes are sorted the same
-    dask_computed_fm = dask_fm.compute().set_index('id').loc[fm.index][fm.columns]
+    # update the type of the future index column so it doesn't conflict with the pandas fm
+    dask_fm = dask_fm.compute().astype({'id': 'int64'})
+    dask_computed_fm = dask_fm.set_index('id').loc[fm.index][fm.columns]
     pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
 
 
@@ -100,7 +102,8 @@ def test_single_table_dask_entityset_ids_not_sorted():
                    trans_primitives=primitives_list)
 
     # Make sure both indexes are sorted the same
-    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id').loc[fm.index], check_dtype=False)
+    dask_fm = dask_fm.compute().astype({'id': 'int64'})
+    pd.testing.assert_frame_equal(fm, dask_fm.set_index('id').loc[fm.index], check_dtype=False)
 
 
 def test_single_table_dask_entityset_with_instance_ids():
@@ -149,7 +152,8 @@ def test_single_table_dask_entityset_with_instance_ids():
                    instance_ids=instance_ids)
 
     # Make sure both indexes are sorted the same
-    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id').loc[fm.index], check_dtype=False)
+    dask_fm = dask_fm.compute().astype({'id': 'int64'})
+    pd.testing.assert_frame_equal(fm, dask_fm.set_index('id').loc[fm.index], check_dtype=False)
 
 
 def test_single_table_dask_entityset_single_cutoff_time():
@@ -196,7 +200,8 @@ def test_single_table_dask_entityset_single_cutoff_time():
                    cutoff_time=pd.Timestamp("2019-01-05 04:00"))
 
     # Make sure both indexes are sorted the same
-    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id').loc[fm.index], check_dtype=False)
+    dask_fm = dask_fm.compute().astype({'id': 'int64'})
+    pd.testing.assert_frame_equal(fm, dask_fm.set_index('id').loc[fm.index], check_dtype=False)
 
 
 def test_single_table_dask_entityset_cutoff_time_df():
@@ -297,7 +302,8 @@ def test_single_table_dask_entityset_dates_not_sorted():
                    trans_primitives=primitives_list,
                    max_depth=1)
 
-    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id').loc[fm.index], check_dtype=False)
+    dask_fm = dask_fm.compute().astype({'id': 'int64'})
+    pd.testing.assert_frame_equal(fm, dask_fm.set_index('id').loc[fm.index], check_dtype=False)
 
 
 def test_dask_entityset_secondary_time_index():

@@ -3,11 +3,26 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+      ==============
+        * Enhancements
+        * Fixes
+        * Changes
+        * Documentation Changes
+        * Testing Changes
+
+    .. Thanks to the following people for contributing to this release:
+
+v1.5.0 Feb 14, 2022
+===================
+    .. warning::
+        Featuretools may not support Python 3.7 in next non-bugfix release.
+
     * Enhancements
         * Add ability to use offset alias strings as inputs to rolling primitives (:pr:`1809`)
+        * Update to add support for pandas version 1.4.0 (:pr:`1881`, :pr:`1895`)
     * Fixes
+        * Fix ``featuretools_primitives`` entry point (:pr:`1891`)
     * Changes
         * Allow only snake camel and title case for primitives (:pr:`1854`)
         * Add autonormalize as an add-on library (:pr:`1840`)
@@ -15,10 +30,12 @@ Future Release
         * Add DistanceToHoliday Transform Primitive (:pr:`1853`)
         * Temporarily restrict pandas and koalas max versions (:pr:`1863`)
         * Add ``__setitem__`` method to overload ``add_dataframe`` method on EntitySet (:pr:`1862`)
-        * Temporarily restrict woodwork max version (:pr:`1872`)
+        * Add support for woodwork 0.12.0 (:pr:`1872`, :pr:`1897`)
         * Split Datetime and LatLong primitives into separate files (:pr:`1861`)
+        * Null values will not be included in index of normalized dataframe (:pr:`1897`)
     * Documentation Changes
         * Bump ipython version (:pr:`1857`)
+        * Update README.md with Alteryx link (:pr:`1886`)
     * Testing Changes
         * Add check for package conflicts with install workflow (:pr:`1843`)
         * Change auto approve workflow to use assignee (:pr:`1843`)
@@ -27,7 +44,11 @@ Future Release
         * Updated deep feature synthesis and feature serialization tests to use new primitive files (:pr:`1861`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`, :user:`tuethan1999`, :user:`jacobboney`
+    :user:`dvreed77`, :user:`gsheni`, :user:`jacobboney`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
+
+Breaking Changes
+++++++++++++++++
+* When using ``normalize_dataframe`` to create a new dataframe, the new dataframe's index will not include a null value.
 
 v1.4.0 Jan 10, 2022
 ===================
@@ -51,7 +72,6 @@ v1.4.0 Jan 10, 2022
 
     Thanks to the following people for contributing to this release:
     :user:`davesque`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
-    
 
 v1.3.0 Dec 2, 2021
 ==================
