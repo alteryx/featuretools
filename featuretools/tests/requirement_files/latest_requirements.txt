@@ -3,8 +3,8 @@ cloudpickle==2.0.0
 dask==2022.2.0
 distributed==2022.2.0
 numpy==1.22.2
-pandas==1.4.0
+pandas==1.4.1
 psutil==5.9.0
 scipy==1.8.0
 tqdm==4.62.3
-woodwork==0.11.2
+woodwork==0.12.0
