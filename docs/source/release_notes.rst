@@ -8,7 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
-        * Removes outdated pandas workaround code (:pr:`1906`)
+        * Remove outdated pandas workaround code (:pr:`1906`)
     * Documentation Changes
     * Testing Changes
 
