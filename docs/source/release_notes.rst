@@ -3,15 +3,18 @@
 Release Notes
 -------------
 
-.. Future Release
-      ==============
-        * Enhancements
-        * Fixes
-        * Changes
-        * Documentation Changes
-        * Testing Changes
+Future Release
+==============
+    * Enhancements
+    * Fixes
+    * Changes
+        * Removes outdated pandas workaround code (:pr:`1906`)
+    * Documentation Changes
+    * Testing Changes
 
-    .. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
+
 
 v1.5.0 Feb 14, 2022
 ===================
