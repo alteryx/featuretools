@@ -23,11 +23,12 @@ v1.6.0 Feb 17, 2022
         * Remove outdated pandas workaround code (:pr:`1906`)
     * Documentation Changes
         * Add in-line tabs and copy-paste functionality to docs (:pr:`1905`)
+        * Add time series guide (:pr:`1896`)
     * Testing Changes
         * Fix URL deserialization file (:pr:`1909`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 
 v1.5.0 Feb 14, 2022
