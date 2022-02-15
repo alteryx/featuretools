@@ -1,6 +1,6 @@
 # Install
 
-Featuretools is available for Python 3.7, 3.8, and 3.9. It can be installed from pip, [conda-forge](https://anaconda.org/conda-forge/featuretools), or from source.
+Featuretools is available for Python 3.7, 3.8, and 3.9. It can be installed from [pypi](https://pypi.org/project/featuretools/), [conda-forge](https://anaconda.org/conda-forge/featuretools), or from source.
 
 To install Featuretools, run the following command:
 
