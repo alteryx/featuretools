@@ -255,6 +255,12 @@ myst_admonition_enable = True
 myst_deflist_enable = True
 myst_heading_anchors = 3
 
+# -- Options for Sphinx Copy Button ------------------------------------------
+
+copybutton_prompt_text = "myinputprompt"
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
+copybutton_prompt_is_regexp = True
+
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
