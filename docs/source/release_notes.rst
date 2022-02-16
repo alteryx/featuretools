@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fix to catch new ``NotImplementedError`` raised by ``holidays`` library for unknown country (:pr:`1907`)
     * Changes
         * Remove outdated pandas workaround code (:pr:`1906`)
     * Documentation Changes
