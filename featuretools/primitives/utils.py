@@ -420,7 +420,7 @@ def _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_2s, unit):
     return distances
 
 
-class HolidayUtil(object):
+class HolidayUtil:
     def __init__(self, country='US'):
         try:
             holidays.CountryHoliday(country)
