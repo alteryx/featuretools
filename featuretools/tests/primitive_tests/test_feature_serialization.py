@@ -43,7 +43,7 @@ from featuretools.tests.testing_utils import check_names
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}_2022_01_27.json".format(SCHEMA_VERSION, ENTITYSET_SCHEMA_VERSION)
+TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}_2022_2_16.json".format(SCHEMA_VERSION, ENTITYSET_SCHEMA_VERSION)
 S3_URL = "s3://featuretools-static/" + TEST_FILE
 URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
 TEST_CONFIG = "CheckConfigPassesOn"
