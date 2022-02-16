@@ -424,7 +424,7 @@ class HolidayUtil(object):
     def __init__(self, country='US'):
         try:
             holidays.CountryHoliday(country)
-        except KeyError:
+        except (KeyError, NotImplementedError):
             available_countries = 'https://github.com/dr-prodigy/python-holidays#available-countries'
             error = 'must be one of the available countries:\n%s' % available_countries
             raise ValueError(error)
