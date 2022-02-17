@@ -3,8 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+    ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.6.0 Feb 17, 2022
+===================
     * Enhancements
         * Add ``IsFederalHoliday`` transform primitive (:pr:`1912`)
     * Fixes
