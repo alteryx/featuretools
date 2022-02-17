@@ -15,6 +15,11 @@ from featuretools.tests.testing_utils import (
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
 
+# pytest marks to re-use
+pandas_mark = pytest.mark.pandas
+dask_mark = pytest.mark.dask
+koalas_mark = pytest.mark.koalas
+
 
 @pytest.fixture()
 def cluster_scheduler():
@@ -92,7 +97,11 @@ def ks_int_es(pd_int_es):
     return es
 
 
-@pytest.fixture(params=['pd_int_es', 'dask_int_es', 'ks_int_es'])
+@pytest.fixture(params=[
+    pytest.param('pd_int_es', marks=pandas_mark),
+    pytest.param('dask_int_es', marks=dask_mark),
+    pytest.param('ks_int_es', marks=koalas_mark)
+])
 def int_es(request):
     return request.getfixturevalue(request.param)
 
@@ -127,12 +136,20 @@ def ks_es(pd_es):
     return es
 
 
-@pytest.fixture(params=['pd_es', 'dask_es', 'ks_es'])
+@pytest.fixture(params=[
+    pytest.param('pd_es', marks=pandas_mark),
+    pytest.param('dask_es', marks=dask_mark),
+    pytest.param('ks_es', marks=koalas_mark)
+])
 def es(request):
     return request.getfixturevalue(request.param)
 
 
-@pytest.fixture(params=['pd_diamond_es', 'dask_diamond_es', 'ks_diamond_es'])
+@pytest.fixture(params=[
+    pytest.param('pd_diamond_es', marks=pandas_mark),
+    pytest.param('dask_diamond_es', marks=dask_mark),
+    pytest.param('ks_diamond_es', marks=koalas_mark)
+])
 def diamond_es(request):
     return request.getfixturevalue(request.param)
 
@@ -217,7 +234,11 @@ def ks_diamond_es(pd_diamond_es):
     return ft.EntitySet(id=pd_diamond_es.id, dataframes=dataframes, relationships=relationships)
 
 
-@pytest.fixture(params=['pd_default_value_es', 'dask_default_value_es', 'ks_default_value_es'])
+@pytest.fixture(params=[
+    pytest.param('pd_default_value_es', marks=pandas_mark),
+    pytest.param('dask_default_value_es', marks=dask_mark),
+    pytest.param('ks_default_value_es', marks=koalas_mark)
+])
 def default_value_es(request):
     return request.getfixturevalue(request.param)
 
@@ -279,7 +300,11 @@ def ks_default_value_es(pd_default_value_es):
     return ft.EntitySet(id=pd_default_value_es.id, dataframes=dataframes, relationships=relationships)
 
 
-@pytest.fixture(params=['pd_home_games_es', 'dask_home_games_es', 'ks_home_games_es'])
+@pytest.fixture(params=[
+    pytest.param('pd_home_games_es', marks=pandas_mark),
+    pytest.param('dask_home_games_es', marks=dask_mark),
+    pytest.param('ks_home_games_es', marks=koalas_mark)
+])
 def home_games_es(request):
     return request.getfixturevalue(request.param)
 
@@ -383,7 +408,11 @@ def ks_mock_customer(pd_mock_customer):
     return ft.EntitySet(id=pd_mock_customer.id, dataframes=dataframes, relationships=relationships)
 
 
-@pytest.fixture(params=['pd_mock_customer', 'dd_mock_customer', 'ks_mock_customer'])
+@pytest.fixture(params=[
+    pytest.param('pd_mock_customer', marks=pandas_mark),
+    pytest.param('dd_mock_customer', marks=dask_mark),
+    pytest.param('ks_mock_customer', marks=koalas_mark)
+])
 def mock_customer(request):
     return request.getfixturevalue(request.param)
 
@@ -410,7 +439,11 @@ def lt(es):
     return labels
 
 
-@pytest.fixture(params=['pd_dataframes', 'dask_dataframes', 'koalas_dataframes'])
+@pytest.fixture(params=[
+    pytest.param('pd_dataframes', marks=pandas_mark),
+    pytest.param('dask_dataframes', marks=dask_mark),
+    pytest.param('koalas_dataframes', marks=koalas_mark)
+])
 def dataframes(request):
     return request.getfixturevalue(request.param)
 
@@ -486,7 +519,11 @@ def relationships():
     return [("cards", "id", "transactions", "card_id")]
 
 
-@pytest.fixture(params=['pd_transform_es', 'dask_transform_es', 'koalas_transform_es'])
+@pytest.fixture(params=[
+    pytest.param('pd_transform_es', marks=pandas_mark),
+    pytest.param('dask_transform_es', marks=dask_mark),
+    pytest.param('koalas_transform_es', marks=koalas_mark)
+])
 def transform_es(request):
     return request.getfixturevalue(request.param)
 
@@ -529,7 +566,11 @@ def koalas_transform_es(pd_transform_es):
     return es
 
 
-@pytest.fixture(params=['divide_by_zero_es_pd', 'divide_by_zero_es_dask', 'divide_by_zero_es_koalas'])
+@pytest.fixture(params=[
+    pytest.param('divide_by_zero_es_pd', marks=pandas_mark),
+    pytest.param('divide_by_zero_es_dask', marks=dask_mark),
+    pytest.param('divide_by_zero_es_koalas', marks=koalas_mark)
+])
 def divide_by_zero_es(request):
     return request.getfixturevalue(request.param)
 

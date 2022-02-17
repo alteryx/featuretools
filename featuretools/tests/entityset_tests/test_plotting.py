@@ -36,7 +36,11 @@ def ks_simple():
     return es
 
 
-@pytest.fixture(params=['pd_simple', 'dd_simple', 'ks_simple'])
+@pytest.fixture(params=[
+    pytest.param('pd_simple', marks=pytest.mark.pandas),
+    pytest.param('dd_simple', marks=pytest.mark.dask),
+    pytest.param('ks_simple', marks=pytest.mark.koalas)
+])
 def simple_es(request):
     return request.getfixturevalue(request.param)
 

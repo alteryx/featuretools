@@ -152,7 +152,10 @@ def ks_employee_df(pd_employee_df):
     return ks.from_pandas(pd_employee_df)
 
 
-@pytest.fixture(params=['pd_employee_df', 'dd_employee_df', 'ks_employee_df'])
+@pytest.fixture(params=[
+    pytest.param('pd_employee_df', marks=pytest.mark.pandas),
+    pytest.param('dd_employee_df', marks=pytest.mark.dask),
+    pytest.param('ks_employee_df', marks=pytest.mark.koalas)])
 def employee_df(request):
     return request.getfixturevalue(request.param)
 

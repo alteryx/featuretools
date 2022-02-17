@@ -12,6 +12,7 @@ import featuretools as ft
 from featuretools.entityset import EntitySet
 from featuretools.utils.gen_utils import import_or_none
 
+pytestmark = pytest.mark.koalas
 ks = import_or_none('databricks.koalas')
 
 

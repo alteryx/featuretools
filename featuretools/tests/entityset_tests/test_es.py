@@ -430,7 +430,11 @@ def ks_df(pd_df):
     return ks.from_pandas(pd_df)
 
 
-@pytest.fixture(params=['pd_df', 'dd_df', 'ks_df'])
+@pytest.fixture(params=[
+    pytest.param('pd_df', marks=pytest.mark.pandas),
+    pytest.param('dd_df', marks=pytest.mark.dask),
+    pytest.param('ks_df', marks=pytest.mark.koalas)
+])
 def df(request):
     return request.getfixturevalue(request.param)
 
@@ -570,7 +574,11 @@ def ks_df2(pd_df2):
     return ks.from_pandas(pd_df2)
 
 
-@pytest.fixture(params=['pd_df2', 'dd_df2', 'ks_df2'])
+@pytest.fixture(params=[
+    pytest.param('pd_df2', marks=pytest.mark.pandas),
+    pytest.param('dd_df2', marks=pytest.mark.dask),
+    pytest.param('ks_df2', marks=pytest.mark.koalas)
+])
 def df2(request):
     return request.getfixturevalue(request.param)
 
@@ -610,7 +618,11 @@ def ks_df3(pd_df3):
     return ks.from_pandas(pd_df3)
 
 
-@pytest.fixture(params=['pd_df3', 'dd_df3', 'ks_df3'])
+@pytest.fixture(params=[
+    pytest.param('pd_df3', marks=pytest.mark.pandas),
+    pytest.param('dd_df3', marks=pytest.mark.dask),
+    pytest.param('ks_df3', marks=pytest.mark.koalas)
+])
 def df3(request):
     return request.getfixturevalue(request.param)
 
@@ -672,7 +684,11 @@ def ks_df4(pd_df4):
     return ks.from_pandas(pd_to_ks_clean(pd_df4))
 
 
-@pytest.fixture(params=['pd_df4', 'dd_df4', 'ks_df4'])
+@pytest.fixture(params=[
+    pytest.param('pd_df4', marks=pytest.mark.pandas),
+    pytest.param('dd_df4', marks=pytest.mark.dask),
+    pytest.param('ks_df4', marks=pytest.mark.koalas)
+])
 def df4(request):
     return request.getfixturevalue(request.param)
 
@@ -765,7 +781,11 @@ def ks_datetime1(pd_datetime1):
     return ks.from_pandas(pd_datetime1)
 
 
-@pytest.fixture(params=['pd_datetime1', 'dd_datetime1', 'ks_datetime1'])
+@pytest.fixture(params=[
+    pytest.param('pd_datetime1', marks=pytest.mark.pandas),
+    pytest.param('dd_datetime1', marks=pytest.mark.dask),
+    pytest.param('ks_datetime1', marks=pytest.mark.koalas)
+])
 def datetime1(request):
     return request.getfixturevalue(request.param)
 
@@ -809,7 +829,11 @@ def ks_datetime2(pd_datetime2):
     return ks.from_pandas(pd_datetime2)
 
 
-@pytest.fixture(params=['pd_datetime2', 'dd_datetime2', 'ks_datetime2'])
+@pytest.fixture(params=[
+    pytest.param('pd_datetime2', marks=pytest.mark.pandas),
+    pytest.param('dd_datetime2', marks=pytest.mark.dask),
+    pytest.param('ks_datetime2', marks=pytest.mark.koalas)
+])
 def datetime2(request):
     return request.getfixturevalue(request.param)
 
@@ -1159,7 +1183,11 @@ def ks_transactions_df(pd_transactions_df):
     return ks.from_pandas(pd_transactions_df)
 
 
-@pytest.fixture(params=['pd_transactions_df', 'dd_transactions_df', 'ks_transactions_df'])
+@pytest.fixture(params=[
+    pytest.param('pd_transactions_df', marks=pytest.mark.pandas),
+    pytest.param('dd_transactions_df', marks=pytest.mark.dask),
+    pytest.param('ks_transactions_df', marks=pytest.mark.koalas)
+])
 def transactions_df(request):
     return request.getfixturevalue(request.param)
 
@@ -1454,7 +1482,11 @@ def ks_normalize_es(pd_normalize_es):
     return es
 
 
-@pytest.fixture(params=['pd_normalize_es', 'dd_normalize_es', 'ks_normalize_es'])
+@pytest.fixture(params=[
+    pytest.param('pd_normalize_es', marks=pytest.mark.pandas),
+    pytest.param('dd_normalize_es', marks=pytest.mark.dask),
+    pytest.param('ks_normalize_es', marks=pytest.mark.koalas)
+])
 def normalize_es(request):
     return request.getfixturevalue(request.param)
 
@@ -1628,7 +1660,11 @@ def ks_datetime3(pd_datetime3):
     return ks.from_pandas(pd_datetime3)
 
 
-@pytest.fixture(params=['pd_datetime3', 'dd_datetime3', 'ks_datetime3'])
+@pytest.fixture(params=[
+    pytest.param('pd_datetime3', marks=pytest.mark.pandas),
+    pytest.param('dd_datetime3', marks=pytest.mark.dask),
+    pytest.param('ks_datetime3', marks=pytest.mark.koalas)
+])
 def datetime3(request):
     return request.getfixturevalue(request.param)
 
@@ -1676,7 +1712,11 @@ def ks_index_df(pd_index_df):
     return ks.from_pandas(pd_index_df)
 
 
-@pytest.fixture(params=['pd_index_df', 'dd_index_df', 'ks_index_df'])
+@pytest.fixture(params=[
+    pytest.param('pd_index_df', marks=pytest.mark.pandas),
+    pytest.param('dd_index_df', marks=pytest.mark.dask),
+    pytest.param('ks_index_df', marks=pytest.mark.koalas)
+])
 def index_df(request):
     return request.getfixturevalue(request.param)
 

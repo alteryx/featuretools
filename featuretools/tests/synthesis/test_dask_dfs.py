@@ -1,5 +1,6 @@
 import dask.dataframe as dd
 import pandas as pd
+import pytest
 from woodwork.logical_types import (
     Datetime,
     Double,
@@ -10,6 +11,8 @@ from woodwork.logical_types import (
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
+
+pytestmark = pytest.mark.dask
 
 
 def test_single_table_dask_entityset():

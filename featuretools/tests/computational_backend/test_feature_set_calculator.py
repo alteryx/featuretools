@@ -442,7 +442,11 @@ def ks_df(pd_df):
     return ks.from_pandas(pd_df)
 
 
-@pytest.fixture(params=['pd_df', 'dd_df', 'ks_df'])
+@pytest.fixture(params=[
+    pytest.param('pd_df', marks=pytest.mark.pandas),
+    pytest.param('dd_df', marks=pytest.mark.dask),
+    pytest.param('ks_df', marks=pytest.mark.koalas)
+])
 def df(request):
     return request.getfixturevalue(request.param)
 
@@ -752,7 +756,11 @@ def ks_parent_child(pd_parent_child):
     return (parent_df, child_df)
 
 
-@pytest.fixture(params=['pd_parent_child', 'dd_parent_child', 'ks_parent_child'])
+@pytest.fixture(params=[
+    pytest.param('pd_parent_child', marks=pytest.mark.pandas),
+    pytest.param('dd_parent_child', marks=pytest.mark.dask),
+    pytest.param('ks_parent_child', marks=pytest.mark.koalas)
+])
 def parent_child(request):
     return request.getfixturevalue(request.param)
 

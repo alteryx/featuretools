@@ -206,7 +206,11 @@ def ks_simple_es(pd_simple_es):
     return ft.EntitySet(id=pd_simple_es.id, dataframes=dataframes, relationships=relationships)
 
 
-@pytest.fixture(params=['pd_simple_es', 'dd_simple_es', 'ks_simple_es'])
+@pytest.fixture(params=[
+    pytest.param('pd_simple_es', marks=pytest.mark.pandas),
+    pytest.param('dd_simple_es', marks=pytest.mark.dask),
+    pytest.param('ks_simple_es', marks=pytest.mark.koalas)
+])
 def simple_es(request):
     return request.getfixturevalue(request.param)
 

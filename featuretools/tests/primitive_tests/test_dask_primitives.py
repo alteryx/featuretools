@@ -8,6 +8,7 @@ from featuretools.primitives import (
 )
 from featuretools.utils.gen_utils import Library
 
+pytestmark = pytest.mark.dask
 UNSUPPORTED = [p.name for p in get_transform_primitives().values() if Library.DASK not in p.compatibility]
 UNSUPPORTED += [p.name for p in get_aggregation_primitives().values() if Library.DASK not in p.compatibility]
 

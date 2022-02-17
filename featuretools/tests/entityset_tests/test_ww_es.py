@@ -45,7 +45,11 @@ def ks_df(pd_df):
     return ks.from_pandas(pd_df)
 
 
-@pytest.fixture(params=['pd_df', 'dd_df', 'ks_df'])
+@pytest.fixture(params=[
+    pytest.param('pd_df', marks=pytest.mark.pandas),
+    pytest.param('dd_df', marks=pytest.mark.dask),
+    pytest.param('ks_df', marks=pytest.mark.koalas)
+])
 def df(request):
     return request.getfixturevalue(request.param)
 
@@ -585,7 +589,11 @@ def latlong_df_koalas(latlong_df_pandas):
     return ks.from_pandas(latlong_df_pandas.applymap(lambda tup: list(tup) if isinstance(tup, tuple) else tup))
 
 
-@pytest.fixture(params=['latlong_df_pandas', 'latlong_df_dask', 'latlong_df_koalas'])
+@pytest.fixture(params=[
+    pytest.param('latlong_df_pandas', marks=pytest.mark.pandas),
+    pytest.param('latlong_df_dask', marks=pytest.mark.dask),
+    pytest.param('latlong_df_koalas', marks=pytest.mark.koalas)
+])
 def latlong_df(request):
     return request.getfixturevalue(request.param)
 

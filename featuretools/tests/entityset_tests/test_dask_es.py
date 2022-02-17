@@ -13,6 +13,7 @@ from featuretools.entityset import EntitySet
 from featuretools.tests.testing_utils import get_df_tags
 from featuretools.utils.gen_utils import Library
 
+pytestmarker = pytest.mark.dask
 
 def test_add_dataframe(pd_es):
     dask_es = EntitySet(id="dask_es")
