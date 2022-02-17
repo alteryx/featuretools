@@ -48,7 +48,10 @@ extensions = [
     'IPython.sphinxext.ipython_directive',
     'sphinx.ext.extlinks',
     'sphinx.ext.viewcode',
-    'sphinx.ext.graphviz'
+    'sphinx.ext.graphviz',
+    'sphinx_inline_tabs',
+    'sphinx_copybutton',
+    'myst_parser',
 ]
 
 
@@ -245,6 +248,18 @@ html_show_sphinx = False
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'featuretoolsdoc'
+
+# -- Options for Markdown files ----------------------------------------------
+
+myst_admonition_enable = True
+myst_deflist_enable = True
+myst_heading_anchors = 3
+
+# -- Options for Sphinx Copy Button ------------------------------------------
+
+copybutton_prompt_text = "myinputprompt"
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
+copybutton_prompt_is_regexp = True
 
 # -- Options for LaTeX output ---------------------------------------------
 

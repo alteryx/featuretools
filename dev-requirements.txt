@@ -9,8 +9,12 @@ jupyter==1.0.0
 matplotlib==3.3.3
 nbconvert==6.2.0
 nbsphinx==0.8.7
+pydata-sphinx-theme==0.7.1
 Sphinx==4.2.0
-pydata_sphinx_theme==0.7.1
+sphinx-inline-tabs==2021.3.28b7; python_version == '3.7'
+sphinx-inline-tabs==2022.1.2b11; python_version >= '3.8'
+sphinx-copybutton==0.4.0
+myst-parser==0.16.1
 nlp_primitives>=2.0.0
 autonormalize >= 1.0.2
 -r koalas-requirements.txt

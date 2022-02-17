@@ -43,19 +43,28 @@ Before starting major work, you should touch base with the maintainers of Featur
 * You will need to install Spark, Scala, and GraphViz to run all unit tests:
 
      **macOS** (use [Homebrew](https://brew.sh/)):
-     ```bash
+     ```console
      brew tap AdoptOpenJDK/openjdk
      brew install --cask adoptopenjdk11
-     brew install scala
-     brew install apache-spark
-     brew install graphviz
+     brew install scala apache-spark graphviz
+     echo 'export JAVA_HOME=$(/usr/libexec/java_home)' >> ~/.zshrc
+     echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
      ```
 
      **Ubuntu**:
-     ```bash
+     ```console
      sudo apt install openjdk-11-jre openjdk-11-jdk scala graphviz -y
+     echo "export SPARK_HOME=/opt/spark" >> ~/.profile
+     echo "export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin" >> ~/.profile
+     echo "export PYSPARK_PYTHON=/usr/bin/python3" >> ~/.profile
      ```
-    
+
+     **Amazon Linux**:
+     ```console
+     sudo amazon-linux-extras install java-openjdk11 scala -y
+     amazon-linux-extras enable java-openjdk11
+     ```
+
 #### 2. Implement your Pull Request
 
 * Implement your pull request. If needed, add new tests or update the documentation.
