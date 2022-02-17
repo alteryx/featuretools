@@ -517,7 +517,7 @@ class IsFederalHoliday(TransformPrimitive):
         self.country = country
         try:
             self.holidays = holidays.CountryHoliday(self.country)
-        except KeyError:
+        except (KeyError, NotImplementedError):
             available_countries = 'https://github.com/dr-prodigy/python-holidays#available-countries'
             error = 'must be one of the available countries:\n%s' % available_countries
             raise ValueError(error)
