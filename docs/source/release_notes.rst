@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add primitive ``IsFederalHoliday`` (:pr:``)
     * Fixes
         * Fix to catch new ``NotImplementedError`` raised by ``holidays`` library for unknown country (:pr:`1907`)
     * Changes
@@ -15,7 +16,7 @@ Future Release
         * Fix URL deserialization file (:pr:`1909`)
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 
 v1.5.0 Feb 14, 2022
