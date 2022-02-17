@@ -420,11 +420,11 @@ def _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_2s, unit):
     return distances
 
 
-class HolidayUtil(object):
+class HolidayUtil:
     def __init__(self, country='US'):
         try:
             holidays.CountryHoliday(country)
-        except KeyError:
+        except (KeyError, NotImplementedError):
             available_countries = 'https://github.com/dr-prodigy/python-holidays#available-countries'
             error = 'must be one of the available countries:\n%s' % available_countries
             raise ValueError(error)

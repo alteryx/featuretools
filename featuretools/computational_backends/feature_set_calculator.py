@@ -738,14 +738,6 @@ class FeatureSetCalculator(object):
 
         frame = frame.fillna(fillna_dict)
 
-        # convert boolean dtypes to floats as appropriate
-        # pandas behavior: https://github.com/pydata/pandas/issues/3752
-        for f in features:
-            if (f.number_output_features == 1 and
-                    'numeric' in f.column_schema.semantic_tags and
-                    frame[f.get_name()].dtype.name in ['object', 'bool']):
-                frame[f.get_name()] = frame[f.get_name()].astype(float)
-
         return frame
 
     def _necessary_columns(self, dataframe_name, feature_names):
