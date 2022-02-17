@@ -12,6 +12,7 @@ Future Release
     * Changes
         * Remove outdated pandas workaround code (:pr:`1906`)
     * Documentation Changes
+        * Add in-line tabs and copy-paste functionality to docs (:pr:`1905`)
     * Testing Changes
         * Fix URL deserialization file (:pr:`1909`)
 
