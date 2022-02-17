@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ``IsFederalHoliday`` transform primitive (:pr:`1912`)
     * Fixes
         * Fix to catch new ``NotImplementedError`` raised by ``holidays`` library for unknown country (:pr:`1907`)
     * Changes
