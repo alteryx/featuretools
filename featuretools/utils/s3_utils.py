@@ -63,5 +63,5 @@ SMART_OPEN_ERR_MSG = (
     "Install via pip:\n"
     "    pip install 'smart-open>=5.0.0'\n"
     "Install via conda:\n"
-    "    conda install -c conda-forge 'smart-open>=5.0.0'"
+    "    conda install -c conda-forge 'smart_open>=5.0.0'"
 )
