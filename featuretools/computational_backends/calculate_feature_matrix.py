@@ -147,7 +147,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     """
     assert (isinstance(features, list) and features != [] and
             all([isinstance(feature, FeatureBase) for feature in features])), \
-        "features must be a non-empty list of features"
+        "No features can be generated from the specified primitives. Please make sure the primitives you are using are compatible with the variable types in your data."
 
     # handle loading entityset
     from featuretools.entityset.entityset import EntitySet

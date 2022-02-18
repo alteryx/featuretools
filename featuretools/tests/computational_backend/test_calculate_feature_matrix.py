@@ -90,7 +90,7 @@ def test_calc_feature_matrix(es):
 
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
-    error_text = 'features must be a non-empty list of features'
+    error_text = 'No features can be generated from the specified primitives. Please make sure the primitives you are using are compatible with the variable types in your data.'
     with pytest.raises(AssertionError, match=error_text):
         feature_matrix = calculate_feature_matrix('features', es, cutoff_time=cutoff_time)
 
