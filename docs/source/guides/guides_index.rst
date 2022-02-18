@@ -15,3 +15,4 @@ Guides on more advanced Featuretools functionality
    advanced_custom_primitives
    feature_descriptions
    feature_selection
+   time_series
