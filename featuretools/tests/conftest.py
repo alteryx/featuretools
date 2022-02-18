@@ -15,6 +15,18 @@ from featuretools.tests.testing_utils import (
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
 
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", "pandas: mark test as using pandas dataframes",
+    )
+    config.addinivalue_line(
+        "markers", "dask: mark test as using dask dataframes",
+    )
+    config.addinivalue_line(
+        "markers", "koalas: mark test as using koalas dataframes",
+    )
+
+
 # pytest marks to re-use
 pandas_mark = pytest.mark.pandas
 dask_mark = pytest.mark.dask
