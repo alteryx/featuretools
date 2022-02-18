@@ -49,19 +49,19 @@ BOTO3_ERR_MSG = (
     "Install via pip:\n"
     "    pip install boto3\n"
     "Install via conda:\n"
-    "    conda install boto3"
+    "    conda install -c conda-forge boto3"
 )
 BOTOCORE_ERR_MSG = (
     "The botocore library is required to read and write from URLs and S3.\n"
     "Install via pip:\n"
     "    pip install botocore\n"
     "Install via conda:\n"
-    "    conda install botocore"
+    "    conda install -c conda-forge botocore"
 )
 SMART_OPEN_ERR_MSG = (
     "The smart_open library is required to read and write from URLs and S3.\n"
     "Install via pip:\n"
     "    pip install 'smart-open>=5.0.0'\n"
     "Install via conda:\n"
-    "    conda install 'smart-open>=5.0.0'"
+    "    conda install -c conda-forge 'smart-open>=5.0.0'"
 )
