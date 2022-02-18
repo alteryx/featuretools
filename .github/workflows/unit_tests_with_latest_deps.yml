@@ -48,7 +48,7 @@ jobs:
         name: Run unit tests (no code coverage)
         run: |
           cd unpacked_sdist
-          pytest featuretools/ -n 2 -m "${{ matrix.libaries }}"
+          pytest featuretools/ -n 2 -m "${{ matrix.libraries }}"
       - if: ${{ matrix.python_version == 3.7 }}
         name: Run unit tests with code coverage
         run: |
@@ -56,7 +56,7 @@ jobs:
           coverage erase
           cd unpacked_sdist/
           coverage erase
-          pytest featuretools/ -n 2 --cov=featuretools --cov-config=../.coveragerc -m "${{ matrix.libaries }}"
+          pytest featuretools/ -n 2 --cov=featuretools --cov-config=../.coveragerc -m "${{ matrix.libraries }}"
       - if: ${{ matrix.python_version == 3.7 && matrix.libraries == 'koalas' }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
