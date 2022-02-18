@@ -29,7 +29,7 @@ v1.6.0 Feb 17, 2022
         * Fix URL deserialization file (:pr:`1909`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`rwedge`,  :user:`thehomebrewnerd`
+    :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 
 v1.5.0 Feb 14, 2022
