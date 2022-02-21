@@ -1,8 +1,9 @@
+from unittest.mock import patch
+
 import composeml as cp
 import numpy as np
 import pandas as pd
 import pytest
-from unittest.mock import patch
 from dask import dataframe as dd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import NaturalLanguage
@@ -22,9 +23,9 @@ from featuretools.primitives import (
     make_trans_primitive
 )
 from featuretools.synthesis import dfs
+from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
-from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
 
 
 @pytest.fixture
