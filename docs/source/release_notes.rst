@@ -10,6 +10,7 @@ Future Release
     * Changes
     * Documentation Changes
         * Add time series guide (:pr:`1896`)
+        * Update error message when DFS returns an empty list of features (:pr:`1919`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
