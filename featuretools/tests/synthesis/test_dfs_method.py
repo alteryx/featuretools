@@ -72,7 +72,7 @@ def test_dfs_empty_features():
         })
         dataframes = {'teams': (teams, 'id', None, {'name': 'natural_language'}), 'games': (games, 'id')}
         relationships = [('teams', 'id', 'games', 'home_team_id')]
-        features = dfs(dataframes, relationships, target_dataframe_name="teams", features_only=True)
+        dfs(dataframes, relationships, target_dataframe_name="teams", features_only=True)
 
 
 def test_passing_strings_to_logical_types_dfs():
