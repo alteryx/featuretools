@@ -9,6 +9,7 @@ from featuretools.synthesis.utils import (
     get_unused_primitives
 )
 from featuretools.utils import entry_point
+from featuretools.feature_base import FeatureBase
 
 
 @entry_point('featuretools_dfs')
@@ -260,6 +261,10 @@ def dfs(dataframes=None,
 
     features = dfs_object.build_features(
         verbose=verbose, return_types=return_types)
+
+    assert (isinstance(features, list) and features != [] and
+            all([isinstance(feature, FeatureBase) for feature in features])), \
+        "No features can be generated from the specified primitives. Please make sure the primitives you are using are compatible with the variable types in your data."
 
     trans, agg, groupby, where = _categorize_features(features)
 

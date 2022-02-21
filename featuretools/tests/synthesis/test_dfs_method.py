@@ -2,6 +2,7 @@ import composeml as cp
 import numpy as np
 import pandas as pd
 import pytest
+from unittest.mock import patch
 from dask import dataframe as dd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import NaturalLanguage
@@ -23,6 +24,7 @@ from featuretools.primitives import (
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
+from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
 
 
 @pytest.fixture
@@ -51,6 +53,26 @@ def datetime_es():
     datetime_es = datetime_es.add_relationship("cards", "id", "transactions", "card_id")
     datetime_es.add_last_time_indexes()
     return datetime_es
+
+
+def test_dfs_empty_features():
+    error_text = 'No features can be generated from the specified primitives. Please make sure the primitives you are using are compatible with the variable types in your data.'
+    with pytest.raises(AssertionError, match=error_text), patch.object(DeepFeatureSynthesis,
+                                                                       'build_features', return_value=[]):
+        teams = pd.DataFrame({
+            'id': range(3),
+            'name': ['Breakers', 'Spirit', 'Thorns']
+        })
+        games = pd.DataFrame({
+            'id': range(5),
+            'home_team_id': [2, 2, 1, 0, 1],
+            'away_team_id': [1, 0, 2, 1, 0],
+            'home_team_score': [3, 0, 1, 0, 4],
+            'away_team_score': [2, 1, 2, 0, 0]
+        })
+        dataframes = {'teams': (teams, 'id', None, {'name': 'natural_language'}), 'games': (games, 'id')}
+        relationships = [('teams', 'id', 'games', 'home_team_id')]
+        features = dfs(dataframes, relationships, target_dataframe_name="teams", features_only=True)
 
 
 def test_passing_strings_to_logical_types_dfs():
