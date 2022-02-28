@@ -11,10 +11,11 @@ Future Release
     * Changes
     * Documentation Changes
         * Add time series guide (:pr:`1896`)
+        * Update minimum nlp_primitives requirement for docs (:pr:`1925`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`kushal-gopal`
+    :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`
 
 v1.6.0 Feb 17, 2022
 ===================
