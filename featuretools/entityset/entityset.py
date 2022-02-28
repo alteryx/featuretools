@@ -666,10 +666,12 @@ class EntitySet(object):
         if secondary_time_index:
             self._set_secondary_time_index(dataframe, secondary_time_index=secondary_time_index)
 
+        dataframe = self._normalize_dataframe(dataframe)
+
         self.dataframe_dict[dataframe.ww.name] = dataframe
         self.reset_data_description()
         self._add_references_to_metadata(dataframe)
-        self._normalize_dataframe(dataframe)
+
         return self
 
     def __setitem__(self, key, value):
@@ -1523,11 +1525,13 @@ class EntitySet(object):
 
     def _normalize_dataframe(self, dataframe):
         for column in dataframe.columns:
-            if isinstance(dataframe.ww._schema.columns["latLong"].logical_type, LatLong):
-                if column.hasnans:
-                    dataframe[column] = np.where(column.isnull(), pd.Series([(np.nan, np.nan)] * len(column)), column)
+            if isinstance(dataframe.ww._schema.columns[column].logical_type, LatLong):
+                series = dataframe[column]
+                if series.hasnans:
+                    dataframe[column] = np.where(series.isnull(), pd.Series([(np.nan, np.nan)] * len(series)), series)
 
-            
+        return dataframe
+
 
 def _vals_to_series(instance_vals, column_id):
     """
