@@ -3,7 +3,6 @@ import warnings
 from featuretools.computational_backends import calculate_feature_matrix
 from featuretools.entityset import EntitySet
 from featuretools.exceptions import UnusedPrimitiveWarning
-from featuretools.feature_base import FeatureBase
 from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
 from featuretools.synthesis.utils import (
     _categorize_features,
