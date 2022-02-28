@@ -13,7 +13,6 @@ from featuretools.computational_backends.calculate_feature_matrix import (
 )
 from featuretools.entityset import EntitySet, Timedelta
 from featuretools.exceptions import UnusedPrimitiveWarning
-from featuretools.feature_base import FeatureBase
 from featuretools.primitives import (
     GreaterThanScalar,
     Max,
@@ -92,8 +91,7 @@ def test_dfs_empty_features_features_only():
     dataframes = {'teams': (teams, 'id', None, {'name': 'natural_language'}), 'games': (games, 'id')}
     relationships = [('teams', 'id', 'games', 'home_team_id')]
     features = dfs(dataframes, relationships, target_dataframe_name="teams", features_only=True)
-    assert (isinstance(features, list) and features != [] and
-            all([isinstance(feature, FeatureBase) for feature in features])), True
+    assert (isinstance(features, list) and features != []), True
 
 
 def test_passing_strings_to_logical_types_dfs():
