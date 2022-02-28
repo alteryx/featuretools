@@ -262,10 +262,6 @@ def dfs(dataframes=None,
     features = dfs_object.build_features(
         verbose=verbose, return_types=return_types)
 
-    assert (isinstance(features, list) and features != [] and
-            all([isinstance(feature, FeatureBase) for feature in features])), \
-        "No features can be generated from the specified primitives. Please make sure the primitives you are using are compatible with the variable types in your data."
-
     trans, agg, groupby, where = _categorize_features(features)
 
     trans_unused = get_unused_primitives(trans_primitives, trans)
@@ -279,6 +275,10 @@ def dfs(dataframes=None,
 
     if features_only:
         return features
+
+    assert (isinstance(features, list) and features != [] and
+            all([isinstance(feature, FeatureBase) for feature in features])), \
+        "No features can be generated from the specified primitives. Please make sure the primitives you are using are compatible with the variable types in your data."
 
     feature_matrix = calculate_feature_matrix(features,
                                               entityset=entityset,

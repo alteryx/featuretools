@@ -13,6 +13,7 @@ from featuretools.computational_backends.calculate_feature_matrix import (
 )
 from featuretools.entityset import EntitySet, Timedelta
 from featuretools.exceptions import UnusedPrimitiveWarning
+from featuretools.feature_base import FeatureBase
 from featuretools.primitives import (
     GreaterThanScalar,
     Max,
@@ -73,7 +74,26 @@ def test_dfs_empty_features():
         })
         dataframes = {'teams': (teams, 'id', None, {'name': 'natural_language'}), 'games': (games, 'id')}
         relationships = [('teams', 'id', 'games', 'home_team_id')]
-        dfs(dataframes, relationships, target_dataframe_name="teams", features_only=True)
+        dfs(dataframes, relationships, target_dataframe_name="teams", features_only=False)
+
+
+def test_dfs_empty_features_features_only():
+    teams = pd.DataFrame({
+        'id': range(3),
+        'name': ['Breakers', 'Spirit', 'Thorns']
+    })
+    games = pd.DataFrame({
+        'id': range(5),
+        'home_team_id': [2, 2, 1, 0, 1],
+        'away_team_id': [1, 0, 2, 1, 0],
+        'home_team_score': [3, 0, 1, 0, 4],
+        'away_team_score': [2, 1, 2, 0, 0]
+    })
+    dataframes = {'teams': (teams, 'id', None, {'name': 'natural_language'}), 'games': (games, 'id')}
+    relationships = [('teams', 'id', 'games', 'home_team_id')]
+    features = dfs(dataframes, relationships, target_dataframe_name="teams", features_only=True)
+    assert (isinstance(features, list) and features != [] and
+            all([isinstance(feature, FeatureBase) for feature in features])), True
 
 
 def test_passing_strings_to_logical_types_dfs():
