@@ -8,12 +8,13 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Normalize LatLong NaN values during EntitySet creation (:pr:`1924`)
     * Documentation Changes
         * Add time series guide (:pr:`1896`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`
+    :user:`dvreed77`, :user:`tamargrey`
 
 v1.6.0 Feb 17, 2022
 ===================
