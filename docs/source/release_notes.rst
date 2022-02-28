@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
-        * Updated the conda install commands to specify the channel (:pr:`1718`)
+        * Updated the conda install commands to specify the channel (:pr:`1917`)
     * Changes
     * Documentation Changes
         * Add time series guide (:pr:`1896`)
