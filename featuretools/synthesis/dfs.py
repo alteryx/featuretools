@@ -276,7 +276,7 @@ def dfs(dataframes=None,
     if features_only:
         return features
 
-    assert (isinstance(features, list) and features != []), \
+    assert (features != []), \
         "No features can be generated from the specified primitives. Please make sure the primitives you are using are compatible with the variable types in your data."
 
     feature_matrix = calculate_feature_matrix(features,
