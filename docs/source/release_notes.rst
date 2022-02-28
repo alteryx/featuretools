@@ -3,15 +3,18 @@
 Release Notes
 -------------
 
-.. Future Release
-    ==============
+Future Release
+==============
     * Enhancements
     * Fixes
+        * Updated the conda install commands to specify the channel (:pr:`1917`)
     * Changes
     * Documentation Changes
+        * Add time series guide (:pr:`1896`)
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`tamargrey`, :user:`kushal-gopal`
 
 v1.6.0 Feb 17, 2022
 ===================

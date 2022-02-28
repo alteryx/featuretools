@@ -1,11 +1,11 @@
-click==8.0.3
+click==8.0.4
 cloudpickle==2.0.0
-dask==2022.2.0
-distributed==2022.2.0
+dask==2022.2.1
+distributed==2022.2.1
 holidays==0.13
 numpy==1.22.2
 pandas==1.4.1
 psutil==5.9.0
 scipy==1.8.0
-tqdm==4.62.3
+tqdm==4.63.0
 woodwork==0.13.0
