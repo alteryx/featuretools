@@ -15,6 +15,6 @@ sphinx-inline-tabs==2021.3.28b7; python_version == '3.7'
 sphinx-inline-tabs==2022.1.2b11; python_version >= '3.8'
 sphinx-copybutton==0.4.0
 myst-parser==0.16.1
-nlp_primitives[complete]>=2.0.0
+nlp_primitives[complete]>=2.3.0
 autonormalize >= 1.0.2
 -r koalas-requirements.txt
