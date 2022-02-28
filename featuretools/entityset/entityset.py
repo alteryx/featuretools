@@ -7,7 +7,7 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 from woodwork import init_series
-from woodwork.logical_types import Datetime
+from woodwork.logical_types import Datetime, LatLong
 
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.relationship import Relationship, RelationshipPath
@@ -669,6 +669,7 @@ class EntitySet(object):
         self.dataframe_dict[dataframe.ww.name] = dataframe
         self.reset_data_description()
         self._add_references_to_metadata(dataframe)
+        self._normalize_dataframe(dataframe)
         return self
 
     def __setitem__(self, key, value):
@@ -1520,6 +1521,13 @@ class EntitySet(object):
             metadata.update(entityset_id=self.id)
         _ES_REF[self.id] = self
 
+    def _normalize_dataframe(self, dataframe):
+        for column in dataframe.columns:
+            if isinstance(dataframe.ww._schema.columns["latLong"].logical_type, LatLong):
+                if column.hasnans:
+                    dataframe[column] = np.where(column.isnull(), pd.Series([(np.nan, np.nan)] * len(column)), column)
+
+            
 
 def _vals_to_series(instance_vals, column_id):
     """
