@@ -15,6 +15,7 @@ from featuretools.tests.testing_utils import (
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
 
+
 def pytest_configure(config):
     config.addinivalue_line(
         "markers", "pandas: mark test as using pandas dataframes",

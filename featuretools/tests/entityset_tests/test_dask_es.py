@@ -15,6 +15,7 @@ from featuretools.utils.gen_utils import Library
 
 pytestmarker = pytest.mark.dask
 
+
 def test_add_dataframe(pd_es):
     dask_es = EntitySet(id="dask_es")
     log_dask = dd.from_pandas(pd_es["log"], npartitions=2)
