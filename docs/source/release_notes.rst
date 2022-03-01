@@ -13,10 +13,11 @@ Future Release
     * Documentation Changes
         * Add time series guide (:pr:`1896`)
         * Update minimum nlp_primitives requirement for docs (:pr:`1925`)
+        * Update error message when DFS returns an empty list of features (:pr:`1919`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`
+    :user:`dvreed77`, :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`
 
 v1.6.0 Feb 17, 2022
 ===================
