@@ -123,6 +123,7 @@ def test_errors_unsupported_primitives(es):
                              trans_primitives=[bad_trans_prim])
 
 
+@pytest.mark.koalas
 def test_errors_unsupported_primitives_koalas(ks_es):
     bad_trans_prim = CumSum()
     bad_agg_prim = NumUnique()

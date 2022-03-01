@@ -717,6 +717,7 @@ def test_training_window_recent_time_index(pd_es):
 
 
 # TODO: add test to fail w/ koalas
+@pytest.mark.dask
 def test_approximate_fails_dask(dask_es):
     agg_feat = ft.Feature(dask_es['log'].ww['id'],
                           parent_dataframe_name='sessions',

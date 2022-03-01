@@ -302,6 +302,7 @@ def test_add_last_time_index(es):
     assert isinstance(es['products'].ww.logical_types[LTI_COLUMN_NAME], Datetime)
 
 
+@pytest.mark.koalas
 def test_add_last_time_non_numeric_index(pd_es, ks_es, dask_es):
     # Confirm that add_last_time_index works for indices that aren't numeric
     # since numeric underlying indices can accidentally match the Woodwork index
