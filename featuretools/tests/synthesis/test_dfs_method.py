@@ -71,8 +71,9 @@ def test_dfs_empty_features():
     })
     dataframes = {'teams': (teams, 'id', None, {'name': 'natural_language'}), 'games': (games, 'id')}
     relationships = [('teams', 'id', 'games', 'home_team_id')]
-    features = dfs(dataframes, relationships, target_dataframe_name="teams", features_only=True)
-    assert (isinstance(features, list) and features != []), True
+    with patch.object(DeepFeatureSynthesis, 'build_features', return_value=[]):
+        features = dfs(dataframes, relationships, target_dataframe_name="teams", features_only=True)
+        assert features == []
     with pytest.raises(AssertionError, match=error_text), patch.object(DeepFeatureSynthesis,
                                                                        'build_features', return_value=[]):
         dfs(dataframes, relationships, target_dataframe_name="teams", features_only=False)
