@@ -18,15 +18,15 @@ def test_cli_help():
 
 
 def test_cli_info():
-    with pytest.raises(SystemExit) as r:
+    with pytest.raises(SystemExit):
         cli(['info'])
 
 
 def test_cli_list_primitives():
-    with pytest.raises(SystemExit) as r:
+    with pytest.raises(SystemExit):
         cli(['list-primitives'])
 
 
 def test_cli():
-    with pytest.raises(SystemExit) as r:
+    with pytest.raises(SystemExit):
         cli()
