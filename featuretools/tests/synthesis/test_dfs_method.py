@@ -58,25 +58,6 @@ def datetime_es():
 
 def test_dfs_empty_features():
     error_text = 'No features can be generated from the specified primitives. Please make sure the primitives you are using are compatible with the variable types in your data.'
-    with pytest.raises(AssertionError, match=error_text), patch.object(DeepFeatureSynthesis,
-                                                                       'build_features', return_value=[]):
-        teams = pd.DataFrame({
-            'id': range(3),
-            'name': ['Breakers', 'Spirit', 'Thorns']
-        })
-        games = pd.DataFrame({
-            'id': range(5),
-            'home_team_id': [2, 2, 1, 0, 1],
-            'away_team_id': [1, 0, 2, 1, 0],
-            'home_team_score': [3, 0, 1, 0, 4],
-            'away_team_score': [2, 1, 2, 0, 0]
-        })
-        dataframes = {'teams': (teams, 'id', None, {'name': 'natural_language'}), 'games': (games, 'id')}
-        relationships = [('teams', 'id', 'games', 'home_team_id')]
-        dfs(dataframes, relationships, target_dataframe_name="teams", features_only=False)
-
-
-def test_dfs_empty_features_features_only():
     teams = pd.DataFrame({
         'id': range(3),
         'name': ['Breakers', 'Spirit', 'Thorns']
@@ -92,6 +73,9 @@ def test_dfs_empty_features_features_only():
     relationships = [('teams', 'id', 'games', 'home_team_id')]
     features = dfs(dataframes, relationships, target_dataframe_name="teams", features_only=True)
     assert (isinstance(features, list) and features != []), True
+    with pytest.raises(AssertionError, match=error_text), patch.object(DeepFeatureSynthesis,
+                                                                       'build_features', return_value=[]):
+        dfs(dataframes, relationships, target_dataframe_name="teams", features_only=False)
 
 
 def test_passing_strings_to_logical_types_dfs():
