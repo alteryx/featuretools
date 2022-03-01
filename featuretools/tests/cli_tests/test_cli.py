@@ -6,7 +6,7 @@ from featuretools.__main__ import cli
 
 
 def test_info():
-    assert subprocess.check_output(['featuretools', 'info'])
+    subprocess.check_output(['featuretools', 'info'])
 
 
 def test_list_primitives():
