@@ -7,14 +7,16 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Updated the conda install commands to specify the channel (:pr:`1917`)
     * Changes
         * Normalize LatLong NaN values during EntitySet creation (:pr:`1924`)
     * Documentation Changes
         * Add time series guide (:pr:`1896`)
+        * Update minimum nlp_primitives requirement for docs (:pr:`1925`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`tamargrey`
+    :user:`dvreed77`, :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`
 
 v1.6.0 Feb 17, 2022
 ===================
