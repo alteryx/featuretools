@@ -14,6 +14,7 @@ Future Release
         * Update minimum nlp_primitives requirement for docs (:pr:`1925`)
         * Update error message when DFS returns an empty list of features (:pr:`1919`)
     * Testing Changes
+        * Add pytest marks to run dask and koalas tests separately (:pr:`1916`)
 
     Thanks to the following people for contributing to this release:
     :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`
