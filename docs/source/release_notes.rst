@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
         * Updated the conda install commands to specify the channel (:pr:`1917`)
+        * Update test cases to cover __main__.py file (:pr:`1927`)
     * Changes
     * Documentation Changes
         * Add time series guide (:pr:`1896`)
@@ -15,7 +16,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`
+    :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`
 
 v1.6.0 Feb 17, 2022
 ===================
