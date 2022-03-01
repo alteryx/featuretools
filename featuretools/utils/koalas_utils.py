@@ -12,7 +12,6 @@ def replace_tuple_columns(pdf):
     return new_df
 
 
-
 def replace_categorical_columns(pdf):
     new_df = pd.DataFrame()
     for c in pdf.columns:
