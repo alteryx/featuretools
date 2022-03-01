@@ -106,24 +106,17 @@ def test_to_csv_manual_interesting_values(es, tmpdir):
 
 
 # Dask/Koalas do not support to_pickle
-def test_to_pickle(pd_es, tmpdir):
-    pd_es.to_pickle(str(tmpdir))
-    new_es = deserialize.read_entityset(str(tmpdir))
-    assert pd_es.__eq__(new_es, deep=True)
-    assert type(pd_es['log']['latlong'][0]) == tuple
-    assert type(new_es['log']['latlong'][0]) == tuple
-
-
-def test_to_pickle_errors_dask(dask_es, tmpdir):
-    msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
-    with pytest.raises(ValueError, match=msg):
-        dask_es.to_pickle(str(tmpdir))
-
-
-def test_to_pickle_errors_koalas(ks_es, tmpdir):
-    msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
-    with pytest.raises(ValueError, match=msg):
-        ks_es.to_pickle(str(tmpdir))
+def test_to_pickle(es, tmpdir):
+    if es.dataframe_type in ("Dask", "Koalas"):
+        msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
+        with pytest.raises(ValueError, match=msg):
+            es.to_pickle(str(tmpdir))
+    else:
+        es.to_pickle(str(tmpdir))
+        new_es = deserialize.read_entityset(str(tmpdir))
+        assert es.__eq__(new_es, deep=True)
+        assert type(es['log']['latlong'][0]) == tuple
+        assert type(new_es['log']['latlong'][0]) == tuple
 
 
 # Dask/Koalas do not support to_pickle
