@@ -59,10 +59,9 @@ jobs:
           pytest featuretools/ -n 2 --cov=featuretools --cov-config=../.coveragerc
       - if: ${{ matrix.python_version == 3.7 && matrix.libraries == 'koalas' }}
         name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v1
         with:
           fail_ci_if_error: true
-          version: "v0.1.15"
 
   win_unit_tests:
     name: ${{ matrix.python_version }} windows unit tests
