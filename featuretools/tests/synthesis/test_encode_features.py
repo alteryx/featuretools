@@ -25,6 +25,7 @@ def test_encodes_features(pd_es):
     assert len(features_encoded) == 5
 
 
+@pytest.mark.dask
 def test_dask_errors_encode_features(dask_es):
     f1 = IdentityFeature(dask_es["log"].ww["product_id"])
     f2 = IdentityFeature(dask_es["log"].ww["purchased"])

@@ -671,6 +671,7 @@ def test_replace_dataframe_different_woodwork_initialized(es):
     assert es['customers']['cancel_date'].dtype == 'datetime64[ns]'
 
 
+@pytest.mark.dask
 def test_replace_dataframe_different_dataframe_types():
     dask_es = EntitySet(id="dask_es")
 

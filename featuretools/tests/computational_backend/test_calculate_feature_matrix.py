@@ -189,6 +189,7 @@ def test_cfm_compose_approximate(es, lt):
             feature_matrix['label_func']).values.all()
 
 
+@pytest.mark.dask
 def test_cfm_dask_compose(dask_es, lt):
     property_feature = ft.Feature(dask_es['log'].ww['value']) > 10
 
@@ -378,6 +379,7 @@ def test_cutoff_time_binning():
         binned_cutoff_times = bin_cutoff_times(cutoff_time, Timedelta(1, 'mo'))
 
 
+@pytest.mark.dask
 def test_training_window_fails_dask(dask_es):
     property_feature = ft.Feature(dask_es['log'].ww['id'],
                                   parent_dataframe_name='customers',

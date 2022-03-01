@@ -2138,7 +2138,10 @@ def test_entityset_deep_equality(es):
         assert first_es.__eq__(second_es, deep=True)
 
 
-@pytest.fixture(params=['make_es', 'dask_es_to_copy'])
+@pytest.fixture(params=[
+    pytest.param('make_es', marks=pytest.mark.pandas),
+    pytest.param('dask_es_to_copy', marks=pytest.mark.dask),
+])
 def es_to_copy(request):
     return request.getfixturevalue(request.param)
 

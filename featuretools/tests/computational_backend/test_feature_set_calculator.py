@@ -97,6 +97,7 @@ def test_full_dataframe_trans_of_agg(pd_es):
     assert v == 82
 
 
+@pytest.mark.dask
 def test_full_dataframe_error_dask(dask_es):
     agg_feat = ft.Feature(dask_es['log'].ww['value'], parent_dataframe_name='customers',
                           primitive=Sum)
