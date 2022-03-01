@@ -1,5 +1,7 @@
-import pytest
 import subprocess
+
+import pytest
+
 from featuretools.__main__ import cli
 
 
@@ -40,4 +42,3 @@ def test_cli():
     with pytest.raises(SystemExit) as r:
         cli()
     assert (r.value.code == 0, r.type.__name__ == 'SystemExit')
-
