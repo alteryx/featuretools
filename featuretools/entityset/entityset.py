@@ -1459,6 +1459,8 @@ class EntitySet(object):
         # Make sure column ordering matches original ordering
         df = df.ww[old_column_names]
 
+        df = self._normalize_dataframe(df)
+
         self.dataframe_dict[dataframe_name] = df
 
         if self[dataframe_name].ww.time_index is not None:
@@ -1524,11 +1526,23 @@ class EntitySet(object):
         _ES_REF[self.id] = self
 
     def _normalize_dataframe(self, dataframe):
+        def replace(x, is_koalas=False):
+            if not isinstance(x, (list, tuple, np.ndarray)) and pd.isna(x):
+                if is_koalas:
+                    return [np.nan, np.nan]
+                else:
+                    return (np.nan, np.nan)
+            else:
+                return x
+    
         for column in dataframe.columns:
             if isinstance(dataframe.ww._schema.columns[column].logical_type, LatLong):
                 series = dataframe[column]
-                if series.hasnans:
-                    dataframe[column] = np.where(series.isnull(), pd.Series([(np.nan, np.nan)] * len(series)), series)
+                if ks and isinstance(series, ks.Series):
+                    if len(series):
+                        dataframe[column] = dataframe[column].apply(replace, args=(True,))  
+                else:
+                    dataframe[column] = dataframe[column].apply(replace)  
 
         return dataframe
 
