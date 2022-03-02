@@ -13,11 +13,12 @@ Future Release
     * Documentation Changes
         * Add time series guide (:pr:`1896`)
         * Update minimum nlp_primitives requirement for docs (:pr:`1925`)
+        * Add GitHub URL for PyPi (:pr:`1928`)
     * Testing Changes
         * Update test cases to cover __main__.py file (:pr:`1927`)
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`
+    :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`
 
 v1.6.0 Feb 17, 2022
 ===================
