@@ -21,6 +21,9 @@ setup(
     packages=find_packages(),
     description="a framework for automated feature engineering",
     url="https://featuretools.com",
+    project_urls={
+        "Source": "https://github.com/alteryx/featuretools",
+    },
     license="BSD 3-clause",
     author="Feature Labs, Inc.",
     author_email="open_source_support@alteryx.com",
