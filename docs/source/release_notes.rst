@@ -13,6 +13,7 @@ Future Release
         * Add time series guide (:pr:`1896`)
         * Update minimum nlp_primitives requirement for docs (:pr:`1925`)
         * Update error message when DFS returns an empty list of features (:pr:`1919`)
+        * Add GitHub URL for PyPi (:pr:`1928`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
