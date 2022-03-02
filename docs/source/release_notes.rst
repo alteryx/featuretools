@@ -17,7 +17,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`
+    :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`
 
 v1.6.0 Feb 17, 2022
 ===================
