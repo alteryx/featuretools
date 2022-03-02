@@ -9,12 +9,13 @@ Future Release
     * Fixes
         * Updated the conda install commands to specify the channel (:pr:`1917`)
     * Changes
+        * Update error message when DFS returns an empty list of features (:pr:`1919`)
     * Documentation Changes
         * Add time series guide (:pr:`1896`)
         * Update minimum nlp_primitives requirement for docs (:pr:`1925`)
-        * Update error message when DFS returns an empty list of features (:pr:`1919`)
         * Add GitHub URL for PyPi (:pr:`1928`)
     * Testing Changes
+        * Update test cases to cover __main__.py file (:pr:`1927`)
 
     Thanks to the following people for contributing to this release:
     :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`
