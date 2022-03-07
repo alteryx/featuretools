@@ -10,6 +10,7 @@ Future Release
         * Updated the conda install commands to specify the channel (:pr:`1917`)
     * Changes
         * Update error message when DFS returns an empty list of features (:pr:`1919`)
+        * Remove ``list_variable_types`` and related directories (:pr:`1929`)
     * Documentation Changes
         * Add time series guide (:pr:`1896`)
         * Update minimum nlp_primitives requirement for docs (:pr:`1925`)
@@ -22,7 +23,7 @@ Future Release
 
 Breaking Changes
 ++++++++++++++++
-* The depricated utility ``list_variable_types`` has been removed from Featuretools.
+* The deprecated utility ``list_variable_types`` has been removed from Featuretools.
 
 v1.6.0 Feb 17, 2022
 ===================
