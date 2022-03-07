@@ -10,15 +10,21 @@ Future Release
         * Updated the conda install commands to specify the channel (:pr:`1917`)
     * Changes
         * Update error message when DFS returns an empty list of features (:pr:`1919`)
+        * Remove ``list_variable_types`` and related directories (:pr:`1929`)
     * Documentation Changes
         * Add time series guide (:pr:`1896`)
         * Update minimum nlp_primitives requirement for docs (:pr:`1925`)
         * Add GitHub URL for PyPi (:pr:`1928`)
     * Testing Changes
         * Update test cases to cover __main__.py file (:pr:`1927`)
+        * Pin ``responses`` version to be below 0.19.0 in minimum_test_requirements to avoid moto error (:pr:`1929`)
 
     Thanks to the following people for contributing to this release:
     :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`
+
+Breaking Changes
+++++++++++++++++
+* The deprecated utility ``list_variable_types`` has been removed from Featuretools.
 
 v1.6.0 Feb 17, 2022
 ===================
