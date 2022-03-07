@@ -20,6 +20,10 @@ Future Release
     Thanks to the following people for contributing to this release:
     :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`
 
+Breaking Changes
+++++++++++++++++
+* The depricated utility ``list_variable_types`` has been removed from Featuretools.
+
 v1.6.0 Feb 17, 2022
 ===================
     * Enhancements
