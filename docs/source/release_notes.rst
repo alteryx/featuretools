@@ -18,6 +18,7 @@ Future Release
     * Testing Changes
         * Update test cases to cover __main__.py file (:pr:`1927`)
         * Pin ``responses`` version to be below 0.19.0 in minimum_test_requirements to avoid moto error (:pr:`1929`)
+        * Add Python 3.9 linting, install complete, and docs build CI tests (:pr:`1934`)
 
     Thanks to the following people for contributing to this release:
     :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`
