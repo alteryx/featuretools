@@ -1,6 +1,5 @@
 # flake8: noqa
 from .config_init import config
-from . import variable_types
 from .entityset.api import *
 from . import primitives
 from .synthesis.api import *
