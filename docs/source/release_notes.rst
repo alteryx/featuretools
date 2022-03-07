@@ -17,6 +17,7 @@ Future Release
         * Add GitHub URL for PyPi (:pr:`1928`)
     * Testing Changes
         * Update test cases to cover __main__.py file (:pr:`1927`)
+        * Pin ``responses`` version to be below 0.19.0 in minimum_test_requirements to avoid moto error (:pr:`1929`)
 
     Thanks to the following people for contributing to this release:
     :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`
