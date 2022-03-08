@@ -21,7 +21,7 @@ Future Release
         * Add CI workflow to test with latest woodwork main branch (:pr:`1936`)
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`, :user:`mingdavidqi`
+    :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`
 
 Breaking Changes
 ++++++++++++++++

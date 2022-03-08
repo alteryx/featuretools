@@ -1,4 +1,4 @@
-name: Test Featuretools with main Branch
+name: Test Featuretools with Woodwork main Branch
 on:
   schedule:
     - cron: "0 * * * *"
@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python_version: ["3.8", "3.9", "3.10"]
+        python_version: ["3.7", "3.8", "3.9",]
         libraries: ["core", "dask", ]
     steps:
       - name: Set up python ${{ matrix.python_version }}
