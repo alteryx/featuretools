@@ -15,6 +15,7 @@ Future Release
         * Add time series guide (:pr:`1896`)
         * Update minimum nlp_primitives requirement for docs (:pr:`1925`)
         * Add GitHub URL for PyPi (:pr:`1928`)
+        * Add backport release support (:pr:`1932`)
     * Testing Changes
         * Update test cases to cover __main__.py file (:pr:`1927`)
         * Pin ``responses`` version to be below 0.19.0 in minimum_test_requirements to avoid moto error (:pr:`1929`)
