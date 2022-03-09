@@ -18,7 +18,7 @@ Future Release
         * Add backport release support (:pr:`1932`)
     * Testing Changes
         * Update test cases to cover __main__.py file (:pr:`1927`)
-        * Pin ``responses`` version to be below 0.19.0 in minimum_test_requirements to avoid moto error (:pr:`1929`)
+        * Upgrade moto requirement (:pr:`1929`, :pr:`1938`)
         * Add Python 3.9 linting, install complete, and docs build CI tests (:pr:`1934`)
         * Add CI workflow to test with latest woodwork main branch (:pr:`1936`)
 
