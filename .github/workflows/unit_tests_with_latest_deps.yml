@@ -52,7 +52,7 @@ jobs:
       - if: ${{ matrix.python_version == 3.7 && matrix.libraries == 'koalas' }}
         name: Run unit tests with code coverage
         run: |
-          python -m pip install "$(cat dev-requirements.txt | grep codecov)"
+          python -m pip install unpacked_dist/"[dev]"
           coverage erase
           cd unpacked_sdist/
           coverage erase
@@ -105,7 +105,7 @@ jobs:
           conda install -q -y -c conda-forge python-graphviz
           python -m pip install --upgrade pip
           python -m pip install .
-          python -m pip install -r test-requirements.txt
+          python -m pip install .[test]
       - name: Run unit tests
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
