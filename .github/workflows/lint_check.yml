@@ -32,6 +32,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e .[dask]
           python -m pip install -e .[koalas]
-          python -m pip install -r unpacked_sdist/"[dev]"
+          python -m pip install unpacked_sdist/"[dev]"
       - name: Run lint test
         run: make lint
