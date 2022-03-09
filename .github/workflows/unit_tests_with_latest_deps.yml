@@ -15,6 +15,9 @@ jobs:
       matrix:
         python_version: ["3.7", "3.8", "3.9", "3.10"]
         libraries: ["core", "koalas"]
+      exclude:
+        - python_version: "3.10"
+        - libraries: "koalas"
     steps:
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
