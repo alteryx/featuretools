@@ -13,8 +13,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.7", "3.8", "3.9"]
+        python_version: ["3.7", "3.8", "3.9", "3.10"]
         libraries: ["core", "koalas"]
+        exclude:
+          - python_version: "3.10"
+            libraries: "koalas"
     steps:
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -69,7 +72,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.7", "3.8", "3.9"]
+        python_version: ["3.7", "3.8", "3.9", "3.10"]
     steps:
       - name: Download miniconda
         shell: pwsh
