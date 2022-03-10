@@ -1,7 +1,7 @@
 name: Test Featuretools with Woodwork main Branch
 on:
   schedule:
-    - cron: "0 * * * *"
+    - cron: '0 * * * *'
   pull_request:
     types: [opened, synchronize]
   push:
@@ -15,8 +15,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python_version: ["3.7", "3.8", "3.9",]
-        libraries: ["core", "dask", ]
+        python_version: ["3.7", "3.8", "3.9", "3.10"]
+        libraries: ["core", "koalas", ]
     steps:
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
