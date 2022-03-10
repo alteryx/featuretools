@@ -11,6 +11,7 @@ Future Release
     * Changes
         * Update error message when DFS returns an empty list of features (:pr:`1919`)
         * Remove ``list_variable_types`` and related directories (:pr:`1929`)
+        * Transition to use pyproject.toml and setup.cfg (moving away from setup.py) (:pr:`1941`)
     * Documentation Changes
         * Add time series guide (:pr:`1896`)
         * Update minimum nlp_primitives requirement for docs (:pr:`1925`)
@@ -21,9 +22,12 @@ Future Release
         * Upgrade moto requirement (:pr:`1929`, :pr:`1938`)
         * Add Python 3.9 linting, install complete, and docs build CI tests (:pr:`1934`)
         * Add CI workflow to test with latest woodwork main branch (:pr:`1936`)
+        * Add support for Python 3.10 (:pr:`1940`)
+        * Add lower bound for wheel for minimum dependency checker and limit lint CI tests to Python 3.10 (:pr:`1945`)
+
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`
+    :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`, :user:`thehomebrewnerd`
 
 Breaking Changes
 ++++++++++++++++

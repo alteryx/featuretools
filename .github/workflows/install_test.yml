@@ -8,12 +8,13 @@ on:
 name: Install Test
 jobs:
   install_ft_complete:
-    name: ${{ matrix.python_version }} install featuretools complete
+    name: ${{ matrix.os}} - ${{ matrix.python_version }} install featuretools complete
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.7", "3.8", "3.9"]
+        os: [ubuntu-latest, macos-latest]
+        python_version: ["3.7", "3.8", "3.9", "3.10"]
     steps:
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
