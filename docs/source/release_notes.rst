@@ -21,6 +21,7 @@ Future Release
         * Update test cases to cover __main__.py file (:pr:`1927`)
         * Upgrade moto requirement (:pr:`1929`, :pr:`1938`)
         * Add Python 3.9 linting, install complete, and docs build CI tests (:pr:`1934`)
+        * Add support for Python 3.10 (:pr:`1940`)
 
     Thanks to the following people for contributing to this release:
     :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`, :user:`thehomebrewnerd`
