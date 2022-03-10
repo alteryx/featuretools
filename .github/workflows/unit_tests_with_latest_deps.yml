@@ -55,6 +55,7 @@ jobs:
       - if: ${{ matrix.python_version == 3.7 && matrix.libraries == 'koalas' }}
         name: Run unit tests with code coverage
         run: |
+          python -m pip install "$(cat setup.cfg | grep codecov)"
           coverage erase
           cd unpacked_sdist/
           coverage erase
