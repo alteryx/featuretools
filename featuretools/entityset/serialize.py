@@ -4,7 +4,7 @@ import os
 import tarfile
 import tempfile
 
-from woodwork.serialize import typing_info_to_dict
+from woodwork.serializers.serializer_base import typing_info_to_dict
 
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es

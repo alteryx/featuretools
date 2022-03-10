@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 import woodwork.type_sys.type_system as ww_type_system
 from woodwork.logical_types import Datetime, LogicalType, Ordinal
-from woodwork.serialize import typing_info_to_dict
+from woodwork.serializers.serializer_base import typing_info_to_dict
 from woodwork.type_sys.utils import list_logical_types
 
 from featuretools.entityset import EntitySet, deserialize, serialize
