@@ -30,9 +30,6 @@ jobs:
         run: |
           pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
-          python -m pip install -e .[dask]
-          python -m pip install -e .[koalas]
-          python -m pip install -r unpacked_sdist/dev-requirements.txt
-          python -m pip install -r unpacked_sdist/test-requirements.txt
+          python -m pip install -e .[dev]
       - name: Run lint test
         run: make lint

@@ -4,9 +4,7 @@ on:
     branches:
       - main
     paths:
-      - 'requirements.txt'
-      - 'test-requirements.txt'
-      - 'koalas-requirements.txt'
+      - 'setup.cfg'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,9 +16,11 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Run min dep generator - test reqs
         id: min_dep_gen_test
-        uses: alteryx/minimum-dependency-generator@v2
+        uses: alteryx/minimum-dependency-generator@v3.1
         with:
-          requirements_paths: 'test-requirements.txt'
+          paths: 'setup.cfg'
+          options: 'install_requires setup_requires'
+          extras_require: 'test'
       - name: Save min test deps and run diff
         id: check_min_test
         continue-on-error: true
@@ -34,9 +34,10 @@ jobs:
           printf "${{ steps.min_dep_gen_test.outputs.min_reqs }}" > featuretools/tests/requirement_files/minimum_test_requirements.txt
       - name: Run min dep generator - core reqs
         id: min_dep_gen_core
-        uses: alteryx/minimum-dependency-generator@v2
+        uses: alteryx/minimum-dependency-generator@v3.1
         with:
-          requirements_paths: 'requirements.txt'
+          paths: 'setup.cfg'
+          options: 'install_requires setup_requires'
       - name: Save min core deps and run diff
         id: check_core_deps
         continue-on-error: true
@@ -49,9 +50,11 @@ jobs:
           printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > featuretools/tests/requirement_files/minimum_core_requirements.txt
       - name: Run min dep generator - koalas
         id: min_dep_gen_koalas
-        uses: alteryx/minimum-dependency-generator@v2
+        uses: alteryx/minimum-dependency-generator@v3.1
         with:
-          requirements_paths: 'koalas-requirements.txt requirements.txt'
+          paths: 'setup.cfg'
+          options: 'install_requires setup_requires'
+          extras_require: 'koalas'
       - name: Save min koalas deps and run diff
         id: check_koalas_deps
         continue-on-error: true
