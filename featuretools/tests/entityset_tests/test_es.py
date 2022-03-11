@@ -488,7 +488,7 @@ def test_replace_dataframe_and_create_index(es):
     # DataFrame that needs the index column added
     assert 'id' not in needs_idx_df.columns
     es.replace_dataframe('test_df', needs_idx_df)
-    
+
     assert es['test_df'].ww.index == 'id'
     assert all(expected_idx_col == to_pandas(es['test_df']['id']))
 

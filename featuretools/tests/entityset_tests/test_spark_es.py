@@ -114,11 +114,11 @@ def test_add_last_time_indexes():
 
     pd_es.add_dataframe(dataframe_name="sessions", dataframe=sessions, index="id", time_index="time")
     spark_es.add_dataframe(dataframe_name="sessions", dataframe=sessions_spark, index="id", time_index="time",
-                        logical_types=sessions_logical_types)
+                           logical_types=sessions_logical_types)
 
     pd_es.add_dataframe(dataframe_name="transactions", dataframe=transactions, index="id", time_index="time")
     spark_es.add_dataframe(dataframe_name="transactions", dataframe=transactions_spark, index="id", time_index="time",
-                        logical_types=transactions_logical_types)
+                           logical_types=transactions_logical_types)
 
     pd_es = pd_es.add_relationship("sessions", "id", "transactions", "session_id")
     spark_es = spark_es.add_relationship("sessions", "id", "transactions", "session_id")

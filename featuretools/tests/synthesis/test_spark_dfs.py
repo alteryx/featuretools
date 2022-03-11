@@ -43,8 +43,8 @@ def test_single_table_spark_entityset():
         logical_types=ltypes)
 
     spark_fm, _ = ft.dfs(entityset=spark_es,
-                      target_dataframe_name="data",
-                      trans_primitives=primitives_list)
+                         target_dataframe_name="data",
+                         trans_primitives=primitives_list)
 
     pd_es = ft.EntitySet(id="pd_es")
     pd_es.add_dataframe(
@@ -91,8 +91,8 @@ def test_single_table_spark_entityset_ids_not_sorted():
         logical_types=ltypes)
 
     spark_fm, _ = ft.dfs(entityset=spark_es,
-                      target_dataframe_name="data",
-                      trans_primitives=primitives_list)
+                         target_dataframe_name="data",
+                         trans_primitives=primitives_list)
 
     pd_es = ft.EntitySet(id="pd_es")
     pd_es.add_dataframe(
@@ -141,9 +141,9 @@ def test_single_table_spark_entityset_with_instance_ids():
         logical_types=ltypes)
 
     spark_fm, _ = ft.dfs(entityset=spark_es,
-                      target_dataframe_name="data",
-                      trans_primitives=primitives_list,
-                      instance_ids=instance_ids)
+                         target_dataframe_name="data",
+                         trans_primitives=primitives_list,
+                         instance_ids=instance_ids)
 
     pd_es = ft.EntitySet(id="pd_es")
     pd_es.add_dataframe(
@@ -191,9 +191,9 @@ def test_single_table_spark_entityset_single_cutoff_time():
         logical_types=ltypes)
 
     spark_fm, _ = ft.dfs(entityset=spark_es,
-                      target_dataframe_name="data",
-                      trans_primitives=primitives_list,
-                      cutoff_time=pd.Timestamp("2019-01-05 04:00"))
+                         target_dataframe_name="data",
+                         trans_primitives=primitives_list,
+                         cutoff_time=pd.Timestamp("2019-01-05 04:00"))
 
     pd_es = ft.EntitySet(id="pd_es")
     pd_es.add_dataframe(
@@ -248,9 +248,9 @@ def test_single_table_spark_entityset_cutoff_time_df():
     cutoff_times = pd.DataFrame({"id": ids, "time": times, "labels": labels}, columns=["id", "time", "labels"])
 
     spark_fm, _ = ft.dfs(entityset=spark_es,
-                      target_dataframe_name="data",
-                      trans_primitives=primitives_list,
-                      cutoff_time=cutoff_times)
+                         target_dataframe_name="data",
+                         trans_primitives=primitives_list,
+                         cutoff_time=cutoff_times)
 
     pd_es = ft.EntitySet(id="pd_es")
     pd_es.add_dataframe(
@@ -301,9 +301,9 @@ def test_single_table_spark_entityset_dates_not_sorted():
         logical_types=ltypes)
 
     spark_fm, _ = ft.dfs(entityset=spark_es,
-                      target_dataframe_name="data",
-                      trans_primitives=primitives_list,
-                      max_depth=1)
+                         target_dataframe_name="data",
+                         trans_primitives=primitives_list,
+                         max_depth=1)
 
     pd_es = ft.EntitySet(id="pd_es")
     pd_es.add_dataframe(
@@ -398,10 +398,10 @@ def test_spark_entityset_secondary_time_index():
                    trans_primitives=["month"])
 
     spark_fm, _ = ft.dfs(entityset=spark_es,
-                      target_dataframe_name="logs",
-                      cutoff_time=cutoff_df,
-                      agg_primitives=["max"],
-                      trans_primitives=["month"])
+                         target_dataframe_name="logs",
+                         cutoff_time=cutoff_df,
+                         agg_primitives=["max"],
+                         trans_primitives=["month"])
 
     # Make sure both matrices are sorted the same
     # Also make sure index has same dtype
