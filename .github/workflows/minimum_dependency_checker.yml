@@ -48,15 +48,15 @@ jobs:
         if: steps.check_core_deps.outcome != 'success'
         run: |
           printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > featuretools/tests/requirement_files/minimum_core_requirements.txt
-      - name: Run min dep generator - koalas
-        id: min_dep_gen_koalas
+      - name: Run min dep generator - spark
+        id: min_dep_gen_spark
         uses: alteryx/minimum-dependency-generator@v3.1
         with:
           paths: 'setup.cfg'
           options: 'install_requires setup_requires'
-          extras_require: 'koalas'
-      - name: Save min koalas deps and run diff
-        id: check_koalas_deps
+          extras_require: 'spark'
+      - name: Save min spark deps and run diff
+        id: check_spark_deps
         continue-on-error: true
         run: |
           printf "${{ steps.min_dep_gen_spark.outputs.min_reqs }}" > /tmp/minimum_spark_requirements.txt
