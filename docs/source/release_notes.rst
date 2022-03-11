@@ -11,6 +11,7 @@ Future Release
     * Changes
         * Update error message when DFS returns an empty list of features (:pr:`1919`)
         * Remove ``list_variable_types`` and related directories (:pr:`1929`)
+        * Replace Koalas with pandas API on Spark (:pr:``)
     * Documentation Changes
         * Add time series guide (:pr:`1896`)
         * Update minimum nlp_primitives requirement for docs (:pr:`1925`)
@@ -23,7 +24,7 @@ Future Release
         * Add support for Python 3.10 (:pr:`1940`)
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`
+    :user:`andriyor`, :user:`jeff-hernandez`, :user:`kushal-gopal`, :user:`mingdavidqi`, :user:`rwedge`, :user:`tamargrey`
 
 Breaking Changes
 ++++++++++++++++
