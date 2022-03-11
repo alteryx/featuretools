@@ -652,12 +652,8 @@ def test_replace_dataframe_different_woodwork_initialized(es):
     with pytest.warns(UserWarning, match=warning):
         es.replace_dataframe('customers', df, already_sorted=True)
 
-    if isinstance(df, dd.DataFrame):
-        assert all(to_pandas(es['customers']['age']) == [1, 2, 3])
-    elif ps and isinstance(df, ps.DataFrame):
-        assert all(to_pandas(es['customers']['age']) == [1, 3, 2])
-    else:
-        assert all(to_pandas(es['customers']['age']) == [3, 1, 2])
+    actual = to_pandas(es['customers']['age']).sort_values()
+    assert all(actual == [1, 2, 3])
 
     assert es['customers'].ww._schema == original_schema
     assert es['customers']['id'].dtype == 'int64'
