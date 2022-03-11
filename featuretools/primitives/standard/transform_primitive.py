@@ -53,6 +53,96 @@ class Absolute(TransformPrimitive):
         return np.absolute
 
 
+class SquareRoot(TransformPrimitive):
+    """Computes the square root of a number.
+
+    Examples:
+        >>> sqrt = SquareRoot()
+        >>> sqrt([9.0, 16.0, 4.0]).tolist()
+        [3.0, 4.0, 2.0]
+    """
+    name = "square_root"
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the square root of {}"
+
+    def get_function(self):
+        return np.sqrt
+
+
+class NaturalLogarithm(TransformPrimitive):
+    """Computes the natural logarithm of a number.
+
+    Examples:
+        >>> log = NaturalLogarithm()
+        >>> log([1.0, np.e, np.e**3]).tolist()
+        [0.0, 1.0, 3.0]
+    """
+    name = "natural_logarithm"
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the natural logarithm of {}"
+
+    def get_function(self):
+        return np.log
+
+
+class Sine(TransformPrimitive):
+    """Computes the sine of a number.
+
+    Examples:
+        >>> sin = Sine()
+        >>> sin([0.0, np.pi/6.0, np.pi/2.0]).tolist()
+        [0.0, 0.5, 1.0]
+    """
+    name = "sine"
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the sine of {}"
+
+    def get_function(self):
+        return np.sin
+
+
+class Cosine(TransformPrimitive):
+    """Computes the cosine of a number.
+
+    Examples:
+        >>> cos = Cosine()
+        >>> cos([0.0, np.pi/2.0, np.pi]).tolist()
+        [1.0, 6.123233995736766e-17, -1.0]
+    """
+    name = "cosine"
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the cosine of {}"
+
+    def get_function(self):
+        return np.cos
+
+
+class Tangent(TransformPrimitive):
+    """Computes the tangent of a number.
+
+    Examples:
+        >>> tan = Tangent()
+        >>> tan([-np.pi, np.pi/2.0, np.pi]).tolist()
+        [1.22460635e-16, 1.63317787e+16, -1.22460635e-16]
+    """
+    name = "tangent"
+    input_types = [ColumnSchema(semantic_tags={'numeric'})]
+    return_type = ColumnSchema(semantic_tags={'numeric'})
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the tangent of {}"
+
+    def get_function(self):
+        return np.tan
+
+
 class NumCharacters(TransformPrimitive):
     """Calculates the number of characters in a string.
 
