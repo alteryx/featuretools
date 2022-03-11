@@ -12,7 +12,7 @@ Future Release
         * Update error message when DFS returns an empty list of features (:pr:`1919`)
         * Remove ``list_variable_types`` and related directories (:pr:`1929`)
         * Transition to use pyproject.toml and setup.cfg (moving away from setup.py) (:pr:`1941`)
-        * Replace Koalas with pandas API on Spark (:pr:``)
+        * Replace Koalas with pandas API on Spark (:pr:`1949`)
     * Documentation Changes
         * Add time series guide (:pr:`1896`)
         * Update minimum nlp_primitives requirement for docs (:pr:`1925`)
