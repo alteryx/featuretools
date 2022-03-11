@@ -1,12 +1,7 @@
 name: Test Featuretools with Woodwork main Branch
 on:
   schedule:
-    - cron: '0 * * * *'
-  pull_request:
-    types: [opened, synchronize]
-  push:
-    branches:
-      - main
+    - cron: '0 14 * * *'
   workflow_dispatch:
 jobs:
   scheduled_unit_latest_tests:
@@ -17,6 +12,9 @@ jobs:
       matrix:
         python_version: ["3.7", "3.8", "3.9", "3.10"]
         libraries: ["core", "koalas", ]
+        exclude:
+          - python_version: "3.10"
+            libraries: "koalas"
     steps:
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -31,17 +29,6 @@ jobs:
           pip config --site set global.progress_bar off
           python -m pip install -U pip
           sudo apt update && sudo apt install -y graphviz
-
-      - if: ${{ matrix.libraries == 'core' }}
-        name: Install Woodwork & Featuretools - test requirements
-        run: |
-          python -m pip install -e unpacked_sdist/[test]
-          python -m pip install -U git+https://github.com/alteryx/woodwork
-      - if: ${{ matrix.libraries == 'dask' }}
-        name: Install Woodwork & Featuretools - dask requirements
-        run: |
-          python -m pip install -e unpacked_sdist/[test]
-          python -m pip install -U git+https://github.com/alteryx/woodwork dask[dataframe]>=2021.10.0
       - if: ${{ matrix.libraries == 'koalas' && matrix.python_version != '3.10' }}
         name: Install Woodwork & Featuretools with koalas pkg - koalas requirements
         run: |
@@ -49,6 +36,8 @@ jobs:
           JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           PYSPARK_SUBMIT_ARGS="--master local[2] pyspark-shell"
           python -m pip install -e unpacked_sdist/[koalas]
+      - name: Install Woodwork & Featuretools - test requirements
+        run: |
           python -m pip install -e unpacked_sdist/[test]
           python -m pip install -U git+https://github.com/alteryx/woodwork
       - if: ${{ !( matrix.libraries == 'koalas' && matrix.python_version == '3.10') }}

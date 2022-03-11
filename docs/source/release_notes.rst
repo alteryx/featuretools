@@ -25,7 +25,6 @@ Future Release
         * Add support for Python 3.10 (:pr:`1940`)
         * Add lower bound for wheel for minimum dependency checker and limit lint CI tests to Python 3.10 (:pr:`1945`)
 
-
     Thanks to the following people for contributing to this release:
     :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`, :user:`thehomebrewnerd`
 
