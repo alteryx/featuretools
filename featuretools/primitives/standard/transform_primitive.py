@@ -95,7 +95,7 @@ class Sine(TransformPrimitive):
     Examples:
         >>> sin = Sine()
         >>> sin([0.0, np.pi/6.0, np.pi/2.0]).tolist()
-        [0.0, 0.5, 1.0]
+        [0.0, 0.49999999999999994, 1.0]
     """
     name = "sine"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
@@ -131,7 +131,7 @@ class Tangent(TransformPrimitive):
     Examples:
         >>> tan = Tangent()
         >>> tan([-np.pi, np.pi/2.0, np.pi]).tolist()
-        [1.22460635e-16, 1.63317787e+16, -1.22460635e-16]
+        [1.2246467991473532e-16, 1.633123935319537e+16, -1.2246467991473532e-16]
     """
     name = "tangent"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
