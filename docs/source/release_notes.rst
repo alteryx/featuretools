@@ -21,6 +21,7 @@ Future Release
         * Update test cases to cover __main__.py file (:pr:`1927`)
         * Upgrade moto requirement (:pr:`1929`, :pr:`1938`)
         * Add Python 3.9 linting, install complete, and docs build CI tests (:pr:`1934`)
+        * Add CI workflow to test with latest woodwork main branch (:pr:`1936`)
         * Add support for Python 3.10 (:pr:`1940`)
         * Add lower bound for wheel for minimum dependency checker and limit lint CI tests to Python 3.10 (:pr:`1945`)
 
