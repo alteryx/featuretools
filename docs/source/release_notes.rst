@@ -586,7 +586,7 @@ v0.21.0 Oct 30, 2020
     * Enhancements
         * Add ``describe_feature`` to generate an English language feature description for a given feature (:pr:`1201`)
     * Fixes
-        * Update ``EntitySet.add_last_time_indexes`` to work with Spark 1.3.0 (:pr:`1192`, :pr:`1202`)
+        * Update ``EntitySet.add_last_time_indexes`` to work with Koalas 1.3.0 (:pr:`1192`, :pr:`1202`)
     * Changes
         * Keep koalas requirements in separate file (:pr:`1195`)
     * Documentation Changes
