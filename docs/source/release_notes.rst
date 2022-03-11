@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Added the SquareRoot, NaturalLogarithm, Since, Cosine and Tangent primitives (:pr:`1948`)
+        * Added the SquareRoot, NaturalLogarithm, Sine, Cosine and Tangent primitives (:pr:`1948`)
     * Fixes
         * Updated the conda install commands to specify the channel (:pr:`1917`)
     * Changes
