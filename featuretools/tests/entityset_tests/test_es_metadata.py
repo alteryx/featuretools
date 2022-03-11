@@ -147,12 +147,12 @@ def dd_employee_df(pd_employee_df):
 
 
 @pytest.fixture
-def ks_employee_df(pd_employee_df):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    return ks.from_pandas(pd_employee_df)
+def spark_employee_df(pd_employee_df):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
+    return ps.from_pandas(pd_employee_df)
 
 
-@pytest.fixture(params=['pd_employee_df', 'dd_employee_df', 'ks_employee_df'])
+@pytest.fixture(params=['pd_employee_df', 'dd_employee_df', 'spark_employee_df'])
 def employee_df(request):
     return request.getfixturevalue(request.param)
 

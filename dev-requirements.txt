@@ -17,4 +17,4 @@ sphinx-copybutton==0.4.0
 myst-parser==0.16.1
 nlp_primitives[complete]>=2.3.0
 autonormalize >= 1.0.2
--r koalas-requirements.txt
+-r spark-requirements.txt

@@ -28,15 +28,15 @@ def dd_simple():
 
 
 @pytest.fixture
-def ks_simple():
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+def spark_simple():
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
     es = ft.EntitySet("test")
-    df = ks.DataFrame({'foo': [1]})
+    df = ps.DataFrame({'foo': [1]})
     es.add_dataframe(df, dataframe_name='test')
     return es
 
 
-@pytest.fixture(params=['pd_simple', 'dd_simple', 'ks_simple'])
+@pytest.fixture(params=['pd_simple', 'dd_simple', 'spark_simple'])
 def simple_es(request):
     return request.getfixturevalue(request.param)
 

@@ -18,7 +18,7 @@ from featuretools.entityset.entityset import LTI_COLUMN_NAME, EntitySet
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library, import_or_none
 
-ks = import_or_none('databricks.koalas')
+ps = import_or_none('pyspark.pandas')
 
 
 def test_empty_es():
@@ -40,12 +40,12 @@ def dd_df(pd_df):
 
 
 @pytest.fixture
-def ks_df(pd_df):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    return ks.from_pandas(pd_df)
+def spark_df(pd_df):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
+    return ps.from_pandas(pd_df)
 
 
-@pytest.fixture(params=['pd_df', 'dd_df', 'ks_df'])
+@pytest.fixture(params=['pd_df', 'dd_df', 'spark_df'])
 def df(request):
     return request.getfixturevalue(request.param)
 
@@ -298,18 +298,18 @@ def test_add_last_time_index(es):
     assert isinstance(es['products'].ww.logical_types[LTI_COLUMN_NAME], Datetime)
 
 
-def test_add_last_time_non_numeric_index(pd_es, ks_es, dask_es):
+def test_add_last_time_non_numeric_index(pd_es, spark_es, dask_es):
     # Confirm that add_last_time_index works for indices that aren't numeric
     # since numeric underlying indices can accidentally match the Woodwork index
     pd_es.add_last_time_indexes(['products'])
     dask_es.add_last_time_indexes(['products'])
-    ks_es.add_last_time_indexes(['products'])
+    spark_es.add_last_time_indexes(['products'])
 
     assert list(to_pandas(pd_es['products'][LTI_COLUMN_NAME]).sort_index()) == list(to_pandas(dask_es['products'][LTI_COLUMN_NAME]).sort_index())
-    assert list(to_pandas(pd_es['products'][LTI_COLUMN_NAME]).sort_index()) == list(to_pandas(ks_es['products']).sort_values('id')[LTI_COLUMN_NAME])
+    assert list(to_pandas(pd_es['products'][LTI_COLUMN_NAME]).sort_index()) == list(to_pandas(spark_es['products']).sort_values('id')[LTI_COLUMN_NAME])
 
     assert pd_es['products'].ww.schema == dask_es['products'].ww.schema
-    assert pd_es['products'].ww.schema == ks_es['products'].ww.schema
+    assert pd_es['products'].ww.schema == spark_es['products'].ww.schema
 
 
 def test_lti_already_has_last_time_column_name(es):
@@ -448,7 +448,7 @@ def test_extra_woodwork_params(es):
 
 def test_replace_dataframe_errors(es):
     df = es['customers'].copy()
-    if ks and isinstance(df, ks.DataFrame):
+    if ps and isinstance(df, ps.DataFrame):
         df['new'] = [1, 2, 3]
     else:
         df['new'] = pd.Series([1, 2, 3])
@@ -474,7 +474,7 @@ def test_replace_dataframe_already_sorted(es):
 
     assert es["sessions"].ww.time_index is None
 
-    if ks and isinstance(df, ks.DataFrame):
+    if ps and isinstance(df, ps.DataFrame):
         df["id"] = updated_id.to_list()
         df = df.sort_index()
     elif isinstance(df, dd.DataFrame):
@@ -494,7 +494,7 @@ def test_replace_dataframe_already_sorted(es):
 
     assert es["customers"].ww.time_index == 'signup_date'
 
-    if ks and isinstance(df, ks.DataFrame):
+    if ps and isinstance(df, ps.DataFrame):
         df['signup_date'] = updated_signup.to_list()
         df = df.sort_index()
     else:
@@ -547,13 +547,13 @@ def test_replace_dataframe_different_dtypes(es):
 
     incompatible_dtype_df = es['customers'].copy()
     incompatible_list = ['hi', 'bye', 'bye']
-    if ks and isinstance(incompatible_dtype_df, ks.DataFrame):
+    if ps and isinstance(incompatible_dtype_df, ps.DataFrame):
         incompatible_dtype_df['age'] = incompatible_list
     else:
         incompatible_dtype_df['age'] = pd.Series(incompatible_list)
 
     if isinstance(es['customers'], pd.DataFrame):
-        # Dask and Koalas do not error on invalid type conversion until compute
+        # Dask and Spark do not error on invalid type conversion until compute
         error_msg = 'Error converting datatype for age from type object to type int64. Please confirm the underlying data is consistent with logical type Integer.'
         with pytest.raises(TypeConversionError, match=error_msg):
             es.replace_dataframe(dataframe_name='customers', df=incompatible_dtype_df)
@@ -580,12 +580,12 @@ def latlong_df_dask(latlong_df_pandas):
 
 
 @pytest.fixture()
-def latlong_df_koalas(latlong_df_pandas):
-    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
-    return ks.from_pandas(latlong_df_pandas.applymap(lambda tup: list(tup) if isinstance(tup, tuple) else tup))
+def latlong_df_spark(latlong_df_pandas):
+    ps = pytest.importorskip('pyspark.pandas', reason='Spark not installed, skipping')
+    return ps.from_pandas(latlong_df_pandas.applymap(lambda tup: list(tup) if isinstance(tup, tuple) else tup))
 
 
-@pytest.fixture(params=['latlong_df_pandas', 'latlong_df_dask', 'latlong_df_koalas'])
+@pytest.fixture(params=['latlong_df_pandas', 'latlong_df_dask', 'latlong_df_spark'])
 def latlong_df(request):
     return request.getfixturevalue(request.param)
 
@@ -599,7 +599,7 @@ def test_replace_dataframe_data_transformation(latlong_df):
 
     df = to_pandas(es['latlongs'])
     expected_val = (1, 2)
-    if ks and isinstance(es['latlongs'], ks.DataFrame):
+    if ps and isinstance(es['latlongs'], ps.DataFrame):
         expected_val = [1, 2]
     for col in latlong_df.columns:
         series = df[col]
@@ -608,7 +608,7 @@ def test_replace_dataframe_data_transformation(latlong_df):
     es.replace_dataframe('latlongs', latlong_df)
     df = to_pandas(es['latlongs'])
     expected_val = (3, 4)
-    if ks and isinstance(es['latlongs'], ks.DataFrame):
+    if ps and isinstance(es['latlongs'], ps.DataFrame):
         expected_val = [3, 4]
     for col in latlong_df.columns:
         series = df[col]
@@ -632,7 +632,7 @@ def test_replace_dataframe_column_order(es):
 
 def test_replace_dataframe_different_woodwork_initialized(es):
     df = es['customers'].copy()
-    if ks and isinstance(df, ks.DataFrame):
+    if ps and isinstance(df, ps.DataFrame):
         df['age'] = [1, 2, 3]
     else:
         df['age'] = pd.Series([1, 2, 3])
@@ -654,6 +654,8 @@ def test_replace_dataframe_different_woodwork_initialized(es):
 
     if isinstance(df, dd.DataFrame):
         assert all(to_pandas(es['customers']['age']) == [1, 2, 3])
+    elif isinstance(df, ps.DataFrame):
+        assert all(to_pandas(es['customers']['age']) == [1, 3, 2])
     else:
         assert all(to_pandas(es['customers']['age']) == [3, 1, 2])
 
@@ -697,9 +699,9 @@ def test_replace_dataframe_and_min_last_time_index(es):
     original_time_index = es['log']['datetime'].copy()
     original_last_time_index = es['products'][LTI_COLUMN_NAME].copy()
 
-    if ks and isinstance(original_time_index, ks.Series):
-        new_time_index = ks.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=1))
-        expected_last_time_index = ks.from_pandas(original_last_time_index.to_pandas() + pd.Timedelta(days=1))
+    if ps and isinstance(original_time_index, ps.Series):
+        new_time_index = ps.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=1))
+        expected_last_time_index = ps.from_pandas(original_last_time_index.to_pandas() + pd.Timedelta(days=1))
     else:
         new_time_index = original_time_index + pd.Timedelta(days=1)
         expected_last_time_index = original_last_time_index + pd.Timedelta(days=1)
@@ -710,7 +712,7 @@ def test_replace_dataframe_and_min_last_time_index(es):
 
     es.replace_dataframe('log', new_dataframe, recalculate_last_time_indexes=True)
 
-    # Koalas reorders indices during last time index, so we sort to confirm individual values are the same
+    # Spark reorders indices during last time index, so we sort to confirm individual values are the same
     pd.testing.assert_series_equal(to_pandas(es['products'][LTI_COLUMN_NAME]).sort_index(), to_pandas(expected_last_time_index).sort_index())
     pd.testing.assert_series_equal(to_pandas(es['log'][LTI_COLUMN_NAME]).sort_index(), to_pandas(new_time_index).sort_index(), check_names=False)
 
@@ -721,8 +723,8 @@ def test_replace_dataframe_dont_recalculate_last_time_index_present(es):
     original_time_index = es['customers']['signup_date'].copy()
     original_last_time_index = es['customers'][LTI_COLUMN_NAME].copy()
 
-    if ks and isinstance(original_time_index, ks.Series):
-        new_time_index = ks.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=10))
+    if ps and isinstance(original_time_index, ps.Series):
+        new_time_index = ps.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=10))
     else:
         new_time_index = original_time_index + pd.Timedelta(days=10)
 
@@ -740,8 +742,8 @@ def test_replace_dataframe_dont_recalculate_last_time_index_not_present(es):
 
     original_time_index = es['customers']['signup_date'].copy()
 
-    if ks and isinstance(original_time_index, ks.Series):
-        new_time_index = ks.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=10))
+    if ps and isinstance(original_time_index, ps.Series):
+        new_time_index = ps.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=10))
     else:
         new_time_index = original_time_index + pd.Timedelta(days=10)
 
@@ -759,8 +761,8 @@ def test_replace_dataframe_recalculate_last_time_index_not_present(es):
 
     original_time_index = es['log']['datetime'].copy()
 
-    if ks and isinstance(original_time_index, ks.Series):
-        new_time_index = ks.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=10))
+    if ps and isinstance(original_time_index, ps.Series):
+        new_time_index = ps.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=10))
     else:
         new_time_index = original_time_index + pd.Timedelta(days=10)
 
@@ -778,8 +780,8 @@ def test_replace_dataframe_recalculate_last_time_index_present(es):
 
     original_time_index = es['log']['datetime'].copy()
 
-    if ks and isinstance(original_time_index, ks.Series):
-        new_time_index = ks.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=10))
+    if ps and isinstance(original_time_index, ps.Series):
+        new_time_index = ps.from_pandas(original_time_index.to_pandas() + pd.Timedelta(days=10))
     else:
         new_time_index = original_time_index + pd.Timedelta(days=10)
 

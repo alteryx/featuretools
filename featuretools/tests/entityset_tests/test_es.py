@@ -30,9 +30,9 @@ from featuretools.entityset import EntitySet
 from featuretools.entityset.entityset import LTI_COLUMN_NAME, WW_SCHEMA_KEY
 from featuretools.tests.testing_utils import get_df_tags, to_pandas
 from featuretools.utils.gen_utils import Library, import_or_none
-from featuretools.utils.koalas_utils import pd_to_ks_clean
+from featuretools.utils.spark_utils import pd_to_spark_clean
 
-ks = import_or_none('databricks.koalas')
+ps = import_or_none('pyspark.pandas')
 
 
 def test_normalize_time_index_as_additional_column(es):
@@ -269,8 +269,8 @@ def test_add_relationship_empty_child_convert_dtype(es):
     empty_log_df = pd.DataFrame(columns=es['log'].columns)
     if es.dataframe_type == Library.DASK.value:
         empty_log_df = dd.from_pandas(empty_log_df, npartitions=2)
-    elif es.dataframe_type == Library.KOALAS.value:
-        empty_log_df = ks.from_pandas(empty_log_df)
+    elif es.dataframe_type == Library.SPARK.value:
+        empty_log_df = ps.from_pandas(empty_log_df)
 
     es.add_dataframe(empty_log_df, 'log')
 
@@ -353,8 +353,8 @@ def test_query_by_id_with_time(es):
         instance_vals=[0, 1, 2, 3, 4],
         time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
     df = to_pandas(df)
-    if es.dataframe_type == Library.KOALAS.value:
-        # Koalas doesn't maintain order
+    if es.dataframe_type == Library.SPARK.value:
+        # Spark doesn't maintain order
         df = df.sort_values('id')
 
     assert list(df['id'].values) == [0, 1, 2]
@@ -369,8 +369,8 @@ def test_query_by_column_with_time(es):
 
     true_values = [
         i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
-    if es.dataframe_type == Library.KOALAS.value:
-        # Koalas doesn't maintain order
+    if es.dataframe_type == Library.SPARK.value:
+        # Spark doesn't maintain order
         df = df.sort_values('id')
 
     assert list(df['id'].values) == list(range(10))
@@ -398,7 +398,7 @@ def test_query_by_column_with_lti_and_training_window(es):
         instance_vals=[0, 1, 2], column_name='cohort',
         time_last=datetime(2011, 4, 11),
         training_window='3d')
-    # Account for different ordering between pandas and dask/koalas
+    # Account for different ordering between pandas and dask/spark
     df = to_pandas(df).reset_index(drop=True).sort_values('id')
     assert list(df['id'].values) == [0, 1, 2]
     assert list(df['age'].values) == [33, 25, 56]
@@ -425,12 +425,12 @@ def dd_df(pd_df):
 
 
 @pytest.fixture
-def ks_df(pd_df):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    return ks.from_pandas(pd_df)
+def spark_df(pd_df):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
+    return ps.from_pandas(pd_df)
 
 
-@pytest.fixture(params=['pd_df', 'dd_df', 'ks_df'])
+@pytest.fixture(params=['pd_df', 'dd_df', 'spark_df'])
 def df(request):
     return request.getfixturevalue(request.param)
 
@@ -465,11 +465,13 @@ def test_make_index_any_location(df):
 
 
 def test_replace_dataframe_and_create_index(es):
+    expected_idx_col = [0, 1, 2]
     df = pd.DataFrame({'ints': [3, 4, 5], 'category': ['a', 'b', 'a']})
     if es.dataframe_type == Library.DASK.value:
         df = dd.from_pandas(df, npartitions=2)
-    elif es.dataframe_type == Library.KOALAS.value:
-        df = ks.from_pandas(df)
+    elif es.dataframe_type == Library.SPARK.value:
+        expected_idx_col = [0, 2, 1]
+        df = ps.from_pandas(df)
 
     needs_idx_df = df.copy()
 
@@ -485,19 +487,20 @@ def test_replace_dataframe_and_create_index(es):
 
     # DataFrame that needs the index column added
     assert 'id' not in needs_idx_df.columns
-    expected_idx_col = [0, 1, 2]
     es.replace_dataframe('test_df', needs_idx_df)
-
+    
     assert es['test_df'].ww.index == 'id'
     assert all(expected_idx_col == to_pandas(es['test_df']['id']))
 
 
 def test_replace_dataframe_created_index_present(es):
+    original_idx_col = [100, 1, 2]
     df = pd.DataFrame({'ints': [3, 4, 5], 'category': ['a', 'b', 'a']})
     if es.dataframe_type == Library.DASK.value:
         df = dd.from_pandas(df, npartitions=2)
-    elif es.dataframe_type == Library.KOALAS.value:
-        df = ks.from_pandas(df)
+    elif es.dataframe_type == Library.SPARK.value:
+        original_idx_col = [100, 2, 1]
+        df = ps.from_pandas(df)
 
     logical_types = {'ints': Integer,
                      'category': Categorical}
@@ -513,8 +516,6 @@ def test_replace_dataframe_created_index_present(es):
         has_idx_df.set_index('id', drop=False, inplace=True)
 
     assert 'id' in has_idx_df.columns
-
-    original_idx_col = [100, 1, 2]
 
     es.replace_dataframe('test_df', has_idx_df)
     assert es['test_df'].ww.index == 'id'
@@ -565,12 +566,12 @@ def dd_df2(pd_df2):
 
 
 @pytest.fixture
-def ks_df2(pd_df2):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    return ks.from_pandas(pd_df2)
+def spark_df2(pd_df2):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
+    return ps.from_pandas(pd_df2)
 
 
-@pytest.fixture(params=['pd_df2', 'dd_df2', 'ks_df2'])
+@pytest.fixture(params=['pd_df2', 'dd_df2', 'spark_df2'])
 def df2(request):
     return request.getfixturevalue(request.param)
 
@@ -605,12 +606,12 @@ def dd_df3(pd_df3):
 
 
 @pytest.fixture
-def ks_df3(pd_df3):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    return ks.from_pandas(pd_df3)
+def spark_df3(pd_df3):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
+    return ps.from_pandas(pd_df3)
 
 
-@pytest.fixture(params=['pd_df3', 'dd_df3', 'ks_df3'])
+@pytest.fixture(params=['pd_df3', 'dd_df3', 'spark_df3'])
 def df3(request):
     return request.getfixturevalue(request.param)
 
@@ -667,12 +668,12 @@ def dd_df4(pd_df4):
 
 
 @pytest.fixture
-def ks_df4(pd_df4):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    return ks.from_pandas(pd_to_ks_clean(pd_df4))
+def spark_df4(pd_df4):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
+    return ps.from_pandas(pd_to_spark_clean(pd_df4))
 
 
-@pytest.fixture(params=['pd_df4', 'dd_df4', 'ks_df4'])
+@pytest.fixture(params=['pd_df4', 'dd_df4', 'spark_df4'])
 def df4(request):
     return request.getfixturevalue(request.param)
 
@@ -699,7 +700,7 @@ def test_converts_dtype_on_init(df4):
 
 def test_converts_dtype_after_init(df4):
     category_dtype = 'category'
-    if ks and isinstance(df4, ks.DataFrame):
+    if ps and isinstance(df4, ps.DataFrame):
         category_dtype = 'string'
 
     df4["category"] = df4["category"].astype(category_dtype)
@@ -736,7 +737,7 @@ def test_converts_dtype_after_init(df4):
 def test_warns_no_typing(df4):
     es = EntitySet(id='test')
     if not isinstance(df4, pd.DataFrame):
-        msg = 'Performing type inference on Dask or Koalas DataFrames may be computationally intensive. Specify logical types for each column to speed up EntitySet initialization.'
+        msg = 'Performing type inference on Dask or Spark DataFrames may be computationally intensive. Specify logical types for each column to speed up EntitySet initialization.'
         with pytest.warns(UserWarning, match=msg):
             es.add_dataframe(dataframe_name='test_dataframe', index='id',
                              dataframe=df4)
@@ -760,12 +761,12 @@ def dd_datetime1(pd_datetime1):
 
 
 @pytest.fixture
-def ks_datetime1(pd_datetime1):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    return ks.from_pandas(pd_datetime1)
+def spark_datetime1(pd_datetime1):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
+    return ps.from_pandas(pd_datetime1)
 
 
-@pytest.fixture(params=['pd_datetime1', 'dd_datetime1', 'ks_datetime1'])
+@pytest.fixture(params=['pd_datetime1', 'dd_datetime1', 'spark_datetime1'])
 def datetime1(request):
     return request.getfixturevalue(request.param)
 
@@ -804,12 +805,12 @@ def dd_datetime2(pd_datetime2):
 
 
 @pytest.fixture
-def ks_datetime2(pd_datetime2):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    return ks.from_pandas(pd_datetime2)
+def spark_datetime2(pd_datetime2):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
+    return ps.from_pandas(pd_datetime2)
 
 
-@pytest.fixture(params=['pd_datetime2', 'dd_datetime2', 'ks_datetime2'])
+@pytest.fixture(params=['pd_datetime2', 'dd_datetime2', 'spark_datetime2'])
 def datetime2(request):
     return request.getfixturevalue(request.param)
 
@@ -861,8 +862,8 @@ def test_dataframe_init(es):
                        'number': [4, 5, 6]})
     if es.dataframe_type == Library.DASK.value:
         df = dd.from_pandas(df, npartitions=2)
-    elif es.dataframe_type == Library.KOALAS.value:
-        df = ks.from_pandas(df)
+    elif es.dataframe_type == Library.SPARK.value:
+        df = ps.from_pandas(df)
 
     logical_types = {'time': Datetime}
     if not isinstance(df, pd.DataFrame):
@@ -888,7 +889,7 @@ def test_dataframe_init(es):
     assert set([v for v in es['test_dataframe'].ww.columns]) == set(df.columns)
 
     assert es['test_dataframe']['time'].dtype == df['time'].dtype
-    if es.dataframe_type == Library.KOALAS.value:
+    if es.dataframe_type == Library.SPARK.value:
         assert set(es['test_dataframe']['id'].to_list()) == set(df['id'].to_list())
     else:
         assert set(es['test_dataframe']['id']) == set(df['id'])
@@ -909,7 +910,7 @@ def bad_df(request):
     return request.getfixturevalue(request.param)
 
 
-# Skip for Koalas, automatically converts non-str column names to str
+# Skip for Spark, automatically converts non-str column names to str
 def test_nonstr_column_names(bad_df):
     if isinstance(bad_df, dd.DataFrame):
         pytest.xfail('Dask DataFrames cannot handle integer column names')
@@ -999,8 +1000,8 @@ def test_concat_inplace(es):
 def test_concat_with_lti(es):
     first_es = copy.deepcopy(es)
     for df in first_es.dataframes:
-        if first_es.dataframe_type == Library.KOALAS.value:
-            # Koalas cannot compute last time indexes on an empty Dataframe
+        if first_es.dataframe_type == Library.SPARK.value:
+            # Spark cannot compute last time indexes on an empty Dataframe
             new_df = df.head(1)
         else:
             new_df = df.loc[[], :]
@@ -1095,8 +1096,8 @@ def test_concat_with_make_index(es):
     df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
     if es.dataframe_type == Library.DASK.value:
         df = dd.from_pandas(df, npartitions=2)
-    elif es.dataframe_type == Library.KOALAS.value:
-        df = ks.from_pandas(df)
+    elif es.dataframe_type == Library.SPARK.value:
+        df = ps.from_pandas(df)
     logical_types = {'id': Categorical,
                      'category': Categorical}
     es.add_dataframe(dataframe=df,
@@ -1154,12 +1155,12 @@ def dd_transactions_df(pd_transactions_df):
 
 
 @pytest.fixture
-def ks_transactions_df(pd_transactions_df):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    return ks.from_pandas(pd_transactions_df)
+def spark_transactions_df(pd_transactions_df):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
+    return ps.from_pandas(pd_transactions_df)
 
 
-@pytest.fixture(params=['pd_transactions_df', 'dd_transactions_df', 'ks_transactions_df'])
+@pytest.fixture(params=['pd_transactions_df', 'dd_transactions_df', 'spark_transactions_df'])
 def transactions_df(request):
     return request.getfixturevalue(request.param)
 
@@ -1169,8 +1170,8 @@ def test_set_time_type_on_init(transactions_df):
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     if isinstance(transactions_df, dd.DataFrame):
         cards_df = dd.from_pandas(cards_df, npartitions=3)
-    if ks and isinstance(transactions_df, ks.DataFrame):
-        cards_df = ks.from_pandas(cards_df)
+    if ps and isinstance(transactions_df, ps.DataFrame):
+        cards_df = ps.from_pandas(cards_df)
     if not isinstance(transactions_df, pd.DataFrame):
         cards_logical_types = {'id': Categorical}
         transactions_logical_types = {
@@ -1204,8 +1205,8 @@ def test_sets_time_when_adding_dataframe(transactions_df):
                                                        "editable"]})
     if isinstance(transactions_df, dd.DataFrame):
         accounts_df = dd.from_pandas(accounts_df, npartitions=2)
-    if ks and isinstance(transactions_df, ks.DataFrame):
-        accounts_df = ks.from_pandas(accounts_df)
+    if ps and isinstance(transactions_df, ps.DataFrame):
+        accounts_df = ps.from_pandas(accounts_df)
     if not isinstance(transactions_df, pd.DataFrame):
         accounts_logical_types = {'id': Categorical, 'signup_date': Datetime}
         transactions_logical_types = {
@@ -1445,16 +1446,16 @@ def dd_normalize_es(pd_normalize_es):
 
 
 @pytest.fixture
-def ks_normalize_es(pd_normalize_es):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+def spark_normalize_es(pd_normalize_es):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
     es = ft.EntitySet(id=pd_normalize_es.id)
-    ks_df = ks.from_pandas(pd_normalize_es['data'])
-    ks_df.ww.init(schema=pd_normalize_es['data'].ww.schema)
-    es.add_dataframe(dataframe=ks_df)
+    spark_df = ps.from_pandas(pd_normalize_es['data'])
+    spark_df.ww.init(schema=pd_normalize_es['data'].ww.schema)
+    es.add_dataframe(dataframe=spark_df)
     return es
 
 
-@pytest.fixture(params=['pd_normalize_es', 'dd_normalize_es', 'ks_normalize_es'])
+@pytest.fixture(params=['pd_normalize_es', 'dd_normalize_es', 'spark_normalize_es'])
 def normalize_es(request):
     return request.getfixturevalue(request.param)
 
@@ -1515,7 +1516,7 @@ def test_normalize_dataframe_copies_logical_types(es):
     assert len(es['values_2'].ww.logical_types['value'].order) == 10
 
 
-# sorting not supported in Dask, Koalas
+# sorting not supported in Dask, Spark
 def test_make_time_index_keeps_original_sorting():
     trips = {
         'trip_id': [999 - i for i in range(1000)],
@@ -1623,12 +1624,12 @@ def dd_datetime3(pd_datetime3):
 
 
 @pytest.fixture
-def ks_datetime3(pd_datetime3):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    return ks.from_pandas(pd_datetime3)
+def spark_datetime3(pd_datetime3):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
+    return ps.from_pandas(pd_datetime3)
 
 
-@pytest.fixture(params=['pd_datetime3', 'dd_datetime3', 'ks_datetime3'])
+@pytest.fixture(params=['pd_datetime3', 'dd_datetime3', 'spark_datetime3'])
 def datetime3(request):
     return request.getfixturevalue(request.param)
 
@@ -1636,7 +1637,7 @@ def datetime3(request):
 def test_datetime64_conversion(datetime3):
     df = datetime3
     df["time"] = pd.Timestamp.now()
-    if ks and isinstance(df, ks.DataFrame):
+    if ps and isinstance(df, ps.DataFrame):
         df['time'] = df['time'].astype(np.datetime64)
     else:
         df["time"] = df["time"].dt.tz_localize("UTC")
@@ -1671,12 +1672,12 @@ def dd_index_df(pd_index_df):
 
 
 @pytest.fixture
-def ks_index_df(pd_index_df):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    return ks.from_pandas(pd_index_df)
+def spark_index_df(pd_index_df):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
+    return ps.from_pandas(pd_index_df)
 
 
-@pytest.fixture(params=['pd_index_df', 'dd_index_df', 'ks_index_df'])
+@pytest.fixture(params=['pd_index_df', 'dd_index_df', 'spark_index_df'])
 def index_df(request):
     return request.getfixturevalue(request.param)
 

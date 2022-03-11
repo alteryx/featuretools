@@ -10,7 +10,7 @@ extras_require = {
     "tsfresh": ["featuretools-tsfresh-primitives >= 1.0.0"],
     "update_checker": ["alteryx-open-src-update-checker >= 2.0.0"],
     "nlp_primitives": ["nlp-primitives[complete] >= 2.0.0"],
-    "koalas": open("koalas-requirements.txt").readlines(),
+    "spark": open("spark-requirements.txt").readlines(),
     "autonormalize": ["autonormalize >= 1.0.2"],
 }
 extras_require["complete"] = sorted(set(sum(extras_require.values(), [])))

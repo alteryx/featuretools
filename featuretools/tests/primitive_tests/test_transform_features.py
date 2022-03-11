@@ -65,7 +65,7 @@ from featuretools.primitives.utils import (
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.tests.testing_utils import feature_with_name, to_pandas
 from featuretools.utils.gen_utils import Library
-from featuretools.utils.koalas_utils import pd_to_ks_clean
+from featuretools.utils.spark_utils import pd_to_spark_clean
 
 
 def test_init_and_name(es):
@@ -89,8 +89,8 @@ def test_init_and_name(es):
     # If Dask EntitySet use only Dask compatible primitives
     if es.dataframe_type == Library.DASK.value:
         trans_primitives = [prim for prim in trans_primitives if Library.DASK in prim.compatibility]
-    if es.dataframe_type == Library.KOALAS.value:
-        trans_primitives = [prim for prim in trans_primitives if Library.KOALAS in prim.compatibility]
+    if es.dataframe_type == Library.SPARK.value:
+        trans_primitives = [prim for prim in trans_primitives if Library.SPARK in prim.compatibility]
 
     for transform_prim in trans_primitives:
         # skip automated testing if a few special cases
@@ -188,12 +188,12 @@ def dd_simple_es(pd_simple_es):
 
 
 @pytest.fixture
-def ks_simple_es(pd_simple_es):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+def spark_simple_es(pd_simple_es):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
     dataframes = {}
     for df in pd_simple_es.dataframes:
-        cleaned_df = pd_to_ks_clean(df).reset_index(drop=True)
-        dataframes[df.ww.name] = (ks.from_pandas(cleaned_df),
+        cleaned_df = pd_to_spark_clean(df).reset_index(drop=True)
+        dataframes[df.ww.name] = (ps.from_pandas(cleaned_df),
                                   df.ww.index,
                                   None,
                                   df.ww.logical_types)
@@ -206,7 +206,7 @@ def ks_simple_es(pd_simple_es):
     return ft.EntitySet(id=pd_simple_es.id, dataframes=dataframes, relationships=relationships)
 
 
-@pytest.fixture(params=['pd_simple_es', 'dd_simple_es', 'ks_simple_es'])
+@pytest.fixture(params=['pd_simple_es', 'dd_simple_es', 'spark_simple_es'])
 def simple_es(request):
     return request.getfixturevalue(request.param)
 
@@ -217,8 +217,8 @@ def test_equal_categorical(simple_es):
                     primitive=Equal)
 
     df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1])
-    if simple_es.dataframe_type != Library.KOALAS.value:
-        # Koalas does not support categorical dtype
+    if simple_es.dataframe_type != Library.SPARK.value:
+        # Spark does not support categorical dtype
         assert set(simple_es['values']['value'].cat.categories) != \
             set(simple_es['values']['value2'].cat.categories)
     assert to_pandas(df, index='id', sort_index=True)['value = value2'].to_list() == [True, False, False, True]
@@ -246,8 +246,8 @@ def test_not_equal_categorical(simple_es):
 
     df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1])
 
-    if simple_es.dataframe_type != Library.KOALAS.value:
-        # Koalas does not support categorical dtype
+    if simple_es.dataframe_type != Library.SPARK.value:
+        # Spark does not support categorical dtype
         assert set(simple_es['values']['value'].cat.categories) != \
             set(simple_es['values']['value2'].cat.categories)
     assert to_pandas(df, index='id', sort_index=True)['value != value2'].to_list() == [False, True, True, False]
@@ -465,8 +465,8 @@ def test_arithmetic_of_identity(es):
                (SubtractNumeric, [0, 3, 6, 9]),
                (MultiplyNumeric, [0, 10, 40, 90]),
                (DivideNumeric, [np.nan, 2.5, 2.5, 2.5])]
-    # SubtractNumeric not supported for Koalas EntitySets
-    if es.dataframe_type == Library.KOALAS.value:
+    # SubtractNumeric not supported for Spark EntitySets
+    if es.dataframe_type == Library.SPARK.value:
         to_test = to_test[:1] + to_test[2:]
 
     features = []
@@ -496,7 +496,7 @@ def test_arithmetic_of_direct(es):
                (SubtractNumeric, [28, 29, 28.5, 28.5]),
                (MultiplyNumeric, [165, 132, 148.5, 148.5]),
                (DivideNumeric, [6.6, 8.25, 22. / 3, 22. / 3])]
-    if es.dataframe_type == Library.KOALAS.value:
+    if es.dataframe_type == Library.SPARK.value:
         to_test = to_test[:1] + to_test[2:]
 
     features = []
@@ -511,7 +511,7 @@ def test_arithmetic_of_direct(es):
         assert v == test[1]
 
 
-# Koalas EntitySets do not support boolean multiplication
+# Spark EntitySets do not support boolean multiplication
 @pytest.fixture(params=['pd_boolean_mult_es', 'dask_boolean_mult_es'])
 def boolean_mult_es(request):
     return request.getfixturevalue(request.param)
@@ -564,10 +564,10 @@ def test_boolean_multiply(boolean_mult_es):
             assert fm[col_name].equals(df[row[0]] * df[row[1]])
 
 
-# TODO: rework test to be Dask and Koalas compatible
+# TODO: rework test to be Dask and Spark compatible
 def test_arithmetic_of_transform(es):
     if es.dataframe_type != Library.PANDAS.value:
-        pytest.xfail("Test uses Diff which is not supported in Dask or Koalas")
+        pytest.xfail("Test uses Diff which is not supported in Dask or Spark")
     diff1 = ft.Feature([ft.Feature(es['log'].ww['value'])], primitive=Diff)
     diff2 = ft.Feature([ft.Feature(es['log'].ww['value_2'])], primitive=Diff)
 
@@ -608,8 +608,8 @@ def test_arithmetic_of_agg(es):
                (SubtractNumeric, [0, -2]),
                (MultiplyNumeric, [9, 0]),
                (DivideNumeric, [1, 0])]
-    # Skip SubtractNumeric for Koalas as it's unsupported
-    if es.dataframe_type == Library.KOALAS.value:
+    # Skip SubtractNumeric for Spark as it's unsupported
+    if es.dataframe_type == Library.SPARK.value:
         to_test = to_test[:1] + to_test[2:]
 
     features = []
@@ -1037,7 +1037,7 @@ def test_get_filepath(es):
         name = "mod4"
         input_types = [ColumnSchema(semantic_tags={'numeric'})]
         return_type = ColumnSchema(semantic_tags={'numeric'})
-        compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+        compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
 
         def get_function(self):
             filepath = self.get_filepath("featuretools_unit_test_example.csv")
@@ -1099,8 +1099,8 @@ def test_override_multi_feature_names(pd_es):
 
 
 def test_time_since_primitive_matches_all_datetime_types(es):
-    if es.dataframe_type == Library.KOALAS.value:
-        pytest.xfail('TimeSince transform primitive is incompatible with Koalas')
+    if es.dataframe_type == Library.SPARK.value:
+        pytest.xfail('TimeSince transform primitive is incompatible with Spark')
     fm, fl = ft.dfs(
         target_dataframe_name="customers",
         entityset=es,

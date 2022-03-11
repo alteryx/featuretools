@@ -123,14 +123,14 @@ def test_errors_unsupported_primitives(es):
                              trans_primitives=[bad_trans_prim])
 
 
-def test_errors_unsupported_primitives_koalas(ks_es):
+def test_errors_unsupported_primitives_spark(spark_es):
     bad_trans_prim = CumSum()
     bad_agg_prim = NumUnique()
-    bad_trans_prim.koalas_compatible, bad_agg_prim.koalas_compatible = False, False
-    error_text = "Selected primitives are incompatible with Koalas EntitySets: cum_sum"
+    bad_trans_prim.spark_compatible, bad_agg_prim.spark_compatible = False, False
+    error_text = "Selected primitives are incompatible with Spark EntitySets: cum_sum"
     with pytest.raises(ValueError, match=error_text):
         DeepFeatureSynthesis(target_dataframe_name='sessions',
-                             entityset=ks_es,
+                             entityset=spark_es,
                              agg_primitives=[bad_agg_prim],
                              trans_primitives=[bad_trans_prim])
 
@@ -315,7 +315,7 @@ def test_makes_agg_features_of_trans_primitives(es):
 
 
 def test_makes_agg_features_with_where(es):
-    # TODO: Update to work with Dask and Koalas `es` fixture when issue #978 is closed
+    # TODO: Update to work with Dask and Spark `es` fixture when issue #978 is closed
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Dask EntitySets do not support add_interesting_values")
     es.add_interesting_values()
@@ -563,7 +563,7 @@ def test_seed_features(es):
 
 
 def test_does_not_make_agg_of_direct_of_target_dataframe(es):
-    # TODO: Update to work with Dask and Koalas supported primitive
+    # TODO: Update to work with Dask and Spark supported primitive
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Dask EntitySets do not support the Last primitive")
 
@@ -582,7 +582,7 @@ def test_does_not_make_agg_of_direct_of_target_dataframe(es):
 
 
 def test_dfs_builds_on_seed_features_more_than_max_depth(es):
-    # TODO: Update to work with Dask and Koalas supported primitive
+    # TODO: Update to work with Dask and Spark supported primitive
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Dask EntitySets do not support the Last and Mode primitives")
 
@@ -625,7 +625,7 @@ def test_dfs_includes_seed_features_greater_than_max_depth(es):
 
 
 def test_allowed_paths(es):
-    # TODO: Update to work with Dask and Koalas supported primitive
+    # TODO: Update to work with Dask and Spark supported primitive
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Dask EntitySets do not support the Last primitive")
 
@@ -713,7 +713,7 @@ def test_where_primitives(es):
 def test_stacking_where_primitives(es):
     # TODO: Update to work with Dask supported primitive
     if es.dataframe_type != Library.PANDAS.value:
-        pytest.xfail("Dask and Koalas EntitySets do not support the Last primitive")
+        pytest.xfail("Dask and Spark EntitySets do not support the Last primitive")
     es = copy.deepcopy(es)
     es.add_interesting_values(dataframe_name='sessions', values={'device_type': [0]})
     es.add_interesting_values(dataframe_name='log', values={'product_id': ['coke_zero']})
@@ -788,7 +788,7 @@ def test_where_different_base_feats(es):
 def test_dfeats_where(es):
     # TODO: Update to work with Dask `es` fixture when issue #978 is closed
     if es.dataframe_type != Library.PANDAS.value:
-        pytest.xfail("Dask and Koalas EntitySets do not support add_interesting_values")
+        pytest.xfail("Dask and Spark EntitySets do not support add_interesting_values")
     es.add_interesting_values()
 
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='sessions',
@@ -852,7 +852,7 @@ def test_transform_consistency(transform_es):
 
 
 def test_transform_no_stack_agg(es):
-    # TODO: Update to work with Dask and Koalas supported primitives
+    # TODO: Update to work with Dask and Spark supported primitives
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Dask EntitySets do not support the NMostCommon primitive")
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='customers',
@@ -878,7 +878,7 @@ def test_initialized_trans_prim(es):
 
 
 def test_initialized_agg_prim(es):
-    # TODO: Update to work with Dask and Koalas supported primitives
+    # TODO: Update to work with Dask and Spark supported primitives
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Dask EntitySets do not support the NMostCommon primitive")
     ThreeMost = NMostCommon(n=3)
@@ -892,9 +892,9 @@ def test_initialized_agg_prim(es):
 
 
 def test_return_types(es):
-    # TODO: Update to work with Dask and Koalas supported primitive
+    # TODO: Update to work with Dask and Spark supported primitive
     if es.dataframe_type != Library.PANDAS.value:
-        pytest.xfail("Dask and Koalas EntitySets do not support the NMostCommon primitive")
+        pytest.xfail("Dask and Spark EntitySets do not support the NMostCommon primitive")
     dfs_obj = DeepFeatureSynthesis(target_dataframe_name="sessions",
                                    entityset=es,
                                    agg_primitives=[Count, NMostCommon],
@@ -980,7 +980,7 @@ def test_makes_direct_features_through_multiple_relationships(games_es):
 
 
 def test_stacks_multioutput_features(es):
-    # TODO: Update to work with Dask and Koalas supported primitive
+    # TODO: Update to work with Dask and Spark supported primitive
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Dask EntitySets do not support the NumUnique and NMostCommon primitives")
 
@@ -1010,7 +1010,7 @@ def test_stacks_multioutput_features(es):
 
 
 def test_seed_multi_output_feature_stacking(es):
-    # TODO: Update to work with Dask and Koalas supported primitive
+    # TODO: Update to work with Dask and Spark supported primitive
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Dask EntitySets do not support the NMostCommon and NumUnique primitives")
     threecommon = NMostCommon(3)
@@ -1326,7 +1326,7 @@ def test_primitive_options_groupbys(pd_es):
 
 def test_primitive_options_multiple_inputs(es):
     if es.dataframe_type != Library.PANDAS.value:
-        pytest.xfail("Dask and Koalas EntitySets do not support various primitives used in this test")
+        pytest.xfail("Dask and Spark EntitySets do not support various primitives used in this test")
     too_many_options = {'mode': [{'include_dataframes': ['logs']},
                                  {'ignore_dataframes': ['sessions']}]}
     error_msg = "Number of options does not match number of inputs for primitive mode"
@@ -1461,7 +1461,7 @@ def test_primitive_options_commutative(es):
                        ColumnSchema(semantic_tags={'numeric'})]
         return_type = ColumnSchema(semantic_tags={'numeric'})
         commutative = True
-        compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+        compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
 
         def generate_name(self, base_feature_names):
             return "%s + %s + %s" % (base_feature_names[0], base_feature_names[1], base_feature_names[2])

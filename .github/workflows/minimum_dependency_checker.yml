@@ -6,7 +6,7 @@ on:
     paths:
       - 'requirements.txt'
       - 'test-requirements.txt'
-      - 'koalas-requirements.txt'
+      - 'spark-requirements.txt'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -47,21 +47,21 @@ jobs:
         if: steps.check_core_deps.outcome != 'success'
         run: |
           printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > featuretools/tests/requirement_files/minimum_core_requirements.txt
-      - name: Run min dep generator - koalas
-        id: min_dep_gen_koalas
+      - name: Run min dep generator - spark
+        id: min_dep_gen_spark
         uses: alteryx/minimum-dependency-generator@v2
         with:
-          requirements_paths: 'koalas-requirements.txt requirements.txt'
-      - name: Save min koalas deps and run diff
-        id: check_koalas_deps
+          requirements_paths: 'spark-requirements.txt requirements.txt'
+      - name: Save min spark deps and run diff
+        id: check_spark_deps
         continue-on-error: true
         run: |
-          printf "${{ steps.min_dep_gen_koalas.outputs.min_reqs }}" > /tmp/minimum_koalas_requirements.txt
-          diff /tmp/minimum_koalas_requirements.txt featuretools/tests/requirement_files/minimum_koalas_requirements.txt
-      - name: if min koalas deps have changed, write output file
-        if: steps.check_koalas_deps.outcome != 'success'
+          printf "${{ steps.min_dep_gen_spark.outputs.min_reqs }}" > /tmp/minimum_spark_requirements.txt
+          diff /tmp/minimum_spark_requirements.txt featuretools/tests/requirement_files/minimum_spark_requirements.txt
+      - name: if min spark deps have changed, write output file
+        if: steps.check_spark_deps.outcome != 'success'
         run: |
-          printf "${{ steps.min_dep_gen_koalas.outputs.min_reqs }}" > featuretools/tests/requirement_files/minimum_koalas_requirements.txt
+          printf "${{ steps.min_dep_gen_spark.outputs.min_reqs }}" > featuretools/tests/requirement_files/minimum_spark_requirements.txt
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:

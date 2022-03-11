@@ -43,7 +43,7 @@ from featuretools.utils.gen_utils import (
     make_tqdm_iterator
 )
 
-ks = import_or_none('databricks.koalas')
+ps = import_or_none('pyspark.pandas')
 
 logger = logging.getLogger('featuretools.computational_backend')
 
@@ -199,7 +199,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
         if isinstance(instance_ids, dd.Series):
             instance_ids = instance_ids.compute()
-        elif is_instance(instance_ids, ks, 'Series'):
+        elif is_instance(instance_ids, ps, 'Series'):
             instance_ids = instance_ids.to_pandas()
 
         # convert list or range object into series
@@ -449,7 +449,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                                                training_window=window,
                                                include_cutoff_time=include_cutoff_time)
 
-                if is_instance(_feature_matrix, (dd, ks), 'DataFrame'):
+                if is_instance(_feature_matrix, (dd, ps), 'DataFrame'):
                     id_name = _feature_matrix.columns[-1]
                 else:
                     id_name = _feature_matrix.index.name
@@ -487,10 +487,10 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                             pass_df = dd.from_pandas(pass_through[[id_name, 'time', col]], npartitions=_feature_matrix.npartitions)
                             _feature_matrix = _feature_matrix.merge(pass_df, how="outer")
                         _feature_matrix = _feature_matrix.drop(columns=['time'])
-                    elif is_instance(_feature_matrix, ks, 'DataFrame') and (len(pass_columns) > 0):
+                    elif is_instance(_feature_matrix, ps, 'DataFrame') and (len(pass_columns) > 0):
                         _feature_matrix['time'] = time_last
                         for col in pass_columns:
-                            pass_df = ks.from_pandas(pass_through[[id_name, 'time', col]])
+                            pass_df = ps.from_pandas(pass_through[[id_name, 'time', col]])
                             _feature_matrix = _feature_matrix.merge(pass_df, how="outer")
                         _feature_matrix = _feature_matrix.drop(columns=['time'])
                 feature_matrix.append(_feature_matrix)
@@ -779,11 +779,11 @@ def init_ww_and_concat_fm(feature_matrix, ww_init_kwargs):
         updated_cols = set()
         for col in cols_to_check:
             # Only convert types for pandas if null values are present
-            # Always convert for Dask/Koalas to avoid pulling data into memory for null check
+            # Always convert for Dask/Spark to avoid pulling data into memory for null check
             is_pandas_df_with_null = isinstance(fm, pd.DataFrame) and fm[col].isnull().any()
             is_dask_df = isinstance(fm, dd.DataFrame)
-            is_koalas_df = is_instance(fm, ks, 'DataFrame')
-            if is_pandas_df_with_null or is_dask_df or is_koalas_df:
+            is_spark_df = is_instance(fm, ps, 'DataFrame')
+            if is_pandas_df_with_null or is_dask_df or is_spark_df:
                 current_type = ww_init_kwargs["logical_types"][col].type_string
                 ww_init_kwargs["logical_types"][col] = replacement_type[current_type]
                 updated_cols.add(col)
@@ -792,8 +792,8 @@ def init_ww_and_concat_fm(feature_matrix, ww_init_kwargs):
 
     if any(isinstance(fm, dd.DataFrame) for fm in feature_matrix):
         feature_matrix = dd.concat(feature_matrix)
-    elif any(is_instance(fm, ks, 'DataFrame') for fm in feature_matrix):
-        feature_matrix = ks.concat(feature_matrix)
+    elif any(is_instance(fm, ps, 'DataFrame') for fm in feature_matrix):
+        feature_matrix = ps.concat(feature_matrix)
     else:
         feature_matrix = pd.concat(feature_matrix)
 

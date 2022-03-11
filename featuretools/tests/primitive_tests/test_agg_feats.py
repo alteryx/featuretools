@@ -244,8 +244,8 @@ def test_init_and_name(es):
     # If Dask EntitySet use only Dask compatible primitives
     if es.dataframe_type == Library.DASK.value:
         agg_primitives = [prim for prim in agg_primitives if Library.DASK in prim.compatibility]
-    if es.dataframe_type == Library.KOALAS.value:
-        agg_primitives = [prim for prim in agg_primitives if Library.KOALAS in prim.compatibility]
+    if es.dataframe_type == Library.SPARK.value:
+        agg_primitives = [prim for prim in agg_primitives if Library.SPARK in prim.compatibility]
 
     for agg_prim in agg_primitives:
         input_types = agg_prim.input_types
@@ -451,9 +451,9 @@ def test_agg_same_method_name(es):
         can't differentiate them. We have a work around to this based on the name property
         that we test here.
     """
-    # TODO: Update to work with Dask and Koalas
+    # TODO: Update to work with Dask and Spark
     if es.dataframe_type != Library.PANDAS.value:
-        pytest.xfail("Cannot use primitives made with make_agg_primitives with Dask or Koalas EntitySets")
+        pytest.xfail("Cannot use primitives made with make_agg_primitives with Dask or Spark EntitySets")
     # test with normally defined functions
 
     def custom_primitive(x):
@@ -599,8 +599,8 @@ def test_custom_primitive_default_kwargs(es):
 
 
 def test_makes_numtrue(es):
-    if es.dataframe_type == Library.KOALAS.value:
-        pytest.xfail('Koalas EntitySets do not support NumTrue primitive')
+    if es.dataframe_type == Library.SPARK.value:
+        pytest.xfail('Spark EntitySets do not support NumTrue primitive')
     dfs = DeepFeatureSynthesis(target_dataframe_name='sessions',
                                entityset=es,
                                agg_primitives=[NumTrue],

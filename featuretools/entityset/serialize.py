@@ -10,7 +10,7 @@ from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
 
-ks = import_or_none('databricks.koalas')
+ps = import_or_none('pyspark.pandas')
 
 FORMATS = ['csv', 'pickle', 'parquet']
 SCHEMA_VERSION = "7.0.0"

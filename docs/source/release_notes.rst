@@ -226,7 +226,7 @@ v1.0.0 Oct 12, 2021
         * Update API Reference to match Featuretools 1.0 API (:pr:`1600`)
         * Update Index page to be Jupyter notebook and use Woodwork integration (:pr:`1602`)
         * Update Feature Descriptions page to be Jupyter notebook and use Woodwork integration (:pr:`1603`)
-        * Update Using Koalas EntitySets page to be Jupyter notebook and use Woodwork integration (:pr:`1604`)
+        * Update Using Spark EntitySets page to be Jupyter notebook and use Woodwork integration (:pr:`1604`)
         * Update Glossary to use Woodwork integration (:pr:`1608`)
         * Update Tuning DFS page to be Jupyter notebook and use Woodwork integration (:pr:`1610`)
         * Fix small formatting issues in Documentation (:pr:`1607`)
@@ -280,7 +280,7 @@ Breaking Changes
   Woodwork has not been initialized on the DataFrame. When adding a dataframe that already has Woodwork
   initialized, if there is no index set, an error will be raised (:pr:`1405`).
 * Featuretools will no longer re-order columns in DataFrames so that the index column is the first column of the DataFrame (:pr:`1405`).
-* Type inference can now be performed on Dask and Koalas dataframes, though a warning will be issued 
+* Type inference can now be performed on Dask and Spark dataframes, though a warning will be issued 
   indicating that this may be computationally intensive (:pr:`1405`).
 * EntitySet.time_type is no longer stored as Variable objects. Instead, Woodwork typing is used, and a
   numeric time type will be indicated by the ``'numeric'`` semantic tag string, and a datetime time type
@@ -473,7 +473,7 @@ v0.24.0 Apr 30, 2021
     * Documentation Changes
         * Improve formatting of release notes (:pr:`1396`)
     * Testing Changes
-        * Update Dask/Koalas test fixtures (:pr:`1382`)
+        * Update Dask/Spark test fixtures (:pr:`1382`)
         * Update Spark config in test fixtures and docs (:pr:`1387`, :pr:`1389`)
         * Don't cancel other CI jobs if one fails (:pr:`1386`)
         * Update boto3 and urllib3 version requirements (:pr:`1394`)
@@ -488,7 +488,7 @@ v0.23.3 Mar 31, 2021
         The next non-bugfix release of Featuretools will not support Python 3.6
 
     * Changes
-        * Minor updates to work with Koalas version 1.7.0 (:pr:`1351`)
+        * Minor updates to work with Spark version 1.7.0 (:pr:`1351`)
         * Explicitly mention Python 3.8 support in setup.py classifiers (:pr:`1371`)
         * Fix issue with smart-open version 5.0.0 (:pr:`1372`, :pr:`1376`)
     * Testing Changes
@@ -583,7 +583,7 @@ v0.21.0 Oct 30, 2020
     * Enhancements
         * Add ``describe_feature`` to generate an English language feature description for a given feature (:pr:`1201`)
     * Fixes
-        * Update ``EntitySet.add_last_time_indexes`` to work with Koalas 1.3.0 (:pr:`1192`, :pr:`1202`)
+        * Update ``EntitySet.add_last_time_indexes`` to work with Spark 1.3.0 (:pr:`1192`, :pr:`1202`)
     * Changes
         * Keep koalas requirements in separate file (:pr:`1195`)
     * Documentation Changes
@@ -621,7 +621,7 @@ v0.20.0 Sep 30, 2020
 v0.19.0 Sep 8, 2020
 ===================
     * Enhancements
-        * Support use of Koalas DataFrames in entitysets (:pr:`1031`)
+        * Support use of Spark DataFrames in entitysets (:pr:`1031`)
         * Add feature selection functions for null, correlated, and single value features (:pr:`1126`)
     * Fixes
         * Fix ``encode_features`` converting excluded feature columns to a numeric dtype (:pr:`1123`)
