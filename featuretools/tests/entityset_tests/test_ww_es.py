@@ -654,7 +654,7 @@ def test_replace_dataframe_different_woodwork_initialized(es):
 
     if isinstance(df, dd.DataFrame):
         assert all(to_pandas(es['customers']['age']) == [1, 2, 3])
-    elif isinstance(df, ps.DataFrame):
+    elif ps and isinstance(df, ps.DataFrame):
         assert all(to_pandas(es['customers']['age']) == [1, 3, 2])
     else:
         assert all(to_pandas(es['customers']['age']) == [3, 1, 2])
