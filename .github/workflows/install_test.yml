@@ -24,11 +24,11 @@ jobs:
         uses: actions/checkout@v2
       - name: Build featuretools package
         run: make package_featuretools
-      - name: Install complete version of featuretools
+      - name: Install complete version of featuretools from sdist
         run: |
           pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
-          python -m pip install -e unpacked_sdist/[complete]
+          python -m pip install unpacked_sdist/[complete]
       - name: Test by importing packages
         run: |
           python -c "import alteryx_open_src_update_checker"
