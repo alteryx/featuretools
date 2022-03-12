@@ -76,8 +76,8 @@ class NaturalLogarithm(TransformPrimitive):
 
     Examples:
         >>> log = NaturalLogarithm()
-        >>> log([1.0, np.e, np.e**3]).tolist()
-        [0.0, 1.0, 3.0]
+        >>> log([1.0, np.e]).tolist()
+        [0.0, 1.0]
     """
     name = "natural_logarithm"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
@@ -94,8 +94,8 @@ class Sine(TransformPrimitive):
 
     Examples:
         >>> sin = Sine()
-        >>> sin([0.0, np.pi/6.0, np.pi/2.0]).tolist()
-        [0.0, 0.49999999999999994, 1.0]
+        >>> sin([-np.pi/2.0, 0.0, np.pi/2.0]).tolist()
+        [-1.0, 0.0, 1.0]
     """
     name = "sine"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
@@ -130,8 +130,8 @@ class Tangent(TransformPrimitive):
 
     Examples:
         >>> tan = Tangent()
-        >>> tan([-np.pi, np.pi/2.0, np.pi]).tolist()
-        [1.2246467991473532e-16, 1.633123935319537e+16, -1.2246467991473532e-16]
+        >>> tan([-np.pi, 0.0, np.pi/2.0]).tolist()
+        [1.2246467991473532e-16, 0.0, 1.633123935319537e+16]
     """
     name = "tangent"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
