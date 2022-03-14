@@ -180,7 +180,7 @@ class TestLastTimeIndex(object):
 
     def test_multiple_children(self, es, wishlist_df,
                                true_sessions_lti):
-        if ps and isinstance(es.dataframes[0], ps.DataFrame):
+        if es.dataframe_type == Library.SPARK.value:
             pytest.xfail('Cannot make index on a Spark DataFrame')
         # test all instances in both children
         if es.dataframe_type == Library.DASK.value:
@@ -209,7 +209,7 @@ class TestLastTimeIndex(object):
 
     def test_multiple_children_right_missing(self, es, wishlist_df,
                                              true_sessions_lti):
-        if ps and isinstance(es.dataframes[0], ps.DataFrame):
+        if es.dataframe_type == Library.SPARK.value:
             pytest.xfail('Cannot make index on a Spark DataFrame')
         # test all instances in left child
 
@@ -241,7 +241,7 @@ class TestLastTimeIndex(object):
 
     def test_multiple_children_left_missing(self, es, extra_session_df,
                                             wishlist_df, true_sessions_lti):
-        if ps and isinstance(es.dataframes[0], ps.DataFrame):
+        if es.dataframe_type == Library.SPARK.value:
             pytest.xfail('Cannot make index on a Spark DataFrame')
 
         # add row to sessions so not all session instances are in log
@@ -283,7 +283,7 @@ class TestLastTimeIndex(object):
 
     def test_multiple_children_all_combined(self, es, extra_session_df,
                                             wishlist_df, true_sessions_lti):
-        if ps and isinstance(es.dataframes[0], ps.DataFrame):
+        if es.dataframe_type == Library.SPARK.value:
             pytest.xfail('Cannot make index on a Spark DataFrame')
 
         # add row to sessions so not all session instances are in log
@@ -327,7 +327,7 @@ class TestLastTimeIndex(object):
 
     def test_multiple_children_both_missing(self, es, extra_session_df,
                                             wishlist_df, true_sessions_lti):
-        if ps and isinstance(es.dataframes[0], ps.DataFrame):
+        if es.dataframe_type == Library.SPARK.value:
             pytest.xfail('Cannot make index on a Spark DataFrame')
         # test all instances in neither child
         sessions = es['sessions']
