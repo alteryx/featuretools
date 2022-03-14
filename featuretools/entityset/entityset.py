@@ -1579,7 +1579,7 @@ def _get_or_create_index(index, make_index, df):
 
 
 def _create_index(df, index):
-    if isinstance(df, dd.DataFrame) or (ps and isinstance(df, ps.DataFrame)):
+    if is_instance(df, dd, 'DataFrame') or is_instance(df, ps, 'DataFrame'):
         df[index] = 1
         df[index] = df[index].cumsum() - 1
     else:
