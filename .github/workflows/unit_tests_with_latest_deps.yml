@@ -13,8 +13,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.7", "3.8", "3.9"]
+        python_version: ["3.7", "3.8", "3.9", "3.10"]
         libraries: ["core", "koalas"]
+        exclude:
+          - python_version: "3.10"
+            libraries: "koalas"
     steps:
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -36,14 +39,14 @@ jobs:
         name: Install featuretools with test requirements
         run: |
           python -m pip install -e unpacked_sdist/
-          python -m pip install -r unpacked_sdist/test-requirements.txt
+          python -m pip install -e unpacked_sdist/[test]
       - if: ${{ matrix.libraries == 'koalas' }}
         name: Install koalas pkg, featuretools with test requirements and koalas requirements
         run: |
           sudo apt install -y openjdk-11-jre-headless
           JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           python -m pip install -e unpacked_sdist/[koalas]
-          python -m pip install -r unpacked_sdist/test-requirements.txt
+          python -m pip install -e unpacked_sdist/[test]
       - if: ${{ matrix.python_version != 3.7 || matrix.libraries != 'koalas' }}
         name: Run unit tests (no code coverage)
         run: |
@@ -52,7 +55,7 @@ jobs:
       - if: ${{ matrix.python_version == 3.7 && matrix.libraries == 'koalas' }}
         name: Run unit tests with code coverage
         run: |
-          python -m pip install "$(cat dev-requirements.txt | grep codecov)"
+          python -m pip install "$(cat setup.cfg | grep codecov)"
           coverage erase
           cd unpacked_sdist/
           coverage erase
@@ -69,7 +72,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.7", "3.8", "3.9"]
+        python_version: ["3.7", "3.8", "3.9", "3.10"]
     steps:
       - name: Download miniconda
         shell: pwsh
@@ -104,8 +107,7 @@ jobs:
           conda config --add channels conda-forge
           conda install -q -y -c conda-forge python-graphviz
           python -m pip install --upgrade pip
-          python -m pip install .
-          python -m pip install -r test-requirements.txt
+          python -m pip install .[test]
       - name: Run unit tests
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1

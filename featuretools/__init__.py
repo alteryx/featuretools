@@ -1,6 +1,6 @@
 # flake8: noqa
+from .version import __version__
 from .config_init import config
-from . import variable_types
 from .entityset.api import *
 from . import primitives
 from .synthesis.api import *
@@ -9,7 +9,6 @@ from .computational_backends.api import *
 from . import tests
 from .utils.time_utils import *
 from .utils.cli_utils import show_info
-from .version import __version__
 import featuretools.demo
 from . import feature_base
 from . import selection
