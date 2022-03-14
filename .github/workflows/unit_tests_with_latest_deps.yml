@@ -15,9 +15,7 @@ jobs:
       matrix:
         python_version: ["3.7", "3.8", "3.9", "3.10"]
         libraries: ["core", "spark"]
-        exclude:
-          - python_version: "3.10"
-            libraries: "spark"
+
     steps:
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
