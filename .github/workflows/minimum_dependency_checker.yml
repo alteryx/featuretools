@@ -19,7 +19,7 @@ jobs:
         uses: alteryx/minimum-dependency-generator@v3.1
         with:
           paths: 'setup.cfg'
-          options: 'install_requires setup_requires'
+          options: 'install_requires'
           extras_require: 'test'
       - name: Save min test deps and run diff
         id: check_min_test
@@ -37,7 +37,7 @@ jobs:
         uses: alteryx/minimum-dependency-generator@v3.1
         with:
           paths: 'setup.cfg'
-          options: 'install_requires setup_requires'
+          options: 'install_requires'
       - name: Save min core deps and run diff
         id: check_core_deps
         continue-on-error: true
@@ -53,7 +53,7 @@ jobs:
         uses: alteryx/minimum-dependency-generator@v3.1
         with:
           paths: 'setup.cfg'
-          options: 'install_requires setup_requires'
+          options: 'install_requires'
           extras_require: 'spark'
       - name: Save min spark deps and run diff
         id: check_spark_deps

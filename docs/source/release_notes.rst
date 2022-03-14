@@ -11,7 +11,7 @@ Future Release
     * Changes
         * Update error message when DFS returns an empty list of features (:pr:`1919`)
         * Remove ``list_variable_types`` and related directories (:pr:`1929`)
-        * Transition to use pyproject.toml and setup.cfg (moving away from setup.py) (:pr:`1941`, :pr:`1950`)
+        * Transition to use pyproject.toml and setup.cfg (moving away from setup.py) (:pr:`1941`, :pr:`1950`, :pr:`1952`)
         * Replace Koalas with pandas API on Spark (:pr:`1949`)
     * Documentation Changes
         * Add time series guide (:pr:`1896`)
@@ -22,6 +22,7 @@ Future Release
         * Update test cases to cover __main__.py file (:pr:`1927`)
         * Upgrade moto requirement (:pr:`1929`, :pr:`1938`)
         * Add Python 3.9 linting, install complete, and docs build CI tests (:pr:`1934`)
+        * Add CI workflow to test with latest woodwork main branch (:pr:`1936`)
         * Add support for Python 3.10 (:pr:`1940`)
         * Add lower bound for wheel for minimum dependency checker and limit lint CI tests to Python 3.10 (:pr:`1945`)
 
