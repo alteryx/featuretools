@@ -10,4 +10,4 @@ scipy==1.3.3
 setuptools==47
 tqdm==4.32.0
 wheel==0.37.0
-woodwork==0.8.1
+woodwork==0.14.0

@@ -132,7 +132,7 @@ def test_calc_feature_matrix(es):
                                               verbose=True)
 
     assert all(feature_matrix.index == cutoff_reordered["id"].values)
-    # fails with Dask and Koalas entitysets, cutoff time not reordered; cannot verify out of order
+    # fails with Dask and Spark entitysets, cutoff time not reordered; cannot verify out of order
     # - can't tell if wrong/different all are false so can't check positional
 
 
@@ -201,7 +201,7 @@ def test_cfm_dask_compose(dask_es, lt):
     assert (feature_matrix[property_feature.get_name()] == feature_matrix['label_func']).values.all()
 
 
-# tests approximate, skip for dask/koalas
+# tests approximate, skip for dask/spark
 def test_cfm_approximate_correct_ordering():
     trips = {
         'trip_id': [i for i in range(1000)],
@@ -247,7 +247,7 @@ def test_cfm_approximate_correct_ordering():
             assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
 
 
-# uses approximate, skip for dask/koalas entitysets
+# uses approximate, skip for dask/spark entitysets
 def test_cfm_no_cutoff_time_index(pd_es):
     agg_feat = ft.Feature(pd_es['log'].ww['id'], parent_dataframe_name='sessions', primitive=Count)
     agg_feat4 = ft.Feature(agg_feat, parent_dataframe_name='customers', primitive=Sum)
@@ -282,7 +282,7 @@ def test_cfm_no_cutoff_time_index(pd_es):
 
 
 # TODO: fails with dask entitysets
-# TODO: fails with koalas entitysets
+# TODO: fails with spark entitysets
 def test_cfm_duplicated_index_in_cutoff_time(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('Distributed results not ordered, missing duplicates')
@@ -301,7 +301,7 @@ def test_cfm_duplicated_index_in_cutoff_time(es):
     assert (feature_matrix.shape[0] == cutoff_time.shape[0])
 
 
-# TODO: fails with Dask, Koalas
+# TODO: fails with Dask, Spark
 def test_saveprogress(es, tmpdir):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('saveprogress fails with distributed entitysets')
@@ -716,7 +716,7 @@ def test_training_window_recent_time_index(pd_es):
     assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
 
 
-# TODO: add test to fail w/ koalas
+# TODO: add test to fail w/ spark
 def test_approximate_fails_dask(dask_es):
     agg_feat = ft.Feature(dask_es['log'].ww['id'],
                           parent_dataframe_name='sessions',
@@ -1093,7 +1093,7 @@ def test_instances_after_cutoff_time_removed(es):
     assert set(actual_ids) == set([2, 0])
 
 
-# TODO: Dask and Koalas do not keep instance_id after cutoff
+# TODO: Dask and Spark do not keep instance_id after cutoff
 def test_instances_with_id_kept_after_cutoff(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('Distributed result not ordered, missing extra instances')
@@ -1112,7 +1112,7 @@ def test_instances_with_id_kept_after_cutoff(es):
 
 
 # TODO: Fails with Dask
-# TODO: Fails with Koalas
+# TODO: Fails with Spark
 def test_cfm_returns_original_time_indexes(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail('Distributed result not ordered, indexes are lost due to not multiindexing')
@@ -1370,7 +1370,7 @@ def test_parallel_cutoff_time_column_pass_through(pd_es, cluster_scheduler):
 
 def test_integer_time_index(int_es):
     if int_es.dataframe_type != Library.PANDAS.value:
-        pytest.xfail('Dask and Koalas do not retain time column')
+        pytest.xfail('Dask and Spark do not retain time column')
     times = list(range(8, 18)) + list(range(19, 26))
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
     cutoff_df = pd.DataFrame({'time': times, 'instance_id': range(17)})
@@ -1389,7 +1389,7 @@ def test_integer_time_index(int_es):
 
 def test_integer_time_index_single_cutoff_value(int_es):
     if int_es.dataframe_type != Library.PANDAS.value:
-        pytest.xfail('Dask and Koalas do not retain time column')
+        pytest.xfail('Dask and Spark do not retain time column')
     labels = [False] * 3 + [True] * 2 + [False] * 4
     property_feature = IdentityFeature(int_es['log'].ww['value']) > 10
 
@@ -1512,10 +1512,10 @@ def test_datetime_index_mixed_cutoff(es):
 
 
 # TODO: Dask version fails (feature matrix is empty)
-# TODO: Koalas version fails (koalas groupby agg doesn't support custom functions)
+# TODO: Spark version fails (spark groupby agg doesn't support custom functions)
 def test_no_data_for_cutoff_time(mock_customer):
     if mock_customer.dataframe_type != Library.PANDAS.value:
-        pytest.xfail("Dask fails because returned feature matrix is empty; Koalas doesn't support custom agg functions")
+        pytest.xfail("Dask fails because returned feature matrix is empty; Spark doesn't support custom agg functions")
     es = mock_customer
     cutoff_times = pd.DataFrame({"customer_id": [4],
                                  "time": pd.Timestamp('2011-04-08 20:08:13')})
@@ -1535,7 +1535,7 @@ def test_no_data_for_cutoff_time(mock_customer):
         pd.testing.assert_series_equal(fm[column], answer[column], check_index=False, check_names=False)
 
 
-# adding missing instances not supported in Dask or Koalas
+# adding missing instances not supported in Dask or Spark
 def test_instances_not_in_data(pd_es):
     last_instance = max(pd_es['log'].index.values)
     instances = list(range(last_instance + 1, last_instance + 11))
@@ -1730,7 +1730,7 @@ def test_closes_tqdm(es):
         name = "error_prim"
         input_types = [ColumnSchema(semantic_tags={'numeric'})]
         return_type = "Numeric"
-        compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+        compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
 
         def get_function(self):
             def error(s):

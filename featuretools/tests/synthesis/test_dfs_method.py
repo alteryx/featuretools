@@ -243,7 +243,7 @@ def test_features_only(dataframes, relationships):
 
     # pandas creates 11 features
     # dask creates 10 features (no skew)
-    # koalas creates 9 features (no skew, no percent_true)
+    # spark creates 9 features (no skew, no percent_true)
     if isinstance(dataframes['transactions'][0], pd.DataFrame):
         expected_features = 11
     elif isinstance(dataframes['transactions'][0], dd.DataFrame):
@@ -320,8 +320,8 @@ def test_accepts_pd_dateoffset_training_window(datetime_es):
 
 
 def test_warns_with_unused_primitives(es):
-    if es.dataframe_type == Library.KOALAS.value:
-        pytest.skip('Koalas throws extra warnings')
+    if es.dataframe_type == Library.SPARK.value:
+        pytest.skip('Spark throws extra warnings')
     trans_primitives = ['num_characters', 'num_words', 'add_numeric']
     agg_primitives = [Max, 'min']
 
@@ -389,8 +389,8 @@ def test_does_not_warn_with_stacking_feature(pd_es):
 
 
 def test_warns_with_unused_where_primitives(es):
-    if es.dataframe_type == Library.KOALAS.value:
-        pytest.skip('Koalas throws extra warnings')
+    if es.dataframe_type == Library.SPARK.value:
+        pytest.skip('Spark throws extra warnings')
     warning_text = "Some specified primitives were not used during DFS:\n" + \
         "  where_primitives: ['count', 'sum']\n" + \
         "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \

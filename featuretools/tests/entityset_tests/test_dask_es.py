@@ -135,10 +135,10 @@ def test_add_last_time_indexes():
     dask_es.add_last_time_indexes()
 
     pd_lti_name = pd_es['sessions'].ww.metadata.get('last_time_index')
-    ks_lti_name = dask_es['sessions'].ww.metadata.get('last_time_index')
-    assert pd_lti_name == ks_lti_name
+    spark_lti_name = dask_es['sessions'].ww.metadata.get('last_time_index')
+    assert pd_lti_name == spark_lti_name
     pd.testing.assert_series_equal(pd_es['sessions'][pd_lti_name].sort_index(),
-                                   dask_es['sessions'][ks_lti_name].compute().sort_index(), check_names=False)
+                                   dask_es['sessions'][spark_lti_name].compute().sort_index(), check_names=False)
 
 
 def test_add_dataframe_with_make_index():

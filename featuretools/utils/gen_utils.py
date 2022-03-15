@@ -142,4 +142,4 @@ def camel_and_title_to_snake(name):
 class Library(Enum):
     PANDAS = 'pandas'
     DASK = 'Dask'
-    KOALAS = 'Koalas'
+    SPARK = 'Spark'

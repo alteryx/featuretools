@@ -117,7 +117,7 @@ class Day(TransformPrimitive):
     name = "day"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=Ordinal(order=list(range(1, 32))), semantic_tags={'category'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the day of the month of {}"
 
     def get_function(self):
@@ -216,7 +216,7 @@ class Hour(TransformPrimitive):
     name = "hour"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=Ordinal(order=list(range(24))), semantic_tags={'category'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = 'the hour value of {}'
 
     def get_function(self):
@@ -240,7 +240,7 @@ class IsWeekend(TransformPrimitive):
     name = "is_weekend"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=BooleanNullable)
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "whether {} occurred on a weekend"
 
     def get_function(self):
@@ -264,7 +264,7 @@ class Minute(TransformPrimitive):
     name = "minute"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=Ordinal(order=list(range(60))), semantic_tags={'category'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the minutes value of {}"
 
     def get_function(self):
@@ -288,7 +288,7 @@ class Month(TransformPrimitive):
     name = "month"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=Ordinal(order=list(range(1, 13))), semantic_tags={'category'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the month of {}"
 
     def get_function(self):
@@ -312,7 +312,7 @@ class Second(TransformPrimitive):
     name = "second"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=Ordinal(order=list(range(60))), semantic_tags={'category'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the seconds value of {}"
 
     def get_function(self):
@@ -426,7 +426,7 @@ class Week(TransformPrimitive):
     name = "week"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=Ordinal(order=list(range(1, 54))), semantic_tags={'category'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the week of the year of {}"
 
     def get_function(self):
@@ -459,7 +459,7 @@ class Weekday(TransformPrimitive):
     name = "weekday"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=Ordinal(order=list(range(7))), semantic_tags={'category'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the day of the week of {}"
 
     def get_function(self):
@@ -483,7 +483,7 @@ class Year(TransformPrimitive):
     name = "year"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=Ordinal(order=list(range(1, 3000))), semantic_tags={'category'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the year of {}"
 
     def get_function(self):
