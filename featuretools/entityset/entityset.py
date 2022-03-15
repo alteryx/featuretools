@@ -20,7 +20,7 @@ from featuretools.utils.plot_utils import (
 )
 from featuretools.utils.wrangle import _check_timedelta
 
-ks = import_or_none('databricks.koalas')
+ps = import_or_none('pyspark.pandas')
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
@@ -189,8 +189,8 @@ class EntitySet(object):
                 df_type = Library.PANDAS.value
             elif isinstance(self.dataframes[0], dd.DataFrame):
                 df_type = Library.DASK.value
-            elif is_instance(self.dataframes[0], ks, 'DataFrame'):
-                df_type = Library.KOALAS.value
+            elif is_instance(self.dataframes[0], ps, 'DataFrame'):
+                df_type = Library.SPARK.value
 
         return df_type
 
@@ -246,7 +246,7 @@ class EntitySet(object):
                 compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         '''
-        if self.dataframe_type == Library.KOALAS.value:
+        if self.dataframe_type == Library.SPARK.value:
             compression = str(compression)
         serialize.write_data_description(self, path, format='csv', index=False, sep=sep, encoding=encoding, engine=engine, compression=compression, profile_name=profile_name)
         return self
@@ -618,10 +618,10 @@ class EntitySet(object):
             if dataframe_name is None:
                 raise ValueError('Cannot add dataframe to EntitySet without a name. '
                                  'Please provide a value for the dataframe_name parameter.')
-            # Warn when performing inference on Dask or Koalas DataFrames
+            # Warn when performing inference on Dask or Spark DataFrames
             if not set(dataframe.columns).issubset(set(logical_types.keys())) and \
-                    (isinstance(dataframe, dd.DataFrame) or is_instance(dataframe, ks, 'DataFrame')):
-                warnings.warn('Performing type inference on Dask or Koalas DataFrames may be computationally intensive. '
+                    (isinstance(dataframe, dd.DataFrame) or is_instance(dataframe, ps, 'DataFrame')):
+                warnings.warn('Performing type inference on Dask or Spark DataFrames may be computationally intensive. '
                               'Specify logical types for each column to speed up EntitySet initialization.')
 
             index_was_created, index, dataframe = _get_or_create_index(index, make_index, dataframe)
@@ -832,7 +832,7 @@ class EntitySet(object):
             ti_cols = [c if c != old_ti_name else secondary_time_index for c in ti_cols]
             make_secondary_time_index = {secondary_time_index: ti_cols}
 
-        if is_instance(new_dataframe, ks, 'DataFrame'):
+        if is_instance(new_dataframe, ps, 'DataFrame'):
             already_sorted = False
 
         # will initialize Woodwork on this DataFrame
@@ -886,8 +886,8 @@ class EntitySet(object):
             combined_es = copy.deepcopy(self)
 
         lib = pd
-        if self.dataframe_type == Library.KOALAS.value:
-            lib = ks
+        if self.dataframe_type == Library.SPARK.value:
+            lib = ps
         elif self.dataframe_type == Library.DASK.value:
             lib = dd
 
@@ -997,8 +997,8 @@ class EntitySet(object):
                     if isinstance(dataframe, dd.DataFrame):
                         lti.index = dataframe[dataframe.ww.index].copy()
                         lti = lti.apply(lambda x: None)
-                    elif is_instance(dataframe, ks, 'DataFrame'):
-                        lti = ks.Series(pd.Series(index=lti.to_list(), name=lti.name))
+                    elif is_instance(dataframe, ps, 'DataFrame'):
+                        lti = ps.Series(pd.Series(index=lti.to_list(), name=lti.name))
                     else:
                         # Cannot have a category dtype with nans when calculating last time index
                         lti = lti.astype('object')
@@ -1026,15 +1026,15 @@ class EntitySet(object):
 
                 # updated last time from all children
                 for child_df in child_dataframes:
-                    # TODO: Figure out if Dask code related to indexes is important for Koalas
+                    # TODO: Figure out if Dask code related to indexes is important for Spark
                     if es_lti_dict[child_df.ww.name] is None:
                         continue
                     link_col = child_cols[dataframe.ww.name][child_df.ww.name].name
 
                     lti_is_dask = isinstance(es_lti_dict[child_df.ww.name], dd.Series)
-                    lti_is_koalas = is_instance(es_lti_dict[child_df.ww.name], ks, 'Series')
+                    lti_is_spark = is_instance(es_lti_dict[child_df.ww.name], ps, 'Series')
 
-                    if lti_is_dask or lti_is_koalas:
+                    if lti_is_dask or lti_is_spark:
                         to_join = child_df[link_col]
                         if lti_is_dask:
                             to_join.index = child_df[child_df.ww.index]
@@ -1066,13 +1066,13 @@ class EntitySet(object):
                         lti_df.set_index(dataframe.ww.index, inplace=True)
                         lti_df = lti_df.reindex(es_lti_dict[dataframe.ww.name].index)
                         lti_df['last_time_old'] = es_lti_dict[dataframe.ww.name]
-                    if not (lti_is_dask or lti_is_koalas) and lti_df.empty:
+                    if not (lti_is_dask or lti_is_spark) and lti_df.empty:
                         # Pandas errors out if it tries to do fillna and then max on an empty dataframe
                         lti_df = pd.Series()
                     else:
-                        if lti_is_koalas:
-                            lti_df['last_time'] = ks.to_datetime(lti_df['last_time'])
-                            lti_df['last_time_old'] = ks.to_datetime(lti_df['last_time_old'])
+                        if lti_is_spark:
+                            lti_df['last_time'] = ps.to_datetime(lti_df['last_time'])
+                            lti_df['last_time_old'] = ps.to_datetime(lti_df['last_time_old'])
                             # TODO: Figure out a workaround for fillna and replace
                             lti_df = lti_df.max(axis=1)
                         else:
@@ -1121,7 +1121,7 @@ class EntitySet(object):
                     new_idx.name = None
                     new_df.index = new_idx
                     dfs_to_update[df.ww.name] = new_df
-                elif is_instance(df, ks, 'DataFrame'):
+                elif is_instance(df, ps, 'DataFrame'):
                     new_df = df.merge(lti, left_on=df.ww.index, right_index=True)
                     new_df.ww.init(schema=df.ww.schema, logical_types={LTI_COLUMN_NAME: lti_ltype})
 
@@ -1175,8 +1175,8 @@ class EntitySet(object):
 
         Notes:
 
-            Finding interesting values is not supported with Dask or Koalas EntitySets.
-            To set interesting values for Dask or Koalas EntitySets, values must be
+            Finding interesting values is not supported with Dask or Spark EntitySets.
+            To set interesting values for Dask or Spark EntitySets, values must be
             specified with the ``values`` parameter.
 
         Returns:
@@ -1299,7 +1299,7 @@ class EntitySet(object):
         """
 
         schema = self[dataframe_name].ww.schema
-        if is_instance(df, ks, 'DataFrame') and isinstance(time_last, np.datetime64):
+        if is_instance(df, ps, 'DataFrame') and isinstance(time_last, np.datetime64):
             time_last = pd.to_datetime(time_last)
         if schema.time_index:
             df_empty = df.empty if isinstance(df, pd.DataFrame) else False
@@ -1338,7 +1338,7 @@ class EntitySet(object):
                 if isinstance(df, dd.DataFrame):
                     for col in columns:
                         df[col] = df[col].mask(mask, np.nan)
-                elif is_instance(df, ks, 'DataFrame'):
+                elif is_instance(df, ps, 'DataFrame'):
                     df.loc[mask, columns] = None
                 else:
                     df.loc[mask, columns] = np.nan
@@ -1384,10 +1384,10 @@ class EntitySet(object):
             df = dataframe.head(0)
 
         else:
-            if is_instance(instance_vals, (dd, ks), 'Series'):
+            if is_instance(instance_vals, (dd, ps), 'Series'):
                 df = dataframe.merge(instance_vals.to_frame(), how="inner", on=column_name)
-            elif isinstance(instance_vals, pd.Series) and is_instance(dataframe, ks, 'DataFrame'):
-                df = dataframe.merge(ks.DataFrame({column_name: instance_vals}), how="inner", on=column_name)
+            elif isinstance(instance_vals, pd.Series) and is_instance(dataframe, ps, 'DataFrame'):
+                df = dataframe.merge(ps.DataFrame({column_name: instance_vals}), how="inner", on=column_name)
             else:
                 df = dataframe[dataframe[column_name].isin(instance_vals)]
 
@@ -1401,8 +1401,8 @@ class EntitySet(object):
             # Pandas claims that bug is fixed but it still shows up in some
             # cases.  More investigation needed.
             #
-            # Note: Woodwork stores categorical columns with a `string` dtype for Koalas
-            if dataframe.ww.columns[column_name].is_categorical and not is_instance(df, ks, 'DataFrame'):
+            # Note: Woodwork stores categorical columns with a `string` dtype for Spark
+            if dataframe.ww.columns[column_name].is_categorical and not is_instance(df, ps, 'DataFrame'):
                 categories = pd.api.types.CategoricalDtype(categories=dataframe[column_name].cat.categories)
                 df[column_name] = df[column_name].astype(categories)
 
@@ -1536,7 +1536,7 @@ def _vals_to_series(instance_vals, column_id):
     # convert iterable to pd.Series
     if isinstance(instance_vals, pd.DataFrame):
         out_vals = instance_vals[column_id]
-    elif is_instance(instance_vals, (pd, dd, ks), 'Series'):
+    elif is_instance(instance_vals, (pd, dd, ps), 'Series'):
         out_vals = instance_vals.rename(column_id)
     else:
         out_vals = pd.Series(instance_vals)
@@ -1579,11 +1579,9 @@ def _get_or_create_index(index, make_index, df):
 
 
 def _create_index(df, index):
-    if isinstance(df, dd.DataFrame):
+    if is_instance(df, dd, 'DataFrame') or is_instance(df, ps, 'DataFrame'):
         df[index] = 1
         df[index] = df[index].cumsum() - 1
-    elif is_instance(df, ks, 'DataFrame'):
-        df = df.koalas.attach_id_column('distributed-sequence', index)
     else:
         df.insert(0, index, range(len(df)))
     return df

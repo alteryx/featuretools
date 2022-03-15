@@ -9,7 +9,7 @@ from featuretools.entityset.entityset import LTI_COLUMN_NAME
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library, import_or_none
 
-ks = import_or_none('databricks.koalas')
+ps = import_or_none('pyspark.pandas')
 
 
 @pytest.fixture
@@ -75,10 +75,10 @@ def extra_session_df(es):
     df = df.append(row, sort=True).sort_index()
     if es.dataframe_type == Library.DASK.value:
         df = dd.from_pandas(df, npartitions=3)
-    elif es.dataframe_type == Library.KOALAS.value:
-        # Koalas can't handle object dtypes
+    elif es.dataframe_type == Library.SPARK.value:
+        # Spark can't handle object dtypes
         df = df.astype('string')
-        df = ks.from_pandas(df)
+        df = ps.from_pandas(df)
     return df
 
 
@@ -180,8 +180,8 @@ class TestLastTimeIndex(object):
 
     def test_multiple_children(self, es, wishlist_df,
                                true_sessions_lti):
-        if ks and isinstance(es.dataframes[0], ks.DataFrame):
-            pytest.xfail('Cannot make index on a Koalas DataFrame')
+        if es.dataframe_type == Library.SPARK.value:
+            pytest.xfail('Cannot make index on a Spark DataFrame')
         # test all instances in both children
         if es.dataframe_type == Library.DASK.value:
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
@@ -209,8 +209,8 @@ class TestLastTimeIndex(object):
 
     def test_multiple_children_right_missing(self, es, wishlist_df,
                                              true_sessions_lti):
-        if ks and isinstance(es.dataframes[0], ks.DataFrame):
-            pytest.xfail('Cannot make index on a Koalas DataFrame')
+        if es.dataframe_type == Library.SPARK.value:
+            pytest.xfail('Cannot make index on a Spark DataFrame')
         # test all instances in left child
 
         # drop wishlist instance related to id 3 so it's only in log
@@ -241,8 +241,8 @@ class TestLastTimeIndex(object):
 
     def test_multiple_children_left_missing(self, es, extra_session_df,
                                             wishlist_df, true_sessions_lti):
-        if ks and isinstance(es.dataframes[0], ks.DataFrame):
-            pytest.xfail('Cannot make index on a Koalas DataFrame')
+        if es.dataframe_type == Library.SPARK.value:
+            pytest.xfail('Cannot make index on a Spark DataFrame')
 
         # add row to sessions so not all session instances are in log
         es.replace_dataframe(dataframe_name='sessions', df=extra_session_df)
@@ -283,8 +283,8 @@ class TestLastTimeIndex(object):
 
     def test_multiple_children_all_combined(self, es, extra_session_df,
                                             wishlist_df, true_sessions_lti):
-        if ks and isinstance(es.dataframes[0], ks.DataFrame):
-            pytest.xfail('Cannot make index on a Koalas DataFrame')
+        if es.dataframe_type == Library.SPARK.value:
+            pytest.xfail('Cannot make index on a Spark DataFrame')
 
         # add row to sessions so not all session instances are in log
         es.replace_dataframe(dataframe_name='sessions', df=extra_session_df)
@@ -327,8 +327,8 @@ class TestLastTimeIndex(object):
 
     def test_multiple_children_both_missing(self, es, extra_session_df,
                                             wishlist_df, true_sessions_lti):
-        if ks and isinstance(es.dataframes[0], ks.DataFrame):
-            pytest.xfail('Cannot make index on a Koalas DataFrame')
+        if es.dataframe_type == Library.SPARK.value:
+            pytest.xfail('Cannot make index on a Spark DataFrame')
         # test all instances in neither child
         sessions = es['sessions']
 
@@ -376,8 +376,8 @@ class TestLastTimeIndex(object):
               .reset_index('datetime', drop=False))
         if es.dataframe_type == Library.DASK.value:
             df = dd.from_pandas(df, npartitions=2)
-        if es.dataframe_type == Library.KOALAS.value:
-            df = ks.from_pandas(df)
+        if es.dataframe_type == Library.SPARK.value:
+            df = ps.from_pandas(df)
         es.replace_dataframe(dataframe_name='log', df=df)
         es.add_last_time_indexes()
         customers = es["customers"]

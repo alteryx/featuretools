@@ -328,7 +328,7 @@ def get_ww_types_from_features(features, entityset, pass_columns=None, cutoff_ti
             semantic_tags[column] = cutoff_schema.semantic_tags[column]
             origins[column] = "base"
 
-    if entityset.dataframe_type in (Library.DASK.value, Library.KOALAS.value):
+    if entityset.dataframe_type in (Library.DASK.value, Library.SPARK.value):
         target_dataframe_name = features[0].dataframe_name
         table_schema = entityset[target_dataframe_name].ww.schema
         index_col = table_schema.index

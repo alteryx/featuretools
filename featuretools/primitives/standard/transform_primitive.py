@@ -27,7 +27,7 @@ class IsNull(TransformPrimitive):
     name = "is_null"
     input_types = [ColumnSchema()]
     return_type = ColumnSchema(logical_type=Boolean)
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "whether {} is null"
 
     def get_function(self):
@@ -47,7 +47,7 @@ class Absolute(TransformPrimitive):
     name = "absolute"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the absolute value of {}"
 
     def get_function(self):
@@ -65,7 +65,7 @@ class SquareRoot(TransformPrimitive):
     name = "square_root"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the square root of {}"
 
     def get_function(self):
@@ -83,7 +83,7 @@ class NaturalLogarithm(TransformPrimitive):
     name = "natural_logarithm"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the natural logarithm of {}"
 
     def get_function(self):
@@ -101,7 +101,7 @@ class Sine(TransformPrimitive):
     name = "sine"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the sine of {}"
 
     def get_function(self):
@@ -119,7 +119,7 @@ class Cosine(TransformPrimitive):
     name = "cosine"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the cosine of {}"
 
     def get_function(self):
@@ -137,7 +137,7 @@ class Tangent(TransformPrimitive):
     name = "tangent"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the tangent of {}"
 
     def get_function(self):
@@ -157,7 +157,7 @@ class NumCharacters(TransformPrimitive):
     name = 'num_characters'
     input_types = [ColumnSchema(logical_type=NaturalLanguage)]
     return_type = ColumnSchema(semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the number of characters in {}"
 
     def get_function(self):
@@ -180,7 +180,7 @@ class NumWords(TransformPrimitive):
     name = 'num_words'
     input_types = [ColumnSchema(logical_type=NaturalLanguage)]
     return_type = ColumnSchema(semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the number of words in {}"
 
     def get_function(self):
@@ -201,7 +201,7 @@ class IsIn(TransformPrimitive):
     name = "isin"
     input_types = [ColumnSchema()]
     return_type = ColumnSchema(logical_type=Boolean)
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
 
     def __init__(self, list_of_outputs=None):
         self.list_of_outputs = list_of_outputs
@@ -260,7 +260,7 @@ class Negate(TransformPrimitive):
     name = "negate"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the negation of {}"
 
     def get_function(self):
@@ -283,7 +283,7 @@ class Not(TransformPrimitive):
     name = "not"
     input_types = [[ColumnSchema(logical_type=Boolean)], [ColumnSchema(logical_type=BooleanNullable)]]
     return_type = ColumnSchema(logical_type=BooleanNullable)
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the negation of {}"
 
     def generate_name(self, base_feature_names):

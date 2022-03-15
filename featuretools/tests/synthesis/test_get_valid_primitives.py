@@ -72,7 +72,7 @@ def test_get_valid_primitives_custom_primitives(pd_es):
                        ColumnSchema(semantic_tags="numeric")]
         return_type = ColumnSchema(semantic_tags="numeric")
         commutative = True
-        compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+        compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
 
     agg_prims, trans_prims = get_valid_primitives(pd_es, "log")
     assert ThreeMostCommonCat not in agg_prims

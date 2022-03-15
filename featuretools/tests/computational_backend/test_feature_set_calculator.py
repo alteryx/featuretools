@@ -206,7 +206,7 @@ def test_make_agg_feat_using_prev_n_events(es):
 
 def test_make_agg_feat_multiple_dtypes(es):
     if es.dataframe_type != Library.PANDAS.value:
-        pytest.xfail('Currently no Dask or Koalas compatible agg prims that use multiple dtypes')
+        pytest.xfail('Currently no Dask or Spark compatible agg prims that use multiple dtypes')
     compare_prod = IdentityFeature(es['log'].ww['product_id']) == 'coke zero'
 
     agg_feat = ft.Feature(es['log'].ww['id'],
@@ -437,12 +437,12 @@ def dd_df(pd_df):
 
 
 @pytest.fixture
-def ks_df(pd_df):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    return ks.from_pandas(pd_df)
+def spark_df(pd_df):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
+    return ps.from_pandas(pd_df)
 
 
-@pytest.fixture(params=['pd_df', 'dd_df', 'ks_df'])
+@pytest.fixture(params=['pd_df', 'dd_df', 'spark_df'])
 def df(request):
     return request.getfixturevalue(request.param)
 
@@ -600,7 +600,7 @@ def test_deep_agg_feat_chain(es):
     assert (v == 17 / 3.)
 
 
-# NMostCommon not supported with Dask or Koalas
+# NMostCommon not supported with Dask or Spark
 def test_topn(pd_es):
     topn = ft.Feature(pd_es['log'].ww['product_id'],
                       parent_dataframe_name='customers',
@@ -629,7 +629,7 @@ def test_topn(pd_es):
                 assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)
 
 
-# Trend not supported with Dask or Koalas
+# Trend not supported with Dask or Spark
 def test_trend(pd_es):
     trend = ft.Feature([ft.Feature(pd_es['log'].ww['value']), ft.Feature(pd_es['log'].ww['datetime'])],
                        parent_dataframe_name='customers',
@@ -744,15 +744,15 @@ def dd_parent_child(pd_parent_child):
 
 
 @pytest.fixture
-def ks_parent_child(pd_parent_child):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+def spark_parent_child(pd_parent_child):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
     parent_df, child_df = pd_parent_child
-    parent_df = ks.from_pandas(parent_df)
-    child_df = ks.from_pandas(child_df)
+    parent_df = ps.from_pandas(parent_df)
+    child_df = ps.from_pandas(child_df)
     return (parent_df, child_df)
 
 
-@pytest.fixture(params=['pd_parent_child', 'dd_parent_child', 'ks_parent_child'])
+@pytest.fixture(params=['pd_parent_child', 'dd_parent_child', 'spark_parent_child'])
 def parent_child(request):
     return request.getfixturevalue(request.param)
 
@@ -859,10 +859,10 @@ def test_with_features_built_from_es_metadata(es):
     assert (v == 10)
 
 
-# TODO: Fails with Dask and Koalas (conflicting aggregation primitives)
+# TODO: Fails with Dask and Spark (conflicting aggregation primitives)
 def test_handles_primitive_function_name_uniqueness(es):
     if es.dataframe_type != Library.PANDAS.value:
-        pytest.xfail("Fails with Dask and Koalas due conflicting aggregation primitive names")
+        pytest.xfail("Fails with Dask and Spark due conflicting aggregation primitive names")
 
     class SumTimesN(AggregationPrimitive):
         name = "sum_times_n"

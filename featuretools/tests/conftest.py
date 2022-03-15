@@ -13,7 +13,7 @@ from featuretools.tests.testing_utils import (
     to_pandas
 )
 from featuretools.utils.gen_utils import import_or_none
-from featuretools.utils.koalas_utils import pd_to_ks_clean
+from featuretools.utils.spark_utils import pd_to_spark_clean
 
 
 @pytest.fixture()
@@ -77,14 +77,14 @@ def dask_int_es(pd_int_es):
 
 
 @pytest.fixture
-def ks_int_es(pd_int_es):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+def spark_int_es(pd_int_es):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
     es = ft.EntitySet(id=pd_int_es.id)
     for df in pd_int_es.dataframes:
-        cleaned_df = pd_to_ks_clean(df).reset_index(drop=True)
-        ks_df = ks.from_pandas(cleaned_df)
-        ks_df.ww.init(schema=df.ww.schema)
-        es.add_dataframe(ks_df)
+        cleaned_df = pd_to_spark_clean(df).reset_index(drop=True)
+        spark_df = ps.from_pandas(cleaned_df)
+        spark_df.ww.init(schema=df.ww.schema)
+        es.add_dataframe(spark_df)
 
     for rel in pd_int_es.relationships:
         es.add_relationship(rel._parent_dataframe_name, rel._parent_column_name,
@@ -92,7 +92,7 @@ def ks_int_es(pd_int_es):
     return es
 
 
-@pytest.fixture(params=['pd_int_es', 'dask_int_es', 'ks_int_es'])
+@pytest.fixture(params=['pd_int_es', 'dask_int_es', 'spark_int_es'])
 def int_es(request):
     return request.getfixturevalue(request.param)
 
@@ -112,14 +112,14 @@ def dask_es(pd_es):
 
 
 @pytest.fixture
-def ks_es(pd_es):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+def spark_es(pd_es):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
     es = ft.EntitySet(id=pd_es.id)
     for df in pd_es.dataframes:
-        cleaned_df = pd_to_ks_clean(df).reset_index(drop=True)
-        ks_df = ks.from_pandas(cleaned_df)
-        ks_df.ww.init(schema=df.ww.schema)
-        es.add_dataframe(ks_df)
+        cleaned_df = pd_to_spark_clean(df).reset_index(drop=True)
+        spark_df = ps.from_pandas(cleaned_df)
+        spark_df.ww.init(schema=df.ww.schema)
+        es.add_dataframe(spark_df)
 
     for rel in pd_es.relationships:
         es.add_relationship(rel._parent_dataframe_name, rel._parent_column_name,
@@ -127,12 +127,12 @@ def ks_es(pd_es):
     return es
 
 
-@pytest.fixture(params=['pd_es', 'dask_es', 'ks_es'])
+@pytest.fixture(params=['pd_es', 'dask_es', 'spark_es'])
 def es(request):
     return request.getfixturevalue(request.param)
 
 
-@pytest.fixture(params=['pd_diamond_es', 'dask_diamond_es', 'ks_diamond_es'])
+@pytest.fixture(params=['pd_diamond_es', 'dask_diamond_es', 'spark_diamond_es'])
 def diamond_es(request):
     return request.getfixturevalue(request.param)
 
@@ -201,13 +201,13 @@ def dask_diamond_es(pd_diamond_es):
 
 
 @pytest.fixture
-def ks_diamond_es(pd_diamond_es):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+def spark_diamond_es(pd_diamond_es):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
     dataframes = {}
     for df in pd_diamond_es.dataframes:
-        ks_df = ks.from_pandas(pd_to_ks_clean(df))
-        ks_df.ww.init(schema=df.ww.schema)
-        dataframes[df.ww.name] = (ks_df,)
+        spark_df = ps.from_pandas(pd_to_spark_clean(df))
+        spark_df.ww.init(schema=df.ww.schema)
+        dataframes[df.ww.name] = (spark_df,)
 
     relationships = [(rel._parent_dataframe_name,
                       rel._parent_column_name,
@@ -217,7 +217,7 @@ def ks_diamond_es(pd_diamond_es):
     return ft.EntitySet(id=pd_diamond_es.id, dataframes=dataframes, relationships=relationships)
 
 
-@pytest.fixture(params=['pd_default_value_es', 'dask_default_value_es', 'ks_default_value_es'])
+@pytest.fixture(params=['pd_default_value_es', 'dask_default_value_es', 'spark_default_value_es'])
 def default_value_es(request):
     return request.getfixturevalue(request.param)
 
@@ -263,13 +263,13 @@ def dask_default_value_es(pd_default_value_es):
 
 
 @pytest.fixture
-def ks_default_value_es(pd_default_value_es):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+def spark_default_value_es(pd_default_value_es):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
     dataframes = {}
     for df in pd_default_value_es.dataframes:
-        ks_df = ks.from_pandas(pd_to_ks_clean(df))
-        ks_df.ww.init(schema=df.ww.schema)
-        dataframes[df.ww.name] = (ks_df,)
+        spark_df = ps.from_pandas(pd_to_spark_clean(df))
+        spark_df.ww.init(schema=df.ww.schema)
+        dataframes[df.ww.name] = (spark_df,)
 
     relationships = [(rel._parent_dataframe_name,
                       rel._parent_column_name,
@@ -279,7 +279,7 @@ def ks_default_value_es(pd_default_value_es):
     return ft.EntitySet(id=pd_default_value_es.id, dataframes=dataframes, relationships=relationships)
 
 
-@pytest.fixture(params=['pd_home_games_es', 'dask_home_games_es', 'ks_home_games_es'])
+@pytest.fixture(params=['pd_home_games_es', 'dask_home_games_es', 'spark_home_games_es'])
 def home_games_es(request):
     return request.getfixturevalue(request.param)
 
@@ -320,13 +320,13 @@ def dask_home_games_es(pd_home_games_es):
 
 
 @pytest.fixture
-def ks_home_games_es(pd_home_games_es):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+def spark_home_games_es(pd_home_games_es):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
     dataframes = {}
     for df in pd_home_games_es.dataframes:
-        ks_df = ks.from_pandas(pd_to_ks_clean(df))
-        ks_df.ww.init(schema=df.ww.schema)
-        dataframes[df.ww.name] = (ks_df,)
+        spark_df = ps.from_pandas(pd_to_spark_clean(df))
+        spark_df.ww.init(schema=df.ww.schema)
+        dataframes[df.ww.name] = (spark_df,)
 
     relationships = [(rel._parent_dataframe_name,
                       rel._parent_column_name,
@@ -365,12 +365,12 @@ def dd_mock_customer(pd_mock_customer):
 
 
 @pytest.fixture
-def ks_mock_customer(pd_mock_customer):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+def spark_mock_customer(pd_mock_customer):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
     dataframes = {}
     for df in pd_mock_customer.dataframes:
-        cleaned_df = pd_to_ks_clean(df).reset_index(drop=True)
-        dataframes[df.ww.name] = (ks.from_pandas(cleaned_df),
+        cleaned_df = pd_to_spark_clean(df).reset_index(drop=True)
+        dataframes[df.ww.name] = (ps.from_pandas(cleaned_df),
                                   df.ww.index,
                                   df.ww.time_index,
                                   df.ww.logical_types)
@@ -383,7 +383,7 @@ def ks_mock_customer(pd_mock_customer):
     return ft.EntitySet(id=pd_mock_customer.id, dataframes=dataframes, relationships=relationships)
 
 
-@pytest.fixture(params=['pd_mock_customer', 'dd_mock_customer', 'ks_mock_customer'])
+@pytest.fixture(params=['pd_mock_customer', 'dd_mock_customer', 'spark_mock_customer'])
 def mock_customer(request):
     return request.getfixturevalue(request.param)
 
@@ -410,7 +410,7 @@ def lt(es):
     return labels
 
 
-@pytest.fixture(params=['pd_dataframes', 'dask_dataframes', 'koalas_dataframes'])
+@pytest.fixture(params=['pd_dataframes', 'dask_dataframes', 'spark_dataframes'])
 def dataframes(request):
     return request.getfixturevalue(request.param)
 
@@ -457,10 +457,10 @@ def dask_dataframes():
 
 
 @pytest.fixture
-def koalas_dataframes():
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
-    cards_df = ks.DataFrame({"id": [1, 2, 3, 4, 5]})
-    transactions_df = ks.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+def spark_dataframes():
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
+    cards_df = ps.DataFrame({"id": [1, 2, 3, 4, 5]})
+    transactions_df = ps.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                                     "card_id": [1, 2, 1, 3, 4, 5],
                                     "transaction_time": [10, 12, 13, 20, 21, 20],
                                     "fraud": [True, False, False, False, True, True]})
@@ -486,7 +486,7 @@ def relationships():
     return [("cards", "id", "transactions", "card_id")]
 
 
-@pytest.fixture(params=['pd_transform_es', 'dask_transform_es', 'koalas_transform_es'])
+@pytest.fixture(params=['pd_transform_es', 'dask_transform_es', 'spark_transform_es'])
 def transform_es(request):
     return request.getfixturevalue(request.param)
 
@@ -518,18 +518,18 @@ def dask_transform_es(pd_transform_es):
 
 
 @pytest.fixture
-def koalas_transform_es(pd_transform_es):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+def spark_transform_es(pd_transform_es):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
     es = ft.EntitySet(id=pd_transform_es.id)
     for df in pd_transform_es.dataframes:
         es.add_dataframe(dataframe_name=df.ww.name,
-                         dataframe=ks.from_pandas(df),
+                         dataframe=ps.from_pandas(df),
                          index=df.ww.index,
                          logical_types=df.ww.logical_types)
     return es
 
 
-@pytest.fixture(params=['divide_by_zero_es_pd', 'divide_by_zero_es_dask', 'divide_by_zero_es_koalas'])
+@pytest.fixture(params=['divide_by_zero_es_pd', 'divide_by_zero_es_dask', 'divide_by_zero_es_spark'])
 def divide_by_zero_es(request):
     return request.getfixturevalue(request.param)
 
@@ -556,12 +556,12 @@ def divide_by_zero_es_dask(divide_by_zero_es_pd):
 
 
 @pytest.fixture
-def divide_by_zero_es_koalas(divide_by_zero_es_pd):
-    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+def divide_by_zero_es_spark(divide_by_zero_es_pd):
+    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
     es = ft.EntitySet(id=divide_by_zero_es_pd.id)
     for df in divide_by_zero_es_pd.dataframes:
         es.add_dataframe(dataframe_name=df.ww.name,
-                         dataframe=ks.from_pandas(df),
+                         dataframe=ps.from_pandas(df),
                          index=df.ww.index,
                          logical_types=df.ww.logical_types)
     return es
