@@ -409,8 +409,8 @@ def test_query_by_indexed_column(es):
         dataframe_name='log',
         instance_vals=['taco clock'],
         column_name='product_id')
-    df = to_pandas(df)
-
+    # Account for different ordering between pandas and dask/spark
+    df = to_pandas(df).reset_index(drop=True).sort_values('id')
     assert list(df['id'].values) == [15, 16]
 
 
