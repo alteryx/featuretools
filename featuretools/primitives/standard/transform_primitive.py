@@ -65,7 +65,7 @@ class SquareRoot(TransformPrimitive):
     name = "square_root"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the square root of {}"
 
     def get_function(self):
@@ -83,7 +83,7 @@ class NaturalLogarithm(TransformPrimitive):
     name = "natural_logarithm"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the natural logarithm of {}"
 
     def get_function(self):
@@ -101,7 +101,7 @@ class Sine(TransformPrimitive):
     name = "sine"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the sine of {}"
 
     def get_function(self):
@@ -119,7 +119,7 @@ class Cosine(TransformPrimitive):
     name = "cosine"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the cosine of {}"
 
     def get_function(self):
@@ -137,7 +137,7 @@ class Tangent(TransformPrimitive):
     name = "tangent"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the tangent of {}"
 
     def get_function(self):
