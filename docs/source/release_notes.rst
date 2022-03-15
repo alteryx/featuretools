@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add support for Python 3.10 (:pr:`1940`)
         * Added the SquareRoot, NaturalLogarithm, Sine, Cosine and Tangent primitives (:pr:`1948`)
     * Fixes
         * Updated the conda install commands to specify the channel (:pr:`1917`)
@@ -24,8 +25,8 @@ Future Release
         * Upgrade moto requirement (:pr:`1929`, :pr:`1938`)
         * Add Python 3.9 linting, install complete, and docs build CI tests (:pr:`1934`)
         * Add CI workflow to test with latest woodwork main branch (:pr:`1936`)
-        * Add support for Python 3.10 (:pr:`1940`)
         * Add lower bound for wheel for minimum dependency checker and limit lint CI tests to Python 3.10 (:pr:`1945`)
+        * Fix non-deterministic test in ``test_es.py`` (:pr:`1961`)
 
     Thanks to the following people for contributing to this release:
     :user:`jeff-hernandez`, :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`, :user:`thehomebrewnerd`, :user:`tvdboom`
