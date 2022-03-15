@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Added the SquareRoot, NaturalLogarithm, Sine, Cosine and Tangent primitives (:pr:`1948`)
     * Fixes
         * Updated the conda install commands to specify the channel (:pr:`1917`)
     * Changes
@@ -26,7 +27,7 @@ Future Release
         * Add lower bound for wheel for minimum dependency checker and limit lint CI tests to Python 3.10 (:pr:`1945`)
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`, :user:`thehomebrewnerd`
+    :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`, :user:`thehomebrewnerd`, :user:`tvdboom`
 
 Breaking Changes
 ++++++++++++++++
