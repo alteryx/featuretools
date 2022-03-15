@@ -20,6 +20,7 @@ Future Release
         * Update minimum nlp_primitives requirement for docs (:pr:`1925`)
         * Add GitHub URL for PyPi (:pr:`1928`)
         * Add backport release support (:pr:`1932`)
+        * Update instructions in ``release.md`` (:pr:`1963`)
     * Testing Changes
         * Update test cases to cover __main__.py file (:pr:`1927`)
         * Upgrade moto requirement (:pr:`1929`, :pr:`1938`)
