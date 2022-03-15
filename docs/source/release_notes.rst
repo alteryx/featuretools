@@ -3,8 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.7.0 Feb 17, 2022
+===================
     * Enhancements
         * Add support for Python 3.10 (:pr:`1940`)
         * Added the SquareRoot, NaturalLogarithm, Sine, Cosine and Tangent primitives (:pr:`1948`)
@@ -29,7 +39,7 @@ Future Release
         * Fix non-deterministic test in ``test_es.py`` (:pr:`1961`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`, :user:`thehomebrewnerd`, :user:`tvdboom`
+    :user:`andriyor`, :user:`jeff-hernandez`, :user:`kushal-gopal`, :user:`mingdavidqi`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tvdboom`
 
 Breaking Changes
 ++++++++++++++++
