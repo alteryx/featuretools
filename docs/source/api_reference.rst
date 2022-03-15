@@ -119,6 +119,11 @@ General Transform Primitives
     :toctree: generated/
 
     Absolute
+    SquareRoot
+    NaturalLogarithm
+    Sine
+    Cosine
+    Tangent
     Percentile
     TimeSince
 

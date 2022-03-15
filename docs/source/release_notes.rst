@@ -6,12 +6,13 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Added the SquareRoot, NaturalLogarithm, Sine, Cosine and Tangent primitives (:pr:`1948`)
     * Fixes
         * Updated the conda install commands to specify the channel (:pr:`1917`)
     * Changes
         * Update error message when DFS returns an empty list of features (:pr:`1919`)
         * Remove ``list_variable_types`` and related directories (:pr:`1929`)
-        * Transition to use pyproject.toml and setup.cfg (moving away from setup.py) (:pr:`1941`, :pr:`1950`, :pr:`1952`)
+        * Transition to use pyproject.toml and setup.cfg (moving away from setup.py) (:pr:`1941`, :pr:`1950`, :pr:`1952`, :pr:`1954`, :pr:`1957`)
         * Replace Koalas with pandas API on Spark (:pr:`1949`)
     * Documentation Changes
         * Add time series guide (:pr:`1896`)
@@ -27,7 +28,7 @@ Future Release
         * Add lower bound for wheel for minimum dependency checker and limit lint CI tests to Python 3.10 (:pr:`1945`)
 
     Thanks to the following people for contributing to this release:
-    :user:`andriyor`, :user:`jeff-hernandez`, :user:`kushal-gopal`, :user:`mingdavidqi`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`jeff-hernandez`, :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`, :user:`thehomebrewnerd`, :user:`tvdboom`
 
 Breaking Changes
 ++++++++++++++++
