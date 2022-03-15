@@ -34,9 +34,17 @@ checkdeps:
 	$(eval allow_list='holidays|scipy|numpy|pandas|tqdm|cloudpickle|distributed|dask|psutil|click|pyspark|koalas|woodwork')
 	pip freeze | grep -v "alteryx/featuretools.git" | grep -E $(allow_list) > $(OUTPUT_PATH)
 
+.PHONY: upgradepip
+upgradepip:
+	python -m pip install --upgrade pip
+
+.PHONY: upgradebuild
+upgradebuild:
+	python -m pip install --upgrade build
+
 .PHONY: package_featuretools
-package_featuretools:
-	python setup.py sdist
-	$(eval FT_VERSION=$(shell python setup.py --version))
+package_featuretools: upgradepip upgradebuild
+	python -m build
+	$(eval FT_VERSION := $(shell grep '__version__\s=' featuretools/version.py | grep -o '[^ ]*$$'))
 	tar -zxvf "dist/featuretools-${FT_VERSION}.tar.gz"
 	mv "featuretools-${FT_VERSION}" unpacked_sdist
