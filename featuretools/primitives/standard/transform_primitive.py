@@ -6,6 +6,7 @@ from woodwork.logical_types import (
     Boolean,
     BooleanNullable,
     Categorical,
+    Double,
     EmailAddress,
     NaturalLanguage
 )
@@ -63,7 +64,7 @@ class SquareRoot(TransformPrimitive):
     """
     name = "square_root"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the square root of {}"
 
@@ -81,7 +82,7 @@ class NaturalLogarithm(TransformPrimitive):
     """
     name = "natural_logarithm"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the natural logarithm of {}"
 
@@ -99,7 +100,7 @@ class Sine(TransformPrimitive):
     """
     name = "sine"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the sine of {}"
 
@@ -117,7 +118,7 @@ class Cosine(TransformPrimitive):
     """
     name = "cosine"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the cosine of {}"
 
@@ -135,7 +136,7 @@ class Tangent(TransformPrimitive):
     """
     name = "tangent"
     input_types = [ColumnSchema(semantic_tags={'numeric'})]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
     description_template = "the tangent of {}"
 
