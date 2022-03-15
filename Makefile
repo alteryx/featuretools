@@ -25,9 +25,8 @@ testcoverage:
 	pytest featuretools/ --cov=featuretools
 
 .PHONY: installdeps
-installdeps:
-	pip install --upgrade pip
-	pip install -e .[dev]
+installdeps: upgradepip
+	pip install -e ".[dev]"
 
 .PHONY: checkdeps
 checkdeps:
