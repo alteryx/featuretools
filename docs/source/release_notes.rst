@@ -13,7 +13,7 @@ Release Notes
 
 .. Thanks to the following people for contributing to this release:
 
-v1.7.0 Feb 17, 2022
+v1.7.0 Mar 16, 2022
 ===================
     * Enhancements
         * Add support for Python 3.10 (:pr:`1940`)
