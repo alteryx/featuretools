@@ -5,7 +5,7 @@
 1. Branch off of featuretools main. For the branch name, please use "release_vX.Y.Z" as the naming scheme (e.g. "release_v0.13.3"). Doing so will bypass our release notes checkin test which requires all other PRs to add a release note entry.
 
 #### Bump version number
-2. Bump version number in `setup.py`, `featuretools/version.py`, and `featuretools/tests/test_version.py`.
+2. Bump version number in `featuretools/version.py` and `featuretools/tests/test_version.py`.
 
 #### Update release notes
 1. Replace "Future Release" in `docs/source/release_notes.rst` with the current date, making sure the heading is fully underlined with `=` characters.

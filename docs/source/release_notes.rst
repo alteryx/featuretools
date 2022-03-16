@@ -23,13 +23,14 @@ v1.7.0 Feb 17, 2022
     * Changes
         * Update error message when DFS returns an empty list of features (:pr:`1919`)
         * Remove ``list_variable_types`` and related directories (:pr:`1929`)
-        * Transition to use pyproject.toml and setup.cfg (moving away from setup.py) (:pr:`1941`, :pr:`1950`, :pr:`1952`, :pr:`1954`, :pr:`1957`)
+        * Transition to use pyproject.toml and setup.cfg (moving away from setup.py) (:pr:`1941`, :pr:`1950`, :pr:`1952`, :pr:`1954`, :pr:`1957`, :pr:`1964`)
         * Replace Koalas with pandas API on Spark (:pr:`1949`)
     * Documentation Changes
         * Add time series guide (:pr:`1896`)
         * Update minimum nlp_primitives requirement for docs (:pr:`1925`)
         * Add GitHub URL for PyPi (:pr:`1928`)
         * Add backport release support (:pr:`1932`)
+        * Update instructions in ``release.md`` (:pr:`1963`)
     * Testing Changes
         * Update test cases to cover __main__.py file (:pr:`1927`)
         * Upgrade moto requirement (:pr:`1929`, :pr:`1938`)
@@ -39,7 +40,7 @@ v1.7.0 Feb 17, 2022
         * Fix non-deterministic test in ``test_es.py`` (:pr:`1961`)
 
     Thanks to the following people for contributing to this release:
-    :user:`andriyor`, :user:`jeff-hernandez`, :user:`kushal-gopal`, :user:`mingdavidqi`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tvdboom`
+    :user:`jeff-hernandez`, :user:`gsheni`, :user:`gsheni`, :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`, :user:`thehomebrewnerd`, :user:`tvdboom`
 
 Breaking Changes
 ++++++++++++++++
