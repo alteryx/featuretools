@@ -1,9 +1,4 @@
-import copy
-import functools
-import inspect
-
 from featuretools.primitives.base.primitive_base import PrimitiveBase
-from featuretools.primitives.base.utils import inspect_function_args
 
 
 class AggregationPrimitive(PrimitiveBase):

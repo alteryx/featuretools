@@ -1,4 +1,3 @@
-from graphql import assert_interface_type
 import numpy as np
 import pandas as pd
 from woodwork.column_schema import ColumnSchema
@@ -15,7 +14,7 @@ from featuretools.primitives import (
     CumMean,
     CumMin,
     CumSum,
-    Last,
+    Last
 )
 from featuretools.primitives.base import TransformPrimitive
 from featuretools.primitives.utils import (
@@ -364,7 +363,7 @@ def test_groupby_multi_output_stacking(pd_es):
         name = "test_time"
         input_types = [ColumnSchema(logical_type=Datetime)]
         return_type = ColumnSchema(semantic_tags={'numeric'})
-        number_output_features=6
+        number_output_features = 6
 
         def get_function(self):
             lambda x: x
@@ -412,13 +411,12 @@ def test_groupby_with_multioutput_primitive(pd_es):
         name = 'multi_cum_sum'
         input_types = [ColumnSchema(semantic_tags={'numeric'})]
         return_type = ColumnSchema(semantic_tags={'numeric'})
-        number_output_features=3
+        number_output_features = 3
 
         def get_function(self):
             def multi_cum_sum(x):
                 return x.cumsum(), x.cummax(), x.cummin()
             return multi_cum_sum
-
 
     fm, _ = dfs(entityset=pd_es,
                 target_dataframe_name='customers',
@@ -463,7 +461,7 @@ def test_groupby_with_multioutput_primitive_custom_names(pd_es):
         name = 'multi_cum_sum'
         input_types = [ColumnSchema(semantic_tags={'numeric'})]
         return_type = ColumnSchema(semantic_tags={'numeric'})
-        number_output_features=3
+        number_output_features = 3
 
         def get_function(self):
             def multi_cum_sum(x):
@@ -472,7 +470,6 @@ def test_groupby_with_multioutput_primitive_custom_names(pd_es):
 
         def generate_names(primitive, base_feature_names):
             return ["CUSTOM_SUM", "CUSTOM_MAX", "CUSTOM_MIN"]
-
 
     fm, _ = dfs(entityset=pd_es,
                 target_dataframe_name='customers',

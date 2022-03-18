@@ -35,9 +35,7 @@ from featuretools.primitives import (
     LessThanEqualToScalar,
     LessThanScalar,
     Longitude,
-    Minute,
     Mode,
-    Month,
     MultiplyNumeric,
     MultiplyNumericScalar,
     Not,
@@ -48,13 +46,11 @@ from featuretools.primitives import (
     NumWords,
     Percentile,
     ScalarSubtractNumericFeature,
-    Second,
     SubtractNumeric,
     SubtractNumericScalar,
     Sum,
     TimeSince,
     TransformPrimitive,
-    Year,
     get_transform_primitives
 )
 from featuretools.primitives.utils import (
@@ -62,7 +58,7 @@ from featuretools.primitives.utils import (
     serialize_primitive
 )
 from featuretools.synthesis.deep_feature_synthesis import match
-from featuretools.tests.testing_utils import feature_with_name, to_pandas
+from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
 from featuretools.utils.spark_utils import pd_to_spark_clean
 
@@ -807,10 +803,9 @@ def test_isin_feat_custom(es):
                 return array.isin(self.list_of_outputs)
             return pd_is_in
 
-        def generate_names(primitive, base_feature_names):
+        def generate_names(self, base_feature_names):
             return u"%s.isin(%s)" % (base_feature_names[0],
-                                 str(self.kwargs['list_of_outputs']))
-
+                                     str(self.kwargs['list_of_outputs']))
 
     isin = ft.Feature(es['log'].ww['product_id'], primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
     features = [isin]
@@ -1027,12 +1022,12 @@ def test_override_multi_feature_names(pd_es):
         return ['Above18(%s)' % base_feature_names,
                 'Above21(%s)' % base_feature_names,
                 'Above65(%s)' % base_feature_names]
-    
+
     class IsGreater(TransformPrimitive):
         name = 'is_greater'
         input_types = [ColumnSchema(semantic_tags={'numeric'})]
         return_type = ColumnSchema(semantic_tags={'numeric'})
-        number_output_features=3
+        number_output_features = 3
 
         def get_function(self):
             def is_greater(x):
@@ -1041,7 +1036,6 @@ def test_override_multi_feature_names(pd_es):
 
         def generate_names(primitive, base_feature_names):
             return gen_custom_names(primitive, base_feature_names)
-
 
     fm, features = ft.dfs(entityset=pd_es,
                           target_dataframe_name="customers",

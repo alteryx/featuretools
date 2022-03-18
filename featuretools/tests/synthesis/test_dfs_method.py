@@ -13,13 +13,10 @@ from featuretools.computational_backends.calculate_feature_matrix import (
 )
 from featuretools.entityset import EntitySet, Timedelta
 from featuretools.exceptions import UnusedPrimitiveWarning
-from featuretools.primitives.base import TransformPrimitive, AggregationPrimitive
-from featuretools.primitives import (
-    GreaterThanScalar,
-    Max,
-    Mean,
-    Min,
-    Sum,
+from featuretools.primitives import GreaterThanScalar, Max, Mean, Min, Sum
+from featuretools.primitives.base import (
+    AggregationPrimitive,
+    TransformPrimitive
 )
 from featuretools.synthesis import dfs
 from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
@@ -437,7 +434,7 @@ def test_warns_with_unused_custom_primitives(pd_es):
         name = 'above_ten'
         input_types = [ColumnSchema(semantic_tags={'numeric'})]
         return_type = ColumnSchema(semantic_tags={'numeric'})
-        
+
         def get_function(self):
             def above_ten(column):
                 return column > 10
@@ -471,7 +468,7 @@ def test_warns_with_unused_custom_primitives(pd_es):
         name = 'max_above_ten'
         input_types = [ColumnSchema(semantic_tags={'numeric'})]
         return_type = ColumnSchema(semantic_tags={'numeric'})
-        
+
         def get_function(self):
             def max_above_ten(column):
                 return max(column) > 10
