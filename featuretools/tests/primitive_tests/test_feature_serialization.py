@@ -16,6 +16,7 @@ from featuretools.feature_base.features_serializer import (
     SCHEMA_VERSION,
     FeaturesSerializer
 )
+from featuretools.primitives.base import AggregationPrimitive
 from featuretools.primitives import (
     Count,
     CumSum,
@@ -84,12 +85,14 @@ def test_pickle_features(es, tmpdir):
 
 
 def test_pickle_features_with_custom_primitive(pd_es, tmpdir):
-    NewMax = make_agg_primitive(
-        lambda x: max(x),
-        name="NewMax",
-        input_types=[ColumnSchema(semantic_tags={'numeric'})],
-        return_type=ColumnSchema(semantic_tags={'numeric'}),
-        description="Calculate means ignoring nan values")
+    class NewMax(AggregationPrimitive):
+        name = "new_max"
+        input_types=[ColumnSchema(semantic_tags={'numeric'})]
+        return_type=ColumnSchema(semantic_tags={'numeric'})
+
+        def get_function(self):
+            return lambda x: max(x)
+
 
     features_original = ft.dfs(target_dataframe_name='sessions', entityset=pd_es,
                                agg_primitives=["Last", "Mean", NewMax], features_only=True)
