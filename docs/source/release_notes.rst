@@ -15,6 +15,11 @@ Future Release
     Thanks to the following people for contributing to this release:
     :user:`thehomebrewnerd`
 
+Breaking Changes
+++++++++++++++++
+* The utility functions ``make_trans_primitive`` and ``make_agg_primitive`` have been removed. To create custom 
+  primitives, define the primitive class directly.
+
 v1.7.0 Mar 16, 2022
 ===================
     * Enhancements
