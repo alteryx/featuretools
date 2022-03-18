@@ -1,10 +1,10 @@
 import os
+from inspect import signature
 
 import numpy as np
 import pandas as pd
 
 from featuretools import config
-from featuretools.primitives.base.utils import signature
 from featuretools.utils.description_utils import convert_to_nth
 from featuretools.utils.gen_utils import Library
 
