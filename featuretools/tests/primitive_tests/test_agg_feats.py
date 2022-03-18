@@ -24,7 +24,6 @@ from featuretools.primitives import (
 )
 from featuretools.primitives.base import (
     AggregationPrimitive,
-    make_agg_primitive
 )
 from featuretools.primitives.utils import (
     PrimitivesDeserializer,

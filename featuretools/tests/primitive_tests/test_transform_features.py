@@ -57,7 +57,6 @@ from featuretools.primitives import (
     Year,
     get_transform_primitives
 )
-from featuretools.primitives.base import make_trans_primitive
 from featuretools.primitives.utils import (
     PrimitivesDeserializer,
     serialize_primitive
@@ -793,23 +792,25 @@ def test_isin_feat_other_syntax_int(es):
 
 
 def test_isin_feat_custom(es):
-    def pd_is_in(array, list_of_outputs=None):
-        if list_of_outputs is None:
-            list_of_outputs = []
-        return array.isin(list_of_outputs)
+    class IsIn(TransformPrimitive):
+        name = 'is_in'
+        input_types = [ColumnSchema()]
+        return_type = ColumnSchema(logical_type=Boolean)
 
-    def isin_generate_name(self, base_feature_names):
-        return u"%s.isin(%s)" % (base_feature_names[0],
+        def __init__(self, list_of_outputs=None):
+            self.list_of_outputs = list_of_outputs
+
+        def get_function(self):
+            def pd_is_in(array):
+                if self.list_of_outputs is None:
+                    self.list_of_outputs = []
+                return array.isin(self.list_of_outputs)
+            return pd_is_in
+
+        def generate_names(primitive, base_feature_names):
+            return u"%s.isin(%s)" % (base_feature_names[0],
                                  str(self.kwargs['list_of_outputs']))
 
-    IsIn = make_trans_primitive(
-        pd_is_in,
-        [ColumnSchema()],
-        ColumnSchema(logical_type=Boolean),
-        name="is_in",
-        description="For each value of the base feature, checks whether it is "
-        "in a list that is provided.",
-        cls_attributes={"generate_name": isin_generate_name})
 
     isin = ft.Feature(es['log'].ww['product_id'], primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
     features = [isin]
@@ -1024,11 +1025,6 @@ def test_make_transform_multiple_output_features(pd_es):
         f = 'sessions.customers.SUM(log.TEST_TIME(datetime)[%d])' % i
         assert feature_with_name(fl, f)
         assert ('products.DIFF(SUM(log.TEST_TIME(datetime)[%d]))' % i) in fl
-
-
-def test_feature_names_inherit_from_make_trans_primitive():
-    # R TODO
-    pass
 
 
 def test_get_filepath(es):

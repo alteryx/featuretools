@@ -13,14 +13,13 @@ from featuretools.computational_backends.calculate_feature_matrix import (
 )
 from featuretools.entityset import EntitySet, Timedelta
 from featuretools.exceptions import UnusedPrimitiveWarning
+from featuretools.primitives.base import TransformPrimitive, AggregationPrimitive
 from featuretools.primitives import (
     GreaterThanScalar,
     Max,
     Mean,
     Min,
     Sum,
-    make_agg_primitive,
-    make_trans_primitive
 )
 from featuretools.synthesis import dfs
 from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
@@ -434,12 +433,15 @@ def test_warns_with_unused_groupby_primitives(pd_es):
 
 
 def test_warns_with_unused_custom_primitives(pd_es):
-    def above_ten(column):
-        return column > 10
-
-    AboveTen = make_trans_primitive(function=above_ten,
-                                    input_types=[ColumnSchema(semantic_tags={'numeric'})],
-                                    return_type=ColumnSchema(semantic_tags={'numeric'}))
+    class AboveTen(TransformPrimitive):
+        name = 'above_ten'
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
+        
+        def get_function(self):
+            def above_ten(column):
+                return column > 10
+            return above_ten
 
     trans_primitives = [AboveTen]
 
@@ -465,12 +467,15 @@ def test_warns_with_unused_custom_primitives(pd_es):
             max_depth=1,
             features_only=True)
 
-    def max_above_ten(column):
-        return max(column) > 10
-
-    MaxAboveTen = make_agg_primitive(function=max_above_ten,
-                                     input_types=[ColumnSchema(semantic_tags={'numeric'})],
-                                     return_type=ColumnSchema(semantic_tags={'numeric'}))
+    class MaxAboveTen(AggregationPrimitive):
+        name = 'max_above_ten'
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
+        
+        def get_function(self):
+            def max_above_ten(column):
+                return max(column) > 10
+            return max_above_ten
 
     agg_primitives = [MaxAboveTen]
 

@@ -36,7 +36,6 @@ from featuretools.primitives import (
     Sum,
     Weekday,
     Year,
-    make_agg_primitive
 )
 from featuretools.tests.testing_utils import check_names
 
