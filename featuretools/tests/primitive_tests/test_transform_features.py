@@ -798,14 +798,8 @@ def test_isin_feat_custom(es):
 
         def get_function(self):
             def pd_is_in(array):
-                if self.list_of_outputs is None:
-                    self.list_of_outputs = []
                 return array.isin(self.list_of_outputs)
             return pd_is_in
-
-        def generate_names(self, base_feature_names):
-            return u"%s.isin(%s)" % (base_feature_names[0],
-                                     str(self.kwargs['list_of_outputs']))
 
     isin = ft.Feature(es['log'].ww['product_id'], primitive=CustomIsIn(list_of_outputs=["toothpaste", "coke zero"]))
     features = [isin]

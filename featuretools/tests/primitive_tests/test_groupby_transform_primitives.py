@@ -365,8 +365,6 @@ def test_groupby_multi_output_stacking(pd_es):
         return_type = ColumnSchema(semantic_tags={'numeric'})
         number_output_features = 6
 
-        def get_function(self):
-            lambda x: x
 
     fl = dfs(
         entityset=pd_es,

@@ -90,9 +90,6 @@ def test_pickle_features_with_custom_primitive(pd_es, tmpdir):
         input_types = [ColumnSchema(semantic_tags={'numeric'})]
         return_type = ColumnSchema(semantic_tags={'numeric'})
 
-        def get_function(self):
-            return lambda x: max(x)
-
     features_original = ft.dfs(target_dataframe_name='sessions', entityset=pd_es,
                                agg_primitives=["Last", "Mean", NewMax], features_only=True)
 

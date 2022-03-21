@@ -99,9 +99,6 @@ def test_count_null(pd_es):
 
         def get_function(self):
             def count_func(values):
-                if len(values) == 0:
-                    return 0
-
                 if self.count_null:
                     values = values.fillna(0)
 
@@ -575,11 +572,6 @@ def test_custom_primitive_default_kwargs(es):
         def __init__(self, n=1):
             self.n = n
 
-        def get_function(self):
-            def sum_n_times(numeric):
-                return np.nan_to_num(numeric).sum(dtype=np.float) * self.n
-            return sum_n_times
-
     sum_n_1_n = 1
     sum_n_1_base_f = ft.Feature(es['log'].ww['value'])
     sum_n_1 = ft.Feature([sum_n_1_base_f], parent_dataframe_name='sessions', primitive=SumNTimes(n=sum_n_1_n))
@@ -692,17 +684,6 @@ def test_override_multi_feature_names(pd_es):
         input_types = [ColumnSchema(semantic_tags={'numeric'})]
         return_type = ColumnSchema(semantic_tags={'category'})
         number_output_features = 3
-
-        def get_function(self):
-            def pd_top3(x):
-                counts = x.value_counts()
-                counts = counts[counts > 0]
-                array = np.array(counts[:3].index)
-                if len(array) < 3:
-                    filler = np.full(3 - len(array), np.nan)
-                    array = np.append(array, filler)
-                return array
-            return pd_top3
 
         def generate_names(self, base_feature_names, relationship_path_name,
                            parent_dataframe_name, where_str, use_prev_str):

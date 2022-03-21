@@ -435,11 +435,6 @@ def test_warns_with_unused_custom_primitives(pd_es):
         input_types = [ColumnSchema(semantic_tags={'numeric'})]
         return_type = ColumnSchema(semantic_tags={'numeric'})
 
-        def get_function(self):
-            def above_ten(column):
-                return column > 10
-            return above_ten
-
     trans_primitives = [AboveTen]
 
     warning_text = "Some specified primitives were not used during DFS:\n" + \
@@ -468,11 +463,6 @@ def test_warns_with_unused_custom_primitives(pd_es):
         name = 'max_above_ten'
         input_types = [ColumnSchema(semantic_tags={'numeric'})]
         return_type = ColumnSchema(semantic_tags={'numeric'})
-
-        def get_function(self):
-            def max_above_ten(column):
-                return max(column) > 10
-            return max_above_ten
 
     agg_primitives = [MaxAboveTen]
 
