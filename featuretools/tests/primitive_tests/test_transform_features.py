@@ -788,7 +788,7 @@ def test_isin_feat_other_syntax_int(es):
 
 
 def test_isin_feat_custom(es):
-    class IsIn(TransformPrimitive):
+    class CustomIsIn(TransformPrimitive):
         name = 'is_in'
         input_types = [ColumnSchema()]
         return_type = ColumnSchema(logical_type=Boolean)
@@ -807,7 +807,7 @@ def test_isin_feat_custom(es):
             return u"%s.isin(%s)" % (base_feature_names[0],
                                      str(self.kwargs['list_of_outputs']))
 
-    isin = ft.Feature(es['log'].ww['product_id'], primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
+    isin = ft.Feature(es['log'].ww['product_id'], primitive=CustomIsIn(list_of_outputs=["toothpaste", "coke zero"]))
     features = [isin]
     df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)),
                    index='id',
