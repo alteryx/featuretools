@@ -44,6 +44,6 @@ upgradebuild:
 .PHONY: package_featuretools
 package_featuretools: upgradepip upgradebuild
 	python -m build
-	$(eval FT_VERSION := $(shell grep '__version__\s=' featuretools/version.py | grep -o '[^ ]*$$'))
+	$(eval FT_VERSION := $(python -c "from pep517.meta import load; metadata = load('.'); print(metadata.version)"))
 	tar -zxvf "dist/featuretools-${FT_VERSION}.tar.gz"
 	mv "featuretools-${FT_VERSION}" unpacked_sdist
