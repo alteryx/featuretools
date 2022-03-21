@@ -5,6 +5,7 @@ on:
   workflow_dispatch:
 jobs:
   scheduled_unit_latest_tests:
+    if: ${{ github.repository_owner == 'alteryx' }}
     name: ${{ matrix.python_version }} unit tests ${{ matrix.libraries }}
     runs-on: ubuntu-latest
     strategy:
