@@ -12,6 +12,7 @@ on:
       - completed
 jobs:
   build:
+    if: ${{ github.repository_owner == 'alteryx' }}
     runs-on: ubuntu-latest
     steps:
       - name: Find dependency PRs

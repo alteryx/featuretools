@@ -11,6 +11,7 @@ Future Release
         * Removed ``make_trans_primitive`` and ``make_agg_primitive`` utility functions (:pr:`1970`)
     * Documentation Changes
     * Testing Changes
+        * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`1973`)
 
     Thanks to the following people for contributing to this release:
     :user:`thehomebrewnerd`
