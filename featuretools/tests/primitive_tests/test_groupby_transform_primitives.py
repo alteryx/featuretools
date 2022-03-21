@@ -365,7 +365,6 @@ def test_groupby_multi_output_stacking(pd_es):
         return_type = ColumnSchema(semantic_tags={'numeric'})
         number_output_features = 6
 
-
     fl = dfs(
         entityset=pd_es,
         target_dataframe_name="sessions",
