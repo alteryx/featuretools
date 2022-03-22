@@ -25,7 +25,7 @@ jobs:
           output_filepath: featuretools/tests/requirement_files/minimum_test_requirements.txt
       - name: Run min dep generator - core reqs
         id: min_dep_gen_core
-        uses: alteryx/minimum-dependency-generator@3.2
+        uses: alteryx/minimum-dependency-generator@v3.2
         with:
           paths: 'setup.cfg'
           options: 'install_requires'
