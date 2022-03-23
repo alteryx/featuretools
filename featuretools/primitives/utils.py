@@ -11,7 +11,7 @@ import featuretools
 from featuretools.primitives.base import (
     AggregationPrimitive,
     PrimitiveBase,
-    TransformPrimitive
+    TransformPrimitive,
 )
 from featuretools.utils.gen_utils import Library, find_descendents
 
@@ -22,8 +22,7 @@ def get_aggregation_primitives():
     for attribute_string in dir(featuretools.primitives):
         attribute = getattr(featuretools.primitives, attribute_string)
         if isclass(attribute):
-            if issubclass(attribute,
-                          featuretools.primitives.AggregationPrimitive):
+            if issubclass(attribute, featuretools.primitives.AggregationPrimitive):
                 if attribute.name:
                     aggregation_primitives.add(attribute)
     return {prim.name.lower(): prim for prim in aggregation_primitives}
@@ -35,71 +34,100 @@ def get_transform_primitives():
     for attribute_string in dir(featuretools.primitives):
         attribute = getattr(featuretools.primitives, attribute_string)
         if isclass(attribute):
-            if issubclass(attribute,
-                          featuretools.primitives.TransformPrimitive):
+            if issubclass(attribute, featuretools.primitives.TransformPrimitive):
                 if attribute.name:
                     transform_primitives.add(attribute)
     return {prim.name.lower(): prim for prim in transform_primitives}
 
 
 def list_primitives():
-    trans_names, trans_primitives, valid_inputs, return_type = _get_names_primitives(get_transform_primitives)
-    trans_dask = [Library.DASK in primitive.compatibility for primitive in trans_primitives]
-    trans_spark = [Library.SPARK in primitive.compatibility for primitive in trans_primitives]
-    transform_df = pd.DataFrame({'name': trans_names,
-                                 'description': _get_descriptions(trans_primitives),
-                                 'dask_compatible': trans_dask,
-                                 'spark_compatible': trans_spark,
-                                 'valid_inputs': valid_inputs,
-                                 'return_type': return_type})
-    transform_df['type'] = 'transform'
+    trans_names, trans_primitives, valid_inputs, return_type = _get_names_primitives(
+        get_transform_primitives
+    )
+    trans_dask = [
+        Library.DASK in primitive.compatibility for primitive in trans_primitives
+    ]
+    trans_spark = [
+        Library.SPARK in primitive.compatibility for primitive in trans_primitives
+    ]
+    transform_df = pd.DataFrame(
+        {
+            "name": trans_names,
+            "description": _get_descriptions(trans_primitives),
+            "dask_compatible": trans_dask,
+            "spark_compatible": trans_spark,
+            "valid_inputs": valid_inputs,
+            "return_type": return_type,
+        }
+    )
+    transform_df["type"] = "transform"
 
-    agg_names, agg_primitives, valid_inputs, return_type = _get_names_primitives(get_aggregation_primitives)
+    agg_names, agg_primitives, valid_inputs, return_type = _get_names_primitives(
+        get_aggregation_primitives
+    )
     agg_dask = [Library.DASK in primitive.compatibility for primitive in agg_primitives]
-    agg_spark = [Library.SPARK in primitive.compatibility for primitive in agg_primitives]
-    agg_df = pd.DataFrame({'name': agg_names,
-                           'description': _get_descriptions(agg_primitives),
-                           'dask_compatible': agg_dask,
-                           'spark_compatible': agg_spark,
-                           'valid_inputs': valid_inputs,
-                           'return_type': return_type})
-    agg_df['type'] = 'aggregation'
+    agg_spark = [
+        Library.SPARK in primitive.compatibility for primitive in agg_primitives
+    ]
+    agg_df = pd.DataFrame(
+        {
+            "name": agg_names,
+            "description": _get_descriptions(agg_primitives),
+            "dask_compatible": agg_dask,
+            "spark_compatible": agg_spark,
+            "valid_inputs": valid_inputs,
+            "return_type": return_type,
+        }
+    )
+    agg_df["type"] = "aggregation"
 
-    columns = ['name', 'type', 'dask_compatible', 'spark_compatible', 'description', 'valid_inputs', 'return_type']
+    columns = [
+        "name",
+        "type",
+        "dask_compatible",
+        "spark_compatible",
+        "description",
+        "valid_inputs",
+        "return_type",
+    ]
     return pd.concat([agg_df, transform_df], ignore_index=True)[columns]
 
 
 def get_default_aggregation_primitives():
-    agg_primitives = [featuretools.primitives.Sum,
-                      featuretools.primitives.Std,
-                      featuretools.primitives.Max,
-                      featuretools.primitives.Skew,
-                      featuretools.primitives.Min,
-                      featuretools.primitives.Mean,
-                      featuretools.primitives.Count,
-                      featuretools.primitives.PercentTrue,
-                      featuretools.primitives.NumUnique,
-                      featuretools.primitives.Mode]
+    agg_primitives = [
+        featuretools.primitives.Sum,
+        featuretools.primitives.Std,
+        featuretools.primitives.Max,
+        featuretools.primitives.Skew,
+        featuretools.primitives.Min,
+        featuretools.primitives.Mean,
+        featuretools.primitives.Count,
+        featuretools.primitives.PercentTrue,
+        featuretools.primitives.NumUnique,
+        featuretools.primitives.Mode,
+    ]
     return agg_primitives
 
 
 def get_default_transform_primitives():
     # featuretools.primitives.TimeSince
-    trans_primitives = [featuretools.primitives.Age,
-                        featuretools.primitives.Day,
-                        featuretools.primitives.Year,
-                        featuretools.primitives.Month,
-                        featuretools.primitives.Weekday,
-                        featuretools.primitives.Haversine,
-                        featuretools.primitives.NumWords,
-                        featuretools.primitives.NumCharacters]
+    trans_primitives = [
+        featuretools.primitives.Age,
+        featuretools.primitives.Day,
+        featuretools.primitives.Year,
+        featuretools.primitives.Month,
+        featuretools.primitives.Weekday,
+        featuretools.primitives.Haversine,
+        featuretools.primitives.NumWords,
+        featuretools.primitives.NumCharacters,
+    ]
     return trans_primitives
 
 
 def _get_descriptions(primitives):
     descriptions = []
     for prim in primitives:
-        description = ''
+        description = ""
         if prim.__doc__ is not None:
             description = prim.__doc__.split("\n")[0]
         descriptions.append(description)
@@ -115,8 +143,8 @@ def _get_names_primitives(primitive_func):
         names.append(name)
         primitives.append(primitive)
         input_types = _get_unique_input_types(primitive.input_types)
-        valid_inputs.append(', '.join(input_types))
-        return_type.append(getattr(primitive.return_type, '__name__', None))
+        valid_inputs.append(", ".join(input_types))
+        return_type.append(getattr(primitive.return_type, "__name__", None))
     return names, primitives, valid_inputs, return_type
 
 
@@ -164,10 +192,11 @@ def load_primitive_from_file(filepath):
     primitives = []
     for primitive_name in vars(module):
         primitive_class = getattr(module, primitive_name)
-        if (isclass(primitive_class) and
-                issubclass(primitive_class, PrimitiveBase) and
-                primitive_class not in (AggregationPrimitive,
-                                        TransformPrimitive)):
+        if (
+            isclass(primitive_class)
+            and issubclass(primitive_class, PrimitiveBase)
+            and primitive_class not in (AggregationPrimitive, TransformPrimitive)
+        ):
             primitives.append((primitive_name, primitive_class))
 
     if len(primitives) == 0:
@@ -183,9 +212,9 @@ def serialize_primitive(primitive):
     args_dict = {name: val for name, val in primitive.get_arguments()}
     cls = type(primitive)
     return {
-        'type': cls.__name__,
-        'module': cls.__module__,
-        'arguments': args_dict,
+        "type": cls.__name__,
+        "module": cls.__module__,
+        "arguments": args_dict,
     }
 
 
@@ -207,8 +236,8 @@ class PrimitivesDeserializer(object):
         Construct a primitive from the given dictionary (output from
         serialize_primitive).
         """
-        class_name = primitive_dict['type']
-        module_name = primitive_dict['module']
+        class_name = primitive_dict["type"]
+        module_name = primitive_dict["module"]
         cache_key = (class_name, module_name)
 
         if cache_key in self.class_cache:
@@ -217,10 +246,12 @@ class PrimitivesDeserializer(object):
             cls = self._find_class_in_descendants(cache_key)
 
             if not cls:
-                raise RuntimeError('Primitive "%s" in module "%s" not found' %
-                                   (class_name, module_name))
+                raise RuntimeError(
+                    'Primitive "%s" in module "%s" not found'
+                    % (class_name, module_name)
+                )
 
-        arguments = primitive_dict['arguments']
+        arguments = primitive_dict["arguments"]
         return cls(**arguments)
 
     def _find_class_in_descendants(self, search_key):
@@ -293,8 +324,8 @@ def _roll_series_with_gap(series, window_size, gap=0, min_periods=1):
 
     # Workaround for pandas' bug: https://github.com/pandas-dev/pandas/issues/43016
     # Can remove when upgraded to pandas 1.4.0
-    if str(series.dtype) == 'Int64':
-        series = series.astype('float64')
+    if str(series.dtype) == "Int64":
+        series = series.astype("float64")
 
     functional_window_length = window_size
     if isinstance(gap, str):
@@ -371,7 +402,9 @@ def _check_window_size(window_size):
         try:
             to_offset(window_size)
         except ValueError:
-            raise ValueError(f"Cannot roll series. The specified window length, {window_size}, is not a valid offset alias.")
+            raise ValueError(
+                f"Cannot roll series. The specified window length, {window_size}, is not a valid offset alias."
+            )
     # Or an integer greater than zero
     elif isinstance(window_size, int):
         if window_size <= 0:
@@ -384,13 +417,17 @@ def _check_gap(window_size, gap):
     # Gap must either be a valid offset string that also has an offset string window length
     if isinstance(gap, str):
         if not isinstance(window_size, str):
-            raise TypeError(f"Cannot roll series with offset gap, {gap}, and numeric window length, {window_size}. "
-                            "If an offset alias is used for gap, the window length must also be defined as an offset alias. "
-                            "Please either change gap to be numeric or change window length to be an offset alias.")
+            raise TypeError(
+                f"Cannot roll series with offset gap, {gap}, and numeric window length, {window_size}. "
+                "If an offset alias is used for gap, the window length must also be defined as an offset alias. "
+                "Please either change gap to be numeric or change window length to be an offset alias."
+            )
         try:
             to_offset(gap)
         except ValueError:
-            raise ValueError(f"Cannot roll series. The specified gap, {gap}, is not a valid offset alias.")
+            raise ValueError(
+                f"Cannot roll series. The specified gap, {gap}, is not a valid offset alias."
+            )
     # Or an integer greater than or equal to zero
     elif isinstance(gap, int):
         if gap < 0:
@@ -407,32 +444,33 @@ def _deconstrct_latlongs(latlongs):
 
 def _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_2s, unit):
     # https://stackoverflow.com/a/29546836/2512385
-    lon1, lat1, lon2, lat2 = map(
-        np.radians, [lon_1s, lat_1s, lon_2s, lat_2s])
+    lon1, lat1, lon2, lat2 = map(np.radians, [lon_1s, lat_1s, lon_2s, lat_2s])
     dlon = lon2 - lon1
     dlat = lat2 - lat1
-    a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * \
-        np.cos(lat2) * np.sin(dlon / 2.0)**2
+    a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.0) ** 2
     radius_earth = 3958.7613
-    if unit == 'kilometers':
+    if unit == "kilometers":
         radius_earth = 6371.0088
     distances = radius_earth * 2 * np.arcsin(np.sqrt(a))
     return distances
 
 
 class HolidayUtil:
-    def __init__(self, country='US'):
+    def __init__(self, country="US"):
         try:
             holidays.country_holidays(country=country)
         except NotImplementedError:
-            available_countries = 'https://github.com/dr-prodigy/python-holidays#available-countries'
-            error = 'must be one of the available countries:\n%s' % available_countries
+            available_countries = (
+                "https://github.com/dr-prodigy/python-holidays#available-countries"
+            )
+            error = "must be one of the available countries:\n%s" % available_countries
             raise ValueError(error)
 
         self.federal_holidays = getattr(holidays, country)(years=range(1950, 2100))
 
     def to_df(self):
-        holidays_df = pd.DataFrame(sorted(self.federal_holidays.items()),
-                                   columns=['holiday_date', 'names'])
-        holidays_df.holiday_date = holidays_df.holiday_date.astype('datetime64')
+        holidays_df = pd.DataFrame(
+            sorted(self.federal_holidays.items()), columns=["holiday_date", "names"]
+        )
+        holidays_df.holiday_date = holidays_df.holiday_date.astype("datetime64")
         return holidays_df

@@ -11,6 +11,7 @@ from featuretools.utils.gen_utils import Library
 
 class PrimitiveBase(object):
     """Base class for all primitives."""
+
     #: (str): Name of the primitive
     name = None
     #: (list): woodwork.ColumnSchema types of inputs
@@ -54,7 +55,9 @@ class PrimitiveBase(object):
             return self._method(*series_args, **kwargs)
 
     def __lt__(self, other):
-        return (self.name + self.get_args_string()) < (other.name + other.get_args_string())
+        return (self.name + self.get_args_string()) < (
+            other.name + other.get_args_string()
+        )
 
     def generate_name(self):
         raise NotImplementedError("Subclass must implement")
@@ -72,14 +75,14 @@ class PrimitiveBase(object):
         strings = []
         for name, value in self.get_arguments():
             # format arg to string
-            string = '{}={}'.format(name, str(value))
+            string = "{}={}".format(name, str(value))
             strings.append(string)
 
         if len(strings) == 0:
-            return ''
+            return ""
 
-        string = ', '.join(strings)
-        string = ', ' + string
+        string = ", ".join(strings)
+        string = ", " + string
         return string
 
     def get_arguments(self):
@@ -102,20 +105,26 @@ class PrimitiveBase(object):
 
         return values
 
-    def get_description(self, input_column_descriptions, slice_num=None, template_override=None):
+    def get_description(
+        self, input_column_descriptions, slice_num=None, template_override=None
+    ):
         template = template_override or self.description_template
         if template:
             if isinstance(template, list):
                 if slice_num is not None:
                     slice_index = slice_num + 1
                     if slice_index < len(template):
-                        return template[slice_index].format(*input_column_descriptions,
-                                                            nth_slice=convert_to_nth(slice_index))
+                        return template[slice_index].format(
+                            *input_column_descriptions,
+                            nth_slice=convert_to_nth(slice_index),
+                        )
                     else:
                         if len(template) > 2:
-                            raise IndexError('Slice out of range of template')
-                        return template[1].format(*input_column_descriptions,
-                                                  nth_slice=convert_to_nth(slice_index))
+                            raise IndexError("Slice out of range of template")
+                        return template[1].format(
+                            *input_column_descriptions,
+                            nth_slice=convert_to_nth(slice_index),
+                        )
                 else:
                     template = template[0]
             return template.format(*input_column_descriptions)
@@ -124,10 +133,11 @@ class PrimitiveBase(object):
         name = self.name.upper() if self.name is not None else type(self).__name__
         if slice_num is not None:
             nth_slice = convert_to_nth(slice_num + 1)
-            description = "the {} output from applying {} to {}".format(nth_slice,
-                                                                        name,
-                                                                        ', '.join(input_column_descriptions))
+            description = "the {} output from applying {} to {}".format(
+                nth_slice, name, ", ".join(input_column_descriptions)
+            )
         else:
-            description = "the result of applying {} to {}".format(name,
-                                                                   ', '.join(input_column_descriptions))
+            description = "the result of applying {} to {}".format(
+                name, ", ".join(input_column_descriptions)
+            )
         return description

@@ -3,12 +3,10 @@ import pandas as pd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, Double
 
-from featuretools.primitives.base.transform_primitive_base import (
-    TransformPrimitive
-)
+from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
 from featuretools.primitives.utils import (
     _apply_roll_with_offset_gap,
-    _roll_series_with_gap
+    _roll_series_with_gap,
 )
 
 
@@ -88,9 +86,13 @@ class RollingMax(TransformPrimitive):
         >>> rolling_max(times, [4, 3, 2, 1, 0]).tolist()
         [nan, 4.0, 4.0, 4.0, 3.0]
     """
+
     name = "rolling_max"
-    input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
-    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
+    input_types = [
+        ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"}),
+        ColumnSchema(semantic_tags={"numeric"}),
+    ]
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
 
     def __init__(self, window_length=3, gap=0, min_periods=1):
         self.window_length = window_length
@@ -100,15 +102,17 @@ class RollingMax(TransformPrimitive):
     def get_function(self):
         def rolling_max(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = _roll_series_with_gap(x,
-                                                  self.window_length,
-                                                  gap=self.gap,
-                                                  min_periods=self.min_periods)
+            rolled_series = _roll_series_with_gap(
+                x, self.window_length, gap=self.gap, min_periods=self.min_periods
+            )
 
             if isinstance(self.gap, str):
                 additional_args = (self.gap, max, self.min_periods)
-                return rolled_series.apply(_apply_roll_with_offset_gap, args=additional_args).values
+                return rolled_series.apply(
+                    _apply_roll_with_offset_gap, args=additional_args
+                ).values
             return rolled_series.max().values
+
         return rolling_max
 
 
@@ -187,9 +191,13 @@ class RollingMin(TransformPrimitive):
         >>> rolling_min(times, [4, 3, 2, 1, 0]).tolist()
         [nan, 4.0, 3.0, 2.0, 1.0]
     """
+
     name = "rolling_min"
-    input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
-    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
+    input_types = [
+        ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"}),
+        ColumnSchema(semantic_tags={"numeric"}),
+    ]
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
 
     def __init__(self, window_length=3, gap=0, min_periods=1):
         self.window_length = window_length
@@ -199,15 +207,17 @@ class RollingMin(TransformPrimitive):
     def get_function(self):
         def rolling_min(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = _roll_series_with_gap(x,
-                                                  self.window_length,
-                                                  gap=self.gap,
-                                                  min_periods=self.min_periods)
+            rolled_series = _roll_series_with_gap(
+                x, self.window_length, gap=self.gap, min_periods=self.min_periods
+            )
 
             if isinstance(self.gap, str):
                 additional_args = (self.gap, min, self.min_periods)
-                return rolled_series.apply(_apply_roll_with_offset_gap, args=additional_args).values
+                return rolled_series.apply(
+                    _apply_roll_with_offset_gap, args=additional_args
+                ).values
             return rolled_series.min().values
+
         return rolling_min
 
 
@@ -279,9 +289,13 @@ class RollingMean(TransformPrimitive):
         >>> rolling_mean(times, [4, 3, 2, 1, 0]).tolist()
         [nan, nan, 3.0, 2.0, 1.0]
     """
+
     name = "rolling_mean"
-    input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
-    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
+    input_types = [
+        ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"}),
+        ColumnSchema(semantic_tags={"numeric"}),
+    ]
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
 
     def __init__(self, window_length=3, gap=0, min_periods=0):
         self.window_length = window_length
@@ -291,15 +305,17 @@ class RollingMean(TransformPrimitive):
     def get_function(self):
         def rolling_mean(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = _roll_series_with_gap(x,
-                                                  self.window_length,
-                                                  gap=self.gap,
-                                                  min_periods=self.min_periods)
+            rolled_series = _roll_series_with_gap(
+                x, self.window_length, gap=self.gap, min_periods=self.min_periods
+            )
 
             if isinstance(self.gap, str):
                 additional_args = (self.gap, np.mean, self.min_periods)
-                return rolled_series.apply(_apply_roll_with_offset_gap, args=additional_args).values
+                return rolled_series.apply(
+                    _apply_roll_with_offset_gap, args=additional_args
+                ).values
             return rolled_series.mean().values
+
         return rolling_mean
 
 
@@ -377,9 +393,13 @@ class RollingSTD(TransformPrimitive):
         >>> rolling_std(times, [4, 3, 2, 1, 0]).tolist()
         [nan, nan, 0.7071067811865476, 1.0, 1.2909944487358056]
     """
+
     name = "rolling_std"
-    input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'}), ColumnSchema(semantic_tags={'numeric'})]
-    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
+    input_types = [
+        ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"}),
+        ColumnSchema(semantic_tags={"numeric"}),
+    ]
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
 
     def __init__(self, window_length=3, gap=0, min_periods=1):
         self.window_length = window_length
@@ -389,18 +409,22 @@ class RollingSTD(TransformPrimitive):
     def get_function(self):
         def rolling_std(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = _roll_series_with_gap(x,
-                                                  self.window_length,
-                                                  gap=self.gap,
-                                                  min_periods=self.min_periods)
+            rolled_series = _roll_series_with_gap(
+                x, self.window_length, gap=self.gap, min_periods=self.min_periods
+            )
 
             if isinstance(self.gap, str):
+
                 def _pandas_std(series):
                     return series.std()
+
                 additional_args = (self.gap, _pandas_std, self.min_periods)
 
-                return rolled_series.apply(_apply_roll_with_offset_gap, args=additional_args).values
+                return rolled_series.apply(
+                    _apply_roll_with_offset_gap, args=additional_args
+                ).values
             return rolled_series.std().values
+
         return rolling_std
 
 
@@ -479,9 +503,10 @@ class RollingCount(TransformPrimitive):
         [nan, 1.0, 2.0, 3.0, 3.0]
 
     """
+
     name = "rolling_count"
-    input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
-    return_type = ColumnSchema(logical_type=Double, semantic_tags={'numeric'})
+    input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"})]
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
 
     def __init__(self, window_length=3, gap=0, min_periods=0):
         self.window_length = window_length
@@ -491,16 +516,17 @@ class RollingCount(TransformPrimitive):
     def get_function(self):
         def rolling_count(datetime):
             x = pd.Series(1, index=datetime)
-            rolled_series = _roll_series_with_gap(x,
-                                                  self.window_length,
-                                                  gap=self.gap,
-                                                  min_periods=self.min_periods)
+            rolled_series = _roll_series_with_gap(
+                x, self.window_length, gap=self.gap, min_periods=self.min_periods
+            )
 
             if isinstance(self.gap, str):
                 # Since _apply_roll_with_offset_gap doesn't artificially add nans before rolling,
                 # it produces correct results
                 additional_args = (self.gap, len, self.min_periods)
-                return rolled_series.apply(_apply_roll_with_offset_gap, args=additional_args).values
+                return rolled_series.apply(
+                    _apply_roll_with_offset_gap, args=additional_args
+                ).values
 
             rolling_count_series = rolled_series.count()
 
@@ -514,4 +540,5 @@ class RollingCount(TransformPrimitive):
                 num_nans = self.min_periods - 1 + self.gap
             rolling_count_series.iloc[range(num_nans)] = np.nan
             return rolling_count_series.values
+
         return rolling_count
