@@ -64,14 +64,6 @@ Primitive Types
 
 .. _api_ref.aggregation_features:
 
-Primitive Creation Functions
-----------------------------
-.. autosummary::
-    :toctree: generated/
-
-    make_agg_primitive
-    make_trans_primitive
-
 Aggregation Primitives
 ----------------------
 .. autosummary::

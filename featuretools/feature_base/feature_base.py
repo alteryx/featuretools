@@ -639,8 +639,6 @@ class AggregationFeature(FeatureBase):
 
 class TransformFeature(FeatureBase):
     def __init__(self, base_features, primitive, name=None):
-        # Any edits made to this method should also be made to the
-        # new_class_init method in make_trans_primitive
         base_features = _validate_base_features(base_features)
 
         for bf in base_features:

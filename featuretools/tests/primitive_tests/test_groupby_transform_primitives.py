@@ -14,10 +14,9 @@ from featuretools.primitives import (
     CumMean,
     CumMin,
     CumSum,
-    Last,
-    TransformPrimitive
+    Last
 )
-from featuretools.primitives.base import make_trans_primitive
+from featuretools.primitives.base import TransformPrimitive
 from featuretools.primitives.utils import (
     PrimitivesDeserializer,
     serialize_primitive
@@ -360,13 +359,11 @@ def test_groupby_uses_calc_time(pd_es):
 
 
 def test_groupby_multi_output_stacking(pd_es):
-    TestTime = make_trans_primitive(
-        function=lambda x: x,
-        name="test_time",
-        input_types=[ColumnSchema(logical_type=Datetime)],
-        return_type=ColumnSchema(semantic_tags={'numeric'}),
-        number_output_features=6,
-    )
+    class TestTime(TransformPrimitive):
+        name = "test_time"
+        input_types = [ColumnSchema(logical_type=Datetime)]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
+        number_output_features = 6
 
     fl = dfs(
         entityset=pd_es,
@@ -407,14 +404,16 @@ def test_serialization(pd_es):
 
 
 def test_groupby_with_multioutput_primitive(pd_es):
-    def multi_cum_sum(x):
-        return x.cumsum(), x.cummax(), x.cummin()
+    class MultiCumSum(TransformPrimitive):
+        name = 'multi_cum_sum'
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
+        number_output_features = 3
 
-    num_features = 3
-    MultiCumSum = make_trans_primitive(function=multi_cum_sum,
-                                       input_types=[ColumnSchema(semantic_tags={'numeric'})],
-                                       return_type=ColumnSchema(semantic_tags={'numeric'}),
-                                       number_output_features=num_features)
+        def get_function(self):
+            def multi_cum_sum(x):
+                return x.cumsum(), x.cummax(), x.cummin()
+            return multi_cum_sum
 
     fm, _ = dfs(entityset=pd_es,
                 target_dataframe_name='customers',
@@ -455,18 +454,19 @@ def test_groupby_with_multioutput_primitive(pd_es):
 
 
 def test_groupby_with_multioutput_primitive_custom_names(pd_es):
-    def gen_custom_names(primitive, base_feature_names):
-        return ["CUSTOM_SUM", "CUSTOM_MAX", "CUSTOM_MIN"]
+    class MultiCumSum(TransformPrimitive):
+        name = 'multi_cum_sum'
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
+        number_output_features = 3
 
-    def multi_cum_sum(x):
-        return x.cumsum(), x.cummax(), x.cummin()
+        def get_function(self):
+            def multi_cum_sum(x):
+                return x.cumsum(), x.cummax(), x.cummin()
+            return multi_cum_sum
 
-    num_features = 3
-    MultiCumSum = make_trans_primitive(function=multi_cum_sum,
-                                       input_types=[ColumnSchema(semantic_tags={'numeric'})],
-                                       return_type=ColumnSchema(semantic_tags={'numeric'}),
-                                       number_output_features=num_features,
-                                       cls_attributes={"generate_names": gen_custom_names})
+        def generate_names(primitive, base_feature_names):
+            return ["CUSTOM_SUM", "CUSTOM_MAX", "CUSTOM_MIN"]
 
     fm, _ = dfs(entityset=pd_es,
                 target_dataframe_name='customers',

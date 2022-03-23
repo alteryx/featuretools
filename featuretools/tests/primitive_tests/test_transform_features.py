@@ -35,9 +35,7 @@ from featuretools.primitives import (
     LessThanEqualToScalar,
     LessThanScalar,
     Longitude,
-    Minute,
     Mode,
-    Month,
     MultiplyNumeric,
     MultiplyNumericScalar,
     Not,
@@ -48,22 +46,19 @@ from featuretools.primitives import (
     NumWords,
     Percentile,
     ScalarSubtractNumericFeature,
-    Second,
     SubtractNumeric,
     SubtractNumericScalar,
     Sum,
     TimeSince,
     TransformPrimitive,
-    Year,
     get_transform_primitives
 )
-from featuretools.primitives.base import make_trans_primitive
 from featuretools.primitives.utils import (
     PrimitivesDeserializer,
     serialize_primitive
 )
 from featuretools.synthesis.deep_feature_synthesis import match
-from featuretools.tests.testing_utils import feature_with_name, to_pandas
+from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
 from featuretools.utils.spark_utils import pd_to_spark_clean
 
@@ -793,25 +788,20 @@ def test_isin_feat_other_syntax_int(es):
 
 
 def test_isin_feat_custom(es):
-    def pd_is_in(array, list_of_outputs=None):
-        if list_of_outputs is None:
-            list_of_outputs = []
-        return array.isin(list_of_outputs)
+    class CustomIsIn(TransformPrimitive):
+        name = 'is_in'
+        input_types = [ColumnSchema()]
+        return_type = ColumnSchema(logical_type=Boolean)
 
-    def isin_generate_name(self, base_feature_names):
-        return u"%s.isin(%s)" % (base_feature_names[0],
-                                 str(self.kwargs['list_of_outputs']))
+        def __init__(self, list_of_outputs=None):
+            self.list_of_outputs = list_of_outputs
 
-    IsIn = make_trans_primitive(
-        pd_is_in,
-        [ColumnSchema()],
-        ColumnSchema(logical_type=Boolean),
-        name="is_in",
-        description="For each value of the base feature, checks whether it is "
-        "in a list that is provided.",
-        cls_attributes={"generate_name": isin_generate_name})
+        def get_function(self):
+            def pd_is_in(array):
+                return array.isin(self.list_of_outputs)
+            return pd_is_in
 
-    isin = ft.Feature(es['log'].ww['product_id'], primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
+    isin = ft.Feature(es['log'].ww['product_id'], primitive=CustomIsIn(list_of_outputs=["toothpaste", "coke zero"]))
     features = [isin]
     df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)),
                    index='id',
@@ -982,55 +972,6 @@ def test_two_kinds_of_dependents(pd_es):
     assert df[g.get_name()].tolist() == [15, 26]
 
 
-def test_make_transform_multiple_output_features(pd_es):
-    def test_time(x):
-        times = pd.Series(x)
-        units = ["year", "month", "day", "hour", "minute", "second"]
-        return [times.apply(lambda x: getattr(x, unit)) for unit in units]
-
-    def gen_feat_names(self):
-        subnames = ["Year", "Month", "Day", "Hour", "Minute", "Second"]
-        return ["Now.%s(%s)" % (subname, self.base_features[0].get_name())
-                for subname in subnames]
-
-    TestTime = make_trans_primitive(
-        function=test_time,
-        input_types=[ColumnSchema(logical_type=Datetime)],
-        return_type=ColumnSchema(semantic_tags={'numeric'}),
-        number_output_features=6,
-        cls_attributes={"get_feature_names": gen_feat_names},
-    )
-
-    join_time_split = ft.Feature(pd_es["log"].ww["datetime"], primitive=TestTime)
-    alt_features = [ft.Feature(pd_es["log"].ww["datetime"], primitive=Year),
-                    ft.Feature(pd_es["log"].ww["datetime"], primitive=Month),
-                    ft.Feature(pd_es["log"].ww["datetime"], primitive=Day),
-                    ft.Feature(pd_es["log"].ww["datetime"], primitive=Hour),
-                    ft.Feature(pd_es["log"].ww["datetime"], primitive=Minute),
-                    ft.Feature(pd_es["log"].ww["datetime"], primitive=Second)]
-    fm, fl = ft.dfs(
-        entityset=pd_es,
-        target_dataframe_name="log",
-        agg_primitives=['sum'],
-        trans_primitives=[TestTime, Year, Month, Day, Hour, Minute, Second, Diff],
-        max_depth=5)
-
-    subnames = join_time_split.get_feature_names()
-    altnames = [f.get_name() for f in alt_features]
-    for col1, col2 in zip(subnames, altnames):
-        assert (fm[col1] == fm[col2]).all()
-
-    for i in range(6):
-        f = 'sessions.customers.SUM(log.TEST_TIME(datetime)[%d])' % i
-        assert feature_with_name(fl, f)
-        assert ('products.DIFF(SUM(log.TEST_TIME(datetime)[%d]))' % i) in fl
-
-
-def test_feature_names_inherit_from_make_trans_primitive():
-    # R TODO
-    pass
-
-
 def test_get_filepath(es):
     class Mod4(TransformPrimitive):
         '''Return base feature modulo 4'''
@@ -1076,15 +1017,19 @@ def test_override_multi_feature_names(pd_es):
                 'Above21(%s)' % base_feature_names,
                 'Above65(%s)' % base_feature_names]
 
-    def is_greater(x):
-        return x > 18, x > 21, x > 65
+    class IsGreater(TransformPrimitive):
+        name = 'is_greater'
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
+        number_output_features = 3
 
-    num_features = 3
-    IsGreater = make_trans_primitive(function=is_greater,
-                                     input_types=[ColumnSchema(semantic_tags={'numeric'})],
-                                     return_type=ColumnSchema(semantic_tags={'numeric'}),
-                                     number_output_features=num_features,
-                                     cls_attributes={"generate_names": gen_custom_names})
+        def get_function(self):
+            def is_greater(x):
+                return x > 18, x > 21, x > 65
+            return is_greater
+
+        def generate_names(primitive, base_feature_names):
+            return gen_custom_names(primitive, base_feature_names)
 
     fm, features = ft.dfs(entityset=pd_es,
                           target_dataframe_name="customers",

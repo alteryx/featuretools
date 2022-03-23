@@ -22,10 +22,7 @@ from featuretools.primitives import (
     TimeSinceLast,
     get_aggregation_primitives
 )
-from featuretools.primitives.base import (
-    AggregationPrimitive,
-    make_agg_primitive
-)
+from featuretools.primitives.base import AggregationPrimitive
 from featuretools.primitives.utils import (
     PrimitivesDeserializer,
     serialize_primitive
@@ -90,30 +87,30 @@ def test_makes_count(es):
     assert feature_with_name(features, 'customers.COUNT(log)')
 
 
-def test_count_null_and_make_agg_primitive(pd_es):
-    def count_func(values, count_null=False):
-        if len(values) == 0:
-            return 0
+def test_count_null(pd_es):
+    class Count(AggregationPrimitive):
+        name = "count"
+        input_types = [[ColumnSchema(semantic_tags={'foreign_key'})], [ColumnSchema()]]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
+        stack_on_self = False
 
-        if count_null:
-            values = values.fillna(0)
+        def __init__(self, count_null=True):
+            self.count_null = count_null
 
-        return values.count()
+        def get_function(self):
+            def count_func(values):
+                if self.count_null:
+                    values = values.fillna(0)
 
-    def count_generate_name(self, base_feature_names, relationship_path_name,
-                            parent_dataframe_name, where_str, use_prev_str):
-        return u"COUNT(%s%s%s)" % (relationship_path_name,
-                                   where_str,
-                                   use_prev_str)
+                return values.count()
+            return count_func
 
-    Count = make_agg_primitive(
-        count_func,
-        [[ColumnSchema(semantic_tags={'foreign_key'})], [ColumnSchema()]],
-        ColumnSchema(semantic_tags={'numeric'}),
-        name="count",
-        stack_on_self=False,
-        cls_attributes={"generate_name": count_generate_name}
-    )
+        def generate_name(self, base_feature_names, relationship_path_name,
+                          parent_dataframe_name, where_str, use_prev_str):
+            return u"COUNT(%s%s%s)" % (relationship_path_name,
+                                       where_str,
+                                       use_prev_str)
+
     count_null = ft.Feature(pd_es['log'].ww['value'], parent_dataframe_name='sessions', primitive=Count(count_null=True))
     feature_matrix = ft.calculate_feature_matrix([count_null], entityset=pd_es)
     values = [5, 4, 1, 2, 3, 2]
@@ -453,20 +450,28 @@ def test_agg_same_method_name(es):
     """
     # TODO: Update to work with Dask and Spark
     if es.dataframe_type != Library.PANDAS.value:
-        pytest.xfail("Cannot use primitives made with make_agg_primitives with Dask or Spark EntitySets")
+        pytest.xfail("Need to update to work with Dask and Spark EntitySets")
+
     # test with normally defined functions
+    class Sum(AggregationPrimitive):
+        name = "sum"
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
 
-    def custom_primitive(x):
-        return x.sum()
+        def get_function(self):
+            def custom_primitive(x):
+                return x.sum()
+            return custom_primitive
 
-    Sum = make_agg_primitive(custom_primitive, input_types=[ColumnSchema(semantic_tags={'numeric'})],
-                             return_type=ColumnSchema(semantic_tags={'numeric'}), name="sum")
+    class Max(AggregationPrimitive):
+        name = "max"
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
 
-    def custom_primitive(x):
-        return x.max()
-
-    Max = make_agg_primitive(custom_primitive, input_types=[ColumnSchema(semantic_tags={'numeric'})],
-                             return_type=ColumnSchema(semantic_tags={'numeric'}), name="max")
+        def get_function(self):
+            def custom_primitive(x):
+                return x.max()
+            return custom_primitive
 
     f_sum = ft.Feature(es["log"].ww["value"], parent_dataframe_name="customers", primitive=Sum)
     f_max = ft.Feature(es["log"].ww["value"], parent_dataframe_name="customers", primitive=Max)
@@ -475,10 +480,21 @@ def test_agg_same_method_name(es):
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
 
     # test with lambdas
-    Sum = make_agg_primitive(lambda x: x.sum(), input_types=[ColumnSchema(semantic_tags={'numeric'})],
-                             return_type=ColumnSchema(semantic_tags={'numeric'}), name="sum")
-    Max = make_agg_primitive(lambda x: x.max(), input_types=[ColumnSchema(semantic_tags={'numeric'})],
-                             return_type=ColumnSchema(semantic_tags={'numeric'}), name="max")
+    class Sum(AggregationPrimitive):
+        name = "sum"
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
+
+        def get_function(self):
+            return lambda x: x.sum()
+
+    class Max(AggregationPrimitive):
+        name = "max"
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
+
+        def get_function(self):
+            return lambda x: x.max()
 
     f_sum = ft.Feature(es["log"].ww["value"], parent_dataframe_name="customers", primitive=Sum)
     f_max = ft.Feature(es["log"].ww["value"], parent_dataframe_name="customers", primitive=Max)
@@ -487,15 +503,18 @@ def test_agg_same_method_name(es):
 
 
 def test_time_since_last_custom(pd_es):
-    def time_since_last(values, time=None):
-        time_since = time - values.iloc[0]
-        return time_since.total_seconds()
+    class TimeSinceLast(AggregationPrimitive):
+        name = "time_since_last"
+        input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
+        uses_calc_time = True
 
-    TimeSinceLast = make_agg_primitive(time_since_last,
-                                       [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})],
-                                       ColumnSchema(semantic_tags={'numeric'}),
-                                       name="time_since_last",
-                                       uses_calc_time=True)
+        def get_function(self):
+            def time_since_last(values, time):
+                time_since = time - values.iloc[0]
+                return time_since.total_seconds()
+            return time_since_last
+
     f = ft.Feature(pd_es["log"].ww["datetime"], parent_dataframe_name="customers", primitive=TimeSinceLast)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=pd_es,
@@ -505,57 +524,23 @@ def test_time_since_last_custom(pd_es):
     correct = [131376600, 131289600, 131287800]
     # note: must round to nearest second
     assert all(fm[f.get_name()].round().values == correct)
-
-    error_text = "'time' is a restricted keyword.  Please use a different keyword."
-    with pytest.raises(ValueError, match=error_text):
-        TimeSinceLast = make_agg_primitive(time_since_last,
-                                           [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})],
-                                           ColumnSchema(semantic_tags={'numeric'}),
-                                           uses_calc_time=False)
-
-
-def test_custom_primitive_time_as_arg(pd_es):
-    def time_since_last(values, time):
-        time_since = time - values.iloc[0]
-        return time_since.total_seconds()
-
-    TimeSinceLast = make_agg_primitive(time_since_last,
-                                       [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})],
-                                       ColumnSchema(semantic_tags={'numeric'}),
-                                       uses_calc_time=True)
-    assert TimeSinceLast.name == "time_since_last"
-    f = ft.Feature(pd_es["log"].ww["datetime"], parent_dataframe_name="customers", primitive=TimeSinceLast)
-    fm = ft.calculate_feature_matrix([f],
-                                     entityset=pd_es,
-                                     instance_ids=[0, 1, 2],
-                                     cutoff_time=datetime(2015, 6, 8))
-
-    correct = [131376600, 131289600, 131287800]
-    # note: must round to nearest second
-    assert all(fm[f.get_name()].round().values == correct)
-
-    error_text = "'time' is a restricted keyword.  Please use a different keyword."
-    with pytest.raises(ValueError, match=error_text):
-        make_agg_primitive(time_since_last,
-                           [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})],
-                           ColumnSchema(semantic_tags={'numeric'}),
-                           uses_calc_time=False)
 
 
 def test_custom_primitive_multiple_inputs(pd_es):
-    def mean_sunday(numeric, datetime):
-        '''
-        Finds the mean of non-null values of a feature that occurred on Sundays
-        '''
-        days = pd.DatetimeIndex(datetime).weekday.values
-        df = pd.DataFrame({'numeric': numeric, 'time': days})
-        return df[df['time'] == 6]['numeric'].mean()
+    class MeanSunday(AggregationPrimitive):
+        name = "mean_sunday"
+        input_types = [ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(logical_type=Datetime)]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
 
-    MeanSunday = make_agg_primitive(
-        function=mean_sunday,
-        input_types=[ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(logical_type=Datetime)],
-        return_type=ColumnSchema(semantic_tags={'numeric'})
-    )
+        def get_function(self):
+            def mean_sunday(numeric, datetime):
+                '''
+                Finds the mean of non-null values of a feature that occurred on Sundays
+                '''
+                days = pd.DatetimeIndex(datetime).weekday.values
+                df = pd.DataFrame({'numeric': numeric, 'time': days})
+                return df[df['time'] == 6]['numeric'].mean()
+            return mean_sunday
 
     fm, features = ft.dfs(entityset=pd_es,
                           target_dataframe_name="sessions",
@@ -579,12 +564,13 @@ def test_custom_primitive_multiple_inputs(pd_es):
 
 
 def test_custom_primitive_default_kwargs(es):
-    def sum_n_times(numeric, n=1):
-        return np.nan_to_num(numeric).sum(dtype=np.float) * n
+    class SumNTimes(AggregationPrimitive):
+        name = "sum_n_times"
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'numeric'})
 
-    SumNTimes = make_agg_primitive(function=sum_n_times,
-                                   input_types=[ColumnSchema(semantic_tags={'numeric'})],
-                                   return_type=ColumnSchema(semantic_tags={'numeric'}))
+        def __init__(self, n=1):
+            self.n = n
 
     sum_n_1_n = 1
     sum_n_1_base_f = ft.Feature(es['log'].ww['value'])
@@ -593,9 +579,9 @@ def test_custom_primitive_default_kwargs(es):
     sum_n_2_base_f = ft.Feature(es['log'].ww['value_2'])
     sum_n_2 = ft.Feature([sum_n_2_base_f], parent_dataframe_name='sessions', primitive=SumNTimes(n=sum_n_2_n))
     assert sum_n_1_base_f == sum_n_1.base_features[0]
-    assert sum_n_1_n == sum_n_1.primitive.kwargs['n']
+    assert sum_n_1_n == sum_n_1.primitive.n
     assert sum_n_2_base_f == sum_n_2.base_features[0]
-    assert sum_n_2_n == sum_n_2.primitive.kwargs['n']
+    assert sum_n_2_n == sum_n_2.primitive.n
 
 
 def test_makes_numtrue(es):
@@ -611,19 +597,22 @@ def test_makes_numtrue(es):
 
 
 def test_make_three_most_common(pd_es):
-    def pd_top3(x):
-        counts = x.value_counts()
-        counts = counts[counts > 0]
-        array = np.array(counts[:3].index)
-        if len(array) < 3:
-            filler = np.full(3 - len(array), np.nan)
-            array = np.append(array, filler)
-        return array
+    class NMostCommoner(AggregationPrimitive):
+        name = "pd_top3"
+        input_types = [ColumnSchema(semantic_tags={'category'})],
+        return_type = None
+        number_output_features = 3
 
-    NMostCommoner = make_agg_primitive(function=pd_top3,
-                                       input_types=[ColumnSchema(semantic_tags={'category'})],
-                                       return_type=None,
-                                       number_output_features=3)
+        def get_function(self):
+            def pd_top3(x):
+                counts = x.value_counts()
+                counts = counts[counts > 0]
+                array = np.array(counts[:3].index)
+                if len(array) < 3:
+                    filler = np.full(3 - len(array), np.nan)
+                    array = np.append(array, filler)
+                return array
+            return pd_top3
 
     fm, features = ft.dfs(entityset=pd_es,
                           target_dataframe_name="customers",
@@ -690,21 +679,16 @@ def test_override_multi_feature_names(pd_es):
         base_string = 'Custom_%s({}.{})'.format(parent_dataframe_name, base_feature_names)
         return [base_string % i for i in range(primitive.number_output_features)]
 
-    def pd_top3(x):
-        counts = x.value_counts()
-        counts = counts[counts > 0]
-        array = np.array(counts[:3].index)
-        if len(array) < 3:
-            filler = np.full(3 - len(array), np.nan)
-            array = np.append(array, filler)
-        return array
+    class NMostCommoner(AggregationPrimitive):
+        name = "pd_top3"
+        input_types = [ColumnSchema(semantic_tags={'numeric'})]
+        return_type = ColumnSchema(semantic_tags={'category'})
+        number_output_features = 3
 
-    num_features = 3
-    NMostCommoner = make_agg_primitive(function=pd_top3,
-                                       input_types=[ColumnSchema(semantic_tags={'numeric'})],
-                                       return_type=ColumnSchema(semantic_tags={'category'}),
-                                       number_output_features=num_features,
-                                       cls_attributes={"generate_names": gen_custom_names})
+        def generate_names(self, base_feature_names, relationship_path_name,
+                           parent_dataframe_name, where_str, use_prev_str):
+            return gen_custom_names(self, base_feature_names, relationship_path_name,
+                                    parent_dataframe_name, where_str, use_prev_str)
 
     fm, features = ft.dfs(entityset=pd_es,
                           target_dataframe_name="products",

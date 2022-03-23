@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Removed ``make_trans_primitive`` and ``make_agg_primitive`` utility functions (:pr:`1970`)
     * Documentation Changes
     * Testing Changes
         * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`1973`)
@@ -15,6 +16,11 @@ Future Release
 
     Thanks to the following people for contributing to this release:
     :user:`thehomebrewnerd`, :user:`gsheni`
+
+Breaking Changes
+++++++++++++++++
+* The utility functions ``make_trans_primitive`` and ``make_agg_primitive`` have been removed. To create custom 
+  primitives, define the primitive class directly.
 
 v1.7.0 Mar 16, 2022
 ===================

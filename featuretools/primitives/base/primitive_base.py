@@ -1,10 +1,10 @@
 import os
+from inspect import signature
 
 import numpy as np
 import pandas as pd
 
 from featuretools import config
-from featuretools.primitives.base.utils import signature
 from featuretools.utils.description_utils import convert_to_nth
 from featuretools.utils.gen_utils import Library
 
@@ -87,10 +87,6 @@ class PrimitiveBase(object):
 
         args = signature(self.__class__).parameters.items()
         for name, arg in args:
-            # skip if not a standard argument (e.g. excluding *args and **kwargs)
-            if arg.kind != arg.POSITIONAL_OR_KEYWORD:
-                continue
-
             # assert that arg is attribute of primitive
             error = '"{}" must be attribute of {}'
             assert hasattr(self, name), error.format(name, self.__class__.__name__)
