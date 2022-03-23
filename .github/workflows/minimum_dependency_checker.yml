@@ -1,5 +1,6 @@
 name: Minimum Dependency Checker
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -16,55 +17,27 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Run min dep generator - test reqs
         id: min_dep_gen_test
-        uses: alteryx/minimum-dependency-generator@v3.1
+        uses: alteryx/minimum-dependency-generator@v3.2
         with:
           paths: 'setup.cfg'
           options: 'install_requires'
           extras_require: 'test'
-      - name: Save min test deps and run diff
-        id: check_min_test
-        continue-on-error: true
-        run: |
-          mkdir /tmp/dependencies_updated_artifacts
-          printf "${{ steps.min_dep_gen_test.outputs.min_reqs }}" > /tmp/minimum_test_requirements.txt
-          diff /tmp/minimum_test_requirements.txt featuretools/tests/requirement_files/minimum_test_requirements.txt
-      - name: if min test deps have changed, write output file
-        if: steps.check_min_test.outcome != 'success'
-        run: |
-          printf "${{ steps.min_dep_gen_test.outputs.min_reqs }}" > featuretools/tests/requirement_files/minimum_test_requirements.txt
+          output_filepath: featuretools/tests/requirement_files/minimum_test_requirements.txt
       - name: Run min dep generator - core reqs
         id: min_dep_gen_core
-        uses: alteryx/minimum-dependency-generator@v3.1
+        uses: alteryx/minimum-dependency-generator@v3.2
         with:
           paths: 'setup.cfg'
           options: 'install_requires'
-      - name: Save min core deps and run diff
-        id: check_core_deps
-        continue-on-error: true
-        run: |
-          printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > /tmp/minimum_core_requirements.txt
-          diff /tmp/minimum_core_requirements.txt featuretools/tests/requirement_files/minimum_core_requirements.txt
-      - name: if min core deps have changed, write output file
-        if: steps.check_core_deps.outcome != 'success'
-        run: |
-          printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > featuretools/tests/requirement_files/minimum_core_requirements.txt
+          output_filepath: featuretools/tests/requirement_files/minimum_core_requirements.txt
       - name: Run min dep generator - spark
         id: min_dep_gen_spark
-        uses: alteryx/minimum-dependency-generator@v3.1
+        uses: alteryx/minimum-dependency-generator@v3.2
         with:
           paths: 'setup.cfg'
           options: 'install_requires'
           extras_require: 'spark'
-      - name: Save min spark deps and run diff
-        id: check_spark_deps
-        continue-on-error: true
-        run: |
-          printf "${{ steps.min_dep_gen_spark.outputs.min_reqs }}" > /tmp/minimum_spark_requirements.txt
-          diff /tmp/minimum_spark_requirements.txt featuretools/tests/requirement_files/minimum_spark_requirements.txt
-      - name: if min spark deps have changed, write output file
-        if: steps.check_spark_deps.outcome != 'success'
-        run: |
-          printf "${{ steps.min_dep_gen_spark.outputs.min_reqs }}" > featuretools/tests/requirement_files/minimum_spark_requirements.txt
+          output_filepath: featuretools/tests/requirement_files/minimum_spark_requirements.txt
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:

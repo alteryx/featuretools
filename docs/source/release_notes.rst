@@ -12,9 +12,10 @@ Future Release
     * Documentation Changes
     * Testing Changes
         * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`1973`)
+        * Updated minimum dependency checker to use new version with write file support (:pr:`1975`, :pr:`1976`)
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`thehomebrewnerd`, :user:`gsheni`
 
 Breaking Changes
 ++++++++++++++++
