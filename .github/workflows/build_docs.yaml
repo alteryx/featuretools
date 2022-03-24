@@ -37,5 +37,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install unpacked_sdist/
           python -m pip install unpacked_sdist/[dev]
+          python -m pip check
       - name: Build docs
         run: make -C docs/ -e "SPHINXOPTS=-W" clean html
