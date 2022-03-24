@@ -8,7 +8,7 @@ on:
 name: Install Test
 jobs:
   install_ft_complete:
-    name: ${{ matrix.os}} - ${{ matrix.python_version }} install featuretools complete
+    name: ${{ matrix.os }} - ${{ matrix.python_version }} install featuretools complete
     strategy:
       fail-fast: false
       matrix:
