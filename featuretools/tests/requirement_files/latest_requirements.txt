@@ -7,5 +7,5 @@ numpy==1.22.3
 pandas==1.4.1
 psutil==5.9.0
 scipy==1.8.0
-tqdm==4.63.0
+tqdm==4.63.1
 woodwork==0.14.0
