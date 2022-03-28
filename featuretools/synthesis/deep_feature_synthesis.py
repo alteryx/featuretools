@@ -220,7 +220,6 @@ class DeepFeatureSynthesis(object):
                 for p in primitives.get_default_aggregation_primitives()
                 if df_library in p.compatibility
             ]
-        self.agg_primitives = []
         self.agg_primitives = sorted(
             [check_primitive(p, "aggregation") for p in agg_primitives]
         )
@@ -1092,7 +1091,7 @@ def match(
 T = TypeVar("T", bound=PrimitiveBase)
 
 
-def handle_primitive(primitive: T) -> T:
+def instantiate_primitive(primitive: T) -> T:
     if not isinstance(primitive, PrimitiveBase):
         primitive = primitive()
     assert isinstance(primitive, PrimitiveBase), "must be a primitive"
@@ -1133,7 +1132,9 @@ def check_primitive(primitive: Union[T, str], prim_type) -> T:
             )
         resolved_primitive = prim_dict[prim_string]  # type: ignore
     else:
-        resolved_primitive = handle_primitive(primitive)
+        resolved_primitive = primitive
+
+    resolved_primitive = instantiate_primitive(resolved_primitive)
 
     if not isinstance(resolved_primitive, supertype):
         raise ValueError(
