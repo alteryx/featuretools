@@ -14,6 +14,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         python_version: ["3.7", "3.8", "3.9", "3.10"]
+        exclude:
+          - python_version: "3.9"
+          - os: macos-latest
     runs-on: ${{ matrix.os }}
     steps:
       - name: Set up python ${{ matrix.python_version }}
