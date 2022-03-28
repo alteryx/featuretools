@@ -10,7 +10,7 @@ Future Release
     * Changes
         * Removed ``make_trans_primitive`` and ``make_agg_primitive`` utility functions (:pr:`1970`)
     * Documentation Changes
-        * Update nbconvert to version 6.5.4 to fix docs build issue (:pr:`1984`)
+        * Update nbconvert to version 6.4.5 to fix docs build issue (:pr:`1984`)
     * Testing Changes
         * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`1973`)
         * Updated minimum dependency checker to use new version with write file support (:pr:`1975`, :pr:`1976`)
