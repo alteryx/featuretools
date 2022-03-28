@@ -1,7 +1,7 @@
 import logging
 import warnings
 from collections import defaultdict
-from typing import Dict, List, Set, Tuple, Union
+from typing import Dict, List, Set, Tuple, Union, TypeVar
 
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
@@ -134,7 +134,7 @@ class DeepFeatureSynthesis(object):
         where_primitives=None,
         groupby_trans_primitives=None,
         max_depth: Union[int, None] = 2,
-        max_features: Union[int, None] = -1,
+        max_features: int = -1,
         allowed_paths: Union[List[List[str]], None] = None,
         ignore_dataframes: Union[List[str], None] = None,
         ignore_columns: Union[Dict[str, List[str]], None] = None,
@@ -235,12 +235,14 @@ class DeepFeatureSynthesis(object):
             [check_primitive(p, "transform") for p in trans_primitives]
         )
 
+        self.where_primitives: List[PrimitiveBase]
         if where_primitives is None:
             where_primitives = [primitives.Count]
         self.where_primitives = sorted(
             [check_primitive(p, "where") for p in where_primitives]
         )
 
+        self.groupby_trans_primitives: List[PrimitiveBase]
         if groupby_trans_primitives is None:
             groupby_trans_primitives = []
         self.groupby_trans_primitives = sorted(
@@ -249,13 +251,13 @@ class DeepFeatureSynthesis(object):
 
         if primitive_options is None:
             primitive_options = {}
-        all_primitives = (
+        all_primitives: List[PrimitiveBase] = (
             self.trans_primitives
-            + self.agg_primitives
+            + self.agg_primitives  # type: ignore
             + self.where_primitives
             + self.groupby_trans_primitives
         )
-        bad_primitives = [
+        bad_primitives: List[str] = [
             prim.name for prim in all_primitives if df_library not in prim.compatibility
         ]
         if bad_primitives:
@@ -1087,14 +1089,19 @@ def match(
     return matching_inputs
 
 
-def handle_primitive(primitive):
+T = TypeVar("T", bound=PrimitiveBase)
+
+
+def handle_primitive(primitive: T) -> T:
     if not isinstance(primitive, PrimitiveBase):
         primitive = primitive()
     assert isinstance(primitive, PrimitiveBase), "must be a primitive"
     return primitive
 
 
-def check_primitive(primitive, prim_type):
+def check_primitive(primitive: Union[T, str], prim_type) -> T:
+
+    resolved_primitive: T
     if prim_type == "transform" or prim_type == "groupby transform":
         prim_dict = primitives.get_transform_primitives()
         supertype = TransformPrimitive
@@ -1104,13 +1111,17 @@ def check_primitive(primitive, prim_type):
             else "groupby_trans_primitives"
         )
         s = "a transform"
-    if prim_type == "aggregation" or prim_type == "where":
+    elif prim_type == "aggregation" or prim_type == "where":
         prim_dict = primitives.get_aggregation_primitives()
         supertype = AggregationPrimitive
         arg_name = (
             "agg_primitives" if prim_type == "aggregation" else "where_primitives"
         )
         s = "an aggregation"
+    else:
+        raise TypeError(
+            f"prim_type must be one of 'groupby transform', 'transform', 'aggregation', 'where'"
+        )
 
     if isinstance(primitive, str):
         prim_string = camel_and_title_to_snake(primitive)
@@ -1120,14 +1131,16 @@ def check_primitive(primitive, prim_type):
                 "Call ft.primitives.list_primitives() to get"
                 " a list of available primitives".format(prim_type, primitive)
             )
-        primitive = prim_dict[prim_string]
-    primitive = handle_primitive(primitive)
-    if not isinstance(primitive, supertype):
+        resolved_primitive = prim_dict[prim_string]  # type: ignore
+    else:
+        resolved_primitive = handle_primitive(primitive)
+
+    if not isinstance(resolved_primitive, supertype):
         raise ValueError(
             "Primitive {} in {} is not {} "
             "primitive".format(type(primitive), arg_name, s)
         )
-    return primitive
+    return resolved_primitive
 
 
 def _all_direct_and_same_path(input_features):

@@ -13,7 +13,7 @@ class PrimitiveBase(object):
     """Base class for all primitives."""
 
     #: (str): Name of the primitive
-    name = None
+    name: str
     #: (list): woodwork.ColumnSchema types of inputs
     input_types = None
     #: (woodwork.ColumnSchema): ColumnSchema type of return

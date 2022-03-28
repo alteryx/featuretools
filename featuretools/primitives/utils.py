@@ -1,7 +1,7 @@
 import importlib.util
 import os
 from inspect import isclass
-from typing import List
+from typing import Dict, List
 
 import holidays
 import numpy as np
@@ -18,7 +18,7 @@ from featuretools.utils.gen_utils import Library, find_descendents
 
 
 # returns all aggregation primitives, regardless of compatibility
-def get_aggregation_primitives():
+def get_aggregation_primitives() -> Dict[str, AggregationPrimitive]:
     aggregation_primitives = set([])
     for attribute_string in dir(featuretools.primitives):
         attribute = getattr(featuretools.primitives, attribute_string)
@@ -30,7 +30,7 @@ def get_aggregation_primitives():
 
 
 # returns all transform primitives, regardless of compatibility
-def get_transform_primitives():
+def get_transform_primitives() -> Dict[str, TransformPrimitive]:
     transform_primitives = set([])
     for attribute_string in dir(featuretools.primitives):
         attribute = getattr(featuretools.primitives, attribute_string)
@@ -110,7 +110,7 @@ def get_default_aggregation_primitives() -> List[AggregationPrimitive]:
     return agg_primitives
 
 
-def get_default_transform_primitives():
+def get_default_transform_primitives() -> List[TransformPrimitive]:
     # featuretools.primitives.TimeSince
     trans_primitives = [
         featuretools.primitives.Age,

@@ -813,7 +813,7 @@ def convert_datetime_to_floats(x):
 def convert_timedelta_to_floats(x):
     first = int(x.iloc[0].total_seconds())
     dividend = find_dividend_by_unit(first)
-    x = pd.TimedeltaIndex(x).total_seconds().astype(np.float64) / dividend
+    x = pd.TimedeltaIndex(x).total_seconds().astype(np.float64) / dividend  # type: ignore
     return x
 
 
