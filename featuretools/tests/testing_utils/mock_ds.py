@@ -19,34 +19,34 @@ from woodwork.logical_types import (
     PersonFullName,
     PhoneNumber,
     PostalCode,
-    SubRegionCode
+    SubRegionCode,
 )
 
 from featuretools.entityset import EntitySet
 
 
 def make_ecommerce_entityset(with_integer_time_index=False):
-    """ Makes a entityset with the following shape:
+    """Makes a entityset with the following shape:
 
-          R         Regions
-         / \\       .
-        S   C       Stores, Customers
-            |       .
-            S   P   Sessions, Products
-             \\ /   .
-              L     Log
+      R         Regions
+     / \\       .
+    S   C       Stores, Customers
+        |       .
+        S   P   Sessions, Products
+         \\ /   .
+          L     Log
     """
-    dataframes = make_ecommerce_dataframes(with_integer_time_index=with_integer_time_index)
+    dataframes = make_ecommerce_dataframes(
+        with_integer_time_index=with_integer_time_index
+    )
     dataframe_names = dataframes.keys()
-    es_id = 'ecommerce'
+    es_id = "ecommerce"
     if with_integer_time_index:
         es_id += "_int_time_index"
 
-    logical_types = make_logical_types(
-        with_integer_time_index=with_integer_time_index)
+    logical_types = make_logical_types(with_integer_time_index=with_integer_time_index)
     semantic_tags = make_semantic_tags()
-    time_indexes = make_time_indexes(
-        with_integer_time_index=with_integer_time_index)
+    time_indexes = make_time_indexes(with_integer_time_index=with_integer_time_index)
 
     es = EntitySet(id=es_id)
 
@@ -55,301 +55,380 @@ def make_ecommerce_entityset(with_integer_time_index=False):
         ti_name = None
         secondary = None
         if time_index is not None:
-            ti_name = time_index['name']
-            secondary = time_index['secondary']
+            ti_name = time_index["name"]
+            secondary = time_index["secondary"]
         df = dataframes[df_name]
-        es.add_dataframe(df,
-                         dataframe_name=df_name,
-                         index='id',
-                         logical_types=logical_types[df_name],
-                         semantic_tags=semantic_tags[df_name],
-                         time_index=ti_name,
-                         secondary_time_index=secondary)
+        es.add_dataframe(
+            df,
+            dataframe_name=df_name,
+            index="id",
+            logical_types=logical_types[df_name],
+            semantic_tags=semantic_tags[df_name],
+            time_index=ti_name,
+            secondary_time_index=secondary,
+        )
 
-    es.normalize_dataframe('customers', 'cohorts', 'cohort',
-                           additional_columns=['cohort_name'],
-                           make_time_index=True,
-                           new_dataframe_time_index='cohort_end')
+    es.normalize_dataframe(
+        "customers",
+        "cohorts",
+        "cohort",
+        additional_columns=["cohort_name"],
+        make_time_index=True,
+        new_dataframe_time_index="cohort_end",
+    )
 
     es.add_relationships(
-        [(u'régions', 'id', 'customers', u'région_id'),
-         (u'régions', 'id', 'stores', u'région_id'),
-         ('customers', 'id', 'sessions', 'customer_id'),
-         ('sessions', 'id', 'log', 'session_id'),
-         ('products', 'id', 'log', 'product_id')])
+        [
+            ("régions", "id", "customers", "région_id"),
+            ("régions", "id", "stores", "région_id"),
+            ("customers", "id", "sessions", "customer_id"),
+            ("sessions", "id", "log", "session_id"),
+            ("products", "id", "log", "product_id"),
+        ]
+    )
 
     return es
 
 
 def make_ecommerce_dataframes(with_integer_time_index=False):
-    region_df = pd.DataFrame({'id': ['United States', 'Mexico'],
-                              'language': ['en', 'sp']})
+    region_df = pd.DataFrame(
+        {"id": ["United States", "Mexico"], "language": ["en", "sp"]}
+    )
 
-    store_df = pd.DataFrame({'id': range(6),
-                             u'région_id': ['United States'] * 3 + ['Mexico'] * 2 + [np.nan],
-                             'num_square_feet': list(range(30000, 60000, 6000)) + [np.nan]})
+    store_df = pd.DataFrame(
+        {
+            "id": range(6),
+            "région_id": ["United States"] * 3 + ["Mexico"] * 2 + [np.nan],
+            "num_square_feet": list(range(30000, 60000, 6000)) + [np.nan],
+        }
+    )
 
-    product_df = pd.DataFrame({'id': ['Haribo sugar-free gummy bears', 'car',
-                                      'toothpaste', 'brown bag', 'coke zero',
-                                      'taco clock'],
-                               'department': ["food", "electronics", "health",
-                                              "food", "food", "electronics"],
-                               'rating': [3.5, 4.0, 4.5, 1.5, 5.0, 5.0],
-                               'url': ['google.com', 'https://www.featuretools.com/',
-                                       'amazon.com', 'www.featuretools.com', 'bit.ly',
-                                       'featuretools.com/demos/'],
-                               })
+    product_df = pd.DataFrame(
+        {
+            "id": [
+                "Haribo sugar-free gummy bears",
+                "car",
+                "toothpaste",
+                "brown bag",
+                "coke zero",
+                "taco clock",
+            ],
+            "department": [
+                "food",
+                "electronics",
+                "health",
+                "food",
+                "food",
+                "electronics",
+            ],
+            "rating": [3.5, 4.0, 4.5, 1.5, 5.0, 5.0],
+            "url": [
+                "google.com",
+                "https://www.featuretools.com/",
+                "amazon.com",
+                "www.featuretools.com",
+                "bit.ly",
+                "featuretools.com/demos/",
+            ],
+        }
+    )
     customer_times = {
-        'signup_date': [datetime(2011, 4, 8), datetime(2011, 4, 9),
-                        datetime(2011, 4, 6)],
+        "signup_date": [
+            datetime(2011, 4, 8),
+            datetime(2011, 4, 9),
+            datetime(2011, 4, 6),
+        ],
         # some point after signup date
-        'upgrade_date': [datetime(2011, 4, 10), datetime(2011, 4, 11),
-                         datetime(2011, 4, 7)],
-        'cancel_date': [datetime(2011, 6, 8), datetime(2011, 10, 9),
-                        datetime(2012, 1, 6)],
-        'birthday': [datetime(1993, 3, 8), datetime(1926, 8, 2),
-                     datetime(1993, 4, 20)]
+        "upgrade_date": [
+            datetime(2011, 4, 10),
+            datetime(2011, 4, 11),
+            datetime(2011, 4, 7),
+        ],
+        "cancel_date": [
+            datetime(2011, 6, 8),
+            datetime(2011, 10, 9),
+            datetime(2012, 1, 6),
+        ],
+        "birthday": [datetime(1993, 3, 8), datetime(1926, 8, 2), datetime(1993, 4, 20)],
     }
     if with_integer_time_index:
-        customer_times['signup_date'] = [6, 7, 4]
-        customer_times['upgrade_date'] = [18, 26, 5]
-        customer_times['cancel_date'] = [27, 28, 29]
-        customer_times['birthday'] = [2, 1, 3]
+        customer_times["signup_date"] = [6, 7, 4]
+        customer_times["upgrade_date"] = [18, 26, 5]
+        customer_times["cancel_date"] = [27, 28, 29]
+        customer_times["birthday"] = [2, 1, 3]
 
-    customer_df = pd.DataFrame({
-        'id': pd.Categorical([0, 1, 2]),
-        'age': [33, 25, 56],
-        u'région_id': ['United States'] * 3,
-        'cohort': [0, 1, 0],
-        'cohort_name': ['Early Adopters', 'Late Adopters', 'Early Adopters'],
-        'loves_ice_cream': [True, False, True],
-        'favorite_quote': ['The proletariat have nothing to lose but their chains',
-                           'Capitalism deprives us all of self-determination',
-                           'All members of the working classes must seize the '
-                           'means of production.'],
-        'signup_date': customer_times['signup_date'],
-        # some point after signup date
-        'upgrade_date': customer_times['upgrade_date'],
-        'cancel_date': customer_times['cancel_date'],
-        'cancel_reason': ["reason_1", "reason_2", "reason_1"],
-        'engagement_level': [1, 3, 2],
-        'full_name': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown'],
-        'email': ['john.smith@example.com', np.nan, 'team@featuretools.com'],
-        'phone_number': ['555-555-5555', '555-555-5555', '1-(555)-555-5555'],
-        'birthday': customer_times['birthday'],
-    })
+    customer_df = pd.DataFrame(
+        {
+            "id": pd.Categorical([0, 1, 2]),
+            "age": [33, 25, 56],
+            "région_id": ["United States"] * 3,
+            "cohort": [0, 1, 0],
+            "cohort_name": ["Early Adopters", "Late Adopters", "Early Adopters"],
+            "loves_ice_cream": [True, False, True],
+            "favorite_quote": [
+                "The proletariat have nothing to lose but their chains",
+                "Capitalism deprives us all of self-determination",
+                "All members of the working classes must seize the "
+                "means of production.",
+            ],
+            "signup_date": customer_times["signup_date"],
+            # some point after signup date
+            "upgrade_date": customer_times["upgrade_date"],
+            "cancel_date": customer_times["cancel_date"],
+            "cancel_reason": ["reason_1", "reason_2", "reason_1"],
+            "engagement_level": [1, 3, 2],
+            "full_name": ["Mr. John Doe", "Doe, Mrs. Jane", "James Brown"],
+            "email": ["john.smith@example.com", np.nan, "team@featuretools.com"],
+            "phone_number": ["555-555-5555", "555-555-5555", "1-(555)-555-5555"],
+            "birthday": customer_times["birthday"],
+        }
+    )
 
-    ips = ['192.168.0.1', '2001:4860:4860::8888', '0.0.0.0',
-           '192.168.1.1:2869', np.nan, np.nan]
-    filepaths = ['/home/user/docs/Letter.txt', './inthisdir', 'C:\\user\\docs\\Letter.txt',
-                 '~/.rcinfo', '../../greatgrandparent', 'data.json']
+    ips = [
+        "192.168.0.1",
+        "2001:4860:4860::8888",
+        "0.0.0.0",
+        "192.168.1.1:2869",
+        np.nan,
+        np.nan,
+    ]
+    filepaths = [
+        "/home/user/docs/Letter.txt",
+        "./inthisdir",
+        "C:\\user\\docs\\Letter.txt",
+        "~/.rcinfo",
+        "../../greatgrandparent",
+        "data.json",
+    ]
 
-    session_df = pd.DataFrame({'id': [0, 1, 2, 3, 4, 5],
-                               'customer_id': pd.Categorical([0, 0, 0, 1, 1, 2]),
-                               'device_type': [0, 1, 1, 0, 0, 1],
-                               'device_name': ['PC', 'Mobile', 'Mobile', 'PC',
-                                               'PC', 'Mobile'],
-                               'ip': ips,
-                               'filepath': filepaths, })
+    session_df = pd.DataFrame(
+        {
+            "id": [0, 1, 2, 3, 4, 5],
+            "customer_id": pd.Categorical([0, 0, 0, 1, 1, 2]),
+            "device_type": [0, 1, 1, 0, 0, 1],
+            "device_name": ["PC", "Mobile", "Mobile", "PC", "PC", "Mobile"],
+            "ip": ips,
+            "filepath": filepaths,
+        }
+    )
 
-    times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
-                 [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
-                 [datetime(2011, 4, 9, 10, 40, 0)] +
-                 [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
-                 [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
-                 [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
+    times = list(
+        [datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)]
+        + [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)]
+        + [datetime(2011, 4, 9, 10, 40, 0)]
+        + [datetime(2011, 4, 10, 10, 40, i) for i in range(2)]
+        + [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)]
+        + [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)]
+    )
     if with_integer_time_index:
         times = list(range(8, 18)) + list(range(19, 26))
 
-    values = list([i * 5 for i in range(5)] +
-                  [i * 1 for i in range(4)] +
-                  [0] +
-                  [i * 5 for i in range(2)] +
-                  [i * 7 for i in range(3)] +
-                  [np.nan] * 2)
+    values = list(
+        [i * 5 for i in range(5)]
+        + [i * 1 for i in range(4)]
+        + [0]
+        + [i * 5 for i in range(2)]
+        + [i * 7 for i in range(3)]
+        + [np.nan] * 2
+    )
 
-    values_2 = list([i * 2 for i in range(5)] +
-                    [i * 1 for i in range(4)] +
-                    [0] +
-                    [i * 2 for i in range(2)] +
-                    [i * 3 for i in range(3)] +
-                    [np.nan] * 2)
+    values_2 = list(
+        [i * 2 for i in range(5)]
+        + [i * 1 for i in range(4)]
+        + [0]
+        + [i * 2 for i in range(2)]
+        + [i * 3 for i in range(3)]
+        + [np.nan] * 2
+    )
 
-    values_many_nans = list([np.nan] * 5 +
-                            [i * 1 for i in range(4)] +
-                            [0] +
-                            [np.nan] * 2 +
-                            [i * 3 for i in range(3)] +
-                            [np.nan] * 2)
+    values_many_nans = list(
+        [np.nan] * 5
+        + [i * 1 for i in range(4)]
+        + [0]
+        + [np.nan] * 2
+        + [i * 3 for i in range(3)]
+        + [np.nan] * 2
+    )
 
     latlong = list([(values[i], values_2[i]) for i, _ in enumerate(values)])
     latlong2 = list([(values_2[i], -values[i]) for i, _ in enumerate(values)])
-    zipcodes = list(['02116'] * 5 +
-                    ['02116-3899'] * 4 +
-                    ['0'] +
-                    ['1234567890'] * 2 +
-                    ['12345-6789'] * 2 +
-                    [np.nan] * 3)
-    countrycodes = list(['US'] * 5 +
-                        ['AL'] * 4 +
-                        [np.nan] * 5 +
-                        ['ALB'] * 2 +
-                        ['USA'])
-    subregioncodes = list(['US-AZ'] * 5 +
-                          ['US-MT'] * 4 +
-                          [np.nan] * 3 +
-                          ['UG-219'] * 2 +
-                          ['ZM-06'] * 3)
-    log_df = pd.DataFrame({
-        'id': range(17),
-        'session_id': [0] * 5 + [1] * 4 + [2] * 1 + [3] * 2 + [4] * 3 + [5] * 2,
-        'product_id': ['coke zero'] * 3 + ['car'] * 2 + ['toothpaste'] * 3 +
-        ['brown bag'] * 2 + ['Haribo sugar-free gummy bears'] +
-        ['coke zero'] * 4 + ['taco clock'] * 2,
-        'datetime': times,
-        'value': values,
-        'value_2': values_2,
-        'latlong': latlong,
-        'latlong2': latlong2,
-        'zipcode': zipcodes,
-        'countrycode': countrycodes,
-        'subregioncode': subregioncodes,
-        'value_many_nans': values_many_nans,
-        'priority_level': [0] * 2 + [1] * 5 + [0] * 6 + [2] * 2 + [1] * 2,
-        'purchased': [True] * 11 + [False] * 4 + [True, False],
-        'url': ['https://www.featuretools.com/'] * 2 + ['amazon.com'] * 2 +
-        ['www.featuretools.com', 'bit.ly', 'featuretools.com/demos/',
-         'www.google.co.in/' 'http://lplay.google.co.in', ' ',
-         'invalid_url', 'an', 'microsoft.com/search/'] + [np.nan] * 5,
-        'email_address': ['john.smith@example.com', np.nan, 'team@featuretools.com'] * 5 + [' prefix@space.com', 'suffix@space.com '],
-        'comments': [coke_zero_review()] + ['I loved it'] * 2 +
-        car_reviews() + toothpaste_reviews() +
-        brown_bag_reviews() + [gummy_review()] +
-        ['I loved it'] * 4 + taco_clock_reviews()
-    })
+    zipcodes = list(
+        ["02116"] * 5
+        + ["02116-3899"] * 4
+        + ["0"]
+        + ["1234567890"] * 2
+        + ["12345-6789"] * 2
+        + [np.nan] * 3
+    )
+    countrycodes = list(["US"] * 5 + ["AL"] * 4 + [np.nan] * 5 + ["ALB"] * 2 + ["USA"])
+    subregioncodes = list(
+        ["US-AZ"] * 5 + ["US-MT"] * 4 + [np.nan] * 3 + ["UG-219"] * 2 + ["ZM-06"] * 3
+    )
+    log_df = pd.DataFrame(
+        {
+            "id": range(17),
+            "session_id": [0] * 5 + [1] * 4 + [2] * 1 + [3] * 2 + [4] * 3 + [5] * 2,
+            "product_id": ["coke zero"] * 3
+            + ["car"] * 2
+            + ["toothpaste"] * 3
+            + ["brown bag"] * 2
+            + ["Haribo sugar-free gummy bears"]
+            + ["coke zero"] * 4
+            + ["taco clock"] * 2,
+            "datetime": times,
+            "value": values,
+            "value_2": values_2,
+            "latlong": latlong,
+            "latlong2": latlong2,
+            "zipcode": zipcodes,
+            "countrycode": countrycodes,
+            "subregioncode": subregioncodes,
+            "value_many_nans": values_many_nans,
+            "priority_level": [0] * 2 + [1] * 5 + [0] * 6 + [2] * 2 + [1] * 2,
+            "purchased": [True] * 11 + [False] * 4 + [True, False],
+            "url": ["https://www.featuretools.com/"] * 2
+            + ["amazon.com"] * 2
+            + [
+                "www.featuretools.com",
+                "bit.ly",
+                "featuretools.com/demos/",
+                "www.google.co.in/" "http://lplay.google.co.in",
+                " ",
+                "invalid_url",
+                "an",
+                "microsoft.com/search/",
+            ]
+            + [np.nan] * 5,
+            "email_address": ["john.smith@example.com", np.nan, "team@featuretools.com"]
+            * 5
+            + [" prefix@space.com", "suffix@space.com "],
+            "comments": [coke_zero_review()]
+            + ["I loved it"] * 2
+            + car_reviews()
+            + toothpaste_reviews()
+            + brown_bag_reviews()
+            + [gummy_review()]
+            + ["I loved it"] * 4
+            + taco_clock_reviews(),
+        }
+    )
 
-    return {u'régions': region_df,
-            'stores': store_df,
-            'products': product_df,
-            'customers': customer_df,
-            'sessions': session_df,
-            'log': log_df}
+    return {
+        "régions": region_df,
+        "stores": store_df,
+        "products": product_df,
+        "customers": customer_df,
+        "sessions": session_df,
+        "log": log_df,
+    }
 
 
 def make_semantic_tags():
-    store_semantic_tags = {u'région_id': 'foreign_key'}
+    store_semantic_tags = {"région_id": "foreign_key"}
 
-    customer_semantic_tags = {u'région_id': 'foreign_key',
-                              'birthday': 'date_of_birth'}
+    customer_semantic_tags = {"région_id": "foreign_key", "birthday": "date_of_birth"}
 
-    session_semantic_tags = {'customer_id': 'foreign_key'}
+    session_semantic_tags = {"customer_id": "foreign_key"}
 
-    log_semantic_tags = {'session_id': 'foreign_key'}
+    log_semantic_tags = {"session_id": "foreign_key"}
 
     return {
-        'customers': customer_semantic_tags,
-        'sessions': session_semantic_tags,
-        'log': log_semantic_tags,
-        'products': {},
-        'stores': store_semantic_tags,
-        u'régions': {}
+        "customers": customer_semantic_tags,
+        "sessions": session_semantic_tags,
+        "log": log_semantic_tags,
+        "products": {},
+        "stores": store_semantic_tags,
+        "régions": {},
     }
 
 
 def make_logical_types(with_integer_time_index=False):
-    region_logical_types = {
-        'id': Categorical,
-        'language': Categorical
-    }
+    region_logical_types = {"id": Categorical, "language": Categorical}
 
-    store_logical_types = {
-        'id': Integer,
-        u'région_id': Categorical
-    }
+    store_logical_types = {"id": Integer, "région_id": Categorical}
 
     product_logical_types = {
-        'id': Categorical,
-        'rating': Double,
-        'department': Categorical,
-        'url': URL,
+        "id": Categorical,
+        "rating": Double,
+        "department": Categorical,
+        "url": URL,
     }
 
     customer_logical_types = {
-        'id': Integer,
-        'age': Integer,
-        u'région_id': Categorical,
-        'loves_ice_cream': Boolean,
-        'favorite_quote': NaturalLanguage,
-        'signup_date': Datetime(datetime_format='%Y-%m-%d'),
-        'upgrade_date': Datetime(datetime_format='%Y-%m-%d'),
-        'cancel_date': Datetime(datetime_format='%Y-%m-%d'),
-        'cancel_reason': Categorical,
-        'engagement_level': Ordinal(order=[1, 2, 3]),
-        'full_name': PersonFullName,
-        'email': EmailAddress,
-        'phone_number': PhoneNumber,
-        'birthday': Datetime(datetime_format='%Y-%m-%d'),
-        'cohort_name': Categorical,
+        "id": Integer,
+        "age": Integer,
+        "région_id": Categorical,
+        "loves_ice_cream": Boolean,
+        "favorite_quote": NaturalLanguage,
+        "signup_date": Datetime(datetime_format="%Y-%m-%d"),
+        "upgrade_date": Datetime(datetime_format="%Y-%m-%d"),
+        "cancel_date": Datetime(datetime_format="%Y-%m-%d"),
+        "cancel_reason": Categorical,
+        "engagement_level": Ordinal(order=[1, 2, 3]),
+        "full_name": PersonFullName,
+        "email": EmailAddress,
+        "phone_number": PhoneNumber,
+        "birthday": Datetime(datetime_format="%Y-%m-%d"),
+        "cohort_name": Categorical,
     }
 
     session_logical_types = {
-        'id': Integer,
-        'customer_id': Integer,
-        'device_type': Categorical,
-        'device_name': Categorical,
-        'ip': IPAddress,
-        'filepath': Filepath,
+        "id": Integer,
+        "customer_id": Integer,
+        "device_type": Categorical,
+        "device_name": Categorical,
+        "ip": IPAddress,
+        "filepath": Filepath,
     }
 
     log_logical_types = {
-        'id': Integer,
-        'session_id': Integer,
-        'product_id': Categorical,
-        'datetime': Datetime(datetime_format='%Y-%m-%d'),
-        'value': Double,
-        'value_2': Double,
-        'latlong': LatLong,
-        'latlong2': LatLong,
-        'zipcode': PostalCode,
-        'countrycode': CountryCode,
-        'subregioncode': SubRegionCode,
-        'value_many_nans': Double,
-        'priority_level': Ordinal(order=[0, 1, 2]),
-        'purchased': Boolean,
-        'url': URL,
-        'email_address': EmailAddress,
-        'comments': NaturalLanguage
+        "id": Integer,
+        "session_id": Integer,
+        "product_id": Categorical,
+        "datetime": Datetime(datetime_format="%Y-%m-%d"),
+        "value": Double,
+        "value_2": Double,
+        "latlong": LatLong,
+        "latlong2": LatLong,
+        "zipcode": PostalCode,
+        "countrycode": CountryCode,
+        "subregioncode": SubRegionCode,
+        "value_many_nans": Double,
+        "priority_level": Ordinal(order=[0, 1, 2]),
+        "purchased": Boolean,
+        "url": URL,
+        "email_address": EmailAddress,
+        "comments": NaturalLanguage,
     }
     if with_integer_time_index:
-        log_logical_types['datetime'] = Integer
-        customer_logical_types['signup_date'] = Integer
-        customer_logical_types['upgrade_date'] = Integer
-        customer_logical_types['cancel_date'] = Integer
-        customer_logical_types['birthday'] = Integer
+        log_logical_types["datetime"] = Integer
+        customer_logical_types["signup_date"] = Integer
+        customer_logical_types["upgrade_date"] = Integer
+        customer_logical_types["cancel_date"] = Integer
+        customer_logical_types["birthday"] = Integer
 
     return {
-        'customers': customer_logical_types,
-        'sessions': session_logical_types,
-        'log': log_logical_types,
-        'products': product_logical_types,
-        'stores': store_logical_types,
-        u'régions': region_logical_types
+        "customers": customer_logical_types,
+        "sessions": session_logical_types,
+        "log": log_logical_types,
+        "products": product_logical_types,
+        "stores": store_logical_types,
+        "régions": region_logical_types,
     }
 
 
 def make_time_indexes(with_integer_time_index=False):
-    return {'customers': {'name': 'signup_date',
-                          'secondary': {
-                              "cancel_date": ["cancel_reason"]}
-                          },
-            'log': {'name': 'datetime',
-                    'secondary': None
-                    }
-            }
+    return {
+        "customers": {
+            "name": "signup_date",
+            "secondary": {"cancel_date": ["cancel_reason"]},
+        },
+        "log": {"name": "datetime", "secondary": None},
+    }
 
 
 def coke_zero_review():
-    return u"""
+    return """
 When it comes to Coca-Cola products, people tend to be die-hard fans. Many of us know someone who can't go a day without a Diet Coke (or two or three). And while Diet Coke has been a leading sugar-free soft drink since it was first released in 1982, it came to light that young adult males shied away from this beverage — identifying diet cola as a woman's drink. The company's answer to that predicament came in 2005 - in the form of a shiny black can - with the release of Coca-Cola Zero.
 
 While Diet Coke was created with its own flavor profile and not as a sugar-free version of the original, Coca-Cola Zero aims to taste just like the "real Coke flavor." Despite their polar opposite advertising campaigns, the contents and nutritional information of the two sugar-free colas is nearly identical. With that information in hand we at HuffPost Taste needed to know: Which of these two artificially-sweetened Coca-Cola beverages actually tastes better? And can you even tell the difference between them?
@@ -394,7 +473,7 @@ IN SUMMARY: It is a real toss up. There is not one artificially-sweetened Coca-C
 
 
 def gummy_review():
-    return u"""
+    return """
 The place: BMO Harris Bradley Center
 The event: Bucks VS Spurs
 The snack: Satan's Diarrhea Hate Bears made by Haribo
@@ -425,19 +504,22 @@ My son asks me, "Daddy, why are we leaving early?"
 
 
 def taco_clock_reviews():
-    return [u"""
+    return [
+        """
 This timer does what it is supposed to do. Setup is elementary. Replacing the old one (after 12 years) was relatively easy. It has performed flawlessly since. I'm delighted I could find an esoteric product like this at Amazon. Their service, and the customer reviews, are just excellent.
 """,
-            """
+        """
 Funny, cute clock. A little spendy for how light the clock is, but its hard to find a taco clock.
-"""
-            ]
+""",
+    ]
 
 
 def brown_bag_reviews():
-    return [u"""
+    return [
+        """
 These bags looked exactly like I'd hoped, however, the handles broke off of almost every single bag as soon as items were placed in them! I used these as gift bags for out-of-town guests at my wedding, so imagine my embarassment as the handles broke off as I was handing them out. I would not recommend purchaing these bags unless you plan to fill them with nothing but paper! Anything heavier will cause the handles to snap right off.
-""", u"""
+""",
+        """
 I purchased these in August 2014 from Big Blue Supplies. I have no problem with the seller, these arrived new condition, fine shape.
 
 I do have a slight problem with the bags. In case someone might want to know, the handles on these bags are set inside against the top. Then a piece of Kraft type packing tape is placed over the handles to hold them in place. On some of the bags, the tape is already starting to peel off. I would be really hesitant about using these bags unless I reinforced the current tape with a different adhesive.
@@ -451,11 +533,13 @@ Even the dollar store bags I normally purchase do not have that stamped on the b
 I do not think I would purchase again for all the reasons stated above.
 
 Another thing for those still wanting to purchase, the ones I received were: 12 3/4 inches high not including handle, 10 1/4 inches wide and a 5 1/4 inch depth.
-"""]
+""",
+    ]
 
 
 def car_reviews():
-    return [u"""
+    return [
+        """
 The full-size pickup truck and the V-8 engine were supposed to be inseparable, like the internet and cat videos. You can’t have one without the other—or so we thought.
 
 In America’s most popular vehicle, the Ford F-150, two turbocharged six-cylinder engines marketed under the EcoBoost name have dethroned the naturally aspirated V-8. Ford’s new 2.7-liter twin-turbo V-6 is the popular choice, while the 3.5-liter twin-turbo V-6 is the top performer. The larger six allows for greater hauling capacity, accelerates the truck more quickly, and swills less gas in EPA testing than the V-8 alternative. It’s enough to make even old-school truck buyers acknowledge that there actually is a replacement for displacement.
@@ -476,7 +560,7 @@ Middle-Child Syndrome
 
 In the F-150, Ford has a trifecta of engines (the fourth, a naturally aspirated 3.5-liter V-6, is best left to the fleet operators). The 2.7-liter twin-turbo V-6 delivers remarkable performance at an affordable price. The 3.5-liter twin-turbo V-6 is the workhorse, with power, torque, and hauling capability to spare. Compared with those two logical options, the middle-child 5.0-liter V-8 is the right-brain choice. Its strongest selling points may be its silky power delivery and the familiar V-8 rumble. That’s a flimsy argument when it comes to rationalizing a $50,000-plus purchase, though, so perhaps it’s no surprise that today’s boosted six-cylinders are now the engines of choice in the F-150.
 """,
-            """
+        """
 THE GOOD
 The Tesla Model S 90D's electric drivetrain is substantially more efficient than any internal combustion engine, and gives the car smooth and quick acceleration. All-wheel drive comes courtesy of a smart dual motor system. The new Autopilot feature eases the stress of stop-and-go traffic and long road trips.
 
@@ -541,12 +625,13 @@ The 2016 Tesla Model S 90D adds features to keep it competitive against the inte
 Lengthy charging times mean longer trips are either out of the question or require more planning than with an internal combustion car. And while the infotainment system responds quickly to touch inputs and offers useful screens, it hasn't changed much in four years. Most notably, Tesla hasn't added any music apps beyond the ones it launched with. Along with new, useful apps, it would be nice to have some themes or other aesthetic changes to the infotainment interface.
 
 The Model S 90D's base price of $88,000 puts it out of reach of the average buyer, and the model I drove was optioned up to around $95,000. Against its Audi, BMW and Mercedes-Benz competition, however, it makes a compelling argument, especially for its uncomplicated nature.
-"""
-            ]
+""",
+    ]
 
 
 def toothpaste_reviews():
-    return [u"""
+    return [
+        """
 Toothpaste can do more harm than good
 
 The next time a patient innocently asks me, “What’s the best toothpaste to use?” I’m going to unleash a whole Chunky Soup can of “You Want The Truth? You CAN’T HANDLE THE TRUTH!!!” Gosh, that’s such an overused movie quote. Sorry about that, but still.
@@ -638,13 +723,12 @@ Next topic?
 
 I’m bringing pyorrhea back.
     """,
-
-            u"""
+        """
 I’ve been a user of Colgate Total Whitening Toothpaste for many years because I’ve always tried to maintain a healthy smile (I’m a receptionist so I need a white smile). But because I drink coffee at least twice a day (sometimes more!) and a lot of herbal teas, I’ve found that using just this toothpaste alone doesn’t really get my teeth white...
 
 The best way to get white teeth is to really try some professional products specifically for tooth whitening. I’ve tried a few products, like Crest White Strips and found that the strips are really not as good as the trays. Although the Crest White Strips are easy to use, they really DO NOT cover your teeth perfectly like some other professional dental whitening kits. This Product did cover my teeth well however because of their custom heat trays, and whitening my teeth A LOT. I would say if you really want white teeth, use the Colgate Toothpaste and least 2 times a day, along side a professional Gel product like Shine Whitening.
     """,
-            u"""
+        """
 The first feature is the price, and it is right.
 
 Next, I consider whether it will be neat to use. It is. Sometimes when I buy those new hard plastic containers, they actually get messy. Also I cannot get all the toothpaste out. It is easy to get the paste out of Colgate Total Whitening Paste without spraying it all over the cabinet.
@@ -656,5 +740,5 @@ Whitening is important. This one is supposed ot whiten. After spending money to 
 Avoiding all kinds of oral pathology is a major consideration. This toothpaste claims that it can help fight cavities, gingivitis, plaque, tartar, and bad breath.
 
 I hope this product stays on the market a long time and does not change.
-    """
-            ]
+    """,
+    ]

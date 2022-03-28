@@ -1,11 +1,11 @@
 from setuptools import setup
 
 setup(
-    name='featuretools_plugin',
-    packages=['featuretools_plugin'],
+    name="featuretools_plugin",
+    packages=["featuretools_plugin"],
     entry_points={
-        'featuretools_plugin': [
-            'module = featuretools_plugin',
+        "featuretools_plugin": [
+            "module = featuretools_plugin",
         ],
     },
 )

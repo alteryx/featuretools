@@ -14,7 +14,7 @@ def test_cityblock():
     given_answer = primitive_func(latlong_1, latlong_2)
     np.testing.assert_allclose(given_answer, answer, rtol=1e-09)
 
-    primitive_instance = CityblockDistance(unit='kilometers')
+    primitive_instance = CityblockDistance(unit="kilometers")
     primitive_func = primitive_instance.get_function()
     answer = primitive_func(latlong_1, latlong_2)
     given_answer = pd.Series([667.1704814, 667.11966315, 666.96722389])
@@ -26,19 +26,17 @@ def test_cityblock_nans():
     lats_longs_1 = [(i, i) for i in range(2)]
     lats_longs_2 = [(i, i) for i in range(2, 4)]
     lats_longs_1 += [(1, 1), (np.nan, 3), (4, np.nan), (np.nan, np.nan)]
-    lats_longs_2 += [(np.nan, np.nan), (np.nan, 5), (6, np.nan), (np.nan,
-                                                                  np.nan)]
+    lats_longs_2 += [(np.nan, np.nan), (np.nan, 5), (6, np.nan), (np.nan, np.nan)]
     primitive_func = primitive_instance.get_function()
-    given_answer = pd.Series(list([276.37367594, 276.35262728] +
-                                  [np.nan] * 4))
+    given_answer = pd.Series(list([276.37367594, 276.35262728] + [np.nan] * 4))
     answer = primitive_func(lats_longs_1, lats_longs_2)
     np.testing.assert_allclose(given_answer, answer, rtol=1e-09)
 
 
 def test_cityblock_error():
-    error_text = 'Invalid unit given'
+    error_text = "Invalid unit given"
     with pytest.raises(ValueError, match=error_text):
-        CityblockDistance(unit='invalid')
+        CityblockDistance(unit="invalid")
 
 
 def test_midpoint():
@@ -82,8 +80,18 @@ def test_midpoint_nan():
 
 
 def test_isingeobox():
-    latlong = pd.Series([(1, 2), (5, 7), (-5, 4), (2, 3), (0, 0),
-                         (np.nan, np.nan), (-2, np.nan), (np.nan, 1)])
+    latlong = pd.Series(
+        [
+            (1, 2),
+            (5, 7),
+            (-5, 4),
+            (2, 3),
+            (0, 0),
+            (np.nan, np.nan),
+            (-2, np.nan),
+            (np.nan, 1),
+        ]
+    )
     bottomleft = (-5, -5)
     topright = (5, 5)
     primitive = IsInGeoBox(bottomleft, topright)

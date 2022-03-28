@@ -1,7 +1,8 @@
 import json
 
-from featuretools.entityset.deserialize import \
-    description_to_entityset as deserialize_es
+from featuretools.entityset.deserialize import (
+    description_to_entityset as deserialize_es,
+)
 from featuretools.feature_base.feature_base import (
     AggregationFeature,
     DirectFeature,
@@ -10,14 +11,11 @@ from featuretools.feature_base.feature_base import (
     FeatureOutputSlice,
     GroupByTransformFeature,
     IdentityFeature,
-    TransformFeature
+    TransformFeature,
 )
 from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.utils.gen_utils import check_schema_version
-from featuretools.utils.s3_utils import (
-    get_transport_params,
-    use_smartopen_features
-)
+from featuretools.utils.s3_utils import get_transport_params, use_smartopen_features
 from featuretools.utils.wrangle import _is_s3, _is_url
 
 
@@ -65,20 +63,20 @@ def load_features(features, profile_name=None):
 
 class FeaturesDeserializer(object):
     FEATURE_CLASSES = {
-        'AggregationFeature': AggregationFeature,
-        'DirectFeature': DirectFeature,
-        'Feature': Feature,
-        'FeatureBase': FeatureBase,
-        'GroupByTransformFeature': GroupByTransformFeature,
-        'IdentityFeature': IdentityFeature,
-        'TransformFeature': TransformFeature,
-        'FeatureOutputSlice': FeatureOutputSlice
+        "AggregationFeature": AggregationFeature,
+        "DirectFeature": DirectFeature,
+        "Feature": Feature,
+        "FeatureBase": FeatureBase,
+        "GroupByTransformFeature": GroupByTransformFeature,
+        "IdentityFeature": IdentityFeature,
+        "TransformFeature": TransformFeature,
+        "FeatureOutputSlice": FeatureOutputSlice,
     }
 
     def __init__(self, features_dict):
         self.features_dict = features_dict
         self._check_schema_version()
-        self.entityset = deserialize_es(features_dict['entityset'])
+        self.entityset = deserialize_es(features_dict["entityset"])
         self._deserialized_features = {}  # name -> feature
         self._primitives_deserializer = PrimitivesDeserializer()
 
@@ -96,37 +94,40 @@ class FeaturesDeserializer(object):
                         features, transport_params=transport_params
                     )
                 else:
-                    with open(features, 'r') as f:
+                    with open(features, "r") as f:
                         features_dict = json.load(f)
             return cls(features_dict)
         return cls(json.load(features))
 
     def to_list(self):
-        feature_names = self.features_dict['feature_list']
+        feature_names = self.features_dict["feature_list"]
         return [self._deserialize_feature(name) for name in feature_names]
 
     def _deserialize_feature(self, feature_name):
         if feature_name in self._deserialized_features:
             return self._deserialized_features[feature_name]
 
-        feature_dict = self.features_dict['feature_definitions'][feature_name]
-        dependencies_list = feature_dict['dependencies']
+        feature_dict = self.features_dict["feature_definitions"][feature_name]
+        dependencies_list = feature_dict["dependencies"]
 
         # Collect dependencies into a dictionary of name -> feature.
-        dependencies = {dependency: self._deserialize_feature(dependency)
-                        for dependency in dependencies_list}
+        dependencies = {
+            dependency: self._deserialize_feature(dependency)
+            for dependency in dependencies_list
+        }
 
-        type = feature_dict['type']
+        type = feature_dict["type"]
         cls = self.FEATURE_CLASSES.get(type)
         if not cls:
             raise RuntimeError('Unrecognized feature type "%s"' % type)
 
-        args = feature_dict['arguments']
-        feature = cls.from_dictionary(args, self.entityset, dependencies,
-                                      self._primitives_deserializer)
+        args = feature_dict["arguments"]
+        feature = cls.from_dictionary(
+            args, self.entityset, dependencies, self._primitives_deserializer
+        )
 
         self._deserialized_features[feature_name] = feature
         return feature
 
     def _check_schema_version(self):
-        check_schema_version(self, 'features')
+        check_schema_version(self, "features")
