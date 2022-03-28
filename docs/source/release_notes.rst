@@ -10,6 +10,7 @@ Future Release
     * Changes
         * Removed ``make_trans_primitive`` and ``make_agg_primitive`` utility functions (:pr:`1970`)
     * Documentation Changes
+        * Update project urls in setup cfg to include Twitter and Slack (:pr:`1981`)
         * Update nbconvert to version 6.4.5 to fix docs build issue (:pr:`1984`)
     * Testing Changes
         * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`1973`)
