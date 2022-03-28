@@ -12,8 +12,8 @@ from woodwork.logical_types import (
 )
 
 from featuretools.primitives.base import TransformPrimitive
+from featuretools.types import Library
 from featuretools.utils.common_tld_utils import COMMON_TLDS
-from featuretools.utils.gen_utils import Library
 
 
 class IsNull(TransformPrimitive):

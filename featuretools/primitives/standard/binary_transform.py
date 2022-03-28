@@ -4,7 +4,7 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable, Datetime, Ordinal
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
+from featuretools.types import Library
 
 
 class GreaterThan(TransformPrimitive):

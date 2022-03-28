@@ -56,7 +56,7 @@ from featuretools.primitives import (
 from featuretools.primitives.utils import PrimitivesDeserializer, serialize_primitive
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import Library
+from featuretools.types import Library
 from featuretools.utils.spark_utils import pd_to_spark_clean
 
 

@@ -3,7 +3,6 @@ import logging
 import re
 import sys
 import warnings
-from enum import Enum
 from itertools import zip_longest
 
 from tqdm import tqdm
@@ -141,9 +140,3 @@ def camel_and_title_to_snake(name):
     name = re.sub(r"(\d+)", r"_\1", name).strip("_")
     name = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", name).lower()
-
-
-class Library(Enum):
-    PANDAS = "pandas"
-    DASK = "Dask"
-    SPARK = "Spark"

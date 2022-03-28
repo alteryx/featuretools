@@ -13,8 +13,8 @@ from woodwork.logical_types import Datetime
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.relationship import Relationship, RelationshipPath
 from featuretools.feature_base.feature_base import _ES_REF
-from featuretools.types import T_ES_Dataframe
-from featuretools.utils.gen_utils import Library, import_or_none, is_instance
+from featuretools.types import Library, T_ES_Dataframe
+from featuretools.utils.gen_utils import import_or_none, is_instance
 from featuretools.utils.plot_utils import (
     check_graphviz,
     get_graphviz_format,

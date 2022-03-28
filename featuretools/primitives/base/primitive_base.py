@@ -6,7 +6,7 @@ import pandas as pd
 
 from featuretools import config
 from featuretools.utils.description_utils import convert_to_nth
-from featuretools.utils.gen_utils import Library
+from featuretools.types import Library
 
 
 class PrimitiveBase(object):
@@ -53,6 +53,13 @@ class PrimitiveBase(object):
         except AttributeError:
             self._method = self.get_function()
             return self._method(*series_args, **kwargs)
+
+    # @classmethod
+    # def __lt__(other):
+    #     return True
+    #     # return (self.name + self.get_args_string()) < (
+    #     #     other.name + other.get_args_string()
+    #     # )
 
     def __lt__(self, other):
         return (self.name + self.get_args_string()) < (

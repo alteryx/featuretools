@@ -43,7 +43,7 @@ from featuretools.primitives.utils import (
     load_primitive_from_file,
 )
 from featuretools.tests.primitive_tests.utils import get_number_from_offset
-from featuretools.utils.gen_utils import Library
+from featuretools.types import Library
 
 
 def test_list_primitives_order():

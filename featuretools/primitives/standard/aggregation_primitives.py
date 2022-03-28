@@ -14,8 +14,8 @@ from woodwork.logical_types import (
 )
 
 from featuretools.primitives.base.aggregation_primitive_base import AggregationPrimitive
+from featuretools.types import Library
 from featuretools.utils import convert_time_units
-from featuretools.utils.gen_utils import Library
 
 
 class Count(AggregationPrimitive):

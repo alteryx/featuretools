@@ -7,7 +7,7 @@ import pytest
 from dask import dataframe as dd
 
 import featuretools as ft
-from featuretools.utils.gen_utils import Library
+from featuretools.types import Library
 
 
 @pytest.fixture

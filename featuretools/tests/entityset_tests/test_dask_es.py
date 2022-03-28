@@ -11,7 +11,7 @@ from woodwork.logical_types import (
 
 from featuretools.entityset import EntitySet
 from featuretools.tests.testing_utils import get_df_tags
-from featuretools.utils.gen_utils import Library
+from featuretools.types import Library
 
 
 def test_add_dataframe(pd_es):

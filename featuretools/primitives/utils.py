@@ -14,7 +14,8 @@ from featuretools.primitives.base import (
     PrimitiveBase,
     TransformPrimitive,
 )
-from featuretools.utils.gen_utils import Library, find_descendents
+from featuretools.types import Library
+from featuretools.utils.gen_utils import find_descendents
 
 
 # returns all aggregation primitives, regardless of compatibility

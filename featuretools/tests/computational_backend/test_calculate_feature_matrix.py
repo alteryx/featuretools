@@ -43,7 +43,7 @@ from featuretools.tests.testing_utils import (
     get_mock_client_cluster,
     to_pandas,
 )
-from featuretools.utils.gen_utils import Library
+from featuretools.types import Library
 
 
 def test_scatter_warning(caplog):

@@ -30,7 +30,7 @@ from featuretools.synthesis.deep_feature_synthesis import (
     match,
 )
 from featuretools.tests.testing_utils import backward_path, feature_with_name, to_pandas
-from featuretools.utils.gen_utils import Library
+from featuretools.types import Library
 
 
 @pytest.fixture

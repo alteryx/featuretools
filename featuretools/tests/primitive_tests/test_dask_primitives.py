@@ -3,7 +3,7 @@ import pytest
 
 import featuretools as ft
 from featuretools.primitives import get_aggregation_primitives, get_transform_primitives
-from featuretools.utils.gen_utils import Library
+from featuretools.types import Library
 
 UNSUPPORTED = [
     p.name

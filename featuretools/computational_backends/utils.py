@@ -11,8 +11,8 @@ from woodwork.logical_types import Datetime, Double
 
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, DirectFeature
+from featuretools.types import Library
 from featuretools.utils import Trie
-from featuretools.utils.gen_utils import Library
 from featuretools.utils.wrangle import _check_time_type, _check_timedelta
 
 logger = logging.getLogger("featuretools.computational_backend")

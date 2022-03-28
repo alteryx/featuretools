@@ -5,7 +5,7 @@ from featuretools.primitives.utils import (
 )
 from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
 from featuretools.synthesis.utils import _categorize_features, get_unused_primitives
-from featuretools.utils.gen_utils import Library
+from featuretools.types import Library
 
 
 def get_valid_primitives(

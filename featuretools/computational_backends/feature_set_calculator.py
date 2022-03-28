@@ -15,9 +15,9 @@ from featuretools.feature_base import (
     IdentityFeature,
     TransformFeature,
 )
+from featuretools.types import Library
 from featuretools.utils import Trie
 from featuretools.utils.gen_utils import (
-    Library,
     get_relationship_column_id,
     import_or_none,
     is_instance,

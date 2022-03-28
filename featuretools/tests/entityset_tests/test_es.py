@@ -29,7 +29,8 @@ import featuretools as ft
 from featuretools.entityset import EntitySet
 from featuretools.entityset.entityset import LTI_COLUMN_NAME, WW_SCHEMA_KEY
 from featuretools.tests.testing_utils import get_df_tags, to_pandas
-from featuretools.utils.gen_utils import Library, import_or_none
+from featuretools.types import Library
+from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.spark_utils import pd_to_spark_clean
 
 ps = import_or_none("pyspark.pandas")

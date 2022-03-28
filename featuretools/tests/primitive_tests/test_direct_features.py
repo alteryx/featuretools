@@ -24,7 +24,7 @@ from featuretools.primitives import (
 from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import Library
+from featuretools.types import Library
 
 
 def test_direct_from_identity(es):

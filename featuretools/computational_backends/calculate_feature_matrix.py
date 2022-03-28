@@ -35,13 +35,9 @@ from featuretools.computational_backends.utils import (
 )
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, FeatureBase
+from featuretools.types import Library
 from featuretools.utils import Trie
-from featuretools.utils.gen_utils import (
-    Library,
-    import_or_none,
-    is_instance,
-    make_tqdm_iterator,
-)
+from featuretools.utils.gen_utils import import_or_none, is_instance, make_tqdm_iterator
 
 ps = import_or_none("pyspark.pandas")
 

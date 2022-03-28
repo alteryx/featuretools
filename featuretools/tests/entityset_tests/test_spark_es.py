@@ -4,7 +4,8 @@ from woodwork.logical_types import Datetime, Double, Integer, NaturalLanguage
 
 from featuretools.entityset import EntitySet
 from featuretools.tests.testing_utils import get_df_tags
-from featuretools.utils.gen_utils import Library, import_or_none
+from featuretools.types import Library
+from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.spark_utils import pd_to_spark_clean
 
 ps = import_or_none("pyspark.pandas")
