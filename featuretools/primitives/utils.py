@@ -1,6 +1,7 @@
 import importlib.util
 import os
 from inspect import isclass
+from typing import List
 
 import holidays
 import numpy as np
@@ -69,7 +70,7 @@ def list_primitives():
     return pd.concat([agg_df, transform_df], ignore_index=True)[columns]
 
 
-def get_default_aggregation_primitives():
+def get_default_aggregation_primitives() -> List[AggregationPrimitive]:
     agg_primitives = [featuretools.primitives.Sum,
                       featuretools.primitives.Std,
                       featuretools.primitives.Max,

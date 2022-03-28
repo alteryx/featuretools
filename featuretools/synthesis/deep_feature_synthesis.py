@@ -1,4 +1,5 @@
 import logging
+from typing import Union, List, Set, Tuple, Dict
 import warnings
 from collections import defaultdict
 
@@ -125,17 +126,17 @@ class DeepFeatureSynthesis(object):
         """
 
     def __init__(self,
-                 target_dataframe_name,
+                 target_dataframe_name: str,
                  entityset,
-                 agg_primitives=None,
-                 trans_primitives=None,
+                 agg_primitives: Union[List[str], List[AggregationPrimitive], None]=None,
+                 trans_primitives: Union[List[str], List[TransformPrimitive], None]=None,
                  where_primitives=None,
                  groupby_trans_primitives=None,
-                 max_depth=2,
-                 max_features=-1,
-                 allowed_paths=None,
-                 ignore_dataframes=None,
-                 ignore_columns=None,
+                 max_depth: Union[int, None]=2,
+                 max_features: Union[int, None]=-1,
+                 allowed_paths: Union[List[List[str]], None]=None,
+                 ignore_dataframes: Union[List[str], None]=None,
+                 ignore_columns: Union[Dict[str, List[str]], None]=None,
                  primitive_options=None,
                  seed_features=None,
                  drop_contains=None,
@@ -161,12 +162,16 @@ class DeepFeatureSynthesis(object):
 
         self.max_features = max_features
 
-        self.allowed_paths = allowed_paths
-        if self.allowed_paths:
+        self.allowed_paths: Union[Set[Tuple[str]], None]
+
+        if allowed_paths is not None:
             self.allowed_paths = set()
             for path in allowed_paths:
                 self.allowed_paths.add(tuple(path))
+        else:
+            self.allowed_paths = allowed_paths
 
+        self.ignore_dataframes: Set[str]
         if ignore_dataframes is None:
             self.ignore_dataframes = set()
         else:
@@ -175,8 +180,8 @@ class DeepFeatureSynthesis(object):
             assert target_dataframe_name not in ignore_dataframes,\
                 "Can't ignore target_dataframe!"
             self.ignore_dataframes = set(ignore_dataframes)
-
-        self.ignore_columns = defaultdict(set)
+        
+        self.ignore_columns: Dict[str, Set[str]] = defaultdict(set)
         if ignore_columns is not None:
             # check if ignore_columns is not {str: list}
             if not all(isinstance(i, str) for i in ignore_columns.keys()) or not all(isinstance(i, list) for i in ignore_columns.values()):
@@ -186,9 +191,12 @@ class DeepFeatureSynthesis(object):
                 raise TypeError('list values should be of type str')
             for df_name, cols in ignore_columns.items():
                 self.ignore_columns[df_name] = set(cols)
+
+
         self.target_dataframe_name = target_dataframe_name
         self.es = entityset
 
+        df_library = Library.PANDAS
         for library in Library:
             if library.value == self.es.dataframe_type:
                 df_library = library
