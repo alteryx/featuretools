@@ -33,7 +33,6 @@ from featuretools.primitives import (
     get_transform_primitives
 )
 from featuretools.primitives.base import PrimitiveBase
-from featuretools.primitives.standard.binary_transform import MultiplyNumeric
 from featuretools.primitives.utils import (
     _apply_roll_with_offset_gap,
     _get_descriptions,
