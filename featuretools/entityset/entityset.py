@@ -1475,12 +1475,12 @@ class EntitySet(object):
                 label = "{%s |%s\l}" % (df.ww.name, columns_string)  # noqa: W605
             else:
                 nrows = df.shape[0]
-                label = "{%s (%d row%s)|%s\l}" % (
+                label = "{%s (%d row%s)|%s\l}" % (  # noqa: W605
                     df.ww.name,
                     nrows,
                     "s" * (nrows > 1),
                     columns_string,
-                )  # noqa: W605
+                )
             graph.node(df.ww.name, shape="record", label=label)
 
         # Draw relationships

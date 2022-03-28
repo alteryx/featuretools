@@ -14,7 +14,7 @@ from featuretools.utils.gen_utils import Library
 def pd_simple():
     es = ft.EntitySet("test")
     df = pd.DataFrame({"foo": [1]})
-    es.add_dataframe(df, dataframe_name='test')
+    es.add_dataframe(df, dataframe_name="test")
     return es
 
 
@@ -23,20 +23,20 @@ def dd_simple():
     es = ft.EntitySet("test")
     df = pd.DataFrame({"foo": [1]})
     df = dd.from_pandas(df, npartitions=2)
-    es.add_dataframe(df, dataframe_name='test')
+    es.add_dataframe(df, dataframe_name="test")
     return es
 
 
 @pytest.fixture
 def spark_simple():
-    ps = pytest.importorskip('pyspark.pandas', reason="Spark not installed, skipping")
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     es = ft.EntitySet("test")
-    df = ps.DataFrame({'foo': [1]})
-    es.add_dataframe(df, dataframe_name='test')
+    df = ps.DataFrame({"foo": [1]})
+    es.add_dataframe(df, dataframe_name="test")
     return es
 
 
-@pytest.fixture(params=['pd_simple', 'dd_simple', 'spark_simple'])
+@pytest.fixture(params=["pd_simple", "dd_simple", "spark_simple"])
 def simple_es(request):
     return request.getfixturevalue(request.param)
 

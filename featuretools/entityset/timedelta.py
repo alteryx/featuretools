@@ -28,8 +28,8 @@ class Timedelta(object):
     _Observations = "o"
 
     # units for absolute times
-    _absolute_units = ['ms', 's', 'h', 'm', 'd', 'w']
-    _relative_units = ['mo', 'Y']
+    _absolute_units = ["ms", "s", "h", "m", "d", "w"]
+    _relative_units = ["mo", "Y"]
 
     _readable_units = {
         "ms": "Milliseconds",
@@ -40,7 +40,7 @@ class Timedelta(object):
         "o": "Observations",
         "w": "Weeks",
         "Y": "Years",
-        "mo": "Months"
+        "mo": "Months",
     }
 
     _readable_to_unit = {v.lower(): k for k, v in _readable_units.items()}
@@ -65,8 +65,8 @@ class Timedelta(object):
 
     @classmethod
     def from_dictionary(cls, dictionary):
-        dict_units = dictionary['unit']
-        dict_values = dictionary['value']
+        dict_units = dictionary["unit"]
+        dict_values = dictionary["value"]
         if isinstance(dict_units, str) and isinstance(dict_values, (int, float)):
             return cls({dict_units: dict_values})
         else:
@@ -77,14 +77,14 @@ class Timedelta(object):
 
     @classmethod
     def make_singular(cls, s):
-        if len(s) > 1 and s.endswith('s'):
+        if len(s) > 1 and s.endswith("s"):
             return s[:-1]
         return s
 
     @classmethod
     def _check_unit_plural(cls, s):
-        if len(s) > 2 and not s.endswith('s'):
-            return (s + 's').lower()
+        if len(s) > 2 and not s.endswith("s"):
+            return (s + "s").lower()
         elif len(s) > 1:
             return s.lower()
         return s
@@ -113,6 +113,7 @@ class Timedelta(object):
     def check_value(self, value, unit):
         if isinstance(value, str):
             from featuretools.utils.wrangle import _check_timedelta
+
             td = _check_timedelta(value)
             self.times = td.times
         elif isinstance(value, dict):
@@ -139,7 +140,9 @@ class Timedelta(object):
     def get_name(self):
         all_units = self.get_units()
         if self.has_multiple_units() is False:
-            return "{} {}".format(self.times[all_units[0]], self._readable_units[all_units[0]])
+            return "{} {}".format(
+                self.times[all_units[0]], self._readable_units[all_units[0]]
+            )
         final_str = ""
         for unit, value in self.times.items():
             if value == 1:
@@ -154,9 +157,9 @@ class Timedelta(object):
             units.append(unit)
             values.append(value)
         if len(units) == 1:
-            return {'unit': units[0], 'value': values[0]}
+            return {"unit": units[0], "value": values[0]}
         else:
-            return {'unit': units, 'value': values}
+            return {"unit": units, "value": values}
 
     def is_absolute(self):
         for unit in self.get_units():
@@ -180,7 +183,7 @@ class Timedelta(object):
         if not isinstance(other, Timedelta):
             return False
 
-        return (self.times == other.times)
+        return self.times == other.times
 
     def __neg__(self):
         """Negate the timedelta"""
