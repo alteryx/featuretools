@@ -52,6 +52,7 @@ def test_get_function_called_once():
 
             def test(x):
                 return x
+
             return test
 
     primitive = TestPrimitive()
@@ -69,17 +70,17 @@ def test_multiple_arg_string():
             self.int = int
             self.float = float
 
-    primitive = Primitive(bool=True, int=4, float=.1)
+    primitive = Primitive(bool=True, int=4, float=0.1)
     string = primitive.get_args_string()
-    assert string == ', int=4, float=0.1'
+    assert string == ", int=4, float=0.1"
 
 
 def test_single_args_string():
-    assert IsIn([1, 2, 3]).get_args_string() == ', list_of_outputs=[1, 2, 3]'
+    assert IsIn([1, 2, 3]).get_args_string() == ", list_of_outputs=[1, 2, 3]"
 
 
 def test_args_string_default():
-    assert IsIn().get_args_string() == ''
+    assert IsIn().get_args_string() == ""
 
 
 def test_args_string_mixed():
@@ -91,13 +92,13 @@ def test_args_string_mixed():
 
     primitive = Primitive(bool=False, int=0)
     string = primitive.get_args_string()
-    assert string == ', bool=False'
+    assert string == ", bool=False"
 
 
 def test_args_string_undefined():
 
     string = Max().get_args_string()
-    assert string == ''
+    assert string == ""
 
 
 def test_args_string_error():
@@ -105,5 +106,5 @@ def test_args_string_error():
         def __init__(self, bool=True, int=0, float=None):
             pass
 
-    with raises(AssertionError, match='must be attribute'):
-        Primitive(bool=True, int=4, float=.1).get_args_string()
+    with raises(AssertionError, match="must be attribute"):
+        Primitive(bool=True, int=4, float=0.1).get_args_string()

@@ -3,15 +3,16 @@ from featuretools.primitives.base.primitive_base import PrimitiveBase
 
 class TransformPrimitive(PrimitiveBase):
     """Feature for dataframe that is a based off one or more other features
-        in that dataframe."""
+    in that dataframe."""
+
     # (bool) If True, feature function depends on all values of dataframe
     #   (and will receive these values as input, regardless of specified instance ids)
     uses_full_dataframe = False
 
     def generate_name(self, base_feature_names):
-        return u"%s(%s%s)" % (
+        return "%s(%s%s)" % (
             self.name.upper(),
-            u", ".join(base_feature_names),
+            ", ".join(base_feature_names),
             self.get_args_string(),
         )
 

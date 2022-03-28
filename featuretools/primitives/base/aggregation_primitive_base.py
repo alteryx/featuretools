@@ -8,10 +8,16 @@ class AggregationPrimitive(PrimitiveBase):
     base_of_exclude = None  # primitives this primitive can't be input for
     stack_on_self = True  # whether or not it can be in input_types of self
 
-    def generate_name(self, base_feature_names, relationship_path_name,
-                      parent_dataframe_name, where_str, use_prev_str):
+    def generate_name(
+        self,
+        base_feature_names,
+        relationship_path_name,
+        parent_dataframe_name,
+        where_str,
+        use_prev_str,
+    ):
         base_features_str = ", ".join(base_feature_names)
-        return u"%s(%s.%s%s%s%s)" % (
+        return "%s(%s.%s%s%s%s)" % (
             self.name.upper(),
             relationship_path_name,
             base_features_str,
@@ -20,12 +26,20 @@ class AggregationPrimitive(PrimitiveBase):
             self.get_args_string(),
         )
 
-    def generate_names(self, base_feature_names, relationship_path_name,
-                       parent_dataframe_name, where_str, use_prev_str):
+    def generate_names(
+        self,
+        base_feature_names,
+        relationship_path_name,
+        parent_dataframe_name,
+        where_str,
+        use_prev_str,
+    ):
         n = self.number_output_features
-        base_name = self.generate_name(base_feature_names,
-                                       relationship_path_name,
-                                       parent_dataframe_name,
-                                       where_str,
-                                       use_prev_str)
+        base_name = self.generate_name(
+            base_feature_names,
+            relationship_path_name,
+            parent_dataframe_name,
+            where_str,
+            use_prev_str,
+        )
         return [base_name + "[%s]" % i for i in range(n)]
