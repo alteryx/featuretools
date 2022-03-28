@@ -17,6 +17,7 @@ from featuretools.primitives import (
     Min,
     Mode,
     Month,
+    MultiplyNumeric,
     NumCharacters,
     NumUnique,
     NumWords,
@@ -68,10 +69,10 @@ def test_list_primitives_order():
 def test_valid_input_types():
     actual = _get_unique_input_types(Haversine.input_types)
     assert actual == {'<ColumnSchema (Logical Type = LatLong)>'}
-    actual = _get_unique_input_types(GreaterThan.input_types)
-    assert actual == {'<ColumnSchema (Logical Type = Datetime)>',
-                      "<ColumnSchema (Semantic Tags = ['numeric'])>",
-                      '<ColumnSchema (Logical Type = Ordinal: None)>'}
+    actual = _get_unique_input_types(MultiplyNumeric.input_types)
+    assert actual == {"<ColumnSchema (Semantic Tags = ['numeric'])>",
+                      '<ColumnSchema (Logical Type = Boolean)>',
+                      '<ColumnSchema (Logical Type = BooleanNullable)>'}
     actual = _get_unique_input_types(Sum.input_types)
     assert actual == {"<ColumnSchema (Semantic Tags = ['numeric'])>"}
 
