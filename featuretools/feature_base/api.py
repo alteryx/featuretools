@@ -7,7 +7,7 @@ from .feature_base import (
     FeatureOutputSlice,
     GroupByTransformFeature,
     IdentityFeature,
-    TransformFeature
+    TransformFeature,
 )
 from .feature_descriptions import describe_feature
 from .feature_visualizer import graph_feature

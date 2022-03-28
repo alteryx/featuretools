@@ -1,9 +1,6 @@
 import json
 
-from featuretools.utils.s3_utils import (
-    get_transport_params,
-    use_smartopen_features
-)
+from featuretools.utils.s3_utils import get_transport_params, use_smartopen_features
 from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.version import __version__ as ft_version
 
@@ -71,11 +68,11 @@ class FeaturesSerializer(object):
         es = self.feature_list[0].entityset
 
         return {
-            'schema_version': SCHEMA_VERSION,
-            'ft_version': ft_version,
-            'entityset': es.to_dictionary(),
-            'feature_list': names_list,
-            'feature_definitions': self._feature_definitions(),
+            "schema_version": SCHEMA_VERSION,
+            "ft_version": ft_version,
+            "entityset": es.to_dictionary(),
+            "feature_list": names_list,
+            "feature_definitions": self._feature_definitions(),
         }
 
     def save(self, location, profile_name):
@@ -87,7 +84,9 @@ class FeaturesSerializer(object):
                 raise ValueError("Writing to URLs is not supported")
             if _is_s3(location):
                 transport_params = get_transport_params(profile_name)
-                use_smartopen_features(location, features_dict, transport_params, read=False)
+                use_smartopen_features(
+                    location, features_dict, transport_params, read=False
+                )
             else:
                 with open(location, "w") as f:
                     json.dump(features_dict, f)

@@ -10,30 +10,30 @@ from .api import *  # noqa: F403
 def _load_primitives():
     """Load in a list of primitives registered by other libraries into Featuretools.
 
-        Example entry_points definition for a library using this entry point either in:
+    Example entry_points definition for a library using this entry point either in:
 
-            - setup.py:
+        - setup.py:
 
-                setup(
-                    entry_points={
-                        'featuretools_primitives': [
-                            'other_library = other_library',
-                        ],
-                    },
-                )
+            setup(
+                entry_points={
+                    'featuretools_primitives': [
+                        'other_library = other_library',
+                    ],
+                },
+            )
 
-            - setup.cfg:
+        - setup.cfg:
 
-                [options.entry_points]
-                featuretools_primitives =
-                    other_library = other_library
+            [options.entry_points]
+            featuretools_primitives =
+                other_library = other_library
 
-        where `other_library` is a top-level module containing all the primitives.
+    where `other_library` is a top-level module containing all the primitives.
     """
-    logger = logging.getLogger('featuretools')
+    logger = logging.getLogger("featuretools")
     base_primitives = AggregationPrimitive, TransformPrimitive  # noqa: F405
 
-    for entry_point in pkg_resources.iter_entry_points('featuretools_primitives'):
+    for entry_point in pkg_resources.iter_entry_points("featuretools_primitives"):
         try:
             loaded = entry_point.load()
         except Exception:
@@ -47,18 +47,25 @@ def _load_primitives():
             primitive = getattr(loaded, key, None)
 
             if (
-                inspect.isclass(primitive) and
-                issubclass(primitive, base_primitives) and
-                primitive not in base_primitives
+                inspect.isclass(primitive)
+                and issubclass(primitive, base_primitives)
+                and primitive not in base_primitives
             ):
                 name = primitive.__name__
                 scope = globals()
 
                 if name in scope:
-                    this_module, that_module = primitive.__module__, scope[name].__module__
+                    this_module, that_module = (
+                        primitive.__module__,
+                        scope[name].__module__,
+                    )
                     message = f'While loading primitives via "{entry_point.name}" entry point, '
-                    message += f'ignored primitive "{name}" from "{this_module}" because '
-                    message += f'a primitive with that name already exists in "{that_module}"'
+                    message += (
+                        f'ignored primitive "{name}" from "{this_module}" because '
+                    )
+                    message += (
+                        f'a primitive with that name already exists in "{that_module}"'
+                    )
                     logger.warning(message)
                 else:
                     scope[name] = primitive

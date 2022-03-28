@@ -20,9 +20,10 @@ class CumSum(TransformPrimitive):
         >>> cum_sum([1, 2, 3, 4, None, 5]).tolist()
         [1.0, 3.0, 6.0, 10.0, nan, 15.0]
     """
+
     name = "cum_sum"
-    input_types = [ColumnSchema(semantic_tags={'numeric'})]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    input_types = [ColumnSchema(semantic_tags={"numeric"})]
+    return_type = ColumnSchema(semantic_tags={"numeric"})
     uses_full_dataframe = True
     description_template = "the cumulative sum of {}"
 
@@ -47,9 +48,13 @@ class CumCount(TransformPrimitive):
         >>> cum_count([1, 2, 3, 4, None, 5]).tolist()
         [1, 2, 3, 4, 5, 6]
     """
+
     name = "cum_count"
-    input_types = [[ColumnSchema(semantic_tags={'foreign_key'})], [ColumnSchema(semantic_tags={'category'})]]
-    return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={'numeric'})
+    input_types = [
+        [ColumnSchema(semantic_tags={"foreign_key"})],
+        [ColumnSchema(semantic_tags={"category"})],
+    ]
+    return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={"numeric"})
     uses_full_dataframe = True
     description_template = "the cumulative count of {}"
 
@@ -75,9 +80,10 @@ class CumMean(TransformPrimitive):
         >>> cum_mean([1, 2, 3, 4, None, 5]).tolist()
         [1.0, 1.5, 2.0, 2.5, nan, 2.5]
     """
+
     name = "cum_mean"
-    input_types = [ColumnSchema(semantic_tags={'numeric'})]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    input_types = [ColumnSchema(semantic_tags={"numeric"})]
+    return_type = ColumnSchema(semantic_tags={"numeric"})
     uses_full_dataframe = True
     description_template = "the cumulative mean of {}"
 
@@ -103,9 +109,10 @@ class CumMin(TransformPrimitive):
         >>> cum_min([1, 2, -3, 4, None, 5]).tolist()
         [1.0, 1.0, -3.0, -3.0, nan, -3.0]
     """
+
     name = "cum_min"
-    input_types = [ColumnSchema(semantic_tags={'numeric'})]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    input_types = [ColumnSchema(semantic_tags={"numeric"})]
+    return_type = ColumnSchema(semantic_tags={"numeric"})
     uses_full_dataframe = True
     description_template = "the cumulative minimum of {}"
 
@@ -131,9 +138,10 @@ class CumMax(TransformPrimitive):
         >>> cum_max([1, 2, 3, 4, None, 5]).tolist()
         [1.0, 2.0, 3.0, 4.0, nan, 5.0]
     """
+
     name = "cum_max"
-    input_types = [ColumnSchema(semantic_tags={'numeric'})]
-    return_type = ColumnSchema(semantic_tags={'numeric'})
+    input_types = [ColumnSchema(semantic_tags={"numeric"})]
+    return_type = ColumnSchema(semantic_tags={"numeric"})
     uses_full_dataframe = True
     description_template = "the cumulative maximum of {}"
 

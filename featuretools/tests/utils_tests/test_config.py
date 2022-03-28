@@ -3,9 +3,11 @@ import os
 
 from featuretools.config_init import initialize_logging
 
-logging_env_vars = {'FEATURETOOLS_LOG_LEVEL': "debug",
-                    'FEATURETOOLS_ES_LOG_LEVEL': "critical",
-                    'FEATURETOOLS_BACKEND_LOG_LEVEL': "error"}
+logging_env_vars = {
+    "FEATURETOOLS_LOG_LEVEL": "debug",
+    "FEATURETOOLS_ES_LOG_LEVEL": "critical",
+    "FEATURETOOLS_BACKEND_LOG_LEVEL": "error",
+}
 
 
 def test_logging_defaults():
@@ -16,11 +18,11 @@ def test_logging_defaults():
             del os.environ[env_var]
 
     initialize_logging()
-    main_logger = logging.getLogger('featuretools')
+    main_logger = logging.getLogger("featuretools")
     assert main_logger.getEffectiveLevel() == logging.INFO
-    es_logger = logging.getLogger('featuretools.entityset')
+    es_logger = logging.getLogger("featuretools.entityset")
     assert es_logger.getEffectiveLevel() == logging.INFO
-    backend_logger = logging.getLogger('featuretools.computation_backend')
+    backend_logger = logging.getLogger("featuretools.computation_backend")
     assert backend_logger.getEffectiveLevel() == logging.INFO
 
     for env_var, value in old_env_vars.items():
@@ -35,11 +37,11 @@ def test_logging_set_via_env():
         os.environ[env_var] = value
 
     initialize_logging()
-    main_logger = logging.getLogger('featuretools')
+    main_logger = logging.getLogger("featuretools")
     assert main_logger.getEffectiveLevel() == logging.DEBUG
-    es_logger = logging.getLogger('featuretools.entityset')
+    es_logger = logging.getLogger("featuretools.entityset")
     assert es_logger.getEffectiveLevel() == logging.CRITICAL
-    backend_logger = logging.getLogger('featuretools.computation_backend')
+    backend_logger = logging.getLogger("featuretools.computation_backend")
     assert backend_logger.getEffectiveLevel() == logging.ERROR
 
     for env_var, value in old_env_vars.items():

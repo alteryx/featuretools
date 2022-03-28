@@ -9,9 +9,9 @@ def initialize_logging():
 
     # Check for environmental variables
     logger_env_vars = {
-        'FEATURETOOLS_LOG_LEVEL': 'featuretools',
-        'FEATURETOOLS_ES_LOG_LEVEL': 'featuretools.entityset',
-        'FEATURETOOLS_BACKEND_LOG_LEVEL': 'featuretools.computation_backend'
+        "FEATURETOOLS_LOG_LEVEL": "featuretools",
+        "FEATURETOOLS_ES_LOG_LEVEL": "featuretools.entityset",
+        "FEATURETOOLS_BACKEND_LOG_LEVEL": "featuretools.computation_backend",
     }
     for logger_env, logger in logger_env_vars.items():
         log_level = os.environ.get(logger_env, None)
@@ -19,16 +19,16 @@ def initialize_logging():
             loggers[logger] = log_level
 
     # Set log level to info if not otherwise specified.
-    loggers.setdefault('featuretools', 'info')
-    loggers.setdefault('featuretools.computation_backend', 'info')
-    loggers.setdefault('featuretools.entityset', 'info')
+    loggers.setdefault("featuretools", "info")
+    loggers.setdefault("featuretools.computation_backend", "info")
+    loggers.setdefault("featuretools.entityset", "info")
 
-    fmt = '%(asctime)-15s %(name)s - %(levelname)s    %(message)s'
+    fmt = "%(asctime)-15s %(name)s - %(levelname)s    %(message)s"
     out_handler = logging.StreamHandler(sys.stdout)
     err_handler = logging.StreamHandler(sys.stdout)
     out_handler.setFormatter(logging.Formatter(fmt))
     err_handler.setFormatter(logging.Formatter(fmt))
-    err_levels = ['WARNING', 'ERROR', 'CRITICAL']
+    err_levels = ["WARNING", "ERROR", "CRITICAL"]
 
     for name, level in list(loggers.items()):
         LEVEL = getattr(logging, level.upper())
@@ -47,7 +47,7 @@ def initialize_logging():
 initialize_logging()
 
 
-class Config():
+class Config:
     def __init__(self):
         self._data = {}
         self.set_to_default()
