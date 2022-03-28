@@ -156,9 +156,7 @@ def test_add_relationship_diff_param_logical_types(es):
     assert isinstance(es['sessions'].ww.logical_types['id'], Ordinal)
     assert es['sessions'].ww.logical_types['id'] != es['log2'].ww.logical_types['session_id']
 
-    warning_text = 'Logical type Ordinal for child column session_id does not match parent '\
-        'column id logical type Ordinal. There is a conflict between the parameters. '\
-        'Changing child logical type to match parent.'
+    warning_text = 'Changing child logical type to match parent.'
     with pytest.warns(UserWarning, match=warning_text):
         es.add_relationship(u'sessions', 'id', 'log2', 'session_id')
     assert isinstance(es['log2'].ww.logical_types['product_id'], Categorical)
