@@ -10,12 +10,12 @@ clean:
 lint:
 	isort --check-only featuretools
 	python docs/notebook_version_standardizer.py check-execution
-	black featuretools -t py39 --check
+	black featuretools -t py310 --check
 	flake8 featuretools
 
 .PHONY: lint-fix
 lint-fix:
-	black -t py39 featuretools
+	black -t py310 featuretools
 	isort featuretools
 	python docs/notebook_version_standardizer.py standardize
 
