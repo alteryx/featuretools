@@ -1,8 +1,8 @@
 import copy
 import logging
-from typing import Union
 import warnings
 from collections import defaultdict
+from typing import Union
 
 import dask.dataframe as dd
 import numpy as np

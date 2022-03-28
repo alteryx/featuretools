@@ -1,7 +1,7 @@
 import logging
-from typing import Union, List, Set, Tuple, Dict
 import warnings
 from collections import defaultdict
+from typing import Dict, List, Set, Tuple, Union
 
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
@@ -129,20 +129,20 @@ class DeepFeatureSynthesis(object):
         self,
         target_dataframe_name: str,
         entityset,
-        agg_primitives: Union[List[str], List[AggregationPrimitive], None]=None,
-        trans_primitives: Union[List[str], List[TransformPrimitive], None]=None,
+        agg_primitives: Union[List[str], List[AggregationPrimitive], None] = None,
+        trans_primitives: Union[List[str], List[TransformPrimitive], None] = None,
         where_primitives=None,
         groupby_trans_primitives=None,
-        max_depth: Union[int, None]=2,
-        max_features: Union[int, None]=-1,
-        allowed_paths: Union[List[List[str]], None]=None,
-        ignore_dataframes: Union[List[str], None]=None,
-        ignore_columns: Union[Dict[str, List[str]], None]=None,
+        max_depth: Union[int, None] = 2,
+        max_features: Union[int, None] = -1,
+        allowed_paths: Union[List[List[str]], None] = None,
+        ignore_dataframes: Union[List[str], None] = None,
+        ignore_columns: Union[Dict[str, List[str]], None] = None,
         primitive_options=None,
         seed_features=None,
         drop_contains=None,
         drop_exact=None,
-        where_stacking_limit=1
+        where_stacking_limit=1,
     ):
 
         if target_dataframe_name not in entityset.dataframe_dict:
@@ -188,7 +188,7 @@ class DeepFeatureSynthesis(object):
                 target_dataframe_name not in ignore_dataframes
             ), "Can't ignore target_dataframe!"
             self.ignore_dataframes = set(ignore_dataframes)
-        
+
         self.ignore_columns: Dict[str, Set[str]] = defaultdict(set)
         if ignore_columns is not None:
             # check if ignore_columns is not {str: list}
@@ -204,7 +204,6 @@ class DeepFeatureSynthesis(object):
                 raise TypeError("list values should be of type str")
             for df_name, cols in ignore_columns.items():
                 self.ignore_columns[df_name] = set(cols)
-
 
         self.target_dataframe_name = target_dataframe_name
         self.es = entityset
