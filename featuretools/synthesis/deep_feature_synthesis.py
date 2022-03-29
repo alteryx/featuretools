@@ -1092,16 +1092,14 @@ def match(
 T = TypeVar("T", bound=PrimitiveBase)
 
 
-def instantiate_primitive(primitive: T) -> T:
+def handle_primitive(primitive: T) -> T:
     if not isinstance(primitive, PrimitiveBase):
         primitive = primitive()
     assert isinstance(primitive, PrimitiveBase), "must be a primitive"
     return primitive
 
 
-def check_primitive(primitive: Union[T, str], prim_type: str) -> T:
-
-    resolved_primitive: T
+def check_primitive(primitive, prim_type):
     if prim_type == "transform" or prim_type == "groupby transform":
         prim_dict = primitives.get_transform_primitives()
         supertype = TransformPrimitive
@@ -1111,17 +1109,13 @@ def check_primitive(primitive: Union[T, str], prim_type: str) -> T:
             else "groupby_trans_primitives"
         )
         s = "a transform"
-    elif prim_type == "aggregation" or prim_type == "where":
+    if prim_type == "aggregation" or prim_type == "where":
         prim_dict = primitives.get_aggregation_primitives()
         supertype = AggregationPrimitive
         arg_name = (
             "agg_primitives" if prim_type == "aggregation" else "where_primitives"
         )
         s = "an aggregation"
-    else:
-        raise TypeError(
-            "prim_type must be one of 'groupby transform', 'transform', 'aggregation', 'where'"
-        )
 
     if isinstance(primitive, str):
         prim_string = camel_and_title_to_snake(primitive)
@@ -1131,18 +1125,14 @@ def check_primitive(primitive: Union[T, str], prim_type: str) -> T:
                 "Call ft.primitives.list_primitives() to get"
                 " a list of available primitives".format(prim_type, primitive)
             )
-        resolved_primitive = prim_dict[prim_string]  # type: ignore
-    else:
-        resolved_primitive = primitive
-
-    resolved_primitive = instantiate_primitive(resolved_primitive)
-
-    if not isinstance(resolved_primitive, supertype):
+        primitive = prim_dict[prim_string]
+    primitive = handle_primitive(primitive)
+    if not isinstance(primitive, supertype):
         raise ValueError(
             "Primitive {} in {} is not {} "
             "primitive".format(type(primitive), arg_name, s)
         )
-    return resolved_primitive
+    return primitive
 
 
 def _all_direct_and_same_path(input_features):
