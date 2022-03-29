@@ -1,19 +1,20 @@
 import os
 from inspect import signature
+from typing import Union
 
 import numpy as np
 import pandas as pd
 
 from featuretools import config
-from featuretools.utils.description_utils import convert_to_nth
 from featuretools.types import Library
+from featuretools.utils.description_utils import convert_to_nth
 
 
 class PrimitiveBase(object):
     """Base class for all primitives."""
 
     #: (str): Name of the primitive
-    name: str
+    name: Union[str, None] = None
     #: (list): woodwork.ColumnSchema types of inputs
     input_types = None
     #: (woodwork.ColumnSchema): ColumnSchema type of return
