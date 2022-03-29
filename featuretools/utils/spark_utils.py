@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 
 def replace_tuple_columns(pdf):
@@ -12,15 +13,23 @@ def replace_tuple_columns(pdf):
 
 
 def replace_nan_with_None(df):
-    def replace(val):
-        if isinstance(val, (tuple, list)):
-            return [None if pd.isna(x) else x for x in val]
+    new_df = pd.DataFrame()
+
+    def replace_val(val):
+        if isinstance(val, tuple):
+            return tuple((None if pd.isna(x) else x for x in val))
+        elif isinstance(val, list):
+            return list([None if pd.isna(x) else x for x in val])
         elif pd.isna(val):
             return None
         else:
             return val
 
-    return df.copy().applymap(replace)
+    for c in df.columns:
+        new_df[c] = df[c].apply(replace_val)
+        new_df[c] = new_df[c].astype(df[c].dtype)
+
+    return new_df
 
 
 def replace_categorical_columns(pdf):
@@ -39,4 +48,6 @@ def pd_to_spark_clean(pdf):
     intermediate_df = pdf
     for f in steps:
         intermediate_df = f(intermediate_df)
+
+    # breakpoint()
     return intermediate_df
