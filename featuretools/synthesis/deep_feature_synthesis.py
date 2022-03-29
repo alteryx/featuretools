@@ -28,7 +28,7 @@ from featuretools.primitives.options_utils import (
     generate_all_primitive_options,
     ignore_dataframe_for_primitive,
 )
-from featuretools.types import Library, PrimitiveTypes
+from featuretools.types import Library
 from featuretools.utils.gen_utils import camel_and_title_to_snake
 
 logger = logging.getLogger("featuretools")
@@ -1099,7 +1099,7 @@ def instantiate_primitive(primitive: T) -> T:
     return primitive
 
 
-def check_primitive(primitive: Union[T, str], prim_type: PrimitiveTypes) -> T:
+def check_primitive(primitive: Union[T, str], prim_type: str) -> T:
 
     resolved_primitive: T
     if prim_type == "transform" or prim_type == "groupby transform":
