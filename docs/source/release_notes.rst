@@ -11,7 +11,9 @@ Future Release
         * Removed ``make_trans_primitive`` and ``make_agg_primitive`` utility functions (:pr:`1970`)
         * Added type hints to DeepFeatureSynthensis and some associated utilities (:pr:`1987`)
     * Documentation Changes
+        * Update project urls in setup cfg to include Twitter and Slack (:pr:`1981`)
         * Update nbconvert to version 6.4.5 to fix docs build issue (:pr:`1984`)
+        * Update ReadMe to have centered badges and add docs badge (:pr:`1993`)
     * Testing Changes
         * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`1973`)
         * Updated minimum dependency checker to use new version with write file support (:pr:`1975`, :pr:`1976`)
