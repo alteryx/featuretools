@@ -2463,39 +2463,45 @@ def test_setitem(add_dataframe):
     add_dataframe.assert_called_with(dataframe=df, dataframe_name="new_df")
 
 
-def test_latlong_nan_normalization():
-    df = pd.DataFrame({"idx": [0, 1, 2], "latLong": [pd.NA, (1, 2), (pd.NA, pd.NA)]})
+def test_latlong_nan_normalization(latlong_df):
+    latlong_df.ww.init(
+        name="latLong", index="idx", logical_types={"latLong": "LatLong"}
+    )
+    latlong_df.sort_values(by="idx", inplace=True)
 
-    df.ww.init(name="latLong", index="idx", logical_types={"latLong": "LatLong"})
-
-    dataframes = {"latLong": (df,)}
+    dataframes = {"latLong": (latlong_df,)}
 
     relationships = []
 
     es = EntitySet("latlong-test", dataframes, relationships)
 
-    normalized_df = es["latLong"]
+    normalized_df = to_pandas(es["latLong"])
 
-    expected_df = pd.DataFrame(
-        {"idx": [0, 1, 2], "latLong": [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]}
+    expected_df = to_pandas(
+        pd.DataFrame(
+            {"idx": [0, 1, 2], "latLong": [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]}
+        )
     )
 
     pd.testing.assert_frame_equal(normalized_df, expected_df)
 
 
-def test_latlong_nan_normalization_add_dataframe():
-    df = pd.DataFrame({"idx": [0, 1, 2], "latLong": [pd.NA, (1, 2), (pd.NA, pd.NA)]})
-
-    df.ww.init(name="latLong", index="idx", logical_types={"latLong": "LatLong"})
+def test_latlong_nan_normalization_add_dataframe(latlong_df):
+    latlong_df.ww.init(
+        name="latLong", index="idx", logical_types={"latLong": "LatLong"}
+    )
+    latlong_df.sort_values(by="idx", inplace=True)
 
     es = EntitySet("latlong-test")
 
-    es.add_dataframe(df)
+    es.add_dataframe(latlong_df)
 
-    normalized_df = es["latLong"]
+    normalized_df = to_pandas(es["latLong"])
 
-    expected_df = pd.DataFrame(
-        {"idx": [0, 1, 2], "latLong": [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]}
+    expected_df = to_pandas(
+        pd.DataFrame(
+            {"idx": [0, 1, 2], "latLong": [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]}
+        )
     )
 
     pd.testing.assert_frame_equal(normalized_df, expected_df)

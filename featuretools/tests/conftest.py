@@ -149,6 +149,33 @@ def es(request):
     return request.getfixturevalue(request.param)
 
 
+@pytest.fixture
+def pd_latlong_df():
+    df = pd.DataFrame({"idx": [0, 1, 2], "latLong": [pd.NA, (1, 2), (pd.NA, pd.NA)]})
+
+    return df
+
+
+@pytest.fixture
+def dask_latlong_df(pd_latlong_df):
+    return dd.from_pandas(pd_latlong_df.reset_index(drop=True), npartitions=4)
+
+
+@pytest.fixture
+def spark_latlong_df(pd_latlong_df):
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
+    cleaned_df = pd_to_spark_clean(pd_latlong_df)
+
+    pdf = ps.from_pandas(cleaned_df)
+
+    return pdf
+
+
+@pytest.fixture(params=["pd_latlong_df", "dask_latlong_df", "spark_latlong_df"])
+def latlong_df(request):
+    return request.getfixturevalue(request.param)
+
+
 @pytest.fixture(params=["pd_diamond_es", "dask_diamond_es", "spark_diamond_es"])
 def diamond_es(request):
     return request.getfixturevalue(request.param)
