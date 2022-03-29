@@ -15,8 +15,8 @@ def replace_categorical_columns(pdf):
     new_df = pd.DataFrame()
     for c in pdf.columns:
         col = pdf[c]
-        if col.dtype.name == 'category':
-            new_df[c] = col.astype('string')
+        if col.dtype.name == "category":
+            new_df[c] = col.astype("string")
         else:
             new_df[c] = pdf[c]
     return new_df

@@ -1,8 +1,9 @@
 from woodwork.column_schema import ColumnSchema
 
-from featuretools.primitives.base import make_agg_primitive
+from featuretools.primitives.base import AggregationPrimitive
 
-CustomMax = make_agg_primitive(lambda x: max(x),
-                               name="CustomMax",
-                               input_types=[ColumnSchema(semantic_tags={'numeric'})],
-                               return_type=ColumnSchema(semantic_tags={'numeric'}))
+
+class CustomMax(AggregationPrimitive):
+    name = "custom_max"
+    input_types = [ColumnSchema(semantic_tags={"numeric"})]
+    return_type = ColumnSchema(semantic_tags={"numeric"})

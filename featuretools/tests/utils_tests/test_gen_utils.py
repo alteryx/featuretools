@@ -8,7 +8,7 @@ from featuretools.utils.gen_utils import (
     camel_and_title_to_snake,
     import_or_none,
     import_or_raise,
-    is_instance
+    is_instance,
 )
 
 
@@ -86,6 +86,7 @@ def test_camel_and_title_to_snake():
         camel_and_title_to_snake("alteryxMachineLearning") == "alteryx_machine_learning"
     )
     assert (
-        camel_and_title_to_snake("alteryx_machine_learning") == "alteryx_machine_learning"
+        camel_and_title_to_snake("alteryx_machine_learning")
+        == "alteryx_machine_learning"
     )
     assert camel_and_title_to_snake("USDValue") == "usd_value"

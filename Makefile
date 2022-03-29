@@ -4,17 +4,20 @@ clean:
 	find . -name '*.pyc' -delete
 	find . -name __pycache__ -delete
 	find . -name '*~' -delete
+	find . -name '.coverage.*' -delete
 
 .PHONY: lint
 lint:
-	flake8 featuretools && isort --check-only featuretools
-	python docs/notebook_cleaner.py check-execution
+	isort --check-only featuretools
+	python docs/notebook_version_standardizer.py check-execution
+	black featuretools -t py310 --check
+	flake8 featuretools
 
 .PHONY: lint-fix
 lint-fix:
-	autopep8 --in-place --recursive --max-line-length=100 --exclude="*/migrations/*" --select="E225,E303,E302,E203,E128,E231,E251,E271,E127,E126,E301,W291,W293,E226,E306,E221,E261,E111,E114" featuretools
+	black -t py310 featuretools
 	isort featuretools
-	python docs/notebook_cleaner.py standardize
+	python docs/notebook_version_standardizer.py standardize
 
 .PHONY: test
 test:
@@ -25,13 +28,12 @@ testcoverage:
 	pytest featuretools/ --cov=featuretools
 
 .PHONY: installdeps
-installdeps:
-	pip install --upgrade pip
-	pip install -e .[dev]
+installdeps: upgradepip
+	pip install -e ".[dev]"
 
 .PHONY: checkdeps
 checkdeps:
-	$(eval allow_list='holidays|scipy|numpy|pandas|tqdm|cloudpickle|distributed|dask|psutil|click|pyspark|koalas|woodwork')
+	$(eval allow_list='holidays|scipy|numpy|pandas|tqdm|cloudpickle|distributed|dask|psutil|click|pyspark|woodwork')
 	pip freeze | grep -v "alteryx/featuretools.git" | grep -E $(allow_list) > $(OUTPUT_PATH)
 
 .PHONY: upgradepip

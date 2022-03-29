@@ -7,14 +7,11 @@ from smart_open import open
 from woodwork.column_schema import ColumnSchema
 
 import featuretools as ft
-from featuretools.entityset.serialize import \
-    SCHEMA_VERSION as ENTITYSET_SCHEMA_VERSION
-from featuretools.feature_base.features_deserializer import (
-    FeaturesDeserializer
-)
+from featuretools.entityset.serialize import SCHEMA_VERSION as ENTITYSET_SCHEMA_VERSION
+from featuretools.feature_base.features_deserializer import FeaturesDeserializer
 from featuretools.feature_base.features_serializer import (
     SCHEMA_VERSION,
-    FeaturesSerializer
+    FeaturesSerializer,
 )
 from featuretools.primitives import (
     Count,
@@ -36,14 +33,16 @@ from featuretools.primitives import (
     Sum,
     Weekday,
     Year,
-    make_agg_primitive
 )
+from featuretools.primitives.base import AggregationPrimitive
 from featuretools.tests.testing_utils import check_names
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}_2022_2_16.json".format(SCHEMA_VERSION, ENTITYSET_SCHEMA_VERSION)
+TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}_2022_2_16.json".format(
+    SCHEMA_VERSION, ENTITYSET_SCHEMA_VERSION
+)
 S3_URL = "s3://featuretools-static/" + TEST_FILE
 URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
 TEST_CONFIG = "CheckConfigPassesOn"
@@ -57,7 +56,7 @@ def assert_features(original, deserialized):
 
 
 def pickle_features_test_helper(es_size, features_original, dir_path):
-    filepath = os.path.join(dir_path, 'test_feature')
+    filepath = os.path.join(dir_path, "test_feature")
 
     ft.save_features(features_original, filepath)
     features_deserializedA = ft.load_features(filepath)
@@ -74,26 +73,34 @@ def pickle_features_test_helper(es_size, features_original, dir_path):
     features_deserializedC = ft.load_features(features)
     assert asizeof(features) < es_size
 
-    features_deserialized_options = [features_deserializedA, features_deserializedB, features_deserializedC]
+    features_deserialized_options = [
+        features_deserializedA,
+        features_deserializedB,
+        features_deserializedC,
+    ]
     for features_deserialized in features_deserialized_options:
         assert_features(features_original, features_deserialized)
 
 
 def test_pickle_features(es, tmpdir):
-    features_original = ft.dfs(target_dataframe_name='sessions', entityset=es, features_only=True)
+    features_original = ft.dfs(
+        target_dataframe_name="sessions", entityset=es, features_only=True
+    )
     pickle_features_test_helper(asizeof(es), features_original, str(tmpdir))
 
 
 def test_pickle_features_with_custom_primitive(pd_es, tmpdir):
-    NewMax = make_agg_primitive(
-        lambda x: max(x),
-        name="NewMax",
-        input_types=[ColumnSchema(semantic_tags={'numeric'})],
-        return_type=ColumnSchema(semantic_tags={'numeric'}),
-        description="Calculate means ignoring nan values")
+    class NewMax(AggregationPrimitive):
+        name = "new_max"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
 
-    features_original = ft.dfs(target_dataframe_name='sessions', entityset=pd_es,
-                               agg_primitives=["Last", "Mean", NewMax], features_only=True)
+    features_original = ft.dfs(
+        target_dataframe_name="sessions",
+        entityset=pd_es,
+        agg_primitives=["Last", "Mean", NewMax],
+        features_only=True,
+    )
 
     assert any([isinstance(feat.primitive, NewMax) for feat in features_original])
     pickle_features_test_helper(asizeof(pd_es), features_original, str(tmpdir))
@@ -101,10 +108,14 @@ def test_pickle_features_with_custom_primitive(pd_es, tmpdir):
 
 def test_serialized_renamed_features(es):
     def serialize_name_unchanged(original):
-        new_name = 'MyFeature'
+        new_name = "MyFeature"
         original_names = original.get_feature_names()
         renamed = original.rename(new_name)
-        new_names = [new_name] if len(original_names) == 1 else [new_name + '[{}]'.format(i) for i in range(len(original_names))]
+        new_names = (
+            [new_name]
+            if len(original_names) == 1
+            else [new_name + "[{}]".format(i) for i in range(len(original_names))]
+        )
         check_names(renamed, new_name, new_names)
 
         serializer = FeaturesSerializer([renamed])
@@ -114,34 +125,50 @@ def test_serialized_renamed_features(es):
         deserialized = deserializer.to_list()[0]
         check_names(deserialized, new_name, new_names)
 
-    identity_original = ft.IdentityFeature(es['log'].ww['value'])
-    assert identity_original.get_name() == 'value'
+    identity_original = ft.IdentityFeature(es["log"].ww["value"])
+    assert identity_original.get_name() == "value"
 
-    value = ft.IdentityFeature(es['log'].ww['value'])
+    value = ft.IdentityFeature(es["log"].ww["value"])
 
     primitive = ft.primitives.Max()
-    agg_original = ft.AggregationFeature(value, 'customers', primitive)
-    assert agg_original.get_name() == 'MAX(log.value)'
+    agg_original = ft.AggregationFeature(value, "customers", primitive)
+    assert agg_original.get_name() == "MAX(log.value)"
 
-    direct_original = ft.DirectFeature(ft.IdentityFeature(es['customers'].ww['age']), 'sessions')
-    assert direct_original.get_name() == 'customers.age'
+    direct_original = ft.DirectFeature(
+        ft.IdentityFeature(es["customers"].ww["age"]), "sessions"
+    )
+    assert direct_original.get_name() == "customers.age"
 
     primitive = ft.primitives.MultiplyNumericScalar(value=2)
     transform_original = ft.TransformFeature(value, primitive)
-    assert transform_original.get_name() == 'value * 2'
+    assert transform_original.get_name() == "value * 2"
 
-    zipcode = ft.IdentityFeature(es['log'].ww['zipcode'])
+    zipcode = ft.IdentityFeature(es["log"].ww["zipcode"])
     primitive = CumSum()
-    groupby_original = ft.feature_base.GroupByTransformFeature(value, primitive, zipcode)
-    assert groupby_original.get_name() == 'CUM_SUM(value) by zipcode'
+    groupby_original = ft.feature_base.GroupByTransformFeature(
+        value, primitive, zipcode
+    )
+    assert groupby_original.get_name() == "CUM_SUM(value) by zipcode"
 
-    multioutput_original = ft.Feature(es['log'].ww['product_id'], parent_dataframe_name='customers', primitive=NMostCommon(n=2))
-    assert multioutput_original.get_name() == 'N_MOST_COMMON(log.product_id, n=2)'
+    multioutput_original = ft.Feature(
+        es["log"].ww["product_id"],
+        parent_dataframe_name="customers",
+        primitive=NMostCommon(n=2),
+    )
+    assert multioutput_original.get_name() == "N_MOST_COMMON(log.product_id, n=2)"
 
     featureslice_original = ft.feature_base.FeatureOutputSlice(multioutput_original, 0)
-    assert featureslice_original.get_name() == 'N_MOST_COMMON(log.product_id, n=2)[0]'
+    assert featureslice_original.get_name() == "N_MOST_COMMON(log.product_id, n=2)[0]"
 
-    feature_type_list = [identity_original, agg_original, direct_original, transform_original, groupby_original, multioutput_original, featureslice_original]
+    feature_type_list = [
+        identity_original,
+        agg_original,
+        direct_original,
+        transform_original,
+        groupby_original,
+        multioutput_original,
+        featureslice_original,
+    ]
 
     for feature_type in feature_type_list:
         serialize_name_unchanged(feature_type)
@@ -151,8 +178,9 @@ def test_serialized_renamed_features(es):
 def s3_client():
     _environ = os.environ.copy()
     from moto import mock_s3
+
     with mock_s3():
-        s3 = boto3.resource('s3')
+        s3 = boto3.resource("s3")
         yield s3
     os.environ.clear()
     os.environ.update(_environ)
@@ -160,30 +188,34 @@ def s3_client():
 
 @pytest.fixture
 def s3_bucket(s3_client):
-    s3_client.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
+    s3_client.create_bucket(Bucket=BUCKET_NAME, ACL="public-read-write")
     s3_bucket = s3_client.Bucket(BUCKET_NAME)
     yield s3_bucket
 
 
 def test_serialize_features_mock_s3(es, s3_client, s3_bucket):
-    features_original = ft.dfs(target_dataframe_name='sessions', entityset=es, features_only=True)
+    features_original = ft.dfs(
+        target_dataframe_name="sessions", entityset=es, features_only=True
+    )
 
     ft.save_features(features_original, TEST_S3_URL)
 
     obj = list(s3_bucket.objects.all())[0].key
-    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL="public-read-write")
 
     features_deserialized = ft.load_features(TEST_S3_URL)
     assert_features(features_original, features_deserialized)
 
 
 def test_serialize_features_mock_anon_s3(es, s3_client, s3_bucket):
-    features_original = ft.dfs(target_dataframe_name='sessions', entityset=es, features_only=True)
+    features_original = ft.dfs(
+        target_dataframe_name="sessions", entityset=es, features_only=True
+    )
 
     ft.save_features(features_original, TEST_S3_URL, profile_name=False)
 
     obj = list(s3_bucket.objects.all())[0].key
-    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL="public-read-write")
 
     features_deserialized = ft.load_features(TEST_S3_URL, profile_name=False)
     assert_features(features_original, features_deserialized)
@@ -191,9 +223,9 @@ def test_serialize_features_mock_anon_s3(es, s3_client, s3_bucket):
 
 @pytest.fixture
 def setup_test_profile(monkeypatch, tmpdir):
-    cache = str(tmpdir.join('.cache').mkdir())
-    test_path = os.path.join(cache, 'test_credentials')
-    test_path_config = os.path.join(cache, 'test_config')
+    cache = str(tmpdir.join(".cache").mkdir())
+    test_path = os.path.join(cache, "test_credentials")
+    test_path_config = os.path.join(cache, "test_config")
     monkeypatch.setenv("AWS_SHARED_CREDENTIALS_FILE", test_path)
     monkeypatch.setenv("AWS_CONFIG_FILE", test_path_config)
     monkeypatch.delenv("AWS_ACCESS_KEY_ID", raising=False)
@@ -224,39 +256,51 @@ def setup_test_profile(monkeypatch, tmpdir):
 
 @pytest.mark.parametrize("profile_name", ["test", False])
 def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile, profile_name):
-    features_original = ft.dfs(target_dataframe_name='sessions', entityset=es, features_only=True)
+    features_original = ft.dfs(
+        target_dataframe_name="sessions", entityset=es, features_only=True
+    )
 
-    ft.save_features(features_original, TEST_S3_URL, profile_name='test')
+    ft.save_features(features_original, TEST_S3_URL, profile_name="test")
 
     obj = list(s3_bucket.objects.all())[0].key
-    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL="public-read-write")
 
     features_deserialized = ft.load_features(TEST_S3_URL, profile_name=profile_name)
     assert_features(features_original, features_deserialized)
 
 
-@pytest.mark.parametrize("url,profile_name", [(S3_URL, False),
-                                              (URL, None)])
+@pytest.mark.parametrize("url,profile_name", [(S3_URL, False), (URL, None)])
 def test_deserialize_features_s3(pd_es, url, profile_name):
-    agg_primitives = [Sum, Std, Max, Skew, Min, Mean, Count, PercentTrue,
-                      NumUnique, Mode]
+    agg_primitives = [
+        Sum,
+        Std,
+        Max,
+        Skew,
+        Min,
+        Mean,
+        Count,
+        PercentTrue,
+        NumUnique,
+        Mode,
+    ]
 
-    trans_primitives = [Day, Year, Month, Weekday, Haversine, NumWords,
-                        NumCharacters]
+    trans_primitives = [Day, Year, Month, Weekday, Haversine, NumWords, NumCharacters]
 
-    features_original = ft.dfs(target_dataframe_name='sessions',
-                               entityset=pd_es,
-                               features_only=True,
-                               agg_primitives=agg_primitives,
-                               trans_primitives=trans_primitives)
+    features_original = ft.dfs(
+        target_dataframe_name="sessions",
+        entityset=pd_es,
+        features_only=True,
+        agg_primitives=agg_primitives,
+        trans_primitives=trans_primitives,
+    )
     features_deserialized = ft.load_features(url, profile_name=profile_name)
     assert_features(features_original, features_deserialized)
 
 
 def test_serialize_url(es):
-    features_original = ft.dfs(target_dataframe_name='sessions',
-                               entityset=es,
-                               features_only=True)
+    features_original = ft.dfs(
+        target_dataframe_name="sessions", entityset=es, features_only=True
+    )
     error_text = "Writing to URLs is not supported"
     with pytest.raises(ValueError, match=error_text):
         ft.save_features(features_original, URL)

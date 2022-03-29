@@ -7,27 +7,55 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+    * Changes
+        * Removed ``make_trans_primitive`` and ``make_agg_primitive`` utility functions (:pr:`1970`)
+        * Normalize LatLong NaN values during EntitySet creation (:pr:`1924`)
+    * Documentation Changes
+        * Update project urls in setup cfg to include Twitter and Slack (:pr:`1981`)
+        * Update nbconvert to version 6.4.5 to fix docs build issue (:pr:`1984`)
+        * Update ReadMe to have centered badges and add docs badge (:pr:`1993`)
+    * Testing Changes
+        * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`1973`)
+        * Updated minimum dependency checker to use new version with write file support (:pr:`1975`, :pr:`1976`)
+        * Add black linting package and remove autopep8 (:pr:`1978`)
+        * Update tests for compatibility with Woodwork version 0.15.0 (:pr:`1984`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`, :user:`gsheni`
+
+Breaking Changes
+++++++++++++++++
+* The utility functions ``make_trans_primitive`` and ``make_agg_primitive`` have been removed. To create custom 
+  primitives, define the primitive class directly.
+
+v1.7.0 Mar 16, 2022
+===================
+    * Enhancements
+        * Add support for Python 3.10 (:pr:`1940`)
+        * Added the SquareRoot, NaturalLogarithm, Sine, Cosine and Tangent primitives (:pr:`1948`)
+    * Fixes
         * Updated the conda install commands to specify the channel (:pr:`1917`)
     * Changes
-        * Normalize LatLong NaN values during EntitySet creation (:pr:`1924`)
         * Update error message when DFS returns an empty list of features (:pr:`1919`)
         * Remove ``list_variable_types`` and related directories (:pr:`1929`)
-        * Transition to use pyproject.toml and setup.cfg (moving away from setup.py) (:pr:`1941`, :pr:`1950`, :pr:`1952`, :pr:`1954`)
+        * Transition to use pyproject.toml and setup.cfg (moving away from setup.py) (:pr:`1941`, :pr:`1950`, :pr:`1952`, :pr:`1954`, :pr:`1957`, :pr:`1964`)
+        * Replace Koalas with pandas API on Spark (:pr:`1949`)
     * Documentation Changes
         * Add time series guide (:pr:`1896`)
         * Update minimum nlp_primitives requirement for docs (:pr:`1925`)
         * Add GitHub URL for PyPi (:pr:`1928`)
         * Add backport release support (:pr:`1932`)
+        * Update instructions in ``release.md`` (:pr:`1963`)
     * Testing Changes
         * Update test cases to cover __main__.py file (:pr:`1927`)
         * Upgrade moto requirement (:pr:`1929`, :pr:`1938`)
         * Add Python 3.9 linting, install complete, and docs build CI tests (:pr:`1934`)
         * Add CI workflow to test with latest woodwork main branch (:pr:`1936`)
-        * Add support for Python 3.10 (:pr:`1940`)
         * Add lower bound for wheel for minimum dependency checker and limit lint CI tests to Python 3.10 (:pr:`1945`)
+        * Fix non-deterministic test in ``test_es.py`` (:pr:`1961`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`tamargrey`, :user:`kushal-gopal`, :user:`rwedge`, :user:`mingdavidqi`, :user:`andriyor`, :user:`thehomebrewnerd`
+    :user:`andriyor`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`kushal-gopal`, :user:`mingdavidqi`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tvdboom`
 
 Breaking Changes
 ++++++++++++++++

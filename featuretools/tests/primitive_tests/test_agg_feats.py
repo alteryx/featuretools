@@ -20,26 +20,16 @@ from featuretools.primitives import (
     Sum,
     TimeSinceFirst,
     TimeSinceLast,
-    get_aggregation_primitives
+    get_aggregation_primitives,
 )
-from featuretools.primitives.base import (
-    AggregationPrimitive,
-    make_agg_primitive
-)
-from featuretools.primitives.utils import (
-    PrimitivesDeserializer,
-    serialize_primitive
-)
+from featuretools.primitives.base import AggregationPrimitive
+from featuretools.primitives.utils import PrimitivesDeserializer, serialize_primitive
 from featuretools.synthesis.deep_feature_synthesis import (
     DeepFeatureSynthesis,
     check_stacking,
-    match
+    match,
 )
-from featuretools.tests.testing_utils import (
-    backward_path,
-    feature_with_name,
-    to_pandas
-)
+from featuretools.tests.testing_utils import backward_path, feature_with_name, to_pandas
 from featuretools.utils.gen_utils import Library
 
 
@@ -47,26 +37,32 @@ from featuretools.utils.gen_utils import Library
 def test_primitive():
     class TestAgg(AggregationPrimitive):
         name = "test"
-        input_types = [ColumnSchema(semantic_tags={'numeric'})]
-        return_type = ColumnSchema(semantic_tags={'numeric'})
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
         stack_on = []
 
-        def get_function(self, agg_type='pandas'):
+        def get_function(self, agg_type="pandas"):
             return None
 
     return TestAgg
 
 
 def test_get_depth(es):
-    log_id_feat = ft.IdentityFeature(es['log'].ww['id'])
-    customer_id_feat = ft.IdentityFeature(es['customers'].ww['id'])
-    count_logs = ft.Feature(log_id_feat, parent_dataframe_name='sessions', primitive=Count)
-    sum_count_logs = ft.Feature(count_logs, parent_dataframe_name='customers', primitive=Sum)
+    log_id_feat = ft.IdentityFeature(es["log"].ww["id"])
+    customer_id_feat = ft.IdentityFeature(es["customers"].ww["id"])
+    count_logs = ft.Feature(
+        log_id_feat, parent_dataframe_name="sessions", primitive=Count
+    )
+    sum_count_logs = ft.Feature(
+        count_logs, parent_dataframe_name="customers", primitive=Sum
+    )
     num_logs_greater_than_5 = sum_count_logs > 5
-    count_customers = ft.Feature(customer_id_feat,
-                                 parent_dataframe_name=u'régions',
-                                 where=num_logs_greater_than_5,
-                                 primitive=Count)
+    count_customers = ft.Feature(
+        customer_id_feat,
+        parent_dataframe_name="régions",
+        where=num_logs_greater_than_5,
+        primitive=Count,
+    )
     num_customers_region = ft.Feature(count_customers, dataframe_name="customers")
 
     depth = num_customers_region.get_depth()
@@ -74,59 +70,74 @@ def test_get_depth(es):
 
 
 def test_makes_count(es):
-    dfs = DeepFeatureSynthesis(target_dataframe_name='sessions',
-                               entityset=es,
-                               agg_primitives=[Count],
-                               trans_primitives=[])
+    dfs = DeepFeatureSynthesis(
+        target_dataframe_name="sessions",
+        entityset=es,
+        agg_primitives=[Count],
+        trans_primitives=[],
+    )
 
     features = dfs.build_features()
-    assert feature_with_name(features, 'device_type')
-    assert feature_with_name(features, 'customer_id')
-    assert feature_with_name(features, u'customers.région_id')
-    assert feature_with_name(features, 'customers.age')
-    assert feature_with_name(features, 'COUNT(log)')
-    assert feature_with_name(features, 'customers.COUNT(sessions)')
-    assert feature_with_name(features, u'customers.régions.language')
-    assert feature_with_name(features, 'customers.COUNT(log)')
+    assert feature_with_name(features, "device_type")
+    assert feature_with_name(features, "customer_id")
+    assert feature_with_name(features, "customers.région_id")
+    assert feature_with_name(features, "customers.age")
+    assert feature_with_name(features, "COUNT(log)")
+    assert feature_with_name(features, "customers.COUNT(sessions)")
+    assert feature_with_name(features, "customers.régions.language")
+    assert feature_with_name(features, "customers.COUNT(log)")
 
 
-def test_count_null_and_make_agg_primitive(pd_es):
-    def count_func(values, count_null=False):
-        if len(values) == 0:
-            return 0
+def test_count_null(pd_es):
+    class Count(AggregationPrimitive):
+        name = "count"
+        input_types = [[ColumnSchema(semantic_tags={"foreign_key"})], [ColumnSchema()]]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
+        stack_on_self = False
 
-        if count_null:
-            values = values.fillna(0)
+        def __init__(self, count_null=True):
+            self.count_null = count_null
 
-        return values.count()
+        def get_function(self):
+            def count_func(values):
+                if self.count_null:
+                    values = values.fillna(0)
 
-    def count_generate_name(self, base_feature_names, relationship_path_name,
-                            parent_dataframe_name, where_str, use_prev_str):
-        return u"COUNT(%s%s%s)" % (relationship_path_name,
-                                   where_str,
-                                   use_prev_str)
+                return values.count()
 
-    Count = make_agg_primitive(
-        count_func,
-        [[ColumnSchema(semantic_tags={'foreign_key'})], [ColumnSchema()]],
-        ColumnSchema(semantic_tags={'numeric'}),
-        name="count",
-        stack_on_self=False,
-        cls_attributes={"generate_name": count_generate_name}
+            return count_func
+
+        def generate_name(
+            self,
+            base_feature_names,
+            relationship_path_name,
+            parent_dataframe_name,
+            where_str,
+            use_prev_str,
+        ):
+            return "COUNT(%s%s%s)" % (relationship_path_name, where_str, use_prev_str)
+
+    count_null = ft.Feature(
+        pd_es["log"].ww["value"],
+        parent_dataframe_name="sessions",
+        primitive=Count(count_null=True),
     )
-    count_null = ft.Feature(pd_es['log'].ww['value'], parent_dataframe_name='sessions', primitive=Count(count_null=True))
     feature_matrix = ft.calculate_feature_matrix([count_null], entityset=pd_es)
     values = [5, 4, 1, 2, 3, 2]
     assert (values == feature_matrix[count_null.get_name()]).all()
 
 
 def test_check_input_types(es):
-    count = ft.Feature(es["sessions"].ww["id"], parent_dataframe_name="customers", primitive=Count)
-    mean = ft.Feature(count, parent_dataframe_name=u"régions", primitive=Mean)
+    count = ft.Feature(
+        es["sessions"].ww["id"], parent_dataframe_name="customers", primitive=Count
+    )
+    mean = ft.Feature(count, parent_dataframe_name="régions", primitive=Mean)
     assert mean._check_input_types()
 
     boolean = count > 3
-    mean = ft.Feature(count, parent_dataframe_name=u"régions", where=boolean, primitive=Mean)
+    mean = ft.Feature(
+        count, parent_dataframe_name="régions", where=boolean, primitive=Mean
+    )
     assert mean._check_input_types()
 
 
@@ -148,22 +159,28 @@ def test_mean_nan(es):
     assert isnan(mean_func_nans_true(array_nans))
 
     # test naming
-    default_feat = ft.Feature(es["log"].ww["value"],
-                              parent_dataframe_name="customers",
-                              primitive=Mean)
+    default_feat = ft.Feature(
+        es["log"].ww["value"], parent_dataframe_name="customers", primitive=Mean
+    )
     assert default_feat.get_name() == "MEAN(log.value)"
-    ignore_nan_feat = ft.Feature(es["log"].ww["value"],
-                                 parent_dataframe_name="customers",
-                                 primitive=Mean(skipna=True))
+    ignore_nan_feat = ft.Feature(
+        es["log"].ww["value"],
+        parent_dataframe_name="customers",
+        primitive=Mean(skipna=True),
+    )
     assert ignore_nan_feat.get_name() == "MEAN(log.value)"
-    include_nan_feat = ft.Feature(es["log"].ww["value"],
-                                  parent_dataframe_name="customers",
-                                  primitive=Mean(skipna=False))
+    include_nan_feat = ft.Feature(
+        es["log"].ww["value"],
+        parent_dataframe_name="customers",
+        primitive=Mean(skipna=False),
+    )
     assert include_nan_feat.get_name() == "MEAN(log.value, skipna=False)"
 
 
 def test_base_of_and_stack_on_heuristic(es, test_primitive):
-    child = ft.Feature(es["sessions"].ww["id"], parent_dataframe_name="customers", primitive=Count)
+    child = ft.Feature(
+        es["sessions"].ww["id"], parent_dataframe_name="customers", primitive=Count
+    )
     test_primitive.stack_on = []
     child.primitive.base_of = []
     assert not check_stacking(test_primitive(), [child])
@@ -208,7 +225,9 @@ def test_base_of_and_stack_on_heuristic(es, test_primitive):
 
 def test_stack_on_self(es, test_primitive):
     # test stacks on self
-    child = ft.Feature(es['log'].ww['value'], parent_dataframe_name=u'régions', primitive=test_primitive)
+    child = ft.Feature(
+        es["log"].ww["value"], parent_dataframe_name="régions", primitive=test_primitive
+    )
     test_primitive.stack_on = []
     child.primitive.base_of = []
     test_primitive.stack_on_self = False
@@ -224,14 +243,14 @@ def test_stack_on_self(es, test_primitive):
 
 
 def test_init_and_name(es):
-    log = es['log']
+    log = es["log"]
 
     # Add a BooleanNullable column so primitives with that input type get tested
-    boolean_nullable = log.ww['purchased']
-    boolean_nullable = boolean_nullable.ww.set_logical_type('BooleanNullable')
-    log.ww['boolean_nullable'] = boolean_nullable
+    boolean_nullable = log.ww["purchased"]
+    boolean_nullable = boolean_nullable.ww.set_logical_type("BooleanNullable")
+    log.ww["boolean_nullable"] = boolean_nullable
 
-    features = [ft.Feature(es['log'].ww[col]) for col in log.columns]
+    features = [ft.Feature(es["log"].ww[col]) for col in log.columns]
 
     # check all primitives have name
     for attribute_string in dir(ft.primitives):
@@ -243,9 +262,13 @@ def test_init_and_name(es):
     agg_primitives = get_aggregation_primitives().values()
     # If Dask EntitySet use only Dask compatible primitives
     if es.dataframe_type == Library.DASK.value:
-        agg_primitives = [prim for prim in agg_primitives if Library.DASK in prim.compatibility]
-    if es.dataframe_type == Library.KOALAS.value:
-        agg_primitives = [prim for prim in agg_primitives if Library.KOALAS in prim.compatibility]
+        agg_primitives = [
+            prim for prim in agg_primitives if Library.DASK in prim.compatibility
+        ]
+    if es.dataframe_type == Library.SPARK.value:
+        agg_primitives = [
+            prim for prim in agg_primitives if Library.SPARK in prim.compatibility
+        ]
 
     for agg_prim in agg_primitives:
         input_types = agg_prim.input_types
@@ -259,7 +282,9 @@ def test_init_and_name(es):
             if len(matching_types) == 0:
                 raise Exception("Agg Primitive %s not tested" % agg_prim.name)
             for t in matching_types:
-                instance = ft.Feature(t, parent_dataframe_name='sessions', primitive=agg_prim)
+                instance = ft.Feature(
+                    t, parent_dataframe_name="sessions", primitive=agg_prim
+                )
 
                 # try to get name and calculate
                 instance.get_name()
@@ -267,92 +292,117 @@ def test_init_and_name(es):
 
 
 def test_invalid_init_args(diamond_es):
-    error_text = 'parent_dataframe must match first relationship in path'
+    error_text = "parent_dataframe must match first relationship in path"
     with pytest.raises(AssertionError, match=error_text):
-        path = backward_path(diamond_es, ['stores', 'transactions'])
-        ft.AggregationFeature(ft.IdentityFeature(diamond_es['transactions'].ww['amount']),
-                              'customers',
-                              ft.primitives.Mean,
-                              relationship_path=path)
+        path = backward_path(diamond_es, ["stores", "transactions"])
+        ft.AggregationFeature(
+            ft.IdentityFeature(diamond_es["transactions"].ww["amount"]),
+            "customers",
+            ft.primitives.Mean,
+            relationship_path=path,
+        )
 
-    error_text = 'Base feature must be defined on the dataframe at the end of relationship_path'
+    error_text = (
+        "Base feature must be defined on the dataframe at the end of relationship_path"
+    )
     with pytest.raises(AssertionError, match=error_text):
-        path = backward_path(diamond_es, ['regions', 'stores'])
-        ft.AggregationFeature(ft.IdentityFeature(diamond_es['transactions'].ww['amount']),
-                              'regions',
-                              ft.primitives.Mean,
-                              relationship_path=path)
+        path = backward_path(diamond_es, ["regions", "stores"])
+        ft.AggregationFeature(
+            ft.IdentityFeature(diamond_es["transactions"].ww["amount"]),
+            "regions",
+            ft.primitives.Mean,
+            relationship_path=path,
+        )
 
-    error_text = 'All relationships in path must be backward'
+    error_text = "All relationships in path must be backward"
     with pytest.raises(AssertionError, match=error_text):
-        backward = backward_path(diamond_es, ['customers', 'transactions'])
+        backward = backward_path(diamond_es, ["customers", "transactions"])
         forward = RelationshipPath([(True, r) for _, r in backward])
         path = RelationshipPath(list(forward) + list(backward))
-        ft.AggregationFeature(ft.IdentityFeature(diamond_es['transactions'].ww['amount']),
-                              'transactions',
-                              ft.primitives.Mean,
-                              relationship_path=path)
+        ft.AggregationFeature(
+            ft.IdentityFeature(diamond_es["transactions"].ww["amount"]),
+            "transactions",
+            ft.primitives.Mean,
+            relationship_path=path,
+        )
 
 
 def test_init_with_multiple_possible_paths(diamond_es):
-    error_text = "There are multiple possible paths to the base dataframe. " \
-                 "You must specify a relationship path."
+    error_text = (
+        "There are multiple possible paths to the base dataframe. "
+        "You must specify a relationship path."
+    )
     with pytest.raises(RuntimeError, match=error_text):
-        ft.AggregationFeature(ft.IdentityFeature(diamond_es['transactions'].ww['amount']),
-                              'regions',
-                              ft.primitives.Mean)
+        ft.AggregationFeature(
+            ft.IdentityFeature(diamond_es["transactions"].ww["amount"]),
+            "regions",
+            ft.primitives.Mean,
+        )
 
     # Does not raise if path specified.
-    path = backward_path(diamond_es, ['regions', 'customers', 'transactions'])
-    ft.AggregationFeature(ft.IdentityFeature(diamond_es['transactions'].ww['amount']),
-                          'regions',
-                          ft.primitives.Mean,
-                          relationship_path=path)
+    path = backward_path(diamond_es, ["regions", "customers", "transactions"])
+    ft.AggregationFeature(
+        ft.IdentityFeature(diamond_es["transactions"].ww["amount"]),
+        "regions",
+        ft.primitives.Mean,
+        relationship_path=path,
+    )
 
 
 def test_init_with_single_possible_path(diamond_es):
     # This uses diamond_es to test that there being a cycle somewhere in the
     # graph doesn't cause an error.
-    feat = ft.AggregationFeature(ft.IdentityFeature(diamond_es['transactions'].ww['amount']),
-                                 'customers',
-                                 ft.primitives.Mean)
-    expected_path = backward_path(diamond_es, ['customers', 'transactions'])
+    feat = ft.AggregationFeature(
+        ft.IdentityFeature(diamond_es["transactions"].ww["amount"]),
+        "customers",
+        ft.primitives.Mean,
+    )
+    expected_path = backward_path(diamond_es, ["customers", "transactions"])
     assert feat.relationship_path == expected_path
 
 
 def test_init_with_no_path(diamond_es):
     error_text = 'No backward path from "transactions" to "customers" found.'
     with pytest.raises(RuntimeError, match=error_text):
-        ft.AggregationFeature(ft.IdentityFeature(diamond_es['customers'].ww['name']),
-                              'transactions',
-                              ft.primitives.Count)
+        ft.AggregationFeature(
+            ft.IdentityFeature(diamond_es["customers"].ww["name"]),
+            "transactions",
+            ft.primitives.Count,
+        )
 
     error_text = 'No backward path from "transactions" to "transactions" found.'
     with pytest.raises(RuntimeError, match=error_text):
-        ft.AggregationFeature(ft.IdentityFeature(diamond_es['transactions'].ww['amount']),
-                              'transactions',
-                              ft.primitives.Mean)
+        ft.AggregationFeature(
+            ft.IdentityFeature(diamond_es["transactions"].ww["amount"]),
+            "transactions",
+            ft.primitives.Mean,
+        )
 
 
 def test_name_with_multiple_possible_paths(diamond_es):
-    path = backward_path(diamond_es, ['regions', 'customers', 'transactions'])
-    feat = ft.AggregationFeature(ft.IdentityFeature(diamond_es['transactions'].ww['amount']),
-                                 'regions',
-                                 ft.primitives.Mean,
-                                 relationship_path=path)
+    path = backward_path(diamond_es, ["regions", "customers", "transactions"])
+    feat = ft.AggregationFeature(
+        ft.IdentityFeature(diamond_es["transactions"].ww["amount"]),
+        "regions",
+        ft.primitives.Mean,
+        relationship_path=path,
+    )
 
     assert feat.get_name() == "MEAN(customers.transactions.amount)"
-    assert feat.relationship_path_name() == 'customers.transactions'
+    assert feat.relationship_path_name() == "customers.transactions"
 
 
 def test_copy(games_es):
-    home_games = next(r for r in games_es.relationships
-                      if r._child_column_name == 'home_team_id')
+    home_games = next(
+        r for r in games_es.relationships if r._child_column_name == "home_team_id"
+    )
     path = RelationshipPath([(False, home_games)])
-    feat = ft.AggregationFeature(ft.IdentityFeature(games_es['games'].ww['home_team_score']),
-                                 'teams',
-                                 relationship_path=path,
-                                 primitive=ft.primitives.Mean)
+    feat = ft.AggregationFeature(
+        ft.IdentityFeature(games_es["games"].ww["home_team_score"]),
+        "teams",
+        relationship_path=path,
+        primitive=ft.primitives.Mean,
+    )
     copied = feat.copy()
     assert copied.dataframe_name == feat.dataframe_name
     assert copied.base_features == feat.base_features
@@ -362,59 +412,61 @@ def test_copy(games_es):
 
 def test_serialization(es):
     primitives_deserializer = PrimitivesDeserializer()
-    value = ft.IdentityFeature(es['log'].ww['value'])
+    value = ft.IdentityFeature(es["log"].ww["value"])
     primitive = ft.primitives.Max()
-    max1 = ft.AggregationFeature(value, 'customers', primitive)
+    max1 = ft.AggregationFeature(value, "customers", primitive)
 
-    path = next(es.find_backward_paths('customers', 'log'))
+    path = next(es.find_backward_paths("customers", "log"))
     dictionary = {
-        'name': None,
-        'base_features': [value.unique_name()],
-        'relationship_path': [r.to_dictionary() for r in path],
-        'primitive': serialize_primitive(primitive),
-        'where': None,
-        'use_previous': None,
+        "name": None,
+        "base_features": [value.unique_name()],
+        "relationship_path": [r.to_dictionary() for r in path],
+        "primitive": serialize_primitive(primitive),
+        "where": None,
+        "use_previous": None,
     }
 
     assert dictionary == max1.get_arguments()
-    deserialized = ft.AggregationFeature.from_dictionary(dictionary,
-                                                         es,
-                                                         {value.unique_name(): value},
-                                                         primitives_deserializer)
+    deserialized = ft.AggregationFeature.from_dictionary(
+        dictionary, es, {value.unique_name(): value}, primitives_deserializer
+    )
     _assert_agg_feats_equal(max1, deserialized)
 
-    is_purchased = ft.IdentityFeature(es['log'].ww['purchased'])
-    use_previous = ft.Timedelta(3, 'd')
-    max2 = ft.AggregationFeature(value, 'customers', primitive,
-                                 where=is_purchased, use_previous=use_previous)
+    is_purchased = ft.IdentityFeature(es["log"].ww["purchased"])
+    use_previous = ft.Timedelta(3, "d")
+    max2 = ft.AggregationFeature(
+        value, "customers", primitive, where=is_purchased, use_previous=use_previous
+    )
 
     dictionary = {
-        'name': None,
-        'base_features': [value.unique_name()],
-        'relationship_path': [r.to_dictionary() for r in path],
-        'primitive': serialize_primitive(primitive),
-        'where': is_purchased.unique_name(),
-        'use_previous': use_previous.get_arguments(),
+        "name": None,
+        "base_features": [value.unique_name()],
+        "relationship_path": [r.to_dictionary() for r in path],
+        "primitive": serialize_primitive(primitive),
+        "where": is_purchased.unique_name(),
+        "use_previous": use_previous.get_arguments(),
     }
 
     assert dictionary == max2.get_arguments()
     dependencies = {
         value.unique_name(): value,
-        is_purchased.unique_name(): is_purchased
+        is_purchased.unique_name(): is_purchased,
     }
-    deserialized = ft.AggregationFeature.from_dictionary(dictionary,
-                                                         es,
-                                                         dependencies,
-                                                         primitives_deserializer)
+    deserialized = ft.AggregationFeature.from_dictionary(
+        dictionary, es, dependencies, primitives_deserializer
+    )
     _assert_agg_feats_equal(max2, deserialized)
 
 
 def test_time_since_last(pd_es):
-    f = ft.Feature(pd_es["log"].ww["datetime"], parent_dataframe_name="customers", primitive=TimeSinceLast)
-    fm = ft.calculate_feature_matrix([f],
-                                     entityset=pd_es,
-                                     instance_ids=[0, 1, 2],
-                                     cutoff_time=datetime(2015, 6, 8))
+    f = ft.Feature(
+        pd_es["log"].ww["datetime"],
+        parent_dataframe_name="customers",
+        primitive=TimeSinceLast,
+    )
+    fm = ft.calculate_feature_matrix(
+        [f], entityset=pd_es, instance_ids=[0, 1, 2], cutoff_time=datetime(2015, 6, 8)
+    )
 
     correct = [131376000.0, 131289534.0, 131287797.0]
     # note: must round to nearest second
@@ -422,11 +474,14 @@ def test_time_since_last(pd_es):
 
 
 def test_time_since_first(pd_es):
-    f = ft.Feature(pd_es["log"].ww["datetime"], parent_dataframe_name="customers", primitive=TimeSinceFirst)
-    fm = ft.calculate_feature_matrix([f],
-                                     entityset=pd_es,
-                                     instance_ids=[0, 1, 2],
-                                     cutoff_time=datetime(2015, 6, 8))
+    f = ft.Feature(
+        pd_es["log"].ww["datetime"],
+        parent_dataframe_name="customers",
+        primitive=TimeSinceFirst,
+    )
+    fm = ft.calculate_feature_matrix(
+        [f], entityset=pd_es, instance_ids=[0, 1, 2], cutoff_time=datetime(2015, 6, 8)
+    )
 
     correct = [131376600.0, 131289600.0, 131287800.0]
     # note: must round to nearest second
@@ -434,11 +489,14 @@ def test_time_since_first(pd_es):
 
 
 def test_median(pd_es):
-    f = ft.Feature(pd_es["log"].ww["value_many_nans"], parent_dataframe_name="customers", primitive=Median)
-    fm = ft.calculate_feature_matrix([f],
-                                     entityset=pd_es,
-                                     instance_ids=[0, 1, 2],
-                                     cutoff_time=datetime(2015, 6, 8))
+    f = ft.Feature(
+        pd_es["log"].ww["value_many_nans"],
+        parent_dataframe_name="customers",
+        primitive=Median,
+    )
+    fm = ft.calculate_feature_matrix(
+        [f], entityset=pd_es, instance_ids=[0, 1, 2], cutoff_time=datetime(2015, 6, 8)
+    )
 
     correct = [1, 3, np.nan]
     np.testing.assert_equal(fm[f.get_name()].values, correct)
@@ -446,207 +504,255 @@ def test_median(pd_es):
 
 def test_agg_same_method_name(es):
     """
-        Pandas relies on the function name when calculating aggregations. This means if a two
-        primitives with the same function name are applied to the same column, pandas
-        can't differentiate them. We have a work around to this based on the name property
-        that we test here.
+    Pandas relies on the function name when calculating aggregations. This means if a two
+    primitives with the same function name are applied to the same column, pandas
+    can't differentiate them. We have a work around to this based on the name property
+    that we test here.
     """
-    # TODO: Update to work with Dask and Koalas
+    # TODO: Update to work with Dask and Spark
     if es.dataframe_type != Library.PANDAS.value:
-        pytest.xfail("Cannot use primitives made with make_agg_primitives with Dask or Koalas EntitySets")
+        pytest.xfail("Need to update to work with Dask and Spark EntitySets")
+
     # test with normally defined functions
+    class Sum(AggregationPrimitive):
+        name = "sum"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
 
-    def custom_primitive(x):
-        return x.sum()
+        def get_function(self):
+            def custom_primitive(x):
+                return x.sum()
 
-    Sum = make_agg_primitive(custom_primitive, input_types=[ColumnSchema(semantic_tags={'numeric'})],
-                             return_type=ColumnSchema(semantic_tags={'numeric'}), name="sum")
+            return custom_primitive
 
-    def custom_primitive(x):
-        return x.max()
+    class Max(AggregationPrimitive):
+        name = "max"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
 
-    Max = make_agg_primitive(custom_primitive, input_types=[ColumnSchema(semantic_tags={'numeric'})],
-                             return_type=ColumnSchema(semantic_tags={'numeric'}), name="max")
+        def get_function(self):
+            def custom_primitive(x):
+                return x.max()
 
-    f_sum = ft.Feature(es["log"].ww["value"], parent_dataframe_name="customers", primitive=Sum)
-    f_max = ft.Feature(es["log"].ww["value"], parent_dataframe_name="customers", primitive=Max)
+            return custom_primitive
+
+    f_sum = ft.Feature(
+        es["log"].ww["value"], parent_dataframe_name="customers", primitive=Sum
+    )
+    f_max = ft.Feature(
+        es["log"].ww["value"], parent_dataframe_name="customers", primitive=Max
+    )
 
     fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
 
     # test with lambdas
-    Sum = make_agg_primitive(lambda x: x.sum(), input_types=[ColumnSchema(semantic_tags={'numeric'})],
-                             return_type=ColumnSchema(semantic_tags={'numeric'}), name="sum")
-    Max = make_agg_primitive(lambda x: x.max(), input_types=[ColumnSchema(semantic_tags={'numeric'})],
-                             return_type=ColumnSchema(semantic_tags={'numeric'}), name="max")
+    class Sum(AggregationPrimitive):
+        name = "sum"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
 
-    f_sum = ft.Feature(es["log"].ww["value"], parent_dataframe_name="customers", primitive=Sum)
-    f_max = ft.Feature(es["log"].ww["value"], parent_dataframe_name="customers", primitive=Max)
+        def get_function(self):
+            return lambda x: x.sum()
+
+    class Max(AggregationPrimitive):
+        name = "max"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
+
+        def get_function(self):
+            return lambda x: x.max()
+
+    f_sum = ft.Feature(
+        es["log"].ww["value"], parent_dataframe_name="customers", primitive=Sum
+    )
+    f_max = ft.Feature(
+        es["log"].ww["value"], parent_dataframe_name="customers", primitive=Max
+    )
     fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
 
 
 def test_time_since_last_custom(pd_es):
-    def time_since_last(values, time=None):
-        time_since = time - values.iloc[0]
-        return time_since.total_seconds()
+    class TimeSinceLast(AggregationPrimitive):
+        name = "time_since_last"
+        input_types = [
+            ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"})
+        ]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
+        uses_calc_time = True
 
-    TimeSinceLast = make_agg_primitive(time_since_last,
-                                       [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})],
-                                       ColumnSchema(semantic_tags={'numeric'}),
-                                       name="time_since_last",
-                                       uses_calc_time=True)
-    f = ft.Feature(pd_es["log"].ww["datetime"], parent_dataframe_name="customers", primitive=TimeSinceLast)
-    fm = ft.calculate_feature_matrix([f],
-                                     entityset=pd_es,
-                                     instance_ids=[0, 1, 2],
-                                     cutoff_time=datetime(2015, 6, 8))
+        def get_function(self):
+            def time_since_last(values, time):
+                time_since = time - values.iloc[0]
+                return time_since.total_seconds()
 
-    correct = [131376600, 131289600, 131287800]
-    # note: must round to nearest second
-    assert all(fm[f.get_name()].round().values == correct)
+            return time_since_last
 
-    error_text = "'time' is a restricted keyword.  Please use a different keyword."
-    with pytest.raises(ValueError, match=error_text):
-        TimeSinceLast = make_agg_primitive(time_since_last,
-                                           [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})],
-                                           ColumnSchema(semantic_tags={'numeric'}),
-                                           uses_calc_time=False)
-
-
-def test_custom_primitive_time_as_arg(pd_es):
-    def time_since_last(values, time):
-        time_since = time - values.iloc[0]
-        return time_since.total_seconds()
-
-    TimeSinceLast = make_agg_primitive(time_since_last,
-                                       [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})],
-                                       ColumnSchema(semantic_tags={'numeric'}),
-                                       uses_calc_time=True)
-    assert TimeSinceLast.name == "time_since_last"
-    f = ft.Feature(pd_es["log"].ww["datetime"], parent_dataframe_name="customers", primitive=TimeSinceLast)
-    fm = ft.calculate_feature_matrix([f],
-                                     entityset=pd_es,
-                                     instance_ids=[0, 1, 2],
-                                     cutoff_time=datetime(2015, 6, 8))
+    f = ft.Feature(
+        pd_es["log"].ww["datetime"],
+        parent_dataframe_name="customers",
+        primitive=TimeSinceLast,
+    )
+    fm = ft.calculate_feature_matrix(
+        [f], entityset=pd_es, instance_ids=[0, 1, 2], cutoff_time=datetime(2015, 6, 8)
+    )
 
     correct = [131376600, 131289600, 131287800]
     # note: must round to nearest second
     assert all(fm[f.get_name()].round().values == correct)
-
-    error_text = "'time' is a restricted keyword.  Please use a different keyword."
-    with pytest.raises(ValueError, match=error_text):
-        make_agg_primitive(time_since_last,
-                           [ColumnSchema(logical_type=Datetime, semantic_tags={'time_index'})],
-                           ColumnSchema(semantic_tags={'numeric'}),
-                           uses_calc_time=False)
 
 
 def test_custom_primitive_multiple_inputs(pd_es):
-    def mean_sunday(numeric, datetime):
-        '''
-        Finds the mean of non-null values of a feature that occurred on Sundays
-        '''
-        days = pd.DatetimeIndex(datetime).weekday.values
-        df = pd.DataFrame({'numeric': numeric, 'time': days})
-        return df[df['time'] == 6]['numeric'].mean()
+    class MeanSunday(AggregationPrimitive):
+        name = "mean_sunday"
+        input_types = [
+            ColumnSchema(semantic_tags={"numeric"}),
+            ColumnSchema(logical_type=Datetime),
+        ]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
 
-    MeanSunday = make_agg_primitive(
-        function=mean_sunday,
-        input_types=[ColumnSchema(semantic_tags={'numeric'}), ColumnSchema(logical_type=Datetime)],
-        return_type=ColumnSchema(semantic_tags={'numeric'})
+        def get_function(self):
+            def mean_sunday(numeric, datetime):
+                """
+                Finds the mean of non-null values of a feature that occurred on Sundays
+                """
+                days = pd.DatetimeIndex(datetime).weekday.values
+                df = pd.DataFrame({"numeric": numeric, "time": days})
+                return df[df["time"] == 6]["numeric"].mean()
+
+            return mean_sunday
+
+    fm, features = ft.dfs(
+        entityset=pd_es,
+        target_dataframe_name="sessions",
+        agg_primitives=[MeanSunday],
+        trans_primitives=[],
     )
-
-    fm, features = ft.dfs(entityset=pd_es,
-                          target_dataframe_name="sessions",
-                          agg_primitives=[MeanSunday],
-                          trans_primitives=[])
     mean_sunday_value = pd.Series([None, None, None, 2.5, 7, None])
     iterator = zip(fm["MEAN_SUNDAY(log.value, datetime)"], mean_sunday_value)
     for x, y in iterator:
-        assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+        assert (pd.isnull(x) and pd.isnull(y)) or (x == y)
 
     pd_es.add_interesting_values()
     mean_sunday_value_priority_0 = pd.Series([None, None, None, 2.5, 0, None])
-    fm, features = ft.dfs(entityset=pd_es,
-                          target_dataframe_name="sessions",
-                          agg_primitives=[MeanSunday],
-                          trans_primitives=[],
-                          where_primitives=[MeanSunday])
+    fm, features = ft.dfs(
+        entityset=pd_es,
+        target_dataframe_name="sessions",
+        agg_primitives=[MeanSunday],
+        trans_primitives=[],
+        where_primitives=[MeanSunday],
+    )
     where_feat = "MEAN_SUNDAY(log.value, datetime WHERE priority_level = 0)"
     for x, y in zip(fm[where_feat], mean_sunday_value_priority_0):
-        assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+        assert (pd.isnull(x) and pd.isnull(y)) or (x == y)
 
 
 def test_custom_primitive_default_kwargs(es):
-    def sum_n_times(numeric, n=1):
-        return np.nan_to_num(numeric).sum(dtype=np.float) * n
+    class SumNTimes(AggregationPrimitive):
+        name = "sum_n_times"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
 
-    SumNTimes = make_agg_primitive(function=sum_n_times,
-                                   input_types=[ColumnSchema(semantic_tags={'numeric'})],
-                                   return_type=ColumnSchema(semantic_tags={'numeric'}))
+        def __init__(self, n=1):
+            self.n = n
 
     sum_n_1_n = 1
-    sum_n_1_base_f = ft.Feature(es['log'].ww['value'])
-    sum_n_1 = ft.Feature([sum_n_1_base_f], parent_dataframe_name='sessions', primitive=SumNTimes(n=sum_n_1_n))
+    sum_n_1_base_f = ft.Feature(es["log"].ww["value"])
+    sum_n_1 = ft.Feature(
+        [sum_n_1_base_f],
+        parent_dataframe_name="sessions",
+        primitive=SumNTimes(n=sum_n_1_n),
+    )
     sum_n_2_n = 2
-    sum_n_2_base_f = ft.Feature(es['log'].ww['value_2'])
-    sum_n_2 = ft.Feature([sum_n_2_base_f], parent_dataframe_name='sessions', primitive=SumNTimes(n=sum_n_2_n))
+    sum_n_2_base_f = ft.Feature(es["log"].ww["value_2"])
+    sum_n_2 = ft.Feature(
+        [sum_n_2_base_f],
+        parent_dataframe_name="sessions",
+        primitive=SumNTimes(n=sum_n_2_n),
+    )
     assert sum_n_1_base_f == sum_n_1.base_features[0]
-    assert sum_n_1_n == sum_n_1.primitive.kwargs['n']
+    assert sum_n_1_n == sum_n_1.primitive.n
     assert sum_n_2_base_f == sum_n_2.base_features[0]
-    assert sum_n_2_n == sum_n_2.primitive.kwargs['n']
+    assert sum_n_2_n == sum_n_2.primitive.n
 
 
 def test_makes_numtrue(es):
-    if es.dataframe_type == Library.KOALAS.value:
-        pytest.xfail('Koalas EntitySets do not support NumTrue primitive')
-    dfs = DeepFeatureSynthesis(target_dataframe_name='sessions',
-                               entityset=es,
-                               agg_primitives=[NumTrue],
-                               trans_primitives=[])
+    if es.dataframe_type == Library.SPARK.value:
+        pytest.xfail("Spark EntitySets do not support NumTrue primitive")
+    dfs = DeepFeatureSynthesis(
+        target_dataframe_name="sessions",
+        entityset=es,
+        agg_primitives=[NumTrue],
+        trans_primitives=[],
+    )
     features = dfs.build_features()
-    assert feature_with_name(features, 'customers.NUM_TRUE(log.purchased)')
-    assert feature_with_name(features, 'NUM_TRUE(log.purchased)')
+    assert feature_with_name(features, "customers.NUM_TRUE(log.purchased)")
+    assert feature_with_name(features, "NUM_TRUE(log.purchased)")
 
 
 def test_make_three_most_common(pd_es):
-    def pd_top3(x):
-        counts = x.value_counts()
-        counts = counts[counts > 0]
-        array = np.array(counts[:3].index)
-        if len(array) < 3:
-            filler = np.full(3 - len(array), np.nan)
-            array = np.append(array, filler)
-        return array
+    class NMostCommoner(AggregationPrimitive):
+        name = "pd_top3"
+        input_types = ([ColumnSchema(semantic_tags={"category"})],)
+        return_type = None
+        number_output_features = 3
 
-    NMostCommoner = make_agg_primitive(function=pd_top3,
-                                       input_types=[ColumnSchema(semantic_tags={'category'})],
-                                       return_type=None,
-                                       number_output_features=3)
+        def get_function(self):
+            def pd_top3(x):
+                counts = x.value_counts()
+                counts = counts[counts > 0]
+                array = np.array(counts[:3].index)
+                if len(array) < 3:
+                    filler = np.full(3 - len(array), np.nan)
+                    array = np.append(array, filler)
+                return array
 
-    fm, features = ft.dfs(entityset=pd_es,
-                          target_dataframe_name="customers",
-                          instance_ids=[0, 1, 2],
-                          agg_primitives=[NMostCommoner],
-                          trans_primitives=[])
+            return pd_top3
+
+    fm, features = ft.dfs(
+        entityset=pd_es,
+        target_dataframe_name="customers",
+        instance_ids=[0, 1, 2],
+        agg_primitives=[NMostCommoner],
+        trans_primitives=[],
+    )
 
     df = fm[["PD_TOP3(log.product_id)[%s]" % i for i in range(3)]]
 
-    assert set(df.iloc[0].values[:2]) == set(['coke zero', 'toothpaste'])  # coke zero and toothpaste have same number of occurrences
-    assert df.iloc[0].values[2] in ['car', 'brown bag']  # so just check that the top two match
+    assert set(df.iloc[0].values[:2]) == set(
+        ["coke zero", "toothpaste"]
+    )  # coke zero and toothpaste have same number of occurrences
+    assert df.iloc[0].values[2] in [
+        "car",
+        "brown bag",
+    ]  # so just check that the top two match
 
-    assert df.iloc[1].reset_index(drop=True).equals(pd.Series(['coke zero', 'Haribo sugar-free gummy bears', np.nan]))
-    assert df.iloc[2].reset_index(drop=True).equals(pd.Series(['taco clock', np.nan, np.nan]))
+    assert (
+        df.iloc[1]
+        .reset_index(drop=True)
+        .equals(pd.Series(["coke zero", "Haribo sugar-free gummy bears", np.nan]))
+    )
+    assert (
+        df.iloc[2]
+        .reset_index(drop=True)
+        .equals(pd.Series(["taco clock", np.nan, np.nan]))
+    )
 
 
 def test_stacking_multi(pd_es):
     threecommon = NMostCommon(3)
-    tc = ft.Feature(pd_es['log'].ww['product_id'], parent_dataframe_name="sessions", primitive=threecommon)
+    tc = ft.Feature(
+        pd_es["log"].ww["product_id"],
+        parent_dataframe_name="sessions",
+        primitive=threecommon,
+    )
 
     stacked = []
     for i in range(3):
-        stacked.append(ft.Feature(tc[i], parent_dataframe_name='customers', primitive=NumUnique))
+        stacked.append(
+            ft.Feature(tc[i], parent_dataframe_name="customers", primitive=NumUnique)
+        )
 
     fm = ft.calculate_feature_matrix(stacked, entityset=pd_es, instance_ids=[0, 1, 2])
 
@@ -656,22 +762,30 @@ def test_stacking_multi(pd_es):
     # two values in the initial n most common function, which changes arbitrarily.
 
     for i in range(3):
-        f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.product_id)[%d])' % i
+        f = "NUM_UNIQUE(sessions.N_MOST_COMMON(log.product_id)[%d])" % i
         cols = fm.columns
         assert f in cols
-        assert fm[cols[i]].tolist() == correct_vals[i] or fm[cols[i]].tolist() == correct_vals1[i]
+        assert (
+            fm[cols[i]].tolist() == correct_vals[i]
+            or fm[cols[i]].tolist() == correct_vals1[i]
+        )
 
 
 def test_use_previous_pd_dateoffset(es):
-    total_events_pd = ft.Feature(es["log"].ww["id"],
-                                 parent_dataframe_name="customers",
-                                 use_previous=pd.DateOffset(hours=47, minutes=60),
-                                 primitive=Count)
+    total_events_pd = ft.Feature(
+        es["log"].ww["id"],
+        parent_dataframe_name="customers",
+        use_previous=pd.DateOffset(hours=47, minutes=60),
+        primitive=Count,
+    )
 
-    feature_matrix = ft.calculate_feature_matrix([total_events_pd], es,
-                                                 cutoff_time=pd.Timestamp('2011-04-11 10:31:30'),
-                                                 instance_ids=[0, 1, 2])
-    feature_matrix = to_pandas(feature_matrix, index='id', sort_index=True)
+    feature_matrix = ft.calculate_feature_matrix(
+        [total_events_pd],
+        es,
+        cutoff_time=pd.Timestamp("2011-04-11 10:31:30"),
+        instance_ids=[0, 1, 2],
+    )
+    feature_matrix = to_pandas(feature_matrix, index="id", sort_index=True)
     col_name = list(feature_matrix.head().keys())[0]
     assert (feature_matrix[col_name] == [1, 5, 2]).all()
 
@@ -685,37 +799,56 @@ def _assert_agg_feats_equal(f1, f2):
 
 
 def test_override_multi_feature_names(pd_es):
-    def gen_custom_names(primitive, base_feature_names, relationship_path_name,
-                         parent_dataframe_name, where_str, use_prev_str):
-        base_string = 'Custom_%s({}.{})'.format(parent_dataframe_name, base_feature_names)
+    def gen_custom_names(
+        primitive,
+        base_feature_names,
+        relationship_path_name,
+        parent_dataframe_name,
+        where_str,
+        use_prev_str,
+    ):
+        base_string = "Custom_%s({}.{})".format(
+            parent_dataframe_name, base_feature_names
+        )
         return [base_string % i for i in range(primitive.number_output_features)]
 
-    def pd_top3(x):
-        counts = x.value_counts()
-        counts = counts[counts > 0]
-        array = np.array(counts[:3].index)
-        if len(array) < 3:
-            filler = np.full(3 - len(array), np.nan)
-            array = np.append(array, filler)
-        return array
+    class NMostCommoner(AggregationPrimitive):
+        name = "pd_top3"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"category"})
+        number_output_features = 3
 
-    num_features = 3
-    NMostCommoner = make_agg_primitive(function=pd_top3,
-                                       input_types=[ColumnSchema(semantic_tags={'numeric'})],
-                                       return_type=ColumnSchema(semantic_tags={'category'}),
-                                       number_output_features=num_features,
-                                       cls_attributes={"generate_names": gen_custom_names})
+        def generate_names(
+            self,
+            base_feature_names,
+            relationship_path_name,
+            parent_dataframe_name,
+            where_str,
+            use_prev_str,
+        ):
+            return gen_custom_names(
+                self,
+                base_feature_names,
+                relationship_path_name,
+                parent_dataframe_name,
+                where_str,
+                use_prev_str,
+            )
 
-    fm, features = ft.dfs(entityset=pd_es,
-                          target_dataframe_name="products",
-                          instance_ids=[0, 1, 2],
-                          agg_primitives=[NMostCommoner],
-                          trans_primitives=[])
+    fm, features = ft.dfs(
+        entityset=pd_es,
+        target_dataframe_name="products",
+        instance_ids=[0, 1, 2],
+        agg_primitives=[NMostCommoner],
+        trans_primitives=[],
+    )
 
     expected_names = []
-    base_names = [['value'], ['value_2'], ['value_many_nans']]
+    base_names = [["value"], ["value_2"], ["value_many_nans"]]
     for name in base_names:
-        expected_names += gen_custom_names(NMostCommoner, name, None, 'products', None, None)
+        expected_names += gen_custom_names(
+            NMostCommoner, name, None, "products", None, None
+        )
 
     for name in expected_names:
         assert name in fm.columns

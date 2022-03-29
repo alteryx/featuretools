@@ -1,1 +1,1 @@
-raise NotImplementedError('invalid primitive')
+raise NotImplementedError("invalid primitive")

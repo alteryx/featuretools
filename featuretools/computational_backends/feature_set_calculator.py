@@ -13,17 +13,17 @@ from featuretools.feature_base import (
     DirectFeature,
     GroupByTransformFeature,
     IdentityFeature,
-    TransformFeature
+    TransformFeature,
 )
 from featuretools.utils import Trie
 from featuretools.utils.gen_utils import (
     Library,
     get_relationship_column_id,
     import_or_none,
-    is_instance
+    is_instance,
 )
 
-ks = import_or_none('databricks.koalas')
+ps = import_or_none("pyspark.pandas")
 
 
 class FeatureSetCalculator(object):
@@ -31,8 +31,14 @@ class FeatureSetCalculator(object):
     Calculates the values of a set of features for given instance ids.
     """
 
-    def __init__(self, entityset, feature_set, time_last=None,
-                 training_window=None, precalculated_features=None):
+    def __init__(
+        self,
+        entityset,
+        feature_set,
+        time_last=None,
+        training_window=None,
+        precalculated_features=None,
+    ):
         """
         Args:
             feature_set (FeatureSet): The features to calculate values for.
@@ -62,7 +68,10 @@ class FeatureSetCalculator(object):
         self.precalculated_features = precalculated_features
 
         # total number of features (including dependencies) to be calculate
-        self.num_features = sum(len(features1) + len(features2) for _, (_, features1, features2) in self.feature_set.feature_trie)
+        self.num_features = sum(
+            len(features1) + len(features2)
+            for _, (_, features1, features2) in self.feature_set.feature_trie
+        )
 
     def run(self, instance_ids, progress_callback=None, include_cutoff_time=True):
         """
@@ -101,6 +110,7 @@ class FeatureSetCalculator(object):
             # do nothing for the progress call back if not provided
             def progress_callback(*args):
                 pass
+
         feature_trie = self.feature_set.feature_trie
 
         df_trie = Trie(path_constructor=RelationshipPath)
@@ -108,15 +118,17 @@ class FeatureSetCalculator(object):
 
         target_dataframe = self.entityset[self.feature_set.target_df_name]
 
-        self._calculate_features_for_dataframe(dataframe_name=self.feature_set.target_df_name,
-                                               feature_trie=feature_trie,
-                                               df_trie=df_trie,
-                                               full_dataframe_trie=full_dataframe_trie,
-                                               precalculated_trie=self.precalculated_features,
-                                               filter_column=target_dataframe.ww.index,
-                                               filter_values=instance_ids,
-                                               progress_callback=progress_callback,
-                                               include_cutoff_time=include_cutoff_time)
+        self._calculate_features_for_dataframe(
+            dataframe_name=self.feature_set.target_df_name,
+            feature_trie=feature_trie,
+            df_trie=df_trie,
+            full_dataframe_trie=full_dataframe_trie,
+            precalculated_trie=self.precalculated_features,
+            filter_column=target_dataframe.ww.index,
+            filter_values=instance_ids,
+            progress_callback=progress_callback,
+            include_cutoff_time=include_cutoff_time,
+        )
 
         # The dataframe for the target dataframe should be stored at the root of
         # df_trie.
@@ -129,11 +141,13 @@ class FeatureSetCalculator(object):
             if df.empty:
                 return self.generate_default_df(instance_ids=instance_ids)
 
-            missing_ids = [i for i in instance_ids if i not in
-                           df[target_dataframe.ww.index]]
+            missing_ids = [
+                i for i in instance_ids if i not in df[target_dataframe.ww.index]
+            ]
             if missing_ids:
-                default_df = self.generate_default_df(instance_ids=missing_ids,
-                                                      extra_columns=df.columns)
+                default_df = self.generate_default_df(
+                    instance_ids=missing_ids, extra_columns=df.columns
+                )
 
                 df = default_df.append(df, sort=True)
 
@@ -145,26 +159,32 @@ class FeatureSetCalculator(object):
             df = df.reindex(unique_instance_ids)
 
             # Keep categorical index if original index was categorical
-            if index_dtype == 'category':
-                df.index = df.index.astype('category')
+            if index_dtype == "category":
+                df.index = df.index.astype("category")
 
         column_list = []
 
         for feat in self.feature_set.target_features:
             column_list.extend(feat.get_feature_names())
 
-        if is_instance(df, (dd, ks), 'DataFrame'):
+        if is_instance(df, (dd, ps), "DataFrame"):
             column_list.extend([target_dataframe.ww.index])
 
         return df[column_list]
 
-    def _calculate_features_for_dataframe(self, dataframe_name, feature_trie, df_trie,
-                                          full_dataframe_trie,
-                                          precalculated_trie,
-                                          filter_column, filter_values,
-                                          parent_data=None,
-                                          progress_callback=None,
-                                          include_cutoff_time=True):
+    def _calculate_features_for_dataframe(
+        self,
+        dataframe_name,
+        feature_trie,
+        df_trie,
+        full_dataframe_trie,
+        precalculated_trie,
+        filter_column,
+        filter_values,
+        parent_data=None,
+        progress_callback=None,
+        include_cutoff_time=True,
+    ):
         """
         Generate dataframes with features calculated for this node of the trie,
         and all descendant nodes. The dataframes will be stored in df_trie.
@@ -206,7 +226,11 @@ class FeatureSetCalculator(object):
         # Step 1: Get a dataframe for the given dataframe name, filtered by the given
         # conditions.
 
-        need_full_dataframe, full_dataframe_features, not_full_dataframe_features = feature_trie.value
+        (
+            need_full_dataframe,
+            full_dataframe_features,
+            not_full_dataframe_features,
+        ) = feature_trie.value
 
         all_features = full_dataframe_features | not_full_dataframe_features
         columns = self._necessary_columns(dataframe_name, all_features)
@@ -219,13 +243,15 @@ class FeatureSetCalculator(object):
             query_column = filter_column
             query_values = filter_values
 
-        df = self.entityset.query_by_values(dataframe_name=dataframe_name,
-                                            instance_vals=query_values,
-                                            column_name=query_column,
-                                            columns=columns,
-                                            time_last=self.time_last,
-                                            training_window=self.training_window,
-                                            include_cutoff_time=include_cutoff_time)
+        df = self.entityset.query_by_values(
+            dataframe_name=dataframe_name,
+            instance_vals=query_values,
+            column_name=query_column,
+            columns=columns,
+            time_last=self.time_last,
+            training_window=self.training_window,
+            include_cutoff_time=include_cutoff_time,
+        )
 
         # call to update timer
         progress_callback(0)
@@ -233,16 +259,21 @@ class FeatureSetCalculator(object):
         # Step 2: Add columns to the dataframe linking it to all ancestors.
         new_ancestor_relationship_columns = []
         if parent_data:
-            parent_relationship, ancestor_relationship_columns, parent_df = \
-                parent_data
+            parent_relationship, ancestor_relationship_columns, parent_df = parent_data
 
             if ancestor_relationship_columns:
-                df, new_ancestor_relationship_columns = self._add_ancestor_relationship_columns(
-                    df, parent_df, ancestor_relationship_columns, parent_relationship)
+                (
+                    df,
+                    new_ancestor_relationship_columns,
+                ) = self._add_ancestor_relationship_columns(
+                    df, parent_df, ancestor_relationship_columns, parent_relationship
+                )
 
             # Add the column linking this dataframe to its parent, so that
             # descendants get linked to the parent.
-            new_ancestor_relationship_columns.append(parent_relationship._child_column_name)
+            new_ancestor_relationship_columns.append(
+                parent_relationship._child_column_name
+            )
 
         # call to update timer
         progress_callback(0)
@@ -270,9 +301,7 @@ class FeatureSetCalculator(object):
                 sub_filter_column = relationship._child_column_name
                 sub_filter_values = filtered_df[relationship._parent_column_name]
 
-                parent_data = (relationship,
-                               new_ancestor_relationship_columns,
-                               df)
+                parent_data = (relationship, new_ancestor_relationship_columns, df)
 
             sub_df_trie = df_trie.get_node([edge])
             sub_full_dataframe_trie = full_dataframe_trie.get_node([edge])
@@ -287,7 +316,8 @@ class FeatureSetCalculator(object):
                 filter_values=sub_filter_values,
                 parent_data=parent_data,
                 progress_callback=progress_callback,
-                include_cutoff_time=include_cutoff_time)
+                include_cutoff_time=include_cutoff_time,
+            )
 
         # Step 4: Calculate the features for this dataframe.
         #
@@ -298,11 +328,13 @@ class FeatureSetCalculator(object):
         precalculated_features_df = precalculated_trie.value
         if precalculated_features_df is not None:
             # Left outer merge to keep all rows of df.
-            df = df.merge(precalculated_features_df,
-                          how='left',
-                          left_index=True,
-                          right_index=True,
-                          suffixes=('', '_precalculated'))
+            df = df.merge(
+                precalculated_features_df,
+                how="left",
+                left_index=True,
+                right_index=True,
+                suffixes=("", "_precalculated"),
+            )
 
         # call to update timer
         progress_callback(0)
@@ -311,7 +343,9 @@ class FeatureSetCalculator(object):
         # be calculated first because all of their dependents are included in
         # full_dataframe_features.
         if need_full_dataframe:
-            df = self._calculate_features(df, full_dataframe_trie, full_dataframe_features, progress_callback)
+            df = self._calculate_features(
+                df, full_dataframe_trie, full_dataframe_features, progress_callback
+            )
 
             # Store full dataframe
             full_dataframe_trie.value = df
@@ -321,7 +355,9 @@ class FeatureSetCalculator(object):
             df = df[df[filter_column].isin(filter_values)]
 
         # Calculate all features that don't require the full dataframe.
-        df = self._calculate_features(df, df_trie, not_full_dataframe_features, progress_callback)
+        df = self._calculate_features(
+            df, df_trie, not_full_dataframe_features, progress_callback
+        )
 
         # Step 5: Store the dataframe for this dataframe at the root of df_trie, so
         # that it can be accessed by the caller.
@@ -340,9 +376,9 @@ class FeatureSetCalculator(object):
 
         return df
 
-    def _add_ancestor_relationship_columns(self, child_df, parent_df,
-                                           ancestor_relationship_columns,
-                                           relationship):
+    def _add_ancestor_relationship_columns(
+        self, child_df, parent_df, ancestor_relationship_columns, relationship
+    ):
         """
         Merge ancestor_relationship_columns from parent_df into child_df, adding a prefix to
         each column name specifying the relationship.
@@ -358,14 +394,17 @@ class FeatureSetCalculator(object):
                 child is connected to the parent.
         """
         relationship_name = relationship.parent_name
-        new_relationship_columns = ['%s.%s' % (relationship_name, col)
-                                    for col in ancestor_relationship_columns]
+        new_relationship_columns = [
+            "%s.%s" % (relationship_name, col) for col in ancestor_relationship_columns
+        ]
 
         # create an intermediate dataframe which shares a column
         # with the child dataframe and has a column with the
         # original parent's id.
         col_map = {relationship._parent_column_name: relationship._child_column_name}
-        for child_column, parent_column in zip(new_relationship_columns, ancestor_relationship_columns):
+        for child_column, parent_column in zip(
+            new_relationship_columns, ancestor_relationship_columns
+        ):
             col_map[parent_column] = child_column
 
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
@@ -376,15 +415,19 @@ class FeatureSetCalculator(object):
         # Left outer join so that all rows in child are kept (if it contains
         # all rows of the dataframe then there may not be corresponding rows in the
         # parent_df).
-        df = child_df.merge(merge_df,
-                            how='left',
-                            left_on=relationship._child_column_name,
-                            right_on=relationship._child_column_name)
+        df = child_df.merge(
+            merge_df,
+            how="left",
+            left_on=relationship._child_column_name,
+            right_on=relationship._child_column_name,
+        )
 
         # ensure index is maintained
         # TODO: Review for dask dataframes
         if isinstance(df, pd.DataFrame):
-            df.set_index(relationship.child_dataframe.ww.index, drop=False, inplace=True)
+            df.set_index(
+                relationship.child_dataframe.ww.index, drop=False, inplace=True
+            )
 
         return df, new_relationship_columns
 
@@ -397,9 +440,9 @@ class FeatureSetCalculator(object):
                 default_row.append(f.default_value)
 
         default_matrix = [default_row] * len(instance_ids)
-        default_df = pd.DataFrame(default_matrix,
-                                  columns=default_cols,
-                                  index=instance_ids)
+        default_df = pd.DataFrame(
+            default_matrix, columns=default_cols, index=instance_ids
+        )
         index_name = self.entityset[self.feature_set.target_df_name].ww.index
         default_df.index.name = index_name
         if extra_columns is not None:
@@ -420,18 +463,21 @@ class FeatureSetCalculator(object):
         elif type(f) == IdentityFeature:
             return self._calculate_identity_features
         else:
-            raise UnknownFeature(u"{} feature unknown".format(f.__class__))
+            raise UnknownFeature("{} feature unknown".format(f.__class__))
 
     def _calculate_identity_features(self, features, df, _df_trie, progress_callback):
         for f in features:
             assert f.get_name() in df.columns, (
-                'Column "%s" missing frome dataframe' % f.get_name())
+                'Column "%s" missing frome dataframe' % f.get_name()
+            )
 
         progress_callback(len(features) / float(self.num_features))
 
         return df
 
-    def _calculate_transform_features(self, features, frame, _df_trie, progress_callback):
+    def _calculate_transform_features(
+        self, features, frame, _df_trie, progress_callback
+    ):
         frame_empty = frame.empty if isinstance(frame, pd.DataFrame) else False
         feature_values = []
         for f in features:
@@ -445,8 +491,7 @@ class FeatureSetCalculator(object):
 
             # collect only the columns we need for this transformation
 
-            column_data = [frame[bf.get_name()]
-                           for bf in f.base_features]
+            column_data = [frame[bf.get_name()] for bf in f.base_features]
 
             feature_func = f.get_function()
             # apply the function to the relevant dataframe slice and add the
@@ -481,7 +526,9 @@ class FeatureSetCalculator(object):
 
         groupby = features[0].groupby.get_name()
         grouped = frame.groupby(groupby)
-        groups = frame[groupby].unique()  # get all the unique group name to iterate over later
+        groups = frame[
+            groupby
+        ].unique()  # get all the unique group name to iterate over later
 
         for f in features:
             feature_vals = []
@@ -495,7 +542,9 @@ class FeatureSetCalculator(object):
 
                 column_names = [bf.get_name() for bf in f.base_features]
                 # exclude the groupby column from being passed to the function
-                column_data = [grouped[name].get_group(group) for name in column_names[:-1]]
+                column_data = [
+                    grouped[name].get_group(group) for name in column_names[:-1]
+                ]
                 feature_func = f.get_function()
 
                 # apply the function to the relevant dataframe slice and add the
@@ -525,10 +574,11 @@ class FeatureSetCalculator(object):
 
         return frame
 
-    def _calculate_direct_features(self, features, child_df, df_trie, progress_callback):
+    def _calculate_direct_features(
+        self, features, child_df, df_trie, progress_callback
+    ):
         path = features[0].relationship_path
-        assert len(path) == 1, \
-            "Error calculating DirectFeatures, len(path) != 1"
+        assert len(path) == 1, "Error calculating DirectFeatures, len(path) != 1"
 
         parent_df = df_trie.get_node([path[0]]).value
         _is_forward, relationship = path[0]
@@ -541,8 +591,11 @@ class FeatureSetCalculator(object):
 
         fillna_dict = {}
         for f in features:
-            feature_defaults = {name: f.default_value
-                                for name in f.get_feature_names() if not pd.isna(f.default_value)}
+            feature_defaults = {
+                name: f.default_value
+                for name in f.get_feature_names()
+                if not pd.isna(f.default_value)
+            }
             fillna_dict.update(feature_defaults)
             if f.base_features[0].get_name() == relationship._parent_column_name:
                 index_as_feature = f
@@ -554,19 +607,21 @@ class FeatureSetCalculator(object):
 
         # merge the identity feature from the parent dataframe into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
-        if is_instance(merge_df, (dd, ks), 'DataFrame'):
-            new_df = child_df.merge(merge_df, left_on=merge_col, right_on=merge_col,
-                                    how='left')
+        if is_instance(merge_df, (dd, ps), "DataFrame"):
+            new_df = child_df.merge(
+                merge_df, left_on=merge_col, right_on=merge_col, how="left"
+            )
         else:
             if index_as_feature is not None:
-                merge_df.set_index(index_as_feature.get_name(),
-                                   inplace=True,
-                                   drop=False)
+                merge_df.set_index(
+                    index_as_feature.get_name(), inplace=True, drop=False
+                )
             else:
                 merge_df.set_index(merge_col, inplace=True)
 
-            new_df = child_df.merge(merge_df, left_on=merge_col, right_index=True,
-                                    how='left')
+            new_df = child_df.merge(
+                merge_df, left_on=merge_col, right_index=True, how="left"
+            )
 
         progress_callback(len(features) / float(self.num_features))
 
@@ -592,13 +647,17 @@ class FeatureSetCalculator(object):
             return frame
 
         # handle where
-        base_frame_empty = base_frame.empty if isinstance(base_frame, pd.DataFrame) else False
+        base_frame_empty = (
+            base_frame.empty if isinstance(base_frame, pd.DataFrame) else False
+        )
         where = test_feature.where
         if where is not None and not base_frame_empty:
             base_frame = base_frame.loc[base_frame[where.get_name()]]
 
         # when no child data, just add all the features to frame with nan
-        base_frame_empty = base_frame.empty if isinstance(base_frame, pd.DataFrame) else False
+        base_frame_empty = (
+            base_frame.empty if isinstance(base_frame, pd.DataFrame) else False
+        )
         if base_frame_empty:
             feature_values = []
             for f in features:
@@ -622,12 +681,14 @@ class FeatureSetCalculator(object):
                     if ti is not None:
                         base_frame = base_frame[base_frame[ti] >= time_first]
                 else:
-                    n = use_previous.get_value('o')
+                    n = use_previous.get_value("o")
 
                     def last_n(df):
                         return df.iloc[-n:]
 
-                    base_frame = base_frame.groupby(groupby_col, observed=True, sort=False).apply(last_n)
+                    base_frame = base_frame.groupby(
+                        groupby_col, observed=True, sort=False
+                    ).apply(last_n)
 
             to_agg = {}
             agg_rename = {}
@@ -642,8 +703,8 @@ class FeatureSetCalculator(object):
                         to_agg[column_id] = []
                     if isinstance(base_frame, dd.DataFrame):
                         func = f.get_function(agg_type=Library.DASK)
-                    elif is_instance(base_frame, ks, 'DataFrame'):
-                        func = f.get_function(agg_type=Library.KOALAS)
+                    elif is_instance(base_frame, ps, "DataFrame"):
+                        func = f.get_function(agg_type=Library.SPARK)
                     else:
                         func = f.get_function()
 
@@ -659,7 +720,7 @@ class FeatureSetCalculator(object):
                         # column twice, wrap it in a partial to avoid
                         # duplicate functions
                         funcname = str(id(func))
-                        if u"{}-{}".format(column_id, funcname) in agg_rename:
+                        if "{}-{}".format(column_id, funcname) in agg_rename:
                             func = partial(func)
                             funcname = str(id(func))
 
@@ -672,7 +733,7 @@ class FeatureSetCalculator(object):
 
                     to_agg[column_id].append(func)
                     # this is used below to rename columns that pandas names for us
-                    agg_rename[u"{}-{}".format(column_id, funcname)] = f.get_name()
+                    agg_rename["{}-{}".format(column_id, funcname)] = f.get_name()
                     continue
 
                 to_apply.add(f)
@@ -685,12 +746,16 @@ class FeatureSetCalculator(object):
                 # to silence pandas warning about ambiguity we explicitly pass
                 # the column (in actuality grouping by both index and group would
                 # work)
-                to_merge = base_frame.groupby(base_frame[groupby_col],
-                                              observed=True,
-                                              sort=False).apply(wrap)
-                frame = pd.merge(left=frame, right=to_merge,
-                                 left_index=True,
-                                 right_index=True, how='left')
+                to_merge = base_frame.groupby(
+                    base_frame[groupby_col], observed=True, sort=False
+                ).apply(wrap)
+                frame = pd.merge(
+                    left=frame,
+                    right=to_merge,
+                    left_index=True,
+                    right_index=True,
+                    how="left",
+                )
 
                 progress_callback(len(to_apply) / float(self.num_features))
 
@@ -701,12 +766,13 @@ class FeatureSetCalculator(object):
                 # to silence pandas warning about ambiguity we explicitly pass
                 # the column (in actuality grouping by both index and group would
                 # work)
-                if is_instance(base_frame, (dd, ks), 'DataFrame'):
+                if is_instance(base_frame, (dd, ps), "DataFrame"):
                     to_merge = base_frame.groupby(groupby_col).agg(to_agg)
 
                 else:
-                    to_merge = base_frame.groupby(base_frame[groupby_col],
-                                                  observed=True, sort=False).agg(to_agg)
+                    to_merge = base_frame.groupby(
+                        base_frame[groupby_col], observed=True, sort=False
+                    ).agg(to_agg)
                 # rename columns to the correct feature names
                 to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns]
                 to_merge = to_merge[list(agg_rename.values())]
@@ -717,14 +783,23 @@ class FeatureSetCalculator(object):
                 # Pandas claims that bug is fixed but it still shows up in some
                 # cases.  More investigation needed.
                 if pdtypes.is_categorical_dtype(frame.index):
-                    categories = pdtypes.CategoricalDtype(categories=frame.index.categories)
+                    categories = pdtypes.CategoricalDtype(
+                        categories=frame.index.categories
+                    )
                     to_merge.index = to_merge.index.astype(object).astype(categories)
 
-                if is_instance(frame, (dd, ks), 'DataFrame'):
-                    frame = frame.merge(to_merge, left_on=parent_merge_col, right_index=True, how='left')
+                if is_instance(frame, (dd, ps), "DataFrame"):
+                    frame = frame.merge(
+                        to_merge, left_on=parent_merge_col, right_index=True, how="left"
+                    )
                 else:
-                    frame = pd.merge(left=frame, right=to_merge,
-                                     left_index=True, right_index=True, how='left')
+                    frame = pd.merge(
+                        left=frame,
+                        right=to_merge,
+                        left_index=True,
+                        right_index=True,
+                        how="left",
+                    )
 
                 # determine number of features that were just merged
                 progress_callback(len(to_merge.columns) / float(self.num_features))
@@ -732,8 +807,7 @@ class FeatureSetCalculator(object):
         # Handle default values
         fillna_dict = {}
         for f in features:
-            feature_defaults = {name: f.default_value
-                                for name in f.get_feature_names()}
+            feature_defaults = {name: f.default_value for name in f.get_feature_names()}
             fillna_dict.update(feature_defaults)
 
         frame = frame.fillna(fillna_dict)
@@ -744,13 +818,16 @@ class FeatureSetCalculator(object):
         # We have to keep all index and foreign columns because we don't know what forward
         # relationships will come from this node.
         df = self.entityset[dataframe_name]
-        index_columns = {col for col in df.columns
-                         if {'index', 'foreign_key', 'time_index'} & df.ww.semantic_tags[col]}
-        features = (self.feature_set.features_by_name[name]
-                    for name in feature_names)
+        index_columns = {
+            col
+            for col in df.columns
+            if {"index", "foreign_key", "time_index"} & df.ww.semantic_tags[col]
+        }
+        features = (self.feature_set.features_by_name[name] for name in feature_names)
 
-        feature_columns = {f.column_name for f in features
-                           if isinstance(f, IdentityFeature)}
+        feature_columns = {
+            f.column_name for f in features if isinstance(f, IdentityFeature)
+        }
         return list(index_columns | feature_columns)
 
 
@@ -758,8 +835,11 @@ def _can_agg(feature):
     assert isinstance(feature, AggregationFeature)
     base_features = feature.base_features
     if feature.where is not None:
-        base_features = [bf.get_name() for bf in base_features
-                         if bf.get_name() != feature.where.get_name()]
+        base_features = [
+            bf.get_name()
+            for bf in base_features
+            if bf.get_name() != feature.where.get_name()
+        ]
 
     if feature.primitive.uses_calc_time:
         return False
@@ -788,6 +868,7 @@ def agg_wrapper(feats, time_last):
         d = update_feature_columns(feature_values, d)
 
         return pd.Series(d)
+
     return wrap
 
 

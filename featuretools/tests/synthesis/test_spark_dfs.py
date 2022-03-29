@@ -1,5 +1,5 @@
-import dask.dataframe as dd
 import pandas as pd
+import pytest
 from woodwork.logical_types import (
     Datetime,
     Double,
@@ -10,9 +10,13 @@ from woodwork.logical_types import (
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
+from featuretools.utils.gen_utils import import_or_none
+
+ps = import_or_none("pyspark.pandas")
 
 
-def test_single_table_dask_entityset():
+@pytest.mark.skipif("not ps")
+def test_single_table_spark_entityset():
     primitives_list = [
         "absolute",
         "is_weekend",
@@ -22,7 +26,7 @@ def test_single_table_dask_entityset():
         "num_words",
     ]
 
-    dask_es = EntitySet(id="dask_es")
+    spark_es = EntitySet(id="spark_es")
     df = pd.DataFrame(
         {
             "id": [0, 1, 2, 3],
@@ -36,14 +40,14 @@ def test_single_table_dask_entityset():
             "strings": ["I am a string", "23", "abcdef ghijk", ""],
         }
     )
-    values_dd = dd.from_pandas(df, npartitions=2)
+    values_dd = ps.from_pandas(df)
     ltypes = {"values": Integer, "dates": Datetime, "strings": NaturalLanguage}
-    dask_es.add_dataframe(
+    spark_es.add_dataframe(
         dataframe_name="data", dataframe=values_dd, index="id", logical_types=ltypes
     )
 
-    dask_fm, _ = ft.dfs(
-        entityset=dask_es,
+    spark_fm, _ = ft.dfs(
+        entityset=spark_es,
         target_dataframe_name="data",
         trans_primitives=primitives_list,
     )
@@ -57,14 +61,16 @@ def test_single_table_dask_entityset():
         entityset=pd_es, target_dataframe_name="data", trans_primitives=primitives_list
     )
 
-    # Use the same columns and make sure both indexes are sorted the same
-    # update the type of the future index column so it doesn't conflict with the pandas fm
-    dask_fm = dask_fm.compute().astype({"id": "int64"})
-    dask_computed_fm = dask_fm.set_index("id").loc[fm.index][fm.columns]
-    pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
+    spark_fm = spark_fm.to_pandas().astype({"id": "int64"})
+    spark_computed_fm = spark_fm.set_index("id").loc[fm.index][fm.columns]
+    # Spark dtypes are different for categorical - set the pandas fm to have the same dtypes before comparing
+    pd.testing.assert_frame_equal(
+        fm.astype(spark_computed_fm.dtypes), spark_computed_fm
+    )
 
 
-def test_single_table_dask_entityset_ids_not_sorted():
+@pytest.mark.skipif("not ps")
+def test_single_table_spark_entityset_ids_not_sorted():
     primitives_list = [
         "absolute",
         "is_weekend",
@@ -74,7 +80,7 @@ def test_single_table_dask_entityset_ids_not_sorted():
         "num_words",
     ]
 
-    dask_es = EntitySet(id="dask_es")
+    spark_es = EntitySet(id="spark_es")
     df = pd.DataFrame(
         {
             "id": [2, 0, 1, 3],
@@ -88,14 +94,18 @@ def test_single_table_dask_entityset_ids_not_sorted():
             "strings": ["I am a string", "23", "abcdef ghijk", ""],
         }
     )
-    values_dd = dd.from_pandas(df, npartitions=2)
-    ltypes = {"values": Integer, "dates": Datetime, "strings": NaturalLanguage}
-    dask_es.add_dataframe(
+    values_dd = ps.from_pandas(df)
+    ltypes = {
+        "values": Integer,
+        "dates": Datetime,
+        "strings": NaturalLanguage,
+    }
+    spark_es.add_dataframe(
         dataframe_name="data", dataframe=values_dd, index="id", logical_types=ltypes
     )
 
-    dask_fm, _ = ft.dfs(
-        entityset=dask_es,
+    spark_fm, _ = ft.dfs(
+        entityset=spark_es,
         target_dataframe_name="data",
         trans_primitives=primitives_list,
     )
@@ -109,14 +119,16 @@ def test_single_table_dask_entityset_ids_not_sorted():
         entityset=pd_es, target_dataframe_name="data", trans_primitives=primitives_list
     )
 
-    # Make sure both indexes are sorted the same
-    dask_fm = dask_fm.compute().astype({"id": "int64"})
+    spark_fm = spark_fm.to_pandas().astype({"id": "int64"})
+    spark_computed_fm = spark_fm.set_index("id").loc[fm.index]
+    # Spark dtypes are different for categorical - set the pandas fm to have the same dtypes before comparing
     pd.testing.assert_frame_equal(
-        fm, dask_fm.set_index("id").loc[fm.index], check_dtype=False
+        fm.astype(spark_computed_fm.dtypes), spark_computed_fm
     )
 
 
-def test_single_table_dask_entityset_with_instance_ids():
+@pytest.mark.skipif("not ps")
+def test_single_table_spark_entityset_with_instance_ids():
     primitives_list = [
         "absolute",
         "is_weekend",
@@ -127,7 +139,7 @@ def test_single_table_dask_entityset_with_instance_ids():
     ]
     instance_ids = [0, 1, 3]
 
-    dask_es = EntitySet(id="dask_es")
+    spark_es = EntitySet(id="spark_es")
     df = pd.DataFrame(
         {
             "id": [0, 1, 2, 3],
@@ -142,14 +154,14 @@ def test_single_table_dask_entityset_with_instance_ids():
         }
     )
 
-    values_dd = dd.from_pandas(df, npartitions=2)
+    values_dd = ps.from_pandas(df)
     ltypes = {"values": Integer, "dates": Datetime, "strings": NaturalLanguage}
-    dask_es.add_dataframe(
+    spark_es.add_dataframe(
         dataframe_name="data", dataframe=values_dd, index="id", logical_types=ltypes
     )
 
-    dask_fm, _ = ft.dfs(
-        entityset=dask_es,
+    spark_fm, _ = ft.dfs(
+        entityset=spark_es,
         target_dataframe_name="data",
         trans_primitives=primitives_list,
         instance_ids=instance_ids,
@@ -167,14 +179,16 @@ def test_single_table_dask_entityset_with_instance_ids():
         instance_ids=instance_ids,
     )
 
-    # Make sure both indexes are sorted the same
-    dask_fm = dask_fm.compute().astype({"id": "int64"})
+    spark_fm = spark_fm.to_pandas().astype({"id": "int64"})
+    spark_computed_fm = spark_fm.set_index("id").loc[fm.index]
+    # Spark dtypes are different for categorical - set the pandas fm to have the same dtypes before comparing
     pd.testing.assert_frame_equal(
-        fm, dask_fm.set_index("id").loc[fm.index], check_dtype=False
+        fm.astype(spark_computed_fm.dtypes), spark_computed_fm
     )
 
 
-def test_single_table_dask_entityset_single_cutoff_time():
+@pytest.mark.skipif("not ps")
+def test_single_table_spark_entityset_single_cutoff_time():
     primitives_list = [
         "absolute",
         "is_weekend",
@@ -184,7 +198,7 @@ def test_single_table_dask_entityset_single_cutoff_time():
         "num_words",
     ]
 
-    dask_es = EntitySet(id="dask_es")
+    spark_es = EntitySet(id="spark_es")
     df = pd.DataFrame(
         {
             "id": [0, 1, 2, 3],
@@ -198,14 +212,14 @@ def test_single_table_dask_entityset_single_cutoff_time():
             "strings": ["I am a string", "23", "abcdef ghijk", ""],
         }
     )
-    values_dd = dd.from_pandas(df, npartitions=2)
+    values_dd = ps.from_pandas(df)
     ltypes = {"values": Integer, "dates": Datetime, "strings": NaturalLanguage}
-    dask_es.add_dataframe(
+    spark_es.add_dataframe(
         dataframe_name="data", dataframe=values_dd, index="id", logical_types=ltypes
     )
 
-    dask_fm, _ = ft.dfs(
-        entityset=dask_es,
+    spark_fm, _ = ft.dfs(
+        entityset=spark_es,
         target_dataframe_name="data",
         trans_primitives=primitives_list,
         cutoff_time=pd.Timestamp("2019-01-05 04:00"),
@@ -223,14 +237,16 @@ def test_single_table_dask_entityset_single_cutoff_time():
         cutoff_time=pd.Timestamp("2019-01-05 04:00"),
     )
 
-    # Make sure both indexes are sorted the same
-    dask_fm = dask_fm.compute().astype({"id": "int64"})
+    spark_fm = spark_fm.to_pandas().astype({"id": "int64"})
+    spark_computed_fm = spark_fm.set_index("id").loc[fm.index]
+    # Spark dtypes are different for categorical - set the pandas fm to have the same dtypes before comparing
     pd.testing.assert_frame_equal(
-        fm, dask_fm.set_index("id").loc[fm.index], check_dtype=False
+        fm.astype(spark_computed_fm.dtypes), spark_computed_fm
     )
 
 
-def test_single_table_dask_entityset_cutoff_time_df():
+@pytest.mark.skipif("not ps")
+def test_single_table_spark_entityset_cutoff_time_df():
     primitives_list = [
         "absolute",
         "is_weekend",
@@ -240,7 +256,7 @@ def test_single_table_dask_entityset_cutoff_time_df():
         "num_words",
     ]
 
-    dask_es = EntitySet(id="dask_es")
+    spark_es = EntitySet(id="spark_es")
     df = pd.DataFrame(
         {
             "id": [0, 1, 2],
@@ -253,9 +269,9 @@ def test_single_table_dask_entityset_cutoff_time_df():
             "strings": ["I am a string", "23", "abcdef ghijk"],
         }
     )
-    values_dd = dd.from_pandas(df, npartitions=2)
+    values_dd = ps.from_pandas(df)
     ltypes = {"values": IntegerNullable, "dates": Datetime, "strings": NaturalLanguage}
-    dask_es.add_dataframe(
+    spark_es.add_dataframe(
         dataframe_name="data",
         dataframe=values_dd,
         index="id",
@@ -275,8 +291,8 @@ def test_single_table_dask_entityset_cutoff_time_df():
         {"id": ids, "time": times, "labels": labels}, columns=["id", "time", "labels"]
     )
 
-    dask_fm, _ = ft.dfs(
-        entityset=dask_es,
+    spark_fm, _ = ft.dfs(
+        entityset=spark_es,
         target_dataframe_name="data",
         trans_primitives=primitives_list,
         cutoff_time=cutoff_times,
@@ -297,16 +313,24 @@ def test_single_table_dask_entityset_cutoff_time_df():
         trans_primitives=primitives_list,
         cutoff_time=cutoff_times,
     )
-    # Because row ordering with Dask is not guaranteed, we need to sort on two columns to make sure that values
+    # Because row ordering with spark is not guaranteed, `we need to sort on two columns to make sure that values
     # for instance id 0 are compared correctly. Also, make sure the index column has the same dtype.
     fm = fm.sort_values(["id", "labels"])
-    dask_fm = dask_fm.compute().astype({"id": "int64"})
-    dask_fm = dask_fm.set_index("id").sort_values(["id", "labels"])
-    pd.testing.assert_frame_equal(fm, dask_fm, check_dtype=False)
+    spark_fm = spark_fm.to_pandas().astype({"id": "int64"})
+    spark_fm = spark_fm.set_index("id").sort_values(["id", "labels"])
+
+    for column in fm.columns:
+        if fm[column].dtype.name == "category":
+            fm[column] = fm[column].astype("Int64").astype("string")
+
+    pd.testing.assert_frame_equal(
+        fm.astype(spark_fm.dtypes), spark_fm, check_dtype=False
+    )
 
 
-def test_single_table_dask_entityset_dates_not_sorted():
-    dask_es = EntitySet(id="dask_es")
+@pytest.mark.skipif("not ps")
+def test_single_table_spark_entityset_dates_not_sorted():
+    spark_es = EntitySet(id="spark_es")
     df = pd.DataFrame(
         {
             "id": [0, 1, 2, 3],
@@ -321,12 +345,12 @@ def test_single_table_dask_entityset_dates_not_sorted():
     )
 
     primitives_list = ["absolute", "is_weekend", "year", "day"]
-    values_dd = dd.from_pandas(df, npartitions=1)
+    values_dd = ps.from_pandas(df)
     ltypes = {
         "values": Integer,
         "dates": Datetime,
     }
-    dask_es.add_dataframe(
+    spark_es.add_dataframe(
         dataframe_name="data",
         dataframe=values_dd,
         index="id",
@@ -334,8 +358,8 @@ def test_single_table_dask_entityset_dates_not_sorted():
         logical_types=ltypes,
     )
 
-    dask_fm, _ = ft.dfs(
-        entityset=dask_es,
+    spark_fm, _ = ft.dfs(
+        entityset=spark_es,
         target_dataframe_name="data",
         trans_primitives=primitives_list,
         max_depth=1,
@@ -357,13 +381,13 @@ def test_single_table_dask_entityset_dates_not_sorted():
         max_depth=1,
     )
 
-    dask_fm = dask_fm.compute().astype({"id": "int64"})
-    pd.testing.assert_frame_equal(
-        fm, dask_fm.set_index("id").loc[fm.index], check_dtype=False
-    )
+    spark_fm = spark_fm.to_pandas().astype({"id": "int64"})
+    spark_fm = spark_fm.set_index("id").loc[fm.index]
+    pd.testing.assert_frame_equal(fm.astype(spark_fm.dtypes), spark_fm)
 
 
-def test_dask_entityset_secondary_time_index():
+@pytest.mark.skipif("not ps")
+def test_spark_entityset_secondary_time_index():
     log_df = pd.DataFrame()
     log_df["id"] = [0, 1, 2, 3]
     log_df["scheduled_time"] = pd.to_datetime(
@@ -377,15 +401,15 @@ def test_dask_entityset_secondary_time_index():
     )
     log_df["delay"] = [-2, 10, 60, 0]
     log_df["flight_id"] = [0, 1, 0, 1]
-    log_dask = dd.from_pandas(log_df, npartitions=2)
+    log_spark = ps.from_pandas(log_df)
 
     flights_df = pd.DataFrame()
     flights_df["id"] = [0, 1, 2, 3]
     flights_df["origin"] = ["BOS", "LAX", "BOS", "LAX"]
-    flights_dask = dd.from_pandas(flights_df, npartitions=2)
+    flights_spark = ps.from_pandas(flights_df)
 
     pd_es = ft.EntitySet("flights")
-    dask_es = ft.EntitySet("flights_dask")
+    spark_es = ft.EntitySet("flights_spark")
 
     log_ltypes = {
         "scheduled_time": Datetime,
@@ -393,19 +417,19 @@ def test_dask_entityset_secondary_time_index():
         "arrival_time": Datetime,
         "delay": Double,
     }
-
     pd_es.add_dataframe(
         dataframe_name="logs",
         dataframe=log_df,
         index="id",
+        logical_types=log_ltypes,
+        semantic_tags={"flight_id": "foreign_key"},
         time_index="scheduled_time",
         secondary_time_index={"arrival_time": ["departure_time", "delay"]},
-        logical_types=log_ltypes,
     )
 
-    dask_es.add_dataframe(
+    spark_es.add_dataframe(
         dataframe_name="logs",
-        dataframe=log_dask,
+        dataframe=log_spark,
         index="id",
         logical_types=log_ltypes,
         semantic_tags={"flight_id": "foreign_key"},
@@ -415,15 +439,15 @@ def test_dask_entityset_secondary_time_index():
 
     pd_es.add_dataframe(dataframe_name="flights", dataframe=flights_df, index="id")
     flights_ltypes = pd_es["flights"].ww.logical_types
-    dask_es.add_dataframe(
+    spark_es.add_dataframe(
         dataframe_name="flights",
-        dataframe=flights_dask,
+        dataframe=flights_spark,
         index="id",
         logical_types=flights_ltypes,
     )
 
     pd_es.add_relationship("flights", "id", "logs", "flight_id")
-    dask_es.add_relationship("flights", "id", "logs", "flight_id")
+    spark_es.add_relationship("flights", "id", "logs", "flight_id")
 
     cutoff_df = pd.DataFrame()
     cutoff_df["id"] = [0, 1, 1]
@@ -437,19 +461,26 @@ def test_dask_entityset_secondary_time_index():
         trans_primitives=["month"],
     )
 
-    dask_fm, _ = ft.dfs(
-        entityset=dask_es,
+    spark_fm, _ = ft.dfs(
+        entityset=spark_es,
         target_dataframe_name="logs",
         cutoff_time=cutoff_df,
         agg_primitives=["max"],
         trans_primitives=["month"],
     )
 
-    # Make sure both matrixes are sorted the same
-    # Also need to account for index differences
-    dask_fm_computed = dask_fm.compute().astype({"id": "int64"}).set_index("id")
+    # Make sure both matrices are sorted the same
+    # Also make sure index has same dtype
+    spark_fm = spark_fm.to_pandas().astype({"id": "int64"})
+    spark_fm = spark_fm.set_index("id").sort_values("delay")
+    fm = fm.sort_values("delay")
+
+    # Spark output for MONTH columns will be of string type without decimal points,
+    # while pandas will contain decimals - we need to convert before comparing
+    for column in fm.columns:
+        if fm[column].dtype.name == "category":
+            fm[column] = fm[column].astype("Int64").astype("string")
+
     pd.testing.assert_frame_equal(
-        fm.sort_values("delay"),
-        dask_fm_computed.sort_values("delay"),
-        check_dtype=False,
+        fm, spark_fm, check_categorical=False, check_dtype=False
     )
