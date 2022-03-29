@@ -22,7 +22,7 @@ def replace_categorical_columns(pdf):
     return new_df
 
 
-def pd_to_ks_clean(pdf):
+def pd_to_spark_clean(pdf):
     steps = [replace_tuple_columns, replace_categorical_columns]
     intermediate_df = pdf
     for f in steps:
