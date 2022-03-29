@@ -10,7 +10,7 @@ from featuretools.primitives import (
     TransformPrimitive,
 )
 from featuretools.synthesis.get_valid_primitives import get_valid_primitives
-from featuretools.utils.gen_utils import Library
+from featuretools.types import Library
 
 
 def test_get_valid_primitives_selected_primitives(es):
