@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 
@@ -16,9 +15,7 @@ def replace_nan_with_None(df):
     new_df = pd.DataFrame()
 
     def replace_val(val):
-        if isinstance(val, tuple):
-            return tuple((None if pd.isna(x) else x for x in val))
-        elif isinstance(val, list):
+        if isinstance(val, (tuple, list)):
             return list([None if pd.isna(x) else x for x in val])
         elif pd.isna(val):
             return None
