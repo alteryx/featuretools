@@ -1120,7 +1120,7 @@ def check_primitive(primitive: Union[T, str], prim_type: str) -> T:
         s = "an aggregation"
     else:
         raise TypeError(
-            f"prim_type must be one of 'groupby transform', 'transform', 'aggregation', 'where'"
+            "prim_type must be one of 'groupby transform', 'transform', 'aggregation', 'where'"
         )
 
     if isinstance(primitive, str):

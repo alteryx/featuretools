@@ -18,7 +18,7 @@ from featuretools.primitives.base import AggregationPrimitive, TransformPrimitiv
 from featuretools.synthesis import dfs
 from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
 from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import Library
+from featuretools.types import Library
 
 
 @pytest.fixture
