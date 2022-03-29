@@ -17,10 +17,3 @@ class Library(Enum):
     PANDAS = "pandas"
     DASK = "Dask"
     SPARK = "Spark"
-
-
-class PrimitiveTypes(Enum):
-    AGGREGATION = "aggregation"
-    TRANSFORM = "transform"
-    WHERE = "where"
-    GROUPBY_TRANSFORM = "groupby transform"

@@ -222,7 +222,7 @@ class DeepFeatureSynthesis(object):
                 if df_library in p.compatibility
             ]
         self.agg_primitives = sorted(
-            [check_primitive(p, PrimitiveTypes.AGGREGATION) for p in agg_primitives]
+            [check_primitive(p, "aggregation") for p in agg_primitives]
         )
 
         if trans_primitives is None:
@@ -232,24 +232,21 @@ class DeepFeatureSynthesis(object):
                 if df_library in p.compatibility
             ]
         self.trans_primitives = sorted(
-            [check_primitive(p, PrimitiveTypes.TRANSFORM) for p in trans_primitives]
+            [check_primitive(p, "transform") for p in trans_primitives]
         )
 
         self.where_primitives: List[PrimitiveBase]
         if where_primitives is None:
             where_primitives = [primitives.Count]
         self.where_primitives = sorted(
-            [check_primitive(p, PrimitiveTypes.WHERE) for p in where_primitives]
+            [check_primitive(p, "where") for p in where_primitives]
         )
 
         self.groupby_trans_primitives: List[PrimitiveBase]
         if groupby_trans_primitives is None:
             groupby_trans_primitives = []
         self.groupby_trans_primitives = sorted(
-            [
-                check_primitive(p, PrimitiveTypes.GROUPBY_TRANSFORM)
-                for p in groupby_trans_primitives
-            ]
+            [check_primitive(p, "groupby transform") for p in groupby_trans_primitives]
         )
 
         if primitive_options is None:
@@ -1105,10 +1102,7 @@ def instantiate_primitive(primitive: T) -> T:
 def check_primitive(primitive: Union[T, str], prim_type: PrimitiveTypes) -> T:
 
     resolved_primitive: T
-    if (
-        prim_type == PrimitiveTypes.TRANSFORM
-        or prim_type == PrimitiveTypes.GROUPBY_TRANSFORM
-    ):
+    if prim_type == "transform" or prim_type == "groupby transform":
         prim_dict = primitives.get_transform_primitives()
         supertype = TransformPrimitive
         arg_name = (
@@ -1117,13 +1111,11 @@ def check_primitive(primitive: Union[T, str], prim_type: PrimitiveTypes) -> T:
             else "groupby_trans_primitives"
         )
         s = "a transform"
-    elif prim_type == PrimitiveTypes.AGGREGATION or prim_type == PrimitiveTypes.WHERE:
+    elif prim_type == "aggregation" or prim_type == "where":
         prim_dict = primitives.get_aggregation_primitives()
         supertype = AggregationPrimitive
         arg_name = (
-            "agg_primitives"
-            if prim_type == PrimitiveTypes.AGGREGATION
-            else "where_primitives"
+            "agg_primitives" if prim_type == "aggregation" else "where_primitives"
         )
         s = "an aggregation"
     else:
