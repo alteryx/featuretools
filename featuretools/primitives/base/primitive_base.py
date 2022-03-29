@@ -54,13 +54,6 @@ class PrimitiveBase(object):
             self._method = self.get_function()
             return self._method(*series_args, **kwargs)
 
-    # @classmethod
-    # def __lt__(other):
-    #     return True
-    #     # return (self.name + self.get_args_string()) < (
-    #     #     other.name + other.get_args_string()
-    #     # )
-
     def __lt__(self, other):
         return (self.name + self.get_args_string()) < (
             other.name + other.get_args_string()

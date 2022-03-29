@@ -9,6 +9,7 @@ Future Release
     * Fixes
     * Changes
         * Removed ``make_trans_primitive`` and ``make_agg_primitive`` utility functions (:pr:`1970`)
+        * Added type hints to DeepFeatureSynthensis and some associated utilities (:pr:`1987`)
     * Documentation Changes
         * Update nbconvert to version 6.4.5 to fix docs build issue (:pr:`1984`)
     * Testing Changes
@@ -18,7 +19,7 @@ Future Release
         * Update tests for compatibility with Woodwork version 0.15.0 (:pr:`1984`)
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`, :user:`gsheni`
+    :user:`dvreed77`, :user:`thehomebrewnerd`, :user:`gsheni`
 
 Breaking Changes
 ++++++++++++++++
