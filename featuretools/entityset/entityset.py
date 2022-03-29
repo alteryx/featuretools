@@ -1797,9 +1797,11 @@ class EntitySet(object):
         for column in dataframe.columns:
             if isinstance(dataframe.ww._schema.columns[column].logical_type, LatLong):
                 series = dataframe[column]
-                if ks and isinstance(series, ks.Series):
+                if ps and isinstance(series, ps.Series):
                     if len(series):
-                        dataframe[column] = dataframe[column].apply(replace, args=(True,))
+                        dataframe[column] = dataframe[column].apply(
+                            replace, args=(True,)
+                        )
                 else:
                     dataframe[column] = dataframe[column].apply(replace)
 
