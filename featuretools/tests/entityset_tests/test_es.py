@@ -2464,12 +2464,9 @@ def test_setitem(add_dataframe):
 
 
 def test_latlong_nan_normalization():
-    df = pd.DataFrame({
-        "idx": [0, 1, 2],
-        'latLong': [pd.NA, (1, 2), (pd.NA, pd.NA)]
-    })
+    df = pd.DataFrame({"idx": [0, 1, 2], "latLong": [pd.NA, (1, 2), (pd.NA, pd.NA)]})
 
-    df.ww.init(name="latLong", index="idx", logical_types={'latLong': 'LatLong'})
+    df.ww.init(name="latLong", index="idx", logical_types={"latLong": "LatLong"})
 
     dataframes = {"latLong": (df,)}
 
@@ -2479,21 +2476,17 @@ def test_latlong_nan_normalization():
 
     normalized_df = es["latLong"]
 
-    expected_df = pd.DataFrame({
-        "idx": [0, 1, 2],
-        'latLong': [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]
-    })
+    expected_df = pd.DataFrame(
+        {"idx": [0, 1, 2], "latLong": [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]}
+    )
 
     pd.testing.assert_frame_equal(normalized_df, expected_df)
 
 
 def test_latlong_nan_normalization_add_dataframe():
-    df = pd.DataFrame({
-        "idx": [0, 1, 2],
-        'latLong': [pd.NA, (1, 2), (pd.NA, pd.NA)]
-    })
+    df = pd.DataFrame({"idx": [0, 1, 2], "latLong": [pd.NA, (1, 2), (pd.NA, pd.NA)]})
 
-    df.ww.init(name="latLong", index="idx", logical_types={'latLong': 'LatLong'})
+    df.ww.init(name="latLong", index="idx", logical_types={"latLong": "LatLong"})
 
     es = EntitySet("latlong-test")
 
@@ -2501,9 +2494,8 @@ def test_latlong_nan_normalization_add_dataframe():
 
     normalized_df = es["latLong"]
 
-    expected_df = pd.DataFrame({
-        "idx": [0, 1, 2],
-        'latLong': [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]
-    })
+    expected_df = pd.DataFrame(
+        {"idx": [0, 1, 2], "latLong": [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]}
+    )
 
     pd.testing.assert_frame_equal(normalized_df, expected_df)
