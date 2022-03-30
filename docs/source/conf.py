@@ -155,8 +155,6 @@ html_theme = 'pydata_sphinx_theme'
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    "github_url": "https://github.com/alteryx/featuretools",
-    "twitter_url": "https://twitter.com/AlteryxOSS",
     "icon_links": [
         {
             "name": "GitHub",
@@ -173,8 +171,8 @@ html_theme_options = {
         {
             "name": "Slack",
             "url": "https://join.slack.com/t/alteryx-oss/shared_invite/zt-6inxevps-RSbpr9lsACE1kObXz4rIuA",
-            "icon": "_static/images/slack.svg",
-            "type": "local",
+            "icon": "fab fa-slack",
+            "type": "fontawesome'",
         },
     ],
     "collapse_navigation": False,
