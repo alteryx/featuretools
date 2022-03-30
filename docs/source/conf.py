@@ -155,8 +155,34 @@ html_theme = 'pydata_sphinx_theme'
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    "github_url": "https://github.com/alteryx/featuretools",
-    "twitter_url": "https://twitter.com/AlteryxOSS",
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/alteryx/featuretools",
+            "icon": "fab fa-github-square",
+            "type": "fontawesome",
+        },
+        {
+            "name": "Twitter",
+            "url": "https://twitter.com/AlteryxOSS",
+            "icon": "fab fa-twitter-square",
+            "type": "fontawesome",
+        },
+        {
+            "name": "Slack",
+            "url": "https://join.slack.com/t/alteryx-oss/shared_invite/zt-6inxevps-RSbpr9lsACE1kObXz4rIuA",
+            "icon": "fab fa-slack",
+            "type": "fontawesome",
+        },
+        {
+            "name": "StackOverflow",
+            "url": "https://stackoverflow.com/questions/tagged/featuretools",
+            "icon": "fab fa-stack-overflow",
+            "type": "fontawesome'",
+        },
+    ],
+    "collapse_navigation": False,
+    "navigation_depth": 2,
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
