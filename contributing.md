@@ -42,7 +42,7 @@ Before starting major work, you should touch base with the maintainers of Featur
 
 * You will need to install Spark, Scala, and GraphViz to run all unit tests:
 
-     **macOS - Intel** (use [Homebrew](https://brew.sh/)):
+     **macOS (Intel)** (use [Homebrew](https://brew.sh/)):
      ```console
      brew tap AdoptOpenJDK/openjdk
      brew install --cask adoptopenjdk11
@@ -51,7 +51,7 @@ Before starting major work, you should touch base with the maintainers of Featur
      echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
      ```
      
-     **macOS - M1 Chip** (use [Homebrew](https://brew.sh/)):
+     **macOS (M1)** (use [Homebrew](https://brew.sh/)):
      ```console
      brew install openjdk@11 scala apache-spark graphviz
      echo 'export PATH="/opt/homebrew/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
