@@ -83,7 +83,7 @@ $ conda install -c conda-forge alteryx-open-src-update-checker
 
 In order to use `EntitySet.plot` or `featuretools.graph_feature` you will need to install the graphviz library.
 
-````{tab} macOS
+````{tab} macOS (Intel, M1)
 :new-set:
 ```{tab} pip
 ```console
@@ -139,7 +139,7 @@ python -m pip install .
 
 ## Scala and Spark
 
-````{tab} macOS
+````{tab} macOS (Intel)
 :new-set:
 ```console
 $ brew tap AdoptOpenJDK/openjdk
@@ -147,6 +147,16 @@ $ brew install --cask adoptopenjdk11
 $ brew install scala apache-spark
 $ echo 'export JAVA_HOME=$(/usr/libexec/java_home)' >> ~/.zshrc
 $ echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
+```
+````
+
+````{tab} macOS (m1)
+:new-set:
+```console
+$ brew install openjdk@11 scala apache-spark graphviz
+$ echo 'export PATH="/opt/homebrew/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
+$ echo 'export CPPFLAGS="-I/opt/homebrew/opt/openjdk@11/include:$CPPFLAGS"' >> ~/.zprofile
+$ sudo ln -sfn /opt/homebrew/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
 ```
 ````
 
