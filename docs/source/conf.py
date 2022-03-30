@@ -171,13 +171,13 @@ html_theme_options = {
         {
             "name": "Slack",
             "url": "https://join.slack.com/t/alteryx-oss/shared_invite/zt-6inxevps-RSbpr9lsACE1kObXz4rIuA",
-            "icon": "fa-brands fa-slack",
+            "icon": "fab fa-slack",
             "type": "fontawesome'",
         },
         {
             "name": "StackOverflow",
             "url": "https://stackoverflow.com/questions/tagged/featuretools",
-            "icon": "fa-brands fa-stack-overflow",
+            "icon": "fab fa-stack-overflow",
             "type": "fontawesome'",
         },
     ],
