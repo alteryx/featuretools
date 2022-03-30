@@ -161,7 +161,7 @@ html_theme_options = {
         {
             "name": "Slack",
             "url": "https://join.slack.com/t/alteryx-oss/shared_invite/zt-6inxevps-RSbpr9lsACE1kObXz4rIuA",
-            "icon": "_static/slack.svg",
+            "icon": "_static/images/slack.svg",
             "type": "local",
         },
     ],
