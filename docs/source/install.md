@@ -150,8 +150,7 @@ $ echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
 ```
 ````
 
-````{tab} macOS (m1)
-:new-set:
+````{tab} macOS (M1)
 ```console
 $ brew install openjdk@11 scala apache-spark graphviz
 $ echo 'export PATH="/opt/homebrew/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
