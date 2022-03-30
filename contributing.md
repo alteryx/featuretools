@@ -53,10 +53,10 @@ Before starting major work, you should touch base with the maintainers of Featur
      
      **macOS - M1 Chip** (use [Homebrew](https://brew.sh/)):
      ```console
-     brew install java scala apache-spark graphviz
-     echo 'export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"' >> ~/.zshrc
-     echo 'export CPPFLAGS="-I/opt/homebrew/opt/openjdk/include"' >> ~/.zprofile
-     sudo ln -sfn /opt/homebrew/opt/openjdk/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk.jdk
+     brew install openjdk@11 scala apache-spark graphviz
+     echo 'export PATH="/opt/homebrew/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
+     echo 'export CPPFLAGS="-I/opt/homebrew/opt/openjdk@11/include:$CPPFLAGS"' >> ~/.zprofile
+     sudo ln -sfn /opt/homebrew/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
      ```
 
      **Ubuntu**:
