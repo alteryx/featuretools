@@ -156,7 +156,7 @@ html_theme = 'pydata_sphinx_theme'
 # documentation.
 html_theme_options = {
     "github_url": "https://github.com/alteryx/featuretools",
-    "twitter_url": "",
+    "twitter_url": "https://twitter.com/AlteryxOSS",
     "icon_links": [
         {
             "name": "GitHub",
