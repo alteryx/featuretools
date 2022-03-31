@@ -3,10 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
     * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.8.0 Mar 31, 2022
+===================
     * Changes
         * Removed ``make_trans_primitive`` and ``make_agg_primitive`` utility functions (:pr:`1970`)
         * Normalize LatLong NaN values during EntitySet creation (:pr:`1924`)
@@ -14,6 +22,7 @@ Future Release
         * Update project urls in setup cfg to include Twitter and Slack (:pr:`1981`)
         * Update nbconvert to version 6.4.5 to fix docs build issue (:pr:`1984`)
         * Update ReadMe to have centered badges and add docs badge (:pr:`1993`)
+        * Add M1 installation instructions to docs and contributing (:pr:`1997`)
     * Testing Changes
         * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`1973`)
         * Updated minimum dependency checker to use new version with write file support (:pr:`1975`, :pr:`1976`)
@@ -21,7 +30,7 @@ Future Release
         * Update tests for compatibility with Woodwork version 0.15.0 (:pr:`1984`)
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`, :user:`gsheni`
+    :user:`gsheni`, :user:`thehomebrewnerd`
 
 Breaking Changes
 ++++++++++++++++
