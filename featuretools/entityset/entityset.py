@@ -758,7 +758,7 @@ class EntitySet(object):
                 dataframe, secondary_time_index=secondary_time_index
             )
 
-        dataframe = self._normalize_dataframe(dataframe)
+        dataframe = self._normalize_values(dataframe)
 
         self.dataframe_dict[dataframe.ww.name] = dataframe
         self.reset_data_description()
@@ -1350,7 +1350,7 @@ class EntitySet(object):
             if ww_schemas[df_name] is not None:
                 df.ww.init(schema=ww_schemas[df_name], validate=False)
 
-            self._normalize_dataframe(df)
+            self._normalize_values(df)
 
         self.__dict__.update(state)
 
@@ -1712,7 +1712,9 @@ class EntitySet(object):
         # Make sure column ordering matches original ordering
         df = df.ww[old_column_names]
 
-        df = self._normalize_dataframe(df)
+        df = self._normalize_values(df)
+
+        breakpoint()
 
         self.dataframe_dict[dataframe_name] = df
 
@@ -1784,10 +1786,10 @@ class EntitySet(object):
             metadata.update(entityset_id=self.id)
         _ES_REF[self.id] = self
 
-    def _normalize_dataframe(self, dataframe):
-        def replace(x, is_koalas=False):
+    def _normalize_values(self, dataframe):
+        def replace(x, is_spark=False):
             if not isinstance(x, (list, tuple, np.ndarray)) and pd.isna(x):
-                if is_koalas:
+                if is_spark:
                     return [np.nan, np.nan]
                 else:
                     return (np.nan, np.nan)
