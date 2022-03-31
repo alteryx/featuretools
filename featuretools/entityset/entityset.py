@@ -1794,7 +1794,7 @@ class EntitySet(object):
             else:
                 return x
 
-        for column, logical_type in dataframe.ww.logical_types:
+        for column, logical_type in dataframe.ww.logical_types.items():
             if isinstance(logical_type, LatLong):
                 series = dataframe[column]
                 if ps and isinstance(series, ps.Series):

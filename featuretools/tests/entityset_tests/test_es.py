@@ -2475,7 +2475,7 @@ def test_latlong_nan_normalization(latlong_df):
 
     es = EntitySet("latlong-test", dataframes, relationships)
 
-    normalized_df = es["latLong"]
+    normalized_df = to_pandas(es["latLong"])
 
     expected_df = to_pandas(
         pd.DataFrame(
@@ -2496,7 +2496,7 @@ def test_latlong_nan_normalization_add_dataframe(latlong_df):
 
     es.add_dataframe(latlong_df)
 
-    normalized_df = es["latLong"]
+    normalized_df = to_pandas(es["latLong"])
 
     expected_df = to_pandas(
         pd.DataFrame(
