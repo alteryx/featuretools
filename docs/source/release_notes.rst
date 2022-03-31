@@ -3,10 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
     * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.8.0 Mar 31, 2022
+===================
     * Changes
         * Removed ``make_trans_primitive`` and ``make_agg_primitive`` utility functions (:pr:`1970`)
     * Documentation Changes
@@ -21,7 +29,7 @@ Future Release
         * Update tests for compatibility with Woodwork version 0.15.0 (:pr:`1984`)
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`, :user:`gsheni`
+    :user:`gsheni`, :user:`thehomebrewnerd`
 
 Breaking Changes
 ++++++++++++++++
