@@ -2477,11 +2477,9 @@ def test_latlong_nan_normalization(latlong_df):
 
     normalized_df = to_pandas(es["latLong"])
 
-    expected_df = to_pandas(
-        pd.DataFrame(
+    expected_df = pd.DataFrame(
             {"idx": [0, 1, 2], "latLong": [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]}
         )
-    )
 
     pd.testing.assert_frame_equal(normalized_df, expected_df)
 
@@ -2498,10 +2496,8 @@ def test_latlong_nan_normalization_add_dataframe(latlong_df):
 
     normalized_df = to_pandas(es["latLong"])
 
-    expected_df = to_pandas(
-        pd.DataFrame(
+    expected_df = pd.DataFrame(
             {"idx": [0, 1, 2], "latLong": [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]}
         )
-    )
 
     pd.testing.assert_frame_equal(normalized_df, expected_df)
