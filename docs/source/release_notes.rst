@@ -13,7 +13,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :dvreed77:`dvreed77`
+    :user:`dvreed77`
 
 v1.8.0 Mar 31, 2022
 ===================
