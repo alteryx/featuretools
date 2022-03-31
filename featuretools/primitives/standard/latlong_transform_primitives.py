@@ -81,8 +81,12 @@ class GeoMidpoint(TransformPrimitive):
 
     def get_function(self):
         def geomidpoint_func(latlong_1, latlong_2):
-            lat_1s, lon_1s = _deconstrct_latlongs(latlong_1)
-            lat_2s, lon_2s = _deconstrct_latlongs(latlong_2)
+            lat_1s = np.array([x[0] for x in latlong_1])
+            lon_1s = np.array([x[1] for x in latlong_1])
+
+            lat_2s = np.array([x[0] for x in latlong_2])
+            lon_2s = np.array([x[1] for x in latlong_2])
+
             lat_middle = np.array([lat_1s, lat_2s]).transpose().mean(axis=1)
             lon_middle = np.array([lon_1s, lon_2s]).transpose().mean(axis=1)
             return list(zip(lat_middle, lon_middle))
