@@ -1714,8 +1714,6 @@ class EntitySet(object):
 
         df = self._normalize_values(df)
 
-        breakpoint()
-
         self.dataframe_dict[dataframe_name] = df
 
         if self[dataframe_name].ww.time_index is not None:
