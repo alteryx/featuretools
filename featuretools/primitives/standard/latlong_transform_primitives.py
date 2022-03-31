@@ -4,7 +4,7 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import BooleanNullable, Double, LatLong
 
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.primitives.utils import _deconstrct_latlongs, _haversine_calculate
+from featuretools.primitives.utils import _haversine_calculate
 
 
 class CityblockDistance(TransformPrimitive):
@@ -53,8 +53,10 @@ class CityblockDistance(TransformPrimitive):
 
     def get_function(self):
         def cityblock(latlong_1, latlong_2):
-            lat_1s, lon_1s = _deconstrct_latlongs(latlong_1)
-            lat_2s, lon_2s = _deconstrct_latlongs(latlong_2)
+            lat_1s = np.array([x[0] for x in latlong_1])
+            lon_1s = np.array([x[1] for x in latlong_1])
+            lat_2s = np.array([x[0] for x in latlong_2])
+            lon_2s = np.array([x[1] for x in latlong_2])
             lon_dis = _haversine_calculate(lat_1s, lon_1s, lat_1s, lon_2s, self.unit)
             lat_dist = _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_1s, self.unit)
             return pd.Series(lon_dis + lat_dist)
@@ -140,8 +142,11 @@ class Haversine(TransformPrimitive):
 
     def get_function(self):
         def haversine(latlong_1, latlong_2):
-            lat_1s, lon_1s = _deconstrct_latlongs(latlong_1)
-            lat_2s, lon_2s = _deconstrct_latlongs(latlong_2)
+            lat_1s = np.array([x[0] for x in latlong_1])
+            lon_1s = np.array([x[1] for x in latlong_1])
+            lat_2s = np.array([x[0] for x in latlong_2])
+            lon_2s = np.array([x[1] for x in latlong_2])
+
             distance = _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_2s, self.unit)
             return distance
 
