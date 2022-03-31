@@ -9,6 +9,8 @@ Future Release
     * Fixes
     * Changes
         * Updated autonormalize version requirement (:pr:`2002`)
+        * Remove extra NaN checking in LatLong primitives (:pr:`1924`)
+        * Normalize LatLong NaN values during EntitySet creation (:pr:`1924`)
     * Documentation Changes
     * Testing Changes
 
@@ -19,7 +21,6 @@ v1.8.0 Mar 31, 2022
 ===================
     * Changes
         * Removed ``make_trans_primitive`` and ``make_agg_primitive`` utility functions (:pr:`1970`)
-        * Normalize LatLong NaN values during EntitySet creation (:pr:`1924`)
     * Documentation Changes
         * Update project urls in setup cfg to include Twitter and Slack (:pr:`1981`)
         * Update nbconvert to version 6.4.5 to fix docs build issue (:pr:`1984`)
