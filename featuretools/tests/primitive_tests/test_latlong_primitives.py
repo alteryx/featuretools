@@ -25,9 +25,8 @@ def test_cityblock_nans():
     lats_longs_2 = [(i, i) for i in range(2, 4)]
     lats_longs_1 += [(1, 1), (np.nan, 3), (4, np.nan), (np.nan, np.nan)]
     lats_longs_2 += [(np.nan, np.nan), (np.nan, 5), (6, np.nan), (np.nan, np.nan)]
-    primitive_func = primitive_instance.get_function()
     given_answer = pd.Series(list([276.37367594, 276.35262728] + [np.nan] * 4))
-    answer = primitive_func(lats_longs_1, lats_longs_2)
+    answer = primitive_instance(lats_longs_1, lats_longs_2)
     np.testing.assert_allclose(given_answer, answer, rtol=1e-09)
 
 
