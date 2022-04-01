@@ -9,14 +9,12 @@ def test_cityblock():
     primitive_instance = CityblockDistance()
     latlong_1 = pd.Series([(i, i) for i in range(3)])
     latlong_2 = pd.Series([(i, i) for i in range(3, 6)])
-    primitive_func = primitive_instance.get_function()
     answer = pd.Series([414.56051391, 414.52893691, 414.43421555])
-    given_answer = primitive_func(latlong_1, latlong_2)
+    given_answer = primitive_instance(latlong_1, latlong_2)
     np.testing.assert_allclose(given_answer, answer, rtol=1e-09)
 
     primitive_instance = CityblockDistance(unit="kilometers")
-    primitive_func = primitive_instance.get_function()
-    answer = primitive_func(latlong_1, latlong_2)
+    answer = primitive_instance(latlong_1, latlong_2)
     given_answer = pd.Series([667.1704814, 667.11966315, 666.96722389])
     np.testing.assert_allclose(given_answer, answer, rtol=1e-09)
 

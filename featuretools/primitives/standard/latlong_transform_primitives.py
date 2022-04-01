@@ -53,10 +53,6 @@ class CityblockDistance(TransformPrimitive):
 
     def get_function(self):
         def cityblock(latlong_1, latlong_2):
-            if isinstance(latlong_1, pd.Series):
-                latlong_1 = latlong_1.tolist()
-            if isinstance(latlong_2, pd.Series):
-                latlong_2 = latlong_2.tolist()
             latlong_1 = np.array(latlong_1)
             latlong_2 = np.array(latlong_2)
             lat_1s = latlong_1[:, 0]
@@ -89,10 +85,6 @@ class GeoMidpoint(TransformPrimitive):
 
     def get_function(self):
         def geomidpoint_func(latlong_1, latlong_2):
-            if isinstance(latlong_1, pd.Series):
-                latlong_1 = latlong_1.tolist()
-            if isinstance(latlong_2, pd.Series):
-                latlong_2 = latlong_2.tolist()
             latlong_1 = np.array(latlong_1)
             latlong_2 = np.array(latlong_2)
             lat_1s = latlong_1[:, 0]
@@ -153,10 +145,6 @@ class Haversine(TransformPrimitive):
 
     def get_function(self):
         def haversine(latlong_1, latlong_2):
-            if isinstance(latlong_1, pd.Series):
-                latlong_1 = latlong_1.tolist()
-            if isinstance(latlong_2, pd.Series):
-                latlong_2 = latlong_2.tolist()
             latlong_1 = np.array(latlong_1)
             latlong_2 = np.array(latlong_2)
             lat_1s = latlong_1[:, 0]
@@ -211,10 +199,7 @@ class IsInGeoBox(TransformPrimitive):
 
     def get_function(self):
         def geobox(latlong):
-            if isinstance(latlong, pd.Series):
-                latlong = latlong.tolist()
             latlong = np.array(latlong)
-
             transposed = np.transpose(latlong)
             lats = (self.lats[0] <= transposed[0]) & (self.lats[1] >= transposed[0])
             longs = (self.lons[0] <= transposed[1]) & (self.lons[1] >= transposed[1])
@@ -242,8 +227,6 @@ class Latitude(TransformPrimitive):
 
     def get_function(self):
         def latitude(latlong):
-            if isinstance(latlong, pd.Series):
-                latlong = latlong.tolist()
             latlong = np.array(latlong)
             return latlong[:, 0]
 
@@ -269,8 +252,6 @@ class Longitude(TransformPrimitive):
 
     def get_function(self):
         def longitude(latlong):
-            if isinstance(latlong, pd.Series):
-                latlong = latlong.tolist()
             latlong = np.array(latlong)
             return latlong[:, 1]
 
