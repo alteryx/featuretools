@@ -436,12 +436,6 @@ def _check_gap(window_size, gap):
         raise TypeError("Gap must be either an offset string or an integer.")
 
 
-def _deconstrct_latlongs(latlongs):
-    lats = np.array([x[0] if isinstance(x, tuple) else np.nan for x in latlongs])
-    longs = np.array([x[1] if isinstance(x, tuple) else np.nan for x in latlongs])
-    return lats, longs
-
-
 def _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_2s, unit):
     # https://stackoverflow.com/a/29546836/2512385
     lon1, lat1, lon2, lat2 = map(np.radians, [lon_1s, lat_1s, lon_2s, lat_2s])

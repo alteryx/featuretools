@@ -7,7 +7,7 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 from woodwork import init_series
-from woodwork.logical_types import Datetime
+from woodwork.logical_types import Datetime, LatLong
 
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.relationship import Relationship, RelationshipPath
@@ -758,9 +758,12 @@ class EntitySet(object):
                 dataframe, secondary_time_index=secondary_time_index
             )
 
+        dataframe = self._normalize_values(dataframe)
+
         self.dataframe_dict[dataframe.ww.name] = dataframe
         self.reset_data_description()
         self._add_references_to_metadata(dataframe)
+
         return self
 
     def __setitem__(self, key, value):
@@ -1346,6 +1349,7 @@ class EntitySet(object):
         for df_name, df in state.get("dataframe_dict", {}).items():
             if ww_schemas[df_name] is not None:
                 df.ww.init(schema=ww_schemas[df_name], validate=False)
+
         self.__dict__.update(state)
 
     # ###########################################################################
@@ -1706,6 +1710,8 @@ class EntitySet(object):
         # Make sure column ordering matches original ordering
         df = df.ww[old_column_names]
 
+        df = self._normalize_values(df)
+
         self.dataframe_dict[dataframe_name] = df
 
         if self[dataframe_name].ww.time_index is not None:
@@ -1775,6 +1781,29 @@ class EntitySet(object):
             metadata.update(dataframe_name=dataframe.ww.name)
             metadata.update(entityset_id=self.id)
         _ES_REF[self.id] = self
+
+    def _normalize_values(self, dataframe):
+        def replace(x, is_spark=False):
+            if not isinstance(x, (list, tuple, np.ndarray)) and pd.isna(x):
+                if is_spark:
+                    return [np.nan, np.nan]
+                else:
+                    return (np.nan, np.nan)
+            else:
+                return x
+
+        for column, logical_type in dataframe.ww.logical_types.items():
+            if isinstance(logical_type, LatLong):
+                series = dataframe[column]
+                if ps and isinstance(series, ps.Series):
+                    if len(series):
+                        dataframe[column] = dataframe[column].apply(
+                            replace, args=(True,)
+                        )
+                else:
+                    dataframe[column] = dataframe[column].apply(replace)
+
+        return dataframe
 
 
 def _vals_to_series(instance_vals, column_id):

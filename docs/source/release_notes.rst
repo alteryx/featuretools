@@ -10,6 +10,8 @@ Future Release
     * Fixes
     * Changes
         * Updated autonormalize version requirement (:pr:`2002`)
+        * Remove extra NaN checking in LatLong primitives (:pr:`1924`)
+        * Normalize LatLong NaN values during EntitySet creation (:pr:`1924`)
     * Documentation Changes
     * Testing Changes
 

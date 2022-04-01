@@ -2461,3 +2461,41 @@ def test_setitem(add_dataframe):
     es["new_df"] = df
     assert add_dataframe.called
     add_dataframe.assert_called_with(dataframe=df, dataframe_name="new_df")
+
+
+def test_latlong_nan_normalization(latlong_df):
+    latlong_df.ww.init(
+        name="latLong", index="idx", logical_types={"latLong": "LatLong"}
+    )
+
+    dataframes = {"latLong": (latlong_df,)}
+
+    relationships = []
+
+    es = EntitySet("latlong-test", dataframes, relationships)
+
+    normalized_df = to_pandas(es["latLong"], sort_index=True)
+
+    expected_df = pd.DataFrame(
+        {"idx": [0, 1, 2], "latLong": [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]}
+    )
+
+    pd.testing.assert_frame_equal(normalized_df, expected_df)
+
+
+def test_latlong_nan_normalization_add_dataframe(latlong_df):
+    latlong_df.ww.init(
+        name="latLong", index="idx", logical_types={"latLong": "LatLong"}
+    )
+
+    es = EntitySet("latlong-test")
+
+    es.add_dataframe(latlong_df)
+
+    normalized_df = to_pandas(es["latLong"], sort_index=True)
+
+    expected_df = pd.DataFrame(
+        {"idx": [0, 1, 2], "latLong": [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]}
+    )
+
+    pd.testing.assert_frame_equal(normalized_df, expected_df)
