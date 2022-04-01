@@ -252,7 +252,7 @@ class Latitude(TransformPrimitive):
 
 class Longitude(TransformPrimitive):
     """Returns the second tuple value in a list of LatLong tuples.
-       For use with the LatLong logical type.
+       For use with the LatLong logical type
 
     Examples:
         >>> longitude = Longitude()
