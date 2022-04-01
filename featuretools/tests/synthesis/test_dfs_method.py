@@ -374,7 +374,8 @@ def test_warns_with_unused_primitives(es):
         "Some specified primitives were not used during DFS:\n"
         + "  trans_primitives: ['add_numeric']\n  agg_primitives: ['max', 'min']\n"
         + "This may be caused by a using a value of max_depth that is too small, not setting interesting values, "
-        + "or it may indicate no compatible columns for the primitive were found in the data."
+        + "or it may indicate no compatible columns for the primitive were found in the data. If the DFS call "
+        + "contained multiple instances of a primitive in the list above, none of them were used."
     )
 
     with pytest.warns(UnusedPrimitiveWarning) as record:
@@ -454,7 +455,8 @@ def test_warns_with_unused_where_primitives(es):
         "Some specified primitives were not used during DFS:\n"
         + "  where_primitives: ['count', 'sum']\n"
         + "This may be caused by a using a value of max_depth that is too small, not setting interesting values, "
-        + "or it may indicate no compatible columns for the primitive were found in the data."
+        + "or it may indicate no compatible columns for the primitive were found in the data. If the DFS call "
+        + "contained multiple instances of a primitive in the list above, none of them were used."
     )
 
     with pytest.warns(UnusedPrimitiveWarning) as record:
@@ -475,7 +477,8 @@ def test_warns_with_unused_groupby_primitives(pd_es):
         "Some specified primitives were not used during DFS:\n"
         + "  groupby_trans_primitives: ['cum_sum']\n"
         + "This may be caused by a using a value of max_depth that is too small, not setting interesting values, "
-        + "or it may indicate no compatible columns for the primitive were found in the data."
+        + "or it may indicate no compatible columns for the primitive were found in the data. If the DFS call "
+        + "contained multiple instances of a primitive in the list above, none of them were used."
     )
 
     with pytest.warns(UnusedPrimitiveWarning) as record:
@@ -514,7 +517,8 @@ def test_warns_with_unused_custom_primitives(pd_es):
         "Some specified primitives were not used during DFS:\n"
         + "  trans_primitives: ['above_ten']\n"
         + "This may be caused by a using a value of max_depth that is too small, not setting interesting values, "
-        + "or it may indicate no compatible columns for the primitive were found in the data."
+        + "or it may indicate no compatible columns for the primitive were found in the data. If the DFS call "
+        + "contained multiple instances of a primitive in the list above, none of them were used."
     )
 
     with pytest.warns(UnusedPrimitiveWarning) as record:
@@ -549,7 +553,8 @@ def test_warns_with_unused_custom_primitives(pd_es):
         "Some specified primitives were not used during DFS:\n"
         + "  agg_primitives: ['max_above_ten']\n"
         + "This may be caused by a using a value of max_depth that is too small, not setting interesting values, "
-        + "or it may indicate no compatible columns for the primitive were found in the data."
+        + "or it may indicate no compatible columns for the primitive were found in the data. If the DFS call "
+        + "contained multiple instances of a primitive in the list above, none of them were used."
     )
 
     with pytest.warns(UnusedPrimitiveWarning) as record:

@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Improve ``UnusedPrimitiveWarning`` with additional information (:pr:`2003`)
     * Fixes
     * Changes
         * Updated autonormalize version requirement (:pr:`2002`)
@@ -13,7 +14,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`
+    :user:`dvreed77`, :user:`thehomebrewnerd`
 
 v1.8.0 Mar 31, 2022
 ===================
