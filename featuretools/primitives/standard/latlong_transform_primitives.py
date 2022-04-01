@@ -53,10 +53,12 @@ class CityblockDistance(TransformPrimitive):
 
     def get_function(self):
         def cityblock(latlong_1, latlong_2):
-            lat_1s = np.array([x[0] for x in latlong_1])
-            lon_1s = np.array([x[1] for x in latlong_1])
-            lat_2s = np.array([x[0] for x in latlong_2])
-            lon_2s = np.array([x[1] for x in latlong_2])
+            latlong_1 = np.array(latlong_1.tolist())
+            latlong_2 = np.array(latlong_2.tolist())
+            lat_1s = latlong_1[:, 0]
+            lat_2s = latlong_2[:, 0]
+            lon_1s = latlong_1[:, 1]
+            lon_2s = latlong_2[:, 1]
             lon_dis = _haversine_calculate(lat_1s, lon_1s, lat_1s, lon_2s, self.unit)
             lat_dist = _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_1s, self.unit)
             return pd.Series(lon_dis + lat_dist)
@@ -83,11 +85,12 @@ class GeoMidpoint(TransformPrimitive):
 
     def get_function(self):
         def geomidpoint_func(latlong_1, latlong_2):
-            lat_1s = np.array([x[0] for x in latlong_1])
-            lon_1s = np.array([x[1] for x in latlong_1])
-
-            lat_2s = np.array([x[0] for x in latlong_2])
-            lon_2s = np.array([x[1] for x in latlong_2])
+            latlong_1 = np.array(latlong_1.tolist())
+            latlong_2 = np.array(latlong_2.tolist())
+            lat_1s = latlong_1[:, 0]
+            lat_2s = latlong_2[:, 0]
+            lon_1s = latlong_1[:, 1]
+            lon_2s = latlong_2[:, 1]
 
             lat_middle = np.array([lat_1s, lat_2s]).transpose().mean(axis=1)
             lon_middle = np.array([lon_1s, lon_2s]).transpose().mean(axis=1)
@@ -142,10 +145,12 @@ class Haversine(TransformPrimitive):
 
     def get_function(self):
         def haversine(latlong_1, latlong_2):
-            lat_1s = np.array([x[0] for x in latlong_1])
-            lon_1s = np.array([x[1] for x in latlong_1])
-            lat_2s = np.array([x[0] for x in latlong_2])
-            lon_2s = np.array([x[1] for x in latlong_2])
+            latlong_1 = np.array(latlong_1.tolist())
+            latlong_2 = np.array(latlong_2.tolist())
+            lat_1s = latlong_1[:, 0]
+            lat_2s = latlong_2[:, 0]
+            lon_1s = latlong_1[:, 1]
+            lon_2s = latlong_2[:, 1]
 
             distance = _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_2s, self.unit)
             return distance
@@ -194,13 +199,7 @@ class IsInGeoBox(TransformPrimitive):
 
     def get_function(self):
         def geobox(latlongs):
-            if latlongs.hasnans:
-                latlongs = np.where(
-                    latlongs.isnull(),
-                    pd.Series([(np.nan, np.nan)] * len(latlongs)),
-                    latlongs,
-                )
-            transposed = np.transpose([list(latlon) for latlon in latlongs])
+            transposed = np.transpose(np.array(latlongs.tolist()))
             lats = (self.lats[0] <= transposed[0]) & (self.lats[1] >= transposed[0])
             longs = (self.lons[0] <= transposed[1]) & (self.lons[1] >= transposed[1])
             return lats & longs
@@ -227,7 +226,8 @@ class Latitude(TransformPrimitive):
 
     def get_function(self):
         def latitude(latlong):
-            return latlong.map(lambda x: x[0] if isinstance(x, tuple) else np.nan)
+            latlong = np.array(latlong.tolist())
+            return latlong[:, 0]
 
         return latitude
 
@@ -251,6 +251,7 @@ class Longitude(TransformPrimitive):
 
     def get_function(self):
         def longitude(latlong):
-            return latlong.map(lambda x: x[1] if isinstance(x, tuple) else np.nan)
+            latlong = np.array(latlong.tolist())
+            return latlong[:, 1]
 
         return longitude

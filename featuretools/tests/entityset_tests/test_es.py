@@ -2467,7 +2467,6 @@ def test_latlong_nan_normalization(latlong_df):
     latlong_df.ww.init(
         name="latLong", index="idx", logical_types={"latLong": "LatLong"}
     )
-    latlong_df.sort_values(by="idx", inplace=True)
 
     dataframes = {"latLong": (latlong_df,)}
 
@@ -2475,7 +2474,7 @@ def test_latlong_nan_normalization(latlong_df):
 
     es = EntitySet("latlong-test", dataframes, relationships)
 
-    normalized_df = to_pandas(es["latLong"])
+    normalized_df = to_pandas(es["latLong"], sort_index=True)
 
     expected_df = pd.DataFrame(
         {"idx": [0, 1, 2], "latLong": [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]}
@@ -2488,13 +2487,12 @@ def test_latlong_nan_normalization_add_dataframe(latlong_df):
     latlong_df.ww.init(
         name="latLong", index="idx", logical_types={"latLong": "LatLong"}
     )
-    latlong_df.sort_values(by="idx", inplace=True)
 
     es = EntitySet("latlong-test")
 
     es.add_dataframe(latlong_df)
 
-    normalized_df = to_pandas(es["latLong"])
+    normalized_df = to_pandas(es["latLong"], sort_index=True)
 
     expected_df = pd.DataFrame(
         {"idx": [0, 1, 2], "latLong": [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]}

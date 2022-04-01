@@ -1350,8 +1350,6 @@ class EntitySet(object):
             if ww_schemas[df_name] is not None:
                 df.ww.init(schema=ww_schemas[df_name], validate=False)
 
-            self._normalize_values(df)
-
         self.__dict__.update(state)
 
     # ###########################################################################
