@@ -12,11 +12,12 @@ Future Release
         * Updated autonormalize version requirement (:pr:`2002`)
         * Remove extra NaN checking in LatLong primitives (:pr:`1924`)
         * Normalize LatLong NaN values during EntitySet creation (:pr:`1924`)
+        * Update setup.cfg with pytest alias (:pr:`2009`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`thehomebrewnerd`
+    :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`
 
 v1.8.0 Mar 31, 2022
 ===================
