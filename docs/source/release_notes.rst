@@ -15,6 +15,7 @@ Future Release
     * Documentation Changes
         * Update README text to Alteryx (:pr:`2010`)
     * Testing Changes
+    
     Thanks to the following people for contributing to this release:
     :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`
 
