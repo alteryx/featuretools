@@ -143,7 +143,7 @@ BibTeX entry:
 }
 ```
 
-## Built at Alteryx Innovation Labs
+## Built at Alteryx Advanced Analytics
 
 **Featuretools** is an open source project maintained by [Alteryx](https://www.alteryx.com). To see the other open source projects we’re working on visit [Alteryx Open Source](https://www.alteryx.com/open-source). If building impactful data science pipelines is important to you or your business, please get in touch.
 

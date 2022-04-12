@@ -13,10 +13,11 @@ Future Release
         * Remove extra NaN checking in LatLong primitives (:pr:`1924`)
         * Normalize LatLong NaN values during EntitySet creation (:pr:`1924`)
     * Documentation Changes
+        * Update README text to Alteryx (:pr:`2010`)
     * Testing Changes
-
+    
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`thehomebrewnerd`
+    :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`
 
 v1.8.0 Mar 31, 2022
 ===================
