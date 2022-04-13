@@ -207,6 +207,8 @@ class DeepFeatureSynthesis(object):
                 df_library = library
                 break
 
+        aggregation_primitive_dict = primitives.get_aggregation_primitives()
+        transform_primitive_dict = primitives.get_transform_primitives()
         if agg_primitives is None:
             agg_primitives = [
                 p
@@ -215,7 +217,15 @@ class DeepFeatureSynthesis(object):
             ]
         self.agg_primitives = []
         self.agg_primitives = sorted(
-            [check_primitive(p, "aggregation") for p in agg_primitives]
+            [
+                check_primitive(
+                    p,
+                    "aggregation",
+                    aggregation_primitive_dict,
+                    transform_primitive_dict,
+                )
+                for p in agg_primitives
+            ]
         )
 
         if trans_primitives is None:
@@ -225,19 +235,37 @@ class DeepFeatureSynthesis(object):
                 if df_library in p.compatibility
             ]
         self.trans_primitives = sorted(
-            [check_primitive(p, "transform") for p in trans_primitives]
+            [
+                check_primitive(
+                    p, "transform", aggregation_primitive_dict, transform_primitive_dict
+                )
+                for p in trans_primitives
+            ]
         )
 
         if where_primitives is None:
             where_primitives = [primitives.Count]
         self.where_primitives = sorted(
-            [check_primitive(p, "where") for p in where_primitives]
+            [
+                check_primitive(
+                    p, "where", aggregation_primitive_dict, transform_primitive_dict
+                )
+                for p in where_primitives
+            ]
         )
 
         if groupby_trans_primitives is None:
             groupby_trans_primitives = []
         self.groupby_trans_primitives = sorted(
-            [check_primitive(p, "groupby transform") for p in groupby_trans_primitives]
+            [
+                check_primitive(
+                    p,
+                    "groupby transform",
+                    aggregation_primitive_dict,
+                    transform_primitive_dict,
+                )
+                for p in groupby_trans_primitives
+            ]
         )
 
         if primitive_options is None:
@@ -1087,9 +1115,11 @@ def handle_primitive(primitive):
     return primitive
 
 
-def check_primitive(primitive, prim_type):
+def check_primitive(
+    primitive, prim_type, aggregation_primitive_dict, transform_primitive_dict
+):
     if prim_type == "transform" or prim_type == "groupby transform":
-        prim_dict = primitives.get_transform_primitives()
+        prim_dict = transform_primitive_dict
         supertype = TransformPrimitive
         arg_name = (
             "trans_primitives"
@@ -1098,7 +1128,7 @@ def check_primitive(primitive, prim_type):
         )
         s = "a transform"
     if prim_type == "aggregation" or prim_type == "where":
-        prim_dict = primitives.get_aggregation_primitives()
+        prim_dict = aggregation_primitive_dict
         supertype = AggregationPrimitive
         arg_name = (
             "agg_primitives" if prim_type == "aggregation" else "where_primitives"
