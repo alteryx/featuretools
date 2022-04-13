@@ -12,12 +12,13 @@ Future Release
         * Updated autonormalize version requirement (:pr:`2002`)
         * Remove extra NaN checking in LatLong primitives (:pr:`1924`)
         * Normalize LatLong NaN values during EntitySet creation (:pr:`1924`)
+        * Pass primitive dictionaries into ``check_primitive`` to avoid repetitive calls (:pr:`2016`)
     * Documentation Changes
         * Update README text to Alteryx (:pr:`2010`, :pr:`2015`)
     * Testing Changes
     
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`dvreed77`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 v1.8.0 Mar 31, 2022
 ===================
