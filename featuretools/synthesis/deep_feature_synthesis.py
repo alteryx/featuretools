@@ -667,29 +667,20 @@ class DeepFeatureSynthesis(object):
                 continue
             # if multiple input_types, get matches for all input types
             input_types = trans_prim.input_types
-            if type(input_types[0]) == list:
-                matching_inputs = []
-                for input_type in input_types:
-                    matching_inputs.extend(
-                        self._get_matching_inputs(
-                            all_features,
-                            dataframe,
-                            new_max_depth,
-                            input_type,
-                            trans_prim,
-                            current_options,
-                            require_direct_input=require_direct_input,
-                        )
+            if not isinstance(input_types[0], list):
+                input_types = [input_types]
+            matching_inputs = []
+            for input_type in input_types:
+                matching_inputs.extend(
+                    self._get_matching_inputs(
+                        all_features,
+                        dataframe,
+                        new_max_depth,
+                        input_type,
+                        trans_prim,
+                        current_options,
+                        require_direct_input=require_direct_input,
                     )
-            else:
-                matching_inputs = self._get_matching_inputs(
-                    all_features,
-                    dataframe,
-                    new_max_depth,
-                    input_types,
-                    trans_prim,
-                    current_options,
-                    require_direct_input=require_direct_input,
                 )
 
             for matching_input in matching_inputs:
@@ -707,27 +698,19 @@ class DeepFeatureSynthesis(object):
                 continue
             input_types = groupby_prim.input_types[:]
             # if multiple input_types, get matches for all input types
-            if type(input_types[0]) == list:
-                matching_inputs = []
-                for input_type in input_types:
-                    matching_inputs.extend(
-                        self._get_matching_inputs(
-                            all_features,
-                            dataframe,
-                            new_max_depth,
-                            input_type,
-                            groupby_prim,
-                            current_options,
-                        )
+            if not isinstance(input_types[0], list):
+                input_types = [input_types]
+            matching_inputs = []
+            for input_type in input_types:
+                matching_inputs.extend(
+                    self._get_matching_inputs(
+                        all_features,
+                        dataframe,
+                        new_max_depth,
+                        input_type,
+                        groupby_prim,
+                        current_options,
                     )
-            else:
-                matching_inputs = self._get_matching_inputs(
-                    all_features,
-                    dataframe,
-                    new_max_depth,
-                    input_types,
-                    groupby_prim,
-                    current_options,
                 )
 
             # get columns to use as groupbys, use IDs as default unless other groupbys specified
@@ -833,29 +816,20 @@ class DeepFeatureSynthesis(object):
 
             # if multiple input_types, get matches for all input types
             input_types = agg_prim.input_types
-            if type(input_types[0]) == list:
-                matching_inputs = []
-                for input_type in input_types:
-                    matching_inputs.extend(
-                        self._get_matching_inputs(
-                            all_features,
-                            child_dataframe,
-                            new_max_depth,
-                            input_type,
-                            agg_prim,
-                            current_options,
-                            feature_filter=feature_filter,
-                        )
+            if not isinstance(input_types[0], list):
+                input_types = [input_types]
+            matching_inputs = []
+            for input_type in input_types:
+                matching_inputs.extend(
+                    self._get_matching_inputs(
+                        all_features,
+                        child_dataframe,
+                        new_max_depth,
+                        input_type,
+                        agg_prim,
+                        current_options,
+                        feature_filter=feature_filter,
                     )
-            else:
-                matching_inputs = self._get_matching_inputs(
-                    all_features,
-                    child_dataframe,
-                    new_max_depth,
-                    input_types,
-                    agg_prim,
-                    current_options,
-                    feature_filter=feature_filter,
                 )
 
             matching_inputs = filter_matches_by_options(
