@@ -1944,6 +1944,8 @@ def test_does_not_build_features_on_last_time_index_col(es):
 
 
 def test_builds_features_using_all_input_types(es):
+    if es.dataframe_type == Library.SPARK.value:
+        pytest.skip("NumTrue primitive not compatible with Spark")
     new_log_df = es["log"]
     new_log_df.ww["purchased_nullable"] = es["log"]["purchased"]
     new_log_df.ww.set_types(logical_types={"purchased_nullable": "boolean_nullable"})
