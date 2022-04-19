@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Improve ``UnusedPrimitiveWarning`` with additional information (:pr:`2003`)
+        * Update DFS primitive matching to use all inputs defined in primitive ``input_types`` (:pr:`2019`)
     * Fixes
     * Changes
         * Updated autonormalize version requirement (:pr:`2002`)
