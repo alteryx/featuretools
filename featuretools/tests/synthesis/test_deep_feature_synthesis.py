@@ -35,8 +35,10 @@ from featuretools.primitives import (
     Month,
     Negate,
     NMostCommon,
+    Not,
     NotEqual,
     NumCharacters,
+    NumTrue,
     NumUnique,
     RollingCount,
     RollingMax,
@@ -1939,3 +1941,42 @@ def test_does_not_build_features_on_last_time_index_col(es):
 
     for feature in features:
         assert LTI_COLUMN_NAME not in feature.get_name()
+
+
+def test_builds_features_using_all_input_types(es):
+    new_log_df = es["log"]
+    new_log_df.ww["purchased_nullable"] = es["log"]["purchased"]
+    new_log_df.ww.set_types(logical_types={"purchased_nullable": "boolean_nullable"})
+    es.replace_dataframe("log", new_log_df)
+
+    dfs_obj = DeepFeatureSynthesis(
+        target_dataframe_name="log",
+        entityset=es,
+        trans_primitives=[Not],
+        max_depth=1,
+    )
+    trans_features = dfs_obj.build_features()
+    assert feature_with_name(trans_features, "NOT(purchased)")
+    assert feature_with_name(trans_features, "NOT(purchased_nullable)")
+
+    dfs_obj = DeepFeatureSynthesis(
+        target_dataframe_name="log",
+        entityset=es,
+        groupby_trans_primitives=[Not],
+        max_depth=1,
+    )
+    groupby_trans_features = dfs_obj.build_features()
+    assert feature_with_name(groupby_trans_features, "NOT(purchased) by session_id")
+    assert feature_with_name(
+        groupby_trans_features, "NOT(purchased_nullable) by session_id"
+    )
+
+    dfs_obj = DeepFeatureSynthesis(
+        target_dataframe_name="sessions",
+        entityset=es,
+        trans_primitives=[],
+        agg_primitives=[NumTrue],
+    )
+    agg_features = dfs_obj.build_features()
+    assert feature_with_name(agg_features, "NUM_TRUE(log.purchased)")
+    assert feature_with_name(agg_features, "NUM_TRUE(log.purchased_nullable)")
