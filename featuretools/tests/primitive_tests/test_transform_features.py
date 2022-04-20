@@ -1459,6 +1459,10 @@ def test_cfm_with_lag_and_non_nullable_column(pd_es):
 
 
 def test_comparisons_with_ordinal(es):
+    if es.dataframe_type == Library.SPARK.value:
+        pytest.xfail(
+            "Categorical dtypes not used in Spark, and comparison works as expected without error."
+        )
     valid_features = [
         ft.Feature(es["log"].ww["priority_level"]) > 1,
         ft.Feature(es["log"].ww["priority_level"]) >= 1,
