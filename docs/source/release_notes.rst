@@ -8,6 +8,7 @@ Future Release
     * Enhancements
         * Improve ``UnusedPrimitiveWarning`` with additional information (:pr:`2003`)
     * Fixes
+        * Fix issue with Ordinal inputs to binary comparison primitives (:pr:`2024`)
     * Changes
         * Updated autonormalize version requirement (:pr:`2002`)
         * Remove extra NaN checking in LatLong primitives (:pr:`1924`)

@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pandas.api.types as pdtypes
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable, Datetime, Ordinal
 
@@ -70,6 +71,11 @@ class GreaterThanScalar(TransformPrimitive):
 
     def get_function(self):
         def greater_than_scalar(vals):
+            if (
+                pdtypes.is_categorical_dtype(vals)
+                and self.value not in vals.cat.categories
+            ):
+                return np.nan
             return vals > self.value
 
         return greater_than_scalar
@@ -143,6 +149,11 @@ class GreaterThanEqualToScalar(TransformPrimitive):
 
     def get_function(self):
         def greater_than_equal_to_scalar(vals):
+            if (
+                pdtypes.is_categorical_dtype(vals)
+                and self.value not in vals.cat.categories
+            ):
+                return np.nan
             return vals >= self.value
 
         return greater_than_equal_to_scalar
@@ -214,6 +225,11 @@ class LessThanScalar(TransformPrimitive):
 
     def get_function(self):
         def less_than_scalar(vals):
+            if (
+                pdtypes.is_categorical_dtype(vals)
+                and self.value not in vals.cat.categories
+            ):
+                return np.nan
             return vals < self.value
 
         return less_than_scalar
@@ -287,6 +303,11 @@ class LessThanEqualToScalar(TransformPrimitive):
 
     def get_function(self):
         def less_than_equal_to_scalar(vals):
+            if (
+                pdtypes.is_categorical_dtype(vals)
+                and self.value not in vals.cat.categories
+            ):
+                return np.nan
             return vals <= self.value
 
         return less_than_equal_to_scalar
