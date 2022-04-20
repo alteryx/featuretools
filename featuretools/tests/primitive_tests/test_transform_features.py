@@ -1456,3 +1456,36 @@ def test_cfm_with_lag_and_non_nullable_column(pd_es):
         .isnull()
         .all()
     )
+
+
+def test_comparisons_with_ordinal(es):
+    valid_features = [
+        ft.Feature(es["log"].ww["priority_level"]) > 1,
+        ft.Feature(es["log"].ww["priority_level"]) >= 1,
+        ft.Feature(es["log"].ww["priority_level"]) < 1,
+        ft.Feature(es["log"].ww["priority_level"]) <= 1,
+    ]
+    fm = ft.calculate_feature_matrix(
+        entityset=es,
+        features=valid_features,
+    )
+    feature_cols = [f.get_name() for f in valid_features]
+    fm = to_pandas(fm)
+    for col in feature_cols:
+        assert fm[col].notnull().any()
+
+    invalid_features = [
+        ft.Feature(es["log"].ww["priority_level"]) > 10,
+        ft.Feature(es["log"].ww["priority_level"]) >= 10,
+        ft.Feature(es["log"].ww["priority_level"]) < 10,
+        ft.Feature(es["log"].ww["priority_level"]) <= 10,
+    ]
+    fm = ft.calculate_feature_matrix(
+        entityset=es,
+        features=invalid_features,
+    )
+
+    feature_cols = [f.get_name() for f in invalid_features]
+    fm = to_pandas(fm)
+    for col in feature_cols:
+        assert fm[col].isnull().all()
