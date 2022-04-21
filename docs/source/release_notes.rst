@@ -24,7 +24,7 @@ Future Release
 
 Note
 ++++
-* The update to the DFS algorithim in this release may cause the numer of features returned
+* The update to the DFS algorithim in this release may cause the number of features returned
   by ``ft.dfs`` to increase in some cases.
 
 v1.8.0 Mar 31, 2022
