@@ -37,14 +37,12 @@ class GreaterThan(TransformPrimitive):
 
     def get_function(self):
         def greater_than(val1, val2):
-            if pdtypes.is_categorical_dtype(val1) and pdtypes.is_categorical_dtype(
-                val2
-            ):
+            val1_is_categorical = pdtypes.is_categorical_dtype(val1)
+            val2_is_categorical = pdtypes.is_categorical_dtype(val2)
+            if val1_is_categorical and val2_is_categorical:
                 if not all(val1.cat.categories == val2.cat.categories):
                     return np.nan
-            elif pdtypes.is_categorical_dtype(val1) or pdtypes.is_categorical_dtype(
-                val2
-            ):
+            elif val1_is_categorical or val2_is_categorical:
                 # This can happen because CFM does not set proper dtypes for intermediate
                 # features, so some agg features that should be Ordinal don't yet have correct type.
                 return np.nan
@@ -127,14 +125,12 @@ class GreaterThanEqualTo(TransformPrimitive):
 
     def get_function(self):
         def greater_than_equal(val1, val2):
-            if pdtypes.is_categorical_dtype(val1) and pdtypes.is_categorical_dtype(
-                val2
-            ):
+            val1_is_categorical = pdtypes.is_categorical_dtype(val1)
+            val2_is_categorical = pdtypes.is_categorical_dtype(val2)
+            if val1_is_categorical and val2_is_categorical:
                 if not all(val1.cat.categories == val2.cat.categories):
                     return np.nan
-            elif pdtypes.is_categorical_dtype(val1) or pdtypes.is_categorical_dtype(
-                val2
-            ):
+            elif val1_is_categorical or val2_is_categorical:
                 # This can happen because CFM does not set proper dtypes for intermediate
                 # features, so some agg features that should be Ordinal don't yet have correct type.
                 return np.nan
@@ -219,14 +215,12 @@ class LessThan(TransformPrimitive):
 
     def get_function(self):
         def less_than(val1, val2):
-            if pdtypes.is_categorical_dtype(val1) and pdtypes.is_categorical_dtype(
-                val2
-            ):
+            val1_is_categorical = pdtypes.is_categorical_dtype(val1)
+            val2_is_categorical = pdtypes.is_categorical_dtype(val2)
+            if val1_is_categorical and val2_is_categorical:
                 if not all(val1.cat.categories == val2.cat.categories):
                     return np.nan
-            elif pdtypes.is_categorical_dtype(val1) or pdtypes.is_categorical_dtype(
-                val2
-            ):
+            elif val1_is_categorical or val2_is_categorical:
                 # This can happen because CFM does not set proper dtypes for intermediate
                 # features, so some agg features that should be Ordinal don't yet have correct type.
                 return np.nan
@@ -309,14 +303,12 @@ class LessThanEqualTo(TransformPrimitive):
 
     def get_function(self):
         def less_than_equal(val1, val2):
-            if pdtypes.is_categorical_dtype(val1) and pdtypes.is_categorical_dtype(
-                val2
-            ):
+            val1_is_categorical = pdtypes.is_categorical_dtype(val1)
+            val2_is_categorical = pdtypes.is_categorical_dtype(val2)
+            if val1_is_categorical and val2_is_categorical:
                 if not all(val1.cat.categories == val2.cat.categories):
                     return np.nan
-            elif pdtypes.is_categorical_dtype(val1) or pdtypes.is_categorical_dtype(
-                val2
-            ):
+            elif val1_is_categorical or val2_is_categorical:
                 # This can happen because CFM does not set proper dtypes for intermediate
                 # features, so some agg features that should be Ordinal don't yet have correct type.
                 return np.nan
