@@ -22,6 +22,11 @@ Future Release
     Thanks to the following people for contributing to this release:
     :user:`dvreed77`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
 
+Note
+++++
+* The update to the DFS algorithim in this release may cause the numer of features returned
+  by ``ft.dfs`` to increase in some cases.
+
 v1.8.0 Mar 31, 2022
 ===================
     * Changes
