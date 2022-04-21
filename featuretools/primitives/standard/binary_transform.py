@@ -37,8 +37,13 @@ class GreaterThan(TransformPrimitive):
 
     def get_function(self):
         def greater_than(val1, val2):
-            if pdtypes.is_categorical_dtype(val1) and not all(
-                val1.cat.categories == val2.cat.categories
+            if pdtypes.is_categorical_dtype(val1) and pdtypes.is_categorical_dtype(
+                val2
+            ):
+                if not all(val1.cat.categories == val2.cat.categories):
+                    return np.nan
+            elif pdtypes.is_categorical_dtype(val1) or pdtypes.is_categorical_dtype(
+                val2
             ):
                 return np.nan
             return val1 > val2
@@ -120,8 +125,13 @@ class GreaterThanEqualTo(TransformPrimitive):
 
     def get_function(self):
         def greater_than_equal(val1, val2):
-            if pdtypes.is_categorical_dtype(val1) and not all(
-                val1.cat.categories == val2.cat.categories
+            if pdtypes.is_categorical_dtype(val1) and pdtypes.is_categorical_dtype(
+                val2
+            ):
+                if not all(val1.cat.categories == val2.cat.categories):
+                    return np.nan
+            elif pdtypes.is_categorical_dtype(val1) or pdtypes.is_categorical_dtype(
+                val2
             ):
                 return np.nan
             return val1 >= val2
@@ -205,8 +215,13 @@ class LessThan(TransformPrimitive):
 
     def get_function(self):
         def less_than(val1, val2):
-            if pdtypes.is_categorical_dtype(val1) and not all(
-                val1.cat.categories == val2.cat.categories
+            if pdtypes.is_categorical_dtype(val1) and pdtypes.is_categorical_dtype(
+                val2
+            ):
+                if not all(val1.cat.categories == val2.cat.categories):
+                    return np.nan
+            elif pdtypes.is_categorical_dtype(val1) or pdtypes.is_categorical_dtype(
+                val2
             ):
                 return np.nan
             return val1 < val2
@@ -288,8 +303,13 @@ class LessThanEqualTo(TransformPrimitive):
 
     def get_function(self):
         def less_than_equal(val1, val2):
-            if pdtypes.is_categorical_dtype(val1) and not all(
-                val1.cat.categories == val2.cat.categories
+            if pdtypes.is_categorical_dtype(val1) and pdtypes.is_categorical_dtype(
+                val2
+            ):
+                if not all(val1.cat.categories == val2.cat.categories):
+                    return np.nan
+            elif pdtypes.is_categorical_dtype(val1) or pdtypes.is_categorical_dtype(
+                val2
             ):
                 return np.nan
             return val1 <= val2
