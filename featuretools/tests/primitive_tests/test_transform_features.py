@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean, Datetime, Integer
+from woodwork.logical_types import Boolean, Datetime, Integer, Ordinal
 
 import featuretools as ft
 from featuretools.computational_backends.feature_set import FeatureSet
@@ -1463,11 +1463,30 @@ def test_comparisons_with_ordinal(es):
         pytest.xfail(
             "Categorical dtypes not used in Spark, and comparison works as expected without error."
         )
+    new_df = es["log"]
+    new_df["ordinal_valid"] = new_df["priority_level"]
+    new_df["ordinal_invalid"] = new_df["priority_level"].astype(int) + 10
+
+    es.replace_dataframe("log", new_df)
+    es["log"].ww.set_types(
+        logical_types={
+            "ordinal_valid": Ordinal(order=[0, 1, 2]),
+            "ordinal_invalid": Ordinal(order=[10, 11, 12]),
+        }
+    )
     valid_features = [
         ft.Feature(es["log"].ww["priority_level"]) > 1,
         ft.Feature(es["log"].ww["priority_level"]) >= 1,
         ft.Feature(es["log"].ww["priority_level"]) < 1,
         ft.Feature(es["log"].ww["priority_level"]) <= 1,
+        ft.Feature(es["log"].ww["priority_level"])
+        > ft.Feature(es["log"].ww["ordinal_valid"]),
+        ft.Feature(es["log"].ww["priority_level"])
+        >= ft.Feature(es["log"].ww["ordinal_valid"]),
+        ft.Feature(es["log"].ww["priority_level"])
+        < ft.Feature(es["log"].ww["ordinal_valid"]),
+        ft.Feature(es["log"].ww["priority_level"])
+        <= ft.Feature(es["log"].ww["ordinal_valid"]),
     ]
     fm = ft.calculate_feature_matrix(
         entityset=es,
@@ -1483,6 +1502,14 @@ def test_comparisons_with_ordinal(es):
         ft.Feature(es["log"].ww["priority_level"]) >= 10,
         ft.Feature(es["log"].ww["priority_level"]) < 10,
         ft.Feature(es["log"].ww["priority_level"]) <= 10,
+        ft.Feature(es["log"].ww["priority_level"])
+        > ft.Feature(es["log"].ww["ordinal_invalid"]),
+        ft.Feature(es["log"].ww["priority_level"])
+        >= ft.Feature(es["log"].ww["ordinal_invalid"]),
+        ft.Feature(es["log"].ww["priority_level"])
+        < ft.Feature(es["log"].ww["ordinal_invalid"]),
+        ft.Feature(es["log"].ww["priority_level"])
+        <= ft.Feature(es["log"].ww["ordinal_invalid"]),
     ]
     fm = ft.calculate_feature_matrix(
         entityset=es,
