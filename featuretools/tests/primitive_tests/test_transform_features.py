@@ -25,6 +25,9 @@ from featuretools.primitives import (
     DivideNumericScalar,
     Equal,
     EqualScalar,
+    First,
+    GreaterThan,
+    GreaterThanEqualTo,
     GreaterThanEqualToScalar,
     GreaterThanScalar,
     Haversine,
@@ -32,6 +35,8 @@ from featuretools.primitives import (
     IsIn,
     IsNull,
     Latitude,
+    LessThan,
+    LessThanEqualTo,
     LessThanEqualToScalar,
     LessThanScalar,
     Longitude,
@@ -1520,3 +1525,33 @@ def test_comparisons_with_ordinal(es):
     fm = to_pandas(fm)
     for col in feature_cols:
         assert fm[col].isnull().all()
+
+    # The following code block tests a scenario where an intermediate feature doesn't have the correct type
+    # because Woodowork has not yet been initialized. This should work and should be fixed in a future
+    # update, but until a fix is implemented null values are returned to prevent calculate_feature_matrix
+    # from raising an Error.
+    if es.dataframe_type == Library.PANDAS.value:
+        priority_level = ft.Feature(es["log"].ww["priority_level"])
+        first_priority = ft.AggregationFeature(
+            priority_level, parent_dataframe_name="customers", primitive=First
+        )
+        engagement = ft.Feature(es["customers"].ww["engagement_level"])
+        invalid_but_should_be_valid = [
+            ft.TransformFeature([engagement, first_priority], primitive=LessThan),
+            ft.TransformFeature(
+                [engagement, first_priority], primitive=LessThanEqualTo
+            ),
+            ft.TransformFeature([engagement, first_priority], primitive=GreaterThan),
+            ft.TransformFeature(
+                [engagement, first_priority], primitive=GreaterThanEqualTo
+            ),
+        ]
+        fm = ft.calculate_feature_matrix(
+            entityset=es,
+            features=invalid_but_should_be_valid,
+        )
+
+        feature_cols = [f.get_name() for f in invalid_but_should_be_valid]
+        fm = to_pandas(fm)
+        for col in feature_cols:
+            assert fm[col].isnull().all()
