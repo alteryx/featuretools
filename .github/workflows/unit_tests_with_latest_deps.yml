@@ -60,7 +60,7 @@ jobs:
           pytest featuretools/ -n 2 --cov=featuretools --cov-config=../.coveragerc
       - if: ${{ matrix.python_version == 3.7 && matrix.libraries == 'spark' }}
         name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v2
         with:
           fail_ci_if_error: true
 
