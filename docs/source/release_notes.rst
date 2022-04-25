@@ -14,6 +14,7 @@ Future Release
         * Remove extra NaN checking in LatLong primitives (:pr:`1924`)
         * Normalize LatLong NaN values during EntitySet creation (:pr:`1924`)
         * Pass primitive dictionaries into ``check_primitive`` to avoid repetitive calls (:pr:`2016`)
+        * Temporarily restrict Woodwork version to <0.16.0 (:pr:`2029`)
     * Documentation Changes
         * Update README text to Alteryx (:pr:`2010`, :pr:`2015`)
     * Testing Changes
