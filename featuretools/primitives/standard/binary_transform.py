@@ -795,12 +795,12 @@ class MultiplyNumericBoolean(TransformPrimitive):
 
     Examples:
         >>> multiply_numeric_boolean = MultiplyNumericBoolean()
-        >>> multiply_numeric([2, 1, 2], [True, True, False]).tolist()
+        >>> multiply_numeric_boolean([2, 1, 2], [True, True, False]).tolist()
         [2, 1, 0]
-        >>> multiply_numeric([2, None, None], [True, True, False]).tolist()
+        >>> multiply_numeric_boolean([2, None, None], [True, True, False]).tolist()
         [2.0, nan, nan]
-        >>> multiply_numeric([2, 1, 2], [True, True, None]).tolist()
-        [2.0, 1, nan]
+        >>> multiply_numeric_boolean([2, 1, 2], [True, True, None]).tolist()
+        [2.0, 1.0, nan]
     """
 
     name = "multiply_numeric_boolean"
