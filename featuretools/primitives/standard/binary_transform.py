@@ -696,20 +696,8 @@ class MultiplyNumeric(TransformPrimitive):
 
     name = "multiply_numeric"
     input_types = [
-        [
-            ColumnSchema(semantic_tags={"numeric"}),
-            ColumnSchema(semantic_tags={"numeric"}),
-        ],
-        [ColumnSchema(semantic_tags={"numeric"}), ColumnSchema(logical_type=Boolean)],
-        [ColumnSchema(logical_type=Boolean), ColumnSchema(semantic_tags={"numeric"})],
-        [
-            ColumnSchema(semantic_tags={"numeric"}),
-            ColumnSchema(logical_type=BooleanNullable),
-        ],
-        [
-            ColumnSchema(logical_type=BooleanNullable),
-            ColumnSchema(semantic_tags={"numeric"}),
-        ],
+        ColumnSchema(semantic_tags={"numeric"}),
+        ColumnSchema(semantic_tags={"numeric"}),
     ]
     return_type = ColumnSchema(semantic_tags={"numeric"})
     commutative = True
