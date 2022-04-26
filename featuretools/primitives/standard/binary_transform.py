@@ -801,7 +801,7 @@ class MultiplyNumericBoolean(TransformPrimitive):
     """Element-wise multiplication of a numeric list with a boolean list.
 
     Description:
-        Given a list of numeric values X and a list of 
+        Given a list of numeric values X and a list of
         boolean values Y, return the values in X where
         the corresponding value in Y is True.
 
@@ -809,14 +809,21 @@ class MultiplyNumericBoolean(TransformPrimitive):
         >>> multiply_numeric_boolean = MultiplyNumericBoolean()
         >>> multiply_numeric([2, 1, 2], [True, True, False]).tolist()
         [2, 1, 0]
+        >>> multiply_numeric([2, None, None], [True, True, False]).tolist()
+        [2.0, nan, nan]
+        >>> multiply_numeric([2, 1, 2], [True, True, None]).tolist()
+        [2.0, 1, nan]
     """
 
     name = "multiply_numeric_boolean"
     input_types = [
-        [ColumnSchema(semantic_tags={"numeric"}), ColumnSchema(logical_type=BooleanNullable)],
         [
             ColumnSchema(semantic_tags={"numeric"}),
             ColumnSchema(logical_type=Boolean),
+        ],
+        [
+            ColumnSchema(semantic_tags={"numeric"}),
+            ColumnSchema(logical_type=BooleanNullable),
         ],
     ]
     return_type = ColumnSchema(semantic_tags={"numeric"})
@@ -825,8 +832,14 @@ class MultiplyNumericBoolean(TransformPrimitive):
 
     def get_function(self):
         def multiply_numeric_boolean(vals, mask):
-            breakpoint()
-            return vals.where(mask, mask.replace({False: 0}))
+            vals_not_null = vals.notnull()
+            # Only apply mask where the input is not null
+            mask = mask.where(vals_not_null)
+            result = vals.where(mask, mask.replace({False: 0}))
+            # Replace all pd.NA with np.nan to avoid WW init error
+            result = result.replace({pd.NA: np.nan})
+            return result
+
         return multiply_numeric_boolean
 
     def generate_name(self, base_feature_names):

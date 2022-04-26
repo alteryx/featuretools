@@ -42,6 +42,7 @@ from featuretools.primitives import (
     Longitude,
     Mode,
     MultiplyNumeric,
+    MultiplyNumericBoolean,
     MultiplyNumericScalar,
     Not,
     NotEqual,
@@ -1569,21 +1570,40 @@ def test_comparisons_with_ordinal_valid_inputs_that_dont_work_but_should(pd_es):
     for col in feature_cols:
         assert fm[col].isnull().all()
 
+
 def test_multiply_numeric_boolean():
-    df = pd.DataFrame({
-    'id': [0, 1, 2],
-    'val_no_nan': [100, 200, 300],
-    'val_with_nan': [100, 200, pd.NA],
-    'mask_no_nan': [True, False, True],
-    'mask_with_nan': pd.Series([pd.NA, False, pd.NA], dtype='boolean'),
-    }) 
+    test_cases = [
+        {"val": 100, "mask": True, "expected": 100},
+        {"val": 100, "mask": False, "expected": 0},
+        {"val": 0, "mask": False, "expected": 0},
+        {"val": 100, "mask": pd.NA, "expected": pd.NA},
+        {"val": pd.NA, "mask": pd.NA, "expected": pd.NA},
+        {"val": pd.NA, "mask": True, "expected": pd.NA},
+        {"val": pd.NA, "mask": False, "expected": pd.NA},
+    ]
 
-    es = ft.EntitySet()
-    es.add_dataframe(dataframe_name="df", dataframe=df)
-    es["df"].ww.set_types(logical_types={'val_no_nan': 'Integer',
-                                     'val_with_nan': 'IntegerNullable',
-                                     'mask_no_nan': 'Boolean',
-                                     'mask_with_nan': 'BooleanNullable'})
+    multiply_numeric_boolean = MultiplyNumericBoolean()
+    for input in test_cases:
+        vals = pd.Series(input["val"])
+        mask = pd.Series(input["mask"])
+        actual = multiply_numeric_boolean(vals, mask).tolist()[0]
+        expected = input["expected"]
+        if pd.isnull(expected):
+            assert pd.isnull(actual)
+        else:
+            assert actual == input["expected"]
 
-    fm, features = ft.dfs(entityset=es, target_dataframe_name="df", trans_primitives=["multiply_numeric_boolean"])
+
+def test_feature_multiplication(es):
+    numeric_ft = ft.Feature(es["customers"].ww["age"])
+    boolean_ft = ft.Feature(es["customers"].ww["loves_ice_cream"])
+
+    mult_numeric = numeric_ft * numeric_ft
+    mult_boolean = boolean_ft * boolean_ft
+    mult_numeric_boolean = numeric_ft * boolean_ft
+    breakpoint()
+    assert isinstance(type(mult_numeric), MultiplyNumeric)
+
+    # Should not work
+    invalid = boolean_ft * numeric_ft
     breakpoint()

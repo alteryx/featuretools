@@ -1,5 +1,5 @@
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean
+from woodwork.logical_types import Boolean, BooleanNullable
 
 from featuretools import primitives
 from featuretools.entityset.relationship import Relationship, RelationshipPath
@@ -319,7 +319,7 @@ class FeatureBase(object):
         if isinstance(other, FeatureBase):
             if all(
                 [
-                    isinstance(f.column_schema.logical_type, Boolean)
+                    isinstance(f.column_schema.logical_type, (Boolean, BooleanNullable))
                     for f in (self, other)
                 ]
             ):
