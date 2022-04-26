@@ -20,6 +20,7 @@ Future Release
     * Documentation Changes
         * Update README text to Alteryx (:pr:`2010`, :pr:`2015`)
     * Testing Changes
+        * Update unit tests with Woodwork main branch workflow name (:pr:`2033`)
     
     Thanks to the following people for contributing to this release:
     :user:`dvreed77`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
