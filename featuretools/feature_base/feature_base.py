@@ -319,7 +319,7 @@ class FeatureBase(object):
         if isinstance(other, FeatureBase):
             if all(
                 [
-                    isinstance(f.column_schema.logical_type, (Boolean, BooleanNullable))
+                    isinstance(f.column_schema.logical_type, (Boolean))
                     for f in (self, other)
                 ]
             ):

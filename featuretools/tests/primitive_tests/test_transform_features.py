@@ -41,6 +41,7 @@ from featuretools.primitives import (
     LessThanScalar,
     Longitude,
     Mode,
+    MultiplyBoolean,
     MultiplyNumeric,
     MultiplyNumericBoolean,
     MultiplyNumericScalar,
@@ -1601,9 +1602,29 @@ def test_feature_multiplication(es):
     mult_numeric = numeric_ft * numeric_ft
     mult_boolean = boolean_ft * boolean_ft
     mult_numeric_boolean = numeric_ft * boolean_ft
-    breakpoint()
-    assert isinstance(type(mult_numeric), MultiplyNumeric)
 
-    # Should not work
-    invalid = boolean_ft * numeric_ft
-    breakpoint()
+    assert issubclass(type(mult_numeric.primitive), MultiplyNumeric)
+    assert issubclass(type(mult_boolean.primitive), MultiplyBoolean)
+    assert issubclass(type(mult_numeric_boolean.primitive), MultiplyNumericBoolean)
+
+    error_message = "Provided inputs don't match input type requirements"
+    with pytest.raises(AssertionError, match=error_message):
+        boolean_ft * numeric_ft
+
+    # Test with nullable types
+    es["customers"].ww.set_types(
+        logical_types={"age": "IntegerNullable", "loves_ice_cream": "BooleanNullable"}
+    )
+    numeric_ft = ft.Feature(es["customers"].ww["age"])
+    boolean_ft = ft.Feature(es["customers"].ww["loves_ice_cream"])
+    mult_numeric = numeric_ft * numeric_ft
+    mult_boolean = boolean_ft * boolean_ft
+    mult_numeric_boolean = numeric_ft * boolean_ft
+
+    assert issubclass(type(mult_numeric.primitive), MultiplyNumeric)
+    assert issubclass(type(mult_boolean.primitive), MultiplyBoolean)
+    assert issubclass(type(mult_numeric_boolean.primitive), MultiplyNumericBoolean)
+
+    error_message = "Provided inputs don't match input type requirements"
+    with pytest.raises(AssertionError, match=error_message):
+        boolean_ft * numeric_ft
