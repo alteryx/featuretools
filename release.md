@@ -12,11 +12,11 @@ Before starting the release process, verify the following:
 
 #### Version Numbering
 
-Woodwork uses [semantic versioning](https://semver.org/). Every release has a major, minor and patch version number, and are displayed like so: `<majorVersion>.<minorVersion>.<patchVersion>`.
+Featuretools uses [semantic versioning](https://semver.org/). Every release has a major, minor and patch version number, and are displayed like so: `<majorVersion>.<minorVersion>.<patchVersion>`.
 
 In certain instances, it may be necessary to create a backport release. This is when commits from a newer version of a library are ported to an older version of the software and then released. This occurs when anything but the latest commit on main is used as the target for release, but can go so far as to add a further patch release, such as 0.11.2, to be released after a 0.12.0 version had already been released. If a backport release is being performed, please see the [Backport Release Guide](docs/backport_release.md) for instructions on how to proceed, as some steps from this guide should be performed differently.
 
-If you'd like to create a development release, which won't be deployed to pypi and conda and marked as a generally-available production release, please add a "dev" prefix to the patch version, i.e. `X.X.devX`. Note this claims the patch number--if the previous release was `0.12.0`, a subsequent dev release would be `0.12.dev1`, and the following release would be `0.12.2`, _not_ `0.12.1`. Development releases deploy to [test.pypi.org](https://test.pypi.org/project/woodwork/) instead of to [pypi.org](https://pypi.org/project/woodwork).
+If you'd like to create a development release, which won't be deployed to pypi and conda and marked as a generally-available production release, please add a "dev" prefix to the patch version, i.e. `X.X.devX`. Note this claims the patch number--if the previous release was `0.12.0`, a subsequent dev release would be `0.12.dev1`, and the following release would be `0.12.2`, _not_ `0.12.1`. Development releases deploy to [test.pypi.org](https://test.pypi.org/project/featuretools/) instead of to [pypi.org](https://pypi.org/project/featuretools).
 
 ## 1. Create Featuretools release on Github
 
