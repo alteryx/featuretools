@@ -813,13 +813,28 @@ class MultiplyNumericBoolean(TransformPrimitive):
             ColumnSchema(semantic_tags={"numeric"}),
             ColumnSchema(logical_type=BooleanNullable),
         ],
+        [
+            ColumnSchema(logical_type=Boolean),
+            ColumnSchema(semantic_tags={"numeric"}),
+        ],
+        [
+            ColumnSchema(logical_type=BooleanNullable),
+            ColumnSchema(semantic_tags={"numeric"}),
+        ],
     ]
     return_type = ColumnSchema(semantic_tags={"numeric"})
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
-    description_template = "the value of {} where {} is True"
+    commutative = True
+    description_template = "the product of {} and {}"
 
     def get_function(self):
-        def multiply_numeric_boolean(vals, mask):
+        def multiply_numeric_boolean(ser1, ser2):
+            if pdtypes.is_bool_dtype(ser1):
+                mask = ser1
+                vals = ser2
+            else:
+                mask = ser2
+                vals = ser1
             vals_not_null = vals.notnull()
             # Only apply mask where the input is not null
             mask = mask.where(vals_not_null)

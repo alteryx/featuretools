@@ -1602,7 +1602,6 @@ def test_feature_multiplication(es):
     mult_numeric_boolean = numeric_ft * boolean_ft
     mult_numeric_boolean2 = boolean_ft * numeric_ft
 
-
     assert issubclass(type(mult_numeric.primitive), MultiplyNumeric)
     assert issubclass(type(mult_boolean.primitive), MultiplyBoolean)
     assert issubclass(type(mult_numeric_boolean.primitive), MultiplyNumericBoolean)
