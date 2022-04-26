@@ -1,5 +1,5 @@
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean
+from woodwork.logical_types import Boolean, BooleanNullable
 
 from featuretools import primitives
 from featuretools.entityset.relationship import Relationship, RelationshipPath
@@ -319,11 +319,24 @@ class FeatureBase(object):
         if isinstance(other, FeatureBase):
             if all(
                 [
-                    isinstance(f.column_schema.logical_type, Boolean)
+                    isinstance(f.column_schema.logical_type, (Boolean, BooleanNullable))
                     for f in (self, other)
                 ]
             ):
                 return Feature([self, other], primitive=primitives.MultiplyBoolean)
+            if (
+                "numeric" in self.column_schema.semantic_tags
+                and isinstance(
+                    other.column_schema.logical_type, (Boolean, BooleanNullable)
+                )
+                or "numeric" in other.column_schema.semantic_tags
+                and isinstance(
+                    self.column_schema.logical_type, (Boolean, BooleanNullable)
+                )
+            ):
+                return Feature(
+                    [self, other], primitive=primitives.MultiplyNumericBoolean
+                )
         return self._handle_binary_comparision(
             other, primitives.MultiplyNumeric, primitives.MultiplyNumericScalar
         )

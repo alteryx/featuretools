@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Improve ``UnusedPrimitiveWarning`` with additional information (:pr:`2003`)
+        * Add ``MultiplyNumericBoolean`` primitive (:pr:`2035`)
     * Fixes
         * Fix issue with Ordinal inputs to binary comparison primitives (:pr:`2024`, :pr:`2025`)
     * Changes
