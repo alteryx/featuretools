@@ -823,7 +823,7 @@ class MultiplyNumericBoolean(TransformPrimitive):
         ],
     ]
     return_type = ColumnSchema(semantic_tags={"numeric"})
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK]
     commutative = True
     description_template = "the product of {} and {}"
 
