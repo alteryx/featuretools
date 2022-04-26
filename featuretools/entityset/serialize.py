@@ -13,7 +13,7 @@ from featuretools.utils.wrangle import _is_s3, _is_url
 ps = import_or_none("pyspark.pandas")
 
 FORMATS = ["csv", "pickle", "parquet"]
-SCHEMA_VERSION = "7.0.0"
+SCHEMA_VERSION = "7.1.0"
 
 
 def entityset_to_description(entityset, format=None):
