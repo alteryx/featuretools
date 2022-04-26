@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Improve ``UnusedPrimitiveWarning`` with additional information (:pr:`2003`)
+        * Update DFS primitive matching to use all inputs defined in primitive ``input_types`` (:pr:`2019`)
         * Add ``MultiplyNumericBoolean`` primitive (:pr:`2035`)
     * Fixes
         * Fix issue with Ordinal inputs to binary comparison primitives (:pr:`2024`, :pr:`2025`)
@@ -24,6 +25,11 @@ Future Release
     
     Thanks to the following people for contributing to this release:
     :user:`dvreed77`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
+
+Note
+++++
+* The update to the DFS algorithm in this release may cause the number of features returned
+  by ``ft.dfs`` to increase in some cases.
 
 v1.8.0 Mar 31, 2022
 ===================
