@@ -40,7 +40,7 @@ from featuretools.tests.testing_utils import check_names
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}_2022_4_19.json".format(
+TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}_2022_4_26.json".format(
     SCHEMA_VERSION, ENTITYSET_SCHEMA_VERSION
 )
 S3_URL = "s3://featuretools-static/" + TEST_FILE

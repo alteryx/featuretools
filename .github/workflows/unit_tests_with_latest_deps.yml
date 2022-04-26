@@ -63,6 +63,7 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   win_unit_tests:
     name: ${{ matrix.python_version }} windows unit tests
