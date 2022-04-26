@@ -701,6 +701,7 @@ def test_boolean_multiply(boolean_mult_es):
     to_test = [
         ("numeric", "numeric"),
         ("numeric", "bool"),
+        ("bool", "numeric"),
         ("bool", "bool"),
     ]
     features = []
@@ -1601,14 +1602,13 @@ def test_feature_multiplication(es):
     mult_numeric = numeric_ft * numeric_ft
     mult_boolean = boolean_ft * boolean_ft
     mult_numeric_boolean = numeric_ft * boolean_ft
+    mult_numeric_boolean2 = boolean_ft * numeric_ft
+
 
     assert issubclass(type(mult_numeric.primitive), MultiplyNumeric)
     assert issubclass(type(mult_boolean.primitive), MultiplyBoolean)
     assert issubclass(type(mult_numeric_boolean.primitive), MultiplyNumericBoolean)
-
-    error_message = "Provided inputs don't match input type requirements"
-    with pytest.raises(AssertionError, match=error_message):
-        boolean_ft * numeric_ft
+    assert issubclass(type(mult_numeric_boolean2.primitive), MultiplyNumericBoolean)
 
     # Test with nullable types
     es["customers"].ww.set_types(
@@ -1619,11 +1619,9 @@ def test_feature_multiplication(es):
     mult_numeric = numeric_ft * numeric_ft
     mult_boolean = boolean_ft * boolean_ft
     mult_numeric_boolean = numeric_ft * boolean_ft
+    mult_numeric_boolean2 = boolean_ft * numeric_ft
 
     assert issubclass(type(mult_numeric.primitive), MultiplyNumeric)
     assert issubclass(type(mult_boolean.primitive), MultiplyBoolean)
     assert issubclass(type(mult_numeric_boolean.primitive), MultiplyNumericBoolean)
-
-    error_message = "Provided inputs don't match input type requirements"
-    with pytest.raises(AssertionError, match=error_message):
-        boolean_ft * numeric_ft
+    assert issubclass(type(mult_numeric_boolean2.primitive), MultiplyNumericBoolean)
