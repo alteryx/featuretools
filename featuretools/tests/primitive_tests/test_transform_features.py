@@ -1469,7 +1469,7 @@ def test_comparisons_with_ordinal_valid_inputs(es):
             "Categorical dtypes not used in Spark, and comparison works as expected without error."
         )
     new_df = es["log"]
-    new_df["ordinal_valid"] = new_df["priority_level"]
+    new_df.ww["ordinal_valid"] = new_df["priority_level"]
 
     es.replace_dataframe("log", new_df)
     es["log"].ww.set_types(
@@ -1507,7 +1507,7 @@ def test_comparisons_with_ordinal_invalid_inputs(es):
             "Categorical dtypes not used in Spark, and comparison works as expected without error."
         )
     new_df = es["log"]
-    new_df["ordinal_invalid"] = new_df["priority_level"].astype(int) + 10
+    new_df.ww["ordinal_invalid"] = new_df["priority_level"].astype(int) + 10
 
     es.replace_dataframe("log", new_df)
     es["log"].ww.set_types(
