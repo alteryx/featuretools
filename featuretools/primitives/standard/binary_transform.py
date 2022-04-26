@@ -797,6 +797,42 @@ class MultiplyBoolean(TransformPrimitive):
         return "%s * %s" % (base_feature_names[0], base_feature_names[1])
 
 
+class MultiplyNumericBoolean(TransformPrimitive):
+    """Element-wise multiplication of a numeric list with a boolean list.
+
+    Description:
+        Given a list of numeric values X and a list of 
+        boolean values Y, return the values in X where
+        the corresponding value in Y is True.
+
+    Examples:
+        >>> multiply_numeric_boolean = MultiplyNumericBoolean()
+        >>> multiply_numeric([2, 1, 2], [True, True, False]).tolist()
+        [2, 1, 0]
+    """
+
+    name = "multiply_numeric_boolean"
+    input_types = [
+        [ColumnSchema(semantic_tags={"numeric"}), ColumnSchema(logical_type=BooleanNullable)],
+        [
+            ColumnSchema(semantic_tags={"numeric"}),
+            ColumnSchema(logical_type=Boolean),
+        ],
+    ]
+    return_type = ColumnSchema(semantic_tags={"numeric"})
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "the value of {} where {} is True"
+
+    def get_function(self):
+        def multiply_numeric_boolean(vals, mask):
+            breakpoint()
+            return vals.where(mask, mask.replace({False: 0}))
+        return multiply_numeric_boolean
+
+    def generate_name(self, base_feature_names):
+        return "%s * %s" % (base_feature_names[0], base_feature_names[1])
+
+
 class DivideNumeric(TransformPrimitive):
     """Element-wise division of two lists.
 

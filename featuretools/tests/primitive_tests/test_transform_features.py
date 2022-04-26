@@ -1568,3 +1568,22 @@ def test_comparisons_with_ordinal_valid_inputs_that_dont_work_but_should(pd_es):
     fm = to_pandas(fm)
     for col in feature_cols:
         assert fm[col].isnull().all()
+
+def test_multiply_numeric_boolean():
+    df = pd.DataFrame({
+    'id': [0, 1, 2],
+    'val_no_nan': [100, 200, 300],
+    'val_with_nan': [100, 200, pd.NA],
+    'mask_no_nan': [True, False, True],
+    'mask_with_nan': pd.Series([pd.NA, False, pd.NA], dtype='boolean'),
+    }) 
+
+    es = ft.EntitySet()
+    es.add_dataframe(dataframe_name="df", dataframe=df)
+    es["df"].ww.set_types(logical_types={'val_no_nan': 'Integer',
+                                     'val_with_nan': 'IntegerNullable',
+                                     'mask_no_nan': 'Boolean',
+                                     'mask_with_nan': 'BooleanNullable'})
+
+    fm, features = ft.dfs(entityset=es, target_dataframe_name="df", trans_primitives=["multiply_numeric_boolean"])
+    breakpoint()
