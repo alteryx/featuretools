@@ -1,7 +1,5 @@
 name: Test Featuretools with Woodwork main Branch
 on:
-  schedule:
-    - cron: '0 14 * * *'
   workflow_dispatch:
 jobs:
   scheduled_unit_latest_tests:

@@ -41,7 +41,9 @@ from featuretools.primitives import (
     LessThanScalar,
     Longitude,
     Mode,
+    MultiplyBoolean,
     MultiplyNumeric,
+    MultiplyNumericBoolean,
     MultiplyNumericScalar,
     Not,
     NotEqual,
@@ -1568,3 +1570,57 @@ def test_comparisons_with_ordinal_valid_inputs_that_dont_work_but_should(pd_es):
     fm = to_pandas(fm)
     for col in feature_cols:
         assert fm[col].isnull().all()
+
+
+def test_multiply_numeric_boolean():
+    test_cases = [
+        {"val": 100, "mask": True, "expected": 100},
+        {"val": 100, "mask": False, "expected": 0},
+        {"val": 0, "mask": False, "expected": 0},
+        {"val": 100, "mask": pd.NA, "expected": pd.NA},
+        {"val": pd.NA, "mask": pd.NA, "expected": pd.NA},
+        {"val": pd.NA, "mask": True, "expected": pd.NA},
+        {"val": pd.NA, "mask": False, "expected": pd.NA},
+    ]
+
+    multiply_numeric_boolean = MultiplyNumericBoolean()
+    for input in test_cases:
+        vals = pd.Series(input["val"])
+        mask = pd.Series(input["mask"])
+        actual = multiply_numeric_boolean(vals, mask).tolist()[0]
+        expected = input["expected"]
+        if pd.isnull(expected):
+            assert pd.isnull(actual)
+        else:
+            assert actual == input["expected"]
+
+
+def test_feature_multiplication(es):
+    numeric_ft = ft.Feature(es["customers"].ww["age"])
+    boolean_ft = ft.Feature(es["customers"].ww["loves_ice_cream"])
+
+    mult_numeric = numeric_ft * numeric_ft
+    mult_boolean = boolean_ft * boolean_ft
+    mult_numeric_boolean = numeric_ft * boolean_ft
+    mult_numeric_boolean2 = boolean_ft * numeric_ft
+
+    assert issubclass(type(mult_numeric.primitive), MultiplyNumeric)
+    assert issubclass(type(mult_boolean.primitive), MultiplyBoolean)
+    assert issubclass(type(mult_numeric_boolean.primitive), MultiplyNumericBoolean)
+    assert issubclass(type(mult_numeric_boolean2.primitive), MultiplyNumericBoolean)
+
+    # Test with nullable types
+    es["customers"].ww.set_types(
+        logical_types={"age": "IntegerNullable", "loves_ice_cream": "BooleanNullable"}
+    )
+    numeric_ft = ft.Feature(es["customers"].ww["age"])
+    boolean_ft = ft.Feature(es["customers"].ww["loves_ice_cream"])
+    mult_numeric = numeric_ft * numeric_ft
+    mult_boolean = boolean_ft * boolean_ft
+    mult_numeric_boolean = numeric_ft * boolean_ft
+    mult_numeric_boolean2 = boolean_ft * numeric_ft
+
+    assert issubclass(type(mult_numeric.primitive), MultiplyNumeric)
+    assert issubclass(type(mult_boolean.primitive), MultiplyBoolean)
+    assert issubclass(type(mult_numeric_boolean.primitive), MultiplyNumericBoolean)
+    assert issubclass(type(mult_numeric_boolean2.primitive), MultiplyNumericBoolean)

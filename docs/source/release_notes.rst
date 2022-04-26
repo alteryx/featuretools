@@ -8,6 +8,7 @@ Future Release
     * Enhancements
         * Improve ``UnusedPrimitiveWarning`` with additional information (:pr:`2003`)
         * Update DFS primitive matching to use all inputs defined in primitive ``input_types`` (:pr:`2019`)
+        * Add ``MultiplyNumericBoolean`` primitive (:pr:`2035`)
     * Fixes
         * Fix issue with Ordinal inputs to binary comparison primitives (:pr:`2024`, :pr:`2025`)
     * Changes
@@ -15,10 +16,12 @@ Future Release
         * Remove extra NaN checking in LatLong primitives (:pr:`1924`)
         * Normalize LatLong NaN values during EntitySet creation (:pr:`1924`)
         * Pass primitive dictionaries into ``check_primitive`` to avoid repetitive calls (:pr:`2016`)
+        * Remove ``Boolean`` and ``BooleanNullable`` from ``MultiplyNumeric`` primitive inputs (:pr:`2022`)
         * Update serialization for compatibility with Woodwork version 0.16.1 (:pr:`2030`)
     * Documentation Changes
         * Update README text to Alteryx (:pr:`2010`, :pr:`2015`)
     * Testing Changes
+        * Update unit tests with Woodwork main branch workflow name (:pr:`2033`)
     
     Thanks to the following people for contributing to this release:
     :user:`dvreed77`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
