@@ -34,6 +34,11 @@ def description_to_entityset(description, **kwargs):
     for df in description["dataframes"].values():
         if path is not None:
             data_path = os.path.join(path, "data", df["name"])
+            format = description.get("format")
+            if format is not None:
+                kwargs["format"] = format
+                if format == "parquet" and df["loading_info"]["table_type"] == "pandas":
+                    kwargs["filename"] = df["name"] + ".parquet"
             dataframe = read_woodwork_table(data_path, validate=False, **kwargs)
         else:
             dataframe = empty_dataframe(df)
