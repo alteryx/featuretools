@@ -700,6 +700,8 @@ def test_boolean_multiply(boolean_mult_es):
     es = boolean_mult_es
     to_test = [
         ("numeric", "numeric"),
+        ("numeric", "bool"),
+        ("bool", "numeric"),
         ("bool", "bool"),
     ]
     features = []
