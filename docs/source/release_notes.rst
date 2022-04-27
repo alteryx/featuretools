@@ -22,6 +22,7 @@ Future Release
         * Update README text to Alteryx (:pr:`2010`, :pr:`2015`)
     * Testing Changes
         * Update unit tests with Woodwork main branch workflow name (:pr:`2033`)
+        * Add slack alert for failing unit tests with Woodwork main branch (:pr:`2040`)
     
     Thanks to the following people for contributing to this release:
     :user:`dvreed77`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
