@@ -2,7 +2,7 @@ name: Unit Tests - Featuretools with Woodwork main branch
 on:
   workflow_dispatch:
 jobs:
-  scheduled_unit_latest_tests:
+  unit_tests_woodwork_main:
     if: ${{ github.repository_owner == 'alteryx' }}
     name: ${{ matrix.python_version }} unit tests ${{ matrix.libraries }}
     runs-on: ubuntu-latest
@@ -46,8 +46,14 @@ jobs:
           echo "Run unit tests without code coverage for ${{ matrix.python_version }} and ${{ matrix.libraries }}"
           echo "Testing with woodwork version:" `python -c "import woodwork; print(woodwork.__version__)"`
           pytest featuretools/ -n 2
+  slack_alert_failure:
+    name: Send Slack alert if failure
+    needs: unit_tests_woodwork_main
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    steps:
       - name: Send Slack alert if failure
-        if: ${{ success() }}
+        if: ${{ needs.unit_tests_woodwork_main.result == 'success' }}
         id: slack
         uses: slackapi/slack-github-action@v1.18.0
         with:
