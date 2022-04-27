@@ -1,4 +1,4 @@
-name: Test Featuretools with Woodwork main Branch
+name: Unit Tests - Featuretools with Woodwork main branch
 on:
   workflow_dispatch:
 jobs:
