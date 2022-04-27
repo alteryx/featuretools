@@ -3,8 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.9.0 Apr 27, 2022
+===================
     * Enhancements
         * Improve ``UnusedPrimitiveWarning`` with additional information (:pr:`2003`)
         * Update DFS primitive matching to use all inputs defined in primitive ``input_types`` (:pr:`2019`)
