@@ -1,3 +1,4 @@
+name: Unit Tests - Latest Dependencies
 on:
   pull_request:
     types: [opened, synchronize]
@@ -5,7 +6,6 @@ on:
     branches:
       - main
   workflow_dispatch:
-name: Unit Tests - Latest Dependencies
 jobs:
   unit_tests:
     name: ${{ matrix.python_version }} unit tests ${{ matrix.libraries }}
