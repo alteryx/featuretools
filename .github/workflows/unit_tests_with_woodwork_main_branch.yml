@@ -55,7 +55,7 @@ jobs:
             {
               "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
               "python_version": "${{ matrix.python_version }}",
-              "libraries: "${{ matrix.libraries }}"
+              "libraries": "${{ matrix.libraries }}"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
