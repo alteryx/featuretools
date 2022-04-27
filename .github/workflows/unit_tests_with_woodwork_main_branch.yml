@@ -40,7 +40,6 @@ jobs:
           python -m pip install -e unpacked_sdist/[test]
           python -m pip install -U git+https://github.com/alteryx/woodwork
       - if: ${{ !( matrix.libraries == 'spark' && matrix.python_version == '3.10') }}
-        continue-on-error: true
         name: Run unit tests without code coverage
         run: |
           echo "Run unit tests without code coverage for ${{ matrix.python_version }} and ${{ matrix.libraries }}"
