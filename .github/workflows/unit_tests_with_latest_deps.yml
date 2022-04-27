@@ -64,7 +64,6 @@ jobs:
         with:
           fail_ci_if_error: true
           verbose: true
-          files: ./coverage.xml
 
   win_unit_tests:
     name: ${{ matrix.python_version }} windows unit tests
