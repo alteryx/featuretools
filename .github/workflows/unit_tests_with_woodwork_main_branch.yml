@@ -52,15 +52,13 @@ jobs:
     if: ${{ always() }}
     steps:
       - name: Send Slack alert if failure
-        if: ${{ needs.unit_tests_woodwork_main.result == 'success' }}
+        if: ${{ needs.unit_tests_woodwork_main.result != 'success' }}
         id: slack
         uses: slackapi/slack-github-action@v1.18.0
         with:
           payload: |
             {
-              "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-              "python_version": "${{ matrix.python_version }}",
-              "libraries": "${{ matrix.libraries }}"
+              "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
