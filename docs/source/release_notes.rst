@@ -9,8 +9,8 @@ Future Release
     * Fixes
     * Changes
     * Documentation Changes
-    * Testing Changes
         * Update slack invite link to new (:pr:`2044`)
+    * Testing Changes
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
