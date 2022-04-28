@@ -18,7 +18,7 @@ Conversation happens in the following places:
 
 .. _`StackOverflow`: http://stackoverflow.com/questions/tagged/featuretools
 .. _`Github issue tracker`: https://github.com/alteryx/featuretools/issues
-.. _`Slack`: https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTQ1MjZlOWFmZDk2YzAwMjEzNTkwZTZkN2NmOGFjOGI4YzE5OGMyMGM5NGIxNTE4NjkzYWI3OWEwZjkyZGExYmQ
+.. _`Slack`: https://join.slack.com/t/alteryx-oss/shared_invite/zt-182tyvuxv-NzIn6eiCEf8TBziuKp0bNA
 
 
 Asking for help
