@@ -3,16 +3,18 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
+        * Update slack invite link to new (:pr:`2044`)
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
-
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
+    
 v1.9.0 Apr 27, 2022
 ===================
     * Enhancements
