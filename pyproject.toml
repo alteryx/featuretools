@@ -24,6 +24,9 @@ multi_line_output = 3
 
 [tool.coverage.run]
 source = ['featuretools']
+omit = [
+    "*/add-ons/**/*"
+]
 
 [tool.coverage.run]
 exclude_lines =[
