@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Delete setup.py and move some configuration to pyproject.toml (:pr:`2046`)
     * Documentation Changes
         * Update slack invite link to new (:pr:`2044`)
     * Testing Changes
