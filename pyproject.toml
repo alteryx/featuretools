@@ -5,13 +5,6 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
-[tool.isort]
-profile = "black"
-forced_separate = "featuretools"
-known_first_party = "featuretools"
-skip = "__init__.py"
-multi_line_output = 3
-
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "--doctest-modules --ignore=featuretools/tests/entry_point_tests/add-ons"
@@ -22,3 +15,10 @@ filterwarnings = [
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning"
 ]
+
+[tool.isort]
+profile = "black"
+forced_separate = "featuretools"
+known_first_party = "featuretools"
+skip = "__init__.py"
+multi_line_output = 3
