@@ -28,7 +28,7 @@ omit = [
     "*/add-ons/**/*"
 ]
 
-[tool.coverage.run]
+[tool.coverage.report]
 exclude_lines =[
     "pragma: no cover",
     "def __repr__",
