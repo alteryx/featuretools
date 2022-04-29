@@ -6,7 +6,6 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
-minversion = "6.0"
 addopts = "--doctest-modules --ignore=featuretools/tests/entry_point_tests/add-ons"
 testpaths = [
     "featuretools/tests/*"
