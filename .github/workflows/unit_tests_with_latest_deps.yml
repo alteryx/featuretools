@@ -53,11 +53,9 @@ jobs:
       - if: ${{ matrix.python_version == 3.7 && matrix.libraries == 'spark' }}
         name: Run unit tests with code coverage
         run: |
-          python -m pip install "$(cat setup.cfg | grep codecov)"
-          coverage erase
           cd unpacked_sdist/
           coverage erase
-          pytest featuretools/ -n 2 --cov=featuretools --cov-config=../.coveragerc
+          pytest featuretools/ -n 2 --cov=featuretools --cov-config=../pyproject.toml
       - if: ${{ matrix.python_version == 3.7 && matrix.libraries == 'spark' }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
