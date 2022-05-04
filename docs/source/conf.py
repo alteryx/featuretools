@@ -170,7 +170,7 @@ html_theme_options = {
         },
         {
             "name": "Slack",
-            "url": "https://join.slack.com/t/alteryx-oss/shared_invite/zt-6inxevps-RSbpr9lsACE1kObXz4rIuA",
+            "url": "https://join.slack.com/t/alteryx-oss/shared_invite/zt-182tyvuxv-NzIn6eiCEf8TBziuKp0bNA",
             "icon": "fab fa-slack",
             "type": "fontawesome",
         },

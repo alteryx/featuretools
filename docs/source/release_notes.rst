@@ -6,6 +6,19 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+    * Fixes
+    * Changes
+        * Delete setup.py, MANIFEST.in and move configuration to pyproject.toml (:pr:`2046`)
+    * Documentation Changes
+        * Update slack invite link to new (:pr:`2044`)
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
+    
+v1.9.0 Apr 27, 2022
+===================
+    * Enhancements
         * Improve ``UnusedPrimitiveWarning`` with additional information (:pr:`2003`)
         * Update DFS primitive matching to use all inputs defined in primitive ``input_types`` (:pr:`2019`)
         * Add ``MultiplyNumericBoolean`` primitive (:pr:`2035`)
@@ -22,6 +35,7 @@ Future Release
         * Update README text to Alteryx (:pr:`2010`, :pr:`2015`)
     * Testing Changes
         * Update unit tests with Woodwork main branch workflow name (:pr:`2033`)
+        * Add slack alert for failing unit tests with Woodwork main branch (:pr:`2040`)
     
     Thanks to the following people for contributing to this release:
     :user:`dvreed77`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
