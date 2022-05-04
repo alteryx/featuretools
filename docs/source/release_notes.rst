@@ -9,6 +9,7 @@ Future Release
     * Fixes
     * Changes
         * Delete setup.py, MANIFEST.in and move configuration to pyproject.toml (:pr:`2046`)
+        * Prevent Woodwork 0.16.3 from being installed (:pr:`2052`)
     * Documentation Changes
         * Update slack invite link to new (:pr:`2044`)
     * Testing Changes
