@@ -9,13 +9,13 @@ Future Release
     * Fixes
     * Changes
         * Delete setup.py, MANIFEST.in and move configuration to pyproject.toml (:pr:`2046`)
-        * Prevent Woodwork 0.16.3 from being installed (:pr:`2052`)
     * Documentation Changes
         * Update slack invite link to new (:pr:`2044`)
     * Testing Changes
+        * Skip test for ``normalize_dataframe`` due to different error coming from Woodwork in 0.16.3 (:pr:`2052`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`thehomebrewnerd`
     
 v1.9.0 Apr 27, 2022
 ===================
