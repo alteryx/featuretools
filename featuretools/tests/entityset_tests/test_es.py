@@ -1996,6 +1996,10 @@ def test_normalize_with_numeric_time_index(int_es):
 
 
 def test_normalize_with_invalid_time_index(es):
+    if es.dataframe_type == Library.DASK.value:
+        pytest.skip(
+            "Woodwork raises different error with Dask. Remove this skip once WW is updated."
+        )
     error_text = "Time index column must contain datetime or numeric values"
     with pytest.raises(TypeError, match=error_text):
         es.normalize_dataframe(

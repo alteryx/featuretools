@@ -12,9 +12,11 @@ Future Release
     * Documentation Changes
         * Update slack invite link to new (:pr:`2044`)
     * Testing Changes
+        * Skip test for ``normalize_dataframe`` due to different error coming from Woodwork in 0.16.3 (:pr:`2052`)
+        * Fix Woodwork install in test with Woodwork main branch (:pr:`2055`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`thehomebrewnerd`
     
 v1.9.0 Apr 27, 2022
 ===================
