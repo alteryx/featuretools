@@ -14,9 +14,10 @@ Future Release
     * Testing Changes
         * Skip test for ``normalize_dataframe`` due to different error coming from Woodwork in 0.16.3 (:pr:`2052`)
         * Fix Woodwork install in test with Woodwork main branch (:pr:`2055`)
+        * Use codecov action v3 (:pr:`1986`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
     
 v1.9.0 Apr 27, 2022
 ===================
