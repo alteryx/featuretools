@@ -55,13 +55,12 @@ jobs:
         run: |
           cd unpacked_sdist/
           coverage erase
-          pytest featuretools/ -n 2 --cov=featuretools --cov-config=../pyproject.toml --cov-report=xml:../coverage.xml
+          pytest featuretools/ -n 2 --cov=featuretools --cov-config=../pyproject.toml
       - if: ${{ matrix.python_version == 3.7 && matrix.libraries == 'spark' }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: true
-          files: ${{ github.workspace }}/coverage.xml
           verbose: true
 
   win_unit_tests:
