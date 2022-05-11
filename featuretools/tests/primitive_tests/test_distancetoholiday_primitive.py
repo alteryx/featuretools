@@ -80,3 +80,26 @@ def test_valid_country():
     answer = [143, -10, -70, 144]
     given_answer = distance_to_holiday(case).astype("float")
     np.testing.assert_array_equal(given_answer, answer)
+
+
+def test_with_timezone_aware_datetimes():
+    df = pd.DataFrame(
+        {
+            "non_timezone_aware_with_time": pd.date_range(
+                "2018-07-03 09:00", periods=3
+            ),
+            "non_timezone_aware_no_time": pd.date_range("2018-07-03", periods=3),
+            "timezone_aware_with_time": pd.date_range(
+                "2018-07-03 09:00", periods=3
+            ).tz_localize(tz="US/Eastern"),
+            "timezone_aware_no_time": pd.date_range(
+                "2018-07-03", periods=3
+            ).tz_localize(tz="US/Eastern"),
+        }
+    )
+
+    distance_to_holiday = DistanceToHoliday("Independence Day", country="US")
+    expected = [1, 0, -1]
+    for col in df.columns:
+        actual = distance_to_holiday(df[col])
+        np.testing.assert_array_equal(actual, expected)
