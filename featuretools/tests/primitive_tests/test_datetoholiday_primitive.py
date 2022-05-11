@@ -109,3 +109,26 @@ def test_multiple_countries():
     ]
     for x in countries:
         DateToHoliday(country=x)
+
+
+def test_with_timezone_aware_datetimes():
+    df = pd.DataFrame(
+        {
+            "non_timezone_aware_with_time": pd.date_range(
+                "2018-07-03 09:00", periods=3
+            ),
+            "non_timezone_aware_no_time": pd.date_range("2018-07-03", periods=3),
+            "timezone_aware_with_time": pd.date_range(
+                "2018-07-03 09:00", periods=3
+            ).tz_localize(tz="US/Eastern"),
+            "timezone_aware_no_time": pd.date_range(
+                "2018-07-03", periods=3
+            ).tz_localize(tz="US/Eastern"),
+        }
+    )
+
+    date_to_holiday = DateToHoliday(country="US")
+    expected = [np.nan, "Independence Day", np.nan]
+    for col in df.columns:
+        actual = date_to_holiday(df[col]).astype("str")
+        np.testing.assert_array_equal(actual, expected)

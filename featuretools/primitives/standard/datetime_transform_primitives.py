@@ -98,7 +98,7 @@ class DateToHoliday(TransformPrimitive):
         def date_to_holiday(x):
             holiday_df = self.holidayUtil.to_df()
             df = pd.DataFrame({"date": x})
-            df.date = df.date.dt.normalize().astype("datetime64")
+            df["date"] = df["date"].dt.date.astype("datetime64[ns]")
 
             df = df.merge(
                 holiday_df, how="left", left_on="date", right_on="holiday_date"
@@ -201,7 +201,7 @@ class DistanceToHoliday(TransformPrimitive):
             df["x_index"] = df.index  # store original index as a column
             df = df.dropna()
             df = df.sort_values("date")
-            df.date = df.date.dt.normalize()
+            df["date"] = df["date"].dt.date.astype("datetime64[ns]")
 
             matches = pd.merge_asof(
                 df,
