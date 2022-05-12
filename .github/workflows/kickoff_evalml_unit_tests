@@ -1,0 +1,18 @@
+name: Kickoff EvalML Unit Tests
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  kickoff:
+    name: Run EvalML unit tests
+    if: github.repository_owner == 'alteryx'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run workflow for EvalML unit tests
+        run: gh workflow run unit_tests_with_featuretools_main_branch.yml --repo "alteryx/evalml"
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
