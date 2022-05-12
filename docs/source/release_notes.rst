@@ -16,7 +16,8 @@ Future Release
         * Skip test for ``normalize_dataframe`` due to different error coming from Woodwork in 0.16.3 (:pr:`2052`)
         * Fix Woodwork install in test with Woodwork main branch (:pr:`2055`)
         * Use codecov action v3 (:pr:`2039`)
-
+        * Add workflow to kickoff EvalML unit tests with Featuretools main (:pr:`2072`)
+        
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
     
