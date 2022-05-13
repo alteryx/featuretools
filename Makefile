@@ -46,7 +46,7 @@ upgradebuild:
 
 .PHONY: pkgversion
 pkgversion:
-	$(eval PACKAGE := $(shell grep '__version__\s=' featuretools/version.py | grep -o '[^ ]*$$'))
+	$(eval PACKAGE=$(shell python -c "from pep517.meta import load; metadata = load('.'); print(metadata.version)"))
 
 .PHONY: package_featuretools
 package_featuretools: upgradepip upgradebuild pkgversion
@@ -57,7 +57,3 @@ package_featuretools: upgradepip upgradebuild pkgversion
 .PHONY: install_sdist
 install_sdist: pkgversion
 	pip install "dist/featuretools-${PACKAGE}.tar.gz"
-
-.PHONY: install_bdist
-install_bdist: pkgversion
-	pip install "dist/featuretools-${PACKAGE}.whl"
