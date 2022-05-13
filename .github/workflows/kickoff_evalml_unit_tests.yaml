@@ -13,6 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run workflow for EvalML unit tests
-        run: gh workflow run unit_tests_with_featuretools_main_branch.yml --repo "alteryx/evalml"
+        run: gh workflow run unit_tests_with_featuretools_main_branch.yaml --repo "alteryx/evalml"
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
