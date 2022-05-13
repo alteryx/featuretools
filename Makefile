@@ -44,9 +44,20 @@ upgradepip:
 upgradebuild:
 	python -m pip install --upgrade build
 
+.PHONY: pkgversion
+pkgversion:
+	$(eval PACKAGE := $(shell grep '__version__\s=' featuretools/version.py | grep -o '[^ ]*$$'))
+
 .PHONY: package_featuretools
-package_featuretools: upgradepip upgradebuild
+package_featuretools: upgradepip upgradebuild pkgversion
 	python -m build
-	$(eval FT_VERSION := $(shell grep '__version__\s=' featuretools/version.py | grep -o '[^ ]*$$'))
-	tar -zxvf "dist/featuretools-${FT_VERSION}.tar.gz"
-	mv "featuretools-${FT_VERSION}" unpacked_sdist
+	tar -zxvf "dist/featuretools-${PACKAGE}.tar.gz"
+	mv "featuretools-${PACKAGE}" unpacked_sdist
+
+.PHONY: install_sdist
+install_sdist: pkgversion
+	pip install "dist/featuretools-${PACKAGE}.tar.gz"
+
+.PHONY: install_bdist
+install_bdist: pkgversion
+	pip install "dist/featuretools-${PACKAGE}.whl"
