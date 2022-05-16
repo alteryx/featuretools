@@ -4,7 +4,7 @@ import composeml as cp
 import dask.dataframe as dd
 import pandas as pd
 import pytest
-from distributed.utils_test import cluster
+from distributed import LocalCluster
 from woodwork.logical_types import Boolean, Integer
 
 import featuretools as ft
@@ -14,15 +14,15 @@ from featuretools.utils.spark_utils import pd_to_spark_clean
 
 
 @pytest.fixture()
-def cluster_scheduler():
-    with cluster() as (scheduler, [a, b]):
-        yield scheduler
+def dask_cluster():
+    with LocalCluster() as cluster:
+        yield cluster
 
 
 @pytest.fixture()
-def three_worker_scheduler():
-    with cluster(nworkers=3) as (scheduler, [a, b, c]):
-        yield scheduler  # pragma: no cover
+def three_worker_dask_cluster():
+    with LocalCluster(n_workers=3) as cluster:
+        yield cluster
 
 
 @pytest.fixture(scope="session", autouse=True)

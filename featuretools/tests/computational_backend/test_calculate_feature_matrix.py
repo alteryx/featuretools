@@ -1438,7 +1438,7 @@ def test_cfm_returns_original_time_indexes_approximate(pd_es):
     assert (time_level_vals == cutoff_df["time"].values).all()
 
 
-def test_dask_kwargs(pd_es, cluster_scheduler):
+def test_dask_kwargs(pd_es, dask_cluster):
     times = (
         [datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)]
         + [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)]
@@ -1451,7 +1451,7 @@ def test_dask_kwargs(pd_es, cluster_scheduler):
     cutoff_time = pd.DataFrame({"time": times, "instance_id": range(17)})
     property_feature = IdentityFeature(pd_es["log"].ww["value"]) > 10
 
-    dkwargs = {"cluster": cluster_scheduler["address"]}
+    dkwargs = {"cluster": dask_cluster.scheduler.address}
     feature_matrix = calculate_feature_matrix(
         [property_feature],
         entityset=pd_es,
@@ -1465,7 +1465,7 @@ def test_dask_kwargs(pd_es, cluster_scheduler):
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
-def test_dask_persisted_es(pd_es, capsys, cluster_scheduler):
+def test_dask_persisted_es(pd_es, capsys, dask_cluster):
     times = (
         [datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)]
         + [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)]
@@ -1478,7 +1478,7 @@ def test_dask_persisted_es(pd_es, capsys, cluster_scheduler):
     cutoff_time = pd.DataFrame({"time": times, "instance_id": range(17)})
     property_feature = IdentityFeature(pd_es["log"].ww["value"]) > 10
 
-    dkwargs = {"cluster": cluster_scheduler["address"]}
+    dkwargs = {"cluster": dask_cluster.scheduler.address}
     feature_matrix = calculate_feature_matrix(
         [property_feature],
         entityset=pd_es,
@@ -1589,11 +1589,11 @@ def test_parallel_failure_raises_correct_error(pd_es):
 
 
 def test_warning_not_enough_chunks(
-    pd_es, capsys, three_worker_scheduler
+    pd_es, capsys, three_worker_dask_cluster
 ):  # pragma: no cover
     property_feature = IdentityFeature(pd_es["log"].ww["value"]) > 10
 
-    dkwargs = {"cluster": three_worker_scheduler["address"]}
+    dkwargs = {"cluster": three_worker_dask_cluster.scheduler.address}
     calculate_feature_matrix(
         [property_feature],
         entityset=pd_es,
@@ -1625,7 +1625,7 @@ def test_n_jobs():
         n_jobs_to_workers(0)
 
 
-def test_parallel_cutoff_time_column_pass_through(pd_es, cluster_scheduler):
+def test_parallel_cutoff_time_column_pass_through(pd_es, dask_cluster):
     times = (
         [datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)]
         + [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)]
@@ -1640,7 +1640,7 @@ def test_parallel_cutoff_time_column_pass_through(pd_es, cluster_scheduler):
     )
     property_feature = IdentityFeature(pd_es["log"].ww["value"]) > 10
 
-    dkwargs = {"cluster": cluster_scheduler["address"]}
+    dkwargs = {"cluster": dask_cluster.scheduler.address}
     feature_matrix = calculate_feature_matrix(
         [property_feature],
         entityset=pd_es,
@@ -2017,7 +2017,7 @@ def test_calls_progress_callback(mock_customer):
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
 
-def test_calls_progress_callback_cluster(pd_mock_customer, cluster_scheduler):
+def test_calls_progress_callback_cluster(pd_mock_customer, dask_cluster):
     class MockProgressCallback:
         def __init__(self):
             self.progress_history = []
@@ -2043,7 +2043,7 @@ def test_calls_progress_callback_cluster(pd_mock_customer, cluster_scheduler):
     )
     features = [trans_per_session, ft.Feature(trans_per_customer, "sessions")]
 
-    dkwargs = {"cluster": cluster_scheduler["address"]}
+    dkwargs = {"cluster": dask_cluster.scheduler.address}
     calculate_feature_matrix(
         features,
         entityset=pd_mock_customer,

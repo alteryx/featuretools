@@ -18,6 +18,7 @@ Future Release
         * Use codecov action v3 (:pr:`2039`)
         * Add workflow to kickoff EvalML unit tests with Featuretools main (:pr:`2072`)
         * Rename yml to yaml for GitHub Actions workflows (:pr:`2073`, :pr:`2077`)
+        * Update Dask test fixtures to prevent flaky behavior (:pr:`2079`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`

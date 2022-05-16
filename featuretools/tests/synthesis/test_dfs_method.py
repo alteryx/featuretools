@@ -609,9 +609,7 @@ def test_calls_progress_callback(dataframes, relationships):
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
 
-def test_calls_progress_callback_cluster(
-    pd_dataframes, relationships, cluster_scheduler
-):
+def test_calls_progress_callback_cluster(pd_dataframes, relationships, dask_cluster):
     class MockProgressCallback:
         def __init__(self):
             self.progress_history = []
@@ -625,7 +623,7 @@ def test_calls_progress_callback_cluster(
 
     mock_progress_callback = MockProgressCallback()
 
-    dkwargs = {"cluster": cluster_scheduler["address"]}
+    dkwargs = {"cluster": dask_cluster.scheduler.address}
     dfs(
         dataframes=pd_dataframes,
         relationships=relationships,
@@ -638,7 +636,7 @@ def test_calls_progress_callback_cluster(
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
 
-def test_dask_kwargs(pd_dataframes, relationships, cluster_scheduler):
+def test_dask_kwargs(pd_dataframes, relationships, dask_cluster):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3], "time": [10, 12, 15]})
     feature_matrix, features = dfs(
         dataframes=pd_dataframes,
@@ -647,7 +645,7 @@ def test_dask_kwargs(pd_dataframes, relationships, cluster_scheduler):
         cutoff_time=cutoff_times_df,
     )
 
-    dask_kwargs = {"cluster": cluster_scheduler["address"]}
+    dask_kwargs = {"cluster": dask_cluster.scheduler.address}
     feature_matrix_2, features_2 = dfs(
         dataframes=pd_dataframes,
         relationships=relationships,
