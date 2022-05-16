@@ -1589,11 +1589,11 @@ def test_parallel_failure_raises_correct_error(pd_es):
 
 
 def test_warning_not_enough_chunks(
-    pd_es, capsys, three_worker_scheduler
+    pd_es, capsys, three_worker_dask_cluster
 ):  # pragma: no cover
     property_feature = IdentityFeature(pd_es["log"].ww["value"]) > 10
 
-    dkwargs = {"cluster": three_worker_scheduler["address"]}
+    dkwargs = {"cluster": three_worker_dask_cluster.scheduler.address}
     calculate_feature_matrix(
         [property_feature],
         entityset=pd_es,
