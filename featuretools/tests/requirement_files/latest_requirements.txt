@@ -6,6 +6,6 @@ holidays==0.13
 numpy==1.22.3
 pandas==1.4.1
 psutil==5.9.0
-scipy==1.8.0
+scipy==1.8.1
 tqdm==4.64.0
 woodwork==0.16.3
