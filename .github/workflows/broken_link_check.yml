@@ -1,5 +1,7 @@
 name: Broken link check
-on: [push]
+on:
+  schedule:
+    - cron: "* * * * 1"
 
 jobs:
   broken_link_checker_job:
@@ -11,10 +13,10 @@ jobs:
         uses: celinekurpershoek/link-checker@v1.0.1
         with:
           # Required:
-          url: "https://featuretools.alteryx.com/en/stable/"
+          url: "https://featuretools.alteryx.com/en/latest/"
           # optional:
           honorRobotExclusions: true
-          ignorePatterns: "*github*,*google*,*twitter*,*slack*,*stackoverflow*"
-          recursiveLinks: true # Check all URLs on all reachable pages (could take a while)
+          ignorePatterns: "*github*,*google*,*twitter*,*slack*,*stackoverflow*,*anaconda*"
+          recursiveLinks: true
       - name: Get the result
         run: echo "${{steps.link-report.outputs.result}}"
