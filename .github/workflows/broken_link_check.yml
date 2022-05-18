@@ -1,22 +1,37 @@
 name: Broken link check
 on:
-  schedule:
-    - cron: "* * * * 1"
+  [push]
+  # workflow_dispatch:
+  # schedule:
+  #   - cron: "* * * * 1"
 
 jobs:
-  broken_link_checker_job:
-    runs-on: ubuntu-latest
+  my-broken-link-checker:
     name: Check for broken links
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
     steps:
       - name: Check for broken links
-        id: link-report
-        uses: celinekurpershoek/link-checker@v1.0.1
+        uses: ruzickap/action-my-broken-link-checker@v2
         with:
-          # Required:
-          url: "https://featuretools.alteryx.com/en/latest/"
-          # optional:
-          honorRobotExclusions: true
-          ignorePatterns: "*github*,*google*,*twitter*,*slack*,*stackoverflow*,*anaconda*"
-          recursiveLinks: true
+          url: https://featuretools.alteryx.com/en/latest/
+          cmd_params: '--max-connections=10 --color=always --ignore-fragments --buffer-size=8192 --exclude="(twitter|github|cloudflare|evalml\\.alteryx\\.com\\/en\\/(stable|main|v.+).*)"'
+      # broken_link_checker_job:
+      #   runs-on: ubuntu-latest
+      #   name: Check for broken links
+      #   steps:
+      #     - name: Check for broken links
+      #       id: link-report
+      #       uses: celinekurpershoek/link-checker@v1.0.1
+      #       with:
+      #         # Required:
+      #         url: "https://featuretools.alteryx.com/en/latest/"
+      #         # optional:
+      #         honorRobotExclusions: true
+      #         ignorePatterns: "*github*,*google*,*twitter*,*slack*,*stackoverflow*,*anaconda*"
+      #         recursiveLinks: true
       - name: Get the result
         run: echo "${{steps.link-report.outputs.result}}"
+      - name: Add to job output
+        run: echo "${{steps.link-report.outputs.result}}" >> $GITHUB_STEP_SUMMARY
