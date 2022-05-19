@@ -21,6 +21,7 @@ from featuretools.utils.plot_utils import (
 from featuretools.utils.wrangle import _check_timedelta
 
 ps = import_or_none("pyspark.pandas")
+cudf = import_or_none("cudf")
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger("featuretools.entityset")
@@ -195,6 +196,8 @@ class EntitySet(object):
                 df_type = Library.DASK.value
             elif is_instance(self.dataframes[0], ps, "DataFrame"):
                 df_type = Library.SPARK.value
+            elif is_instance(self.dataframes[0], cudf, "DataFrame"):
+                df_type = Library.CUDF.value
 
         return df_type
 
@@ -976,7 +979,7 @@ class EntitySet(object):
             ti_cols = [c if c != old_ti_name else secondary_time_index for c in ti_cols]
             make_secondary_time_index = {secondary_time_index: ti_cols}
 
-        if is_instance(new_dataframe, ps, "DataFrame"):
+        if is_instance(new_dataframe, (ps, cudf), "DataFrame"):
             already_sorted = False
 
         # will initialize Woodwork on this DataFrame
@@ -1158,6 +1161,10 @@ class EntitySet(object):
                         lti = lti.apply(lambda x: None)
                     elif is_instance(dataframe, ps, "DataFrame"):
                         lti = ps.Series(pd.Series(index=lti.to_list(), name=lti.name))
+                    elif is_instance(dataframe, cudf, 'DataFrame'):
+                        # TODO: check if to_list is needed
+                        if is_instance(lti, cudf, 'Series'):
+                            lti = cudf.Series(index=lti, name=lti.name)
                     else:
                         # Cannot have a category dtype with nans when calculating last time index
                         lti = lti.astype("object")
@@ -1196,8 +1203,9 @@ class EntitySet(object):
                     lti_is_spark = is_instance(
                         es_lti_dict[child_df.ww.name], ps, "Series"
                     )
+                    lti_is_cudf = is_instance(es_lti_dict[child_df.ww.name], cudf, 'Series')
 
-                    if lti_is_dask or lti_is_spark:
+                    if lti_is_dask or lti_is_spark or lti_is_cudf:
                         to_join = child_df[link_col]
                         if lti_is_dask:
                             to_join.index = child_df[child_df.ww.index]
@@ -1219,21 +1227,31 @@ class EntitySet(object):
                             .to_frame(name="last_time_old")
                             .join(lti_df)
                         )
-
                     else:
-                        lti_df = pd.DataFrame(
+                        is_cudf_df = is_instance(self.dataframes[0], cudf, "DataFrame")
+                        if is_cudf_df:
+                            from cudf import DataFrame
+                        else:
+                            from pandas import DataFrame
+                        lti_df = DataFrame(
                             {
                                 "last_time": es_lti_dict[child_df.ww.name],
                                 dataframe.ww.index: child_df[link_col],
                             }
                         )
-
-                        # sort by time and keep only the most recent
-                        lti_df.sort_values(
-                            ["last_time", dataframe.ww.index],
-                            kind="mergesort",
-                            inplace=True,
-                        )
+                        if is_cudf_df:
+                            # UserWarning: GPU-accelerated mergesort is currently not supported, defaulting to quicksort.
+                            lti_df = lti_df.sort_values(
+                                ["last_time", dataframe.ww.index],
+                                kind="quicksort",
+                            )
+                        else:
+                            # sort by time and keep only the most recent
+                            lti_df.sort_values(
+                                ["last_time", dataframe.ww.index],
+                                kind="mergesort",
+                                inplace=True,
+                            )
 
                         lti_df.drop_duplicates(
                             dataframe.ww.index, keep="last", inplace=True
@@ -1242,7 +1260,7 @@ class EntitySet(object):
                         lti_df.set_index(dataframe.ww.index, inplace=True)
                         lti_df = lti_df.reindex(es_lti_dict[dataframe.ww.name].index)
                         lti_df["last_time_old"] = es_lti_dict[dataframe.ww.name]
-                    if not (lti_is_dask or lti_is_spark) and lti_df.empty:
+                    if not (lti_is_dask or lti_is_spark or lti_is_cudf) and lti_df.empty:
                         # Pandas errors out if it tries to do fillna and then max on an empty dataframe
                         lti_df = pd.Series()
                     else:
@@ -1253,6 +1271,20 @@ class EntitySet(object):
                             )
                             # TODO: Figure out a workaround for fillna and replace
                             lti_df = lti_df.max(axis=1)
+                        elif lti_is_cudf:
+                            lti_df['last_time'] = cudf.to_datetime(lti_df['last_time'])
+                            lti_df['last_time_old'] = cudf.to_datetime(lti_df['last_time_old'])
+                            # we have the entity.index column from join
+                            # getting rid of it for results
+                            if dataframe.ww.index in lti_df.columns:
+                                lti_df.drop(columns=dataframe.ww.index, inplace=True)
+
+                            # fill na with zero_date to handle null effectively
+                            zero_date = pd.Timestamp("19700101")
+                            lti_df = lti_df.fillna(zero_date).max(axis=1)
+                            # convert filled nulls with None
+                            flag = lti_df == pd.Timestamp(zero_date)
+                            lti_df[flag] = None
                         else:
                             lti_df["last_time"] = lti_df["last_time"].astype(
                                 "datetime64[ns]"
@@ -1312,6 +1344,13 @@ class EntitySet(object):
                     new_df.index = new_idx
                     dfs_to_update[df.ww.name] = new_df
                 elif is_instance(df, ps, "DataFrame"):
+                    new_df = df.merge(lti, left_on=df.ww.index, right_index=True)
+                    new_df.ww.init(
+                        schema=df.ww.schema, logical_types={LTI_COLUMN_NAME: lti_ltype}
+                    )
+
+                    dfs_to_update[df.ww.name] = new_df
+                elif is_instance(df, cudf, "DataFrame"):
                     new_df = df.merge(lti, left_on=df.ww.index, right_index=True)
                     new_df.ww.init(
                         schema=df.ww.schema, logical_types={LTI_COLUMN_NAME: lti_ltype}
@@ -1783,9 +1822,9 @@ class EntitySet(object):
         _ES_REF[self.id] = self
 
     def _normalize_values(self, dataframe):
-        def replace(x, is_spark=False):
+        def replace(x, use_list=False):
             if not isinstance(x, (list, tuple, np.ndarray)) and pd.isna(x):
-                if is_spark:
+                if use_list:
                     return [np.nan, np.nan]
                 else:
                     return (np.nan, np.nan)
@@ -1795,11 +1834,13 @@ class EntitySet(object):
         for column, logical_type in dataframe.ww.logical_types.items():
             if isinstance(logical_type, LatLong):
                 series = dataframe[column]
-                if ps and isinstance(series, ps.Series):
+                if (ps and isinstance(series, ps.Series)):
                     if len(series):
                         dataframe[column] = dataframe[column].apply(
                             replace, args=(True,)
                         )
+                elif (cudf and isinstance(series, cudf.Series)):
+                    pass
                 else:
                     dataframe[column] = dataframe[column].apply(replace)
 
@@ -1821,7 +1862,7 @@ def _vals_to_series(instance_vals, column_id):
     # convert iterable to pd.Series
     if isinstance(instance_vals, pd.DataFrame):
         out_vals = instance_vals[column_id]
-    elif is_instance(instance_vals, (pd, dd, ps), "Series"):
+    elif is_instance(instance_vals, (pd, dd, ps, cudf), "Series"):
         out_vals = instance_vals.rename(column_id)
     else:
         out_vals = pd.Series(instance_vals)

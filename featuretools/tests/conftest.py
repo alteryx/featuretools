@@ -143,8 +143,24 @@ def spark_es(pd_es):
         )
     return es
 
+@pytest.fixture
+def cudf_es(pd_es):
+    cudf = pytest.importorskip('cudf', reason="cudf not installed, skipping")
+    es = ft.EntitySet(id=pd_es.id)
+    for df in pd_es.dataframes:
+        c_df = cudf.from_pandas(df)
+        c_df.ww.init(schema=df.ww.schema)
+        es.add_dataframe(c_df)
+    for rel in pd_es.relationships:
+        es.add_relationship(
+            rel._parent_dataframe_name,
+            rel._parent_column_name,
+            rel._child_dataframe_name,
+            rel._child_column_name,
+        )
+    return es
 
-@pytest.fixture(params=["pd_es", "dask_es", "spark_es"])
+@pytest.fixture(params=["pd_es", "dask_es", "spark_es", "cudf_es"])
 def es(request):
     return request.getfixturevalue(request.param)
 

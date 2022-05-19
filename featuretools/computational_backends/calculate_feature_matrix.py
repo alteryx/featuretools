@@ -44,6 +44,7 @@ from featuretools.utils.gen_utils import (
 )
 
 ps = import_or_none("pyspark.pandas")
+cudf = import_or_none("cudf")
 
 logger = logging.getLogger("featuretools.computational_backend")
 
@@ -222,7 +223,7 @@ def calculate_feature_matrix(
             instance_ids = instance_ids.to_pandas()
 
         # convert list or range object into series
-        if not isinstance(instance_ids, pd.Series):
+        if not isinstance(instance_ids, pd.Series) and not is_instance(instance_ids, cudf, "Series"):
             instance_ids = pd.Series(instance_ids)
 
         cutoff_time = (cutoff_time, instance_ids)

@@ -147,3 +147,4 @@ class Library(Enum):
     PANDAS = "pandas"
     DASK = "Dask"
     SPARK = "Spark"
+    CUDF = "cudf"

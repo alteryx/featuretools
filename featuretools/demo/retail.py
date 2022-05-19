@@ -4,7 +4,7 @@ from woodwork.logical_types import NaturalLanguage
 import featuretools as ft
 
 
-def load_retail(id="demo_retail_data", nrows=None, return_single_table=False):
+def load_retail(id="demo_retail_data", nrows=None, return_single_table=False, df_type="pandas"):
     """Returns the retail entityset example.
     The original dataset can be found `here <https://archive.ics.uci.edu/ml/datasets/online+retail>`_.
 
@@ -66,12 +66,17 @@ def load_retail(id="demo_retail_data", nrows=None, return_single_table=False):
         "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv?library=featuretools&version="
         + ft.__version__
     )
+
+    if df_type == "cudf":
+        from cudf import read_csv
+    else:
+        from pandas import read_csv
     # Try to read in gz compressed file
     try:
-        df = pd.read_csv(csv_s3_gz, nrows=nrows, parse_dates=["order_date"])
+        df = read_csv(csv_s3_gz, nrows=nrows, parse_dates=["order_date"])
     # Fall back to uncompressed
     except Exception:
-        df = pd.read_csv(csv_s3, nrows=nrows, parse_dates=["order_date"])
+        df = read_csv(csv_s3, nrows=nrows, parse_dates=["order_date"])
     if return_single_table:
         return df
 
