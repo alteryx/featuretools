@@ -20,6 +20,7 @@ Future Release
         * Rename yml to yaml for GitHub Actions workflows (:pr:`2073`, :pr:`2077`)
         * Update Dask test fixtures to prevent flaky behavior (:pr:`2079`)
         * Update Makefile with better pkg command (:pr:`2081`)
+        * Add scheduled workflow that checks for broken links in documentation (:pr:`2084`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
@@ -46,7 +47,7 @@ v1.9.0 Apr 27, 2022
         * Add slack alert for failing unit tests with Woodwork main branch (:pr:`2040`)
     
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`dvreed77`, :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 Note
 ++++
