@@ -12,6 +12,7 @@ Future Release
         * Delete setup.py, MANIFEST.in and move configuration to pyproject.toml (:pr:`2046`)
     * Documentation Changes
         * Update slack invite link to new (:pr:`2044`)
+        * Add slack and stackoverflow icon to footer (:pr:`2087`)
     * Testing Changes
         * Skip test for ``normalize_dataframe`` due to different error coming from Woodwork in 0.16.3 (:pr:`2052`)
         * Fix Woodwork install in test with Woodwork main branch (:pr:`2055`)
