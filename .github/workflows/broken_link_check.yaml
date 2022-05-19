@@ -1,9 +1,8 @@
 name: Broken link check
 on:
-  [push]
-  # workflow_dispatch:
-  # schedule:
-  #   - cron: "* * * * 1"
+  workflow_dispatch:
+  schedule:
+    - cron: "* * * * 1"
 
 jobs:
   my-broken-link-checker:
