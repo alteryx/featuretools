@@ -782,7 +782,7 @@ class FeatureSetCalculator(object):
                 # Added because of
                 # https://github.com/rapidsai/cudf/issues/6810
                 elif is_instance(base_frame, (cudf), 'DataFrame'):
-                    to_merge = base_frame.nans_to_nulls().groupby(groupby_var, sort=False).agg(to_agg)
+                    to_merge = base_frame.nans_to_nulls().groupby(groupby_col, sort=False).agg(to_agg)
                 else:
                     to_merge = base_frame.groupby(
                         base_frame[groupby_col], observed=True, sort=False
