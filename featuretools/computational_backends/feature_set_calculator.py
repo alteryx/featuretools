@@ -24,6 +24,7 @@ from featuretools.utils.gen_utils import (
 )
 
 ps = import_or_none("pyspark.pandas")
+cudf = import_or_none("cudf")
 
 
 class FeatureSetCalculator(object):
@@ -167,7 +168,7 @@ class FeatureSetCalculator(object):
         for feat in self.feature_set.target_features:
             column_list.extend(feat.get_feature_names())
 
-        if is_instance(df, (dd, ps), "DataFrame"):
+        if is_instance(df, (dd, ps, cudf), "DataFrame"):
             column_list.extend([target_dataframe.ww.index])
 
         return df[column_list]
@@ -493,7 +494,15 @@ class FeatureSetCalculator(object):
 
             column_data = [frame[bf.get_name()] for bf in f.base_features]
 
-            feature_func = f.get_function()
+            if isinstance(frame, dd.DataFrame):
+                feature_func = f.get_function(trans_type=Library.DASK)
+            elif is_instance(frame, ps, "DataFrame"):
+                feature_func = f.get_function(trans_type=Library.SPARK)
+            elif is_instance(frame, cudf, "DataFrame"):
+                feature_func = f.get_function(trans_type=Library.CUDF)
+            else:
+                feature_func = f.get_function()
+
             # apply the function to the relevant dataframe slice and add the
             # feature row to the results dataframe.
             if f.primitive.uses_calc_time:
@@ -607,7 +616,7 @@ class FeatureSetCalculator(object):
 
         # merge the identity feature from the parent dataframe into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
-        if is_instance(merge_df, (dd, ps), "DataFrame"):
+        if is_instance(merge_df, (dd, ps, cudf), "DataFrame"):
             new_df = child_df.merge(
                 merge_df, left_on=merge_col, right_on=merge_col, how="left"
             )
@@ -705,6 +714,8 @@ class FeatureSetCalculator(object):
                         func = f.get_function(agg_type=Library.DASK)
                     elif is_instance(base_frame, ps, "DataFrame"):
                         func = f.get_function(agg_type=Library.SPARK)
+                    elif is_instance(base_frame, cudf, "DataFrame"):
+                        func = f.get_function(agg_type=Library.CUDF)
                     else:
                         func = f.get_function()
 
@@ -768,7 +779,10 @@ class FeatureSetCalculator(object):
                 # work)
                 if is_instance(base_frame, (dd, ps), "DataFrame"):
                     to_merge = base_frame.groupby(groupby_col).agg(to_agg)
-
+                # Added because of
+                # https://github.com/rapidsai/cudf/issues/6810
+                elif is_instance(base_frame, (cudf), 'DataFrame'):
+                    to_merge = base_frame.nans_to_nulls().groupby(groupby_var, sort=False).agg(to_agg)
                 else:
                     to_merge = base_frame.groupby(
                         base_frame[groupby_col], observed=True, sort=False
@@ -788,7 +802,7 @@ class FeatureSetCalculator(object):
                     )
                     to_merge.index = to_merge.index.astype(object).astype(categories)
 
-                if is_instance(frame, (dd, ps), "DataFrame"):
+                if is_instance(frame, (dd, ps, cudf), "DataFrame"):
                     frame = frame.merge(
                         to_merge, left_on=parent_merge_col, right_index=True, how="left"
                     )
@@ -809,6 +823,13 @@ class FeatureSetCalculator(object):
         for f in features:
             feature_defaults = {name: f.default_value for name in f.get_feature_names()}
             fillna_dict.update(feature_defaults)
+
+        # We support Nullable dtypes for int32 and int64 with cudf
+        if is_instance(frame, cudf, 'DataFrame'):
+            for c, v in fillna_dict.items():
+                if v is np.nan:
+                    if frame[c].dtype in [np.int32, np.int64]:
+                        fillna_dict[c] = None
 
         frame = frame.fillna(fillna_dict)
 

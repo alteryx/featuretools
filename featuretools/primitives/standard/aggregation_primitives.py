@@ -32,11 +32,11 @@ class Count(AggregationPrimitive):
     return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={"numeric"})
     stack_on_self = False
     default_value = 0
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK, Library.CUDF]
     description_template = "the number"
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type in [Library.DASK, Library.SPARK]:
+        if agg_type in [Library.DASK, Library.SPARK, Library.CUDF]:
             return "count"
 
         return pd.Series.count
@@ -67,11 +67,11 @@ class Sum(AggregationPrimitive):
     stack_on_self = False
     stack_on_exclude = [Count]
     default_value = 0
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK, Library.CUDF]
     description_template = "the sum of {}"
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type in [Library.DASK, Library.SPARK]:
+        if agg_type in [Library.DASK, Library.SPARK, Library.CUDF]:
             return "sum"
 
         return np.sum
@@ -99,14 +99,14 @@ class Mean(AggregationPrimitive):
     name = "mean"
     input_types = [ColumnSchema(semantic_tags={"numeric"})]
     return_type = ColumnSchema(semantic_tags={"numeric"})
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK, Library.CUDF]
     description_template = "the average of {}"
 
     def __init__(self, skipna=True):
         self.skipna = skipna
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type in [Library.DASK, Library.SPARK]:
+        if agg_type in [Library.DASK, Library.SPARK, Library.CUDF]:
             return "mean"
 
         if self.skipna:
@@ -158,11 +158,11 @@ class Min(AggregationPrimitive):
     input_types = [ColumnSchema(semantic_tags={"numeric"})]
     return_type = ColumnSchema(semantic_tags={"numeric"})
     stack_on_self = False
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK, Library.CUDF]
     description_template = "the minimum of {}"
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type in [Library.DASK, Library.SPARK]:
+        if agg_type in [Library.DASK, Library.SPARK, Library.CUDF]:
             return "min"
 
         return np.min
@@ -181,11 +181,11 @@ class Max(AggregationPrimitive):
     input_types = [ColumnSchema(semantic_tags={"numeric"})]
     return_type = ColumnSchema(semantic_tags={"numeric"})
     stack_on_self = False
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK, Library.CUDF]
     description_template = "the maximum of {}"
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type in [Library.DASK, Library.SPARK]:
+        if agg_type in [Library.DASK, Library.SPARK, Library.CUDF]:
             return "max"
 
         return np.max
@@ -209,7 +209,7 @@ class NumUnique(AggregationPrimitive):
     input_types = [ColumnSchema(semantic_tags={"category"})]
     return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={"numeric"})
     stack_on_self = False
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK, Library.CUDF]
     description_template = "the number of unique elements in {}"
 
     def get_function(self, agg_type=Library.PANDAS):
@@ -234,7 +234,7 @@ class NumUnique(AggregationPrimitive):
 
             return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
 
-        elif agg_type == Library.SPARK:
+        elif agg_type in [Library.SPARK, Library.CUDF]:
             return "nunique"
 
         return pd.Series.nunique
@@ -512,11 +512,11 @@ class Std(AggregationPrimitive):
     input_types = [ColumnSchema(semantic_tags={"numeric"})]
     return_type = ColumnSchema(semantic_tags={"numeric"})
     stack_on_self = False
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK, Library.CUDF]
     description_template = "the standard deviation of {}"
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type in [Library.DASK, Library.SPARK]:
+        if agg_type in [Library.DASK, Library.SPARK, Library.CUDF]:
             return "std"
 
         return np.std

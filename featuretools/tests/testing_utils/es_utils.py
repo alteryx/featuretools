@@ -4,6 +4,7 @@ import pandas as pd
 from featuretools.utils.gen_utils import import_or_none, is_instance
 
 ps = import_or_none("pyspark.pandas")
+cudf = import_or_none("cudf")
 
 
 def to_pandas(df, index=None, sort_index=False, int_index=False):
@@ -25,11 +26,14 @@ def to_pandas(df, index=None, sort_index=False, int_index=False):
         pd_df = df.compute()
     if is_instance(df, (ps, ps), ("DataFrame", "Series")):
         pd_df = df.to_pandas()
+    if is_instance(df, (cudf, cudf), ("DataFrame", "Series")):
+        pd_df = df.to_pandas()
 
     if index:
         pd_df = pd_df.set_index(index)
     if sort_index:
         pd_df = pd_df.sort_index()
+    
     if int_index and isinstance(df, dd.DataFrame):
         pd_df.index = pd.Int64Index(pd_df.index)
 

@@ -1589,7 +1589,7 @@ class EntitySet(object):
                 if isinstance(df, dd.DataFrame):
                     for col in columns:
                         df[col] = df[col].mask(mask, np.nan)
-                elif is_instance(df, ps, "DataFrame"):
+                elif is_instance(df, (ps, cudf), "DataFrame"):
                     df.loc[mask, columns] = None
                 else:
                     df.loc[mask, columns] = np.nan

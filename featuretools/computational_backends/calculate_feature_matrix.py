@@ -219,7 +219,7 @@ def calculate_feature_matrix(
 
         if isinstance(instance_ids, dd.Series):
             instance_ids = instance_ids.compute()
-        elif is_instance(instance_ids, ps, "Series"):
+        elif is_instance(instance_ids, (ps, cudf), "Series"):
             instance_ids = instance_ids.to_pandas()
 
         # convert list or range object into series
@@ -310,7 +310,6 @@ def calculate_feature_matrix(
     elif progress_callback is not None:
         # allows us to utilize progress_bar updates without printing to anywhere
         tqdm_options.update({"file": open(os.devnull, "w"), "disable": False})
-
     with make_tqdm_iterator(**tqdm_options) as progress_bar:
         if n_jobs != 1 or dask_kwargs is not None:
             feature_matrix = parallel_calculate_chunks(
@@ -348,7 +347,6 @@ def calculate_feature_matrix(
                 progress_callback=progress_callback,
                 include_cutoff_time=include_cutoff_time,
             )
-
         # ensure rows are sorted by input order
         if isinstance(feature_matrix, pd.DataFrame):
             if isinstance(cutoff_time, pd.DataFrame):
@@ -404,7 +402,6 @@ def calculate_chunk(
     include_cutoff_time=True,
     schema=None,
 ):
-
     if not isinstance(feature_set, FeatureSet):
         feature_set = cloudpickle.loads(feature_set)  # pragma: no cover
 
@@ -535,7 +532,7 @@ def calculate_chunk(
                     include_cutoff_time=include_cutoff_time,
                 )
 
-                if is_instance(_feature_matrix, (dd, ps), "DataFrame"):
+                if is_instance(_feature_matrix, (dd, ps, cudf), "DataFrame"):
                     id_name = _feature_matrix.columns[-1]
                 else:
                     id_name = _feature_matrix.index.name
@@ -545,9 +542,18 @@ def calculate_chunk(
                 if approximate:
                     cols = [c for c in _feature_matrix.columns if c not in pass_columns]
                     indexer = group[["instance_id", target_time] + pass_columns]
-                    _feature_matrix = _feature_matrix[cols].merge(
-                        indexer, right_on=["instance_id"], left_index=True, how="right"
-                    )
+                    if is_instance(_feature_matrix, cudf, 'DataFrame'):
+                        if is_instance(indexer, pd, 'DataFrame'):
+                            indexer = cudf.from_pandas(indexer)
+                        _feature_matrix = _feature_matrix[cols].merge(indexer,
+                                                                      right_on=['instance_id'],
+                                                                      left_on=[id_name],
+                                                                      how='right')
+                    else:
+                        _feature_matrix = _feature_matrix[cols].merge(indexer,
+                                                                      right_on=['instance_id'],
+                                                                      left_index=True,
+                                                                      how='right')
                     _feature_matrix.set_index(
                         ["instance_id", target_time], inplace=True
                     )
@@ -601,6 +607,14 @@ def calculate_chunk(
                                 pass_df, how="outer"
                             )
                         _feature_matrix = _feature_matrix.drop(columns=["time"])
+                    elif is_instance(_feature_matrix, cudf, "DataFrame") and (
+                        len(pass_columns) > 0
+                    ):
+                        _feature_matrix['time'] = time_last
+                        for col in pass_columns:
+                            pass_df = cudf.from_pandas(pass_through[[id_name, 'time', col]])
+                            _feature_matrix = _feature_matrix.merge(pass_df, how="outer")
+                        _feature_matrix = _feature_matrix.drop(columns=['time'])
                 feature_matrix.append(_feature_matrix)
 
     ww_init_kwargs = get_ww_types_from_features(
@@ -885,6 +899,8 @@ def _add_approx_dataframe_index_col(es, target_dataframe_name, cutoffs, path):
         new_col_name = "%s.%s" % (last_child_col, relationship._child_column_name)
         to_rename = {relationship._child_column_name: new_col_name}
         child_df = child_df.rename(columns=to_rename)
+        if is_instance(child_df, cudf, 'DataFrame') and is_instance(cutoffs, pd, 'DataFrame'):
+            cutoffs = cudf.from_pandas(cutoffs)
         cutoffs = cutoffs.merge(
             child_df, left_on=last_child_col, right_on=last_parent_col
         )
@@ -893,6 +909,8 @@ def _add_approx_dataframe_index_col(es, target_dataframe_name, cutoffs, path):
         last_child_col = new_col_name
         last_parent_col = relationship._parent_column_name
 
+    if is_instance(cutoffs, cudf, 'DataFrame'):
+        cutoffs = cutoffs.to_pandas()
     return cutoffs, new_col_name
 
 
@@ -947,7 +965,8 @@ def init_ww_and_concat_fm(feature_matrix, ww_init_kwargs):
             )
             is_dask_df = isinstance(fm, dd.DataFrame)
             is_spark_df = is_instance(fm, ps, "DataFrame")
-            if is_pandas_df_with_null or is_dask_df or is_spark_df:
+            is_cudf_df = is_instance(fm, cudf, "DataFrame")
+            if is_pandas_df_with_null or is_dask_df or is_spark_df or is_cudf_df:
                 current_type = ww_init_kwargs["logical_types"][col].type_string
                 ww_init_kwargs["logical_types"][col] = replacement_type[current_type]
                 updated_cols.add(col)
@@ -958,6 +977,8 @@ def init_ww_and_concat_fm(feature_matrix, ww_init_kwargs):
         feature_matrix = dd.concat(feature_matrix)
     elif any(is_instance(fm, ps, "DataFrame") for fm in feature_matrix):
         feature_matrix = ps.concat(feature_matrix)
+    elif any(is_instance(fm, cudf, "DataFrame") for fm in feature_matrix):
+        feature_matrix = cudf.concat(feature_matrix)
     else:
         feature_matrix = pd.concat(feature_matrix)
 
