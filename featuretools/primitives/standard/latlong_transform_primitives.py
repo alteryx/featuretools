@@ -168,7 +168,7 @@ class Haversine(TransformPrimitive):
 
 class IsInGeoBox(TransformPrimitive):
     """Determines if coordinates are inside a box defined by two
-    corner coordinate points.
+       corner coordinate points.
 
     Description:
         Coordinate values should be specified as (latitude, longitude)
