@@ -76,12 +76,6 @@ Tutorials
 
 .. _`A Hands-On Guide to Automated Feature Engineering`: https://www.analyticsvidhya.com/blog/2018/08/guide-automated-feature-engineering-featuretools-python/
 
-`Simple Automatic Feature Engineering`_
-=======================================
-- A walk-through that applies Featuretools to a sample dataset and creates a classifier to predict clients who make large orders.
-
-.. _`Simple Automatic Feature Engineering`: https://medium.com/@rrfd/simple-automatic-feature-engineering-using-featuretools-in-python-for-classification-b1308040e183
-
 `Introduction to Automated Feature Engineering Using DFS`_
 ==========================================================
 - This article demonstrates using Featuretools helps automate the manual process of feature engineering on a dataset of home loans.
