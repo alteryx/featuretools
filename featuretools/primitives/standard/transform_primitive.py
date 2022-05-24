@@ -238,7 +238,7 @@ class IsIn(TransformPrimitive):
 
 class Diff(TransformPrimitive):
     """Compute the difference between the value in a list and the
-        previous value in that list.
+       previous value in that list.
 
     Description:
         Given a list of values, compute the difference from the previous
