@@ -1,6 +1,7 @@
 import importlib.util
 import os
-from inspect import isclass
+from inspect import isclass, getfullargspec
+from typing import List, Dict
 
 import holidays
 import numpy as np
@@ -14,7 +15,8 @@ from featuretools.primitives.base import (
     TransformPrimitive,
 )
 from featuretools.utils.gen_utils import Library, find_descendents
-
+from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import Categorical, Datetime
 
 # returns all aggregation primitives, regardless of compatibility
 def get_aggregation_primitives():
@@ -93,6 +95,38 @@ def list_primitives():
     return pd.concat([agg_df, transform_df], ignore_index=True)[columns]
 
 
+def summarize_primatives():
+    """Ultility function that provides a summary df of primative information in featuretools."""
+    trans_names, trans_primitives, valid_inputs, return_type = _get_names_primitives(
+        get_transform_primitives
+    )
+
+    agg_names, agg_primitives, valid_inputs, return_type = _get_names_primitives(
+        get_aggregation_primitives
+    )
+
+    columns = [
+        "name",
+        "type",
+        "dask_compatible",
+        "spark_compatible",
+        "description",
+        "valid_inputs",
+        "return_type",
+    ]
+
+    tot_trans = len(trans_names)
+    tot_agg = len(agg_names)
+    tot_prims = tot_trans + tot_agg
+    unique_in_types = len(list(set(valid_inputs)))
+    unique_out_types = len(list(set(return_type)))  # broken
+    results_list_trans_primatives = _get_summary_primitives(trans_primitives)
+    results_list_agg_primatives = _get_summary_primitives(agg_primitives)
+
+    # summary_df = pd.DataFrame({"total_primatives": len()})
+    # return pd.concat([agg_df, transform_df], ignore_index=True)[columns]
+
+
 def get_default_aggregation_primitives():
     agg_primitives = [
         featuretools.primitives.Sum,
@@ -132,6 +166,77 @@ def _get_descriptions(primitives):
             description = prim.__doc__.split("\n")[0]
         descriptions.append(description)
     return descriptions
+
+
+def _get_summary_primitives(primitives: List):
+    unique_input_types = set()
+    unique_output_types = set()
+    count_multi_in = 0
+    count_multi_out = 0
+    count_time_idx = 0
+    count_dt_time_inputs = 0
+    count_cat_inputs = 0
+    count_extra_data = 0
+    count_controllable = 0
+    count_trainable = 0  # get clarification
+    for prim in primitives:
+        prim_input_checks = {
+            "uses_time_idx": False,
+            "uses_dt_input": False,
+            "uses_cat_input": False,
+        }
+        _check_input_types(prim.input_types, prim_input_checks, unique_input_types)
+        if prim_input_checks["uses_time_idx"]:
+            count_time_idx += 1
+        if prim_input_checks["uses_dt_input"]:
+            count_dt_time_inputs += 1
+        if prim_input_checks["uses_cat_input"]:
+            count_cat_inputs += 1
+
+        if len(prim.input_types) > 1:
+            count_multi_in += 1
+
+        if isinstance(prim.return_type, list):
+            for out_type in prim.return_type:
+                unique_output_types.add(str(out_type))
+                count_multi_out += 1
+        else:
+            unique_output_types.add(str(prim.return_type))
+
+        if prim.get("filename"):
+            count_extra_data += 1
+
+        if len(getfullargspec(prim.__init__).args) > 1:
+            count_controllable += 1
+
+    return [
+        len(unique_input_types),
+        len(unique_output_types),
+        count_multi_in,
+        count_multi_out,
+        count_time_idx,
+        count_dt_time_inputs,
+        count_cat_inputs,
+    ]
+
+
+def _check_input_types(
+    input_types: List[ColumnSchema],
+    prim_input_checks: Dict,
+    unique_input_types: set,
+):
+    for in_type in input_types:
+        if isinstance(in_type, list):
+            _check_input_types(in_type, prim_input_checks, unique_input_types)
+        else:
+            if in_type.is_categorical:
+                prim_input_checks["uses_cat_input"] = True
+            if in_type.is_datetime:
+                prim_input_checks["uses_dt_input"] = True
+            if "time_index" in in_type.semantic_tags:
+                prim_input_checks["uses_time_idx"] = True
+            unique_input_types.add(str(in_type))
+    return prim_input_checks
 
 
 def _get_names_primitives(primitive_func):
