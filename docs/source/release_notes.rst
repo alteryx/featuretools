@@ -3,11 +3,20 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.9.1 May 27, 2022
+===================
     * Enhancements
         * Update ``DateToHoliday`` and ``DistanceToHoliday`` primitives to work with timezone-aware inputs (:pr:`2056`)
-    * Fixes
     * Changes
         * Delete setup.py, MANIFEST.in and move configuration to pyproject.toml (:pr:`2046`)
     * Documentation Changes
