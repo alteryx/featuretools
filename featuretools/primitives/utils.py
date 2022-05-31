@@ -16,7 +16,7 @@ from featuretools.primitives.base import (
 )
 from featuretools.utils.gen_utils import Library, find_descendents
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Categorical, Datetime
+
 
 # returns all aggregation primitives, regardless of compatibility
 def get_aggregation_primitives():
@@ -97,34 +97,70 @@ def list_primitives():
 
 def summarize_primatives():
     """Ultility function that provides a summary df of primative information in featuretools."""
-    trans_names, trans_primitives, valid_inputs, return_type = _get_names_primitives(
-        get_transform_primitives
-    )
+    (
+        trans_names,
+        trans_primitives,
+        trans_valid_inputs,
+        trans_return_type,
+    ) = _get_names_primitives(get_transform_primitives)
 
-    agg_names, agg_primitives, valid_inputs, return_type = _get_names_primitives(
-        get_aggregation_primitives
-    )
-
-    columns = [
-        "name",
-        "type",
-        "dask_compatible",
-        "spark_compatible",
-        "description",
-        "valid_inputs",
-        "return_type",
-    ]
+    (
+        agg_names,
+        agg_primitives,
+        agg_valid_inputs,
+        agg_return_type,
+    ) = _get_names_primitives(get_aggregation_primitives)
 
     tot_trans = len(trans_names)
     tot_agg = len(agg_names)
     tot_prims = tot_trans + tot_agg
-    unique_in_types = len(list(set(valid_inputs)))
-    unique_out_types = len(list(set(return_type)))  # broken
-    results_list_trans_primatives = _get_summary_primitives(trans_primitives)
-    results_list_agg_primatives = _get_summary_primitives(agg_primitives)
+    all_primitives = trans_primitives + agg_primitives
+    unique_in_types = len(set(agg_valid_inputs + trans_valid_inputs))
+    unique_out_types = len(set(agg_return_type + trans_return_type))  # broken
+    primatives_summary = _get_summary_primitives(all_primitives)
 
-    # summary_df = pd.DataFrame({"total_primatives": len()})
-    # return pd.concat([agg_df, transform_df], ignore_index=True)[columns]
+    summary_df = pd.DataFrame(
+        {
+            "total_primatives": tot_prims,
+            "aggregation_primatives": tot_agg,
+            "transform_primatives": tot_trans,
+            "unique_input_types": primatives_summary["unique_input_types"],
+            "unique_out_types": primatives_summary["unique_output_types"],
+            "use_multi_inputs": primatives_summary["ct_multi_in"],
+            "use_multi_outputs": primatives_summary["ct_multi_out"],
+            "use_external_data": primatives_summary["ct_extra_data"],
+            "are_controllable": primatives_summary["ct_controllable"],
+            "use_time_index": primatives_summary["semantic_time_idx"],
+            "use_datetime_inputs": primatives_summary["Datetime"],
+            "use_categorical_inputs": primatives_summary["Categorical"],
+            "use_address_inputs": primatives_summary["Address"],
+            "use_age_inputs": primatives_summary["Age"],
+            "use_age_nullable_inputs": primatives_summary["AgeNullable"],
+            "use_age_fractional_inputs": primatives_summary["AgeFractional"],
+            "use_boolean_inputs": primatives_summary["Boolean"],
+            "use_boolean_nullable_inputs": primatives_summary["BooleanNullable"],
+            "use_country_code_inputs": primatives_summary["CountryCode"],
+            "use_currency_code_inputs": primatives_summary["CurrencyCode"],
+            "use_double_inputs": primatives_summary["Double"],
+            "use_integer_inputs": primatives_summary["Integer"],
+            "uses_integer_nullable_inputs": primatives_summary["IntegerNullable"],
+            "use_email_address_inputs": primatives_summary["EmailAddress"],
+            "use_filepath_inputs": primatives_summary["Filepath"],
+            "use_person_fullname_inputs": primatives_summary["PersonFullName"],
+            "use_ip_address_inputs": primatives_summary["IPAddress"],
+            "use_lat_long_address_inputs": primatives_summary["LatLong"],
+            "use_natural_language_inputs": primatives_summary["NaturalLanguage"],
+            "use_unknown_inputs": primatives_summary["Unknown"],
+            "use_ordinal_inputs": primatives_summary["Ordinal"],
+            "use_phone_number_inputs": primatives_summary["PhoneNumber"],
+            "use_sub_region_code_inputs": primatives_summary["SubRegionCode"],
+            "use_time_delta_inputs": primatives_summary["Timedelta"],
+            "use_url_inputs": primatives_summary["URL"],
+            "use_postal_code_inputs": primatives_summary["PostalCode"],
+        },
+        index=[0],
+    )
+    return summary_df
 
 
 def get_default_aggregation_primitives():
@@ -168,75 +204,90 @@ def _get_descriptions(primitives):
     return descriptions
 
 
-def _get_summary_primitives(primitives: List):
+def _get_summary_primitives(primitives: List) -> Dict[str, int]:
     unique_input_types = set()
     unique_output_types = set()
-    count_multi_in = 0
-    count_multi_out = 0
-    count_time_idx = 0
-    count_dt_time_inputs = 0
-    count_cat_inputs = 0
-    count_extra_data = 0
-    count_controllable = 0
-    count_trainable = 0  # get clarification
+    ct_multi_in = 0
+    ct_multi_out = 0
+    ct_extra_data = 0
+    ct_controllable = 0
+    ct_trainable = 0  # get clarification
+    prim_input_ww_checks = {  # semantic tag for time index and logical types in inputs
+        "semantic_time_idx": 0,
+        "Datetime": 0,
+        "Categorical": 0,
+        "Address": 0,
+        "Age": 0,
+        "AgeFractional": 0,
+        "AgeNullable": 0,
+        "Boolean": 0,
+        "BooleanNullable": 0,
+        "CountryCode": 0,
+        "CurrencyCode": 0,
+        "Double": 0,
+        "Integer": 0,
+        "IntegerNullable": 0,
+        "EmailAddress": 0,
+        "Filepath": 0,
+        "PersonFullName": 0,
+        "IPAddress": 0,
+        "LatLong": 0,
+        "NaturalLanguage": 0,
+        "Unknown": 0,
+        "Ordinal": 0,
+        "PhoneNumber": 0,
+        "SubRegionCode": 0,
+        "Timedelta": 0,
+        "URL": 0,
+        "PostalCode": 0,
+    }
     for prim in primitives:
-        prim_input_checks = {
-            "uses_time_idx": False,
-            "uses_dt_input": False,
-            "uses_cat_input": False,
-        }
-        _check_input_types(prim.input_types, prim_input_checks, unique_input_types)
-        if prim_input_checks["uses_time_idx"]:
-            count_time_idx += 1
-        if prim_input_checks["uses_dt_input"]:
-            count_dt_time_inputs += 1
-        if prim_input_checks["uses_cat_input"]:
-            count_cat_inputs += 1
+        input_checks = set()
+        _check_input_types(prim.input_types, input_checks, unique_input_types)
+        for check in list(input_checks):
+            prim_input_ww_checks[check] += 1
 
         if len(prim.input_types) > 1:
-            count_multi_in += 1
+            ct_multi_in += 1
 
         if isinstance(prim.return_type, list):
             for out_type in prim.return_type:
                 unique_output_types.add(str(out_type))
-                count_multi_out += 1
+                ct_multi_out += 1
         else:
             unique_output_types.add(str(prim.return_type))
 
-        if prim.get("filename"):
-            count_extra_data += 1
+        if hasattr(prim, "filename"):
+            ct_extra_data += 1
 
         if len(getfullargspec(prim.__init__).args) > 1:
-            count_controllable += 1
+            ct_controllable += 1
 
-    return [
-        len(unique_input_types),
-        len(unique_output_types),
-        count_multi_in,
-        count_multi_out,
-        count_time_idx,
-        count_dt_time_inputs,
-        count_cat_inputs,
-    ]
+    return {
+        "unique_input_types": len(unique_input_types),
+        "unique_output_types": len(unique_output_types),
+        "ct_multi_in": ct_multi_in,
+        "ct_multi_out": ct_multi_out,
+        "ct_extra_data": ct_extra_data,
+        "ct_controllable": ct_controllable,
+        **prim_input_ww_checks,
+    }
 
 
 def _check_input_types(
     input_types: List[ColumnSchema],
-    prim_input_checks: Dict,
+    input_checks: set,
     unique_input_types: set,
 ):
     for in_type in input_types:
         if isinstance(in_type, list):
-            _check_input_types(in_type, prim_input_checks, unique_input_types)
+            _check_input_types(in_type, input_checks, unique_input_types)
         else:
-            if in_type.is_categorical:
-                prim_input_checks["uses_cat_input"] = True
-            if in_type.is_datetime:
-                prim_input_checks["uses_dt_input"] = True
             if "time_index" in in_type.semantic_tags:
-                prim_input_checks["uses_time_idx"] = True
+                input_checks.add("semantic_time_idx")
+            if in_type.logical_type:
+                input_checks.add(str(in_type.logical_type.__class__))
             unique_input_types.add(str(in_type))
-    return prim_input_checks
 
 
 def _get_names_primitives(primitive_func):
