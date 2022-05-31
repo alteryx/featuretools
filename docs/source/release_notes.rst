@@ -22,7 +22,7 @@ v1.9.1 May 27, 2022
     * Documentation Changes
         * Update slack invite link to new (:pr:`2044`)
         * Add slack and stackoverflow icon to footer (:pr:`2087`)
-        * Update dead links in docs and docstrings (:pr:`2092`)
+        * Update dead links in docs and docstrings (:pr:`2092`, :pr:`2095`)
     * Testing Changes
         * Skip test for ``normalize_dataframe`` due to different error coming from Woodwork in 0.16.3 (:pr:`2052`)
         * Fix Woodwork install in test with Woodwork main branch (:pr:`2055`)

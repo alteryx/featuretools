@@ -178,7 +178,7 @@ html_theme_options = {
             "name": "StackOverflow",
             "url": "https://stackoverflow.com/questions/tagged/featuretools",
             "icon": "fab fa-stack-overflow",
-            "type": "fontawesome'",
+            "type": "fontawesome",
         },
     ],
     "collapse_navigation": False,
