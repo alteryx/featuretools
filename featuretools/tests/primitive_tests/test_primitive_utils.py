@@ -38,6 +38,7 @@ from featuretools.primitives.utils import (
     _check_input_types,
     _get_descriptions,
     _get_rolled_series_without_gap,
+    _get_summary_primitives,
     _get_unique_input_types,
     _roll_series_with_gap,
     list_primitive_files,
@@ -652,3 +653,20 @@ def test_check_input_types():
 
     assert input_checks == expected_input_check
     assert unique_input_types == expected_unique_input_types
+
+
+def test_get_summary_primitives():
+    primitives = [Sum, Weekday, PercentTrue, Day, Std]
+    primatives_summary = _get_summary_primitives(primitives)
+    expected_unique_input_types = 4
+    expected_unique_output_types = 4
+    expected_ct_multi_in = 1
+    expected_datetime_inputs = 2
+    expected_bool = 1
+    expected_bool_nullable = 1
+    assert primatives_summary["unique_input_types"] == expected_unique_input_types
+    assert primatives_summary["unique_output_types"] == expected_unique_output_types
+    assert primatives_summary["ct_multi_in"] == expected_ct_multi_in
+    assert primatives_summary["Datetime"] == expected_datetime_inputs
+    assert primatives_summary["Boolean"] == expected_bool
+    assert primatives_summary["BooleanNullable"] == expected_bool_nullable

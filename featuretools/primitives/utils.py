@@ -1,6 +1,6 @@
 import importlib.util
 import os
-from inspect import getfullargspec, isclass
+from inspect import getfullargspec, getsource, isclass
 from typing import Dict, List
 
 import holidays
@@ -96,7 +96,7 @@ def list_primitives():
 
 
 def summarize_primatives() -> pd.DataFrame:
-    """Ultility function that provides a summary metrics dataframe of primatives in featuretools."""
+    """Utility function that provides a metrics summary dataframe of primitives in featuretools."""
     (
         trans_names,
         trans_primitives,
@@ -115,8 +115,6 @@ def summarize_primatives() -> pd.DataFrame:
     tot_agg = len(agg_names)
     tot_prims = tot_trans + tot_agg
     all_primitives = trans_primitives + agg_primitives
-    # unique_in_types = len(set(agg_valid_inputs + trans_valid_inputs))
-    # unique_out_types = len(set(agg_return_type + trans_return_type))  # broken
     primatives_summary = _get_summary_primitives(all_primitives)
 
     summary_df = pd.DataFrame(
@@ -205,7 +203,8 @@ def _get_descriptions(primitives):
 
 
 def _get_summary_primitives(primitives: List) -> Dict[str, int]:
-    """Provides metrics for a list of primatives."""
+    """Provides metrics for a list of primitives."""
+    controllable_list = {}
     unique_input_types = set()
     unique_output_types = set()
     ct_multi_in = 0
@@ -251,18 +250,17 @@ def _get_summary_primitives(primitives: List) -> Dict[str, int]:
         if len(prim.input_types) > 1:
             ct_multi_in += 1
 
-        if isinstance(prim.return_type, list):
-            for out_type in prim.return_type:
-                unique_output_types.add(str(out_type))
-                ct_multi_out += 1
-        else:
-            unique_output_types.add(str(prim.return_type))
+        # checks if number_output_features is set as an instance variable
+        if "self.number_output_features =" in getsource(prim.__init__):
+            ct_multi_out += 1
+        unique_output_types.add(str(prim.return_type))
 
         if hasattr(prim, "filename"):
             ct_extra_data += 1
 
         if len(getfullargspec(prim.__init__).args) > 1:
             ct_controllable += 1
+            controllable_list[str(prim.__name__)] = getfullargspec(prim.__init__).args
 
     return {
         "unique_input_types": len(unique_input_types),
@@ -280,7 +278,7 @@ def _check_input_types(
     input_checks: set,
     unique_input_types: set,
 ):
-    """Recursively checks for unique input types for a primative."""
+    """Recursively checks for unique input types for a primitive."""
     for in_type in input_types:
         if isinstance(in_type, list):
             _check_input_types(in_type, input_checks, unique_input_types)
@@ -302,7 +300,9 @@ def _get_names_primitives(primitive_func):
         primitives.append(primitive)
         input_types = _get_unique_input_types(primitive.input_types)
         valid_inputs.append(", ".join(input_types))
-        return_type.append(getattr(primitive.return_type, "__name__", None))
+        return_type.append(
+            str(primitive.return_type)
+        ) if primitive.return_type is not None else return_type.append(None)
     return names, primitives, valid_inputs, return_type
 
 
