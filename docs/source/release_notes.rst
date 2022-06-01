@@ -4,9 +4,9 @@ Release Notes
 -------------
 
 Future Release
-===================
+==============
     * Enhancements
-        * Add ``summarize_primatives`` function for getting metrics about available primitives (:pr:`2099`)
+        * Add ``summarize_primitives`` function for getting metrics about available primitives (:pr:`2099`)
     * Fixes
     * Changes
     * Documentation Changes

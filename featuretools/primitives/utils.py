@@ -95,7 +95,7 @@ def list_primitives():
     return pd.concat([agg_df, transform_df], ignore_index=True)[columns]
 
 
-def summarize_primatives() -> pd.DataFrame:
+def summarize_primitives() -> pd.DataFrame:
     """Utility function that provides a metrics summary dataframe of primitives in featuretools."""
     (
         trans_names,

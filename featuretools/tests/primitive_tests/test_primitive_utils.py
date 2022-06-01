@@ -7,10 +7,12 @@ import pytest
 from featuretools import list_primitives
 from featuretools.primitives import (
     Age,
+    AddNumericScalar,
     Count,
     Day,
     GreaterThan,
     Haversine,
+    IsFreeEmailDomain,
     Last,
     Max,
     Mean,
@@ -18,7 +20,9 @@ from featuretools.primitives import (
     Mode,
     Month,
     MultiplyBoolean,
+    NMostCommon,
     NumCharacters,
+    NumericLag,
     NumUnique,
     NumWords,
     PercentTrue,
@@ -641,15 +645,21 @@ def test_roll_series_with_non_offset_string_inputs(rolling_series_pd):
 
 
 def test_check_input_types():
-    primitives = [Sum, Weekday, PercentTrue, Day, Std]
+    primitives = [Sum, Weekday, PercentTrue, Day, Std, NumericLag]
     input_checks = set()
     unique_input_types = set()
-    expected_input_check = {"BooleanNullable", "Boolean", "Datetime"}
+    expected_input_check = {
+        "BooleanNullable",
+        "Boolean",
+        "Datetime",
+        "semantic_time_idx",
+    }
     expected_unique_input_types = {
         "<ColumnSchema (Logical Type = BooleanNullable)>",
         "<ColumnSchema (Semantic Tags = ['numeric'])>",
         "<ColumnSchema (Logical Type = Boolean)>",
         "<ColumnSchema (Logical Type = Datetime)>",
+        "<ColumnSchema (Semantic Tags = ['time_index'])>",
     }
     for prim in primitives:
         _check_input_types(prim.input_types, input_checks, unique_input_types)
@@ -659,17 +669,36 @@ def test_check_input_types():
 
 
 def test_get_summary_primitives():
-    primitives = [Sum, Weekday, PercentTrue, Day, Std]
+    primitives = [
+        Sum,
+        Weekday,
+        PercentTrue,
+        Day,
+        Std,
+        NumericLag,
+        AddNumericScalar,
+        IsFreeEmailDomain,
+        NMostCommon,
+    ]
     primatives_summary = _get_summary_primitives(primitives)
-    expected_unique_input_types = 4
-    expected_unique_output_types = 4
-    expected_ct_multi_in = 1
+    expected_unique_input_types = 7
+    expected_unique_output_types = 6
+    expected_ct_multi_in = 2
+    expected_ct_multi_out = 1
+    expected_ct_extra_data = 1
+    expected_controllable = 3
     expected_datetime_inputs = 2
     expected_bool = 1
     expected_bool_nullable = 1
+    expected_semantic_time_idx = 1
+
     assert primatives_summary["unique_input_types"] == expected_unique_input_types
     assert primatives_summary["unique_output_types"] == expected_unique_output_types
     assert primatives_summary["ct_multi_in"] == expected_ct_multi_in
+    assert primatives_summary["ct_multi_out"] == expected_ct_multi_out
+    assert primatives_summary["ct_extra_data"] == expected_ct_extra_data
+    assert primatives_summary["ct_controllable"] == expected_controllable
+    assert primatives_summary["semantic_time_idx"] == expected_semantic_time_idx
     assert primatives_summary["Datetime"] == expected_datetime_inputs
     assert primatives_summary["Boolean"] == expected_bool
     assert primatives_summary["BooleanNullable"] == expected_bool_nullable
