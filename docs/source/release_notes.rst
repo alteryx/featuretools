@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
+Future Release
   ==============
     * Enhancements
+        * Add ``summarize_primatives`` function for getting metrics about available primitives (:pr:`2099`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`ozzieD`
 
 v1.9.1 May 27, 2022
 ===================

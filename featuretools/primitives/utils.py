@@ -1,12 +1,13 @@
 import importlib.util
 import os
-from inspect import isclass, getfullargspec
-from typing import List, Dict
+from inspect import getfullargspec, isclass
+from typing import Dict, List
 
 import holidays
 import numpy as np
 import pandas as pd
 from pandas.tseries.frequencies import to_offset
+from woodwork.column_schema import ColumnSchema
 
 import featuretools
 from featuretools.primitives.base import (
@@ -15,7 +16,6 @@ from featuretools.primitives.base import (
     TransformPrimitive,
 )
 from featuretools.utils.gen_utils import Library, find_descendents
-from woodwork.column_schema import ColumnSchema
 
 
 # returns all aggregation primitives, regardless of compatibility
@@ -95,8 +95,8 @@ def list_primitives():
     return pd.concat([agg_df, transform_df], ignore_index=True)[columns]
 
 
-def summarize_primatives():
-    """Ultility function that provides a summary df of primative information in featuretools."""
+def summarize_primatives() -> pd.DataFrame:
+    """Ultility function that provides a summary metrics dataframe of primatives in featuretools."""
     (
         trans_names,
         trans_primitives,
@@ -115,8 +115,8 @@ def summarize_primatives():
     tot_agg = len(agg_names)
     tot_prims = tot_trans + tot_agg
     all_primitives = trans_primitives + agg_primitives
-    unique_in_types = len(set(agg_valid_inputs + trans_valid_inputs))
-    unique_out_types = len(set(agg_return_type + trans_return_type))  # broken
+    # unique_in_types = len(set(agg_valid_inputs + trans_valid_inputs))
+    # unique_out_types = len(set(agg_return_type + trans_return_type))  # broken
     primatives_summary = _get_summary_primitives(all_primitives)
 
     summary_df = pd.DataFrame(
@@ -205,13 +205,14 @@ def _get_descriptions(primitives):
 
 
 def _get_summary_primitives(primitives: List) -> Dict[str, int]:
+    """Provides metrics for a list of primatives."""
     unique_input_types = set()
     unique_output_types = set()
     ct_multi_in = 0
     ct_multi_out = 0
     ct_extra_data = 0
     ct_controllable = 0
-    ct_trainable = 0  # get clarification
+    # ct_trainable = 0  # get clarification
     prim_input_ww_checks = {  # semantic tag for time index and logical types in inputs
         "semantic_time_idx": 0,
         "Datetime": 0,
@@ -279,6 +280,7 @@ def _check_input_types(
     input_checks: set,
     unique_input_types: set,
 ):
+    """Recursively checks for unique input types for a primative."""
     for in_type in input_types:
         if isinstance(in_type, list):
             _check_input_types(in_type, input_checks, unique_input_types)

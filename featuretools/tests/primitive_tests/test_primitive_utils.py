@@ -35,6 +35,7 @@ from featuretools.primitives import (
 from featuretools.primitives.base import PrimitiveBase
 from featuretools.primitives.utils import (
     _apply_roll_with_offset_gap,
+    _check_input_types,
     _get_descriptions,
     _get_rolled_series_without_gap,
     _get_unique_input_types,
@@ -633,3 +634,21 @@ def test_roll_series_with_non_offset_string_inputs(rolling_series_pd):
     )
     with pytest.raises(TypeError, match=error):
         _roll_series_with_gap(rolling_series_pd, window_size=7, gap="2d").max()
+
+
+def test_check_input_types():
+    primitives = [Sum, Weekday, PercentTrue, Day, Std]
+    input_checks = set()
+    unique_input_types = set()
+    expected_input_check = {"BooleanNullable", "Boolean", "Datetime"}
+    expected_unique_input_types = {
+        "<ColumnSchema (Logical Type = BooleanNullable)>",
+        "<ColumnSchema (Semantic Tags = ['numeric'])>",
+        "<ColumnSchema (Logical Type = Boolean)>",
+        "<ColumnSchema (Logical Type = Datetime)>",
+    }
+    for prim in primitives:
+        _check_input_types(prim.input_types, input_checks, unique_input_types)
+
+    assert input_checks == expected_input_check
+    assert unique_input_types == expected_unique_input_types
