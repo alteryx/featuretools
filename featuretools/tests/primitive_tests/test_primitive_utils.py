@@ -63,7 +63,10 @@ def test_list_primitives_order():
         assert row["valid_inputs"] == ", ".join(
             _get_unique_input_types(primitive.input_types)
         )
-        assert row["return_type"] == getattr(primitive.return_type, "__name__", None)
+        expected_return_type = (
+            str(primitive.return_type) if primitive.return_type is not None else None
+        )
+        assert row["return_type"] == expected_return_type
 
     types = df["type"].values
     assert "aggregation" in types
