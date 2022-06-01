@@ -4,10 +4,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from featuretools import list_primitives
+from featuretools import list_primitives, summarize_primitives
 from featuretools.primitives import (
-    Age,
     AddNumericScalar,
+    Age,
     Count,
     Day,
     GreaterThan,
@@ -702,3 +702,17 @@ def test_get_summary_primitives():
     assert primatives_summary["Datetime"] == expected_datetime_inputs
     assert primatives_summary["Boolean"] == expected_bool
     assert primatives_summary["BooleanNullable"] == expected_bool_nullable
+
+
+def test_summarize_primatives():
+    df = summarize_primitives()
+    print(df)
+    trans_prims = get_transform_primitives()
+    agg_prims = get_aggregation_primitives()
+    tot_trans = len(trans_prims)
+    tot_agg = len(agg_prims)
+    tot_prims = tot_trans + tot_agg
+
+    assert df["total_primatives"].iloc[0] == tot_prims
+    assert df["aggregation_primatives"].iloc[0] == tot_agg
+    assert df["transform_primatives"].iloc[0] == tot_trans

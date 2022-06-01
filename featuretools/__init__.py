@@ -4,7 +4,7 @@ from .config_init import config
 from .entityset.api import *
 from . import primitives
 from .synthesis.api import *
-from .primitives import list_primitives
+from .primitives import list_primitives, summarize_primitives
 from .computational_backends.api import *
 from . import tests
 from .utils.time_utils import *
