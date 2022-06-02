@@ -42,8 +42,6 @@ class PrimitiveBase(object):
     # `nth_slice` keyword argument. Multi-output primitives can use a list to
     # differentiate between the base description and a slice description.
     description_template = None
-    #: (bool): True if primivitive is dependent upon some form of data to initalize.
-    trainable = False
 
     def __init__(self):
         pass
@@ -143,3 +141,12 @@ class PrimitiveBase(object):
                 name, ", ".join(input_column_descriptions)
             )
         return description
+
+    @staticmethod
+    def flatten_nested_input_types(input_types):
+        """Flattens nested column schema inputs into a single list."""
+        if isinstance(input_types[0], list):
+            input_types = [
+                sub_input for input_obj in input_types for sub_input in input_obj
+            ]
+        return input_types

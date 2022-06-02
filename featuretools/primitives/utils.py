@@ -7,6 +7,7 @@ import holidays
 import numpy as np
 import pandas as pd
 from pandas.tseries.frequencies import to_offset
+from woodwork import list_logical_types
 from woodwork.column_schema import ColumnSchema
 
 import featuretools
@@ -128,7 +129,7 @@ def summarize_primitives() -> pd.DataFrame:
             "use_multi_outputs": primatives_summary["ct_multi_out"],
             "use_external_data": primatives_summary["ct_extra_data"],
             "are_controllable": primatives_summary["ct_controllable"],
-            "use_time_index": primatives_summary["semantic_time_idx"],
+            "use_time_index": primatives_summary["ct_semantic_time_idx"],
             "use_datetime_inputs": primatives_summary["Datetime"],
             "use_categorical_inputs": primatives_summary["Categorical"],
             "use_address_inputs": primatives_summary["Address"],
@@ -204,46 +205,23 @@ def _get_descriptions(primitives):
 
 def _get_summary_primitives(primitives: List) -> Dict[str, int]:
     """Provides metrics for a list of primitives."""
-    controllable_list = {}
     unique_input_types = set()
     unique_output_types = set()
     ct_multi_in = 0
     ct_multi_out = 0
     ct_extra_data = 0
     ct_controllable = 0
-    # ct_trainable = 0  # get clarification
+    logical_type_count = {
+        log_type: 0 for log_type in list(list_logical_types()["name"])
+    }
     prim_input_ww_checks = {  # semantic tag for time index and logical types in inputs
-        "semantic_time_idx": 0,
-        "Datetime": 0,
-        "Categorical": 0,
-        "Address": 0,
-        "Age": 0,
-        "AgeFractional": 0,
-        "AgeNullable": 0,
-        "Boolean": 0,
-        "BooleanNullable": 0,
-        "CountryCode": 0,
-        "CurrencyCode": 0,
-        "Double": 0,
-        "Integer": 0,
-        "IntegerNullable": 0,
-        "EmailAddress": 0,
-        "Filepath": 0,
-        "PersonFullName": 0,
-        "IPAddress": 0,
-        "LatLong": 0,
-        "NaturalLanguage": 0,
-        "Unknown": 0,
-        "Ordinal": 0,
-        "PhoneNumber": 0,
-        "SubRegionCode": 0,
-        "Timedelta": 0,
-        "URL": 0,
-        "PostalCode": 0,
+        "ct_semantic_time_idx": 0,
+        **logical_type_count,
     }
     for prim in primitives:
         input_checks = set()
-        _check_input_types(prim.input_types, input_checks, unique_input_types)
+        input_types = prim.flatten_nested_input_types(prim.input_types)
+        _check_input_types(input_types, input_checks, unique_input_types)
         for check in list(input_checks):
             prim_input_ww_checks[check] += 1
 
@@ -260,7 +238,6 @@ def _get_summary_primitives(primitives: List) -> Dict[str, int]:
 
         if len(getfullargspec(prim.__init__).args) > 1:
             ct_controllable += 1
-            controllable_list[str(prim.__name__)] = getfullargspec(prim.__init__).args
 
     return {
         "unique_input_types": len(unique_input_types),
@@ -274,20 +251,15 @@ def _get_summary_primitives(primitives: List) -> Dict[str, int]:
 
 
 def _check_input_types(
-    input_types: List[ColumnSchema],
-    input_checks: set,
-    unique_input_types: set,
+    input_types: List[ColumnSchema], input_checks: set, unique_input_types: set
 ):
-    """Recursively checks for unique input types for a primitive."""
+    """Checks if any logical types or time indices occur in a list of Woodwork input types and keeps track of unique input types."""
     for in_type in input_types:
-        if isinstance(in_type, list):
-            _check_input_types(in_type, input_checks, unique_input_types)
-        else:
-            if "time_index" in in_type.semantic_tags:
-                input_checks.add("semantic_time_idx")
-            if in_type.logical_type:
-                input_checks.add(str(in_type.logical_type.__class__))
-            unique_input_types.add(str(in_type))
+        if "time_index" in in_type.semantic_tags:
+            input_checks.add("ct_semantic_time_idx")
+        if in_type.logical_type:
+            input_checks.add(str(in_type.logical_type.__class__))
+        unique_input_types.add(str(in_type))
 
 
 def _get_names_primitives(primitive_func):

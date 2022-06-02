@@ -652,7 +652,7 @@ def test_check_input_types():
         "BooleanNullable",
         "Boolean",
         "Datetime",
-        "semantic_time_idx",
+        "ct_semantic_time_idx",
     }
     expected_unique_input_types = {
         "<ColumnSchema (Logical Type = BooleanNullable)>",
@@ -662,7 +662,8 @@ def test_check_input_types():
         "<ColumnSchema (Semantic Tags = ['time_index'])>",
     }
     for prim in primitives:
-        _check_input_types(prim.input_types, input_checks, unique_input_types)
+        input_types_flattened = prim.flatten_nested_input_types(prim.input_types)
+        _check_input_types(input_types_flattened, input_checks, unique_input_types)
 
     assert input_checks == expected_input_check
     assert unique_input_types == expected_unique_input_types
@@ -698,7 +699,7 @@ def test_get_summary_primitives():
     assert primatives_summary["ct_multi_out"] == expected_ct_multi_out
     assert primatives_summary["ct_extra_data"] == expected_ct_extra_data
     assert primatives_summary["ct_controllable"] == expected_controllable
-    assert primatives_summary["semantic_time_idx"] == expected_semantic_time_idx
+    assert primatives_summary["ct_semantic_time_idx"] == expected_semantic_time_idx
     assert primatives_summary["Datetime"] == expected_datetime_inputs
     assert primatives_summary["Boolean"] == expected_bool
     assert primatives_summary["BooleanNullable"] == expected_bool_nullable
