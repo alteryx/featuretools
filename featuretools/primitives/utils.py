@@ -44,6 +44,7 @@ def get_transform_primitives():
 
 
 def list_primitives():
+    """Returns a DataFrame that lists and describes each built-in primitive."""
     trans_names, trans_primitives, valid_inputs, return_type = _get_names_primitives(
         get_transform_primitives
     )
@@ -97,7 +98,7 @@ def list_primitives():
 
 
 def summarize_primitives() -> pd.DataFrame:
-    """Utility function that provides a metrics summary dataframe of primitives in featuretools."""
+    """Returns a metrics summary DataFrame of all built-in primitives in featuretools."""
     (
         trans_names,
         trans_primitives,
@@ -117,47 +118,47 @@ def summarize_primitives() -> pd.DataFrame:
     tot_prims = tot_trans + tot_agg
     all_primitives = trans_primitives + agg_primitives
     primitives_summary = _get_summary_primitives(all_primitives)
+    summary_dict = {
+        "total_primitives": tot_prims,
+        "aggregation_primitives": tot_agg,
+        "transform_primitives": tot_trans,
+        "unique_input_types": primitives_summary["unique_input_types"],
+        "unique_out_types": primitives_summary["unique_output_types"],
+        "use_multi_inputs": primitives_summary["ct_multi_in"],
+        "use_multi_outputs": primitives_summary["ct_multi_out"],
+        "use_external_data": primitives_summary["ct_extra_data"],
+        "are_controllable": primitives_summary["ct_controllable"],
+        "use_time_index": primitives_summary["ct_semantic_time_idx"],
+        "use_datetime_inputs": primitives_summary["datetime"],
+        "use_categorical_inputs": primitives_summary["categorical"],
+        "use_address_inputs": primitives_summary["address"],
+        "use_age_inputs": primitives_summary["age"],
+        "use_age_nullable_inputs": primitives_summary["age_nullable"],
+        "use_age_fractional_inputs": primitives_summary["age_fractional"],
+        "use_boolean_inputs": primitives_summary["boolean"],
+        "use_boolean_nullable_inputs": primitives_summary["boolean_nullable"],
+        "use_country_code_inputs": primitives_summary["country_code"],
+        "use_currency_code_inputs": primitives_summary["currency_code"],
+        "use_double_inputs": primitives_summary["double"],
+        "use_integer_inputs": primitives_summary["integer"],
+        "uses_integer_nullable_inputs": primitives_summary["integer_nullable"],
+        "use_email_address_inputs": primitives_summary["email_address"],
+        "use_filepath_inputs": primitives_summary["filepath"],
+        "use_person_fullname_inputs": primitives_summary["person_full_name"],
+        "use_ip_address_inputs": primitives_summary["ip_address"],
+        "use_lat_long_address_inputs": primitives_summary["lat_long"],
+        "use_natural_language_inputs": primitives_summary["natural_language"],
+        "use_unknown_inputs": primitives_summary["unknown"],
+        "use_ordinal_inputs": primitives_summary["ordinal"],
+        "use_phone_number_inputs": primitives_summary["phone_number"],
+        "use_sub_region_code_inputs": primitives_summary["sub_region_code"],
+        "use_time_delta_inputs": primitives_summary["timedelta"],
+        "use_url_inputs": primitives_summary["url"],
+        "use_postal_code_inputs": primitives_summary["postal_code"],
+    }
 
     summary_df = pd.DataFrame(
-        {
-            "total_primitives": tot_prims,
-            "aggregation_primitives": tot_agg,
-            "transform_primitives": tot_trans,
-            "unique_input_types": primitives_summary["unique_input_types"],
-            "unique_out_types": primitives_summary["unique_output_types"],
-            "use_multi_inputs": primitives_summary["ct_multi_in"],
-            "use_multi_outputs": primitives_summary["ct_multi_out"],
-            "use_external_data": primitives_summary["ct_extra_data"],
-            "are_controllable": primitives_summary["ct_controllable"],
-            "use_time_index": primitives_summary["ct_semantic_time_idx"],
-            "use_datetime_inputs": primitives_summary["datetime"],
-            "use_categorical_inputs": primitives_summary["categorical"],
-            "use_address_inputs": primitives_summary["address"],
-            "use_age_inputs": primitives_summary["age"],
-            "use_age_nullable_inputs": primitives_summary["age_nullable"],
-            "use_age_fractional_inputs": primitives_summary["age_fractional"],
-            "use_boolean_inputs": primitives_summary["boolean"],
-            "use_boolean_nullable_inputs": primitives_summary["boolean_nullable"],
-            "use_country_code_inputs": primitives_summary["country_code"],
-            "use_currency_code_inputs": primitives_summary["currency_code"],
-            "use_double_inputs": primitives_summary["double"],
-            "use_integer_inputs": primitives_summary["integer"],
-            "uses_integer_nullable_inputs": primitives_summary["integer_nullable"],
-            "use_email_address_inputs": primitives_summary["email_address"],
-            "use_filepath_inputs": primitives_summary["filepath"],
-            "use_person_fullname_inputs": primitives_summary["person_full_name"],
-            "use_ip_address_inputs": primitives_summary["ip_address"],
-            "use_lat_long_address_inputs": primitives_summary["lat_long"],
-            "use_natural_language_inputs": primitives_summary["natural_language"],
-            "use_unknown_inputs": primitives_summary["unknown"],
-            "use_ordinal_inputs": primitives_summary["ordinal"],
-            "use_phone_number_inputs": primitives_summary["phone_number"],
-            "use_sub_region_code_inputs": primitives_summary["sub_region_code"],
-            "use_time_delta_inputs": primitives_summary["timedelta"],
-            "use_url_inputs": primitives_summary["url"],
-            "use_postal_code_inputs": primitives_summary["postal_code"],
-        },
-        index=[0],
+        [{"Metric": k, "Count": v} for k, v in summary_dict.items()]
     )
     return summary_df
 

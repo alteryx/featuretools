@@ -714,6 +714,6 @@ def test_summarize_primitives():
     tot_agg = len(agg_prims)
     tot_prims = tot_trans + tot_agg
 
-    assert df["total_primitives"].iloc[0] == tot_prims
-    assert df["aggregation_primitives"].iloc[0] == tot_agg
-    assert df["transform_primitives"].iloc[0] == tot_trans
+    assert df["Count"].iloc[0] == tot_prims
+    assert df["Count"].iloc[1] == tot_agg
+    assert df["Count"].iloc[2] == tot_trans
