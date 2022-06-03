@@ -230,7 +230,10 @@ def _get_summary_primitives(primitives: List) -> Dict[str, int]:
             ct_multi_in += 1
 
         # checks if number_output_features is set as an instance variable
-        if "self.number_output_features =" in getsource(prim.__init__):
+        if (
+            "self.number_output_features =" in getsource(prim.__init__)
+            or prim.number_output_features > 1
+        ):
             ct_multi_out += 1
         unique_output_types.add(str(prim.return_type))
 
