@@ -116,46 +116,46 @@ def summarize_primitives() -> pd.DataFrame:
     tot_agg = len(agg_names)
     tot_prims = tot_trans + tot_agg
     all_primitives = trans_primitives + agg_primitives
-    primatives_summary = _get_summary_primitives(all_primitives)
+    primitives_summary = _get_summary_primitives(all_primitives)
 
     summary_df = pd.DataFrame(
         {
-            "total_primatives": tot_prims,
-            "aggregation_primatives": tot_agg,
-            "transform_primatives": tot_trans,
-            "unique_input_types": primatives_summary["unique_input_types"],
-            "unique_out_types": primatives_summary["unique_output_types"],
-            "use_multi_inputs": primatives_summary["ct_multi_in"],
-            "use_multi_outputs": primatives_summary["ct_multi_out"],
-            "use_external_data": primatives_summary["ct_extra_data"],
-            "are_controllable": primatives_summary["ct_controllable"],
-            "use_time_index": primatives_summary["ct_semantic_time_idx"],
-            "use_datetime_inputs": primatives_summary["Datetime"],
-            "use_categorical_inputs": primatives_summary["Categorical"],
-            "use_address_inputs": primatives_summary["Address"],
-            "use_age_inputs": primatives_summary["Age"],
-            "use_age_nullable_inputs": primatives_summary["AgeNullable"],
-            "use_age_fractional_inputs": primatives_summary["AgeFractional"],
-            "use_boolean_inputs": primatives_summary["Boolean"],
-            "use_boolean_nullable_inputs": primatives_summary["BooleanNullable"],
-            "use_country_code_inputs": primatives_summary["CountryCode"],
-            "use_currency_code_inputs": primatives_summary["CurrencyCode"],
-            "use_double_inputs": primatives_summary["Double"],
-            "use_integer_inputs": primatives_summary["Integer"],
-            "uses_integer_nullable_inputs": primatives_summary["IntegerNullable"],
-            "use_email_address_inputs": primatives_summary["EmailAddress"],
-            "use_filepath_inputs": primatives_summary["Filepath"],
-            "use_person_fullname_inputs": primatives_summary["PersonFullName"],
-            "use_ip_address_inputs": primatives_summary["IPAddress"],
-            "use_lat_long_address_inputs": primatives_summary["LatLong"],
-            "use_natural_language_inputs": primatives_summary["NaturalLanguage"],
-            "use_unknown_inputs": primatives_summary["Unknown"],
-            "use_ordinal_inputs": primatives_summary["Ordinal"],
-            "use_phone_number_inputs": primatives_summary["PhoneNumber"],
-            "use_sub_region_code_inputs": primatives_summary["SubRegionCode"],
-            "use_time_delta_inputs": primatives_summary["Timedelta"],
-            "use_url_inputs": primatives_summary["URL"],
-            "use_postal_code_inputs": primatives_summary["PostalCode"],
+            "total_primitives": tot_prims,
+            "aggregation_primitives": tot_agg,
+            "transform_primitives": tot_trans,
+            "unique_input_types": primitives_summary["unique_input_types"],
+            "unique_out_types": primitives_summary["unique_output_types"],
+            "use_multi_inputs": primitives_summary["ct_multi_in"],
+            "use_multi_outputs": primitives_summary["ct_multi_out"],
+            "use_external_data": primitives_summary["ct_extra_data"],
+            "are_controllable": primitives_summary["ct_controllable"],
+            "use_time_index": primitives_summary["ct_semantic_time_idx"],
+            "use_datetime_inputs": primitives_summary["datetime"],
+            "use_categorical_inputs": primitives_summary["categorical"],
+            "use_address_inputs": primitives_summary["address"],
+            "use_age_inputs": primitives_summary["age"],
+            "use_age_nullable_inputs": primitives_summary["age_nullable"],
+            "use_age_fractional_inputs": primitives_summary["age_fractional"],
+            "use_boolean_inputs": primitives_summary["boolean"],
+            "use_boolean_nullable_inputs": primitives_summary["boolean_nullable"],
+            "use_country_code_inputs": primitives_summary["country_code"],
+            "use_currency_code_inputs": primitives_summary["currency_code"],
+            "use_double_inputs": primitives_summary["double"],
+            "use_integer_inputs": primitives_summary["integer"],
+            "uses_integer_nullable_inputs": primitives_summary["integer_nullable"],
+            "use_email_address_inputs": primitives_summary["email_address"],
+            "use_filepath_inputs": primitives_summary["filepath"],
+            "use_person_fullname_inputs": primitives_summary["person_full_name"],
+            "use_ip_address_inputs": primitives_summary["ip_address"],
+            "use_lat_long_address_inputs": primitives_summary["lat_long"],
+            "use_natural_language_inputs": primitives_summary["natural_language"],
+            "use_unknown_inputs": primitives_summary["unknown"],
+            "use_ordinal_inputs": primitives_summary["ordinal"],
+            "use_phone_number_inputs": primitives_summary["phone_number"],
+            "use_sub_region_code_inputs": primitives_summary["sub_region_code"],
+            "use_time_delta_inputs": primitives_summary["timedelta"],
+            "use_url_inputs": primitives_summary["url"],
+            "use_postal_code_inputs": primitives_summary["postal_code"],
         },
         index=[0],
     )
@@ -212,7 +212,7 @@ def _get_summary_primitives(primitives: List) -> Dict[str, int]:
     ct_extra_data = 0
     ct_controllable = 0
     logical_type_count = {
-        log_type: 0 for log_type in list(list_logical_types()["name"])
+        log_type: 0 for log_type in list(list_logical_types()["type_string"])
     }
     prim_input_ww_checks = {  # semantic tag for time index and logical types in inputs
         "ct_semantic_time_idx": 0,
@@ -258,7 +258,7 @@ def _check_input_types(
         if "time_index" in in_type.semantic_tags:
             input_checks.add("ct_semantic_time_idx")
         if in_type.logical_type:
-            input_checks.add(str(in_type.logical_type.__class__))
+            input_checks.add(in_type.logical_type.type_string)
         unique_input_types.add(str(in_type))
 
 

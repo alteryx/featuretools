@@ -681,7 +681,7 @@ def test_get_summary_primitives():
         IsFreeEmailDomain,
         NMostCommon,
     ]
-    primatives_summary = _get_summary_primitives(primitives)
+    primitives_summary = _get_summary_primitives(primitives)
     expected_unique_input_types = 7
     expected_unique_output_types = 6
     expected_ct_multi_in = 2
@@ -693,19 +693,19 @@ def test_get_summary_primitives():
     expected_bool_nullable = 1
     expected_semantic_time_idx = 1
 
-    assert primatives_summary["unique_input_types"] == expected_unique_input_types
-    assert primatives_summary["unique_output_types"] == expected_unique_output_types
-    assert primatives_summary["ct_multi_in"] == expected_ct_multi_in
-    assert primatives_summary["ct_multi_out"] == expected_ct_multi_out
-    assert primatives_summary["ct_extra_data"] == expected_ct_extra_data
-    assert primatives_summary["ct_controllable"] == expected_controllable
-    assert primatives_summary["ct_semantic_time_idx"] == expected_semantic_time_idx
-    assert primatives_summary["Datetime"] == expected_datetime_inputs
-    assert primatives_summary["Boolean"] == expected_bool
-    assert primatives_summary["BooleanNullable"] == expected_bool_nullable
+    assert primitives_summary["unique_input_types"] == expected_unique_input_types
+    assert primitives_summary["unique_output_types"] == expected_unique_output_types
+    assert primitives_summary["ct_multi_in"] == expected_ct_multi_in
+    assert primitives_summary["ct_multi_out"] == expected_ct_multi_out
+    assert primitives_summary["ct_extra_data"] == expected_ct_extra_data
+    assert primitives_summary["ct_controllable"] == expected_controllable
+    assert primitives_summary["ct_semantic_time_idx"] == expected_semantic_time_idx
+    assert primitives_summary["Datetime"] == expected_datetime_inputs
+    assert primitives_summary["Boolean"] == expected_bool
+    assert primitives_summary["BooleanNullable"] == expected_bool_nullable
 
 
-def test_summarize_primatives():
+def test_summarize_primitives():
     df = summarize_primitives()
     print(df)
     trans_prims = get_transform_primitives()
@@ -714,6 +714,6 @@ def test_summarize_primatives():
     tot_agg = len(agg_prims)
     tot_prims = tot_trans + tot_agg
 
-    assert df["total_primatives"].iloc[0] == tot_prims
-    assert df["aggregation_primatives"].iloc[0] == tot_agg
-    assert df["transform_primatives"].iloc[0] == tot_trans
+    assert df["total_primitives"].iloc[0] == tot_prims
+    assert df["aggregation_primitives"].iloc[0] == tot_agg
+    assert df["transform_primitives"].iloc[0] == tot_trans
