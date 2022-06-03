@@ -649,9 +649,9 @@ def test_check_input_types():
     input_checks = set()
     unique_input_types = set()
     expected_input_check = {
-        "BooleanNullable",
-        "Boolean",
-        "Datetime",
+        "boolean_nullable",
+        "boolean",
+        "datetime",
         "ct_semantic_time_idx",
     }
     expected_unique_input_types = {
@@ -700,9 +700,9 @@ def test_get_summary_primitives():
     assert primitives_summary["ct_extra_data"] == expected_ct_extra_data
     assert primitives_summary["ct_controllable"] == expected_controllable
     assert primitives_summary["ct_semantic_time_idx"] == expected_semantic_time_idx
-    assert primitives_summary["Datetime"] == expected_datetime_inputs
-    assert primitives_summary["Boolean"] == expected_bool
-    assert primitives_summary["BooleanNullable"] == expected_bool_nullable
+    assert primitives_summary["datetime"] == expected_datetime_inputs
+    assert primitives_summary["boolean"] == expected_bool
+    assert primitives_summary["boolean_nullable"] == expected_bool_nullable
 
 
 def test_summarize_primitives():
