@@ -67,7 +67,6 @@ Before starting major work, you should touch base with the maintainers of Featur
      echo "export SPARK_HOME=/opt/spark" >> ~/.profile
      echo "export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin" >> ~/.profile
      echo "export PYSPARK_PYTHON=/usr/bin/python3" >> ~/.profile
-     echo "export PATH=$HOME/.cabal/bin:$PATH" >> ~/.profile
      ```
 
      **Amazon Linux**:
