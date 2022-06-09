@@ -9,7 +9,7 @@ Future Release
     * Fixes
     * Changes
     * Documentation Changes
-        * Update contributing.md to add pandoc (:pr:`2103`)
+        * Update contributing.md to add pandoc (:pr:`2103`, :pr:`2104`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
