@@ -7,13 +7,14 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Add feature origin information to all multi-output feature columns (:pr:`2102`)
     * Changes
     * Documentation Changes
         * Update contributing.md to add pandoc (:pr:`2103`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`thehomebrewnerd`
 
 v1.9.1 May 27, 2022
 ===================
