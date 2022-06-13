@@ -2244,3 +2244,25 @@ def test_cfm_introduces_nan_values_in_direct_feats(es):
     assert isinstance(fm.ww.logical_types["age"], AgeNullable)
     assert isinstance(fm.ww.logical_types["engagement_level"], IntegerNullable)
     assert isinstance(fm.ww.logical_types["loves_ice_cream"], BooleanNullable)
+
+
+def test_feature_origins_present_on_all_fm_cols(pd_es):
+    class MultiCumSum(TransformPrimitive):
+        name = "multi_cum_sum"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
+        number_output_features = 3
+
+        def get_function(self):
+            def multi_cum_sum(x):
+                return x.cumsum(), x.cummax(), x.cummin()
+
+            return multi_cum_sum
+
+    feature_matrix, _ = ft.dfs(
+        entityset=pd_es, target_dataframe_name="log", trans_primitives=[MultiCumSum]
+    )
+
+    for col in feature_matrix.columns:
+        origin = feature_matrix.ww[col].ww.origin
+        assert origin in ["base", "engineered"]

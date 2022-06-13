@@ -358,10 +358,10 @@ def get_ww_types_from_features(
 
             if logical_types[name] is None and "numeric" in semantic_tags[name]:
                 logical_types[name] = Double
-        if all([f.primitive is None for f in feature.get_dependencies(deep=True)]):
-            origins[name] = "base"
-        else:
-            origins[name] = "engineered"
+            if all([f.primitive is None for f in feature.get_dependencies(deep=True)]):
+                origins[name] = "base"
+            else:
+                origins[name] = "engineered"
 
     if pass_columns:
         cutoff_schema = cutoff_time.ww.schema
