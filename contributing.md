@@ -63,7 +63,7 @@ Before starting major work, you should touch base with the maintainers of Featur
 
      **Ubuntu**:
      ```console
-     sudo apt install openjdk-11-jre openjdk-11-jdk scala pandoc pandoc -y
+     sudo apt install openjdk-11-jre openjdk-11-jdk scala graphviz pandoc -y
      echo "export SPARK_HOME=/opt/spark" >> ~/.profile
      echo "export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin" >> ~/.profile
      echo "export PYSPARK_PYTHON=/usr/bin/python3" >> ~/.profile
