@@ -43,6 +43,7 @@ Before starting major work, you should touch base with the maintainers of Featur
 * You will need to install Spark, Scala, GraphViz, and Pandoc to run all unit tests & build docs:
 
   > If you do not install Spark/Scala, you can still run the unit tests (the Spark tests will be skipped).
+
   > Pandoc is only needed to build the documentation locally.
 
      **macOS (Intel)** (use [Homebrew](https://brew.sh/)):
