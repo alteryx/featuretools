@@ -161,7 +161,7 @@ $ sudo ln -sfn /opt/homebrew/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/Ja
 
 ````{tab} Ubuntu
 ```console
-$ sudo install openjdk-11-jre openjdk-11-jdk scala -y
+$ sudo apt install openjdk-11-jre openjdk-11-jdk scala -y
 $ echo "export SPARK_HOME=/opt/spark" >> ~/.profile
 $ echo "export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin" >> ~/.profile
 $ echo "export PYSPARK_PYTHON=/usr/bin/python3" >> ~/.profile
