@@ -182,11 +182,11 @@ You can do so by installing it as a package inside a container (following the no
 creating a new image with Featuretools pre-installed, using the following commands in your `Dockerfile`:
 
 ```dockerfile
-FROM python:3.8-slim-buster
-RUN apt-get update && apt-get -y update
-RUN apt-get install -y build-essential python3-pip python3-dev
-RUN pip -q install pip --upgrade
-RUN pip install featuretools
+FROM --platform=linux/x86_64 python:3.8-slim-buster
+RUN apt update && apt -y update
+RUN apt install -y build-essential
+RUN pip3 install --upgrade --quiet pip
+RUN pip3 install featuretools
 ```
 
 # Development
