@@ -506,10 +506,8 @@ class FeatureSetCalculator(object):
         for f in features:
             # handle when no data
             if frame_empty:
-                set_default_column(frame, f)
-
+                feature_values.append((f, [[] for _ in range(f.number_output_features)]))
                 progress_callback(1 / float(self.num_features))
-
                 continue
 
             # collect only the columns we need for this transformation
@@ -538,8 +536,13 @@ class FeatureSetCalculator(object):
         return frame
 
     def _calculate_groupby_features(self, features, frame, _df_trie, progress_callback):
+        # set default values to handle the null group
+        default_values = {}
         for f in features:
-            set_default_column(frame, f)
+            for name in f.get_feature_names():
+                default_values[name] = f.default_value
+
+        frame = pd.concat([frame, pd.DataFrame(default_values, index=frame.index)], axis=1)
 
         # handle when no data
         if frame.shape[0] == 0:
@@ -914,11 +917,6 @@ def agg_wrapper(feats, time_last):
         return pd.Series(d)
 
     return wrap
-
-
-def set_default_column(frame, f):
-    for name in f.get_feature_names():
-        frame[name] = f.default_value
 
 
 def update_feature_columns(feature_data, data):
