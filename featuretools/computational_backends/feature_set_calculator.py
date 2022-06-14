@@ -935,8 +935,10 @@ def update_feature_columns(feature_data, data):
         data.update(new_cols)
         return data
 
-    return data.assign(**new_cols)
-
+    if isinstance(data, pd.DataFrame):
+        return pd.concat([data, pd.DataFrame(new_cols, index=data.index)], axis=1)
+    else:
+        pass
 
 def strip_values_if_series(values):
     if isinstance(values, pd.Series):
