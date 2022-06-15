@@ -165,7 +165,7 @@ class DayOfYear(TransformPrimitive):
         def dayOfYear(vals):
             try:
                 return vals.dt.day_of_year
-            except:
+            except AttributeError:
                 # if Spark dataframe
                 return vals.dt.dayofyear
 
