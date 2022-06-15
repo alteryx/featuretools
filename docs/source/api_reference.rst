@@ -189,6 +189,8 @@ Natural Language Processing Primitives
 --------------------------------------
 Natural Language Processing primitives create features for textual data. For more information on how to use and install these primitives, see `here <https://github.com/FeatureLabs/nlp_primitives>`__.
 
+Standard NLP Primitives
+***********************
 .. autosummary::
     :toctree: generated/
 
@@ -202,16 +204,13 @@ Natural Language Processing primitives create features for textual data. For mor
     TitleWordCount
     UpperCaseCount
 
-.. currentmodule:: nlp_primitives.tensorflow.elmo
+Tensorflow NLP Primitives
+*************************
+.. currentmodule:: nlp_primitives.tensorflow
 .. autosummary::
     :toctree: generated/
 
     Elmo
-
-.. currentmodule:: nlp_primitives.tensorflow.universal_sentence_encoder
-.. autosummary::
-    :toctree: generated/
-
     UniversalSentenceEncoder
 
 
