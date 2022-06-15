@@ -142,7 +142,8 @@ class DayOfYear(TransformPrimitive):
     Description:
         For a list of dates, return the day of the year
         from the given datetime.
-        Examples:
+        
+    Examples:
     >>> from datetime import datetime
     >>> dates = [datetime(2019, 1, 1),
     ...          datetime(2019, 12, 31),
