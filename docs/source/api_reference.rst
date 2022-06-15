@@ -133,6 +133,7 @@ Datetime Transform Primitives
     Week
     Month
     Year
+    DayOfYear
 
 Rolling Transform Primitives
 *******************************
