@@ -152,7 +152,7 @@ class DayOfYear(TransformPrimitive):
     [1, 3, 31]
     """
 
-    name = "dayOfYear"
+    name = "day_of_year"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={"date"})]
     return_type = ColumnSchema(
         logical_type=Ordinal(order=list(range(1, 365))), semantic_tags={"category"}
