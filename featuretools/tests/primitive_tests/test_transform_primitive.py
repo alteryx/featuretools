@@ -96,7 +96,13 @@ def test_age_leap_year():
     correct_ages = [4.0027]  # .0027 added due to leap year
     np.testing.assert_array_almost_equal(ages, correct_ages, decimal=3)
 
-
+def test_age_nan():
+    age = Age()
+    dates = pd.Series([datetime(2010, 1, 1), np.nan, datetime(2012, 1, 1)])
+    ages = age(dates, time=datetime(2020, 2, 26))
+    correct_ages = [10.159, np.nan, 8.159]
+    np.testing.assert_array_almost_equal(ages, correct_ages, decimal=3)
+    
 def test_day_of_year():
     doy = DayOfYear()
     dates = pd.Series(datetime(2020, 12, 31))
