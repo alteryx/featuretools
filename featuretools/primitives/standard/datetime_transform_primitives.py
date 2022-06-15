@@ -137,7 +137,7 @@ class Day(TransformPrimitive):
 
 
 class DayOfYear(TransformPrimitive):
-    """Computes the day number from 1-365, given the datetime
+    """Determines the day of the year from the given datetime
 
     Description:
         For a list of dates, return the day of the year
