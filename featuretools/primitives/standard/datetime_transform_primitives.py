@@ -154,7 +154,7 @@ class DayOfYear(TransformPrimitive):
     """
 
     name = "day_of_year"
-    input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={"date"})]
+    input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
         logical_type=Ordinal(order=list(range(1, 366))), semantic_tags={"category"}
     )
@@ -163,7 +163,10 @@ class DayOfYear(TransformPrimitive):
 
     def get_function(self):
         def dayOfYear(vals):
-            return vals.dt.day_of_year
+            try:
+                return vals.dt.day_of_year
+            except:
+                return vals.dt.dayofyear
 
         return dayOfYear
 

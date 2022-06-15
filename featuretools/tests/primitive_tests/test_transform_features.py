@@ -19,6 +19,7 @@ from featuretools.primitives import (
     Age,
     Count,
     Day,
+    DayOfYear,
     Diff,
     DivideByFeature,
     DivideNumeric,
@@ -99,6 +100,7 @@ def test_init_and_name(es):
         ]
 
     for transform_prim in trans_primitives:
+        # print(f"T: {transform_prim}")
         # skip automated testing if a few special cases
         features_to_use = log_features
         if transform_prim in [NotEqual, Equal]:
