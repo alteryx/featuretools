@@ -200,8 +200,19 @@ Natural Language Processing primitives create features for textual data. For mor
     PunctuationCount
     StopwordCount
     TitleWordCount
-    UniversalSentenceEncoder
     UpperCaseCount
+
+.. currentmodule:: nlp_primitives.tensorflow.elmo
+.. autosummary::
+    :toctree: generated/
+
+    Elmo
+
+.. currentmodule:: nlp_primitives.tensorflow.universal_sentence_encoder
+.. autosummary::
+    :toctree: generated/
+
+    UniversalSentenceEncoder
 
 
 Feature methods
