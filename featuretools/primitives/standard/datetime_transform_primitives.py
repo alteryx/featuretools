@@ -149,7 +149,7 @@ class DayOfYear(TransformPrimitive):
         ...          datetime(2019, 12, 31),
         ...          datetime(2020, 2, 28)]
         >>> dayOfYear = DayOfYear()
-        >>> dayofYear(dates).tolist()
+        >>> dayOfYear(dates).tolist()
         [1, 366, 59]
     """
 
