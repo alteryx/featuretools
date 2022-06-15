@@ -19,7 +19,6 @@ from featuretools.primitives import (
     Age,
     Count,
     Day,
-    DayOfYear,
     Diff,
     DivideByFeature,
     DivideNumeric,
