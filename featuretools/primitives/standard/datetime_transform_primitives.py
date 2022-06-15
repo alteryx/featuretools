@@ -166,6 +166,7 @@ class DayOfYear(TransformPrimitive):
             try:
                 return vals.dt.day_of_year
             except:
+                # if Spark dataframe
                 return vals.dt.dayofyear
 
         return dayOfYear
