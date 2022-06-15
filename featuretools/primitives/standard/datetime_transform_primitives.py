@@ -136,11 +136,11 @@ class Day(TransformPrimitive):
         return day
 
 
-class DayOfYear(TransformPrimitive): 
+class DayOfYear(TransformPrimitive):
     """Computes the day number from 1-365, given the datetime
-    
-    Description: 
-        For a list of dates, return the day of the year 
+
+    Description:
+        For a list of dates, return the day of the year
         from the given datetime.
         Examples:
     >>> from datetime import datetime
@@ -149,12 +149,14 @@ class DayOfYear(TransformPrimitive):
     ...          datetime(2020, 2, 28)]
     >>> day = DayOfYear()
     >>> day(dates).tolist()
-    [1, 3, 31] 
+    [1, 3, 31]
     """
 
     name = "dayOfYear"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={"date"})]
-    return_type = ColumnSchema(logical_type=Ordinal(order=list(range(1,365))), semantic_tags={"category"})
+    return_type = ColumnSchema(
+        logical_type=Ordinal(order=list(range(1, 365))), semantic_tags={"category"}
+    )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the day of year from {}"
 
