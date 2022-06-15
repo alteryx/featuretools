@@ -137,10 +137,10 @@ class Day(TransformPrimitive):
 
 
 class DayOfYear(TransformPrimitive):
-    """Determines the day of the year from the given datetime
+    """Determines the ordinal day of the year from the given datetime
 
     Description:
-        For a list of dates, return the day of the year
+        For a list of dates, return the ordinal day of the year
         from the given datetime.
 
     Examples:
@@ -150,7 +150,7 @@ class DayOfYear(TransformPrimitive):
         ...          datetime(2020, 2, 28)]
         >>> dayOfYear = DayOfYear()
         >>> dayofYear(dates).tolist()
-        [1, 365, 59]
+        [1, 366, 59]
     """
 
     name = "day_of_year"
