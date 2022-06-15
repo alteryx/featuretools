@@ -146,7 +146,7 @@ class DayOfYear(TransformPrimitive):
     Examples:
         >>> from datetime import datetime
         >>> dates = [datetime(2019, 1, 1),
-        ...          datetime(2019, 12, 31),
+        ...          datetime(2020, 12, 31),
         ...          datetime(2020, 2, 28)]
         >>> dayOfYear = DayOfYear()
         >>> dayOfYear(dates).tolist()
@@ -156,7 +156,7 @@ class DayOfYear(TransformPrimitive):
     name = "day_of_year"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={"date"})]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(1, 365))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(1, 366))), semantic_tags={"category"}
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the day of year from {}"
