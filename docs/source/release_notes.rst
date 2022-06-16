@@ -11,9 +11,10 @@ Future Release
     * Documentation Changes
         * Update contributing.md to add pandoc (:pr:`2103`, :pr:`2104`)
     * Testing Changes
+        * Latest dependency checker installs spark dependencies (:pr:`2112`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`rwedge`
 
 v1.9.2 June 10, 2022
 ====================
