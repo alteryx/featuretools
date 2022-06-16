@@ -357,13 +357,18 @@ class Month(TransformPrimitive):
         return month
 
 
-class Quarter(TransformPrimitive): 
+class Quarter(TransformPrimitive):
     """Determines the quarter a datetime column falls into (1, 2, 3, 4)
-    
-    Examples: 
-        
-    
+
+    Examples:
+        >>> dates = [datetime(2019,12,1),
+        ...          datetime(2019,1,3),
+        ...          datetime(2020,2,1)]
+        >>> q = Quarter()
+        >>> q(dates).tolist()
+        [4, 1, 1]
     """
+
     name = "quarter"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(

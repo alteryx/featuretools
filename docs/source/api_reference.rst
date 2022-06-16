@@ -133,6 +133,7 @@ Datetime Transform Primitives
     DaysInMonth
     Week
     Month
+    Quarter
     Year
 
 Rolling Transform Primitives

@@ -114,11 +114,11 @@ def test_days_in_month():
     np.testing.assert_array_equal(days_in_month, correct_days)
 
 
-def test_quarter(): 
+def test_quarter():
     q = Quarter()
-    dates =  [datetime(2019,12,1), datetime(2019,1,3), datetime(2020,2,1)]
-    quarter = q(dates) 
-    correct_quarters = [4, 1, 1] 
+    dates = [datetime(2019, 12, 1), datetime(2019, 1, 3), datetime(2020, 2, 1)]
+    quarter = q(dates)
+    correct_quarters = [4, 1, 1]
     np.testing.assert_array_equal(quarter, correct_quarters)
 
 
