@@ -1,3 +1,4 @@
+import inspect
 from datetime import datetime
 from functools import partial
 
@@ -6,6 +7,7 @@ import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
 
+from featuretools.computational_backends.utils import is_agg_type_in_primitive_or_feature
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.exceptions import UnknownFeature
 from featuretools.feature_base import (
@@ -708,9 +710,19 @@ class FeatureSetCalculator(object):
                     if column_id not in to_agg:
                         to_agg[column_id] = []
                     if isinstance(base_frame, dd.DataFrame):
-                        func = f.get_function(agg_type=Library.DASK)
+                        is_agg_type = is_agg_type_in_primitive_or_feature(f)
+
+                        if is_agg_type:
+                            func = f.get_function(agg_type=Library.DASK)
+                        else:
+                            func = f.get_function(series_library=Library.DASK)
                     elif is_instance(base_frame, ps, "DataFrame"):
-                        func = f.get_function(agg_type=Library.SPARK)
+                        is_agg_type = is_agg_type_in_primitive_or_feature(f)
+
+                        if is_agg_type:
+                            func = f.get_function(agg_type=Library.SPARK)
+                        else:
+                            func = f.get_function(series_library=Library.SPARK)
                     else:
                         func = f.get_function()
 
