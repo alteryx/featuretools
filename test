@@ -1,0 +1,6 @@
+from featuretools.primitives import * 
+
+d = DayOfYear()
+dates = [datetime(2021, 2, 3), datetime(2022, 12, 31)] 
+print(d(dates).tolist()) 
+
