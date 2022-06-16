@@ -9,6 +9,7 @@ from featuretools.primitives import (
     DaysInMonth,
     EmailAddressToDomain,
     IsFreeEmailDomain,
+    IsLeapYear,
     NumericLag,
     Quarter,
     TimeSince,
@@ -112,6 +113,14 @@ def test_days_in_month():
     days_in_month = dim(dates)
     correct_days = [31]
     np.testing.assert_array_equal(days_in_month, correct_days)
+
+
+def test_is_leap_year():
+    ily = IsLeapYear()
+    dates = pd.Series([datetime(2020, 1, 1), datetime(2021, 1, 1)])
+    leap_year_bools = ily(dates)
+    correct_bools = [True, False]
+    np.testing.assert_array_equal(leap_year_bools, correct_bools)
 
 
 def test_quarter():

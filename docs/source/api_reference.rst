@@ -127,6 +127,7 @@ Datetime Transform Primitives
     Second
     Minute
     Weekday
+    IsLeapYear
     IsWeekend
     Hour
     Day

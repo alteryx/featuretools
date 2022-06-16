@@ -275,6 +275,32 @@ class Hour(TransformPrimitive):
         return hour
 
 
+class IsLeapYear(TransformPrimitive):
+    """Determines the is_leap_year attribute of a datetime column.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 3, 1),
+        ...          datetime(2020, 3, 3, 11, 10, 50),
+        ...          datetime(2021, 3, 31, 19, 45, 15)]
+        >>> ily = IsLeapYear()
+        >>> ily(dates).tolist()
+        [False, True, False]
+    """
+
+    name = "is_leap_year"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=BooleanNullable)
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "whether the year of {} is a leap year"
+
+    def get_function(self):
+        def is_leap_year(vals):
+            return vals.dt.is_leap_year
+
+        return is_leap_year
+
+
 class IsWeekend(TransformPrimitive):
     """Determines if a date falls on a weekend.
 
@@ -361,6 +387,7 @@ class Quarter(TransformPrimitive):
     """Determines the quarter a datetime column falls into (1, 2, 3, 4)
 
     Examples:
+        >>> from datetime import datetime
         >>> dates = [datetime(2019,12,1),
         ...          datetime(2019,1,3),
         ...          datetime(2020,2,1)]
