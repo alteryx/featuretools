@@ -144,9 +144,9 @@ class DaysInMonth(TransformPrimitive):
         >>> dates = [datetime(2019, 12, 1),
         ...          datetime(2019, 1, 3),
         ...          datetime(2020, 2, 1)]
-        >>> day = Day()
-        >>> day(dates).tolist()
-        [31, 31, 28]
+        >>> days_in_month = DaysInMonth()
+        >>> days_in_month(dates).tolist()
+        [31, 31, 29]
     """
 
     name = "days_in_month"

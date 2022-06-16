@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Implement DaysInMonth primitive (:pr:`2112`)
+        * Implement DaysInMonth primitive (:pr:`2117`)
     * Fixes
     * Changes
         * Pin pyspark below v3.3.0 (:pr:`2114`)
