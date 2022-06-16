@@ -138,11 +138,11 @@ class Day(TransformPrimitive):
 
 class DayOfYear(TransformPrimitive):
     """Determines the ordinal day of the year from the given datetime
-    
+
     Description:
         For a list of dates, return the ordinal day of the year
         from the given datetime.
-    
+
     Examples:
         >>> from datetime import datetime
         >>> dates = [datetime(2019, 1, 1),
