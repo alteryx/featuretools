@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ``DayOfYear`` primitive (:pr:`2108`) 
     * Fixes
     * Changes
     * Documentation Changes
@@ -13,7 +14,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`sbadithe`
 
 v1.9.2 June 10, 2022
 ====================
