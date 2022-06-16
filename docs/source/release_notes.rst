@@ -5,6 +5,10 @@ Release Notes
 
 Future Release
 ==============
+    .. warning::
+        Aggregations Primitives change the name of ``agg_type`` parameter
+        in ``get_function`` to ``series_library``.
+
     * Enhancements
         * Add series_library argument to transform primitives (:pr:`2111`)
     * Fixes
