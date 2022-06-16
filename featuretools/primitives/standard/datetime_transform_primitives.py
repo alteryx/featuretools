@@ -141,7 +141,16 @@ class DaysInMonth(TransformPrimitive):
     Description: 
         For a given datetime, return the number of days in the month
 
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 3, 1),
+        ...          datetime(2019, 3, 3),
+        ...          datetime(2019, 3, 31)]
+        >>> days_in_month = DaysInMonth()
+        >>> days_in_month(dates).tolist()
+        [31, 30, 31] 
     """
+    
     name = "days_in_month"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
