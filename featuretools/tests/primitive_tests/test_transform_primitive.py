@@ -6,6 +6,7 @@ import pytest
 
 from featuretools.primitives import (
     Age,
+    DaysInMonth,
     EmailAddressToDomain,
     IsFreeEmailDomain,
     NumericLag,
@@ -102,6 +103,14 @@ def test_age_nan():
     ages = age(dates, time=datetime(2020, 2, 26))
     correct_ages = [10.159, np.nan, 8.159]
     np.testing.assert_array_almost_equal(ages, correct_ages, decimal=3)
+
+
+def test_days_in_month():
+    dim = DaysInMonth()
+    dates = pd.Series([datetime(2010, 1, 1)])
+    days_in_month = dim(dates)
+    correct_days = [31]
+    np.testing.assert_array_equal(days_in_month, correct_days)
 
 
 def test_week_no_deprecation_message():

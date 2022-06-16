@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Implement DaysInMonth primitive (:pr:`2112`)
     * Fixes
     * Changes
         * Pin pyspark below v3.3.0 (:pr:`2114`)
@@ -15,7 +16,7 @@ Future Release
         * Latest dependency checker installs spark dependencies (:pr:`2112`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`
+    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`
 
 v1.9.2 June 10, 2022
 ====================

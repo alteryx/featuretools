@@ -130,6 +130,7 @@ Datetime Transform Primitives
     IsWeekend
     Hour
     Day
+    DaysInMonth
     Week
     Month
     Year

@@ -136,6 +136,34 @@ class Day(TransformPrimitive):
         return day
 
 
+class DaysInMonth(TransformPrimitive):
+    """Determines the day of the month from a datetime.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 12, 1),
+        ...          datetime(2019, 1, 3),
+        ...          datetime(2020, 2, 1)]
+        >>> day = Day()
+        >>> day(dates).tolist()
+        [31, 31, 28]
+    """
+
+    name = "days_in_month"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(
+        logical_type=Ordinal(order=list(range(1, 32))), semantic_tags={"category"}
+    )
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "the days in the month of {}"
+
+    def get_function(self):
+        def days_in_month(vals):
+            return vals.dt.daysinmonth
+
+        return days_in_month
+
+
 class DistanceToHoliday(TransformPrimitive):
     """Computes the number of days before or after a given holiday.
 
