@@ -156,7 +156,7 @@ class DayOfYear(TransformPrimitive):
     name = "day_of_year"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(1, 366))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(1, 367))), semantic_tags={"category"}
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the day of year from {}"
