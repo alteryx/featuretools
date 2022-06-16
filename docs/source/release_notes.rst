@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add trans_type argument to transform primitives (:pr:`2111`)
     * Fixes
     * Changes
     * Documentation Changes
