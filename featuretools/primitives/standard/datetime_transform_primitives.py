@@ -135,6 +135,26 @@ class Day(TransformPrimitive):
 
         return day
 
+class DaysInMonth(TransformPrimitive): 
+    """Computes the number of days in a month of a certain datetime.
+    
+    Description: 
+        For a given datetime, return the number of days in the month
+
+    """
+    name = "days_in_month"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(
+        logical_type=Ordinal(order=list(range(1, 32))), semantic_tags={"category"}
+    )
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "the days in the month of {}"
+
+    def get_function(self):
+        def days_in_month(vals):
+            return vals.dt.daysinmonth
+
+        return days_in_month
 
 class DistanceToHoliday(TransformPrimitive):
     """Computes the number of days before or after a given holiday.
