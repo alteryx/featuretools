@@ -194,14 +194,19 @@ Standard NLP Primitives
 .. autosummary::
     :toctree: generated/
 
+    CountString
     DiversityScore
     LSA
     MeanCharactersPerWord
+    MedianWordLength
+    NumUniqueSeparators
+    NumberOfCommonWords
     PartOfSpeechCount
     PolarityScore
     PunctuationCount
     StopwordCount
     TitleWordCount
+    TotalWordLength
     UpperCaseCount
 
 Tensorflow NLP Primitives
