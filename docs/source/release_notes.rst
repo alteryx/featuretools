@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Add ``DayOfYear`` primitive (:pr:`2108`) 
+        * Add ``DayOfYear`` primitive (:pr:`2110`) 
     * Fixes
     * Changes
     * Documentation Changes
