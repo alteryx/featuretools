@@ -2064,7 +2064,7 @@ def test_closes_tqdm(es):
         return_type = "Numeric"
         compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
 
-        def get_function(self, trans_type=Library.PANDAS):
+        def get_function(self, series_library=Library.PANDAS):
             def error(s):
                 raise RuntimeError("This primitive has errored")
 

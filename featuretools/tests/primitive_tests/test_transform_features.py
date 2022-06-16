@@ -1091,7 +1091,7 @@ def test_isin_feat_custom(es):
         def __init__(self, list_of_outputs=None):
             self.list_of_outputs = list_of_outputs
 
-        def get_function(self, trans_type=Library.PANDAS):
+        def get_function(self, series_library=Library.PANDAS):
             def pd_is_in(array):
                 return array.isin(self.list_of_outputs)
 
@@ -1320,7 +1320,7 @@ def test_get_filepath(es):
         return_type = ColumnSchema(semantic_tags={"numeric"})
         compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
 
-        def get_function(self, trans_type=Library.PANDAS):
+        def get_function(self, series_library=Library.PANDAS):
             filepath = self.get_filepath("featuretools_unit_test_example.csv")
             reference = pd.read_csv(filepath, header=None, squeeze=True)
 

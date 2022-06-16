@@ -31,7 +31,7 @@ class IsNull(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "whether {} is null"
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         def isnull(array):
             return array.isnull()
 
@@ -53,7 +53,7 @@ class Absolute(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the absolute value of {}"
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         return np.absolute
 
 
@@ -72,7 +72,7 @@ class SquareRoot(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the square root of {}"
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         return np.sqrt
 
 
@@ -91,7 +91,7 @@ class NaturalLogarithm(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the natural logarithm of {}"
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         return np.log
 
 
@@ -110,7 +110,7 @@ class Sine(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the sine of {}"
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         return np.sin
 
 
@@ -129,7 +129,7 @@ class Cosine(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the cosine of {}"
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         return np.cos
 
 
@@ -148,7 +148,7 @@ class Tangent(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the tangent of {}"
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         return np.tan
 
 
@@ -169,7 +169,7 @@ class NumCharacters(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the number of characters in {}"
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         def character_counter(array):
             return array.fillna("").str.len()
 
@@ -194,7 +194,7 @@ class NumWords(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the number of words in {}"
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         def word_counter(array):
             return array.fillna("").str.count(" ") + 1
 
@@ -226,7 +226,7 @@ class IsIn(TransformPrimitive):
             stringified_output_list
         )
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         def pd_is_in(array):
             return array.isin(self.list_of_outputs or [])
 
@@ -259,7 +259,7 @@ class Diff(TransformPrimitive):
     uses_full_dataframe = True
     description_template = "the difference from the previous value of {}"
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         def pd_diff(values):
             return values.diff()
 
@@ -281,7 +281,7 @@ class Negate(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the negation of {}"
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         def negate(vals):
             return vals * -1
 
@@ -312,7 +312,7 @@ class Not(TransformPrimitive):
     def generate_name(self, base_feature_names):
         return "NOT({})".format(base_feature_names[0])
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         return np.logical_not
 
 
@@ -336,7 +336,7 @@ class Percentile(TransformPrimitive):
     return_type = ColumnSchema(semantic_tags={"numeric"})
     description_template = "the percentile rank of {}"
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         return lambda array: array.rank(pct=True)
 
 
@@ -360,7 +360,7 @@ class URLToDomain(TransformPrimitive):
     input_types = [ColumnSchema(logical_type=URL)]
     return_type = ColumnSchema(logical_type=Categorical, semantic_tags={"category"})
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         def url_to_domain(x):
             p = r"^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/?\n]+)"
             return x.str.extract(p, expand=False)
@@ -389,7 +389,7 @@ class URLToProtocol(TransformPrimitive):
     input_types = [ColumnSchema(logical_type=URL)]
     return_type = ColumnSchema(logical_type=Categorical, semantic_tags={"category"})
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         def url_to_protocol(x):
             p = r"^(https|http)(?:\:)"
             return x.str.extract(p, expand=False)
@@ -419,7 +419,7 @@ class URLToTLD(TransformPrimitive):
     input_types = [ColumnSchema(logical_type=URL)]
     return_type = ColumnSchema(logical_type=Categorical, semantic_tags={"category"})
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         self.tlds_pattern = r"(?:\.({}))".format("|".join(COMMON_TLDS))
 
         def url_to_domain(x):
@@ -456,7 +456,7 @@ class IsFreeEmailDomain(TransformPrimitive):
 
     filename = "free_email_provider_domains.txt"
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         file_path = self.get_filepath(self.filename)
 
         free_domains = pd.read_csv(file_path, header=None, names=["domain"])
@@ -508,7 +508,7 @@ class EmailAddressToDomain(TransformPrimitive):
     input_types = [ColumnSchema(logical_type=EmailAddress)]
     return_type = ColumnSchema(logical_type=Categorical, semantic_tags={"category"})
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         def email_address_to_domain(emails):
             # if the input is empty return an empty Series
             if len(emails) == 0:
@@ -570,7 +570,7 @@ class NumericLag(TransformPrimitive):
         self.periods = periods
         self.fill_value = fill_value
 
-    def get_function(self, trans_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         def lag(time_index, numeric):
             x = pd.Series(numeric.values, index=time_index.values)
             return x.shift(periods=self.periods, fill_value=self.fill_value).values
