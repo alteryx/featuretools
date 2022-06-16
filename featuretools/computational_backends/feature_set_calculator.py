@@ -493,7 +493,13 @@ class FeatureSetCalculator(object):
 
             column_data = [frame[bf.get_name()] for bf in f.base_features]
 
-            feature_func = f.get_function()
+            if isinstance(frame, dd.DataFrame):
+                feature_func = f.get_function(trans_type=Library.DASK)
+            elif is_instance(frame, ps, "DataFrame"):
+                feature_func = f.get_function(trans_type=Library.SPARK)
+            else:
+                feature_func = f.get_function()
+
             # apply the function to the relevant dataframe slice and add the
             # feature row to the results dataframe.
             if f.primitive.uses_calc_time:

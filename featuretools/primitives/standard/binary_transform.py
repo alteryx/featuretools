@@ -35,7 +35,7 @@ class GreaterThan(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "whether {} is greater than {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def greater_than(val1, val2):
             val1_is_categorical = pdtypes.is_categorical_dtype(val1)
             val2_is_categorical = pdtypes.is_categorical_dtype(val2)
@@ -81,7 +81,7 @@ class GreaterThanScalar(TransformPrimitive):
         self.value = value
         self.description_template = "whether {{}} is greater than {}".format(self.value)
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def greater_than_scalar(vals):
             if (
                 pdtypes.is_categorical_dtype(vals)
@@ -123,7 +123,7 @@ class GreaterThanEqualTo(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "whether {} is greater than or equal to {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def greater_than_equal(val1, val2):
             val1_is_categorical = pdtypes.is_categorical_dtype(val1)
             val2_is_categorical = pdtypes.is_categorical_dtype(val2)
@@ -171,7 +171,7 @@ class GreaterThanEqualToScalar(TransformPrimitive):
             "whether {{}} is greater than or equal to {}".format(self.value)
         )
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def greater_than_equal_to_scalar(vals):
             if (
                 pdtypes.is_categorical_dtype(vals)
@@ -213,7 +213,7 @@ class LessThan(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "whether {} is less than {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def less_than(val1, val2):
             val1_is_categorical = pdtypes.is_categorical_dtype(val1)
             val2_is_categorical = pdtypes.is_categorical_dtype(val2)
@@ -259,7 +259,7 @@ class LessThanScalar(TransformPrimitive):
         self.value = value
         self.description_template = "whether {{}} is less than {}".format(self.value)
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def less_than_scalar(vals):
             if (
                 pdtypes.is_categorical_dtype(vals)
@@ -301,7 +301,7 @@ class LessThanEqualTo(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "whether {} is less than or equal to {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def less_than_equal(val1, val2):
             val1_is_categorical = pdtypes.is_categorical_dtype(val1)
             val2_is_categorical = pdtypes.is_categorical_dtype(val2)
@@ -349,7 +349,7 @@ class LessThanEqualToScalar(TransformPrimitive):
             self.value
         )
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def less_than_equal_to_scalar(vals):
             if (
                 pdtypes.is_categorical_dtype(vals)
@@ -385,7 +385,7 @@ class Equal(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "whether {} equals {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def equal(x_vals, y_vals):
             if isinstance(x_vals.dtype, pd.CategoricalDtype) and isinstance(
                 y_vals.dtype, pd.CategoricalDtype
@@ -429,7 +429,7 @@ class EqualScalar(TransformPrimitive):
         self.value = value
         self.description_template = "whether {{}} equals {}".format(self.value)
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def equal_scalar(vals):
             return vals == self.value
 
@@ -460,7 +460,7 @@ class NotEqual(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "whether {} does not equal {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def not_equal(x_vals, y_vals):
             if isinstance(x_vals.dtype, pd.CategoricalDtype) and isinstance(
                 y_vals.dtype, pd.CategoricalDtype
@@ -504,7 +504,7 @@ class NotEqualScalar(TransformPrimitive):
         self.value = value
         self.description_template = "whether {{}} does not equal {}".format(self.value)
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def not_equal_scalar(vals):
             return vals != self.value
 
@@ -538,7 +538,7 @@ class AddNumeric(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the sum of {} and {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         return np.add
 
     def generate_name(self, base_feature_names):
@@ -567,7 +567,7 @@ class AddNumericScalar(TransformPrimitive):
         self.value = value
         self.description_template = "the sum of {{}} and {}".format(self.value)
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def add_scalar(vals):
             return vals + self.value
 
@@ -608,7 +608,7 @@ class SubtractNumeric(TransformPrimitive):
     def __init__(self, commutative=True):
         self.commutative = commutative
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         return np.subtract
 
     def generate_name(self, base_feature_names):
@@ -637,7 +637,7 @@ class SubtractNumericScalar(TransformPrimitive):
         self.value = value
         self.description_template = "the result of {{}} minus {}".format(self.value)
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def subtract_scalar(vals):
             return vals - self.value
 
@@ -670,7 +670,7 @@ class ScalarSubtractNumericFeature(TransformPrimitive):
         self.value = value
         self.description_template = "the result {} minus {{}}".format(self.value)
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def scalar_subtract_numeric_feature(vals):
             return self.value - vals
 
@@ -704,7 +704,7 @@ class MultiplyNumeric(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the product of {} and {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         return np.multiply
 
     def generate_name(self, base_feature_names):
@@ -733,7 +733,7 @@ class MultiplyNumericScalar(TransformPrimitive):
         self.value = value
         self.description_template = "the product of {{}} and {}".format(self.value)
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def multiply_scalar(vals):
             return vals * self.value
 
@@ -778,7 +778,7 @@ class MultiplyBoolean(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "the product of {} and {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         return np.bitwise_and
 
     def generate_name(self, base_feature_names):
@@ -827,7 +827,7 @@ class MultiplyNumericBoolean(TransformPrimitive):
     commutative = True
     description_template = "the product of {} and {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def multiply_numeric_boolean(ser1, ser2):
             if pdtypes.is_bool_dtype(ser1):
                 mask = ser1
@@ -880,7 +880,7 @@ class DivideNumeric(TransformPrimitive):
     def __init__(self, commutative=False):
         self.commutative = commutative
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         return np.divide
 
     def generate_name(self, base_feature_names):
@@ -911,7 +911,7 @@ class DivideNumericScalar(TransformPrimitive):
             self.value
         )
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def divide_scalar(vals):
             return vals / self.value
 
@@ -946,7 +946,7 @@ class DivideByFeature(TransformPrimitive):
             self.value
         )
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def divide_by_feature(vals):
             return self.value / vals
 
@@ -979,7 +979,7 @@ class ModuloNumeric(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the remainder after dividing {} by {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         return np.mod
 
     def generate_name(self, base_feature_names):
@@ -1011,7 +1011,7 @@ class ModuloNumericScalar(TransformPrimitive):
             self.value
         )
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def modulo_scalar(vals):
             return vals % self.value
 
@@ -1046,7 +1046,7 @@ class ModuloByFeature(TransformPrimitive):
             self.value
         )
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def modulo_by_feature(vals):
             return self.value % vals
 
@@ -1091,7 +1091,7 @@ class And(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "whether {} and {} are true"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         return np.logical_and
 
     def generate_name(self, base_feature_names):
@@ -1133,7 +1133,7 @@ class Or(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "whether {} is true or {} is true"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         return np.logical_or
 
     def generate_name(self, base_feature_names):
