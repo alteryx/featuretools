@@ -494,9 +494,9 @@ class FeatureSetCalculator(object):
             column_data = [frame[bf.get_name()] for bf in f.base_features]
 
             if isinstance(frame, dd.DataFrame):
-                feature_func = f.get_function(trans_type=Library.DASK)
+                feature_func = f.get_function(series_library=Library.DASK)
             elif is_instance(frame, ps, "DataFrame"):
-                feature_func = f.get_function(trans_type=Library.SPARK)
+                feature_func = f.get_function(series_library=Library.SPARK)
             else:
                 feature_func = f.get_function()
 
@@ -708,9 +708,9 @@ class FeatureSetCalculator(object):
                     if column_id not in to_agg:
                         to_agg[column_id] = []
                     if isinstance(base_frame, dd.DataFrame):
-                        func = f.get_function(agg_type=Library.DASK)
+                        func = f.get_function(series_library=Library.DASK)
                     elif is_instance(base_frame, ps, "DataFrame"):
-                        func = f.get_function(agg_type=Library.SPARK)
+                        func = f.get_function(series_library=Library.SPARK)
                     else:
                         func = f.get_function()
 

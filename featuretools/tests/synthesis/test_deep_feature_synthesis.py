@@ -1169,7 +1169,7 @@ def test_stacks_multioutput_features(es):
         return_type = ColumnSchema(semantic_tags={"numeric"})
         number_output_features = 6
 
-        def get_function(self, trans_type=Library.PANDAS):
+        def get_function(self, series_library=Library.PANDAS):
             def test_f(x):
                 times = pd.Series(x)
                 units = ["year", "month", "day", "hour", "minute", "second"]
