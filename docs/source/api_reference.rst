@@ -128,6 +128,7 @@ Datetime Transform Primitives
     Minute
     Weekday
     IsLeapYear
+    IsQuarterEnd
     IsWeekend
     Hour
     Day

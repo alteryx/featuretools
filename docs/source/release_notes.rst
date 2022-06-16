@@ -9,6 +9,7 @@ Future Release
         * Implement DaysInMonth primitive (:pr:`2117`)
         * Implement Quarter primitive (:pr:`2117`)
         * Implement IsLeapYear primitive (:pr:`2117`)
+        * Implement IsQuarterEnd primitive (:pr:`2117`)
     * Fixes
     * Changes
         * Pin pyspark below v3.3.0 (:pr:`2114`)
