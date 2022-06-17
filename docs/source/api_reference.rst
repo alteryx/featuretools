@@ -127,12 +127,17 @@ Datetime Transform Primitives
     Second
     Minute
     Weekday
+    IsLeapYear
+    IsQuarterEnd
+    IsQuarterStart
     IsWeekend
     Hour
     Day
     DayOfYear
+    DaysInMonth
     Week
     Month
+    Quarter
     Year
 
 Rolling Transform Primitives

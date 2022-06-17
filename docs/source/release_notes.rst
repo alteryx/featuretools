@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Add ``DayOfYear`` primitive (:pr:`2110`) 
+        * Add ``DayOfYear``, ``DaysInMonth``, ``Quarter`` , ``IsLeapYear`` , ``IsQuarterEnd`` , ``IsQuarterStart`` transform primitives (:pr:`2110`, :pr:`2117`)
     * Fixes
     * Changes
     * Documentation Changes
