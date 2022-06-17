@@ -140,7 +140,9 @@ def test_is_leap_year():
 
 def test_is_month_end():
     ime = IsMonthEnd()
-    dates = pd.Series([datetime(2019, 3, 1), datetime(2021, 2, 28), datetime(2020, 2, 29)])
+    dates = pd.Series(
+        [datetime(2019, 3, 1), datetime(2021, 2, 28), datetime(2020, 2, 29)]
+    )
     ime_bools = ime(dates)
     correct_bools = [False, True, True]
     np.testing.assert_array_equal(ime_bools, correct_bools)
@@ -148,7 +150,9 @@ def test_is_month_end():
 
 def test_is_month_start():
     ims = IsMonthStart()
-    dates = pd.Series([datetime(2019, 3, 1), datetime(2020, 2, 28), datetime(2020, 2, 29)])
+    dates = pd.Series(
+        [datetime(2019, 3, 1), datetime(2020, 2, 28), datetime(2020, 2, 29)]
+    )
     ims_bools = ims(dates)
     correct_bools = [True, False, False]
     np.testing.assert_array_equal(ims_bools, correct_bools)
