@@ -7,9 +7,14 @@ import pytest
 from featuretools.primitives import (
     Age,
     DayOfYear,
+    DaysInMonth,
     EmailAddressToDomain,
     IsFreeEmailDomain,
+    IsLeapYear,
+    IsQuarterEnd,
+    IsQuarterStart,
     NumericLag,
+    Quarter,
     TimeSince,
     URLToDomain,
     URLToProtocol,
@@ -107,10 +112,52 @@ def test_age_nan():
 
 def test_day_of_year():
     doy = DayOfYear()
-    dates = pd.Series(datetime(2020, 12, 31))
+    dates = pd.Series([datetime(2019, 12, 31), datetime(2020, 12, 31)])
     days_of_year = doy(dates)
-    correct_days = [366]
+    correct_days = [365, 366]
     np.testing.assert_array_equal(days_of_year, correct_days)
+
+
+def test_days_in_month():
+    dim = DaysInMonth()
+    dates = pd.Series(
+        [datetime(2010, 1, 1), datetime(2019, 2, 1), datetime(2020, 2, 1)]
+    )
+    days_in_month = dim(dates)
+    correct_days = [31, 28, 29]
+    np.testing.assert_array_equal(days_in_month, correct_days)
+
+
+def test_is_leap_year():
+    ily = IsLeapYear()
+    dates = pd.Series([datetime(2020, 1, 1), datetime(2021, 1, 1)])
+    leap_year_bools = ily(dates)
+    correct_bools = [True, False]
+    np.testing.assert_array_equal(leap_year_bools, correct_bools)
+
+
+def test_is_quarter_end():
+    iqe = IsQuarterEnd()
+    dates = pd.Series([datetime(2020, 1, 1), datetime(2021, 3, 31)])
+    iqe_bools = iqe(dates)
+    correct_bools = [False, True]
+    np.testing.assert_array_equal(iqe_bools, correct_bools)
+
+
+def test_is_quarter_start():
+    iqs = IsQuarterStart()
+    dates = pd.Series([datetime(2020, 1, 1), datetime(2021, 3, 31)])
+    iqs_bools = iqs(dates)
+    correct_bools = [True, False]
+    np.testing.assert_array_equal(iqs_bools, correct_bools)
+
+
+def test_quarter():
+    q = Quarter()
+    dates = [datetime(2019, 12, 1), datetime(2019, 1, 3), datetime(2020, 2, 1)]
+    quarter = q(dates)
+    correct_quarters = [4, 1, 1]
+    np.testing.assert_array_equal(quarter, correct_quarters)
 
 
 def test_week_no_deprecation_message():
