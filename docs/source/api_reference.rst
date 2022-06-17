@@ -131,6 +131,8 @@ Datetime Transform Primitives
     IsQuarterEnd
     IsQuarterStart
     IsWeekend
+    IsYearEnd
+    IsYearStart
     Hour
     Day
     DayOfYear
