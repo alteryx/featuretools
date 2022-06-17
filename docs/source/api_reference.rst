@@ -189,8 +189,8 @@ Natural Language Processing Primitives
 --------------------------------------
 Natural Language Processing primitives create features for textual data. For more information on how to use and install these primitives, see `here <https://github.com/FeatureLabs/nlp_primitives>`__.
 
-Standard NLP Primitives
-***********************
+Primitives in standard install
+******************************
 .. autosummary::
     :toctree: generated/
 
@@ -209,8 +209,8 @@ Standard NLP Primitives
     TotalWordLength
     UpperCaseCount
 
-Tensorflow NLP Primitives
-*************************
+Primitives that require installing tensorflow
+*********************************************
 .. currentmodule:: nlp_primitives.tensorflow
 .. autosummary::
     :toctree: generated/
