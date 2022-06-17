@@ -307,7 +307,8 @@ class IsQuarterEnd(TransformPrimitive):
     Examples:
         >>> from datetime import datetime
         >>> iqe = IsQuarterEnd()
-        >>> dates = [datetime(2020, 3, 31), datetime(2020, 1, 1)]
+        >>> dates = [datetime(2020, 3, 31),
+        ...          datetime(2020, 1, 1)]
         >>> iqe(dates).tolist()
         [True, False]
     """
@@ -331,7 +332,8 @@ class IsQuarterStart(TransformPrimitive):
     Examples:
         >>> from datetime import datetime
         >>> iqs = IsQuarterStart()
-        >>> dates = [datetime(2020, 3, 31), datetime(2020, 1, 1)]
+        >>> dates = [datetime(2020, 3, 31),
+        ...          datetime(2020, 1, 1)]
         >>> iqs(dates).tolist()
         [False, True]
     """
