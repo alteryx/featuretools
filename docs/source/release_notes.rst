@@ -11,14 +11,18 @@ Future Release
 
     * Enhancements
         * Add series_library argument to transform primitives (:pr:`2111`)
+        * Add ``DayOfYear`` primitive (:pr:`2110`)
     * Fixes
     * Changes
+        * Pin pyspark below v3.3.0 (:pr:`2114`)
     * Documentation Changes
         * Update contributing.md to add pandoc (:pr:`2103`, :pr:`2104`)
+        * Update NLP primitives section of API reference (:pr:`2109`)
     * Testing Changes
+        * Latest dependency checker installs spark dependencies (:pr:`2112`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`
 
 v1.9.2 June 10, 2022
 ====================
