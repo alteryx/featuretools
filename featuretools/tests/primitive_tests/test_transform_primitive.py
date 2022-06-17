@@ -209,7 +209,7 @@ def test_quarter_year_before_1970():
     )
     answer = q(array)
     correct_answer = pd.Series([1, 2, 3, 4])
-    pd.testing.assert_array_equal(answer, correct_answer)
+    np.testing.assert_array_equal(answer, correct_answer)
 
 
 def test_quarter_year_after_2038():
