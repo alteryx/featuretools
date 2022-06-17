@@ -208,6 +208,7 @@ Primitives in standard install
     TitleWordCount
     TotalWordLength
     UpperCaseCount
+    WhitespaceCount
 
 Primitives that require installing tensorflow
 *********************************************
