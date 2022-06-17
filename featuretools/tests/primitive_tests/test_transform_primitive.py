@@ -11,6 +11,7 @@ from featuretools.primitives import (
     IsFreeEmailDomain,
     IsLeapYear,
     IsQuarterEnd,
+    IsQuarterStart,
     NumericLag,
     Quarter,
     TimeSince,
@@ -130,6 +131,14 @@ def test_is_quarter_end():
     iqe_bools = iqe(dates)
     correct_bools = [False, True]
     np.testing.assert_array_equal(iqe_bools, correct_bools)
+
+
+def test_is_quarter_start():
+    iqs = IsQuarterStart()
+    dates = pd.Series([datetime(2020, 1, 1), datetime(2021, 3, 31)])
+    iqs_bools = iqs(dates)
+    correct_bools = [True, False]
+    np.testing.assert_array_equal(iqs_bools, correct_bools)
 
 
 def test_quarter():
