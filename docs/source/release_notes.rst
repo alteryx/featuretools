@@ -6,9 +6,9 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Add ``DayOfYear``, ``DaysInMonth``, ``Quarter`` , 
-              ``IsLeapYear`` , ``IsQuarterEnd`` , ``IsQuarterStart``, 
-              ``IsMonthEnd``, ``IsMonthStart`` transform primitives (:pr:`2110`, :pr:`2117`, :pr:`2121`)
+        * Add ``DayOfYear``, ``DaysInMonth``, ``Quarter``, ``IsLeapYear``, 
+              ``IsQuarterEnd``, ``IsQuarterStart``, ``IsMonthEnd``, ``IsMonthStart`` 
+              transform primitives (:pr:`2110`, :pr:`2117`, :pr:`2121`)
     * Fixes
     * Changes
         * Pin pyspark below v3.3.0 (:pr:`2114`)
