@@ -164,7 +164,7 @@ def test_quarter_regular():
     )
     answer = q(array)
     correct_answer = pd.Series([1, 2, 3, 4])
-    np.testing.assert_series_equal(answer, correct_answer)
+    np.testing.assert_array_equal(answer, correct_answer)
 
 
 def test_quarter_leap_year():
@@ -179,7 +179,7 @@ def test_quarter_leap_year():
     )
     answer = q(array)
     correct_answer = pd.Series([1, 2, 3, 4])
-    np.testing.assert_series_equal(answer, correct_answer)
+    np.testing.assert_array_equal(answer, correct_answer)
 
 
 def test_quarter_nan_and_nat_input():
@@ -194,10 +194,10 @@ def test_quarter_nan_and_nat_input():
     )
     answer = q(array)
     correct_answer = pd.Series([1, np.nan, np.nan, 4])
-    np.testing.assert_series_equal(answer, correct_answer)
+    np.testing.assert_array_equal(answer, correct_answer)
 
 
-def test_quarter_year_before_1970(self):
+def test_quarter_year_before_1970():
     q = Quarter()
     array = pd.Series(
         [
@@ -209,7 +209,7 @@ def test_quarter_year_before_1970(self):
     )
     answer = q(array)
     correct_answer = pd.Series([1, 2, 3, 4])
-    pd.testing.assert_series_equal(answer, correct_answer)
+    pd.testing.assert_array_equal(answer, correct_answer)
 
 
 def test_quarter_year_after_2038():
@@ -224,7 +224,7 @@ def test_quarter_year_after_2038():
     )
     answer = q(array)
     correct_answer = pd.Series([1, 2, 3, 4])
-    np.testing.assert_series_equal(answer, correct_answer)
+    np.testing.assert_array_equal(answer, correct_answer)
 
 
 def test_quarter():
