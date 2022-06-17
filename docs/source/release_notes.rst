@@ -12,6 +12,7 @@ Future Release
         * Pin pyspark below v3.3.0 (:pr:`2114`)
     * Documentation Changes
         * Update contributing.md to add pandoc (:pr:`2103`, :pr:`2104`)
+        * Update NLP primitives section of API reference (:pr:`2109`)
     * Testing Changes
         * Latest dependency checker installs spark dependencies (:pr:`2112`)
 
