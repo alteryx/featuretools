@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
 
-from featuretools.computational_backends.utils import is_agg_type_in_primitive_or_feature
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.exceptions import UnknownFeature
 from featuretools.feature_base import (
@@ -495,10 +494,18 @@ class FeatureSetCalculator(object):
 
             column_data = [frame[bf.get_name()] for bf in f.base_features]
 
+            has_series_lib_parameter = "series_library" in f.get_function.__code__.co_varnames
+
             if isinstance(frame, dd.DataFrame):
-                feature_func = f.get_function(series_library=Library.DASK)
+                if has_series_lib_parameter:
+                    feature_func = f.get_function(series_library=Library.DASK)
+                else:
+                    feature_func = f.get_function()
             elif is_instance(frame, ps, "DataFrame"):
-                feature_func = f.get_function(series_library=Library.SPARK)
+                if has_series_lib_parameter:
+                    feature_func = f.get_function(series_library=Library.SPARK)
+                else:
+                    feature_func = f.get_function()
             else:
                 feature_func = f.get_function()
 
@@ -916,3 +923,20 @@ def strip_values_if_series(values):
     if isinstance(values, pd.Series):
         values = values.values
     return values
+
+
+def is_agg_type_in_primitive_or_feature(f):
+    is_agg_type = False
+    if hasattr(f.primitive, "is_agg_type"):
+        return f.primitive.is_agg_type
+
+    if hasattr(f, "is_agg_type"):
+        return f.is_agg_type
+
+    if isinstance(f, AggregationFeature):
+        is_agg_type = "agg_type" in f.primitive.get_function.__code__.co_varnames
+        f.primitive.is_agg_type = is_agg_type
+    else:
+        is_agg_type = "agg_type" in f.get_function.__code__.co_varnames
+        f.is_agg_type = is_agg_type
+    return is_agg_type

@@ -385,12 +385,3 @@ def get_ww_types_from_features(
         "column_origins": origins,
     }
     return ww_init
-
-
-def is_agg_type_in_primitive_or_feature(f):
-    is_agg_type = False
-    if isinstance(f, AggregationFeature):
-        is_agg_type = "agg_type" in f.primitive.get_function.__code__.co_varnames
-    else:
-        is_agg_type = "agg_type" in f.get_function.__code__.co_varnames
-    return is_agg_type
