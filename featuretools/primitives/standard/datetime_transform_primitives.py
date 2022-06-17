@@ -167,7 +167,7 @@ class DayOfYear(TransformPrimitive):
 
         return dayOfYear
 
-      
+
 class DaysInMonth(TransformPrimitive):
     """Determines the day of the month from a datetime.
 
@@ -195,7 +195,7 @@ class DaysInMonth(TransformPrimitive):
 
         return days_in_month
 
-      
+
 class DistanceToHoliday(TransformPrimitive):
     """Computes the number of days before or after a given holiday.
 
