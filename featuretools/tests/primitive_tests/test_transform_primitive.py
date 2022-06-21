@@ -167,6 +167,80 @@ def test_is_year_start():
     dates = pd.Series([datetime(2020, 12, 31), datetime(2020, 1, 1)])
     answer = is_year_start(dates)
     correct_answer = [False, True]
+    
+    
+def test_quarter_regular():
+    q = Quarter()
+    array = pd.Series(
+        [
+            pd.to_datetime("2018-01-01"),
+            pd.to_datetime("2018-04-01"),
+            pd.to_datetime("2018-07-01"),
+            pd.to_datetime("2018-10-01"),
+        ]
+    )
+    answer = q(array)
+    correct_answer = pd.Series([1, 2, 3, 4])
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_quarter_leap_year():
+    q = Quarter()
+    array = pd.Series(
+        [
+            pd.to_datetime("2016-02-29"),
+            pd.to_datetime("2018-04-01"),
+            pd.to_datetime("2018-07-01"),
+            pd.to_datetime("2018-10-01"),
+        ]
+    )
+    answer = q(array)
+    correct_answer = pd.Series([1, 2, 3, 4])
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_quarter_nan_and_nat_input():
+    q = Quarter()
+    array = pd.Series(
+        [
+            pd.to_datetime("2016-02-29"),
+            np.nan,
+            np.datetime64("NaT"),
+            pd.to_datetime("2018-10-01"),
+        ]
+    )
+    answer = q(array)
+    correct_answer = pd.Series([1, np.nan, np.nan, 4])
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_quarter_year_before_1970():
+    q = Quarter()
+    array = pd.Series(
+        [
+            pd.to_datetime("2018-01-01"),
+            pd.to_datetime("1950-04-01"),
+            pd.to_datetime("1874-07-01"),
+            pd.to_datetime("2018-10-01"),
+        ]
+    )
+    answer = q(array)
+    correct_answer = pd.Series([1, 2, 3, 4])
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_quarter_year_after_2038():
+    q = Quarter()
+    array = pd.Series(
+        [
+            pd.to_datetime("2018-01-01"),
+            pd.to_datetime("2050-04-01"),
+            pd.to_datetime("2174-07-01"),
+            pd.to_datetime("2018-10-01"),
+        ]
+    )
+    answer = q(array)
+    correct_answer = pd.Series([1, 2, 3, 4])
     np.testing.assert_array_equal(answer, correct_answer)
 
 
