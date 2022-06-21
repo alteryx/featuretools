@@ -469,7 +469,13 @@ class PartOfDay(TransformPrimitive):
     """Determines the part of day of a datetime.
 
     Examples:
-
+        >>> from datetime import datetime
+        >>> dates = [datetime(2020, 1, 11, 6, 2, 1),
+        ...          datetime(2021, 3, 31, 4, 2, 1),
+        ...          datetime(2020, 3, 4, 9, 2, 1)]
+        >>> part_of_day = PartOfDay()
+        >>> part_of_day(dates).tolist()
+        >>> ["early morning", "dawn", "late morning"]
     """
 
     name = "part_of_day"
