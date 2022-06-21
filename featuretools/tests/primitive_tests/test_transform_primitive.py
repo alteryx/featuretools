@@ -167,6 +167,7 @@ def test_is_year_start():
     dates = pd.Series([datetime(2020, 12, 31), datetime(2020, 1, 1)])
     answer = is_year_start(dates)
     correct_answer = [False, True]
+    np.testing.assert_array_equal(answer, correct_answer)
 
 
 def test_quarter_regular():
