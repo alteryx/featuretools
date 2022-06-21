@@ -10,6 +10,7 @@ Future Release
         * Move ``Quarter`` test cases (:pr:`2123`)
     * Fixes
     * Changes
+        * Update feature deserialization to use a common primitive instance for features that use the same primitive (:pr:`2127`)
     * Documentation Changes
         * Update contributing.md to add pandoc (:pr:`2103`, :pr:`2104`)
         * Update NLP primitives section of API reference (:pr:`2109`)
@@ -18,7 +19,7 @@ Future Release
         * Fix test failures with pyspark v3.3.0 (:pr:`2114`, :pr:`2120`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`
+    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v1.9.2 June 10, 2022
 ====================
