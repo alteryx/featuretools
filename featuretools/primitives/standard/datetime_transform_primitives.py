@@ -465,6 +465,44 @@ class Month(TransformPrimitive):
         return month
 
 
+class PartOfDay(TransformPrimitive):
+    """Determines the part of day of a datetime.
+
+    Examples:
+
+    """
+
+    name = "part_of_day"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=Categorical, semantic_tags={"category"})
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "the part of day {} falls in"
+
+    def get_part_of_day(self, hour):
+        if hour in [4, 5]:
+            return "dawn"
+        elif hour in [6, 7]:
+            return "early morning"
+        elif hour in [8, 9, 10]:
+            return "late morning"
+        elif hour in [11, 12, 13]:
+            return "noon"
+        elif hour in [14, 15, 16]:
+            return "afternoon"
+        elif hour in [17, 18, 19]:
+            return "evening"
+        elif hour in [20, 21, 22]:
+            return "night"
+        elif hour in [23, 24, 1, 2, 3]:
+            return "midnight"
+
+    def get_function(self):
+        def part_of_day(vals):
+            return vals.apply(lambda x: self.get_part_of_day(x.hour))
+
+        return part_of_day
+
+
 class Quarter(TransformPrimitive):
     """Determines the quarter a datetime column falls into (1, 2, 3, 4)
 

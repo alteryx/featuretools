@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Add ``DayOfYear``, ``DaysInMonth``, ``Quarter`` , ``IsLeapYear`` , ``IsQuarterEnd`` , ``IsQuarterStart`` transform primitives (:pr:`2110`, :pr:`2117`)
+        * Add ``DayOfYear``, ``DaysInMonth``, ``Quarter`` , ``IsLeapYear`` , ``IsQuarterEnd`` , ``IsQuarterStart``, ``PartOfDay`` transform primitives (:pr:`2110`, :pr:`2117`, :pr:)
         * Move ``Quarter`` test cases (:pr:`2123`)
     * Fixes
     * Changes
