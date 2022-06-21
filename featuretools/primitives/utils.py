@@ -232,7 +232,7 @@ class PrimitivesDeserializer(object):
         # (class_name, module_name) -> class
         self.class_cache = {}
 
-        # Cache to use existing primitive instances if they exist
+        # Cache to use existing primitive instances
         # (class_name, module_name, (arg1_key, arg1_value), ...) -> class
         self.instance_cache = {}
         self.primitive_classes = find_descendents(PrimitiveBase)
