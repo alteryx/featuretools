@@ -497,12 +497,12 @@ def test_make_index_any_location(df):
 
 
 def test_replace_dataframe_and_create_index(es):
-    expected_idx_col = [0, 1, 2]
     df = pd.DataFrame({"ints": [3, 4, 5], "category": ["a", "b", "a"]})
+    final_df = df.copy()
+    final_df["id"] = [0, 1, 2]
     if es.dataframe_type == Library.DASK.value:
         df = dd.from_pandas(df, npartitions=2)
     elif es.dataframe_type == Library.SPARK.value:
-        expected_idx_col = [0, 2, 1]
         df = ps.from_pandas(df)
 
     needs_idx_df = df.copy()
@@ -523,16 +523,16 @@ def test_replace_dataframe_and_create_index(es):
     es.replace_dataframe("test_df", needs_idx_df)
 
     assert es["test_df"].ww.index == "id"
-    assert all(expected_idx_col == to_pandas(es["test_df"]["id"]))
+    df = to_pandas(es["test_df"]).sort_values(by="id")
+    assert all(df["id"] == final_df["id"])
+    assert all(df["ints"] == final_df["ints"])
 
 
 def test_replace_dataframe_created_index_present(es):
-    original_idx_col = [100, 1, 2]
     df = pd.DataFrame({"ints": [3, 4, 5], "category": ["a", "b", "a"]})
     if es.dataframe_type == Library.DASK.value:
         df = dd.from_pandas(df, npartitions=2)
     elif es.dataframe_type == Library.SPARK.value:
-        original_idx_col = [100, 2, 1]
         df = ps.from_pandas(df)
 
     logical_types = {"ints": Integer, "category": Categorical}
@@ -553,7 +553,8 @@ def test_replace_dataframe_created_index_present(es):
 
     es.replace_dataframe("test_df", has_idx_df)
     assert es["test_df"].ww.index == "id"
-    assert all(original_idx_col == to_pandas(es["test_df"]["id"]))
+    df = to_pandas(es["test_df"]).sort_values(by="ints")
+    assert all(df["id"] == [100, 1, 2])
 
 
 def test_index_any_location(df):
