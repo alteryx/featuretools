@@ -7,7 +7,7 @@ import holidays
 import numpy as np
 import pandas as pd
 from pandas.tseries.frequencies import to_offset
-from woodwork import list_logical_types
+from woodwork import list_logical_types, list_semantic_tags
 from woodwork.column_schema import ColumnSchema
 
 import featuretools
@@ -122,41 +122,20 @@ def summarize_primitives() -> pd.DataFrame:
         "total_primitives": tot_prims,
         "aggregation_primitives": tot_agg,
         "transform_primitives": tot_trans,
-        "unique_input_types": primitives_summary["unique_input_types"],
-        "unique_out_types": primitives_summary["unique_output_types"],
-        "use_multi_inputs": primitives_summary["ct_multi_in"],
-        "use_multi_outputs": primitives_summary["ct_multi_out"],
-        "use_external_data": primitives_summary["ct_extra_data"],
-        "are_controllable": primitives_summary["ct_controllable"],
-        "use_time_index": primitives_summary["ct_semantic_time_idx"],
-        "use_datetime_inputs": primitives_summary["datetime"],
-        "use_categorical_inputs": primitives_summary["categorical"],
-        "use_address_inputs": primitives_summary["address"],
-        "use_age_inputs": primitives_summary["age"],
-        "use_age_nullable_inputs": primitives_summary["age_nullable"],
-        "use_age_fractional_inputs": primitives_summary["age_fractional"],
-        "use_boolean_inputs": primitives_summary["boolean"],
-        "use_boolean_nullable_inputs": primitives_summary["boolean_nullable"],
-        "use_country_code_inputs": primitives_summary["country_code"],
-        "use_currency_code_inputs": primitives_summary["currency_code"],
-        "use_double_inputs": primitives_summary["double"],
-        "use_integer_inputs": primitives_summary["integer"],
-        "uses_integer_nullable_inputs": primitives_summary["integer_nullable"],
-        "use_email_address_inputs": primitives_summary["email_address"],
-        "use_filepath_inputs": primitives_summary["filepath"],
-        "use_person_fullname_inputs": primitives_summary["person_full_name"],
-        "use_ip_address_inputs": primitives_summary["ip_address"],
-        "use_lat_long_address_inputs": primitives_summary["lat_long"],
-        "use_natural_language_inputs": primitives_summary["natural_language"],
-        "use_unknown_inputs": primitives_summary["unknown"],
-        "use_ordinal_inputs": primitives_summary["ordinal"],
-        "use_phone_number_inputs": primitives_summary["phone_number"],
-        "use_sub_region_code_inputs": primitives_summary["sub_region_code"],
-        "use_time_delta_inputs": primitives_summary["timedelta"],
-        "use_url_inputs": primitives_summary["url"],
-        "use_postal_code_inputs": primitives_summary["postal_code"],
+        **primitives_summary["general_metrics"],
     }
-
+    summary_dict.update(
+        {
+            f"uses_{ltype}_input": count
+            for ltype, count in primitives_summary["logical_type_input_metrics"].items()
+        }
+    )
+    summary_dict.update(
+        {
+            f"uses_{tag}_tag_input": count
+            for tag, count in primitives_summary["semantic_tag_metrics"].items()
+        }
+    )
     summary_df = pd.DataFrame(
         [{"Metric": k, "Count": v} for k, v in summary_dict.items()]
     )
@@ -208,61 +187,77 @@ def _get_summary_primitives(primitives: List) -> Dict[str, int]:
     """Provides metrics for a list of primitives."""
     unique_input_types = set()
     unique_output_types = set()
-    ct_multi_in = 0
-    ct_multi_out = 0
-    ct_extra_data = 0
-    ct_controllable = 0
-    logical_type_count = {
+    uses_multi_input = 0
+    uses_multi_output = 0
+    uses_external_data = 0
+    are_controllable = 0
+    logical_type_metrics = {
         log_type: 0 for log_type in list(list_logical_types()["type_string"])
     }
-    prim_input_ww_checks = {  # semantic tag for time index and logical types in inputs
-        "ct_semantic_time_idx": 0,
-        **logical_type_count,
+    semantic_tag_metrics = {
+        sem_tag: 0 for sem_tag in list(list_semantic_tags()["name"])
     }
+    semantic_tag_metrics.update(
+        {"foreign_key": 0}
+    )  # not currently in list_semantic_tags()
+
     for prim in primitives:
-        input_checks = set()
+        log_in_type_checks = set()
+        sem_tag_type_checks = set()
         input_types = prim.flatten_nested_input_types(prim.input_types)
-        _check_input_types(input_types, input_checks, unique_input_types)
-        for check in list(input_checks):
-            prim_input_ww_checks[check] += 1
+        _check_input_types(
+            input_types, log_in_type_checks, sem_tag_type_checks, unique_input_types
+        )
+        for ltype in list(log_in_type_checks):
+            logical_type_metrics[ltype] += 1
+
+        for sem_tag in list(sem_tag_type_checks):
+            semantic_tag_metrics[sem_tag] += 1
 
         if len(prim.input_types) > 1:
-            ct_multi_in += 1
+            uses_multi_input += 1
 
         # checks if number_output_features is set as an instance variable or set as a constant
         if (
             "self.number_output_features =" in getsource(prim.__init__)
             or prim.number_output_features > 1
         ):
-            ct_multi_out += 1
+            uses_multi_output += 1
         unique_output_types.add(str(prim.return_type))
 
         if hasattr(prim, "filename"):
-            ct_extra_data += 1
+            uses_external_data += 1
 
         if len(getfullargspec(prim.__init__).args) > 1:
-            ct_controllable += 1
+            are_controllable += 1
 
     return {
-        "unique_input_types": len(unique_input_types),
-        "unique_output_types": len(unique_output_types),
-        "ct_multi_in": ct_multi_in,
-        "ct_multi_out": ct_multi_out,
-        "ct_extra_data": ct_extra_data,
-        "ct_controllable": ct_controllable,
-        **prim_input_ww_checks,
+        "general_metrics": {
+            "unique_input_types": len(unique_input_types),
+            "unique_output_types": len(unique_output_types),
+            "uses_multi_input": uses_multi_input,
+            "uses_multi_output": uses_multi_output,
+            "uses_external_data": uses_external_data,
+            "are_controllable": are_controllable,
+        },
+        "logical_type_input_metrics": logical_type_metrics,
+        "semantic_tag_metrics": semantic_tag_metrics,
     }
 
 
 def _check_input_types(
-    input_types: List[ColumnSchema], input_checks: set, unique_input_types: set
+    input_types: List[ColumnSchema],
+    log_in_type_checks: set,
+    sem_tag_type_checks: set,
+    unique_input_types: set,
 ):
-    """Checks if any logical types or time indices occur in a list of Woodwork input types and keeps track of unique input types."""
+    """Checks if any logical types or semantic tags occur in a list of Woodwork input types and keeps track of unique input types."""
     for in_type in input_types:
-        if "time_index" in in_type.semantic_tags:
-            input_checks.add("ct_semantic_time_idx")
+        if in_type.semantic_tags:
+            for sem_tag in in_type.semantic_tags:
+                sem_tag_type_checks.add(sem_tag)
         if in_type.logical_type:
-            input_checks.add(in_type.logical_type.type_string)
+            log_in_type_checks.add(in_type.logical_type.type_string)
         unique_input_types.add(str(in_type))
 
 
