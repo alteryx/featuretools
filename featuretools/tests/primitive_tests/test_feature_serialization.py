@@ -7,7 +7,6 @@ from smart_open import open
 from woodwork.column_schema import ColumnSchema
 
 import featuretools as ft
-from featuretools import entityset
 from featuretools.entityset.serialize import SCHEMA_VERSION as ENTITYSET_SCHEMA_VERSION
 from featuretools.feature_base.features_deserializer import FeaturesDeserializer
 from featuretools.feature_base.features_serializer import (
