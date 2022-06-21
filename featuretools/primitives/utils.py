@@ -228,7 +228,13 @@ class PrimitivesDeserializer(object):
     """
 
     def __init__(self):
-        self.class_cache = {}  # (class_name, module_name) -> class
+        # Cache to avoid repeatedly searching for primitive class
+        # (class_name, module_name) -> class
+        self.class_cache = {}
+
+        # Cache to use existing primitive instances if they exist
+        # (class_name, module_name, (arg1_key, arg1_value), ...) -> class
+        self.instance_cache = {}
         self.primitive_classes = find_descendents(PrimitiveBase)
 
     def deserialize_primitive(self, primitive_dict):
@@ -238,21 +244,28 @@ class PrimitivesDeserializer(object):
         """
         class_name = primitive_dict["type"]
         module_name = primitive_dict["module"]
-        cache_key = (class_name, module_name)
+        arguments = primitive_dict["arguments"]
+        arguments_key = [(k, v) for k, v in arguments.items()]
+        class_cache_key = (class_name, module_name)
+        instance_cache_key = (class_name, module_name, *arguments_key)
 
-        if cache_key in self.class_cache:
-            cls = self.class_cache[cache_key]
+        if instance_cache_key in self.instance_cache:
+            primitive_instance = self.instance_cache[instance_cache_key]
         else:
-            cls = self._find_class_in_descendants(cache_key)
+            if class_cache_key in self.class_cache:
+                cls = self.class_cache[class_cache_key]
+            else:
+                cls = self._find_class_in_descendants(class_cache_key)
 
             if not cls:
                 raise RuntimeError(
                     'Primitive "%s" in module "%s" not found'
                     % (class_name, module_name)
                 )
+            primitive_instance = cls(**arguments)
+            self.instance_cache[instance_cache_key] = primitive_instance
 
-        arguments = primitive_dict["arguments"]
-        return cls(**arguments)
+        return primitive_instance
 
     def _find_class_in_descendants(self, search_key):
         for cls in self.primitive_classes:

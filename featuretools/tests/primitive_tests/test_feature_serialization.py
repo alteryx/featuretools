@@ -7,6 +7,7 @@ from smart_open import open
 from woodwork.column_schema import ColumnSchema
 
 import featuretools as ft
+from featuretools import entityset
 from featuretools.entityset.serialize import SCHEMA_VERSION as ENTITYSET_SCHEMA_VERSION
 from featuretools.feature_base.features_deserializer import FeaturesDeserializer
 from featuretools.feature_base.features_serializer import (
@@ -17,12 +18,14 @@ from featuretools.primitives import (
     Count,
     CumSum,
     Day,
+    DistanceToHoliday,
     Haversine,
     Max,
     Mean,
     Min,
     Mode,
     Month,
+    MultiplyNumericScalar,
     NMostCommon,
     NumCharacters,
     NumUnique,
@@ -36,6 +39,7 @@ from featuretools.primitives import (
 )
 from featuretools.primitives.base import AggregationPrimitive
 from featuretools.tests.testing_utils import check_names
+from featuretools.utils.gen_utils import Library
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
@@ -304,3 +308,100 @@ def test_serialize_url(es):
     error_text = "Writing to URLs is not supported"
     with pytest.raises(ValueError, match=error_text):
         ft.save_features(features_original, URL)
+
+
+def test_deserializer_uses_common_primitive_instances(es, tmpdir):
+    scalar1 = MultiplyNumericScalar(value=1)
+    scalar5 = MultiplyNumericScalar(value=5)
+    features = ft.dfs(
+        entityset=es,
+        target_dataframe_name="products",
+        features_only=True,
+        agg_primitives=["sum"],
+        trans_primitives=["is_null", scalar1, scalar5],
+    )
+
+    is_null_features = [f for f in features if f.primitive.name == "is_null"]
+    sum_features = [f for f in features if f.primitive.name == "sum"]
+    scalar1_features = [
+        f
+        for f in features
+        if f.primitive.name == "multiply_numeric_scalar" and " * 1" in f.get_name()
+    ]
+    scalar5_features = [
+        f
+        for f in features
+        if f.primitive.name == "multiply_numeric_scalar" and " * 5" in f.get_name()
+    ]
+
+    # Make sure we have multiple features of each type
+    assert len(is_null_features) > 1
+    assert len(sum_features) > 1
+    assert len(scalar1_features) > 1
+    assert len(scalar5_features) > 1
+
+    # DFS should use the same primitive instance for all features that share a primitive
+    is_null_primitive = is_null_features[0].primitive
+    sum_primitive = sum_features[0].primitive
+    scalar1_primitive = scalar1_features[0].primitive
+    scalar5_primitive = scalar5_features[0].primitive
+    assert all([f.primitive is is_null_primitive for f in is_null_features])
+    assert all([f.primitive is sum_primitive for f in sum_features])
+    assert all([f.primitive is scalar1_primitive for f in scalar1_features])
+    assert all([f.primitive is scalar5_primitive for f in scalar5_features])
+    assert scalar1_primitive is not scalar5_primitive
+
+    file = os.path.join(tmpdir, "features.json")
+    ft.save_features(features, file)
+    deserialized_features = ft.load_features(file)
+    new_is_null_features = [
+        f for f in deserialized_features if f.primitive.name == "is_null"
+    ]
+    new_sum_features = [f for f in deserialized_features if f.primitive.name == "sum"]
+    new_scalar1_features = [
+        f
+        for f in features
+        if f.primitive.name == "multiply_numeric_scalar" and " * 1" in f.get_name()
+    ]
+    new_scalar5_features = [
+        f
+        for f in features
+        if f.primitive.name == "multiply_numeric_scalar" and " * 5" in f.get_name()
+    ]
+
+    # After deserialization all features that share a primitive should use the same primitive instance
+    new_is_null_primitive = new_is_null_features[0].primitive
+    new_sum_primitive = new_sum_features[0].primitive
+    new_scalar1_primitive = new_scalar1_features[0].primitive
+    new_scalar5_primitive = new_scalar5_features[0].primitive
+    assert all([f.primitive is new_is_null_primitive for f in new_is_null_features])
+    assert all([f.primitive is new_sum_primitive for f in new_sum_features])
+    assert all([f.primitive is new_scalar1_primitive for f in new_scalar1_features])
+    assert all([f.primitive is new_scalar5_primitive for f in new_scalar5_features])
+    assert new_scalar1_primitive is not new_scalar5_primitive
+
+    # Test primitive with multiple args - pandas only due to primitive compatibility
+    if es.dataframe_type == Library.PANDAS.value:
+        distance_to_holiday = DistanceToHoliday(
+            holiday="Victoria Day", country="Canada"
+        )
+        features = ft.dfs(
+            entityset=es,
+            target_dataframe_name="customers",
+            features_only=True,
+            agg_primitives=[],
+            trans_primitives=[distance_to_holiday],
+        )
+
+        distance_features = [
+            f for f in features if f.primitive.name == "distance_to_holiday"
+        ]
+        assert len(distance_features) > 1
+
+        file = os.path.join(tmpdir, "distance_features.json")
+        ft.save_features(distance_features, file)
+        new_distance_features = ft.load_features(file)
+        new_distance_primitive = new_distance_features[0].primitive
+        assert all(
+            [f.primitive is new_distance_primitive for f in new_distance_features]
+        )
