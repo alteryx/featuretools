@@ -9,6 +9,7 @@ Future Release
         * Add ``DayOfYear``, ``DaysInMonth``, ``Quarter``, ``IsLeapYear``, 
               ``IsQuarterEnd``, ``IsQuarterStart``, ``IsMonthEnd``, ``IsMonthStart`` 
               transform primitives (:pr:`2110`, :pr:`2117`, :pr:`2121`)
+        * Move ``Quarter`` test cases (:pr:`2123`)
     * Fixes
     * Changes
         * Pin pyspark below v3.3.0 (:pr:`2114`)
