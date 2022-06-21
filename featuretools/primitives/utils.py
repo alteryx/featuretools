@@ -245,7 +245,14 @@ class PrimitivesDeserializer(object):
         class_name = primitive_dict["type"]
         module_name = primitive_dict["module"]
         arguments = primitive_dict["arguments"]
-        arguments_key = [(k, v) for k, v in arguments.items()]
+        # convert any list args to tuples so they are hashable
+        cleaned_args = {}
+        for k, v in arguments.items():
+            if isinstance(v, list):
+                cleaned_args[k] = tuple(v)
+            else:
+                cleaned_args[k] = v
+        arguments_key = [(k, v) for k, v in cleaned_args.items()]
         class_cache_key = (class_name, module_name)
         instance_cache_key = (class_name, module_name, *arguments_key)
 
