@@ -127,11 +127,17 @@ Datetime Transform Primitives
     Second
     Minute
     Weekday
+    IsLeapYear
+    IsQuarterEnd
+    IsQuarterStart
     IsWeekend
     Hour
     Day
+    DayOfYear
+    DaysInMonth
     Week
     Month
+    Quarter
     Year
 
 Rolling Transform Primitives
@@ -189,19 +195,35 @@ Natural Language Processing Primitives
 --------------------------------------
 Natural Language Processing primitives create features for textual data. For more information on how to use and install these primitives, see `here <https://github.com/FeatureLabs/nlp_primitives>`__.
 
+Primitives in standard install
+******************************
 .. autosummary::
     :toctree: generated/
 
+    CountString
     DiversityScore
     LSA
     MeanCharactersPerWord
+    MedianWordLength
+    NumUniqueSeparators
+    NumberOfCommonWords
     PartOfSpeechCount
     PolarityScore
     PunctuationCount
     StopwordCount
     TitleWordCount
-    UniversalSentenceEncoder
+    TotalWordLength
     UpperCaseCount
+    WhitespaceCount
+
+Primitives that require installing tensorflow
+*********************************************
+.. currentmodule:: nlp_primitives.tensorflow
+.. autosummary::
+    :toctree: generated/
+
+    Elmo
+    UniversalSentenceEncoder
 
 
 Feature methods

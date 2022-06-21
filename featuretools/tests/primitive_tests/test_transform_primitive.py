@@ -6,9 +6,15 @@ import pytest
 
 from featuretools.primitives import (
     Age,
+    DayOfYear,
+    DaysInMonth,
     EmailAddressToDomain,
     IsFreeEmailDomain,
+    IsLeapYear,
+    IsQuarterEnd,
+    IsQuarterStart,
     NumericLag,
+    Quarter,
     TimeSince,
     URLToDomain,
     URLToProtocol,
@@ -102,6 +108,131 @@ def test_age_nan():
     ages = age(dates, time=datetime(2020, 2, 26))
     correct_ages = [10.159, np.nan, 8.159]
     np.testing.assert_array_almost_equal(ages, correct_ages, decimal=3)
+
+
+def test_day_of_year():
+    doy = DayOfYear()
+    dates = pd.Series([datetime(2019, 12, 31), datetime(2020, 12, 31)])
+    days_of_year = doy(dates)
+    correct_days = [365, 366]
+    np.testing.assert_array_equal(days_of_year, correct_days)
+
+
+def test_days_in_month():
+    dim = DaysInMonth()
+    dates = pd.Series(
+        [datetime(2010, 1, 1), datetime(2019, 2, 1), datetime(2020, 2, 1)]
+    )
+    days_in_month = dim(dates)
+    correct_days = [31, 28, 29]
+    np.testing.assert_array_equal(days_in_month, correct_days)
+
+
+def test_is_leap_year():
+    ily = IsLeapYear()
+    dates = pd.Series([datetime(2020, 1, 1), datetime(2021, 1, 1)])
+    leap_year_bools = ily(dates)
+    correct_bools = [True, False]
+    np.testing.assert_array_equal(leap_year_bools, correct_bools)
+
+
+def test_is_quarter_end():
+    iqe = IsQuarterEnd()
+    dates = pd.Series([datetime(2020, 1, 1), datetime(2021, 3, 31)])
+    iqe_bools = iqe(dates)
+    correct_bools = [False, True]
+    np.testing.assert_array_equal(iqe_bools, correct_bools)
+
+
+def test_is_quarter_start():
+    iqs = IsQuarterStart()
+    dates = pd.Series([datetime(2020, 1, 1), datetime(2021, 3, 31)])
+    iqs_bools = iqs(dates)
+    correct_bools = [True, False]
+    np.testing.assert_array_equal(iqs_bools, correct_bools)
+
+
+def test_quarter_regular():
+    q = Quarter()
+    array = pd.Series(
+        [
+            pd.to_datetime("2018-01-01"),
+            pd.to_datetime("2018-04-01"),
+            pd.to_datetime("2018-07-01"),
+            pd.to_datetime("2018-10-01"),
+        ]
+    )
+    answer = q(array)
+    correct_answer = pd.Series([1, 2, 3, 4])
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_quarter_leap_year():
+    q = Quarter()
+    array = pd.Series(
+        [
+            pd.to_datetime("2016-02-29"),
+            pd.to_datetime("2018-04-01"),
+            pd.to_datetime("2018-07-01"),
+            pd.to_datetime("2018-10-01"),
+        ]
+    )
+    answer = q(array)
+    correct_answer = pd.Series([1, 2, 3, 4])
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_quarter_nan_and_nat_input():
+    q = Quarter()
+    array = pd.Series(
+        [
+            pd.to_datetime("2016-02-29"),
+            np.nan,
+            np.datetime64("NaT"),
+            pd.to_datetime("2018-10-01"),
+        ]
+    )
+    answer = q(array)
+    correct_answer = pd.Series([1, np.nan, np.nan, 4])
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_quarter_year_before_1970():
+    q = Quarter()
+    array = pd.Series(
+        [
+            pd.to_datetime("2018-01-01"),
+            pd.to_datetime("1950-04-01"),
+            pd.to_datetime("1874-07-01"),
+            pd.to_datetime("2018-10-01"),
+        ]
+    )
+    answer = q(array)
+    correct_answer = pd.Series([1, 2, 3, 4])
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_quarter_year_after_2038():
+    q = Quarter()
+    array = pd.Series(
+        [
+            pd.to_datetime("2018-01-01"),
+            pd.to_datetime("2050-04-01"),
+            pd.to_datetime("2174-07-01"),
+            pd.to_datetime("2018-10-01"),
+        ]
+    )
+    answer = q(array)
+    correct_answer = pd.Series([1, 2, 3, 4])
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_quarter():
+    q = Quarter()
+    dates = [datetime(2019, 12, 1), datetime(2019, 1, 3), datetime(2020, 2, 1)]
+    quarter = q(dates)
+    correct_quarters = [4, 1, 1]
+    np.testing.assert_array_equal(quarter, correct_quarters)
 
 
 def test_week_no_deprecation_message():
