@@ -335,12 +335,12 @@ class IsLeapYear(TransformPrimitive):
 
 class IsLunchTime(TransformPrimitive):
     """Determines if a datetime falls during lunch time (non-holiday weekday with hour=12)
-    
+
     Args:
         country (str): Country to use for determining Holidays.
             Default is 'US'. Should be one of the available countries here:
             https://github.com/dr-prodigy/python-holidays#available-countries
-    
+
     Examples:
         >>> from datetime import datetime
         >>> dates = [datetime(2022, 6, 21, 12, 3, 3),
@@ -358,7 +358,7 @@ class IsLunchTime(TransformPrimitive):
     description_template = "whether {} falls during lunch time"
 
     def __init__(self, country="US"):
-        self.country = country 
+        self.country = country
         years_list = [1950 + x for x in range(150)]
         self.federal_holidays = getattr(holidays, self.country)(years=years_list)
 
@@ -505,14 +505,14 @@ class IsWeekend(TransformPrimitive):
 
 class IsWorkingHours(TransformPrimitive):
     """Determines if a datetime falls during working hours
-    
+
     Args:
         start_time (int): Start hour of workday
         end_time (int): End hour of workday
         country (str): Country to use for determining Holidays.
             Default is 'US'. Should be one of the available countries here:
             https://github.com/dr-prodigy/python-holidays#available-countries
-    
+
     Examples:
         >>> from datetime import datetime
         >>> dates = [datetime(2022, 6, 21, 16, 3, 3),
@@ -530,14 +530,14 @@ class IsWorkingHours(TransformPrimitive):
     description_template = "whether {} falls during working hours"
 
     def __init__(self, start_time=8, end_time=18, country="US"):
-        self.country = country 
+        self.country = country
         years_list = [1950 + x for x in range(150)]
         self.federal_holidays = getattr(holidays, self.country)(years=years_list)
-        self.start_hour = start_time
-        self.end_hour = end_time
+        self.start_time = start_time
+        self.end_time = end_time
 
     def work_hours(self, tstamp):
-        working_hours = tstamp.hour >= self.start_hour and tstamp.hour <= self.end_hour
+        working_hours = tstamp.hour >= self.start_time and tstamp.hour <= self.end_time
         working_day = tstamp.weekday() < 5
         is_holiday = tstamp.date() in self.federal_holidays.keys()
         return working_hours and working_day and not is_holiday
