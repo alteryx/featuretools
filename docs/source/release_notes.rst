@@ -9,7 +9,7 @@ Future Release
         * Add ``DayOfYear``, ``DaysInMonth``, ``Quarter``, ``IsLeapYear``, 
               ``IsQuarterEnd``, ``IsQuarterStart``, ``IsMonthEnd``, ``IsMonthStart`` 
               ``IsWorkingHours``, ``IsLunchTime``
-              transform primitives (:pr:`2110`, :pr:`2117`, :pr:`2121`, :pr:)
+              transform primitives (:pr:`2110`, :pr:`2117`, :pr:`2121`, :pr:`2130`)
         * Move ``Quarter`` test cases (:pr:`2123`)
     * Fixes
     * Changes
