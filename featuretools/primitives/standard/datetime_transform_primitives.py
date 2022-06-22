@@ -507,8 +507,8 @@ class IsWorkingHours(TransformPrimitive):
     """Determines if a datetime falls during working hours
 
     Args:
-        start_time (int): Start hour of workday
-        end_time (int): End hour of workday
+        start_time (int): Start hour of workday. Default is 8 (8am)
+        end_time (int): End hour of workday. Default is 18 (6pm) 
         country (str): Country to use for determining Holidays.
             Default is 'US'. Should be one of the available countries here:
             https://github.com/dr-prodigy/python-holidays#available-countries
