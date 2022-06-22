@@ -98,7 +98,7 @@ def list_primitives():
 
 
 def summarize_primitives() -> pd.DataFrame:
-    """Returns a metrics summary DataFrame of all built-in primitives in featuretools."""
+    """Returns a metrics summary DataFrame of all primitives found in list_primitives."""
     (
         trans_names,
         trans_primitives,
