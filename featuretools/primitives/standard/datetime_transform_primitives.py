@@ -333,6 +333,42 @@ class IsLeapYear(TransformPrimitive):
         return is_leap_year
 
 
+class IsLunchTime(TransformPrimitive):
+    """Determines if a datetime falls during lunch time (non-holiday weekday with hour=12)
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2022, 6, 21, 12, 3, 3),
+                     datetime(2019, 1, 3, 4, 4, 4),
+                     datetime(2022, 1, 1, 12, 1, 2)]
+        >>> ilt = IsLunchTime()
+        >>> ilt(dates).tolist()
+        [True, False, False]
+    """
+
+    name = "is_lunch_time"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=BooleanNullable)
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "whether {} falls during lunch time"
+
+    def __init__(self, country="US"):
+        years_list = [1950 + x for x in range(150)]
+        self.federal_holidays = getattr(holidays, country)(years=years_list)
+
+    def lunch_time(self, tstamp):
+        lunch_hrs = tstamp.hour == 12
+        working_day = tstamp.weekday() < 5
+        is_holiday = tstamp.date() in self.federal_holidays.keys()
+        return lunch_hrs and working_day and not is_holiday
+
+    def get_function(self):
+        def is_lunch_time(vals):
+            return vals.apply(lambda x: self.lunch_time(x))
+
+        return is_lunch_time
+
+
 class IsMonthEnd(TransformPrimitive):
     """Determines the is_month_end attribute of a datetime column.
 
@@ -459,6 +495,44 @@ class IsWeekend(TransformPrimitive):
             return vals.dt.weekday > 4
 
         return is_weekend
+
+
+class IsWorkingHours(TransformPrimitive):
+    """Determines if a datetime falls during working hours
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2022, 6, 21, 16, 3, 3),
+                     datetime(2019,1,3,4,4,4),
+                     datetime(2022, 1, 1, 12, 1, 2)]
+        >>> iwh = IsWorkingHours()
+        >>> iwh(dates).tolist()
+        [True, False, False]
+    """
+
+    name = "is_working_hours"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=BooleanNullable)
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "whether {} falls during working hours"
+
+    def __init__(self, start_time=8, end_time=18, country="US"):
+        years_list = [1950 + x for x in range(150)]
+        self.federal_holidays = getattr(holidays, country)(years=years_list)
+        self.start_hour = start_time
+        self.end_hour = end_time
+
+    def work_hours(self, tstamp):
+        working_hours = tstamp.hour >= self.start_hour and tstamp.hour <= self.end_hour
+        working_day = tstamp.weekday() < 5
+        is_holiday = tstamp.date() in self.federal_holidays.keys()
+        return working_hours and working_day and not is_holiday
+
+    def get_function(self):
+        def is_working_hours(vals):
+            return vals.apply(lambda x: self.work_hours(x))
+
+        return is_working_hours
 
 
 class Minute(TransformPrimitive):

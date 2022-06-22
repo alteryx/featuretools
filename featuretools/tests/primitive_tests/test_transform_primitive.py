@@ -11,10 +11,12 @@ from featuretools.primitives import (
     EmailAddressToDomain,
     IsFreeEmailDomain,
     IsLeapYear,
+    IsLunchTime,
     IsMonthEnd,
     IsMonthStart,
     IsQuarterEnd,
     IsQuarterStart,
+    IsWorkingHours,
     NumericLag,
     Quarter,
     TimeSince,
@@ -172,6 +174,62 @@ def test_is_quarter_start():
     iqs_bools = iqs(dates)
     correct_bools = [True, False]
     np.testing.assert_array_equal(iqs_bools, correct_bools)
+
+
+def test_is_lunch_time():
+    ilt = IsLunchTime()
+    dates = pd.Series(
+        [
+            datetime(2022, 6, 19, 12, 12, 12),
+            datetime(2022, 6, 21, 12, 3, 4),
+            datetime(2022, 6, 21, 11, 3, 4),
+        ]
+    )
+    answer = ilt(dates)
+    correct_answer = [False, True, False]
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_is_working_hours_standard_hours():
+    iwh = IsWorkingHours()
+    dates = pd.Series(
+        [
+            datetime(2022, 6, 21, 16, 3, 3),
+            datetime(2019, 1, 3, 4, 4, 4),
+            datetime(2022, 1, 1, 12, 1, 2),
+        ]
+    )
+    answer = iwh(dates)
+    correct_answer = [True, False, False]
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_is_working_hours_configured_hours():
+    iwh = IsWorkingHours(15, 18)
+    dates = pd.Series(
+        [
+            datetime(2022, 6, 21, 16, 3, 3),
+            datetime(2022, 6, 22, 14, 4, 4),
+            datetime(2022, 1, 1, 12, 1, 2),
+        ]
+    )
+    answer = iwh(dates)
+    correct_answer = [True, False, False]
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_is_working_hours_boxing_day():
+    iwh = IsWorkingHours(country="CA")
+    dates = pd.Series(
+        [
+            datetime(2022, 12, 26, 16, 3, 3),
+            datetime(2021, 12, 26, 16, 3, 3),
+            datetime(2020, 12, 26, 16, 3, 3),
+        ]
+    )
+    answer = iwh(dates)
+    correct_answer = [False, False, False]
+    np.testing.assert_array_equal(answer, correct_answer)
 
 
 def test_quarter_regular():
