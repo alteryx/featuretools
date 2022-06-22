@@ -8,8 +8,10 @@ Future Release
     * Enhancements
         * Add ``DayOfYear``, ``DaysInMonth``, ``Quarter``,
           ``IsLeapYear`` , ``IsQuarterEnd`` , ``IsQuarterStart``, 
-          ``IsYearEnd``, ``IsYearStart`` transform primitives (:pr:`2110`, :pr:`2117`, :pr:`2124`)
+          ``IsYearEnd``, ``IsYearStart``, ``IsMonthEnd``, ``IsMonthStart``
+          transform primitives (:pr:`2110`, :pr:`2117`, :pr:`2121`, :pr:`2124`)
         * Move ``Quarter`` test cases (:pr:`2123`)
+        * Add ``summarize_primitives`` function for getting metrics about available primitives (:pr:`2099`)
     * Fixes
     * Changes
     * Documentation Changes
@@ -20,7 +22,7 @@ Future Release
         * Fix test failures with pyspark v3.3.0 (:pr:`2114`, :pr:`2120`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`
+    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`ozzieD`
 
 v1.9.2 June 10, 2022
 ====================
