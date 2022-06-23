@@ -13,6 +13,7 @@ Future Release
         * Add ``summarize_primitives`` function for getting metrics about available primitives (:pr:`2099`)
     * Fixes
     * Changes
+        * Restrict numpy below 1.23.0 while investigating test failures (:pr:`2135`)
     * Documentation Changes
         * Update contributing.md to add pandoc (:pr:`2103`, :pr:`2104`)
         * Update NLP primitives section of API reference (:pr:`2109`)
@@ -21,7 +22,7 @@ Future Release
         * Fix test failures with pyspark v3.3.0 (:pr:`2114`, :pr:`2120`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`ozzieD`
+    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`ozzieD`, :user:`thehomebrewnerd`
 
 v1.9.2 June 10, 2022
 ====================
