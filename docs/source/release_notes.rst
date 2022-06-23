@@ -11,8 +11,10 @@ Future Release
               transform primitives (:pr:`2110`, :pr:`2117`, :pr:`2121`)
         * Move ``Quarter`` test cases (:pr:`2123`)
         * Add ``summarize_primitives`` function for getting metrics about available primitives (:pr:`2099`)
+        
     * Fixes
     * Changes
+        * Improve serialization and deserialization to reduce storage of duplicate primitive information ()
     * Documentation Changes
         * Update contributing.md to add pandoc (:pr:`2103`, :pr:`2104`)
         * Update NLP primitives section of API reference (:pr:`2109`)
@@ -21,7 +23,7 @@ Future Release
         * Fix test failures with pyspark v3.3.0 (:pr:`2114`, :pr:`2120`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`ozzieD`
+    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`ozzieD`, :user:`thehomebrewnerd`
 
 v1.9.2 June 10, 2022
 ====================
