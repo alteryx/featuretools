@@ -424,6 +424,7 @@ def test_serialization(es):
         "primitive": serialize_primitive(primitive),
         "where": None,
         "use_previous": None,
+        "feature_names": None,
     }
 
     assert dictionary == max1.get_arguments()
@@ -445,6 +446,7 @@ def test_serialization(es):
         "primitive": serialize_primitive(primitive),
         "where": is_purchased.unique_name(),
         "use_previous": use_previous.get_arguments(),
+        "feature_names": None,
     }
 
     assert dictionary == max2.get_arguments()

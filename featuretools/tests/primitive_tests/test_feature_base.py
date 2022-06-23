@@ -211,6 +211,7 @@ def test_to_dictionary_direct(es):
                 "parent_column_name": "id",
                 "child_column_name": "session_id",
             },
+            "feature_names": None,
         },
     }
 
@@ -259,6 +260,7 @@ def test_to_dictionary_agg(es):
             },
             "where": None,
             "use_previous": None,
+            "feature_names": None,
         },
     }
 
@@ -294,6 +296,7 @@ def test_to_dictionary_where(es):
             },
             "where": "log: value = 2",
             "use_previous": None,
+            "feature_names": None,
         },
     }
 
@@ -314,6 +317,7 @@ def test_to_dictionary_trans(es):
                 "module": "featuretools.primitives.standard.transform_primitive",
                 "arguments": {},
             },
+            "feature_names": None,
         },
     }
 

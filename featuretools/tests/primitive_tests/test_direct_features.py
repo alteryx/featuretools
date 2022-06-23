@@ -286,6 +286,7 @@ def test_serialization(es):
         "name": None,
         "base_feature": value.unique_name(),
         "relationship": log_to_products.to_dictionary(),
+        "feature_names": None,
     }
 
     assert dictionary == direct.get_arguments()
