@@ -13,7 +13,7 @@ Future Release
         * Add ``summarize_primitives`` function for getting metrics about available primitives (:pr:`2099`)
     * Fixes
     * Changes
-        * Restrict numpy below 1.23.0 while investigating test failures (:pr:`2135`)
+        * Changes for compatibility with numpy 1.23.0 (:pr:`2135`, :pr:`2137`)
     * Documentation Changes
         * Update contributing.md to add pandoc (:pr:`2103`, :pr:`2104`)
         * Update NLP primitives section of API reference (:pr:`2109`)
