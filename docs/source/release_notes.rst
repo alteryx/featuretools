@@ -2,9 +2,18 @@
 
 Release Notes
 -------------
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
 
-Future Release
-==============
+.. Thanks to the following people for contributing to this release:
+
+v1.10.0 June 23, 2022
+=====================
     * Enhancements
         * Add ``DayOfYear``, ``DaysInMonth``, ``Quarter``, ``IsLeapYear``, ``IsQuarterEnd``, ``IsQuarterStart`` transform primitives (:pr:`2110`, :pr:`2117`)
         * Add ``IsMonthEnd``, ``IsMonthStart`` transform primitives (:pr:`2121`)
@@ -21,7 +30,7 @@ Future Release
         * Fix test failures with pyspark v3.3.0 (:pr:`2114`, :pr:`2120`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`ozzieD`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v1.9.2 June 10, 2022
 ====================
