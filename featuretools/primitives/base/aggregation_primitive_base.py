@@ -7,6 +7,7 @@ class AggregationPrimitive(PrimitiveBase):
     base_of = None  # whitelist of primitives this prim can be input for
     base_of_exclude = None  # primitives this primitive can't be input for
     stack_on_self = True  # whether or not it can be in input_types of self
+    is_agg_type = False #
 
     def generate_name(
         self,
@@ -43,3 +44,5 @@ class AggregationPrimitive(PrimitiveBase):
             use_prev_str,
         )
         return [base_name + "[%s]" % i for i in range(n)]
+
+    def is_agg_type(self):

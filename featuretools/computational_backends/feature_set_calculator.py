@@ -499,11 +499,13 @@ class FeatureSetCalculator(object):
             if isinstance(frame, dd.DataFrame):
                 if has_series_lib_parameter:
                     feature_func = f.get_function(series_library=Library.DASK)
+                    f.series_library = Library.DASK
                 else:
                     feature_func = f.get_function()
             elif is_instance(frame, ps, "DataFrame"):
                 if has_series_lib_parameter:
                     feature_func = f.get_function(series_library=Library.SPARK)
+                    f.series_library = Library.SPARK
                 else:
                     feature_func = f.get_function()
             else:
