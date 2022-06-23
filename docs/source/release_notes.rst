@@ -14,7 +14,7 @@ Future Release
         
     * Fixes
     * Changes
-        * Improve serialization and deserialization to reduce storage of duplicate primitive information ()
+        * Improve serialization and deserialization to reduce storage of duplicate primitive information (:pr:`2136`)
     * Documentation Changes
         * Update contributing.md to add pandoc (:pr:`2103`, :pr:`2104`)
         * Update NLP primitives section of API reference (:pr:`2109`)
