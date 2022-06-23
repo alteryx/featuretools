@@ -548,12 +548,16 @@ class DirectFeature(FeatureBase):
             arguments["relationship"], entityset
         )
         child_dataframe_name = relationship.child_dataframe.ww.name
-        return cls(
+        feat = cls(
             base_feature=base_feature,
             child_dataframe_name=child_dataframe_name,
             relationship=relationship,
             name=arguments["name"],
         )
+        feature_names = arguments.get("feature_names")
+        if feature_names:
+            feat._names = feature_names
+        return feat
 
     @property
     def number_output_features(self):
@@ -589,6 +593,7 @@ class DirectFeature(FeatureBase):
             "name": self._name,
             "base_feature": self.base_features[0].unique_name(),
             "relationship": relationship.to_dictionary(),
+            "feature_names": self._names,
         }
 
     def _name_from_base(self, base_name):
@@ -730,7 +735,7 @@ class AggregationFeature(FeatureBase):
         where_name = arguments["where"]
         where = where_name and dependencies[where_name]
 
-        return cls(
+        feat = cls(
             base_features=base_features,
             parent_dataframe_name=parent_dataframe_name,
             primitive=primitive,
@@ -739,6 +744,10 @@ class AggregationFeature(FeatureBase):
             where=where,
             name=arguments["name"],
         )
+        feature_names = arguments.get("feature_names")
+        if feature_names:
+            feat._names = feature_names
+        return feat
 
     def copy(self):
         return AggregationFeature(
@@ -790,6 +799,7 @@ class AggregationFeature(FeatureBase):
             "primitive": serialize_primitive(self.primitive),
             "where": self.where and self.where.unique_name(),
             "use_previous": self.use_previous and self.use_previous.get_arguments(),
+            "feature_names": self._names,
         }
 
     def relationship_path_name(self):
@@ -823,9 +833,13 @@ class TransformFeature(FeatureBase):
         primitive = primitives_deserializer.deserialize_primitive(
             arguments["primitive"]
         )
-        return cls(
+        feat = cls(
             base_features=base_features, primitive=primitive, name=arguments["name"]
         )
+        feature_names = arguments.get("feature_names")
+        if feature_names:
+            feat._names = feature_names
+        return feat
 
     def copy(self):
         return TransformFeature(self.base_features, self.primitive)
@@ -845,6 +859,7 @@ class TransformFeature(FeatureBase):
             "name": self._name,
             "base_features": [feat.unique_name() for feat in self.base_features],
             "primitive": serialize_primitive(self.primitive),
+            "feature_names": self._names,
         }
 
 
