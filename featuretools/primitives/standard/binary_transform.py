@@ -883,6 +883,7 @@ class DivideNumeric(TransformPrimitive):
     def get_function(self):
         def divide_numeric(val1, val2):
             return val1 / val2
+
         return divide_numeric
 
     def generate_name(self, base_feature_names):
