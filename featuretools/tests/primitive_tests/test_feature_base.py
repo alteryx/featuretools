@@ -1,4 +1,5 @@
 import os.path
+import re
 
 import pytest
 from pympler.asizeof import asizeof
@@ -461,3 +462,76 @@ def test_rename_featureoutputslice(es):
     new_name = "session_test"
     new_names = ["session_test"]
     check_rename(feat, new_name, new_names)
+
+
+def test_set_feature_names_wrong_number_of_names(es):
+    feat = ft.Feature(
+        es["log"].ww["product_id"],
+        parent_dataframe_name="customers",
+        primitive=NMostCommon(n=2),
+    )
+    new_names = ["col1"]
+    error_msg = re.escape(
+        "Number of names provided must match the number of output features: 1 name(s) provided, 2 expected."
+    )
+    with pytest.raises(ValueError, match=error_msg):
+        feat.set_feature_names(new_names)
+
+
+def test_set_feature_names_not_unique(es):
+    feat = ft.Feature(
+        es["log"].ww["product_id"],
+        parent_dataframe_name="customers",
+        primitive=NMostCommon(n=2),
+    )
+    new_names = ["col1", "col1"]
+    error_msg = "Provided output feature names must be unique."
+    with pytest.raises(ValueError, match=error_msg):
+        feat.set_feature_names(new_names)
+
+
+def test_set_feature_names_direct_feature(es):
+    feat = ft.Feature(es["sessions"].ww["device_name"], "log")
+    new_names = ["sessions_device"]
+    feat.set_feature_names(new_names)
+    assert feat.get_feature_names() == new_names
+
+
+def test_set_feature_names_identity_feature(es):
+    feat = ft.Feature(es["log"].ww["value"])
+    new_names = ["log_value"]
+    error_msg = "Cannot change output feature name for an IdentityFeature."
+    with pytest.raises(TypeError, match=error_msg):
+        feat.set_feature_names(new_names)
+
+
+def test_set_feature_names_transform_feature(es):
+    feat = ft.Feature(es["log"].ww["value"], primitive=Negate)
+    new_names = ["negative_log_value"]
+    feat.set_feature_names(new_names)
+    assert feat.get_feature_names() == new_names
+
+
+def test_set_feature_names_aggregation_feature(es):
+    feat = ft.Feature(
+        es["log"].ww["product_id"],
+        parent_dataframe_name="customers",
+        primitive=NMostCommon(n=2),
+    )
+    new_names = ["agg_col_1", "second_agg_col"]
+    feat.set_feature_names(new_names)
+    assert feat.get_feature_names() == new_names
+
+
+def test_renaming_resets_feature_output_names_to_default(es):
+    feat = ft.Feature(
+        es["log"].ww["product_id"],
+        parent_dataframe_name="customers",
+        primitive=NMostCommon(n=2),
+    )
+    new_names = ["renamed1", "renamed2"]
+    feat.set_feature_names(new_names)
+    assert feat.get_feature_names() == new_names
+
+    feat = feat.rename("new_feature_name")
+    assert feat.get_feature_names() == ["new_feature_name[0]", "new_feature_name[1]"]

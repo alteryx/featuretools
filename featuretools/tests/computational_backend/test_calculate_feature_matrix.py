@@ -37,7 +37,16 @@ from featuretools.computational_backends.utils import (
     n_jobs_to_workers,
 )
 from featuretools.feature_base import AggregationFeature, DirectFeature, IdentityFeature
-from featuretools.primitives import Count, Max, Min, Percentile, Sum, TransformPrimitive
+from featuretools.primitives import (
+    Count,
+    Max,
+    Min,
+    Negate,
+    NMostCommon,
+    Percentile,
+    Sum,
+    TransformPrimitive,
+)
 from featuretools.tests.testing_utils import (
     backward_path,
     get_mock_client_cluster,
@@ -2266,3 +2275,25 @@ def test_feature_origins_present_on_all_fm_cols(pd_es):
     for col in feature_matrix.columns:
         origin = feature_matrix.ww[col].ww.origin
         assert origin in ["base", "engineered"]
+
+
+def test_renamed_features_have_expected_column_names(pd_es):
+    direct_feat = ft.Feature(pd_es["sessions"].ww["device_name"], "log")
+    trans_feat = ft.Feature(pd_es["log"].ww["value"], primitive=Negate)
+    multi_output_agg_feat = ft.Feature(
+        pd_es["log"].ww["product_id"],
+        parent_dataframe_name="customers",
+        primitive=NMostCommon(n=2),
+    )
+
+    direct_name = ["device_direct"]
+    direct_feat.set_feature_names(direct_name)
+    trans_name = ["negative_value"]
+    trans_feat.set_feature_names(trans_name)
+    agg_name = ["first_most_common", "second_most_common"]
+    multi_output_agg_feat.set_feature_names(agg_name)
+
+    features = [direct_feat, trans_feat, multi_output_agg_feat]
+    feature_matrix = calculate_feature_matrix(entityset=pd_es, features=features)
+    for renamed_col in direct_name + trans_name + agg_name:
+        assert renamed_col in feature_matrix.columns

@@ -76,7 +76,8 @@ class FeatureBase(object):
         raise NotImplementedError("Must define from_dictionary on FeatureBase subclass")
 
     def rename(self, name):
-        """Rename Feature, returns copy"""
+        """Rename Feature, returns copy. Will reset any custom feature column names
+        to their default value."""
         feature_copy = self.copy()
         feature_copy._name = name
         feature_copy._names = None
@@ -102,6 +103,26 @@ class FeatureBase(object):
                         for i in range(len(self._names))
                     ]
         return self._names
+
+    def set_feature_names(self, names):
+        """Set new values for the feature column names, overriding the default values.
+        Number of names provided much match the number of output columns defined for
+        the feature.
+
+        Args:
+            names (list[str]): List of names to use for the output feature columns. Provided
+                names must be unique.
+        """
+        if self.number_output_features != len(names):
+            raise ValueError(
+                "Number of names provided must match the number of output features:"
+                f" {len(names)} name(s) provided, {self.number_output_features} expected."
+            )
+
+        if len(set(names)) != len(names):
+            raise ValueError("Provided output feature names must be unique.")
+
+        self._names = names
 
     def get_function(self, **kwargs):
         return self.primitive.get_function(**kwargs)
@@ -447,6 +468,9 @@ class IdentityFeature(FeatureBase):
             "column_name": self.column_name,
             "dataframe_name": self.dataframe_name,
         }
+
+    def set_feature_names(self, names):
+        raise TypeError("Cannot change output feature name for an IdentityFeature.")
 
     @property
     def column_schema(self):
