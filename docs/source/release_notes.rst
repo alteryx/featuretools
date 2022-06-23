@@ -15,6 +15,7 @@ Future Release
     * Fixes
     * Changes
         * Improve serialization and deserialization to reduce storage of duplicate primitive information (:pr:`2136`)
+        * Changes for compatibility with numpy 1.23.0 (:pr:`2135`, :pr:`2137`)
     * Documentation Changes
         * Update contributing.md to add pandoc (:pr:`2103`, :pr:`2104`)
         * Update NLP primitives section of API reference (:pr:`2109`)

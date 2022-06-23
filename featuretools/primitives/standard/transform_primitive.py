@@ -81,7 +81,9 @@ class NaturalLogarithm(TransformPrimitive):
 
     Examples:
         >>> log = NaturalLogarithm()
-        >>> log([1.0, np.e]).tolist()
+        >>> results = log([1.0, np.e]).tolist()
+        >>> results = [round(x, 2) for x in results]
+        >>> results
         [0.0, 1.0]
     """
 
