@@ -881,7 +881,9 @@ class DivideNumeric(TransformPrimitive):
         self.commutative = commutative
 
     def get_function(self):
-        return np.divide
+        def divide_numeric(val1, val2):
+            return val1 / val2
+        return divide_numeric
 
     def generate_name(self, base_feature_names):
         return "%s / %s" % (base_feature_names[0], base_feature_names[1])
