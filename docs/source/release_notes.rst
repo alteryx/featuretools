@@ -6,17 +6,16 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Add ``DayOfYear``, ``DaysInMonth``, ``Quarter``, ``IsLeapYear``, 
-              ``IsQuarterEnd``, ``IsQuarterStart``, ``IsMonthEnd``, ``IsMonthStart`` 
-              transform primitives (:pr:`2110`, :pr:`2117`, :pr:`2121`)
+        * Add ``DayOfYear``, ``DaysInMonth``, ``Quarter``, ``IsLeapYear``, ``IsQuarterEnd``, ``IsQuarterStart`` transform primitives (:pr:`2110`, :pr:`2117`)
+        * Add ``IsMonthEnd``, ``IsMonthStart`` transform primitives (:pr:`2121`)
         * Move ``Quarter`` test cases (:pr:`2123`)
         * Add ``summarize_primitives`` function for getting metrics about available primitives (:pr:`2099`)
-    * Fixes
     * Changes
         * Changes for compatibility with numpy 1.23.0 (:pr:`2135`, :pr:`2137`)
     * Documentation Changes
         * Update contributing.md to add pandoc (:pr:`2103`, :pr:`2104`)
         * Update NLP primitives section of API reference (:pr:`2109`)
+        * Fixing release notes formatting (:pr:`2139`)
     * Testing Changes
         * Latest dependency checker installs spark dependencies (:pr:`2112`)
         * Fix test failures with pyspark v3.3.0 (:pr:`2114`, :pr:`2120`)
