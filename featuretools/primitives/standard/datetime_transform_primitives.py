@@ -482,8 +482,8 @@ class IsYearEnd(TransformPrimitive):
 
     def get_function(self):
         def is_year_end(vals):
-            vals[pd.isna()] = pd.NaT
-            vals[pd.notna()] = vals.dt.is_year_end
+            vals[pd.isna(vals)] = pd.NaT
+            vals[pd.notna(vals)] = vals.dt.is_year_end
             return vals
 
         return is_year_end
@@ -510,8 +510,8 @@ class IsYearStart(TransformPrimitive):
 
     def get_function(self):
         def is_year_start(vals):
-            vals[pd.isna()] = pd.NaT
-            vals[pd.notna()] = vals.dt.is_year_start
+            vals[pd.isna(vals)] = pd.NaT
+            vals[pd.notna(vals)] = vals.dt.is_year_start
             return vals
 
         return is_year_start
