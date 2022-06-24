@@ -2,15 +2,17 @@
 
 Release Notes
 -------------
-.. Future Release
+Future Release
   ==============
     * Enhancements
+        * Add ``IsYearEnd``, ``IsYearStart`` transform primitives (:pr:`2124`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+Thanks to the following people for contributing to this release: 
+:user:`sbadithe`
 
 v1.10.0 June 23, 2022
 =====================
