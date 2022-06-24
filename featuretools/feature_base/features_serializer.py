@@ -68,7 +68,7 @@ class FeaturesSerializer(object):
         es = self.feature_list[0].entityset
 
         feature_defs, primitive_defs = self._feature_definitions()
-        
+
         return {
             "schema_version": SCHEMA_VERSION,
             "ft_version": ft_version,

@@ -39,7 +39,7 @@ def test_base_features_in_list(es):
             value.unique_name(): value.to_dictionary(),
         },
     }
-    breakpoint()
+
     _compare_feature_dicts(expected, serializer.to_dict())
 
 
