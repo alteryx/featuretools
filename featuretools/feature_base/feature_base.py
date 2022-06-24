@@ -554,9 +554,7 @@ class DirectFeature(FeatureBase):
             relationship=relationship,
             name=arguments["name"],
         )
-        feature_names = arguments.get("feature_names")
-        if feature_names:
-            feat._names = feature_names
+        feat._names = arguments.get("feature_names")
         return feat
 
     @property
@@ -589,12 +587,14 @@ class DirectFeature(FeatureBase):
 
     def get_arguments(self):
         _is_forward, relationship = self.relationship_path[0]
-        return {
+        arg_dict = {
             "name": self._name,
             "base_feature": self.base_features[0].unique_name(),
             "relationship": relationship.to_dictionary(),
-            "feature_names": self._names,
         }
+        if self._names:
+            arg_dict["feature_names"] = self._names
+        return arg_dict
 
     def _name_from_base(self, base_name):
         return "%s.%s" % (self.relationship_path_name(), base_name)
@@ -744,9 +744,7 @@ class AggregationFeature(FeatureBase):
             where=where,
             name=arguments["name"],
         )
-        feature_names = arguments.get("feature_names")
-        if feature_names:
-            feat._names = feature_names
+        feat._names = arguments.get("feature_names")
         return feat
 
     def copy(self):
@@ -792,15 +790,17 @@ class AggregationFeature(FeatureBase):
         )
 
     def get_arguments(self):
-        return {
+        arg_dict = {
             "name": self._name,
             "base_features": [feat.unique_name() for feat in self.base_features],
             "relationship_path": [r.to_dictionary() for _, r in self.relationship_path],
             "primitive": serialize_primitive(self.primitive),
             "where": self.where and self.where.unique_name(),
             "use_previous": self.use_previous and self.use_previous.get_arguments(),
-            "feature_names": self._names,
         }
+        if self._names:
+            arg_dict["feature_names"] = self._names
+        return arg_dict
 
     def relationship_path_name(self):
         if self._path_is_unique:
@@ -836,9 +836,7 @@ class TransformFeature(FeatureBase):
         feat = cls(
             base_features=base_features, primitive=primitive, name=arguments["name"]
         )
-        feature_names = arguments.get("feature_names")
-        if feature_names:
-            feat._names = feature_names
+        feat._names = arguments.get("feature_names")
         return feat
 
     def copy(self):
@@ -855,12 +853,14 @@ class TransformFeature(FeatureBase):
         )
 
     def get_arguments(self):
-        return {
+        arg_dict = {
             "name": self._name,
             "base_features": [feat.unique_name() for feat in self.base_features],
             "primitive": serialize_primitive(self.primitive),
-            "feature_names": self._names,
         }
+        if self._names:
+            arg_dict["feature_names"] = self._names
+        return arg_dict
 
 
 class GroupByTransformFeature(TransformFeature):

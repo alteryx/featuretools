@@ -137,7 +137,6 @@ def test_serialization(es):
         "name": None,
         "base_features": [value.unique_name()],
         "primitive": serialize_primitive(primitive),
-        "feature_names": None,
     }
 
     assert dictionary == value_x2.get_arguments()
