@@ -3,7 +3,7 @@
 Release Notes
 -------------
 Future Release
-  ==============
+==============
     * Enhancements
         * Add ``IsYearEnd``, ``IsYearStart`` transform primitives (:pr:`2124`)
     * Fixes
