@@ -4,7 +4,7 @@ from featuretools.utils.s3_utils import get_transport_params, use_smartopen_feat
 from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.version import __version__ as ft_version
 
-SCHEMA_VERSION = "8.0.0"
+SCHEMA_VERSION = "9.0.0"
 
 
 def save_features(features, location=None, profile_name=None):
@@ -67,12 +67,15 @@ class FeaturesSerializer(object):
         names_list = [feat.unique_name() for feat in self.feature_list]
         es = self.feature_list[0].entityset
 
+        feature_defs, primitive_defs = self._feature_definitions()
+        
         return {
             "schema_version": SCHEMA_VERSION,
             "ft_version": ft_version,
             "entityset": es.to_dictionary(),
             "feature_list": names_list,
-            "feature_definitions": self._feature_definitions(),
+            "feature_definitions": feature_defs,
+            "primitive_definitions": primitive_defs,
         }
 
     def save(self, location, profile_name):
@@ -96,11 +99,19 @@ class FeaturesSerializer(object):
     def _feature_definitions(self):
         if not self._features_dict:
             self._features_dict = {}
+            self._primitives_dict = {}
 
             for feature in self.feature_list:
                 self._serialize_feature(feature)
 
-        return self._features_dict
+            for name, feature in self._features_dict.items():
+                primitive = feature["arguments"].get("primitive")
+                if primitive:
+                    primitive_hash = hash(json.dumps(primitive))
+                    if primitive_hash not in self._primitives_dict.keys():
+                        self._primitives_dict[primitive_hash] = primitive
+                    self._features_dict[name]["arguments"]["primitive"] = primitive_hash
+        return self._features_dict, self._primitives_dict
 
     def _serialize_feature(self, feature):
         name = feature.unique_name()
