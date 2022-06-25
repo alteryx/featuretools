@@ -692,14 +692,7 @@ class Week(TransformPrimitive):
 
     def get_function(self):
         def week(vals):
-            warnings.filterwarnings(
-                "ignore",
-                message=(
-                    "Series.dt.weekofyear and Series.dt.week " "have been deprecated."
-                ),
-                module="featuretools",
-            )
-            return vals.dt.week
+            return vals.dt.isocalendar().week
 
         return week
 

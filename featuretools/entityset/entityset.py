@@ -1800,9 +1800,12 @@ class EntitySet(object):
                         dataframe[column] = dataframe[column].apply(
                             replace, args=(True,)
                         )
+                elif isinstance(dataframe, dd.DataFrame):
+                    dataframe[column] = dataframe[column].apply(
+                        replace, meta=(column, logical_type.primary_dtype)
+                    )
                 else:
                     dataframe[column] = dataframe[column].apply(replace)
-
         return dataframe
 
 
