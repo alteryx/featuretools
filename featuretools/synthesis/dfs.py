@@ -1,5 +1,7 @@
 import warnings
 
+import dateutil
+
 from featuretools.computational_backends import calculate_feature_matrix
 from featuretools.entityset import EntitySet
 from featuretools.exceptions import UnusedPrimitiveWarning
@@ -7,7 +9,6 @@ from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
 from featuretools.synthesis.utils import _categorize_features, get_unused_primitives
 from featuretools.utils import entry_point
 
-import dateutil 
 
 @entry_point("featuretools_dfs")
 def dfs(
@@ -243,8 +244,8 @@ def dfs(
     if not isinstance(entityset, EntitySet):
         entityset = EntitySet("dfs", dataframes, relationships)
 
-    if isinstance(cutoff_time, str): 
-        cutoff_time = dateutil.parser.parse(cutoff_time) 
+    if isinstance(cutoff_time, str):
+        cutoff_time = dateutil.parser.parse(cutoff_time)
 
     dfs_object = DeepFeatureSynthesis(
         target_dataframe_name,

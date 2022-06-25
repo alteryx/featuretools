@@ -1,13 +1,13 @@
 from unittest.mock import patch
 
 import composeml as cp
+import dateutil
 import numpy as np
 import pandas as pd
 import pytest
 from dask import dataframe as dd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import NaturalLanguage
-import dateutil  
 
 from featuretools.computational_backends.calculate_feature_matrix import (
     FEATURE_CALCULATION_PERCENTAGE,
