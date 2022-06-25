@@ -7,6 +7,7 @@ import pytest
 from dask import dataframe as dd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import NaturalLanguage
+import dateutil  
 
 from featuretools.computational_backends.calculate_feature_matrix import (
     FEATURE_CALCULATION_PERCENTAGE,
@@ -357,6 +358,26 @@ def test_accepts_pd_dateoffset_training_window(datetime_es):
         entityset=datetime_es,
         target_dataframe_name="transactions",
         cutoff_time=pd.Timestamp("2012-3-31 04:00"),
+        training_window=pd.offsets.BDay(44),
+    )
+
+    assert (feature_matrix.index == [2, 3, 4]).all()
+    assert (feature_matrix.index == feature_matrix_2.index).all()
+
+
+def test_accepts_datetime_and_string_offset(datetime_es):
+    # TODO: Update to use Dask dataframes when issue #882 is closed
+    feature_matrix, _ = dfs(
+        entityset=datetime_es,
+        target_dataframe_name="transactions",
+        cutoff_time=dateutil.parser.parse("2012-3-31 04:00"),
+        training_window=pd.DateOffset(months=2),
+    )
+
+    feature_matrix_2, _ = dfs(
+        entityset=datetime_es,
+        target_dataframe_name="transactions",
+        cutoff_time="2012-3-31 04:00",
         training_window=pd.offsets.BDay(44),
     )
 
