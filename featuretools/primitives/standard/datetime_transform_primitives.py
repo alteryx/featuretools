@@ -536,7 +536,10 @@ class PartOfDay(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the part of day {} falls in"
 
-    def get_part_of_day(self, hour):
+    def get_part_of_day(self, elem):
+        hour = elem.hour
+        if pd.isna(hour):
+            return pd.NaT
         if hour in [4, 5]:
             return "dawn"
         elif hour in [6, 7]:
@@ -556,7 +559,7 @@ class PartOfDay(TransformPrimitive):
 
     def get_function(self):
         def part_of_day(vals):
-            return vals.apply(lambda x: self.get_part_of_day(x.hour))
+            return vals.map(self.get_part_of_day)
 
         return part_of_day
 
