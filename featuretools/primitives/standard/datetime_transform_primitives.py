@@ -539,7 +539,7 @@ class PartOfDay(TransformPrimitive):
     def get_part_of_day(self, elem):
         hour = elem.hour
         if pd.isna(hour):
-            return pd.NaT
+            return np.nan
         if hour in [4, 5]:
             return "dawn"
         elif hour in [6, 7]:
