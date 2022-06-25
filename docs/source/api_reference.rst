@@ -383,3 +383,12 @@ Data Type Util Methods
 
     list_logical_types
     list_semantic_tags
+
+Primitive Util Methods
+----------------------
+.. currentmodule:: featuretools
+.. autosummary::
+    :toctree: generated/
+
+    list_primitives
+    summarize_primitives

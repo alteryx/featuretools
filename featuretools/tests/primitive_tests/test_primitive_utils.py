@@ -4,13 +4,15 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from featuretools import list_primitives
+from featuretools import list_primitives, summarize_primitives
 from featuretools.primitives import (
+    AddNumericScalar,
     Age,
     Count,
     Day,
     GreaterThan,
     Haversine,
+    IsFreeEmailDomain,
     Last,
     Max,
     Mean,
@@ -18,7 +20,9 @@ from featuretools.primitives import (
     Mode,
     Month,
     MultiplyBoolean,
+    NMostCommon,
     NumCharacters,
+    NumericLag,
     NumUnique,
     NumWords,
     PercentTrue,
@@ -35,8 +39,10 @@ from featuretools.primitives import (
 from featuretools.primitives.base import PrimitiveBase
 from featuretools.primitives.utils import (
     _apply_roll_with_offset_gap,
+    _check_input_types,
     _get_descriptions,
     _get_rolled_series_without_gap,
+    _get_summary_primitives,
     _get_unique_input_types,
     _roll_series_with_gap,
     list_primitive_files,
@@ -61,7 +67,10 @@ def test_list_primitives_order():
         assert row["valid_inputs"] == ", ".join(
             _get_unique_input_types(primitive.input_types)
         )
-        assert row["return_type"] == getattr(primitive.return_type, "__name__", None)
+        expected_return_type = (
+            str(primitive.return_type) if primitive.return_type is not None else None
+        )
+        assert row["return_type"] == expected_return_type
 
     types = df["type"].values
     assert "aggregation" in types
@@ -633,3 +642,111 @@ def test_roll_series_with_non_offset_string_inputs(rolling_series_pd):
     )
     with pytest.raises(TypeError, match=error):
         _roll_series_with_gap(rolling_series_pd, window_size=7, gap="2d").max()
+
+
+def test_check_input_types():
+    primitives = [Sum, Weekday, PercentTrue, Day, Std, NumericLag]
+    log_in_type_checks = set()
+    sem_tag_type_checks = set()
+    unique_input_types = set()
+    expected_log_in_check = {
+        "boolean_nullable",
+        "boolean",
+        "datetime",
+    }
+    expected_sem_tag_type_check = {"numeric", "time_index"}
+    expected_unique_input_types = {
+        "<ColumnSchema (Logical Type = BooleanNullable)>",
+        "<ColumnSchema (Semantic Tags = ['numeric'])>",
+        "<ColumnSchema (Logical Type = Boolean)>",
+        "<ColumnSchema (Logical Type = Datetime)>",
+        "<ColumnSchema (Semantic Tags = ['time_index'])>",
+    }
+    for prim in primitives:
+        input_types_flattened = prim.flatten_nested_input_types(prim.input_types)
+        _check_input_types(
+            input_types_flattened,
+            log_in_type_checks,
+            sem_tag_type_checks,
+            unique_input_types,
+        )
+
+    assert log_in_type_checks == expected_log_in_check
+    assert sem_tag_type_checks == expected_sem_tag_type_check
+    assert unique_input_types == expected_unique_input_types
+
+
+def test_get_summary_primitives():
+    primitives = [
+        Sum,
+        Weekday,
+        PercentTrue,
+        Day,
+        Std,
+        NumericLag,
+        AddNumericScalar,
+        IsFreeEmailDomain,
+        NMostCommon,
+    ]
+    primitives_summary = _get_summary_primitives(primitives)
+    expected_unique_input_types = 7
+    expected_unique_output_types = 6
+    expected_uses_multi_input = 2
+    expected_uses_multi_output = 1
+    expected_uses_external_data = 1
+    expected_controllable = 3
+    expected_datetime_inputs = 2
+    expected_bool = 1
+    expected_bool_nullable = 1
+    expected_time_index_tag = 1
+
+    assert (
+        primitives_summary["general_metrics"]["unique_input_types"]
+        == expected_unique_input_types
+    )
+    assert (
+        primitives_summary["general_metrics"]["unique_output_types"]
+        == expected_unique_output_types
+    )
+    assert (
+        primitives_summary["general_metrics"]["uses_multi_input"]
+        == expected_uses_multi_input
+    )
+    assert (
+        primitives_summary["general_metrics"]["uses_multi_output"]
+        == expected_uses_multi_output
+    )
+    assert (
+        primitives_summary["general_metrics"]["uses_external_data"]
+        == expected_uses_external_data
+    )
+    assert (
+        primitives_summary["general_metrics"]["are_controllable"]
+        == expected_controllable
+    )
+    assert (
+        primitives_summary["semantic_tag_metrics"]["time_index"]
+        == expected_time_index_tag
+    )
+    assert (
+        primitives_summary["logical_type_input_metrics"]["datetime"]
+        == expected_datetime_inputs
+    )
+    assert primitives_summary["logical_type_input_metrics"]["boolean"] == expected_bool
+    assert (
+        primitives_summary["logical_type_input_metrics"]["boolean_nullable"]
+        == expected_bool_nullable
+    )
+
+
+def test_summarize_primitives():
+    df = summarize_primitives()
+    trans_prims = get_transform_primitives()
+    agg_prims = get_aggregation_primitives()
+    tot_trans = len(trans_prims)
+    tot_agg = len(agg_prims)
+    tot_prims = tot_trans + tot_agg
+
+    assert df["Count"].iloc[0] == tot_prims
+    assert df["Count"].iloc[1] == tot_agg
+    assert df["Count"].iloc[2] == tot_trans
