@@ -5,7 +5,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Add datetime and string types as valid arguments to dfs ``cutoff_time`` (:pr:) 
+        * Add datetime and string types as valid arguments to dfs ``cutoff_time`` (:pr:`2147`) 
     * Fixes
     * Changes
     * Documentation Changes
