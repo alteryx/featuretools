@@ -99,7 +99,7 @@ def test_override_boolean(es):
     features.append(count_lo.AND(count_hi))
     features.append(~(count_lo.AND(count_hi)))
 
-    df = ft.calculate_feature_matrix(
+    df = calculate_feature_matrix(
         entityset=es, features=features, instance_ids=[0, 1, 2]
     )
     df = to_pandas(df, index="id", sort_index=True)
@@ -186,7 +186,7 @@ def test_override_cmp_from_column(es):
     features = [count_lo]
 
     df = to_pandas(
-        ft.calculate_feature_matrix(
+        calculate_feature_matrix(
             entityset=es, features=features, instance_ids=[0, 1, 2]
         ),
         index="id",
@@ -238,7 +238,7 @@ def test_override_cmp(es):
         ne_other,
     ]
 
-    df = ft.calculate_feature_matrix(
+    df = calculate_feature_matrix(
         entityset=es, features=features, instance_ids=[0, 1, 2]
     )
     df = to_pandas(df, index="id", sort_index=True)
