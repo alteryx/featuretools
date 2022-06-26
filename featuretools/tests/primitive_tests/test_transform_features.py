@@ -8,6 +8,16 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, Datetime, Integer, Ordinal
 
 import featuretools as ft
+from featuretools import (
+    AggregationFeature,
+    EntitySet,
+    Feature,
+    IdentityFeature,
+    TransformFeature,
+    calculate_feature_matrix,
+    dfs,
+    primitives,
+)
 from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
     FeatureSetCalculator,
@@ -40,8 +50,8 @@ from featuretools.primitives import (
     LessThanEqualToScalar,
     LessThanScalar,
     Longitude,
+    Min,
     Mode,
-    Min, 
     MultiplyBoolean,
     MultiplyNumeric,
     MultiplyNumericBoolean,
@@ -66,16 +76,7 @@ from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
 from featuretools.utils.spark_utils import pd_to_spark_clean
-from featuretools import (
-    AggregationFeature,
-    dfs,
-    EntitySet,
-    Feature, 
-    IdentityFeature, 
-    calculate_feature_matrix, 
-    primitives,
-    TransformFeature    
-)
+
 
 def test_init_and_name(es):
     log = es["log"]
@@ -499,9 +500,7 @@ def test_compare_of_transform(es):
     for test in to_test:
         features.append(Feature(day, primitive=test[0](10)))
 
-    df = calculate_feature_matrix(
-        entityset=es, features=features, instance_ids=[0, 14]
-    )
+    df = calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 14])
     df = to_pandas(df, index="id", sort_index=True)
 
     for i, test in enumerate(to_test):
@@ -716,9 +715,7 @@ def test_boolean_multiply(boolean_mult_es):
     ]
     features = []
     for row in to_test:
-        features.append(
-            Feature(es["test"].ww[row[0]]) * Feature(es["test"].ww[row[1]])
-        )
+        features.append(Feature(es["test"].ww[row[0]]) * Feature(es["test"].ww[row[1]]))
 
     fm = to_pandas(calculate_feature_matrix(entityset=es, features=features))
 
@@ -764,9 +761,7 @@ def test_not_feature(es):
     not_feat = Feature(es["customers"].ww["loves_ice_cream"], primitive=Not)
     features = [not_feat]
     df = to_pandas(
-        calculate_feature_matrix(
-            entityset=es, features=features, instance_ids=[0, 1]
-        )
+        calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1])
     )
     v = df[not_feat.get_name()].values
     assert not v[0]
@@ -1345,9 +1340,7 @@ def test_get_filepath(es):
             return map_to_word
 
     feat = Feature(es["log"].ww["value"], primitive=Mod4)
-    df = calculate_feature_matrix(
-        features=[feat], entityset=es, instance_ids=range(17)
-    )
+    df = calculate_feature_matrix(features=[feat], entityset=es, instance_ids=range(17))
     df = to_pandas(df, index="id")
     assert pd.isnull(df["MOD4(value)"][15])
     assert df["MOD4(value)"][0] == 0

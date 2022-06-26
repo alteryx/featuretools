@@ -9,7 +9,7 @@ Future Release
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Directly importing functions for testing rather than using ``ft.`` (:pr:)
+        * Directly importing functions for testing rather than using ``ft.`` (:pr:`2148`)
 
     Thanks to the following people for contributing to this release:
     :user:`sbadithe`
