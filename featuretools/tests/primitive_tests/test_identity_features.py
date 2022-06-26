@@ -1,6 +1,7 @@
 import featuretools as ft
-from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools import IdentityFeature
+from featuretools.primitives.utils import PrimitivesDeserializer
+
 
 def test_relationship_path(es):
     value = IdentityFeature(es["log"].ww["value"])

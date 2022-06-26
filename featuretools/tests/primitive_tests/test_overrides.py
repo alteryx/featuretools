@@ -1,4 +1,5 @@
 import featuretools as ft
+from featuretools import Feature, calculate_feature_matrix
 from featuretools.primitives import (
     AddNumeric,
     AddNumericScalar,
@@ -30,10 +31,7 @@ from featuretools.primitives import (
     Sum,
 )
 from featuretools.tests.testing_utils import to_pandas
-from featuretools import (
-    calculate_feature_matrix,
-    Feature 
-)
+
 
 def test_overrides(es):
     value = Feature(es["log"].ww["value"])
