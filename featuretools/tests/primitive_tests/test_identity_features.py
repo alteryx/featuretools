@@ -1,4 +1,3 @@
-import featuretools as ft
 from featuretools import IdentityFeature
 from featuretools.primitives.utils import PrimitivesDeserializer
 

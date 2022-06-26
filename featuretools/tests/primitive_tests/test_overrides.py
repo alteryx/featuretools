@@ -1,4 +1,3 @@
-import featuretools as ft
 from featuretools import Feature, calculate_feature_matrix
 from featuretools.primitives import (
     AddNumeric,

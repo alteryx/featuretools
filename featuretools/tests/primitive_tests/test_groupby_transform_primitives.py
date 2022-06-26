@@ -3,7 +3,12 @@ import pandas as pd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime
 
-from featuretools import Feature, IdentityFeature, calculate_feature_matrix
+from featuretools import (
+    Feature,
+    GroupByTransformFeature,
+    IdentityFeature,
+    calculate_feature_matrix,
+)
 from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
     FeatureSetCalculator,
@@ -428,7 +433,7 @@ def test_groupby_uses_calc_time(pd_es):
         def get_function(self):
             return projected_amount_left
 
-    time_since_product = ft.GroupByTransformFeature(
+    time_since_product = GroupByTransformFeature(
         [
             IdentityFeature(pd_es["log"].ww["value"]),
             IdentityFeature(pd_es["log"].ww["datetime"]),
@@ -491,7 +496,7 @@ def test_serialization(pd_es):
     value = IdentityFeature(pd_es["log"].ww["value"])
     zipcode = IdentityFeature(pd_es["log"].ww["zipcode"])
     primitive = CumSum()
-    groupby = Feature_base.GroupByTransformFeature(value, primitive, zipcode)
+    groupby = GroupByTransformFeature(value, primitive, zipcode)
 
     dictionary = {
         "name": None,
@@ -505,7 +510,7 @@ def test_serialization(pd_es):
         value.unique_name(): value,
         zipcode.unique_name(): zipcode,
     }
-    assert groupby == Feature_base.GroupByTransformFeature.from_dictionary(
+    assert groupby == GroupByTransformFeature.from_dictionary(
         dictionary, pd_es, dependencies, PrimitivesDeserializer()
     )
 
