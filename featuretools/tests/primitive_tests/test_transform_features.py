@@ -7,7 +7,6 @@ import pytest
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, Datetime, Integer, Ordinal
 
-import featuretools as ft
 from featuretools import (
     AggregationFeature,
     EntitySet,
