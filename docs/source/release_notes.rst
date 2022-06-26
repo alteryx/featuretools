@@ -2,15 +2,17 @@
 
 Release Notes
 -------------
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Directly importing functions for testing rather than using ``ft.`` (:pr:)
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`sbadithe`
 
 v1.10.0 June 23, 2022
 =====================
