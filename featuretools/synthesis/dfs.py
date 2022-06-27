@@ -245,9 +245,12 @@ def dfs(
         entityset = EntitySet("dfs", dataframes, relationships)
 
     if isinstance(cutoff_time, str):
-        cutoff_time = pd.to_datetime(cutoff_time) 
-        if pd.isna(cutoff_time): 
-            raise ValueError("invalid time") 
+        try: 
+            cutoff_time = pd.to_datetime(cutoff_time) 
+        except ValueError: 
+            raise(f"Cutoff time {cutoff_time} was not able to be parsed")
+        except OverflowError: 
+            raise(f"Cutoff time {cutoff_time} was parsed into an integer that cannot be stored on your system") 
 
     dfs_object = DeepFeatureSynthesis(
         target_dataframe_name,

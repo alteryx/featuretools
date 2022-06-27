@@ -395,6 +395,16 @@ def test_handles_parseutil_parser_error(datetime_es):
         )
 
 
+def test_handles_parseutil_overflow_error(datetime_es):
+    with pytest.raises(OverflowError):
+        _, _ = dfs(
+            entityset=datetime_es,
+            target_dataframe_name="transactions",
+            cutoff_time="200000000000000000000000000000000000000000000000000000000000000000-3-31 04:00",
+            training_window=pd.DateOffset(months=2),
+        )
+
+
 def test_warns_with_unused_primitives(es):
     if es.dataframe_type == Library.SPARK.value:
         pytest.skip("Spark throws extra warnings")
