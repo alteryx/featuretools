@@ -9,7 +9,7 @@ Future Release
     * Changes
     * Documentation Changes
     * Testing Changes
-        * fix pandas warning and reduce dask .apply warnings (:pr:`2145`)
+        * Fix pandas warning and reduce dask .apply warnings (:pr:`2145`)
 
     Thanks to the following people for contributing to this release:
     :user:`ozzieD`
