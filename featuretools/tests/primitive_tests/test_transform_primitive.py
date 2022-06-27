@@ -187,10 +187,11 @@ def test_part_of_day():
             datetime(2020, 3, 4, 14, 2, 3),
             datetime(2020, 3, 4, 17, 2, 3),
             datetime(2020, 2, 2, 20, 2, 2),
+            np.nan
         ]
     )
     answer = pod(dates)
-    correct_answer = [
+    correct_answer = pd.Series([
         "midnight",
         "dawn",
         "early morning",
@@ -199,7 +200,10 @@ def test_part_of_day():
         "afternoon",
         "evening",
         "night",
-    ]
+        np.nan
+    ])
+    answer = [i if not pd.isna(i) else None for i in answer]
+    correct_answer = [i if not pd.isna(i) else None for i in correct_answer]
     np.testing.assert_array_equal(answer, correct_answer)
 
 
