@@ -13,7 +13,7 @@ Future Release
         * Fix pandas warning and reduce dask .apply warnings (:pr:`2145`)
 
     Thanks to the following people for contributing to this release:
-    :user:`ozzieD`
+    :user:`ozzieD`, :user:`sbadithe`
 
 v1.10.0 June 23, 2022
 =====================
