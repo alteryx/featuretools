@@ -5,7 +5,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-      * Add PartOfDay primitive (:pr:`2128`) 
+        * Add ``PartOfDay`` transform primitive (:pr:`2128`)
     * Fixes
     * Changes
     * Documentation Changes
@@ -13,13 +13,13 @@ Future Release
         * Fix pandas warning and reduce dask .apply warnings (:pr:`2145`)
 
     Thanks to the following people for contributing to this release:
-    :user:`ozzieD`, :user:`sbadithe`
+    :user:`ozzieD`
 
 v1.10.0 June 23, 2022
 =====================
     * Enhancements
         * Add ``DayOfYear``, ``DaysInMonth``, ``Quarter``, ``IsLeapYear``, ``IsQuarterEnd``, ``IsQuarterStart`` transform primitives (:pr:`2110`, :pr:`2117`)
-        * Add ``IsMonthEnd``, ``IsMonthStart``, ``PartOfDay`` transform primitives (:pr:`2121`, :pr:`2128)
+        * Add ``IsMonthEnd``, ``IsMonthStart`` transform primitives (:pr:`2121`, :pr:`2128)
         * Move ``Quarter`` test cases (:pr:`2123`)
         * Add ``summarize_primitives`` function for getting metrics about available primitives (:pr:`2099`)
     * Changes
