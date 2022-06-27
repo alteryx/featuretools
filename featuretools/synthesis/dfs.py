@@ -1,6 +1,6 @@
 import warnings
 
-import dateutil
+import pandas as pd 
 
 from featuretools.computational_backends import calculate_feature_matrix
 from featuretools.entityset import EntitySet
@@ -245,16 +245,9 @@ def dfs(
         entityset = EntitySet("dfs", dataframes, relationships)
 
     if isinstance(cutoff_time, str):
-        try:
-            cutoff_time = dateutil.parser.parse(cutoff_time)
-        except dateutil.parser.ParserError:
-            raise ValueError(
-                f"The provided cutoff_time of {cutoff_time} is either an invalid date or in an unknown format"
-            )
-        except OverflowError:
-            raise OverflowError(
-                "The parsed date would exceed the largest valid integer"
-            )
+        cutoff_time = pd.to_datetime(cutoff_time) 
+        if pd.isna(cutoff_time): 
+            raise ValueError("invalid time") 
 
     dfs_object = DeepFeatureSynthesis(
         target_dataframe_name,
