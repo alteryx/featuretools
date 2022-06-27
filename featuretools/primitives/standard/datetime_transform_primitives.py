@@ -527,7 +527,7 @@ class PartOfDay(TransformPrimitive):
         ...          datetime(2020, 3, 4, 9, 2, 1)]
         >>> part_of_day = PartOfDay()
         >>> part_of_day(dates).tolist()
-        >>> ["early morning", "dawn", "late morning"]
+        ["early morning", "dawn", "late morning"]
     """
 
     name = "part_of_day"
@@ -559,8 +559,7 @@ class PartOfDay(TransformPrimitive):
 
     def get_function(self):
         def part_of_day(vals):
-            vals = vals.map(self.get_part_of_day)
-            return vals
+            return vals.map(self.get_part_of_day)
 
         return part_of_day
 
