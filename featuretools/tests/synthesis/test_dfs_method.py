@@ -386,7 +386,7 @@ def test_accepts_datetime_and_string_offset(datetime_es):
 
 
 def test_handles_parseutil_parser_error(datetime_es):
-    with pytest.raises(ValueError):  
+    with pytest.raises(ValueError):
         _, _ = dfs(
             entityset=datetime_es,
             target_dataframe_name="transactions",
@@ -395,8 +395,8 @@ def test_handles_parseutil_parser_error(datetime_es):
         )
 
 
-def test_handles_parseutil_overflow_error(datetime_es): 
-    with pytest.raises(OverflowError): 
+def test_handles_parseutil_overflow_error(datetime_es):
+    with pytest.raises(OverflowError):
         _, _ = dfs(
             entityset=datetime_es,
             target_dataframe_name="transactions",
