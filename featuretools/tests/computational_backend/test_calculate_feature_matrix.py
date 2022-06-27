@@ -2278,22 +2278,33 @@ def test_feature_origins_present_on_all_fm_cols(pd_es):
 
 
 def test_renamed_features_have_expected_column_names(pd_es):
-    direct_feat = ft.Feature(pd_es["sessions"].ww["device_name"], "log")
-    trans_feat = ft.Feature(pd_es["log"].ww["value"], primitive=Negate)
+    class MultiCumulative(TransformPrimitive):
+        name = "multi_cum_sum"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
+        number_output_features = 3
+
+        def get_function(self):
+            def multi_cum_sum(x):
+                return x.cumsum(), x.cummax(), x.cummin()
+
+            return multi_cum_sum
+
+    multi_output_trans_feat = ft.Feature(
+        pd_es["log"].ww["value"], primitive=MultiCumulative
+    )
     multi_output_agg_feat = ft.Feature(
         pd_es["log"].ww["product_id"],
         parent_dataframe_name="customers",
         primitive=NMostCommon(n=2),
     )
 
-    direct_name = ["device_direct"]
-    direct_feat.set_feature_names(direct_name)
-    trans_name = ["negative_value"]
-    trans_feat.set_feature_names(trans_name)
-    agg_name = ["first_most_common", "second_most_common"]
-    multi_output_agg_feat.set_feature_names(agg_name)
+    multi_output_trans_names = ["cumulative_sum", "cumulative_max", "cumulative_min"]
+    multi_output_trans_feat.set_feature_names(multi_output_trans_names)
+    agg_names = ["first_most_common", "second_most_common"]
+    multi_output_agg_feat.set_feature_names(agg_names)
 
-    features = [direct_feat, trans_feat, multi_output_agg_feat]
+    features = [multi_output_trans_feat, multi_output_agg_feat]
     feature_matrix = calculate_feature_matrix(entityset=pd_es, features=features)
-    for renamed_col in direct_name + trans_name + agg_name:
+    for renamed_col in multi_output_trans_names + agg_names:
         assert renamed_col in feature_matrix.columns

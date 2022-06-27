@@ -490,24 +490,29 @@ def test_set_feature_names_not_unique(es):
         feat.set_feature_names(new_names)
 
 
-def test_set_feature_names_direct_feature(es):
+def test_set_feature_names_error_on_single_output_feature(es):
     feat = ft.Feature(es["sessions"].ww["device_name"], "log")
     new_names = ["sessions_device"]
-    feat.set_feature_names(new_names)
-    assert feat.get_feature_names() == new_names
-
-
-def test_set_feature_names_identity_feature(es):
-    feat = ft.Feature(es["log"].ww["value"])
-    new_names = ["log_value"]
-    error_msg = "Cannot change output feature name for an IdentityFeature."
-    with pytest.raises(TypeError, match=error_msg):
+    error_msg = "The set_feature_names can only be used on features that have more than one output column."
+    with pytest.raises(ValueError, match=error_msg):
         feat.set_feature_names(new_names)
 
 
 def test_set_feature_names_transform_feature(es):
-    feat = ft.Feature(es["log"].ww["value"], primitive=Negate)
-    new_names = ["negative_log_value"]
+    class MultiCumulative(TransformPrimitive):
+        name = "multi_cum_sum"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
+        number_output_features = 3
+
+        def get_function(self):
+            def multi_cumulative(x):
+                return x.cumsum(), x.cummax(), x.cummin()
+
+            return multi_cumulative
+
+    feat = ft.Feature(es["log"].ww["value"], primitive=MultiCumulative)
+    new_names = ["cumulative_sum", "cumulative_max", "cumulative_min"]
     feat.set_feature_names(new_names)
     assert feat.get_feature_names() == new_names
 

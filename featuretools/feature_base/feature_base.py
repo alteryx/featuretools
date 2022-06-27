@@ -107,19 +107,26 @@ class FeatureBase(object):
     def set_feature_names(self, names):
         """Set new values for the feature column names, overriding the default values.
         Number of names provided much match the number of output columns defined for
-        the feature.
+        the feature. Only works for features that have more than one output column. Use
+        ``Feature.rename`` for changing the column name for single output features.
 
         Args:
             names (list[str]): List of names to use for the output feature columns. Provided
                 names must be unique.
         """
-        if self.number_output_features != len(names):
+        if self.number_output_features == 1:
             raise ValueError(
-                "Number of names provided must match the number of output features:"
-                f" {len(names)} name(s) provided, {self.number_output_features} expected."
+                "The set_feature_names can only be used on features that have more than one output column."
             )
 
-        if len(set(names)) != len(names):
+        num_new_names = len(names)
+        if self.number_output_features != num_new_names:
+            raise ValueError(
+                "Number of names provided must match the number of output features:"
+                f" {num_new_names} name(s) provided, {self.number_output_features} expected."
+            )
+
+        if len(set(names)) != num_new_names:
             raise ValueError("Provided output feature names must be unique.")
 
         self._names = names
@@ -469,9 +476,6 @@ class IdentityFeature(FeatureBase):
             "dataframe_name": self.dataframe_name,
         }
 
-    def set_feature_names(self, names):
-        raise TypeError("Cannot change output feature name for an IdentityFeature.")
-
     @property
     def column_schema(self):
         return self.return_type
@@ -548,14 +552,12 @@ class DirectFeature(FeatureBase):
             arguments["relationship"], entityset
         )
         child_dataframe_name = relationship.child_dataframe.ww.name
-        feat = cls(
+        return cls(
             base_feature=base_feature,
             child_dataframe_name=child_dataframe_name,
             relationship=relationship,
             name=arguments["name"],
         )
-        feat._names = arguments.get("feature_names")
-        return feat
 
     @property
     def number_output_features(self):
@@ -587,14 +589,11 @@ class DirectFeature(FeatureBase):
 
     def get_arguments(self):
         _is_forward, relationship = self.relationship_path[0]
-        arg_dict = {
+        return {
             "name": self._name,
             "base_feature": self.base_features[0].unique_name(),
             "relationship": relationship.to_dictionary(),
         }
-        if self._names:
-            arg_dict["feature_names"] = self._names
-        return arg_dict
 
     def _name_from_base(self, base_name):
         return "%s.%s" % (self.relationship_path_name(), base_name)
