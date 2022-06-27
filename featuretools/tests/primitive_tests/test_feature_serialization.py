@@ -25,11 +25,7 @@ from featuretools.primitives import (
     Min,
     Mode,
     Month,
-<<<<<<< HEAD
-    Negate,
-=======
     MultiplyNumericScalar,
->>>>>>> serialization-updates
     NMostCommon,
     NumCharacters,
     NumUnique,
@@ -315,19 +311,12 @@ def test_serialize_url(es):
         ft.save_features(features_original, URL)
 
 
-<<<<<<< HEAD
 def test_custom_feature_names_retained_during_serialization(pd_es, tmpdir):
     class MultiCumulative(TransformPrimitive):
         name = "multi_cum_sum"
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
         return_type = ColumnSchema(semantic_tags={"numeric"})
         number_output_features = 3
-
-        def get_function(self):
-            def multi_cumulative(x):
-                return x.cumsum(), x.cummax(), x.cummin()
-
-            return multi_cumulative
 
     multi_output_trans_feat = ft.Feature(
         pd_es["log"].ww["value"], primitive=MultiCumulative
@@ -351,7 +340,8 @@ def test_custom_feature_names_retained_during_serialization(pd_es, tmpdir):
     new_trans, new_agg = deserialized_features
     assert new_trans.get_feature_names() == trans_names
     assert new_agg.get_feature_names() == agg_name
-=======
+
+
 def test_deserializer_uses_common_primitive_instances_no_args(es, tmp_path):
     features = ft.dfs(
         entityset=es,
@@ -501,4 +491,3 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
     new_is_in_primitive = new_is_in_features[0].primitive
     assert all([f.primitive is new_is_in_primitive for f in new_is_in_features])
     assert new_is_in_primitive.list_of_outputs == [5, True, "coke zero"]
->>>>>>> serialization-updates

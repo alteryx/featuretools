@@ -505,12 +505,6 @@ def test_set_feature_names_transform_feature(es):
         return_type = ColumnSchema(semantic_tags={"numeric"})
         number_output_features = 3
 
-        def get_function(self):
-            def multi_cumulative(x):
-                return x.cumsum(), x.cummax(), x.cummin()
-
-            return multi_cumulative
-
     feat = ft.Feature(es["log"].ww["value"], primitive=MultiCumulative)
     new_names = ["cumulative_sum", "cumulative_max", "cumulative_min"]
     feat.set_feature_names(new_names)
