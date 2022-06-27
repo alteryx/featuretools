@@ -180,10 +180,7 @@ def test_is_year_end():
     is_year_end = IsYearEnd()
     dates = pd.Series([datetime(2020, 12, 31), np.nan, datetime(2020, 1, 1)])
     answer = is_year_end(dates)
-    correct_answer = [True, pd.NaT, False]
-
-    answer = [i if not pd.isnull(i) else None for i in answer]
-    correct_answer = [i if not pd.isnull(i) else None for i in correct_answer]
+    correct_answer = [True, False, False]
     np.testing.assert_array_equal(answer, correct_answer)
 
 
@@ -191,10 +188,7 @@ def test_is_year_start():
     is_year_start = IsYearStart()
     dates = pd.Series([datetime(2020, 12, 31), np.nan, datetime(2020, 1, 1)])
     answer = is_year_start(dates)
-    correct_answer = [False, pd.NaT, True]
-
-    answer = [i if not pd.isnull(i) else None for i in answer]
-    correct_answer = [i if not pd.isnull(i) else None for i in correct_answer]
+    correct_answer = [False, False, True]
     np.testing.assert_array_equal(answer, correct_answer)
 
 
