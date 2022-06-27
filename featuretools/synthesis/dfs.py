@@ -245,7 +245,12 @@ def dfs(
         entityset = EntitySet("dfs", dataframes, relationships)
 
     if isinstance(cutoff_time, str):
-        cutoff_time = dateutil.parser.parse(cutoff_time)
+        try: 
+            cutoff_time = dateutil.parser.parse(cutoff_time)
+        except dateutil.parser.ParserError:
+            raise ValueError(f"The provided cutoff_time of {cutoff_time} is either an invalid date or in an unknown format")
+        except OverflowError: 
+            raise ValueError("The parsed date would exceed the largest valid integer") 
 
     dfs_object = DeepFeatureSynthesis(
         target_dataframe_name,
