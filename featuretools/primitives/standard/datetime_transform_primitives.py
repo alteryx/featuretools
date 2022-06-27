@@ -1,5 +1,3 @@
-import warnings
-
 import holidays
 import numpy as np
 import pandas as pd
@@ -692,7 +690,10 @@ class Week(TransformPrimitive):
 
     def get_function(self):
         def week(vals):
-            return vals.dt.isocalendar().week
+            if hasattr(vals.dt, "isocalendar"):
+                return vals.dt.isocalendar().week
+            else:
+                return vals.dt.week
 
         return week
 
