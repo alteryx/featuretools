@@ -2309,7 +2309,7 @@ def test_renamed_features_have_expected_column_names_in_feature_matrix(pd_es):
         primitive=NMostCommon(n=2),
     )
     slice = FeatureOutputSlice(multi_output_trans_feat, 1)
-    stacked = ft.Feature(slice, primitive=Negate)
+    stacked_feat = ft.Feature(slice, primitive=Negate)
 
     multi_output_trans_names = ["cumulative_sum", "cumulative_max", "cumulative_min"]
     multi_output_trans_feat.set_feature_names(multi_output_trans_names)
@@ -2321,7 +2321,7 @@ def test_renamed_features_have_expected_column_names_in_feature_matrix(pd_es):
     features = [
         multi_output_trans_feat,
         multi_output_agg_feat,
-        stacked,
+        stacked_feat,
         groupby_trans_feat,
     ]
     feature_matrix = calculate_feature_matrix(entityset=pd_es, features=features)

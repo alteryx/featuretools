@@ -887,12 +887,14 @@ class GroupByTransformFeature(TransformFeature):
             arguments["primitive"]
         )
         groupby = dependencies[arguments["groupby"]]
-        return cls(
+        feat = cls(
             base_features=base_features,
             primitive=primitive,
             groupby=groupby,
             name=arguments["name"],
         )
+        feat._names = arguments.get("feature_names")
+        return feat
 
     def copy(self):
         # the groupby feature is appended to base_features in the __init__
@@ -921,12 +923,15 @@ class GroupByTransformFeature(TransformFeature):
             for feat in self.base_features
             if feat.unique_name() != self.groupby.unique_name()
         ]
-        return {
+        arg_dict = {
             "name": self._name,
             "base_features": feature_names,
             "primitive": serialize_primitive(self.primitive),
             "groupby": self.groupby.unique_name(),
         }
+        if self._names:
+            arg_dict["feature_names"] = self._names
+        return arg_dict
 
 
 class Feature(object):
