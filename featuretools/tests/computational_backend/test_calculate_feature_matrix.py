@@ -36,7 +36,12 @@ from featuretools.computational_backends.utils import (
     create_client_and_cluster,
     n_jobs_to_workers,
 )
-from featuretools.feature_base import AggregationFeature, DirectFeature, IdentityFeature
+from featuretools.feature_base import (
+    AggregationFeature,
+    DirectFeature,
+    FeatureOutputSlice,
+    IdentityFeature,
+)
 from featuretools.primitives import (
     Count,
     Max,
@@ -46,6 +51,7 @@ from featuretools.primitives import (
     Sum,
     TransformPrimitive,
 )
+from featuretools.primitives.standard.transform_primitive import Negate
 from featuretools.tests.testing_utils import (
     backward_path,
     get_mock_client_cluster,
@@ -2276,7 +2282,7 @@ def test_feature_origins_present_on_all_fm_cols(pd_es):
         assert origin in ["base", "engineered"]
 
 
-def test_renamed_features_have_expected_column_names(pd_es):
+def test_renamed_features_have_expected_column_names_in_feature_matrix(pd_es):
     class MultiCumulative(TransformPrimitive):
         name = "multi_cum_sum"
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
@@ -2292,18 +2298,36 @@ def test_renamed_features_have_expected_column_names(pd_es):
     multi_output_trans_feat = ft.Feature(
         pd_es["log"].ww["value"], primitive=MultiCumulative
     )
+    groupby_trans_feat = ft.GroupByTransformFeature(
+        pd_es["log"].ww["value"],
+        primitive=MultiCumulative,
+        groupby=pd_es["log"].ww["product_id"],
+    )
     multi_output_agg_feat = ft.Feature(
         pd_es["log"].ww["product_id"],
         parent_dataframe_name="customers",
         primitive=NMostCommon(n=2),
     )
+    slice = FeatureOutputSlice(multi_output_trans_feat, 1)
+    stacked = ft.Feature(slice, primitive=Negate)
 
     multi_output_trans_names = ["cumulative_sum", "cumulative_max", "cumulative_min"]
     multi_output_trans_feat.set_feature_names(multi_output_trans_names)
+    groupby_trans_feat_names = ["grouped_sum", "grouped_max", "grouped_min"]
+    groupby_trans_feat.set_feature_names(groupby_trans_feat_names)
     agg_names = ["first_most_common", "second_most_common"]
     multi_output_agg_feat.set_feature_names(agg_names)
 
-    features = [multi_output_trans_feat, multi_output_agg_feat]
+    features = [
+        multi_output_trans_feat,
+        multi_output_agg_feat,
+        stacked,
+        groupby_trans_feat,
+    ]
     feature_matrix = calculate_feature_matrix(entityset=pd_es, features=features)
-    for renamed_col in multi_output_trans_names + agg_names:
+    expected_names = multi_output_trans_names + agg_names + groupby_trans_feat_names
+    for renamed_col in expected_names:
         assert renamed_col in feature_matrix.columns
+
+    expected_stacked_name = "-(cumulative_max)"
+    assert expected_stacked_name in feature_matrix.columns
