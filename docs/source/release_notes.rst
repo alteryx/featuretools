@@ -7,7 +7,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
-        * Improve serialization and deserialization to reduce storage of duplicate primitive information (:pr:`2136`)
+        * Improve serialization and deserialization to reduce storage of duplicate primitive information (:pr:`2136`, :pr:`2127`)
     * Documentation Changes
     * Testing Changes
 
