@@ -320,8 +320,10 @@ def test_custom_feature_names_retained_during_serialization(pd_es, tmpdir):
                 return x.cumsum(), x.cummax(), x.cummin()
 
             return multi_cumulative
-    
-    multi_output_trans_feat = ft.Feature(pd_es["log"].ww["value"], primitive=MultiCumulative)
+
+    multi_output_trans_feat = ft.Feature(
+        pd_es["log"].ww["value"], primitive=MultiCumulative
+    )
     multi_output_agg_feat = ft.Feature(
         pd_es["log"].ww["product_id"],
         parent_dataframe_name="customers",
