@@ -477,7 +477,7 @@ class IsYearEnd(TransformPrimitive):
     name = "is_year_end"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=BooleanNullable)
-    compatibility = [Library.PANDAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "whether {} occurred on the end of a year"
 
     def get_function(self):
@@ -503,7 +503,7 @@ class IsYearStart(TransformPrimitive):
     name = "is_year_start"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=BooleanNullable)
-    compatibility = [Library.PANDAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "whether {} occurred on the start of a year"
 
     def get_function(self):
