@@ -32,6 +32,7 @@ from featuretools.primitives import (
     Skew,
     Std,
     Sum,
+    TransformPrimitive,
     Weekday,
     Year,
 )
@@ -308,27 +309,35 @@ def test_serialize_url(es):
 
 
 def test_custom_feature_names_retained_during_serialization(pd_es, tmpdir):
-    direct_feat = ft.Feature(pd_es["sessions"].ww["device_name"], "log")
-    trans_feat = ft.Feature(pd_es["log"].ww["value"], primitive=Negate)
+    class MultiCumulative(TransformPrimitive):
+        name = "multi_cum_sum"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
+        number_output_features = 3
+
+        def get_function(self):
+            def multi_cumulative(x):
+                return x.cumsum(), x.cummax(), x.cummin()
+
+            return multi_cumulative
+    
+    multi_output_trans_feat = ft.Feature(pd_es["log"].ww["value"], primitive=MultiCumulative)
     multi_output_agg_feat = ft.Feature(
         pd_es["log"].ww["product_id"],
         parent_dataframe_name="customers",
         primitive=NMostCommon(n=2),
     )
 
-    direct_name = ["device_direct"]
-    direct_feat.set_feature_names(direct_name)
-    trans_name = ["negative_value"]
-    trans_feat.set_feature_names(trans_name)
+    trans_names = ["cumulative_sum", "cumulative_max", "cumulative_min"]
+    multi_output_trans_feat.set_feature_names(trans_names)
     agg_name = ["first_most_common", "second_most_common"]
     multi_output_agg_feat.set_feature_names(agg_name)
 
-    features = [direct_feat, trans_feat, multi_output_agg_feat]
+    features = [multi_output_trans_feat, multi_output_agg_feat]
     file = os.path.join(tmpdir, "features.json")
     ft.save_features(features, file)
     deserialized_features = ft.load_features(file)
 
-    new_direct, new_trans, new_agg = deserialized_features
-    assert new_direct.get_feature_names() == direct_name
-    assert new_trans.get_feature_names() == trans_name
+    new_trans, new_agg = deserialized_features
+    assert new_trans.get_feature_names() == trans_names
     assert new_agg.get_feature_names() == agg_name

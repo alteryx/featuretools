@@ -41,7 +41,6 @@ from featuretools.primitives import (
     Count,
     Max,
     Min,
-    Negate,
     NMostCommon,
     Percentile,
     Sum,
