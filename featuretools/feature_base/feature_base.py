@@ -108,7 +108,7 @@ class FeatureBase(object):
         """Set new values for the feature column names, overriding the default values.
         Number of names provided much match the number of output columns defined for
         the feature. Only works for features that have more than one output column. Use
-        ``Feature.rename`` for changing the column name for single output features.
+        ``Feature.rename`` to change the column name for single output features.
 
         Args:
             names (list[str]): List of names to use for the output feature columns. Provided
