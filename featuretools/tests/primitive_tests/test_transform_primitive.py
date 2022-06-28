@@ -180,9 +180,9 @@ def test_is_lunch_time():
     ilt = IsLunchTime()
     dates = pd.Series(
         [
-            datetime(2022, 6, 26, 12, 12, 12),
-            datetime(2022, 6, 21, 12, 3, 4),
-            datetime(2022, 6, 21, 11, 3, 4),
+            datetime(2022, 6, 26, 12, 12, 12),  # Weekend date
+            datetime(2022, 6, 28, 12, 3, 4),  # Weekday date
+            datetime(2022, 6, 28, 11, 3, 4),  # Weekday date
             np.nan,
         ]
     )
@@ -195,10 +195,10 @@ def test_is_lunch_time_weekdays_only():
     ilt = IsLunchTime(include_weekends=False)
     dates = pd.Series(
         [
-            datetime(2022, 6, 26, 12, 12, 12),
-            datetime(2022, 6, 21, 12, 3, 4),
-            datetime(2022, 6, 21, 11, 3, 4),
-            datetime(2022, 7, 4, 12, 1, 1),
+            datetime(2022, 6, 26, 12, 12, 12),  # Weekend date
+            datetime(2022, 6, 28, 12, 3, 4),  # Weekday date
+            datetime(2022, 6, 28, 11, 3, 4),  # Weekday date
+            datetime(2022, 7, 4, 12, 1, 1),  # July 4th -- Holiday date
         ]
     )
     actual = ilt(dates)
@@ -210,10 +210,10 @@ def test_is_lunch_time_include_holidays():
     ilt = IsLunchTime(include_weekends=False, include_holidays=True)
     dates = pd.Series(
         [
-            datetime(2022, 6, 26, 12, 12, 12),
-            datetime(2022, 6, 21, 12, 3, 4),
-            datetime(2022, 6, 21, 11, 3, 4),
-            datetime(2022, 7, 4, 12, 1, 1),
+            datetime(2022, 6, 26, 12, 12, 12),  # Weekend date
+            datetime(2022, 6, 21, 12, 3, 4),  # Weekday date
+            datetime(2022, 6, 21, 11, 3, 4),  # Weekday date
+            datetime(2022, 7, 4, 12, 1, 1),  # July 4th -- Holiday date
         ]
     )
     actual = ilt(dates)
@@ -225,9 +225,9 @@ def test_is_working_hours_standard_hours():
     iwh = IsWorkingHours()
     dates = pd.Series(
         [
-            datetime(2022, 6, 21, 16, 3, 3),
-            datetime(2019, 1, 3, 4, 4, 4),
-            datetime(2022, 1, 1, 12, 1, 2),
+            datetime(2022, 6, 21, 16, 3, 3),  # Weekday date
+            datetime(2019, 1, 3, 4, 4, 4),  # Weekday date
+            datetime(2022, 1, 1, 12, 1, 2),  # New Year's -- Holiday date
         ]
     )
     answer = iwh(dates)
@@ -239,9 +239,9 @@ def test_is_working_hours_configured_hours():
     iwh = IsWorkingHours(15, 18)
     dates = pd.Series(
         [
-            datetime(2022, 6, 21, 16, 3, 3),
-            datetime(2022, 6, 22, 14, 4, 4),
-            datetime(2022, 1, 1, 12, 1, 2),
+            datetime(2022, 6, 21, 16, 3, 3),  # Weekday date
+            datetime(2022, 6, 26, 14, 4, 4),  # Weekend date
+            datetime(2022, 1, 1, 12, 1, 2),  # New Year's -- Holiday date
         ]
     )
     answer = iwh(dates)
@@ -250,12 +250,12 @@ def test_is_working_hours_configured_hours():
 
 
 def test_is_working_hours_boxing_day():
-    iwh = IsWorkingHours(country="CA")
+    iwh = IsWorkingHours(country="CA")  # tests Canadian holidays
     dates = pd.Series(
         [
-            datetime(2022, 12, 26, 16, 3, 3),
-            datetime(2021, 12, 26, 16, 3, 3),
-            datetime(2020, 12, 26, 16, 3, 3),
+            datetime(2022, 12, 26, 16, 3, 3),  # Boxing Day 2022 -- Holiday date
+            datetime(2021, 12, 26, 16, 3, 3),  # Boxing Day 2021 -- Holiday date
+            datetime(2020, 12, 26, 16, 3, 3),  # Boxing Day 2020 -- Holiday date
         ]
     )
     answer = iwh(dates)

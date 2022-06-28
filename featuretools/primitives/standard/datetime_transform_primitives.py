@@ -525,7 +525,7 @@ class IsWorkingHours(TransformPrimitive):
     Examples:
         >>> from datetime import datetime
         >>> dates = [datetime(2022, 6, 21, 16, 3, 3),
-        ...          datetime(2019,1,3,4,4,4),
+        ...          datetime(2019, 1, 3, 4, 4, 4),
         ...          datetime(2022, 1, 1, 12, 1, 2)]
         >>> iwh = IsWorkingHours()
         >>> iwh(dates).tolist()
