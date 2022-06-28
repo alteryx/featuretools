@@ -366,7 +366,7 @@ class PrimitivesDeserializer(object):
         self.instance_cache = {}
         self.primitive_classes = find_descendents(PrimitiveBase)
 
-    def deserialize_primitive(self, primitive_dict, primitive_key):
+    def deserialize_primitive(self, primitive_dict):
         """
         Construct a primitive from the given dictionary (output from
         serialize_primitive).
@@ -375,22 +375,21 @@ class PrimitivesDeserializer(object):
         module_name = primitive_dict["module"]
         class_cache_key = (class_name, module_name)
 
-        if primitive_key in self.instance_cache:
-            primitive_instance = self.instance_cache[primitive_key]
+        # if primitive_key in self.instance_cache:
+        #     primitive_instance = self.instance_cache[primitive_key]
+        # else:
+        if class_cache_key in self.class_cache:
+            cls = self.class_cache[class_cache_key]
         else:
-            if class_cache_key in self.class_cache:
-                cls = self.class_cache[class_cache_key]
-            else:
-                cls = self._find_class_in_descendants(class_cache_key)
+            cls = self._find_class_in_descendants(class_cache_key)
 
-            if not cls:
-                raise RuntimeError(
-                    'Primitive "%s" in module "%s" not found'
-                    % (class_name, module_name)
-                )
-            arguments = primitive_dict["arguments"]
-            primitive_instance = cls(**arguments)
-            self.instance_cache[primitive_key] = primitive_instance
+        if not cls:
+            raise RuntimeError(
+                'Primitive "%s" in module "%s" not found' % (class_name, module_name)
+            )
+        arguments = primitive_dict["arguments"]
+        primitive_instance = cls(**arguments)
+        # self.instance_cache[primitive_key] = primitive_instance
 
         return primitive_instance
 

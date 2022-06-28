@@ -710,9 +710,7 @@ class AggregationFeature(FeatureBase):
         return relationship_path, path_is_unique
 
     @classmethod
-    def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
-    ):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitive):
         base_features = [dependencies[name] for name in arguments["base_features"]]
         relationship_path = [
             Relationship.from_dictionary(r, entityset)
@@ -720,12 +718,6 @@ class AggregationFeature(FeatureBase):
         ]
         parent_dataframe_name = relationship_path[0].parent_dataframe.ww.name
         relationship_path = RelationshipPath([(False, r) for r in relationship_path])
-
-        primitive_key = arguments["primitive"]
-        primitive_dict = arguments["primitive_definitions"][primitive_key]
-        primitive = primitives_deserializer.deserialize_primitive(
-            primitive_dict, primitive_key
-        )
 
         use_previous_data = arguments["use_previous"]
         use_previous = use_previous_data and Timedelta.from_dictionary(
@@ -826,15 +818,9 @@ class TransformFeature(FeatureBase):
         )
 
     @classmethod
-    def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
-    ):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitive):
         base_features = [dependencies[name] for name in arguments["base_features"]]
-        primitive_key = arguments["primitive"]
-        primitive_dict = arguments["primitive_definitions"][primitive_key]
-        primitive = primitives_deserializer.deserialize_primitive(
-            primitive_dict, primitive_key
-        )
+
         feat = cls(
             base_features=base_features, primitive=primitive, name=arguments["name"]
         )
@@ -882,16 +868,8 @@ class GroupByTransformFeature(TransformFeature):
         )
 
     @classmethod
-    def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
-    ):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitive):
         base_features = [dependencies[name] for name in arguments["base_features"]]
-        primitive_key = arguments["primitive"]
-        primitive_dict = arguments["primitive_definitions"][primitive_key]
-        primitive = primitives_deserializer.deserialize_primitive(
-            primitive_dict,
-            primitive_key,
-        )
         groupby = dependencies[arguments["groupby"]]
         feat = cls(
             base_features=base_features,

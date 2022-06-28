@@ -234,8 +234,9 @@ def test_to_dictionary_identity(es):
 
 
 def test_to_dictionary_agg(es):
+    primitive = Sum()
     actual = ft.Feature(
-        es["customers"].ww["age"], primitive=Sum, parent_dataframe_name="cohorts"
+        es["customers"].ww["age"], primitive=primitive, parent_dataframe_name="cohorts"
     ).to_dictionary()
 
     expected = {
@@ -252,11 +253,7 @@ def test_to_dictionary_agg(es):
                     "child_column_name": "cohort",
                 }
             ],
-            "primitive": {
-                "type": "Sum",
-                "module": "featuretools.primitives.standard.aggregation_primitives",
-                "arguments": {},
-            },
+            "primitive": primitive,
             "where": None,
             "use_previous": None,
         },
@@ -266,11 +263,12 @@ def test_to_dictionary_agg(es):
 
 
 def test_to_dictionary_where(es):
+    primitive = Sum()
     actual = ft.Feature(
         es["log"].ww["value"],
         parent_dataframe_name="sessions",
         where=ft.IdentityFeature(es["log"].ww["value"]) == 2,
-        primitive=Sum,
+        primitive=primitive,
     ).to_dictionary()
 
     expected = {
@@ -287,11 +285,7 @@ def test_to_dictionary_where(es):
                     "child_column_name": "session_id",
                 }
             ],
-            "primitive": {
-                "type": "Sum",
-                "module": "featuretools.primitives.standard.aggregation_primitives",
-                "arguments": {},
-            },
+            "primitive": primitive,
             "where": "log: value = 2",
             "use_previous": None,
         },
@@ -301,7 +295,8 @@ def test_to_dictionary_where(es):
 
 
 def test_to_dictionary_trans(es):
-    trans_feature = ft.Feature(es["customers"].ww["age"], primitive=Negate)
+    primitive = Negate()
+    trans_feature = ft.Feature(es["customers"].ww["age"], primitive=primitive)
 
     expected = {
         "type": "TransformFeature",
@@ -309,11 +304,7 @@ def test_to_dictionary_trans(es):
         "arguments": {
             "name": None,
             "base_features": ["customers: age"],
-            "primitive": {
-                "type": "Negate",
-                "module": "featuretools.primitives.standard.transform_primitive",
-                "arguments": {},
-            },
+            "primitive": primitive,
         },
     }
 
@@ -321,9 +312,10 @@ def test_to_dictionary_trans(es):
 
 
 def test_to_dictionary_groupby_trans(es):
+    primitive = Negate()
     id_feat = ft.Feature(es["log"].ww["product_id"])
     groupby_feature = ft.Feature(
-        es["log"].ww["value"], primitive=Negate, groupby=id_feat
+        es["log"].ww["value"], primitive=primitive, groupby=id_feat
     )
 
     expected = {
@@ -332,11 +324,7 @@ def test_to_dictionary_groupby_trans(es):
         "arguments": {
             "name": None,
             "base_features": ["log: value"],
-            "primitive": {
-                "type": "Negate",
-                "module": "featuretools.primitives.standard.transform_primitive",
-                "arguments": {},
-            },
+            "primitive": primitive,
             "groupby": "log: product_id",
         },
     }

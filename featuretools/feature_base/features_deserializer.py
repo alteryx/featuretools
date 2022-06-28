@@ -78,7 +78,12 @@ class FeaturesDeserializer(object):
         self._check_schema_version()
         self.entityset = deserialize_es(features_dict["entityset"])
         self._deserialized_features = {}  # name -> feature
-        self._primitives_deserializer = PrimitivesDeserializer()
+        primitive_deserializer = PrimitivesDeserializer()
+        primitive_definitions = features_dict["primitive_definitions"]
+        self._deserialized_primitives = {
+            k: primitive_deserializer.deserialize_primitive(v)
+            for k, v in primitive_definitions.items()
+        }
 
     @classmethod
     def load(cls, features, profile_name):
@@ -108,11 +113,11 @@ class FeaturesDeserializer(object):
             return self._deserialized_features[feature_name]
 
         feature_dict = self.features_dict["feature_definitions"][feature_name]
-        feature_dict["arguments"]["primitive_definitions"] = self.features_dict[
-            "primitive_definitions"
-        ]
-
         dependencies_list = feature_dict["dependencies"]
+        primitive = None
+        primitive_id = feature_dict["arguments"].get("primitive")
+        if primitive_id is not None:
+            primitive = self._deserialized_primitives[primitive_id]
 
         # Collect dependencies into a dictionary of name -> feature.
         dependencies = {
@@ -126,9 +131,7 @@ class FeaturesDeserializer(object):
             raise RuntimeError('Unrecognized feature type "%s"' % type)
 
         args = feature_dict["arguments"]
-        feature = cls.from_dictionary(
-            args, self.entityset, dependencies, self._primitives_deserializer
-        )
+        feature = cls.from_dictionary(args, self.entityset, dependencies, primitive)
 
         self._deserialized_features[feature_name] = feature
         return feature
