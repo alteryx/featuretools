@@ -10,9 +10,10 @@ Future Release
         * Improve serialization and deserialization to reduce storage of duplicate primitive information (:pr:`2136`, :pr:`2127`, :pr:`2142`)
     * Documentation Changes
     * Testing Changes
+        * Fix pandas warning and reduce dask .apply warnings (:pr:`2145`)
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`ozzieD`, :user:`thehomebrewnerd`
 
 v1.10.0 June 23, 2022
 =====================
