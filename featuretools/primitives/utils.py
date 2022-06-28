@@ -375,9 +375,6 @@ class PrimitivesDeserializer(object):
         module_name = primitive_dict["module"]
         class_cache_key = (class_name, module_name)
 
-        # if primitive_key in self.instance_cache:
-        #     primitive_instance = self.instance_cache[primitive_key]
-        # else:
         if class_cache_key in self.class_cache:
             cls = self.class_cache[class_cache_key]
         else:
