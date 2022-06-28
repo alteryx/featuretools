@@ -348,12 +348,18 @@ def test_diff(pd_es):
     )
     diff2 = ft.Feature(value, groupby=customer_id_feat, primitive=Diff)
 
-    feature_set = FeatureSet([diff1, diff2])
+    diff_periods = ft.Feature(
+        value, groupby=customer_id_feat, primitive=Diff(periods=1)
+    )
+
+    feature_set = FeatureSet([diff1, diff2, diff_periods])
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array(range(15)))
 
     val1 = df[diff1.get_name()].tolist()
     val2 = df[diff2.get_name()].tolist()
+    val3 = df[diff_periods.get_name()].tolist()
+
     correct_vals1 = [
         np.nan,
         5,
@@ -372,6 +378,7 @@ def test_diff(pd_es):
         7,
     ]
     correct_vals2 = [np.nan, 5, 5, 5, 5, -20, 1, 1, 1, -3, np.nan, 5, -5, 7, 7]
+    correct_vals3 = [np.nan, np.nan, 5, 5, 5, 5, -20, 1, 1, 1, np.nan, np.nan, 5, -5, 7]
     for i, v in enumerate(val1):
         v1 = val1[i]
         if np.isnan(v1):
@@ -383,6 +390,11 @@ def test_diff(pd_es):
             assert np.isnan(correct_vals2[i])
         else:
             assert v2 == correct_vals2[i]
+        v3 = val3[i]
+        if np.isnan(v3):
+            assert np.isnan(correct_vals3[i])
+        else:
+            assert v3 == correct_vals3[i]
 
 
 def test_diff_single_value(pd_es):
