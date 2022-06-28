@@ -2,26 +2,39 @@
 
 Release Notes
 -------------
-
 Future Release
 ==============
     * Enhancements
-        * Add ``DayOfYear``, ``DaysInMonth``, ``Quarter``, ``IsLeapYear``, 
-              ``IsQuarterEnd``, ``IsQuarterStart``, ``IsMonthEnd``, ``IsMonthStart`` 
-              ``IsWorkingHours``, ``IsLunchTime``
-              transform primitives (:pr:`2110`, :pr:`2117`, :pr:`2121`, :pr:`2130`)
-        * Move ``Quarter`` test cases (:pr:`2123`)
+      * Add ``IsWorkingHours`` and ``IsLunchTime`` transform primitives (:pr:`2130`) 
     * Fixes
     * Changes
+        * Sort core requirements and test requirements in setup cfg (:pr:`2152`)
+    * Documentation Changes
+    * Testing Changes
+        * Fix pandas warning and reduce dask .apply warnings (:pr:`2145`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`ozzieD`, :user:`sbadithe`
+
+v1.10.0 June 23, 2022
+=====================
+    * Enhancements
+        * Add ``DayOfYear``, ``DaysInMonth``, ``Quarter``, ``IsLeapYear``, ``IsQuarterEnd``, ``IsQuarterStart`` transform primitives (:pr:`2110`, :pr:`2117`)
+        * Add ``IsMonthEnd``, ``IsMonthStart`` transform primitives (:pr:`2121`)
+        * Move ``Quarter`` test cases (:pr:`2123`)
+        * Add ``summarize_primitives`` function for getting metrics about available primitives (:pr:`2099`)
+    * Changes
+        * Changes for compatibility with numpy 1.23.0 (:pr:`2135`, :pr:`2137`)
     * Documentation Changes
         * Update contributing.md to add pandoc (:pr:`2103`, :pr:`2104`)
         * Update NLP primitives section of API reference (:pr:`2109`)
+        * Fixing release notes formatting (:pr:`2139`)
     * Testing Changes
         * Latest dependency checker installs spark dependencies (:pr:`2112`)
         * Fix test failures with pyspark v3.3.0 (:pr:`2114`, :pr:`2120`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`
+    :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v1.9.2 June 10, 2022
 ====================

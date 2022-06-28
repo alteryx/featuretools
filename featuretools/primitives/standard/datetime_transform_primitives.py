@@ -1,5 +1,3 @@
-import warnings
-
 import holidays
 import numpy as np
 import pandas as pd
@@ -787,14 +785,10 @@ class Week(TransformPrimitive):
 
     def get_function(self):
         def week(vals):
-            warnings.filterwarnings(
-                "ignore",
-                message=(
-                    "Series.dt.weekofyear and Series.dt.week " "have been deprecated."
-                ),
-                module="featuretools",
-            )
-            return vals.dt.week
+            if hasattr(vals.dt, "isocalendar"):
+                return vals.dt.isocalendar().week
+            else:
+                return vals.dt.week
 
         return week
 
