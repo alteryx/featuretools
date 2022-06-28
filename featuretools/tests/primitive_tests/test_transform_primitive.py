@@ -11,7 +11,7 @@ from featuretools.primitives import (
     EmailAddressToDomain,
     IsFreeEmailDomain,
     IsLeapYear,
-    IsLunchTime,
+    IsLunchTime, 
     IsMonthEnd,
     IsMonthStart,
     IsQuarterEnd,
@@ -180,10 +180,10 @@ def test_is_lunch_time():
     ilt = IsLunchTime()
     dates = pd.Series(
         [
-            datetime(2022, 6, 19, 12, 12, 12),
+            datetime(2022, 6, 26, 12, 12, 12),
             datetime(2022, 6, 21, 12, 3, 4),
             datetime(2022, 6, 21, 11, 3, 4),
-            np.nan,
+            np.nan
         ]
     )
     actual = ilt(dates)
@@ -192,31 +192,31 @@ def test_is_lunch_time():
 
 
 def test_is_lunch_time_weekdays_only():
-    ilt = IsLunchTime()
+    ilt = IsLunchTime(include_weekends=False)
     dates = pd.Series(
         [
-            datetime(2022, 6, 19, 12, 12, 12),
+            datetime(2022, 6, 26, 12, 12, 12),
             datetime(2022, 6, 21, 12, 3, 4),
             datetime(2022, 6, 21, 11, 3, 4),
-            datetime(2022, 7, 4, 12, 1, 1),
+            datetime(2022, 7, 4, 12, 1, 1)
         ]
     )
-    actual = ilt(dates, include_weekends=False)
+    actual = ilt(dates)
     expected = [False, True, False, False]
     np.testing.assert_array_equal(actual, expected)
 
 
 def test_is_lunch_time_include_holidays():
-    ilt = IsLunchTime()
+    ilt = IsLunchTime(include_weekends=False, include_holidays=True)
     dates = pd.Series(
         [
-            datetime(2022, 6, 19, 12, 12, 12),
+            datetime(2022, 6, 26, 12, 12, 12),
             datetime(2022, 6, 21, 12, 3, 4),
             datetime(2022, 6, 21, 11, 3, 4),
-            datetime(2022, 7, 4, 12, 1, 1),
+            datetime(2022, 7, 4, 12, 1, 1)
         ]
     )
-    actual = ilt(dates, include_holidays=True)
+    actual = ilt(dates)
     expected = [False, True, False, True]
     np.testing.assert_array_equal(actual, expected)
 
