@@ -362,7 +362,7 @@ class IsLunchTime(TransformPrimitive):
         self.country = country
         years_list = [1950 + x for x in range(150)]
         self.federal_holidays = getattr(holidays, self.country)(years=years_list)
-        self.weekday_only = include_weekends
+        self.include_weekends = include_weekends
         self.include_holidays = include_holidays
 
     def lunch_time(self, tstamp):
