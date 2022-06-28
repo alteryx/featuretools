@@ -247,12 +247,10 @@ def dfs(
     if isinstance(cutoff_time, str):
         try:
             cutoff_time = pd.to_datetime(cutoff_time)
-        except ValueError:
-            raise ValueError(f"Cutoff time {cutoff_time} was not able to be parsed")
-        except OverflowError:
-            raise OverflowError(
-                f"Cutoff time {cutoff_time} was parsed into an integer that cannot be stored on your system"
-            )
+        except ValueError as e:
+            raise ValueError(f"While parsing cutoff_time: {str(e)}")
+        except OverflowError as e:
+            raise OverflowError(f"While parsing cutoff_time: {str(e)}")
 
     dfs_object = DeepFeatureSynthesis(
         target_dataframe_name,
