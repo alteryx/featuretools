@@ -345,10 +345,11 @@ class IsLunchTime(TransformPrimitive):
         >>> from datetime import datetime
         >>> dates = [datetime(2022, 6, 21, 12, 3, 3),
         ...          datetime(2019, 1, 3, 4, 4, 4),
-        ...          datetime(2022, 1, 1, 12, 1, 2)]
+        ...          datetime(2022, 1, 1, 12, 1, 2),
+        ...          np.nan]
         >>> ilt = IsLunchTime()
         >>> ilt(dates).tolist()
-        [True, False, False]
+        [True, False, False, False]
     """
 
     name = "is_lunch_time"
@@ -357,15 +358,21 @@ class IsLunchTime(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "whether {} falls during lunch time"
 
-    def __init__(self, country="US"):
+    def __init__(self, country="US", include_weekends=True, include_holidays=False):
         self.country = country
         years_list = [1950 + x for x in range(150)]
         self.federal_holidays = getattr(holidays, self.country)(years=years_list)
+        self.weekday_only = include_weekends
+        self.include_holidays = include_holidays
 
     def lunch_time(self, tstamp):
         lunch_hrs = tstamp.hour == 12
         working_day = tstamp.weekday() < 5
         is_holiday = tstamp.date() in self.federal_holidays.keys()
+        if self.include_weekends:
+            working_day = True
+        if self.include_holidays:
+            is_holiday = False
         return lunch_hrs and working_day and not is_holiday
 
     def get_function(self):
@@ -508,7 +515,7 @@ class IsWorkingHours(TransformPrimitive):
 
     Args:
         start_time (int): Start hour of workday. Default is 8 (8am)
-        end_time (int): End hour of workday. Default is 18 (6pm) 
+        end_time (int): End hour of workday. Default is 18 (6pm)
         country (str): Country to use for determining Holidays.
             Default is 'US'. Should be one of the available countries here:
             https://github.com/dr-prodigy/python-holidays#available-countries

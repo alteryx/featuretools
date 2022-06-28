@@ -183,11 +183,42 @@ def test_is_lunch_time():
             datetime(2022, 6, 19, 12, 12, 12),
             datetime(2022, 6, 21, 12, 3, 4),
             datetime(2022, 6, 21, 11, 3, 4),
+            np.nan,
         ]
     )
-    answer = ilt(dates)
-    correct_answer = [False, True, False]
-    np.testing.assert_array_equal(answer, correct_answer)
+    actual = ilt(dates)
+    expected = [True, True, False, False]
+    np.testing.assert_array_equal(actual, expected)
+
+
+def test_is_lunch_time_weekdays_only():
+    ilt = IsLunchTime()
+    dates = pd.Series(
+        [
+            datetime(2022, 6, 19, 12, 12, 12),
+            datetime(2022, 6, 21, 12, 3, 4),
+            datetime(2022, 6, 21, 11, 3, 4),
+            datetime(2022, 7, 4, 12, 1, 1),
+        ]
+    )
+    actual = ilt(dates, include_weekends=False)
+    expected = [False, True, False, False]
+    np.testing.assert_array_equal(actual, expected)
+
+
+def test_is_lunch_time_include_holidays():
+    ilt = IsLunchTime()
+    dates = pd.Series(
+        [
+            datetime(2022, 6, 19, 12, 12, 12),
+            datetime(2022, 6, 21, 12, 3, 4),
+            datetime(2022, 6, 21, 11, 3, 4),
+            datetime(2022, 7, 4, 12, 1, 1),
+        ]
+    )
+    actual = ilt(dates, include_holidays=True)
+    expected = [False, True, False, True]
+    np.testing.assert_array_equal(actual, expected)
 
 
 def test_is_working_hours_standard_hours():
