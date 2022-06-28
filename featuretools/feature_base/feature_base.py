@@ -76,7 +76,8 @@ class FeatureBase(object):
         raise NotImplementedError("Must define from_dictionary on FeatureBase subclass")
 
     def rename(self, name):
-        """Rename Feature, returns copy"""
+        """Rename Feature, returns copy. Will reset any custom feature column names
+        to their default value."""
         feature_copy = self.copy()
         feature_copy._name = name
         feature_copy._names = None
@@ -102,6 +103,33 @@ class FeatureBase(object):
                         for i in range(len(self._names))
                     ]
         return self._names
+
+    def set_feature_names(self, names):
+        """Set new values for the feature column names, overriding the default values.
+        Number of names provided much match the number of output columns defined for
+        the feature. Only works for features that have more than one output column. Use
+        ``Feature.rename`` to change the column name for single output features.
+
+        Args:
+            names (list[str]): List of names to use for the output feature columns. Provided
+                names must be unique.
+        """
+        if self.number_output_features == 1:
+            raise ValueError(
+                "The set_feature_names can only be used on features that have more than one output column."
+            )
+
+        num_new_names = len(names)
+        if self.number_output_features != num_new_names:
+            raise ValueError(
+                "Number of names provided must match the number of output features:"
+                f" {num_new_names} name(s) provided, {self.number_output_features} expected."
+            )
+
+        if len(set(names)) != num_new_names:
+            raise ValueError("Provided output feature names must be unique.")
+
+        self._names = names
 
     def get_function(self, **kwargs):
         return self.primitive.get_function(**kwargs)
@@ -706,7 +734,7 @@ class AggregationFeature(FeatureBase):
         where_name = arguments["where"]
         where = where_name and dependencies[where_name]
 
-        return cls(
+        feat = cls(
             base_features=base_features,
             parent_dataframe_name=parent_dataframe_name,
             primitive=primitive,
@@ -715,6 +743,8 @@ class AggregationFeature(FeatureBase):
             where=where,
             name=arguments["name"],
         )
+        feat._names = arguments.get("feature_names")
+        return feat
 
     def copy(self):
         return AggregationFeature(
@@ -759,7 +789,7 @@ class AggregationFeature(FeatureBase):
         )
 
     def get_arguments(self):
-        return {
+        arg_dict = {
             "name": self._name,
             "base_features": [feat.unique_name() for feat in self.base_features],
             "relationship_path": [r.to_dictionary() for _, r in self.relationship_path],
@@ -767,6 +797,9 @@ class AggregationFeature(FeatureBase):
             "where": self.where and self.where.unique_name(),
             "use_previous": self.use_previous and self.use_previous.get_arguments(),
         }
+        if self._names:
+            arg_dict["feature_names"] = self._names
+        return arg_dict
 
     def relationship_path_name(self):
         if self._path_is_unique:
@@ -799,9 +832,11 @@ class TransformFeature(FeatureBase):
         primitive = primitives_deserializer.deserialize_primitive(
             arguments["primitive"]
         )
-        return cls(
+        feat = cls(
             base_features=base_features, primitive=primitive, name=arguments["name"]
         )
+        feat._names = arguments.get("feature_names")
+        return feat
 
     def copy(self):
         return TransformFeature(self.base_features, self.primitive)
@@ -817,11 +852,14 @@ class TransformFeature(FeatureBase):
         )
 
     def get_arguments(self):
-        return {
+        arg_dict = {
             "name": self._name,
             "base_features": [feat.unique_name() for feat in self.base_features],
             "primitive": serialize_primitive(self.primitive),
         }
+        if self._names:
+            arg_dict["feature_names"] = self._names
+        return arg_dict
 
 
 class GroupByTransformFeature(TransformFeature):
@@ -849,12 +887,14 @@ class GroupByTransformFeature(TransformFeature):
             arguments["primitive"]
         )
         groupby = dependencies[arguments["groupby"]]
-        return cls(
+        feat = cls(
             base_features=base_features,
             primitive=primitive,
             groupby=groupby,
             name=arguments["name"],
         )
+        feat._names = arguments.get("feature_names")
+        return feat
 
     def copy(self):
         # the groupby feature is appended to base_features in the __init__
@@ -883,12 +923,15 @@ class GroupByTransformFeature(TransformFeature):
             for feat in self.base_features
             if feat.unique_name() != self.groupby.unique_name()
         ]
-        return {
+        arg_dict = {
             "name": self._name,
             "base_features": feature_names,
             "primitive": serialize_primitive(self.primitive),
             "groupby": self.groupby.unique_name(),
         }
+        if self._names:
+            arg_dict["feature_names"] = self._names
+        return arg_dict
 
 
 class Feature(object):
