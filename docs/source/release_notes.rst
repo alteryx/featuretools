@@ -5,7 +5,8 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-      * Add ``IsWorkingHours`` and ``IsLunchTime`` transform primitives (:pr:`2130`) 
+        * Add ``IsWorkingHours`` and ``IsLunchTime`` transform primitives (:pr:`2130`) 
+        * Include np.nan testing for ``DayOfYear`` and ``DaysInMonth`` primitives (:pr:`2146`)
     * Fixes
     * Changes
         * Sort core requirements and test requirements in setup cfg (:pr:`2152`)
