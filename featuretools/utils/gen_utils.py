@@ -56,6 +56,7 @@ def check_schema_version(cls, cls_type):
         current = [int(val) for val in current]
         saved = version_string.split(".")
         saved = [int(val) for val in saved]
+
         warning_text_upgrade = (
             "The schema version of the saved %s"
             "(%s) is greater than the latest supported (%s). "

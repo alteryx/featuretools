@@ -386,7 +386,6 @@ class PrimitivesDeserializer(object):
             )
         arguments = primitive_dict["arguments"]
         primitive_instance = cls(**arguments)
-        # self.instance_cache[primitive_key] = primitive_instance
 
         return primitive_instance
 

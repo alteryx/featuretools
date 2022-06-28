@@ -814,7 +814,6 @@ class TransformFeature(FeatureBase):
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitive):
         base_features = [dependencies[name] for name in arguments["base_features"]]
-
         feat = cls(
             base_features=base_features, primitive=primitive, name=arguments["name"]
         )
