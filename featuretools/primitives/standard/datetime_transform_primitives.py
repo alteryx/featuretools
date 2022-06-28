@@ -466,10 +466,11 @@ class IsYearEnd(TransformPrimitive):
         >>> from datetime import datetime
         >>> dates = [datetime(2019, 12, 31),
         ...          datetime(2019, 1, 1),
-        ...          datetime(2019, 11, 30)]
+        ...          datetime(2019, 11, 30),
+        ...          np.nan]
         >>> is_year_end = IsYearEnd()
         >>> is_year_end(dates).tolist()
-        [True, False, False]
+        [True, False, False, False]
     """
 
     name = "is_year_end"
@@ -492,10 +493,11 @@ class IsYearStart(TransformPrimitive):
         >>> from datetime import datetime
         >>> dates = [datetime(2019, 12, 31),
         ...          datetime(2019, 1, 1),
-        ...          datetime(2019, 11, 30)]
+        ...          datetime(2019, 11, 30),
+        ...          np.nan]
         >>> is_year_start = IsYearStart()
         >>> is_year_start(dates).tolist()
-        [False, True, False]
+        [False, True, False, False]
     """
 
     name = "is_year_start"
