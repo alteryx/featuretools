@@ -8,11 +8,13 @@ Future Release
         * Add datetime and string types as valid arguments to dfs ``cutoff_time`` (:pr:`2147`) 
     * Fixes
     * Changes
+        * Sort core requirements and test requirements in setup cfg (:pr:`2152`)
     * Documentation Changes
     * Testing Changes
+        * Fix pandas warning and reduce dask .apply warnings (:pr:`2145`)
 
-Thanks to the following people for contributing to this release: 
-    :user:`sbadithe`
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`ozzieD`, :user:`sbadithe`
 
 v1.10.0 June 23, 2022
 =====================
