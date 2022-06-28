@@ -204,8 +204,8 @@ def test_part_of_day():
             np.nan,
         ]
     )
-    actual = [i if not pd.isna(i) else None for i in answer]
-    expected = [i if not pd.isna(i) else None for i in correct_answer]
+    actual = [i if not pd.isna(i) else None for i in actual]
+    expected = [i if not pd.isna(i) else None for i in expected]
     np.testing.assert_array_equal(actual, expected)
 
 
