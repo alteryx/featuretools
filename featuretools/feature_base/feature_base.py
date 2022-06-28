@@ -70,7 +70,7 @@ class FeatureBase(object):
 
     @classmethod
     def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
+        cls, arguments, entityset, dependencies, primitive
     ):
         raise NotImplementedError("Must define from_dictionary on FeatureBase subclass")
 
@@ -451,7 +451,7 @@ class IdentityFeature(FeatureBase):
 
     @classmethod
     def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
+        cls, arguments, entityset, dependencies, primitive
     ):
         dataframe_name = arguments["dataframe_name"]
         column_name = arguments["column_name"]
@@ -544,7 +544,7 @@ class DirectFeature(FeatureBase):
 
     @classmethod
     def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
+        cls, arguments, entityset, dependencies, primitive
     ):
         base_feature = dependencies[arguments["base_feature"]]
         relationship = Relationship.from_dictionary(
@@ -1009,7 +1009,7 @@ class FeatureOutputSlice(FeatureBase):
 
     @classmethod
     def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
+        cls, arguments, entityset, dependencies, primitive
     ):
         base_feature_name = arguments["base_feature"]
         base_feature = dependencies[base_feature_name]
