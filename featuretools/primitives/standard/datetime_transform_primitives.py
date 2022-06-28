@@ -518,6 +518,18 @@ class Month(TransformPrimitive):
 class PartOfDay(TransformPrimitive):
     """Determines the part of day of a datetime.
 
+    Description:
+        For a list of datetimes, determines the part of day the datetime
+        falls into, based on the hour.
+        If the hour falls from 4 to 5, the part of day is 'dawn'.
+        If the hour falls from 6 to 7, the part of day is 'early morning'.
+        If the hour falls from 8 to 10, the part of day is 'late morning'.
+        If the hour falls from 11 to 13, the part of day is 'noon'.
+        If the hour falls from 14 to 16, the part of day is 'afternoon'.
+        If the hour falls from 17 to 19, the part of day is 'evening'.
+        If the hour falls from 20 to 22, the part of day is 'night'.
+        If the hour falls into 23, 24, or 1 to 3, the part of day is 'midnight'.
+
     Examples:
         >>> from datetime import datetime
         >>> dates = [datetime(2020, 1, 11, 6, 2, 1),
