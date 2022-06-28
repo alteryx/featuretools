@@ -8,12 +8,13 @@ Future Release
         * Include np.nan testing for ``DayOfYear`` and ``DaysInMonth`` primitives (:pr:`2146`)
     * Fixes
     * Changes
+        * Sort core requirements and test requirements in setup cfg (:pr:`2152`)
     * Documentation Changes
     * Testing Changes
         * Fix pandas warning and reduce dask .apply warnings (:pr:`2145`)
 
     Thanks to the following people for contributing to this release:
-    :user:`ozzieD`, :user:`sbadithe`
+    :user:`gsheni`, :user:`ozzieD`, :user:`sbadithe`
 
 v1.10.0 June 23, 2022
 =====================
