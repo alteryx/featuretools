@@ -1,6 +1,6 @@
 import warnings
 
-import pandas as pd 
+import pandas as pd
 
 from featuretools.computational_backends import calculate_feature_matrix
 from featuretools.entityset import EntitySet
@@ -245,12 +245,14 @@ def dfs(
         entityset = EntitySet("dfs", dataframes, relationships)
 
     if isinstance(cutoff_time, str):
-        try: 
-            cutoff_time = pd.to_datetime(cutoff_time) 
-        except ValueError: 
-            raise(f"Cutoff time {cutoff_time} was not able to be parsed")
-        except OverflowError: 
-            raise(f"Cutoff time {cutoff_time} was parsed into an integer that cannot be stored on your system") 
+        try:
+            cutoff_time = pd.to_datetime(cutoff_time)
+        except ValueError:
+            raise ValueError(f"Cutoff time {cutoff_time} was not able to be parsed")
+        except OverflowError:
+            raise OverflowError(
+                f"Cutoff time {cutoff_time} was parsed into an integer that cannot be stored on your system"
+            )
 
     dfs_object = DeepFeatureSynthesis(
         target_dataframe_name,
