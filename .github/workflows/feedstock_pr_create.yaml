@@ -8,4 +8,46 @@ jobs:
     name: Pull latest in forked feestock
     runs-on: ubuntu-latest
     steps:
-        - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          repository: 'alteryx/featuretools'
+          ref: "${{ github.event.release.tag_name }}"
+      - name: Pull latest from upstream
+        run: |
+          gh auth status
+          gh repo sync alteryx/featuretools-feedstock --branch master --source conda-forge/featuretools-feedstock
+        env:
+          GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
+      - uses: actions/checkout@v3
+        with:
+          repository: 'alteryx/featuretools-feedstock'
+          ref: 'master'
+      - name: Modify meta.yaml
+        id: branch
+        shell: python
+        run: |
+          import configparser
+          new_version = "${{ github.event.release.tag_name }}"
+          new_version = new_version[1:]
+          with open('featuretools-feedstock/recipe/meta.yaml') as f:
+              data = f.readlines()
+          current_version = re.search('\d+\.\d+\.\d', data[0])
+          data[0] = data[0].replace(current_version[0], new_version)
+          config = configparser.ConfigParser()
+          config.read('featuretools/setup.cfg')
+          def clean_cfg_section(section):
+              section = section.split('\n')
+              section = [x for x in section if len(x) > 1]
+              return section
+          requirements += clean_cfg_section(config['options']['install_requires'])
+          test_requirements += clean_cfg_section(config['options.extras_require']['test'])
+          
+          with open('featuretools-feedstock/recipe/meta.yaml', 'w') as f:
+              f.writelines(data)
+      - name: Create branch
+        run: |
+          gh pr create --repo alteryx/featuretools-feedstock
+        env:
+          GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
+
+        
