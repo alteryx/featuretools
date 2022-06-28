@@ -11,7 +11,7 @@ from featuretools.primitives import (
     EmailAddressToDomain,
     IsFreeEmailDomain,
     IsLeapYear,
-    IsLunchTime, 
+    IsLunchTime,
     IsMonthEnd,
     IsMonthStart,
     IsQuarterEnd,
@@ -183,7 +183,7 @@ def test_is_lunch_time():
             datetime(2022, 6, 26, 12, 12, 12),
             datetime(2022, 6, 21, 12, 3, 4),
             datetime(2022, 6, 21, 11, 3, 4),
-            np.nan
+            np.nan,
         ]
     )
     actual = ilt(dates)
@@ -198,7 +198,7 @@ def test_is_lunch_time_weekdays_only():
             datetime(2022, 6, 26, 12, 12, 12),
             datetime(2022, 6, 21, 12, 3, 4),
             datetime(2022, 6, 21, 11, 3, 4),
-            datetime(2022, 7, 4, 12, 1, 1)
+            datetime(2022, 7, 4, 12, 1, 1),
         ]
     )
     actual = ilt(dates)
@@ -213,7 +213,7 @@ def test_is_lunch_time_include_holidays():
             datetime(2022, 6, 26, 12, 12, 12),
             datetime(2022, 6, 21, 12, 3, 4),
             datetime(2022, 6, 21, 11, 3, 4),
-            datetime(2022, 7, 4, 12, 1, 1)
+            datetime(2022, 7, 4, 12, 1, 1),
         ]
     )
     actual = ilt(dates)

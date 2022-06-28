@@ -338,7 +338,7 @@ class IsLunchTime(TransformPrimitive):
         country (str): Country to use for determining Holidays.
             Default is 'US'. Should be one of the available countries here:
             https://github.com/dr-prodigy/python-holidays#available-countries
-        include_weekend (bool): Include weekend dates as datetimes with valid 
+        include_weekend (bool): Include weekend dates as datetimes with valid
             lunch times. Default is True.
         include_holidays (bool): Include holiday dates as datetimes with valid
             lunch times. Default is False.
