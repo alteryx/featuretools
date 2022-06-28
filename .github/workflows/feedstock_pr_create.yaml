@@ -1,0 +1,11 @@
+on:
+  release:
+    types: [published]
+
+name: Create feedstock PR for conda release 
+jobs:
+  pull_latest_main:
+    name: Pull latest in forked feestock
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v2
