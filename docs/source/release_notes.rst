@@ -6,6 +6,7 @@ Future Release
 ==============
     * Enhancements
         * Add ``PartOfDay`` transform primitive (:pr:`2128`)
+        * Include np.nan testing for ``DayOfYear`` and ``DaysInMonth`` primitives (:pr:`2146`)
     * Fixes
     * Changes
         * Sort core requirements and test requirements in setup cfg (:pr:`2152`)
