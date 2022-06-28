@@ -190,8 +190,8 @@ def test_part_of_day():
             np.nan,
         ]
     )
-    answer = pod(dates)
-    correct_answer = pd.Series(
+    actual = pod(dates)
+    expected = pd.Series(
         [
             "midnight",
             "dawn",
@@ -204,9 +204,9 @@ def test_part_of_day():
             np.nan,
         ]
     )
-    answer = [i if not pd.isna(i) else None for i in answer]
-    correct_answer = [i if not pd.isna(i) else None for i in correct_answer]
-    np.testing.assert_array_equal(answer, correct_answer)
+    actual = [i if not pd.isna(i) else None for i in answer]
+    expected = [i if not pd.isna(i) else None for i in correct_answer]
+    np.testing.assert_array_equal(actual, expected)
 
 
 def test_quarter_regular():
