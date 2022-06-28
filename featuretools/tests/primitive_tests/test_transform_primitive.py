@@ -204,9 +204,7 @@ def test_part_of_day():
             np.nan,
         ]
     )
-    actual = [i if not pd.isna(i) else None for i in actual]
-    expected = [i if not pd.isna(i) else None for i in expected]
-    np.testing.assert_array_equal(actual, expected)
+    pd.testing.assert_series_equal(expected, actual)
 
 
 def test_quarter_regular():
