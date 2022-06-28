@@ -1,5 +1,6 @@
 import json
 
+from featuretools.primitives.utils import serialize_primitive
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_features
 from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.version import __version__ as ft_version
@@ -104,13 +105,30 @@ class FeaturesSerializer(object):
             for feature in self.feature_list:
                 self._serialize_feature(feature)
 
+            primitive_number = 0
+            primitive_id_to_key = {}
             for name, feature in self._features_dict.items():
                 primitive = feature["arguments"].get("primitive")
                 if primitive:
-                    primitive_hash = hash(json.dumps(primitive))
-                    if primitive_hash not in self._primitives_dict.keys():
-                        self._primitives_dict[primitive_hash] = primitive
-                    self._features_dict[name]["arguments"]["primitive"] = primitive_hash
+                    primitive_id = id(primitive)
+                    if primitive_id not in primitive_id_to_key.keys():
+                        # Primitive we haven't seen before, add to dict and increment primitive_id counter
+                        # Always use string for keys because json conversion results in integer dict keys
+                        # being converted to strings, but integer dict values are not.
+                        primitives_dict_key = str(primitive_number)
+                        primitive_id_to_key[primitive_id] = primitives_dict_key
+                        self._primitives_dict[
+                            str(primitives_dict_key)
+                        ] = serialize_primitive(primitive)
+                        self._features_dict[name]["arguments"][
+                            "primitive"
+                        ] = primitives_dict_key
+                        primitive_number += 1
+                    else:
+                        # Primitive we have seen already - use existing primitive_id key
+                        key = primitive_id_to_key[primitive_id]
+                        self._features_dict[name]["arguments"]["primitive"] = key
+
         return self._features_dict, self._primitives_dict
 
     def _serialize_feature(self, feature):

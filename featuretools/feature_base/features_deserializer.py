@@ -108,12 +108,10 @@ class FeaturesDeserializer(object):
             return self._deserialized_features[feature_name]
 
         feature_dict = self.features_dict["feature_definitions"][feature_name]
-        primitive_hash = feature_dict["arguments"].get("primitive")
-        if primitive_hash:
-            primitive_dict = self.features_dict["primitive_definitions"][
-                str(primitive_hash)
-            ]
-            feature_dict["arguments"]["primitive"] = primitive_dict
+        feature_dict["arguments"]["primitive_definitions"] = self.features_dict[
+            "primitive_definitions"
+        ]
+
         dependencies_list = feature_dict["dependencies"]
 
         # Collect dependencies into a dictionary of name -> feature.

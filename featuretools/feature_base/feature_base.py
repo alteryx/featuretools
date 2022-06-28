@@ -10,7 +10,6 @@ from featuretools.primitives.base import (
     PrimitiveBase,
     TransformPrimitive,
 )
-from featuretools.primitives.utils import serialize_primitive
 from featuretools.utils.wrangle import _check_time_against_column, _check_timedelta
 
 _ES_REF = {}
@@ -722,8 +721,10 @@ class AggregationFeature(FeatureBase):
         parent_dataframe_name = relationship_path[0].parent_dataframe.ww.name
         relationship_path = RelationshipPath([(False, r) for r in relationship_path])
 
+        primitive_key = arguments["primitive"]
+        primitive_dict = arguments["primitive_definitions"][primitive_key]
         primitive = primitives_deserializer.deserialize_primitive(
-            arguments["primitive"]
+            primitive_dict, primitive_key
         )
 
         use_previous_data = arguments["use_previous"]
@@ -793,7 +794,7 @@ class AggregationFeature(FeatureBase):
             "name": self._name,
             "base_features": [feat.unique_name() for feat in self.base_features],
             "relationship_path": [r.to_dictionary() for _, r in self.relationship_path],
-            "primitive": serialize_primitive(self.primitive),
+            "primitive": self.primitive,
             "where": self.where and self.where.unique_name(),
             "use_previous": self.use_previous and self.use_previous.get_arguments(),
         }
@@ -829,8 +830,10 @@ class TransformFeature(FeatureBase):
         cls, arguments, entityset, dependencies, primitives_deserializer
     ):
         base_features = [dependencies[name] for name in arguments["base_features"]]
+        primitive_key = arguments["primitive"]
+        primitive_dict = arguments["primitive_definitions"][primitive_key]
         primitive = primitives_deserializer.deserialize_primitive(
-            arguments["primitive"]
+            primitive_dict, primitive_key
         )
         feat = cls(
             base_features=base_features, primitive=primitive, name=arguments["name"]
@@ -855,7 +858,7 @@ class TransformFeature(FeatureBase):
         arg_dict = {
             "name": self._name,
             "base_features": [feat.unique_name() for feat in self.base_features],
-            "primitive": serialize_primitive(self.primitive),
+            "primitive": self.primitive,
         }
         if self._names:
             arg_dict["feature_names"] = self._names
@@ -883,8 +886,11 @@ class GroupByTransformFeature(TransformFeature):
         cls, arguments, entityset, dependencies, primitives_deserializer
     ):
         base_features = [dependencies[name] for name in arguments["base_features"]]
+        primitive_key = arguments["primitive"]
+        primitive_dict = arguments["primitive_definitions"][primitive_key]
         primitive = primitives_deserializer.deserialize_primitive(
-            arguments["primitive"]
+            primitive_dict,
+            primitive_key,
         )
         groupby = dependencies[arguments["groupby"]]
         feat = cls(
@@ -926,7 +932,7 @@ class GroupByTransformFeature(TransformFeature):
         arg_dict = {
             "name": self._name,
             "base_features": feature_names,
-            "primitive": serialize_primitive(self.primitive),
+            "primitive": self.primitive,
             "groupby": self.groupby.unique_name(),
         }
         if self._names:
