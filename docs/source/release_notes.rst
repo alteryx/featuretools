@@ -7,6 +7,7 @@ Future Release
     * Enhancements
         * Add ``IsYearEnd``, ``IsYearStart`` transform primitives (:pr:`2124`)
         * Include np.nan testing for ``DayOfYear`` and ``DaysInMonth`` primitives (:pr:`2146`)
+        * Add periods parameter to ``Diff`` primitive (:pr:`2155`)
     * Fixes
     * Changes
         * Sort core requirements and test requirements in setup cfg (:pr:`2152`)
