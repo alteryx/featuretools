@@ -17,6 +17,8 @@ from featuretools.primitives import (
     IsQuarterEnd,
     IsQuarterStart,
     IsWorkingHours,
+    IsYearEnd,
+    IsYearStart,
     NumericLag,
     Quarter,
     TimeSince,
@@ -231,9 +233,14 @@ def test_is_working_hours_standard_hours():
         ]
     )
     answer = iwh(dates)
+
+ 
+def test_is_year_end():
+    is_year_end = IsYearEnd()
+    dates = pd.Series([datetime(2020, 12, 31), np.nan, datetime(2020, 1, 1)])
+    answer = is_year_end(dates)
     correct_answer = [True, False, False]
     np.testing.assert_array_equal(answer, correct_answer)
-
 
 def test_is_working_hours_configured_hours():
     iwh = IsWorkingHours(15, 18)
@@ -275,6 +282,13 @@ def test_is_working_hours_holiday_before_established_and_after():
     )
     answer = iwh(dates)
     correct_answer = [True, False]
+
+    
+def test_is_year_start():
+    is_year_start = IsYearStart()
+    dates = pd.Series([datetime(2020, 12, 31), np.nan, datetime(2020, 1, 1)])
+    answer = is_year_start(dates)
+    correct_answer = [False, False, True]
     np.testing.assert_array_equal(answer, correct_answer)
 
 

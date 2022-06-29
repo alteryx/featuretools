@@ -135,6 +135,8 @@ Datetime Transform Primitives
     IsQuarterStart
     IsWeekend
     IsWorkingHours
+    IsYearEnd
+    IsYearStart
     Hour
     Day
     DayOfYear
