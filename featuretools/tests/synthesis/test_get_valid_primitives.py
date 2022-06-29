@@ -6,9 +6,9 @@ from featuretools.primitives import (
     Count,
     Hour,
     IsIn,
+    Not,
     TimeSincePrevious,
     TransformPrimitive,
-    Not
 )
 from featuretools.synthesis.get_valid_primitives import get_valid_primitives
 from featuretools.utils.gen_utils import Library
@@ -123,15 +123,16 @@ def test_get_valid_primitives_with_dfs_kwargs(es):
 
     # Can use other dfs parameters and they get applied
     agg_prims, trans_prims = get_valid_primitives(
-        es, "customers", selected_primitives=[Hour, Count, Not],
-        ignore_columns={'customers': ['loves_ice_cream']}
+        es,
+        "customers",
+        selected_primitives=[Hour, Count, Not],
+        ignore_columns={"customers": ["loves_ice_cream"]},
     )
     assert set(agg_prims) == set([Count])
     assert set(trans_prims) == set([Hour])
 
     agg_prims, trans_prims = get_valid_primitives(
-        es, "products", selected_primitives=[Hour, Count],
-        ignore_dataframes=['log']
+        es, "products", selected_primitives=[Hour, Count], ignore_dataframes=["log"]
     )
     assert set(agg_prims) == set()
     assert set(trans_prims) == set()

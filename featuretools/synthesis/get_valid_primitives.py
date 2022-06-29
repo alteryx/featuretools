@@ -9,7 +9,11 @@ from featuretools.utils.gen_utils import Library
 
 
 def get_valid_primitives(
-    entityset, target_dataframe_name, max_depth=2, selected_primitives=None, **dfs_kwargs
+    entityset,
+    target_dataframe_name,
+    max_depth=2,
+    selected_primitives=None,
+    **dfs_kwargs,
 ):
     """
     Returns two lists of primitives (transform and aggregation) containing
@@ -32,7 +36,7 @@ def get_valid_primitives(
             If None, all primitives will be considered
         dfs_kwargs (keywords): Additional keyword arguments to pass as keyworg arguments to
             the DeepFeatureSynthesis object. Should not include ``max_depth``, ``agg_primitives``,
-            or ``trans_primitives``, as those are passed in explicity. 
+            or ``trans_primitives``, as those are passed in explicity.
     Returns:
        list[AggregationPrimitive], list[TransformPrimitive]:
            The list of valid aggregation primitives and the list of valid
@@ -86,7 +90,7 @@ def get_valid_primitives(
         agg_primitives=agg_primitives,
         trans_primitives=trans_primitives,
         max_depth=max_depth,
-        **dfs_kwargs
+        **dfs_kwargs,
     )
 
     features = dfs_object.build_features()
