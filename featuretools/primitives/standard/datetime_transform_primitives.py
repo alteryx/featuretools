@@ -3,6 +3,7 @@ from statistics import variance
 import holidays
 import numpy as np
 import pandas as pd
+import dask as dd 
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import (
     AgeFractional,
@@ -384,16 +385,16 @@ class IsLunchTime(TransformPrimitive):
 
     def get_function(self):
         def is_lunch_time(vals):
-            if isinstance(vals, ps.Series):
-                vals = vals.apply(self.spark_mask)
-                return vals
-            else:
+            if isinstance(vals, pd.Series) or isinstance(vals, dd.dataframe.DataFrame):
                 mask = vals.dt.hour == 12
                 if not self.include_weekends:
                     mask = (mask) & (vals.dt.dayofweek < 5)
                 if not self.include_holidays:
                     mask = (mask) & ~(vals.dt.normalize().isin(self.holidays_df.dates))
                 return mask.values
+            else:
+                vals = vals.apply(self.spark_mask)
+                return vals
 
         return is_lunch_time
 
@@ -572,10 +573,7 @@ class IsWorkingHours(TransformPrimitive):
 
     def get_function(self):
         def is_working_hours(vals):
-            if isinstance(vals, ps.Series):
-                vals = vals.apply(self.spark_mask)
-                return vals
-            else:
+            if isinstance(vals, pd.Series) or isinstance(vals, dd.dataframe.DataFrame):
                 is_weekday = (
                     (vals.dt.dayofweek < 5)
                     & (vals.dt.hour >= self.start_time)
@@ -583,6 +581,10 @@ class IsWorkingHours(TransformPrimitive):
                     & ~(vals.dt.normalize().isin(self.holidays_df.dates))
                 )
                 return is_weekday.values
+            else:
+                vals = vals.apply(self.spark_mask)
+                return vals
+                
 
         return is_working_hours
 
