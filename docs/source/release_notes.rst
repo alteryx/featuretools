@@ -6,6 +6,7 @@ Future Release
 ==============
     * Enhancements
         * Add datetime and string types as valid arguments to dfs ``cutoff_time`` (:pr:`2147`) 
+        * Add ``PartOfDay`` transform primitive (:pr:`2128`)
         * Add ``IsYearEnd``, ``IsYearStart`` transform primitives (:pr:`2124`)
         * Include np.nan testing for ``DayOfYear`` and ``DaysInMonth`` primitives (:pr:`2146`)
     * Fixes
