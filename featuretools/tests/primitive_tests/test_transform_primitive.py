@@ -234,13 +234,14 @@ def test_is_working_hours_standard_hours():
     )
     answer = iwh(dates)
 
- 
+
 def test_is_year_end():
     is_year_end = IsYearEnd()
     dates = pd.Series([datetime(2020, 12, 31), np.nan, datetime(2020, 1, 1)])
     answer = is_year_end(dates)
     correct_answer = [True, False, False]
     np.testing.assert_array_equal(answer, correct_answer)
+
 
 def test_is_working_hours_configured_hours():
     iwh = IsWorkingHours(15, 18)
@@ -271,19 +272,19 @@ def test_is_working_hours_boxing_day():
 
 
 def test_is_working_hours_holiday_before_established_and_after():
-    iwh = IsWorkingHours()  # tests Canadian holidays
+    iwh = IsWorkingHours()
     dates = pd.Series(
         [
             datetime(1962, 6, 19, 16, 3, 3),  # Before Juneteenth was a Federal holiday
             datetime(
-                2022, 6, 19, 16, 3, 3
-            ),  # After Juneteenth was declared a Federal holiday
+                2023, 6, 19, 16, 3, 3
+            ),  # Weekday, after Juneteenth was declared a Federal holiday
         ]
     )
     answer = iwh(dates)
     correct_answer = [True, False]
 
-    
+
 def test_is_year_start():
     is_year_start = IsYearStart()
     dates = pd.Series([datetime(2020, 12, 31), np.nan, datetime(2020, 1, 1)])

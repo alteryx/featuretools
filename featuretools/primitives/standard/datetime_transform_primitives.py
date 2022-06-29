@@ -558,6 +558,7 @@ class IsWorkingHours(TransformPrimitive):
 
         return is_working_hours
 
+
 class IsYearEnd(TransformPrimitive):
     """Determines if a date falls on the end of a year.
 
@@ -611,7 +612,7 @@ class IsYearStart(TransformPrimitive):
 
         return is_year_start
 
-      
+
 class Minute(TransformPrimitive):
     """Determines the minutes value of a datetime.
 
