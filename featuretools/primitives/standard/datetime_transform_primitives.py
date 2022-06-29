@@ -3,7 +3,9 @@ from statistics import variance
 import holidays
 import numpy as np
 import pandas as pd
-import pyspark.pandas as ps
+
+import_or_none("pyspark.pandas")
+
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import (
     AgeFractional,
