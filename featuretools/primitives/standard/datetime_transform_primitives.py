@@ -600,6 +600,7 @@ class PartOfDay(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the part of day {} falls in"
 
+    @staticmethod
     def construct_replacement_dict(self):
         tdict = dict()
         tdict[pd.NaT] = np.nan
@@ -622,11 +623,11 @@ class PartOfDay(TransformPrimitive):
         return tdict
 
     def get_function(self):
-        self.tdict = self.construct_replacement_dict()
+        replacement_dict = self.construct_replacement_dict()
 
         def part_of_day(vals):
-            vals = vals.dt.hour.replace(self.tdict)
-            return vals
+            ans = vals.dt.hour.replace(replacement_dict)
+            return ans
 
         return part_of_day
 
