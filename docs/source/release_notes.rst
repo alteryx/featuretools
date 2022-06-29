@@ -7,7 +7,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
-        * Improve serialization and deserialization to reduce storage of duplicate primitive information (:pr:`2136`, :pr:`2127`, :pr:`2142`)
+        * Improve serialization and deserialization to reduce storage of duplicate primitive information (:pr:`2136`, :pr:`2127`, :pr:`2142`, :pr:`2144`)
     * Documentation Changes
     * Testing Changes
         * Fix pandas warning and reduce dask .apply warnings (:pr:`2145`)

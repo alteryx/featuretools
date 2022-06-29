@@ -362,7 +362,7 @@ class PrimitivesDeserializer(object):
         self.class_cache = {}
 
         # Cache to use existing primitive instances
-        # (class_name, module_name, (arg1_key, arg1_value), ...) -> class
+        # primitive key -> primitive instance
         self.instance_cache = {}
         self.primitive_classes = find_descendents(PrimitiveBase)
 
@@ -373,33 +373,19 @@ class PrimitivesDeserializer(object):
         """
         class_name = primitive_dict["type"]
         module_name = primitive_dict["module"]
-        arguments = primitive_dict["arguments"]
-        # convert any list args to tuples so they are hashable
-        cleaned_args = {}
-        for k, v in arguments.items():
-            if isinstance(v, list):
-                cleaned_args[k] = tuple(v)
-            else:
-                cleaned_args[k] = v
-        arguments_key = [(k, v) for k, v in cleaned_args.items()]
         class_cache_key = (class_name, module_name)
-        instance_cache_key = (class_name, module_name, *arguments_key)
 
-        if instance_cache_key in self.instance_cache:
-            primitive_instance = self.instance_cache[instance_cache_key]
+        if class_cache_key in self.class_cache:
+            cls = self.class_cache[class_cache_key]
         else:
-            if class_cache_key in self.class_cache:
-                cls = self.class_cache[class_cache_key]
-            else:
-                cls = self._find_class_in_descendants(class_cache_key)
+            cls = self._find_class_in_descendants(class_cache_key)
 
-            if not cls:
-                raise RuntimeError(
-                    'Primitive "%s" in module "%s" not found'
-                    % (class_name, module_name)
-                )
-            primitive_instance = cls(**arguments)
-            self.instance_cache[instance_cache_key] = primitive_instance
+        if not cls:
+            raise RuntimeError(
+                'Primitive "%s" in module "%s" not found' % (class_name, module_name)
+            )
+        arguments = primitive_dict["arguments"]
+        primitive_instance = cls(**arguments)
 
         return primitive_instance
 

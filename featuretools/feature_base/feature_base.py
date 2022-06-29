@@ -10,7 +10,6 @@ from featuretools.primitives.base import (
     PrimitiveBase,
     TransformPrimitive,
 )
-from featuretools.primitives.utils import serialize_primitive
 from featuretools.utils.wrangle import _check_time_against_column, _check_timedelta
 
 _ES_REF = {}
@@ -70,9 +69,7 @@ class FeatureBase(object):
         return FeatureOutputSlice(self, key)
 
     @classmethod
-    def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
-    ):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitive):
         raise NotImplementedError("Must define from_dictionary on FeatureBase subclass")
 
     def rename(self, name):
@@ -451,9 +448,7 @@ class IdentityFeature(FeatureBase):
         )
 
     @classmethod
-    def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
-    ):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitive):
         dataframe_name = arguments["dataframe_name"]
         column_name = arguments["column_name"]
         column = entityset[dataframe_name].ww[column_name]
@@ -544,9 +539,7 @@ class DirectFeature(FeatureBase):
         return relationship
 
     @classmethod
-    def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
-    ):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitive):
         base_feature = dependencies[arguments["base_feature"]]
         relationship = Relationship.from_dictionary(
             arguments["relationship"], entityset
@@ -711,9 +704,7 @@ class AggregationFeature(FeatureBase):
         return relationship_path, path_is_unique
 
     @classmethod
-    def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
-    ):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitive):
         base_features = [dependencies[name] for name in arguments["base_features"]]
         relationship_path = [
             Relationship.from_dictionary(r, entityset)
@@ -721,10 +712,6 @@ class AggregationFeature(FeatureBase):
         ]
         parent_dataframe_name = relationship_path[0].parent_dataframe.ww.name
         relationship_path = RelationshipPath([(False, r) for r in relationship_path])
-
-        primitive = primitives_deserializer.deserialize_primitive(
-            arguments["primitive"]
-        )
 
         use_previous_data = arguments["use_previous"]
         use_previous = use_previous_data and Timedelta.from_dictionary(
@@ -793,7 +780,7 @@ class AggregationFeature(FeatureBase):
             "name": self._name,
             "base_features": [feat.unique_name() for feat in self.base_features],
             "relationship_path": [r.to_dictionary() for _, r in self.relationship_path],
-            "primitive": serialize_primitive(self.primitive),
+            "primitive": self.primitive,
             "where": self.where and self.where.unique_name(),
             "use_previous": self.use_previous and self.use_previous.get_arguments(),
         }
@@ -825,13 +812,8 @@ class TransformFeature(FeatureBase):
         )
 
     @classmethod
-    def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
-    ):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitive):
         base_features = [dependencies[name] for name in arguments["base_features"]]
-        primitive = primitives_deserializer.deserialize_primitive(
-            arguments["primitive"]
-        )
         feat = cls(
             base_features=base_features, primitive=primitive, name=arguments["name"]
         )
@@ -855,7 +837,7 @@ class TransformFeature(FeatureBase):
         arg_dict = {
             "name": self._name,
             "base_features": [feat.unique_name() for feat in self.base_features],
-            "primitive": serialize_primitive(self.primitive),
+            "primitive": self.primitive,
         }
         if self._names:
             arg_dict["feature_names"] = self._names
@@ -879,13 +861,8 @@ class GroupByTransformFeature(TransformFeature):
         )
 
     @classmethod
-    def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
-    ):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitive):
         base_features = [dependencies[name] for name in arguments["base_features"]]
-        primitive = primitives_deserializer.deserialize_primitive(
-            arguments["primitive"]
-        )
         groupby = dependencies[arguments["groupby"]]
         feat = cls(
             base_features=base_features,
@@ -926,7 +903,7 @@ class GroupByTransformFeature(TransformFeature):
         arg_dict = {
             "name": self._name,
             "base_features": feature_names,
-            "primitive": serialize_primitive(self.primitive),
+            "primitive": self.primitive,
             "groupby": self.groupby.unique_name(),
         }
         if self._names:
@@ -1024,9 +1001,7 @@ class FeatureOutputSlice(FeatureBase):
         }
 
     @classmethod
-    def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
-    ):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitive):
         base_feature_name = arguments["base_feature"]
         base_feature = dependencies[base_feature_name]
         n = arguments["n"]
