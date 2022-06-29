@@ -546,30 +546,33 @@ class PartOfDay(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the part of day {} falls in"
 
-    def get_part_of_day(self, x):
-        hour = x.hour
-        if pd.isna(hour):
-            return np.nan
-        if hour in [4, 5]:
-            return "dawn"
-        elif hour in [6, 7]:
-            return "early morning"
-        elif hour in [8, 9, 10]:
-            return "late morning"
-        elif hour in [11, 12, 13]:
-            return "noon"
-        elif hour in [14, 15, 16]:
-            return "afternoon"
-        elif hour in [17, 18, 19]:
-            return "evening"
-        elif hour in [20, 21, 22]:
-            return "night"
-        elif hour in [23, 24, 1, 2, 3]:
-            return "midnight"
+    def construct_replacement_dict(self):
+        tdict = dict()
+        tdict[pd.NaT] = np.nan
+        for hour in [4, 5]:
+            tdict[hour] = "dawn"
+        for hour in [6, 7]:
+            tdict[hour] = "early morning"
+        for hour in [8, 9, 10]:
+            tdict[hour] = "late morning"
+        for hour in [11, 12, 13]:
+            tdict[hour] = "noon"
+        for hour in [14, 15, 16]:
+            tdict[hour] = "afternoon"
+        for hour in [17, 18, 19]:
+            tdict[hour] = "evening"
+        for hour in [20, 21, 22]:
+            tdict[hour] = "night"
+        for hour in [23, 24, 1, 2, 3]:
+            tdict[hour] = "midnight"
+        return tdict
 
     def get_function(self):
+        self.tdict = self.construct_replacement_dict()
+
         def part_of_day(vals):
-            return vals.map(self.get_part_of_day)
+            vals = vals.dt.hour.replace(self.tdict)
+            return vals
 
         return part_of_day
 
