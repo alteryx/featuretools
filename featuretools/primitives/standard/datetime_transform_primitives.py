@@ -479,7 +479,6 @@ class IsQuarterStart(TransformPrimitive):
 
     def get_function(self):
         def is_quarter_start(vals):
-            print(f"Return type for is_quarter_start: {type(vals.dt.is_quarter_start)}")
             return vals.dt.is_quarter_start
 
         return is_quarter_start
