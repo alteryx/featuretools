@@ -365,7 +365,6 @@ def test_accepts_pd_dateoffset_training_window(datetime_es):
 
 
 def test_accepts_datetime_and_string_offset(datetime_es):
-    # TODO: Update to use Dask dataframes when issue #882 is closed
     feature_matrix, _ = dfs(
         entityset=datetime_es,
         target_dataframe_name="transactions",
