@@ -377,7 +377,7 @@ class IsLunchTime(TransformPrimitive):
                 mask = (mask) & (vals.dt.dayofweek < 5)
             if not self.include_holidays:
                 mask = (mask) & ~(vals.dt.normalize().isin(self.holidays_df.dates))
-            return mask.values
+            return pd.Series(mask.values)
 
         return is_lunch_time
 
@@ -554,7 +554,7 @@ class IsWorkingHours(TransformPrimitive):
                 & (vals.dt.hour <= self.end_time)
                 & ~(vals.dt.normalize().isin(self.holidays_df.dates))
             )
-            return is_weekday.values
+            return pd.Series(is_weekday.values)
 
         return is_working_hours
 
