@@ -384,12 +384,14 @@ class IsLunchTime(TransformPrimitive):
     def get_function(self):
         def is_lunch_time(vals):
             if isinstance(vals, pd.Series) or isinstance(vals, dd.dataframe.Series):
-                mask = vals.dt.hour == 12
+                lunch_time_mask = vals.dt.hour == 12
                 if not self.include_weekends:
-                    mask = (mask) & (vals.dt.dayofweek < 5)
+                    weekday_mask = vals.dt.dayofweek < 5
+                    lunch_time_mask = (weekday_mask) & (lunch_time_mask)
                 if not self.include_holidays:
-                    mask = (mask) & ~(vals.dt.normalize().isin(self.holidays_df.dates))
-                return mask.values
+                    holiday_mask = ~(vals.dt.normalize().isin(self.holidays_df.dates))
+                    lunch_time_mask = (holiday_mask) & (lunch_time_mask)
+                return lunch_time_mask.values
             else:
                 vals = vals.apply(self.spark_mask)
                 return vals
