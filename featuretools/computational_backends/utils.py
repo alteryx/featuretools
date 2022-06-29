@@ -1,7 +1,8 @@
-from datetime import datetime
 import logging
 import os
+import typing
 import warnings
+from datetime import datetime
 from functools import wraps
 
 import dask.dataframe as dd
@@ -9,7 +10,6 @@ import numpy as np
 import pandas as pd
 import psutil
 from woodwork.logical_types import Datetime, Double
-import typing 
 
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, DirectFeature
@@ -217,7 +217,10 @@ def get_client_cluster():
     return Client, LocalCluster
 
 
-def _validate_cutoff_time(cutoff_time : typing.Union[dd.DataFrame, pd.DataFrame, str, datetime], target_dataframe):
+def _validate_cutoff_time(
+    cutoff_time: typing.Union[dd.DataFrame, pd.DataFrame, str, datetime],
+    target_dataframe,
+):
     """
     Verify that the cutoff time is a single value or a pandas dataframe with the proper columns
     containing no duplicate rows
@@ -281,7 +284,7 @@ def _validate_cutoff_time(cutoff_time : typing.Union[dd.DataFrame, pd.DataFrame,
         assert (
             cutoff_time[["instance_id", "time"]].duplicated().sum() == 0
         ), "Duplicated rows in cutoff time dataframe."
-    if isinstance(cutoff_time, str): 
+    if isinstance(cutoff_time, str):
         try:
             cutoff_time = pd.to_datetime(cutoff_time)
         except ValueError as e:
