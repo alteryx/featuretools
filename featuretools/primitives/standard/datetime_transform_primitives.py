@@ -1,6 +1,8 @@
+from statistics import variance
 import holidays
 import numpy as np
 import pandas as pd
+import pyspark as ps 
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import (
     AgeFractional,
@@ -357,7 +359,7 @@ class IsLunchTime(TransformPrimitive):
     name = "is_lunch_time"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=BooleanNullable)
-    compatibility = [Library.PANDAS, Library.DASK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "whether {} falls during lunch time"
 
     def __init__(self, country="US", include_weekends=True, include_holidays=False):
@@ -370,14 +372,26 @@ class IsLunchTime(TransformPrimitive):
             sorted(self.federal_holidays.items()), columns=["dates", "names"]
         )
 
+    def spark_mask(self,v): 
+        l_time = v.hour == 12 
+        if not self.include_weekends: 
+            l_time = l_time and (v.dayofweek < 5) 
+        if not self.include_holidays: 
+            l_time = l_time and not (v.normalize().isin(self.holidays_df.dates))
+        return l_time 
+
     def get_function(self):
         def is_lunch_time(vals):
-            mask = vals.dt.hour == 12
-            if not self.include_weekends:
-                mask = (mask) & (vals.dt.dayofweek < 5)
-            if not self.include_holidays:
-                mask = (mask) & ~(vals.dt.normalize().isin(self.holidays_df.dates))
-            return mask.values
+            if isinstance(vals, ps.pandas.Series): 
+                vals = vals.apply(self.spark_mask)
+                return vals
+            else: 
+                mask = vals.dt.hour == 12
+                if not self.include_weekends:
+                    mask = (mask) & (vals.dt.dayofweek < 5)
+                if not self.include_holidays:
+                    mask = (mask) & ~(vals.dt.normalize().isin(self.holidays_df.dates))
+                return mask.values
 
         return is_lunch_time
 
@@ -533,7 +547,7 @@ class IsWorkingHours(TransformPrimitive):
     name = "is_working_hours"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=BooleanNullable)
-    compatibility = [Library.PANDAS, Library.DASK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "whether {} falls during working hours"
 
     def __init__(self, start_time=8, end_time=18, country="US"):
@@ -546,15 +560,22 @@ class IsWorkingHours(TransformPrimitive):
             sorted(self.federal_holidays.items()), columns=["dates", "names"]
         )
 
+    def spark_mask(self, v): 
+        return v.dayofweek < 5 and v.hour >= self.start_time and v.hour <= self.end_time and not v.normalize().isin(self.holidays_df)
+
     def get_function(self):
         def is_working_hours(vals):
-            is_weekday = (
-                (vals.dt.dayofweek < 5)
-                & (vals.dt.hour >= self.start_time)
-                & (vals.dt.hour <= self.end_time)
-                & ~(vals.dt.normalize().isin(self.holidays_df.dates))
-            )
-            return is_weekday.values
+            if isinstance(vals, ps.pandas.Series): 
+                vals = vals.apply(self.spark_mask)
+                return vals 
+            else: 
+                is_weekday = (
+                    (vals.dt.dayofweek < 5)
+                    & (vals.dt.hour >= self.start_time)
+                    & (vals.dt.hour <= self.end_time)
+                    & ~(vals.dt.normalize().isin(self.holidays_df.dates))
+                )
+                return is_weekday.values
 
         return is_working_hours
 
