@@ -34,7 +34,7 @@ def get_valid_primitives(
         selected_primitives(list[str or AggregationPrimitive/TransformPrimitive], optional):
             list of primitives to consider when looking for valid primitives.
             If None, all primitives will be considered
-        dfs_kwargs (keywords): Additional keyword arguments to pass as keyworg arguments to
+        dfs_kwargs (keywords): Additional keyword arguments to pass as keyword arguments to
             the DeepFeatureSynthesis object. Should not include ``max_depth``, ``agg_primitives``,
             or ``trans_primitives``, as those are passed in explicity.
     Returns:
