@@ -1,7 +1,5 @@
 import warnings
 
-import pandas as pd
-
 from featuretools.computational_backends import calculate_feature_matrix
 from featuretools.entityset import EntitySet
 from featuretools.exceptions import UnusedPrimitiveWarning
