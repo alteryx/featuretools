@@ -383,7 +383,7 @@ class IsLunchTime(TransformPrimitive):
 
     def get_function(self):
         def is_lunch_time(vals):
-            if isinstance(vals, pd.Series) or isinstance(vals, dd.dataframe.DataFrame):
+            if isinstance(vals, pd.Series) or isinstance(vals, dd.dataframe.Series):
                 mask = vals.dt.hour == 12
                 if not self.include_weekends:
                     mask = (mask) & (vals.dt.dayofweek < 5)
@@ -571,7 +571,7 @@ class IsWorkingHours(TransformPrimitive):
 
     def get_function(self):
         def is_working_hours(vals):
-            if isinstance(vals, pd.Series) or isinstance(vals, dd.dataframe.DataFrame):
+            if isinstance(vals, pd.Series) or isinstance(vals, dd.dataframe.Series):
                 is_weekday = (
                     (vals.dt.dayofweek < 5)
                     & (vals.dt.hour >= self.start_time)
@@ -580,7 +580,6 @@ class IsWorkingHours(TransformPrimitive):
                 )
                 return is_weekday.values
             else:
-                print(type(vals))
                 vals = vals.apply(self.spark_mask)
                 return vals
 

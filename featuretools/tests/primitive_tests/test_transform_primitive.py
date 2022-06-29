@@ -28,7 +28,6 @@ from featuretools.primitives import (
     Week,
     get_transform_primitives,
 )
-from featuretools.utils.gen_utils import import_or_none
 
 
 def test_time_since():
