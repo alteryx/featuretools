@@ -14,9 +14,10 @@ Future Release
         * Augment single table entry in DFS to include information about passing in a dictionary for `dataframes` argument (:pr:`2160`)
     * Testing Changes
         * Fix pandas warning and reduce dask .apply warnings (:pr:`2145`)
+        * Pin graphviz version used in windows tests (:pr:`2159`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`ozzieD`, :user:`sbadithe`
+    :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`
 
 v1.10.0 June 23, 2022
 =====================
