@@ -5,6 +5,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ``PartOfDay`` transform primitive (:pr:`2128`)
         * Add ``IsYearEnd``, ``IsYearStart`` transform primitives (:pr:`2124`)
         * Include np.nan testing for ``DayOfYear`` and ``DaysInMonth`` primitives (:pr:`2146`)
         * Add periods parameter to ``Diff`` primitive (:pr:`2155`)
@@ -14,9 +15,10 @@ Future Release
     * Documentation Changes
     * Testing Changes
         * Fix pandas warning and reduce dask .apply warnings (:pr:`2145`)
+        * Pin graphviz version used in windows tests (:pr:`2159`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`ozzieD`, :user:`sbadithe`
+    :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`
 
 v1.10.0 June 23, 2022
 =====================
