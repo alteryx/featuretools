@@ -1,6 +1,7 @@
 import holidays
 import numpy as np
 import pandas as pd
+import pyspark as ps
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import (
     AgeFractional,
@@ -357,7 +358,7 @@ class IsLunchTime(TransformPrimitive):
     name = "is_lunch_time"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=BooleanNullable)
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK]
     description_template = "whether {} falls during lunch time"
 
     def __init__(self, country="US", include_weekends=True, include_holidays=False):
@@ -377,7 +378,7 @@ class IsLunchTime(TransformPrimitive):
                 mask = (mask) & (vals.dt.dayofweek < 5)
             if not self.include_holidays:
                 mask = (mask) & ~(vals.dt.normalize().isin(self.holidays_df.dates))
-            return pd.Series(mask.values)
+            return mask.values 
 
         return is_lunch_time
 
@@ -479,6 +480,7 @@ class IsQuarterStart(TransformPrimitive):
 
     def get_function(self):
         def is_quarter_start(vals):
+            print(f"Return type for is_quarter_start: {type(vals.dt.is_quarter_start)}")
             return vals.dt.is_quarter_start
 
         return is_quarter_start
@@ -533,7 +535,7 @@ class IsWorkingHours(TransformPrimitive):
     name = "is_working_hours"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=BooleanNullable)
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK]
     description_template = "whether {} falls during working hours"
 
     def __init__(self, start_time=8, end_time=18, country="US"):
@@ -554,7 +556,7 @@ class IsWorkingHours(TransformPrimitive):
                 & (vals.dt.hour <= self.end_time)
                 & ~(vals.dt.normalize().isin(self.holidays_df.dates))
             )
-            return pd.Series(is_weekday.values)
+            return is_weekday.values
 
         return is_working_hours
 
