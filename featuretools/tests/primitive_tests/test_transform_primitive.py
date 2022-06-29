@@ -263,6 +263,21 @@ def test_is_working_hours_boxing_day():
     np.testing.assert_array_equal(answer, correct_answer)
 
 
+def test_is_working_hours_holiday_before_established_and_after():
+    iwh = IsWorkingHours()  # tests Canadian holidays
+    dates = pd.Series(
+        [
+            datetime(1962, 6, 19, 16, 3, 3),  # Before Juneteenth was a Federal holiday
+            datetime(
+                2022, 6, 19, 16, 3, 3
+            ),  # After Juneteenth was declared a Federal holiday
+        ]
+    )
+    answer = iwh(dates)
+    correct_answer = [True, False]
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
 def test_quarter_regular():
     q = Quarter()
     array = pd.Series(

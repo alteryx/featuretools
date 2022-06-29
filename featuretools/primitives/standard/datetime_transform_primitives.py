@@ -554,6 +554,7 @@ class IsWorkingHours(TransformPrimitive):
                 & (vals.dt.hour <= self.end_time)
                 & ~(vals.dt.normalize().isin(self.holidays_df.dates))
             )
+            print(~(vals.dt.normalize().isin(self.holidays_df.dates)))
             return is_weekday.values
 
         return is_working_hours
