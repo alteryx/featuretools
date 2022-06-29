@@ -118,7 +118,7 @@ class FeaturesSerializer(object):
                         primitives_dict_key = str(primitive_number)
                         primitive_id_to_key[primitive_id] = primitives_dict_key
                         self._primitives_dict[
-                            str(primitives_dict_key)
+                            primitives_dict_key
                         ] = serialize_primitive(primitive)
                         self._features_dict[name]["arguments"][
                             "primitive"
