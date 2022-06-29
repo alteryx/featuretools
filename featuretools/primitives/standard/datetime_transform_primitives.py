@@ -1,5 +1,3 @@
-from statistics import variance
-
 import dask as dd
 import holidays
 import numpy as np
