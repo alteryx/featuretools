@@ -1,9 +1,9 @@
 from statistics import variance
 
+import dask as dd
 import holidays
 import numpy as np
 import pandas as pd
-import dask as dd 
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import (
     AgeFractional,
@@ -584,7 +584,6 @@ class IsWorkingHours(TransformPrimitive):
             else:
                 vals = vals.apply(self.spark_mask)
                 return vals
-                
 
         return is_working_hours
 
