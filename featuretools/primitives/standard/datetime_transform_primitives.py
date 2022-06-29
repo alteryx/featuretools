@@ -366,20 +366,18 @@ class IsLunchTime(TransformPrimitive):
         self.federal_holidays = getattr(holidays, self.country)(years=years_list)
         self.include_weekends = include_weekends
         self.include_holidays = include_holidays
-
-    def lunch_time(self, tstamp):
-        lunch_hrs = tstamp.hour == 12
-        working_day = tstamp.weekday() < 5
-        is_holiday = tstamp.date() in self.federal_holidays.keys()
-        if self.include_weekends:
-            working_day = True
-        if self.include_holidays:
-            is_holiday = False
-        return lunch_hrs and working_day and not is_holiday
+        self.holidays_df = pd.DataFrame(
+            sorted(self.federal_holidays.items()), columns=["dates", "names"]
+        )
 
     def get_function(self):
         def is_lunch_time(vals):
-            return vals.apply(lambda x: self.lunch_time(x))
+            mask = vals.dt.hour == 12
+            if not self.include_weekends:
+                mask = (mask) & (vals.dt.dayofweek < 5)
+            if not self.include_holidays:
+                mask = (mask) & ~(vals.dt.normalize().isin(self.holidays_df.dates))
+            return mask.values
 
         return is_lunch_time
 
@@ -544,16 +542,19 @@ class IsWorkingHours(TransformPrimitive):
         self.federal_holidays = getattr(holidays, self.country)(years=years_list)
         self.start_time = start_time
         self.end_time = end_time
-
-    def work_hours(self, tstamp):
-        working_hours = tstamp.hour >= self.start_time and tstamp.hour <= self.end_time
-        working_day = tstamp.weekday() < 5
-        is_holiday = tstamp.date() in self.federal_holidays.keys()
-        return working_hours and working_day and not is_holiday
+        self.holidays_df = pd.DataFrame(
+            sorted(self.federal_holidays.items()), columns=["dates", "names"]
+        )
 
     def get_function(self):
         def is_working_hours(vals):
-            return vals.apply(lambda x: self.work_hours(x))
+            is_weekday = (
+                (vals.dt.dayofweek < 5)
+                & (vals.dt.hour >= self.start_time)
+                & (vals.dt.hour <= self.end_time)
+                & ~(vals.dt.normalize().isin(self.holidays_df.dates))
+            )
+            return is_weekday.values
 
         return is_working_hours
 
