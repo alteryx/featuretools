@@ -1,7 +1,6 @@
 import holidays
 import numpy as np
 import pandas as pd
-import pyspark as ps
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import (
     AgeFractional,
@@ -378,7 +377,7 @@ class IsLunchTime(TransformPrimitive):
                 mask = (mask) & (vals.dt.dayofweek < 5)
             if not self.include_holidays:
                 mask = (mask) & ~(vals.dt.normalize().isin(self.holidays_df.dates))
-            return mask.values 
+            return mask.values
 
         return is_lunch_time
 
