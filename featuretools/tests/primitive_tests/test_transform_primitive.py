@@ -232,7 +232,9 @@ def test_is_working_hours_standard_hours():
             datetime(2022, 1, 1, 12, 1, 2),  # New Year's -- Holiday date
         ]
     )
-    answer = iwh(dates)
+    actual = iwh(dates)
+    expected = [True, False, False]
+    np.testing.assert_array_equal(actual, expected)
 
 
 def test_is_year_end():
@@ -281,8 +283,9 @@ def test_is_working_hours_holiday_before_established_and_after():
             ),  # Weekday, after Juneteenth was declared a Federal holiday
         ]
     )
-    answer = iwh(dates)
-    correct_answer = [True, False]
+    actual = iwh(dates)
+    expected = [True, False]
+    np.testing.assert_array_equal(actual, expected)
 
 
 def test_is_year_start():
