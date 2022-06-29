@@ -601,7 +601,7 @@ class PartOfDay(TransformPrimitive):
     description_template = "the part of day {} falls in"
 
     @staticmethod
-    def construct_replacement_dict(self):
+    def construct_replacement_dict():
         tdict = dict()
         tdict[pd.NaT] = np.nan
         for hour in [4, 5]:
