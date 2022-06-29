@@ -1,8 +1,9 @@
 from statistics import variance
+
 import holidays
 import numpy as np
 import pandas as pd
-import pyspark as ps 
+import pyspark.pandas as ps
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import (
     AgeFractional,
@@ -372,20 +373,20 @@ class IsLunchTime(TransformPrimitive):
             sorted(self.federal_holidays.items()), columns=["dates", "names"]
         )
 
-    def spark_mask(self,v): 
-        l_time = v.hour == 12 
-        if not self.include_weekends: 
-            l_time = l_time and (v.dayofweek < 5) 
-        if not self.include_holidays: 
+    def spark_mask(self, v):
+        l_time = v.hour == 12
+        if not self.include_weekends:
+            l_time = l_time and (v.dayofweek < 5)
+        if not self.include_holidays:
             l_time = l_time and not (v.normalize().isin(self.holidays_df.dates))
-        return l_time 
+        return l_time
 
     def get_function(self):
         def is_lunch_time(vals):
-            if isinstance(vals, ps.pandas.Series): 
+            if isinstance(vals, ps.Series):
                 vals = vals.apply(self.spark_mask)
                 return vals
-            else: 
+            else:
                 mask = vals.dt.hour == 12
                 if not self.include_weekends:
                     mask = (mask) & (vals.dt.dayofweek < 5)
@@ -560,15 +561,20 @@ class IsWorkingHours(TransformPrimitive):
             sorted(self.federal_holidays.items()), columns=["dates", "names"]
         )
 
-    def spark_mask(self, v): 
-        return v.dayofweek < 5 and v.hour >= self.start_time and v.hour <= self.end_time and not v.normalize().isin(self.holidays_df)
+    def spark_mask(self, v):
+        return (
+            v.dayofweek < 5
+            and v.hour >= self.start_time
+            and v.hour <= self.end_time
+            and not v.normalize().isin(self.holidays_df)
+        )
 
     def get_function(self):
         def is_working_hours(vals):
-            if isinstance(vals, ps.pandas.Series): 
+            if isinstance(vals, ps.Series):
                 vals = vals.apply(self.spark_mask)
-                return vals 
-            else: 
+                return vals
+            else:
                 is_weekday = (
                     (vals.dt.dayofweek < 5)
                     & (vals.dt.hour >= self.start_time)
