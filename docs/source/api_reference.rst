@@ -143,6 +143,7 @@ Datetime Transform Primitives
     DaysInMonth
     Week
     Month
+    PartOfDay
     Quarter
     Year
 

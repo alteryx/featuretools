@@ -20,6 +20,7 @@ from featuretools.primitives import (
     IsYearEnd,
     IsYearStart,
     NumericLag,
+    PartOfDay,
     Quarter,
     TimeSince,
     URLToDomain,
@@ -234,6 +235,38 @@ def test_is_working_hours_standard_hours():
     actual = iwh(dates)
     expected = [True, False, False]
     np.testing.assert_array_equal(actual, expected)
+
+
+def test_part_of_day():
+    pod = PartOfDay()
+    dates = pd.Series(
+        [
+            datetime(2020, 1, 11, 1, 2, 1),
+            datetime(2021, 3, 31, 4, 2, 1),
+            datetime(2020, 3, 4, 6, 2, 1),
+            datetime(2020, 3, 4, 8, 2, 1),
+            datetime(2020, 3, 4, 11, 2, 1),
+            datetime(2020, 3, 4, 14, 2, 3),
+            datetime(2020, 3, 4, 17, 2, 3),
+            datetime(2020, 2, 2, 20, 2, 2),
+            np.nan,
+        ]
+    )
+    actual = pod(dates)
+    expected = pd.Series(
+        [
+            "midnight",
+            "dawn",
+            "early morning",
+            "late morning",
+            "noon",
+            "afternoon",
+            "evening",
+            "night",
+            np.nan,
+        ]
+    )
+    pd.testing.assert_series_equal(expected, actual)
 
 
 def test_is_year_end():

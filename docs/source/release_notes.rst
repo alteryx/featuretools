@@ -5,7 +5,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Add ``IsWorkingHours`` and ``IsLunchTime`` transform primitives (:pr:`2130`) 
+        * Add ``PartOfDay``, ``IsWorkingHours``, ``IsLunchTime`` transform primitives (:pr:`2128`) (:pr:`2130`) 
         * Add ``IsYearEnd``, ``IsYearStart`` transform primitives (:pr:`2124`)
         * Include np.nan testing for ``DayOfYear`` and ``DaysInMonth`` primitives (:pr:`2146`)
     * Fixes
