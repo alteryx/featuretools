@@ -244,14 +244,6 @@ def dfs(
     if not isinstance(entityset, EntitySet):
         entityset = EntitySet("dfs", dataframes, relationships)
 
-    if isinstance(cutoff_time, str):
-        try:
-            cutoff_time = pd.to_datetime(cutoff_time)
-        except ValueError as e:
-            raise ValueError(f"While parsing cutoff_time: {str(e)}")
-        except OverflowError as e:
-            raise OverflowError(f"While parsing cutoff_time: {str(e)}")
-
     dfs_object = DeepFeatureSynthesis(
         target_dataframe_name,
         entityset,
