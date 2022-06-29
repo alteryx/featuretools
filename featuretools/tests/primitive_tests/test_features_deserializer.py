@@ -4,12 +4,20 @@ import pandas as pd
 import pytest
 
 import featuretools as ft
+from featuretools import AggregationFeature, Feature, IdentityFeature, TransformFeature
 from featuretools.feature_base.features_deserializer import FeaturesDeserializer
 from featuretools.feature_base.features_serializer import SCHEMA_VERSION
+from featuretools.primitives import (
+    Count,
+    Max,
+    MultiplyNumericScalar,
+    NMostCommon,
+    NumUnique,
+)
 
 
 def test_single_feature(es):
-    feature = ft.IdentityFeature(es["log"].ww["value"])
+    feature = IdentityFeature(es["log"].ww["value"])
     dictionary = {
         "ft_version": ft.__version__,
         "schema_version": SCHEMA_VERSION,
@@ -24,17 +32,17 @@ def test_single_feature(es):
 
 
 def test_multioutput_feature(es):
-    value = ft.IdentityFeature(es["log"].ww["product_id"])
-    threecommon = ft.primitives.NMostCommon()
-    tc = ft.Feature(value, parent_dataframe_name="sessions", primitive=threecommon)
+    value = IdentityFeature(es["log"].ww["product_id"])
+    threecommon = NMostCommon()
+    tc = Feature(value, parent_dataframe_name="sessions", primitive=threecommon)
 
     features = [tc, value]
     for i in range(3):
         features.append(
-            ft.Feature(
+            Feature(
                 tc[i],
                 parent_dataframe_name="customers",
-                primitive=ft.primitives.NumUnique,
+                primitive=NumUnique,
             )
         )
         features.append(tc[i])
@@ -58,8 +66,8 @@ def test_multioutput_feature(es):
 
 
 def test_base_features_in_list(es):
-    value = ft.IdentityFeature(es["log"].ww["value"])
-    max_feat = ft.AggregationFeature(value, "sessions", ft.primitives.Max)
+    value = IdentityFeature(es["log"].ww["value"])
+    max_feat = AggregationFeature(value, "sessions", Max)
     dictionary = {
         "ft_version": ft.__version__,
         "schema_version": SCHEMA_VERSION,
@@ -77,9 +85,9 @@ def test_base_features_in_list(es):
 
 
 def test_base_features_not_in_list(es):
-    value = ft.IdentityFeature(es["log"].ww["value"])
-    value_x2 = ft.TransformFeature(value, ft.primitives.MultiplyNumericScalar(value=2))
-    max_feat = ft.AggregationFeature(value_x2, "sessions", ft.primitives.Max)
+    value = IdentityFeature(es["log"].ww["value"])
+    value_x2 = TransformFeature(value, MultiplyNumericScalar(value=2))
+    max_feat = AggregationFeature(value_x2, "sessions", Max)
     dictionary = {
         "ft_version": ft.__version__,
         "schema_version": SCHEMA_VERSION,
@@ -160,8 +168,8 @@ def test_unknown_feature_type(es):
 
 
 def test_unknown_primitive_type(es):
-    value = ft.IdentityFeature(es["log"].ww["value"])
-    max_feat = ft.AggregationFeature(value, "sessions", ft.primitives.Max)
+    value = IdentityFeature(es["log"].ww["value"])
+    max_feat = AggregationFeature(value, "sessions", Max)
     max_dict = max_feat.to_dictionary()
     max_dict["arguments"]["primitive"]["type"] = "FakePrimitive"
     dictionary = {
@@ -179,16 +187,13 @@ def test_unknown_primitive_type(es):
     with pytest.raises(RuntimeError) as excinfo:
         deserializer.to_list()
 
-    error_text = (
-        'Primitive "FakePrimitive" in module "%s" not found'
-        % ft.primitives.Max.__module__
-    )
+    error_text = 'Primitive "FakePrimitive" in module "%s" not found' % Max.__module__
     assert error_text == str(excinfo.value)
 
 
 def test_unknown_primitive_module(es):
-    value = ft.IdentityFeature(es["log"].ww["value"])
-    max_feat = ft.AggregationFeature(value, "sessions", ft.primitives.Max)
+    value = IdentityFeature(es["log"].ww["value"])
+    max_feat = AggregationFeature(value, "sessions", Max)
     max_dict = max_feat.to_dictionary()
     max_dict["arguments"]["primitive"]["module"] = "fake.module"
     dictionary = {
@@ -211,11 +216,9 @@ def test_unknown_primitive_module(es):
 
 
 def test_feature_use_previous_pd_timedelta(es):
-    value = ft.IdentityFeature(es["log"].ww["id"])
+    value = IdentityFeature(es["log"].ww["id"])
     td = pd.Timedelta(12, "W")
-    count_feature = ft.AggregationFeature(
-        value, "customers", ft.primitives.Count, use_previous=td
-    )
+    count_feature = AggregationFeature(value, "customers", Count, use_previous=td)
     dictionary = {
         "ft_version": ft.__version__,
         "schema_version": SCHEMA_VERSION,
@@ -233,11 +236,9 @@ def test_feature_use_previous_pd_timedelta(es):
 
 
 def test_feature_use_previous_pd_dateoffset(es):
-    value = ft.IdentityFeature(es["log"].ww["id"])
+    value = IdentityFeature(es["log"].ww["id"])
     do = pd.DateOffset(months=3)
-    count_feature = ft.AggregationFeature(
-        value, "customers", ft.primitives.Count, use_previous=do
-    )
+    count_feature = AggregationFeature(value, "customers", Count, use_previous=do)
     dictionary = {
         "ft_version": ft.__version__,
         "schema_version": SCHEMA_VERSION,
@@ -253,11 +254,9 @@ def test_feature_use_previous_pd_dateoffset(es):
     expected = [count_feature, value]
     assert expected == deserializer.to_list()
 
-    value = ft.IdentityFeature(es["log"].ww["id"])
+    value = IdentityFeature(es["log"].ww["id"])
     do = pd.DateOffset(months=3, days=2, minutes=30)
-    count_feature = ft.AggregationFeature(
-        value, "customers", ft.primitives.Count, use_previous=do
-    )
+    count_feature = AggregationFeature(value, "customers", Count, use_previous=do)
     dictionary = {
         "ft_version": ft.__version__,
         "schema_version": SCHEMA_VERSION,

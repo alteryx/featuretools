@@ -4,12 +4,11 @@ import pytest
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime
 
-import featuretools as ft
+from featuretools import DirectFeature, Feature, IdentityFeature
 from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
     FeatureSetCalculator,
 )
-from featuretools.feature_base import DirectFeature, Feature, IdentityFeature
 from featuretools.primitives import (
     AggregationPrimitive,
     Day,
@@ -274,7 +273,7 @@ def test_direct_with_no_path(diamond_es):
 
 
 def test_serialization(es):
-    value = ft.IdentityFeature(es["products"].ww["rating"])
+    value = IdentityFeature(es["products"].ww["rating"])
     direct = DirectFeature(value, "log")
 
     log_to_products = next(
