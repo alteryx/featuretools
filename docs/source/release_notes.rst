@@ -11,6 +11,7 @@ Future Release
     * Changes
         * Sort core requirements and test requirements in setup cfg (:pr:`2152`)
     * Documentation Changes
+        * Augment single table entry in DFS to include information about passing in a dictionary for `dataframes` argument (:pr:`2160`)
     * Testing Changes
         * Fix pandas warning and reduce dask .apply warnings (:pr:`2145`)
 
