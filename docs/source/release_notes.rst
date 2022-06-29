@@ -5,15 +5,18 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ``IsYearEnd``, ``IsYearStart`` transform primitives (:pr:`2124`)
+        * Include np.nan testing for ``DayOfYear`` and ``DaysInMonth`` primitives (:pr:`2146`)
     * Fixes
     * Changes
         * Improve serialization and deserialization to reduce storage of duplicate primitive information (:pr:`2136`, :pr:`2127`, :pr:`2142`, :pr:`2144`)
+        * Sort core requirements and test requirements in setup cfg (:pr:`2152`)
     * Documentation Changes
     * Testing Changes
         * Fix pandas warning and reduce dask .apply warnings (:pr:`2145`)
 
     Thanks to the following people for contributing to this release:
-    :user:`ozzieD`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`ozzieD`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v1.10.0 June 23, 2022
 =====================

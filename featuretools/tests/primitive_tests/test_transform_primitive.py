@@ -15,6 +15,8 @@ from featuretools.primitives import (
     IsMonthStart,
     IsQuarterEnd,
     IsQuarterStart,
+    IsYearEnd,
+    IsYearStart,
     NumericLag,
     Quarter,
     TimeSince,
@@ -114,19 +116,19 @@ def test_age_nan():
 
 def test_day_of_year():
     doy = DayOfYear()
-    dates = pd.Series([datetime(2019, 12, 31), datetime(2020, 12, 31)])
+    dates = pd.Series([datetime(2019, 12, 31), np.nan, datetime(2020, 12, 31)])
     days_of_year = doy(dates)
-    correct_days = [365, 366]
+    correct_days = [365, np.nan, 366]
     np.testing.assert_array_equal(days_of_year, correct_days)
 
 
 def test_days_in_month():
     dim = DaysInMonth()
     dates = pd.Series(
-        [datetime(2010, 1, 1), datetime(2019, 2, 1), datetime(2020, 2, 1)]
+        [datetime(2010, 1, 1), datetime(2019, 2, 1), np.nan, datetime(2020, 2, 1)]
     )
     days_in_month = dim(dates)
-    correct_days = [31, 28, 29]
+    correct_days = [31, 28, np.nan, 29]
     np.testing.assert_array_equal(days_in_month, correct_days)
 
 
@@ -172,6 +174,22 @@ def test_is_quarter_start():
     iqs_bools = iqs(dates)
     correct_bools = [True, False]
     np.testing.assert_array_equal(iqs_bools, correct_bools)
+
+
+def test_is_year_end():
+    is_year_end = IsYearEnd()
+    dates = pd.Series([datetime(2020, 12, 31), np.nan, datetime(2020, 1, 1)])
+    answer = is_year_end(dates)
+    correct_answer = [True, False, False]
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_is_year_start():
+    is_year_start = IsYearStart()
+    dates = pd.Series([datetime(2020, 12, 31), np.nan, datetime(2020, 1, 1)])
+    answer = is_year_start(dates)
+    correct_answer = [False, False, True]
+    np.testing.assert_array_equal(answer, correct_answer)
 
 
 def test_quarter_regular():
