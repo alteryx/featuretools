@@ -3,9 +3,6 @@ from statistics import variance
 import holidays
 import numpy as np
 import pandas as pd
-
-import_or_none("pyspark.pandas")
-
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import (
     AgeFractional,
@@ -18,7 +15,9 @@ from woodwork.logical_types import (
 from featuretools.primitives.base import TransformPrimitive
 from featuretools.primitives.utils import HolidayUtil
 from featuretools.utils import convert_time_units
-from featuretools.utils.gen_utils import Library
+from featuretools.utils.gen_utils import Library, import_or_none
+
+import_or_none("pyspark.pandas")
 
 
 class Age(TransformPrimitive):
