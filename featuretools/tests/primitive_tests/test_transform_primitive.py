@@ -28,6 +28,7 @@ from featuretools.primitives import (
     Week,
     get_transform_primitives,
 )
+from featuretools.utils.gen_utils import import_or_none
 
 
 def test_time_since():
@@ -195,14 +196,13 @@ def test_is_lunch_time():
 
 def test_is_lunch_time_weekdays_only():
     ilt = IsLunchTime(include_weekends=False)
-    dates = pd.Series(
-        [
-            datetime(2022, 6, 26, 12, 12, 12),  # Weekend date
-            datetime(2022, 6, 28, 12, 3, 4),  # Weekday date
-            datetime(2022, 6, 28, 11, 3, 4),  # Weekday date
-            datetime(2022, 7, 4, 12, 1, 1),  # July 4th -- Holiday date
-        ]
-    )
+    dates = [
+        datetime(2022, 6, 26, 12, 12, 12),  # Weekend date
+        datetime(2022, 6, 28, 12, 3, 4),  # Weekday date
+        datetime(2022, 6, 28, 11, 3, 4),  # Weekday date
+        datetime(2022, 7, 4, 12, 1, 1),  # July 4th -- Holiday date
+    ]
+
     actual = ilt(dates)
     expected = [False, True, False, False]
     np.testing.assert_array_equal(actual, expected)

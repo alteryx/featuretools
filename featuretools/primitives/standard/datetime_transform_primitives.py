@@ -580,6 +580,7 @@ class IsWorkingHours(TransformPrimitive):
                 )
                 return is_weekday.values
             else:
+                print(type(vals))
                 vals = vals.apply(self.spark_mask)
                 return vals
 
