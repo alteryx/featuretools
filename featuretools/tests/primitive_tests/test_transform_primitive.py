@@ -15,6 +15,8 @@ from featuretools.primitives import (
     IsMonthStart,
     IsQuarterEnd,
     IsQuarterStart,
+    IsYearEnd,
+    IsYearStart,
     NumericLag,
     PartOfDay,
     Quarter,
@@ -206,6 +208,22 @@ def test_part_of_day():
     )
     pd.testing.assert_series_equal(expected, actual)
 
+
+def test_is_year_end():
+    is_year_end = IsYearEnd()
+    dates = pd.Series([datetime(2020, 12, 31), np.nan, datetime(2020, 1, 1)])
+    answer = is_year_end(dates)
+    correct_answer = [True, False, False]
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_is_year_start():
+    is_year_start = IsYearStart()
+    dates = pd.Series([datetime(2020, 12, 31), np.nan, datetime(2020, 1, 1)])
+    answer = is_year_start(dates)
+    correct_answer = [False, False, True]
+    np.testing.assert_array_equal(answer, correct_answer)
+    
 
 def test_quarter_regular():
     q = Quarter()
