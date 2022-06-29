@@ -267,6 +267,7 @@ class Diff(TransformPrimitive):
 
         Using datetimes
 
+        >>> from datetime import datetime
         >>> dt_values = [datetime(2019, 3, 1), datetime(2019, 6, 30), datetime(2019, 11, 17), datetime(2020, 1, 30), datetime(2020, 3, 11)]
         >>> diff_dt = Diff()
         >>> diff_dt(dt_values).tolist()
