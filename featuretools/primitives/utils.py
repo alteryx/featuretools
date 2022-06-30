@@ -361,9 +361,6 @@ class PrimitivesDeserializer(object):
         # (class_name, module_name) -> class
         self.class_cache = {}
 
-        # Cache to use existing primitive instances
-        # primitive key -> primitive instance
-        self.instance_cache = {}
         self.primitive_classes = find_descendents(PrimitiveBase)
 
     def deserialize_primitive(self, primitive_dict):
