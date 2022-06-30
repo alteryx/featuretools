@@ -13,7 +13,7 @@ Release Notes
 .. Thanks to the following people for contributing to this release:
 
 v1.11.0 Jun 30, 2022
-=====================
+====================
     * Enhancements
         * Add datetime and string types as valid arguments to dfs ``cutoff_time`` (:pr:`2147`) 
         * Add ``PartOfDay`` transform primitive (:pr:`2128`)
@@ -32,7 +32,7 @@ v1.11.0 Jun 30, 2022
     :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 v1.10.0 Jun 23, 2022
-=====================
+====================
     * Enhancements
         * Add ``DayOfYear``, ``DaysInMonth``, ``Quarter``, ``IsLeapYear``, ``IsQuarterEnd``, ``IsQuarterStart`` transform primitives (:pr:`2110`, :pr:`2117`)
         * Add ``IsMonthEnd``, ``IsMonthStart`` transform primitives (:pr:`2121`)
