@@ -52,15 +52,15 @@ def load_features(features, profile_name=None):
 
             # Option 2
             filepath = os.path.join('/Home/features/', 'list.json')
-            f = open(filepath, 'r')
-            features = ft.load_features(f)
-            f.close()
+            with open(filepath, 'r') as f:
+                features = ft.load_features(f)
 
             # Option 3
             filepath = os.path.join('/Home/features/', 'list.json')
-            feature_str = f.read()
+            with open(filepath, 'r') as :
+                feature_str = f.read()
             features = ft.load_features(feature_str)
-            f.close()
+
 
     .. seealso::
         :func:`.save_features`

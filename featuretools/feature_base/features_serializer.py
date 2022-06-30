@@ -52,9 +52,8 @@ def save_features(features, location=None, profile_name=None):
 
             # Option 2
             filepath = os.path.join('/Home/features/', 'list.json')
-            f = open(filepath, 'w')
-            ft.save_features(features, f)
-            f.close()
+            with open(filepath, 'w') as f:
+                ft.save_features(features, f)
 
             # Option 3
             features_string = ft.save_features(features)
