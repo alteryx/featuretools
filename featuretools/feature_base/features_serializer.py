@@ -46,13 +46,18 @@ def save_features(features, location=None, profile_name=None):
 
             features = [f1, f2, f3]
 
+            # Option 1
             filepath = os.path.join('/Home/features/', 'list.json')
             ft.save_features(features, filepath)
 
+            # Option 2
+            filepath = os.path.join('/Home/features/', 'list.json')
             f = open(filepath, 'w')
             ft.save_features(features, f)
-
-            features_str = ft.save_features(features)
+            f.close()
+            
+            # Option 3
+            features_string = ft.save_features(features)
     .. seealso::
         :func:`.load_features`
     """

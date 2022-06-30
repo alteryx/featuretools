@@ -46,14 +46,21 @@ def load_features(features, profile_name=None):
 
         .. code-block:: python
 
+            # Option 1
             filepath = os.path.join('/Home/features/', 'list.json')
-            ft.load_features(filepath)
+            features = ft.load_features(filepath)
 
+            # Option 2
+            filepath = os.path.join('/Home/features/', 'list.json')
             f = open(filepath, 'r')
-            ft.load_features(f)
+            features = ft.load_features(f)
+            f.close()
 
+            # Option 3
+            filepath = os.path.join('/Home/features/', 'list.json')
             feature_str = f.read()
-            ft.load_features(feature_str)
+            features = ft.load_features(feature_str)
+            f.close()
 
     .. seealso::
         :func:`.save_features`
