@@ -416,7 +416,7 @@ def test_serialization(es):
 
     path = next(es.find_backward_paths("customers", "log"))
     dictionary = {
-        "name": None,
+        "name": max1.get_name(),
         "base_features": [value.unique_name()],
         "relationship_path": [r.to_dictionary() for r in path],
         "primitive": primitive,
@@ -437,7 +437,7 @@ def test_serialization(es):
     )
 
     dictionary = {
-        "name": None,
+        "name": max2.get_name(),
         "base_features": [value.unique_name()],
         "relationship_path": [r.to_dictionary() for r in path],
         "primitive": primitive,

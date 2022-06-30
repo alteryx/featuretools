@@ -203,7 +203,7 @@ def test_to_dictionary_direct(es):
         "type": "DirectFeature",
         "dependencies": ["sessions: customer_id"],
         "arguments": {
-            "name": None,
+            "name": "sessions.customer_id",
             "base_feature": "sessions: customer_id",
             "relationship": {
                 "parent_dataframe_name": "sessions",
@@ -224,7 +224,7 @@ def test_to_dictionary_identity(es):
         "type": "IdentityFeature",
         "dependencies": [],
         "arguments": {
-            "name": None,
+            "name": "customer_id",
             "column_name": "customer_id",
             "dataframe_name": "sessions",
         },
@@ -243,7 +243,7 @@ def test_to_dictionary_agg(es):
         "type": "AggregationFeature",
         "dependencies": ["customers: age"],
         "arguments": {
-            "name": None,
+            "name": "SUM(customers.age)",
             "base_features": ["customers: age"],
             "relationship_path": [
                 {
@@ -275,7 +275,7 @@ def test_to_dictionary_where(es):
         "type": "AggregationFeature",
         "dependencies": ["log: value", "log: value = 2"],
         "arguments": {
-            "name": None,
+            "name": "SUM(log.value WHERE value = 2)",
             "base_features": ["log: value"],
             "relationship_path": [
                 {
@@ -302,7 +302,7 @@ def test_to_dictionary_trans(es):
         "type": "TransformFeature",
         "dependencies": ["customers: age"],
         "arguments": {
-            "name": None,
+            "name": "-(age)",
             "base_features": ["customers: age"],
             "primitive": primitive,
         },
@@ -322,7 +322,7 @@ def test_to_dictionary_groupby_trans(es):
         "type": "GroupByTransformFeature",
         "dependencies": ["log: value", "log: product_id"],
         "arguments": {
-            "name": None,
+            "name": "-(value) by product_id",
             "base_features": ["log: value"],
             "primitive": primitive,
             "groupby": "log: product_id",
@@ -343,7 +343,7 @@ def test_to_dictionary_multi_slice(es):
         "type": "FeatureOutputSlice",
         "dependencies": ["customers: N_MOST_COMMON(log.product_id, n=2)"],
         "arguments": {
-            "name": None,
+            "name": "N_MOST_COMMON(log.product_id, n=2)[0]",
             "base_feature": "customers: N_MOST_COMMON(log.product_id, n=2)",
             "n": 0,
         },

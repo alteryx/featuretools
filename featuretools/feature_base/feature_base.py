@@ -466,7 +466,7 @@ class IdentityFeature(FeatureBase):
 
     def get_arguments(self):
         return {
-            "name": self._name,
+            "name": self.get_name(),
             "column_name": self.column_name,
             "dataframe_name": self.dataframe_name,
         }
@@ -583,7 +583,7 @@ class DirectFeature(FeatureBase):
     def get_arguments(self):
         _is_forward, relationship = self.relationship_path[0]
         return {
-            "name": self._name,
+            "name": self.get_name(),
             "base_feature": self.base_features[0].unique_name(),
             "relationship": relationship.to_dictionary(),
         }
@@ -777,14 +777,14 @@ class AggregationFeature(FeatureBase):
 
     def get_arguments(self):
         arg_dict = {
-            "name": self._name,
+            "name": self.get_name(),
             "base_features": [feat.unique_name() for feat in self.base_features],
             "relationship_path": [r.to_dictionary() for _, r in self.relationship_path],
             "primitive": self.primitive,
             "where": self.where and self.where.unique_name(),
             "use_previous": self.use_previous and self.use_previous.get_arguments(),
         }
-        if self._names:
+        if self._names and self.number_output_features > 1:
             arg_dict["feature_names"] = self._names
         return arg_dict
 
@@ -835,11 +835,11 @@ class TransformFeature(FeatureBase):
 
     def get_arguments(self):
         arg_dict = {
-            "name": self._name,
+            "name": self.get_name(),
             "base_features": [feat.unique_name() for feat in self.base_features],
             "primitive": self.primitive,
         }
-        if self._names:
+        if self._names and self.number_output_features > 1:
             arg_dict["feature_names"] = self._names
         return arg_dict
 
@@ -901,12 +901,12 @@ class GroupByTransformFeature(TransformFeature):
             if feat.unique_name() != self.groupby.unique_name()
         ]
         arg_dict = {
-            "name": self._name,
+            "name": self.get_name(),
             "base_features": feature_names,
             "primitive": self.primitive,
             "groupby": self.groupby.unique_name(),
         }
-        if self._names:
+        if self._names and self.number_output_features > 1:
             arg_dict["feature_names"] = self._names
         return arg_dict
 
@@ -995,7 +995,7 @@ class FeatureOutputSlice(FeatureBase):
 
     def get_arguments(self):
         return {
-            "name": self._name,
+            "name": self.get_name(),
             "base_feature": self.base_feature.unique_name(),
             "n": self.n,
         }

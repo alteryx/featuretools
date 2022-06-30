@@ -493,7 +493,7 @@ def test_serialization(pd_es):
     groupby = ft.feature_base.GroupByTransformFeature(value, primitive, zipcode)
 
     dictionary = {
-        "name": None,
+        "name": "CUM_SUM(value) by zipcode",
         "base_features": [value.unique_name()],
         "primitive": primitive,
         "groupby": zipcode.unique_name(),
