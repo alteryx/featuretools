@@ -23,7 +23,6 @@ from featuretools.primitives import (
     get_aggregation_primitives,
 )
 from featuretools.primitives.base import AggregationPrimitive
-from featuretools.primitives.utils import PrimitivesDeserializer, serialize_primitive
 from featuretools.synthesis.deep_feature_synthesis import (
     DeepFeatureSynthesis,
     check_stacking,
@@ -411,24 +410,23 @@ def test_copy(games_es):
 
 
 def test_serialization(es):
-    primitives_deserializer = PrimitivesDeserializer()
     value = ft.IdentityFeature(es["log"].ww["value"])
     primitive = ft.primitives.Max()
     max1 = ft.AggregationFeature(value, "customers", primitive)
 
     path = next(es.find_backward_paths("customers", "log"))
     dictionary = {
-        "name": None,
+        "name": max1.get_name(),
         "base_features": [value.unique_name()],
         "relationship_path": [r.to_dictionary() for r in path],
-        "primitive": serialize_primitive(primitive),
+        "primitive": primitive,
         "where": None,
         "use_previous": None,
     }
 
     assert dictionary == max1.get_arguments()
     deserialized = ft.AggregationFeature.from_dictionary(
-        dictionary, es, {value.unique_name(): value}, primitives_deserializer
+        dictionary, es, {value.unique_name(): value}, primitive
     )
     _assert_agg_feats_equal(max1, deserialized)
 
@@ -439,10 +437,10 @@ def test_serialization(es):
     )
 
     dictionary = {
-        "name": None,
+        "name": max2.get_name(),
         "base_features": [value.unique_name()],
         "relationship_path": [r.to_dictionary() for r in path],
-        "primitive": serialize_primitive(primitive),
+        "primitive": primitive,
         "where": is_purchased.unique_name(),
         "use_previous": use_previous.get_arguments(),
     }
@@ -453,7 +451,7 @@ def test_serialization(es):
         is_purchased.unique_name(): is_purchased,
     }
     deserialized = ft.AggregationFeature.from_dictionary(
-        dictionary, es, dependencies, primitives_deserializer
+        dictionary, es, dependencies, primitive
     )
     _assert_agg_feats_equal(max2, deserialized)
 

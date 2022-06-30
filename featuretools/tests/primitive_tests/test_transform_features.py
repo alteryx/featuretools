@@ -60,7 +60,6 @@ from featuretools.primitives import (
     TransformPrimitive,
     get_transform_primitives,
 )
-from featuretools.primitives.utils import PrimitivesDeserializer, serialize_primitive
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
@@ -134,14 +133,14 @@ def test_serialization(es):
     value_x2 = ft.TransformFeature(value, primitive)
 
     dictionary = {
-        "name": None,
+        "name": value_x2.get_name(),
         "base_features": [value.unique_name()],
-        "primitive": serialize_primitive(primitive),
+        "primitive": primitive,
     }
 
     assert dictionary == value_x2.get_arguments()
     assert value_x2 == ft.TransformFeature.from_dictionary(
-        dictionary, es, {value.unique_name(): value}, PrimitivesDeserializer()
+        dictionary, es, {value.unique_name(): value}, primitive
     )
 
 
