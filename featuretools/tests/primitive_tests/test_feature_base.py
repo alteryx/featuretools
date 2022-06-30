@@ -1,4 +1,5 @@
 import os.path
+import re
 
 import pytest
 from pympler.asizeof import asizeof
@@ -202,7 +203,7 @@ def test_to_dictionary_direct(es):
         "type": "DirectFeature",
         "dependencies": ["sessions: customer_id"],
         "arguments": {
-            "name": None,
+            "name": "sessions.customer_id",
             "base_feature": "sessions: customer_id",
             "relationship": {
                 "parent_dataframe_name": "sessions",
@@ -223,7 +224,7 @@ def test_to_dictionary_identity(es):
         "type": "IdentityFeature",
         "dependencies": [],
         "arguments": {
-            "name": None,
+            "name": "customer_id",
             "column_name": "customer_id",
             "dataframe_name": "sessions",
         },
@@ -233,15 +234,16 @@ def test_to_dictionary_identity(es):
 
 
 def test_to_dictionary_agg(es):
+    primitive = Sum()
     actual = ft.Feature(
-        es["customers"].ww["age"], primitive=Sum, parent_dataframe_name="cohorts"
+        es["customers"].ww["age"], primitive=primitive, parent_dataframe_name="cohorts"
     ).to_dictionary()
 
     expected = {
         "type": "AggregationFeature",
         "dependencies": ["customers: age"],
         "arguments": {
-            "name": None,
+            "name": "SUM(customers.age)",
             "base_features": ["customers: age"],
             "relationship_path": [
                 {
@@ -251,11 +253,7 @@ def test_to_dictionary_agg(es):
                     "child_column_name": "cohort",
                 }
             ],
-            "primitive": {
-                "type": "Sum",
-                "module": "featuretools.primitives.standard.aggregation_primitives",
-                "arguments": {},
-            },
+            "primitive": primitive,
             "where": None,
             "use_previous": None,
         },
@@ -265,18 +263,19 @@ def test_to_dictionary_agg(es):
 
 
 def test_to_dictionary_where(es):
+    primitive = Sum()
     actual = ft.Feature(
         es["log"].ww["value"],
         parent_dataframe_name="sessions",
         where=ft.IdentityFeature(es["log"].ww["value"]) == 2,
-        primitive=Sum,
+        primitive=primitive,
     ).to_dictionary()
 
     expected = {
         "type": "AggregationFeature",
         "dependencies": ["log: value", "log: value = 2"],
         "arguments": {
-            "name": None,
+            "name": "SUM(log.value WHERE value = 2)",
             "base_features": ["log: value"],
             "relationship_path": [
                 {
@@ -286,11 +285,7 @@ def test_to_dictionary_where(es):
                     "child_column_name": "session_id",
                 }
             ],
-            "primitive": {
-                "type": "Sum",
-                "module": "featuretools.primitives.standard.aggregation_primitives",
-                "arguments": {},
-            },
+            "primitive": primitive,
             "where": "log: value = 2",
             "use_previous": None,
         },
@@ -300,19 +295,16 @@ def test_to_dictionary_where(es):
 
 
 def test_to_dictionary_trans(es):
-    trans_feature = ft.Feature(es["customers"].ww["age"], primitive=Negate)
+    primitive = Negate()
+    trans_feature = ft.Feature(es["customers"].ww["age"], primitive=primitive)
 
     expected = {
         "type": "TransformFeature",
         "dependencies": ["customers: age"],
         "arguments": {
-            "name": None,
+            "name": "-(age)",
             "base_features": ["customers: age"],
-            "primitive": {
-                "type": "Negate",
-                "module": "featuretools.primitives.standard.transform_primitive",
-                "arguments": {},
-            },
+            "primitive": primitive,
         },
     }
 
@@ -320,22 +312,19 @@ def test_to_dictionary_trans(es):
 
 
 def test_to_dictionary_groupby_trans(es):
+    primitive = Negate()
     id_feat = ft.Feature(es["log"].ww["product_id"])
     groupby_feature = ft.Feature(
-        es["log"].ww["value"], primitive=Negate, groupby=id_feat
+        es["log"].ww["value"], primitive=primitive, groupby=id_feat
     )
 
     expected = {
         "type": "GroupByTransformFeature",
         "dependencies": ["log: value", "log: product_id"],
         "arguments": {
-            "name": None,
+            "name": "-(value) by product_id",
             "base_features": ["log: value"],
-            "primitive": {
-                "type": "Negate",
-                "module": "featuretools.primitives.standard.transform_primitive",
-                "arguments": {},
-            },
+            "primitive": primitive,
             "groupby": "log: product_id",
         },
     }
@@ -354,7 +343,7 @@ def test_to_dictionary_multi_slice(es):
         "type": "FeatureOutputSlice",
         "dependencies": ["customers: N_MOST_COMMON(log.product_id, n=2)"],
         "arguments": {
-            "name": None,
+            "name": "N_MOST_COMMON(log.product_id, n=2)[0]",
             "base_feature": "customers: N_MOST_COMMON(log.product_id, n=2)",
             "n": 0,
         },
@@ -461,3 +450,75 @@ def test_rename_featureoutputslice(es):
     new_name = "session_test"
     new_names = ["session_test"]
     check_rename(feat, new_name, new_names)
+
+
+def test_set_feature_names_wrong_number_of_names(es):
+    feat = ft.Feature(
+        es["log"].ww["product_id"],
+        parent_dataframe_name="customers",
+        primitive=NMostCommon(n=2),
+    )
+    new_names = ["col1"]
+    error_msg = re.escape(
+        "Number of names provided must match the number of output features: 1 name(s) provided, 2 expected."
+    )
+    with pytest.raises(ValueError, match=error_msg):
+        feat.set_feature_names(new_names)
+
+
+def test_set_feature_names_not_unique(es):
+    feat = ft.Feature(
+        es["log"].ww["product_id"],
+        parent_dataframe_name="customers",
+        primitive=NMostCommon(n=2),
+    )
+    new_names = ["col1", "col1"]
+    error_msg = "Provided output feature names must be unique."
+    with pytest.raises(ValueError, match=error_msg):
+        feat.set_feature_names(new_names)
+
+
+def test_set_feature_names_error_on_single_output_feature(es):
+    feat = ft.Feature(es["sessions"].ww["device_name"], "log")
+    new_names = ["sessions_device"]
+    error_msg = "The set_feature_names can only be used on features that have more than one output column."
+    with pytest.raises(ValueError, match=error_msg):
+        feat.set_feature_names(new_names)
+
+
+def test_set_feature_names_transform_feature(es):
+    class MultiCumulative(TransformPrimitive):
+        name = "multi_cum_sum"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
+        number_output_features = 3
+
+    feat = ft.Feature(es["log"].ww["value"], primitive=MultiCumulative)
+    new_names = ["cumulative_sum", "cumulative_max", "cumulative_min"]
+    feat.set_feature_names(new_names)
+    assert feat.get_feature_names() == new_names
+
+
+def test_set_feature_names_aggregation_feature(es):
+    feat = ft.Feature(
+        es["log"].ww["product_id"],
+        parent_dataframe_name="customers",
+        primitive=NMostCommon(n=2),
+    )
+    new_names = ["agg_col_1", "second_agg_col"]
+    feat.set_feature_names(new_names)
+    assert feat.get_feature_names() == new_names
+
+
+def test_renaming_resets_feature_output_names_to_default(es):
+    feat = ft.Feature(
+        es["log"].ww["product_id"],
+        parent_dataframe_name="customers",
+        primitive=NMostCommon(n=2),
+    )
+    new_names = ["renamed1", "renamed2"]
+    feat.set_feature_names(new_names)
+    assert feat.get_feature_names() == new_names
+
+    feat = feat.rename("new_feature_name")
+    assert feat.get_feature_names() == ["new_feature_name[0]", "new_feature_name[1]"]
