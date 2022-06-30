@@ -210,7 +210,6 @@ def test_is_lunch_time_weekdays_only():
     dates = ps.Series(dates)
     primitive_func = ilt.get_function()
     actual = primitive_func(dates).to_numpy()
-    expected = [False, True, False, True]
     np.testing.assert_array_equal(actual, expected)
 
 
