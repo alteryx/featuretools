@@ -1,4 +1,3 @@
-import dask as dd
 import holidays
 import numpy as np
 import pandas as pd
@@ -14,9 +13,7 @@ from woodwork.logical_types import (
 from featuretools.primitives.base import TransformPrimitive
 from featuretools.primitives.utils import HolidayUtil
 from featuretools.utils import convert_time_units
-from featuretools.utils.gen_utils import Library, import_or_none
-
-import_or_none("pyspark.pandas")
+from featuretools.utils.gen_utils import Library
 
 
 class Age(TransformPrimitive):
