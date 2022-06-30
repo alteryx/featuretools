@@ -55,7 +55,7 @@ def save_features(features, location=None, profile_name=None):
             f = open(filepath, 'w')
             ft.save_features(features, f)
             f.close()
-            
+
             # Option 3
             features_string = ft.save_features(features)
     .. seealso::
