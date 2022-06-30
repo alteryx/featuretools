@@ -6,8 +6,10 @@ Future Release
 ==============
     * Enhancements
         * Add ``PartOfDay``, ``IsWorkingHours``, ``IsLunchTime`` transform primitives (:pr:`2128`) (:pr:`2130`) 
+        * Add datetime and string types as valid arguments to dfs ``cutoff_time`` (:pr:`2147`) 
         * Add ``IsYearEnd``, ``IsYearStart`` transform primitives (:pr:`2124`)
         * Include np.nan testing for ``DayOfYear`` and ``DaysInMonth`` primitives (:pr:`2146`)
+        * Allow dfs kwargs to be passed into ``get_valid_primitives`` (:pr:`2157`)
     * Fixes
     * Changes
         * Sort core requirements and test requirements in setup cfg (:pr:`2152`)
@@ -17,7 +19,7 @@ Future Release
         * Pin graphviz version used in windows tests (:pr:`2159`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`
+    :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`
 
 v1.10.0 June 23, 2022
 =====================
