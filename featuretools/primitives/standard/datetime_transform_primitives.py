@@ -393,8 +393,8 @@ class IsLunchTime(TransformPrimitive):
                     lunch_time_mask = (holiday_mask) & (lunch_time_mask)
                 return lunch_time_mask.values
             else:
-                vals = vals.apply(self.spark_mask)
-                return vals
+                ans = vals.apply(self.spark_mask)
+                return ans
 
         return is_lunch_time
 
@@ -582,8 +582,8 @@ class IsWorkingHours(TransformPrimitive):
                 )
                 return is_weekday.values
             else:
-                vals = vals.apply(self.spark_mask)
-                return vals
+                ans = vals.apply(self.spark_mask)
+                return ans
 
         return is_working_hours
 
