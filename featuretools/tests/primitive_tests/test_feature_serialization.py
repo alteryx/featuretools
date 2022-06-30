@@ -321,7 +321,6 @@ def test_serialize_url(es):
         save_features(features_original, URL)
 
 
-
 def test_custom_feature_names_retained_during_serialization(pd_es, tmpdir):
     class MultiCumulative(TransformPrimitive):
         name = "multi_cum_sum"
@@ -359,8 +358,8 @@ def test_custom_feature_names_retained_during_serialization(pd_es, tmpdir):
         stacked_feat,
     ]
     file = os.path.join(tmpdir, "features.json")
-    ft.save_features(features, file)
-    deserialized_features = ft.load_features(file)
+    save_features(features, file)
+    deserialized_features = load_features(file)
 
     new_trans, new_agg, new_groupby, new_stacked = deserialized_features
     assert new_trans.get_feature_names() == trans_names
@@ -392,8 +391,8 @@ def test_deserializer_uses_common_primitive_instances_no_args(es, tmp_path):
     assert all([f.primitive is sum_primitive for f in sum_features])
 
     file = os.path.join(tmp_path, "features.json")
-    ft.save_features(features, file)
-    deserialized_features = ft.load_features(file)
+    save_features(features, file)
+    deserialized_features = load_features(file)
     new_is_null_features = [
         f for f in deserialized_features if f.primitive.name == "is_null"
     ]
@@ -438,7 +437,7 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
     assert all([f.primitive is scalar5 for f in scalar5_features])
 
     file = os.path.join(tmp_path, "features.json")
-    ft.save_features(features, file)
+    save_features(features, file)
     deserialized_features = load_features(file)
 
     new_scalar1_features = [
@@ -465,7 +464,7 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
         distance_to_holiday = DistanceToHoliday(
             holiday="Victoria Day", country="Canada"
         )
-        features = ft.dfs(
+        features = dfs(
             entityset=es,
             target_dataframe_name="customers",
             features_only=True,
@@ -483,7 +482,7 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
         assert all([f.primitive is distance_to_holiday for f in distance_features])
 
         file = os.path.join(tmp_path, "distance_features.json")
-        ft.save_features(distance_features, file)
+        save_features(distance_features, file)
         new_distance_features = load_features(file)
 
         # After deserialization all features that share a primitive should use the same primitive instance
@@ -511,7 +510,7 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
     assert all([f.primitive is is_in for f in is_in_features])
 
     file = os.path.join(tmp_path, "distance_features.json")
-    ft.save_features(is_in_features, file)
+    save_features(is_in_features, file)
     new_is_in_features = load_features(file)
 
     # After deserialization all features that share a primitive should use the same primitive instance
