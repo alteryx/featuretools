@@ -1,6 +1,8 @@
 import logging
 import os
+import typing
 import warnings
+from datetime import datetime
 from functools import wraps
 
 import dask.dataframe as dd
@@ -215,7 +217,10 @@ def get_client_cluster():
     return Client, LocalCluster
 
 
-def _validate_cutoff_time(cutoff_time, target_dataframe):
+def _validate_cutoff_time(
+    cutoff_time: typing.Union[dd.DataFrame, pd.DataFrame, str, datetime],
+    target_dataframe,
+):
     """
     Verify that the cutoff time is a single value or a pandas dataframe with the proper columns
     containing no duplicate rows
@@ -279,6 +284,13 @@ def _validate_cutoff_time(cutoff_time, target_dataframe):
         assert (
             cutoff_time[["instance_id", "time"]].duplicated().sum() == 0
         ), "Duplicated rows in cutoff time dataframe."
+    if isinstance(cutoff_time, str):
+        try:
+            cutoff_time = pd.to_datetime(cutoff_time)
+        except ValueError as e:
+            raise ValueError(f"While parsing cutoff_time: {str(e)}")
+        except OverflowError as e:
+            raise OverflowError(f"While parsing cutoff_time: {str(e)}")
     else:
         if isinstance(cutoff_time, list):
             raise TypeError("cutoff_time must be a single value or DataFrame")
