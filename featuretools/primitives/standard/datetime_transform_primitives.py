@@ -379,7 +379,7 @@ class IsLunchTime(TransformPrimitive):
         if not self.include_weekends:
             lunch_mask = lunch_mask and (v.dayofweek < 5)
         if not self.include_holidays:
-            holiday_mask = v.normalize() in self.timestamp_dates 
+            holiday_mask = v.normalize() in self.timestamp_dates
             lunch_mask = lunch_mask and not holiday_mask
         return lunch_mask
 
