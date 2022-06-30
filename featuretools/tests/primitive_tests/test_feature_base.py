@@ -6,7 +6,7 @@ from pympler.asizeof import asizeof
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, Integer
 
-from featuretools import Feature, FeatureOutputSlice, IdentityFeature, config
+from featuretools import Feature, feature_base, IdentityFeature, config
 from featuretools.primitives import (
     Count,
     Diff,
@@ -441,7 +441,7 @@ def test_rename_featureoutputslice(es):
         parent_dataframe_name="customers",
         primitive=NMostCommon(n=2),
     )
-    feat = FeatureOutputSlice(multi_output_feat, 0)
+    feat = feature_base.FeatureOutputSlice(multi_output_feat, 0)
     new_name = "session_test"
     new_names = ["session_test"]
     check_rename(feat, new_name, new_names)
