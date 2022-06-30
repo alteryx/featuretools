@@ -29,7 +29,8 @@ from featuretools.primitives import (
     Week,
     get_transform_primitives,
 )
-from featuretools.utils.spark_utils import pd_to_spark_clean
+
+ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
 
 
 def test_time_since():
@@ -203,9 +204,13 @@ def test_is_lunch_time_weekdays_only():
         datetime(2022, 6, 28, 11, 3, 4),  # Weekday date
         datetime(2022, 7, 4, 12, 1, 1),  # July 4th -- Holiday date
     ]
-
     actual = ilt(dates)
     expected = [False, True, False, False]
+    np.testing.assert_array_equal(actual, expected)
+    dates = ps.Series(dates)
+    primitive_func = ilt.get_function()
+    actual = primitive_func(dates).to_numpy()
+    expected = [False, True, False, True]
     np.testing.assert_array_equal(actual, expected)
 
 
@@ -219,12 +224,12 @@ def test_is_lunch_time_include_holidays():
             datetime(2022, 7, 4, 12, 1, 1),  # July 4th -- Holiday date
         ]
     )
-    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
+    expected = [False, True, False, True]
+    actual = ilt(dates)
+    np.testing.assert_array_equal(actual, expected)
     dates = ps.Series(dates)
     primitive_func = ilt.get_function()
-    actual = primitive_func(dates)
-    expected = [False, True, False, True]
-    actual = actual.to_numpy()
+    actual = primitive_func(dates).to_numpy()
     np.testing.assert_array_equal(actual, expected)
 
 
@@ -239,6 +244,10 @@ def test_is_working_hours_standard_hours():
     )
     actual = iwh(dates)
     expected = [True, False, False]
+    np.testing.assert_array_equal(actual, expected)
+    dates = ps.Series(dates)
+    primitive_func = iwh.get_function()
+    actual = primitive_func(dates).to_numpy()
     np.testing.assert_array_equal(actual, expected)
 
 
@@ -292,8 +301,12 @@ def test_is_working_hours_configured_hours():
         ]
     )
     answer = iwh(dates)
-    correct_answer = [True, False, False]
-    np.testing.assert_array_equal(answer, correct_answer)
+    expected = [True, False, False]
+    np.testing.assert_array_equal(answer, expected)
+    dates = ps.Series(dates)
+    primitive_func = iwh.get_function()
+    actual = primitive_func(dates).to_numpy()
+    np.testing.assert_array_equal(actual, expected)
 
 
 def test_is_working_hours_boxing_day():
@@ -306,8 +319,12 @@ def test_is_working_hours_boxing_day():
         ]
     )
     answer = iwh(dates)
-    correct_answer = [False, False, False]
-    np.testing.assert_array_equal(answer, correct_answer)
+    expected = [False, False, False]
+    np.testing.assert_array_equal(answer, expected)
+    dates = ps.Series(dates)
+    primitive_func = iwh.get_function()
+    actual = primitive_func(dates).to_numpy()
+    np.testing.assert_array_equal(actual, expected)
 
 
 def test_is_working_hours_holiday_before_established_and_after():

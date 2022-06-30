@@ -372,14 +372,16 @@ class IsLunchTime(TransformPrimitive):
         self.holidays_df = pd.DataFrame(
             sorted(self.federal_holidays.items()), columns=["dates", "names"]
         )
+        self.timestamp_dates = [pd.Timestamp(i) for i in self.holidays_df.dates]
 
     def spark_mask(self, v):
-        l_time = v.hour == 12
+        lunch_mask = v.hour == 12
         if not self.include_weekends:
-            l_time = l_time and (v.dayofweek < 5)
+            lunch_mask = lunch_mask and (v.dayofweek < 5)
         if not self.include_holidays:
-            l_time = l_time and not (v.normalize().isin(self.holidays_df.dates))
-        return l_time
+            holiday_mask = v.normalize() in self.holidays_df.dates
+            lunch_mask = lunch_mask and holiday_mask
+        return lunch_mask
 
     def get_function(self):
         def is_lunch_time(vals):
@@ -561,13 +563,14 @@ class IsWorkingHours(TransformPrimitive):
         self.holidays_df = pd.DataFrame(
             sorted(self.federal_holidays.items()), columns=["dates", "names"]
         )
+        self.timestamp_dates = [pd.Timestamp(i) for i in self.holidays_df.dates]
 
     def spark_mask(self, v):
         return (
             v.dayofweek < 5
             and v.hour >= self.start_time
             and v.hour <= self.end_time
-            and not v.normalize().isin(self.holidays_df)
+            and not (v.normalize() in self.timestamp_dates)
         )
 
     def get_function(self):
@@ -581,8 +584,7 @@ class IsWorkingHours(TransformPrimitive):
                 )
                 return is_weekday.values
             else:
-                ans = vals.apply(self.spark_mask)
-                return ans
+                return vals.apply(self.spark_mask)
 
         return is_working_hours
 
