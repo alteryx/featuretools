@@ -51,8 +51,8 @@ v1.10.0 Jun 23, 2022
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
-v1.9.2 June 10, 2022
-====================
+v1.9.2 Jun 10, 2022
+===================
     * Fixes
         * Add feature origin information to all multi-output feature columns (:pr:`2102`)
     * Documentation Changes
@@ -294,7 +294,7 @@ v1.1.0 Nov 2, 2021
     :user:`bchen1116`, :user:`gsheni`, :user:`HenryRocha`, :user:`jeff-hernandez`, :user:`ridicolos`, :user:`rwedge`
 
 v1.0.0 Oct 12, 2021
-====================
+===================
     * Enhancements
         * Add support for creating EntitySets from Woodwork DataTables (:pr:`1277`)
         * Add ``EntitySet.__deepcopy__`` that retains Woodwork typing information (:pr:`1465`)
