@@ -6,7 +6,7 @@ from pympler.asizeof import asizeof
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, Integer
 
-from featuretools import Feature, feature_base, IdentityFeature, config
+from featuretools import Feature, IdentityFeature, config, feature_base, primitive
 from featuretools.primitives import (
     Count,
     Diff,
@@ -293,7 +293,7 @@ def test_to_dictionary_where(es):
 def test_to_dictionary_trans(es):
     trans_feature = Feature(es["customers"].ww["age"], primitive=Negate)
     primitive = Negate()
-    trans_feature = ft.Feature(es["customers"].ww["age"], primitive=primitive)
+    trans_feature = Feature(es["customers"].ww["age"], primitive=primitive)
 
     expected = {
         "type": "TransformFeature",

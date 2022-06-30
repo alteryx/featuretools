@@ -331,7 +331,7 @@ def test_custom_feature_names_retained_during_serialization(pd_es, tmpdir):
     multi_output_trans_feat = Feature(
         pd_es["log"].ww["value"], primitive=MultiCumulative
     )
-    groupby_trans_feat = GroupByTransformFeature(
+    groupby_trans_feat = feature_base.GroupByTransformFeature(
         pd_es["log"].ww["value"],
         primitive=MultiCumulative,
         groupby=pd_es["log"].ww["product_id"],

@@ -12,6 +12,7 @@ from featuretools import (
     AggregationFeature,
     Feature,
     IdentityFeature,
+    PrimitivesDeserializer,
     Timedelta,
     calculate_feature_matrix,
     dfs,
