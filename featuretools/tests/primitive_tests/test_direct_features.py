@@ -282,7 +282,7 @@ def test_serialization(es):
         if r.parent_dataframe.ww.name == "products"
     )
     dictionary = {
-        "name": None,
+        "name": direct.get_name(),
         "base_feature": value.unique_name(),
         "relationship": log_to_products.to_dictionary(),
     }

@@ -11,7 +11,7 @@ def test_serialization(es):
     value = IdentityFeature(es["log"].ww["value"])
 
     dictionary = {
-        "name": None,
+        "name": "value",
         "column_name": "value",
         "dataframe_name": "log",
     }

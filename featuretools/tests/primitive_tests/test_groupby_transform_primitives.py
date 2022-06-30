@@ -15,7 +15,6 @@ from featuretools.computational_backends.feature_set_calculator import (
 )
 from featuretools.primitives import CumCount, CumMax, CumMean, CumMin, CumSum, Last
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.primitives.utils import PrimitivesDeserializer, serialize_primitive
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import feature_with_name
 
@@ -499,9 +498,9 @@ def test_serialization(pd_es):
     groupby = GroupByTransformFeature(value, primitive, zipcode)
 
     dictionary = {
-        "name": None,
+        "name": "CUM_SUM(value) by zipcode",
         "base_features": [value.unique_name()],
-        "primitive": serialize_primitive(primitive),
+        "primitive": primitive,
         "groupby": zipcode.unique_name(),
     }
 
@@ -510,8 +509,8 @@ def test_serialization(pd_es):
         value.unique_name(): value,
         zipcode.unique_name(): zipcode,
     }
-    assert groupby == GroupByTransformFeature.from_dictionary(
-        dictionary, pd_es, dependencies, PrimitivesDeserializer()
+    assert groupby == ft.feature_base.GroupByTransformFeature.from_dictionary(
+        dictionary, pd_es, dependencies, primitive
     )
 
 

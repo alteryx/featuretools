@@ -1,5 +1,3 @@
-import warnings
-
 import holidays
 import numpy as np
 import pandas as pd
@@ -461,6 +459,60 @@ class IsWeekend(TransformPrimitive):
         return is_weekend
 
 
+class IsYearEnd(TransformPrimitive):
+    """Determines if a date falls on the end of a year.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 12, 31),
+        ...          datetime(2019, 1, 1),
+        ...          datetime(2019, 11, 30),
+        ...          np.nan]
+        >>> is_year_end = IsYearEnd()
+        >>> is_year_end(dates).tolist()
+        [True, False, False, False]
+    """
+
+    name = "is_year_end"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=BooleanNullable)
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "whether {} occurred on the end of a year"
+
+    def get_function(self):
+        def is_year_end(vals):
+            return vals.dt.is_year_end
+
+        return is_year_end
+
+
+class IsYearStart(TransformPrimitive):
+    """Determines if a date falls on the start of a year.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 12, 31),
+        ...          datetime(2019, 1, 1),
+        ...          datetime(2019, 11, 30),
+        ...          np.nan]
+        >>> is_year_start = IsYearStart()
+        >>> is_year_start(dates).tolist()
+        [False, True, False, False]
+    """
+
+    name = "is_year_start"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=BooleanNullable)
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "whether {} occurred on the start of a year"
+
+    def get_function(self):
+        def is_year_start(vals):
+            return vals.dt.is_year_start
+
+        return is_year_start
+
+
 class Minute(TransformPrimitive):
     """Determines the minutes value of a datetime.
 
@@ -515,6 +567,69 @@ class Month(TransformPrimitive):
             return vals.dt.month
 
         return month
+
+
+class PartOfDay(TransformPrimitive):
+    """Determines the part of day of a datetime.
+
+    Description:
+        For a list of datetimes, determines the part of day the datetime
+        falls into, based on the hour.
+        If the hour falls from 4 to 5, the part of day is 'dawn'.
+        If the hour falls from 6 to 7, the part of day is 'early morning'.
+        If the hour falls from 8 to 10, the part of day is 'late morning'.
+        If the hour falls from 11 to 13, the part of day is 'noon'.
+        If the hour falls from 14 to 16, the part of day is 'afternoon'.
+        If the hour falls from 17 to 19, the part of day is 'evening'.
+        If the hour falls from 20 to 22, the part of day is 'night'.
+        If the hour falls into 23, 24, or 1 to 3, the part of day is 'midnight'.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2020, 1, 11, 6, 2, 1),
+        ...          datetime(2021, 3, 31, 4, 2, 1),
+        ...          datetime(2020, 3, 4, 9, 2, 1)]
+        >>> part_of_day = PartOfDay()
+        >>> part_of_day(dates).tolist()
+        ['early morning', 'dawn', 'late morning']
+    """
+
+    name = "part_of_day"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=Categorical, semantic_tags={"category"})
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "the part of day {} falls in"
+
+    @staticmethod
+    def construct_replacement_dict():
+        tdict = dict()
+        tdict[pd.NaT] = np.nan
+        for hour in [4, 5]:
+            tdict[hour] = "dawn"
+        for hour in [6, 7]:
+            tdict[hour] = "early morning"
+        for hour in [8, 9, 10]:
+            tdict[hour] = "late morning"
+        for hour in [11, 12, 13]:
+            tdict[hour] = "noon"
+        for hour in [14, 15, 16]:
+            tdict[hour] = "afternoon"
+        for hour in [17, 18, 19]:
+            tdict[hour] = "evening"
+        for hour in [20, 21, 22]:
+            tdict[hour] = "night"
+        for hour in [23, 24, 1, 2, 3]:
+            tdict[hour] = "midnight"
+        return tdict
+
+    def get_function(self):
+        replacement_dict = self.construct_replacement_dict()
+
+        def part_of_day(vals):
+            ans = vals.dt.hour.replace(replacement_dict)
+            return ans
+
+        return part_of_day
 
 
 class Quarter(TransformPrimitive):
@@ -692,14 +807,10 @@ class Week(TransformPrimitive):
 
     def get_function(self):
         def week(vals):
-            warnings.filterwarnings(
-                "ignore",
-                message=(
-                    "Series.dt.weekofyear and Series.dt.week " "have been deprecated."
-                ),
-                module="featuretools",
-            )
-            return vals.dt.week
+            if hasattr(vals.dt, "isocalendar"):
+                return vals.dt.isocalendar().week
+            else:
+                return vals.dt.week
 
         return week
 

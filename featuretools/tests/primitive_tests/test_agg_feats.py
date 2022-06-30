@@ -32,7 +32,6 @@ from featuretools.primitives import (
     get_aggregation_primitives,
 )
 from featuretools.primitives.base import AggregationPrimitive
-from featuretools.primitives.utils import PrimitivesDeserializer, serialize_primitive
 from featuretools.synthesis.deep_feature_synthesis import (
     DeepFeatureSynthesis,
     check_stacking,
@@ -425,10 +424,10 @@ def test_serialization(es):
 
     path = next(es.find_backward_paths("customers", "log"))
     dictionary = {
-        "name": None,
+        "name": max1.get_name(),
         "base_features": [value.unique_name()],
         "relationship_path": [r.to_dictionary() for r in path],
-        "primitive": serialize_primitive(primitive),
+        "primitive": primitive,
         "where": None,
         "use_previous": None,
     }
@@ -446,10 +445,10 @@ def test_serialization(es):
     )
 
     dictionary = {
-        "name": None,
+        "name": max2.get_name(),
         "base_features": [value.unique_name()],
         "relationship_path": [r.to_dictionary() for r in path],
-        "primitive": serialize_primitive(primitive),
+        "primitive": primitive,
         "where": is_purchased.unique_name(),
         "use_previous": use_previous.get_arguments(),
     }
