@@ -784,8 +784,8 @@ class AggregationFeature(FeatureBase):
             "where": self.where and self.where.unique_name(),
             "use_previous": self.use_previous and self.use_previous.get_arguments(),
         }
-        if self._names and self.number_output_features > 1:
-            arg_dict["feature_names"] = self._names
+        if self.number_output_features > 1:
+            arg_dict["feature_names"] = self.get_feature_names()
         return arg_dict
 
     def relationship_path_name(self):
@@ -839,8 +839,8 @@ class TransformFeature(FeatureBase):
             "base_features": [feat.unique_name() for feat in self.base_features],
             "primitive": self.primitive,
         }
-        if self._names and self.number_output_features > 1:
-            arg_dict["feature_names"] = self._names
+        if self.number_output_features > 1:
+            arg_dict["feature_names"] = self.get_feature_names()
         return arg_dict
 
 
@@ -906,8 +906,8 @@ class GroupByTransformFeature(TransformFeature):
             "primitive": self.primitive,
             "groupby": self.groupby.unique_name(),
         }
-        if self._names and self.number_output_features > 1:
-            arg_dict["feature_names"] = self._names
+        if self.number_output_features > 1:
+            arg_dict["feature_names"] = self.get_feature_names()
         return arg_dict
 
 
