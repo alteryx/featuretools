@@ -275,7 +275,10 @@ class Diff(TransformPrimitive):
     """
 
     name = "diff"
-    input_types = [ColumnSchema(semantic_tags={"numeric"})]
+    input_types = [
+        [ColumnSchema(semantic_tags={"numeric"})],
+        [ColumnSchema(semantic_tags={"time_index"})],
+    ]
     return_type = ColumnSchema(semantic_tags={"numeric"})
     uses_full_dataframe = True
     description_template = "the difference from the previous value of {}"
