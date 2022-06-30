@@ -5,9 +5,8 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Add ``PartOfDay``, ``IsWorkingHours``, ``IsLunchTime`` transform primitives (:pr:`2128`) (:pr:`2130`) 
         * Add datetime and string types as valid arguments to dfs ``cutoff_time`` (:pr:`2147`) 
-        * Add ``IsYearEnd``, ``IsYearStart`` transform primitives (:pr:`2124`)
+        * Add ``IsYearEnd``, ``IsYearStart``, ``IsWorkingHours``, ``IsLunchTime`` transform primitives (:pr:`2124`) (:pr:`2130`) 
         * Add ``Feature.set_feature_names`` method to directly set output column names for multi-output features (:pr:`2142`)
         * Include np.nan testing for ``DayOfYear`` and ``DaysInMonth`` primitives (:pr:`2146`)
         * Allow dfs kwargs to be passed into ``get_valid_primitives`` (:pr:`2157`)
