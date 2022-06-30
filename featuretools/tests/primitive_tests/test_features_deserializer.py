@@ -6,6 +6,14 @@ import pytest
 import featuretools as ft
 from featuretools.feature_base.features_deserializer import FeaturesDeserializer
 from featuretools.feature_base.features_serializer import SCHEMA_VERSION
+from featuretools.primitives import (
+    Count,
+    Max,
+    MultiplyNumericScalar,
+    NMostCommon,
+    NumUnique,
+)
+from featuretools.primitives.utils import serialize_primitive
 
 
 def test_single_feature(es):
@@ -16,6 +24,7 @@ def test_single_feature(es):
         "entityset": es.to_dictionary(),
         "feature_list": [feature.unique_name()],
         "feature_definitions": {feature.unique_name(): feature.to_dictionary()},
+        "primitive_definitions": {},
     }
     deserializer = FeaturesDeserializer(dictionary)
 
@@ -25,7 +34,8 @@ def test_single_feature(es):
 
 def test_multioutput_feature(es):
     value = ft.IdentityFeature(es["log"].ww["product_id"])
-    threecommon = ft.primitives.NMostCommon()
+    threecommon = NMostCommon()
+    num_unique = NumUnique()
     tc = ft.Feature(value, parent_dataframe_name="sessions", primitive=threecommon)
 
     features = [tc, value]
@@ -34,7 +44,7 @@ def test_multioutput_feature(es):
             ft.Feature(
                 tc[i],
                 parent_dataframe_name="customers",
-                primitive=ft.primitives.NumUnique,
+                primitive=num_unique,
             )
         )
         features.append(tc[i])
@@ -50,7 +60,15 @@ def test_multioutput_feature(es):
         "feature_list": flist,
         "feature_definitions": fdict,
     }
+    dictionary["primitive_definitions"] = {
+        "0": serialize_primitive(threecommon),
+        "1": serialize_primitive(num_unique),
+    }
 
+    dictionary["feature_definitions"][flist[0]]["arguments"]["primitive"] = "0"
+    dictionary["feature_definitions"][flist[2]]["arguments"]["primitive"] = "1"
+    dictionary["feature_definitions"][flist[4]]["arguments"]["primitive"] = "1"
+    dictionary["feature_definitions"][flist[6]]["arguments"]["primitive"] = "1"
     deserializer = FeaturesDeserializer(dictionary).to_list()
 
     for i in range(len(features)):
@@ -58,8 +76,9 @@ def test_multioutput_feature(es):
 
 
 def test_base_features_in_list(es):
+    max_primitive = Max()
     value = ft.IdentityFeature(es["log"].ww["value"])
-    max_feat = ft.AggregationFeature(value, "sessions", ft.primitives.Max)
+    max_feat = ft.AggregationFeature(value, "sessions", max_primitive)
     dictionary = {
         "ft_version": ft.__version__,
         "schema_version": SCHEMA_VERSION,
@@ -70,6 +89,10 @@ def test_base_features_in_list(es):
             value.unique_name(): value.to_dictionary(),
         },
     }
+    dictionary["primitive_definitions"] = {"0": serialize_primitive(max_primitive)}
+    dictionary["feature_definitions"][max_feat.unique_name()]["arguments"][
+        "primitive"
+    ] = "0"
     deserializer = FeaturesDeserializer(dictionary)
 
     expected = [max_feat, value]
@@ -77,9 +100,11 @@ def test_base_features_in_list(es):
 
 
 def test_base_features_not_in_list(es):
+    max_primitive = Max()
+    mult_primitive = MultiplyNumericScalar(value=2)
     value = ft.IdentityFeature(es["log"].ww["value"])
-    value_x2 = ft.TransformFeature(value, ft.primitives.MultiplyNumericScalar(value=2))
-    max_feat = ft.AggregationFeature(value_x2, "sessions", ft.primitives.Max)
+    value_x2 = ft.TransformFeature(value, mult_primitive)
+    max_feat = ft.AggregationFeature(value_x2, "sessions", max_primitive)
     dictionary = {
         "ft_version": ft.__version__,
         "schema_version": SCHEMA_VERSION,
@@ -91,6 +116,16 @@ def test_base_features_not_in_list(es):
             value.unique_name(): value.to_dictionary(),
         },
     }
+    dictionary["primitive_definitions"] = {
+        "0": serialize_primitive(max_primitive),
+        "1": serialize_primitive(mult_primitive),
+    }
+    dictionary["feature_definitions"][max_feat.unique_name()]["arguments"][
+        "primitive"
+    ] = "0"
+    dictionary["feature_definitions"][value_x2.unique_name()]["arguments"][
+        "primitive"
+    ] = "1"
     deserializer = FeaturesDeserializer(dictionary)
 
     expected = [max_feat]
@@ -151,6 +186,7 @@ def test_unknown_feature_type(es):
         "feature_definitions": {
             "feature_1": {"type": "FakeFeature", "dependencies": [], "arguments": {}}
         },
+        "primitive_definitions": {},
     }
 
     deserializer = FeaturesDeserializer(dictionary)
@@ -161,23 +197,23 @@ def test_unknown_feature_type(es):
 
 def test_unknown_primitive_type(es):
     value = ft.IdentityFeature(es["log"].ww["value"])
-    max_feat = ft.AggregationFeature(value, "sessions", ft.primitives.Max)
-    max_dict = max_feat.to_dictionary()
-    max_dict["arguments"]["primitive"]["type"] = "FakePrimitive"
+    max_feat = ft.AggregationFeature(value, "sessions", Max)
+    primitive_dict = serialize_primitive(Max())
+    primitive_dict["type"] = "FakePrimitive"
     dictionary = {
         "ft_version": ft.__version__,
         "schema_version": SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [max_feat.unique_name(), value.unique_name()],
         "feature_definitions": {
-            max_feat.unique_name(): max_dict,
+            max_feat.unique_name(): max_feat.to_dictionary(),
             value.unique_name(): value.to_dictionary(),
         },
+        "primitive_definitions": {"0": primitive_dict},
     }
-    deserializer = FeaturesDeserializer(dictionary)
 
     with pytest.raises(RuntimeError) as excinfo:
-        deserializer.to_list()
+        FeaturesDeserializer(dictionary)
 
     error_text = (
         'Primitive "FakePrimitive" in module "%s" not found'
@@ -188,23 +224,23 @@ def test_unknown_primitive_type(es):
 
 def test_unknown_primitive_module(es):
     value = ft.IdentityFeature(es["log"].ww["value"])
-    max_feat = ft.AggregationFeature(value, "sessions", ft.primitives.Max)
-    max_dict = max_feat.to_dictionary()
-    max_dict["arguments"]["primitive"]["module"] = "fake.module"
+    max_feat = ft.AggregationFeature(value, "sessions", Max)
+    primitive_dict = serialize_primitive(Max())
+    primitive_dict["module"] = "fake.module"
     dictionary = {
         "ft_version": ft.__version__,
         "schema_version": SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [max_feat.unique_name(), value.unique_name()],
         "feature_definitions": {
-            max_feat.unique_name(): max_dict,
+            max_feat.unique_name(): max_feat.to_dictionary(),
             value.unique_name(): value.to_dictionary(),
         },
+        "primitive_definitions": {"0": primitive_dict},
     }
-    deserializer = FeaturesDeserializer(dictionary)
 
     with pytest.raises(RuntimeError) as excinfo:
-        deserializer.to_list()
+        FeaturesDeserializer(dictionary)
 
     error_text = 'Primitive "Max" in module "fake.module" not found'
     assert error_text == str(excinfo.value)
@@ -213,8 +249,9 @@ def test_unknown_primitive_module(es):
 def test_feature_use_previous_pd_timedelta(es):
     value = ft.IdentityFeature(es["log"].ww["id"])
     td = pd.Timedelta(12, "W")
+    count_primitive = Count()
     count_feature = ft.AggregationFeature(
-        value, "customers", ft.primitives.Count, use_previous=td
+        value, "customers", count_primitive, use_previous=td
     )
     dictionary = {
         "ft_version": ft.__version__,
@@ -226,6 +263,10 @@ def test_feature_use_previous_pd_timedelta(es):
             value.unique_name(): value.to_dictionary(),
         },
     }
+    dictionary["primitive_definitions"] = {"0": serialize_primitive(count_primitive)}
+    dictionary["feature_definitions"][count_feature.unique_name()]["arguments"][
+        "primitive"
+    ] = "0"
     deserializer = FeaturesDeserializer(dictionary)
 
     expected = [count_feature, value]
@@ -235,8 +276,9 @@ def test_feature_use_previous_pd_timedelta(es):
 def test_feature_use_previous_pd_dateoffset(es):
     value = ft.IdentityFeature(es["log"].ww["id"])
     do = pd.DateOffset(months=3)
+    count_primitive = Count()
     count_feature = ft.AggregationFeature(
-        value, "customers", ft.primitives.Count, use_previous=do
+        value, "customers", count_primitive, use_previous=do
     )
     dictionary = {
         "ft_version": ft.__version__,
@@ -248,6 +290,10 @@ def test_feature_use_previous_pd_dateoffset(es):
             value.unique_name(): value.to_dictionary(),
         },
     }
+    dictionary["primitive_definitions"] = {"0": serialize_primitive(count_primitive)}
+    dictionary["feature_definitions"][count_feature.unique_name()]["arguments"][
+        "primitive"
+    ] = "0"
     deserializer = FeaturesDeserializer(dictionary)
 
     expected = [count_feature, value]
@@ -256,7 +302,7 @@ def test_feature_use_previous_pd_dateoffset(es):
     value = ft.IdentityFeature(es["log"].ww["id"])
     do = pd.DateOffset(months=3, days=2, minutes=30)
     count_feature = ft.AggregationFeature(
-        value, "customers", ft.primitives.Count, use_previous=do
+        value, "customers", count_primitive, use_previous=do
     )
     dictionary = {
         "ft_version": ft.__version__,
@@ -268,6 +314,10 @@ def test_feature_use_previous_pd_dateoffset(es):
             value.unique_name(): value.to_dictionary(),
         },
     }
+    dictionary["primitive_definitions"] = {"0": serialize_primitive(count_primitive)}
+    dictionary["feature_definitions"][count_feature.unique_name()]["arguments"][
+        "primitive"
+    ] = "0"
     deserializer = FeaturesDeserializer(dictionary)
 
     expected = [count_feature, value]
@@ -281,6 +331,7 @@ def _check_schema_version(version, es, warning_text, caplog, warning_type=None):
         "entityset": es.to_dictionary(),
         "feature_list": [],
         "feature_definitions": {},
+        "primitive_definitions": {},
     }
 
     if warning_type == "log" and warning_text:

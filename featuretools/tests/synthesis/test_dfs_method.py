@@ -364,6 +364,45 @@ def test_accepts_pd_dateoffset_training_window(datetime_es):
     assert (feature_matrix.index == feature_matrix_2.index).all()
 
 
+def test_accepts_datetime_and_string_offset(datetime_es):
+    feature_matrix, _ = dfs(
+        entityset=datetime_es,
+        target_dataframe_name="transactions",
+        cutoff_time=pd.to_datetime("2012-3-31 04:00"),
+        training_window=pd.DateOffset(months=2),
+    )
+
+    feature_matrix_2, _ = dfs(
+        entityset=datetime_es,
+        target_dataframe_name="transactions",
+        cutoff_time="2012-3-31 04:00",
+        training_window=pd.offsets.BDay(44),
+    )
+
+    assert (feature_matrix.index == [2, 3, 4]).all()
+    assert (feature_matrix.index == feature_matrix_2.index).all()
+
+
+def test_handles_pandas_parser_error(datetime_es):
+    with pytest.raises(ValueError):
+        _, _ = dfs(
+            entityset=datetime_es,
+            target_dataframe_name="transactions",
+            cutoff_time="2--012-----3-----31 04:00",
+            training_window=pd.DateOffset(months=2),
+        )
+
+
+def test_handles_pandas_overflow_error(datetime_es):
+    with pytest.raises(OverflowError):
+        _, _ = dfs(
+            entityset=datetime_es,
+            target_dataframe_name="transactions",
+            cutoff_time="200000000000000000000000000000000000000000000000000000000000000000-3-31 04:00",
+            training_window=pd.DateOffset(months=2),
+        )
+
+
 def test_warns_with_unused_primitives(es):
     if es.dataframe_type == Library.SPARK.value:
         pytest.skip("Spark throws extra warnings")
