@@ -352,7 +352,7 @@ class PrimitivesDeserializer(object):
     This class wraps a cache and a generator which iterates over all primitive
     classes. When deserializing a primitive if it is not in the cache then we
     iterate until it is found, adding every seen class to the cache. When
-    deseriazing the next primitive the iteration resumes where it left off. This
+    deserializing the next primitive the iteration resumes where it left off. This
     means that we never visit a class more than once.
     """
 
