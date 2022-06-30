@@ -12,7 +12,7 @@ Release Notes
 
 .. Thanks to the following people for contributing to this release:
 
-v1.11.0 June 30, 2022
+v1.11.0 Jun 30, 2022
 =====================
     * Enhancements
         * Add datetime and string types as valid arguments to dfs ``cutoff_time`` (:pr:`2147`) 
@@ -21,11 +21,9 @@ v1.11.0 June 30, 2022
         * Add ``Feature.set_feature_names`` method to directly set output column names for multi-output features (:pr:`2142`)
         * Include np.nan testing for ``DayOfYear`` and ``DaysInMonth`` primitives (:pr:`2146`)
         * Allow dfs kwargs to be passed into ``get_valid_primitives`` (:pr:`2157`)
-    * Fixes
     * Changes
         * Improve serialization and deserialization to reduce storage of duplicate primitive information (:pr:`2136`, :pr:`2127`, :pr:`2144`)
         * Sort core requirements and test requirements in setup cfg (:pr:`2152`)
-    * Documentation Changes
     * Testing Changes
         * Fix pandas warning and reduce dask .apply warnings (:pr:`2145`)
         * Pin graphviz version used in windows tests (:pr:`2159`)
@@ -33,7 +31,7 @@ v1.11.0 June 30, 2022
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
-v1.10.0 June 23, 2022
+v1.10.0 Jun 23, 2022
 =====================
     * Enhancements
         * Add ``DayOfYear``, ``DaysInMonth``, ``Quarter``, ``IsLeapYear``, ``IsQuarterEnd``, ``IsQuarterStart`` transform primitives (:pr:`2110`, :pr:`2117`)
