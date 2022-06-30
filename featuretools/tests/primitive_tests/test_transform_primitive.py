@@ -29,6 +29,7 @@ from featuretools.primitives import (
     Week,
     get_transform_primitives,
 )
+from featuretools.utils.spark_utils import pd_to_spark_clean
 
 
 def test_time_since():
@@ -218,8 +219,12 @@ def test_is_lunch_time_include_holidays():
             datetime(2022, 7, 4, 12, 1, 1),  # July 4th -- Holiday date
         ]
     )
-    actual = ilt(dates)
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
+    dates = ps.Series(dates)
+    primitive_func = ilt.get_function()
+    actual = primitive_func(dates)
     expected = [False, True, False, True]
+    actual = actual.to_numpy()
     np.testing.assert_array_equal(actual, expected)
 
 
