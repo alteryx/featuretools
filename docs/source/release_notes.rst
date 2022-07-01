@@ -2,8 +2,18 @@
 
 Release Notes
 -------------
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.11.0 Jun 30, 2022
+====================
     * Enhancements
         * Add datetime and string types as valid arguments to dfs ``cutoff_time`` (:pr:`2147`) 
         * Add ``PartOfDay`` transform primitive (:pr:`2128`)
@@ -11,7 +21,6 @@ Future Release
         * Add ``Feature.set_feature_names`` method to directly set output column names for multi-output features (:pr:`2142`)
         * Include np.nan testing for ``DayOfYear`` and ``DaysInMonth`` primitives (:pr:`2146`)
         * Allow dfs kwargs to be passed into ``get_valid_primitives`` (:pr:`2157`)
-    * Fixes
     * Changes
         * Improve serialization and deserialization to reduce storage of duplicate primitive information (:pr:`2136`, :pr:`2127`, :pr:`2144`)
         * Sort core requirements and test requirements in setup cfg (:pr:`2152`)
@@ -24,8 +33,8 @@ Future Release
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
-v1.10.0 June 23, 2022
-=====================
+v1.10.0 Jun 23, 2022
+====================
     * Enhancements
         * Add ``DayOfYear``, ``DaysInMonth``, ``Quarter``, ``IsLeapYear``, ``IsQuarterEnd``, ``IsQuarterStart`` transform primitives (:pr:`2110`, :pr:`2117`)
         * Add ``IsMonthEnd``, ``IsMonthStart`` transform primitives (:pr:`2121`)
@@ -44,8 +53,8 @@ v1.10.0 June 23, 2022
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
-v1.9.2 June 10, 2022
-====================
+v1.9.2 Jun 10, 2022
+===================
     * Fixes
         * Add feature origin information to all multi-output feature columns (:pr:`2102`)
     * Documentation Changes
@@ -287,7 +296,7 @@ v1.1.0 Nov 2, 2021
     :user:`bchen1116`, :user:`gsheni`, :user:`HenryRocha`, :user:`jeff-hernandez`, :user:`ridicolos`, :user:`rwedge`
 
 v1.0.0 Oct 12, 2021
-====================
+===================
     * Enhancements
         * Add support for creating EntitySets from Woodwork DataTables (:pr:`1277`)
         * Add ``EntitySet.__deepcopy__`` that retains Woodwork typing information (:pr:`1465`)
