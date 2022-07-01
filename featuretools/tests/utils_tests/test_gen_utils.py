@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from woodwork import ww_list_logical_types, ww_list_semantic_tags
 
-from featuretools import list_logical_types, list_semantic_tags 
+from featuretools import list_logical_types, list_semantic_tags
 from featuretools.utils.gen_utils import (
     camel_and_title_to_snake,
     import_or_none,
