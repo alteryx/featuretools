@@ -60,6 +60,7 @@ from featuretools.primitives import (
     TransformPrimitive,
     get_transform_primitives,
 )
+from featuretools.primitives.standard.transform_primitive import DiffDatetime
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
@@ -378,22 +379,9 @@ def test_diff(pd_es):
     ]
     correct_vals2 = [np.nan, 5, 5, 5, 5, -20, 1, 1, 1, -3, np.nan, 5, -5, 7, 7]
     correct_vals3 = [np.nan, np.nan, 5, 5, 5, 5, -20, 1, 1, 1, np.nan, np.nan, 5, -5, 7]
-    for i, v in enumerate(val1):
-        v1 = val1[i]
-        if np.isnan(v1):
-            assert np.isnan(correct_vals1[i])
-        else:
-            assert v1 == correct_vals1[i]
-        v2 = val2[i]
-        if np.isnan(v2):
-            assert np.isnan(correct_vals2[i])
-        else:
-            assert v2 == correct_vals2[i]
-        v3 = val3[i]
-        if np.isnan(v3):
-            assert np.isnan(correct_vals3[i])
-        else:
-            assert v3 == correct_vals3[i]
+    np.testing.assert_equal(val1, correct_vals1)
+    np.testing.assert_equal(val2, correct_vals2)
+    np.testing.assert_equal(val3, correct_vals3)
 
 
 def test_diff_single_value(pd_es):
@@ -431,6 +419,37 @@ def test_diff_single_value_is_nan(pd_es):
     df = calculator.run(np.array([5]))
     assert df.shape[0] == 1
     assert df[diff.get_name()].dropna().shape[0] == 0
+
+
+def test_diff_datetime(pd_es):
+    diff = ft.Feature(
+        pd_es["log"].ww["datetime"],
+        groupby=ft.Feature(pd_es["log"].ww["session_id"]),
+        primitive=DiffDatetime,
+    )
+    feature_set = FeatureSet([diff])
+    calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
+    df = calculator.run(np.array(range(15)))
+    vals = df[diff.get_name()].tolist()
+    print(vals)
+    expected_vals = [
+        np.nan,
+        6000000000,
+        6000000000,
+        6000000000,
+        6000000000,
+        np.nan,
+        9000000000,
+        9000000000,
+        9000000000,
+        np.nan,
+        np.nan,
+        1000000000,
+        np.nan,
+        3000000000,
+        3000000000,
+    ]
+    np.testing.assert_equal(vals, expected_vals)
 
 
 def test_compare_of_identity(es):
