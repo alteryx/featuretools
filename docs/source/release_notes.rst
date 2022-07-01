@@ -2,15 +2,17 @@
 
 Release Notes
 -------------
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+       * Standardize imports across test files to remove unnecessary imports (:pr:`2166`) 
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`sbadithe`
 
 v1.11.0 Jun 30, 2022
 ====================
@@ -27,7 +29,6 @@ v1.11.0 Jun 30, 2022
     * Testing Changes
         * Fix pandas warning and reduce dask .apply warnings (:pr:`2145`)
         * Pin graphviz version used in windows tests (:pr:`2159`)
-        * Standardize imports in `primitive_tests` folder (:pr:`2166`) 
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`, :user:`thehomebrewnerd`
