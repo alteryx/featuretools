@@ -9,7 +9,7 @@ Future Release
     * Changes
     * Documentation Changes
     * Testing Changes
-       * Standardize imports across test files to remove unnecessary imports (:pr:`2166`) 
+       * Standardize imports across test files to simplify accessing featuretools functions (:pr:`2166`) 
 
     Thanks to the following people for contributing to this release:
     :user:`sbadithe`
