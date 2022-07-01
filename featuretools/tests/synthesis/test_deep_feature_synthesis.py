@@ -462,7 +462,7 @@ def test_make_groupby_features_with_agg(pd_es):
 def test_bad_groupby_feature(es):
     msg = re.escape(
         "Unknown groupby transform primitive max. "
-        "Call primitives.list_primitives() to get "
+        "Call ft.primitives.list_primitives() to get "
         "a list of available primitives"
     )
     with pytest.raises(ValueError, match=msg):
