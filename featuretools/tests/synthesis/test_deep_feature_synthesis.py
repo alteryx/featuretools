@@ -6,11 +6,12 @@ import pytest
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime
 
-import featuretools as ft
+from featuretools import EntitySet, Feature
 from featuretools.entityset.entityset import LTI_COLUMN_NAME
 from featuretools.feature_base import (
     AggregationFeature,
     DirectFeature,
+    GroupByTransformFeature,
     IdentityFeature,
     TransformFeature,
 )
@@ -167,7 +168,7 @@ def test_error_for_missing_target_dataframe(es):
             ignore_dataframes=["log"],
         )
 
-    es_without_id = ft.EntitySet()
+    es_without_id = EntitySet()
     error_text = (
         "Provided target dataframe missing_dataframe does not exist in entity set"
     )
@@ -462,7 +463,7 @@ def test_make_groupby_features_with_agg(pd_es):
 def test_bad_groupby_feature(es):
     msg = re.escape(
         "Unknown groupby transform primitive max. "
-        "Call ft.primitives.list_primitives() to get "
+        "Call primitives.list_primitives() to get "
         "a list of available primitives"
     )
     with pytest.raises(ValueError, match=msg):
@@ -633,13 +634,11 @@ def test_drop_exact(es):
 
 def test_seed_features(es):
     seed_feature_sessions = (
-        ft.Feature(
-            es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
-        )
+        Feature(es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count)
         > 2
     )
-    seed_feature_log = ft.Feature(es["log"].ww["comments"], primitive=NumCharacters)
-    session_agg = ft.Feature(
+    seed_feature_log = Feature(es["log"].ww["comments"], primitive=NumCharacters)
+    session_agg = Feature(
         seed_feature_log, parent_dataframe_name="sessions", primitive=Mean
     )
     dfs_obj = DeepFeatureSynthesis(
@@ -660,7 +659,7 @@ def test_does_not_make_agg_of_direct_of_target_dataframe(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Dask EntitySets do not support the Last primitive")
 
-    count_sessions = ft.Feature(
+    count_sessions = Feature(
         es["sessions"].ww["id"], parent_dataframe_name="customers", primitive=Count
     )
     dfs_obj = DeepFeatureSynthesis(
@@ -683,18 +682,18 @@ def test_dfs_builds_on_seed_features_more_than_max_depth(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Dask EntitySets do not support the Last and Mode primitives")
 
-    seed_feature_sessions = ft.Feature(
+    seed_feature_sessions = Feature(
         es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
     )
-    seed_feature_log = ft.Feature(es["log"].ww["datetime"], primitive=Hour)
-    session_agg = ft.Feature(
+    seed_feature_log = Feature(es["log"].ww["datetime"], primitive=Hour)
+    session_agg = Feature(
         seed_feature_log, parent_dataframe_name="sessions", primitive=Last
     )
 
     # Depth of this feat is 2 relative to session_agg, the seed feature,
     # which is greater than max_depth so it shouldn't be built
     session_agg_trans = DirectFeature(
-        ft.Feature(session_agg, parent_dataframe_name="customers", primitive=Mode),
+        Feature(session_agg, parent_dataframe_name="customers", primitive=Mode),
         "sessions",
     )
     dfs_obj = DeepFeatureSynthesis(
@@ -712,10 +711,10 @@ def test_dfs_builds_on_seed_features_more_than_max_depth(es):
 
 
 def test_dfs_includes_seed_features_greater_than_max_depth(es):
-    session_agg = ft.Feature(
+    session_agg = Feature(
         es["log"].ww["value"], parent_dataframe_name="sessions", primitive=Sum
     )
-    customer_agg = ft.Feature(
+    customer_agg = Feature(
         session_agg, parent_dataframe_name="customers", primitive=Mean
     )
     assert customer_agg.get_depth() == 2
@@ -749,12 +748,12 @@ def test_allowed_paths(es):
     features_unconstrained = dfs_unconstrained.build_features()
 
     unconstrained_names = [f.get_name() for f in features_unconstrained]
-    customers_session_feat = ft.Feature(
+    customers_session_feat = Feature(
         es["sessions"].ww["device_type"],
         parent_dataframe_name="customers",
         primitive=Last,
     )
-    customers_session_log_feat = ft.Feature(
+    customers_session_log_feat = Feature(
         es["log"].ww["value"], parent_dataframe_name="customers", primitive=Last
     )
     assert customers_session_feat.get_name() in unconstrained_names
@@ -1198,7 +1197,7 @@ def test_seed_multi_output_feature_stacking(es):
             "Dask EntitySets do not support the NMostCommon and NumUnique primitives"
         )
     threecommon = NMostCommon(3)
-    tc = ft.Feature(
+    tc = Feature(
         es["log"].ww["product_id"],
         parent_dataframe_name="sessions",
         primitive=threecommon,
@@ -1562,7 +1561,7 @@ def test_primitive_options_groupbys(pd_es):
     )
     features = dfs_obj.build_features()
     for f in features:
-        if isinstance(f, ft.GroupByTransformFeature):
+        if isinstance(f, GroupByTransformFeature):
             deps = f.groupby.get_dependencies(deep=True)
             df_names = [d.dataframe_name for d in deps] + [f.groupby.dataframe_name]
             columns = [d for d in deps if isinstance(d, IdentityFeature)]
@@ -1829,10 +1828,10 @@ def test_primitive_ordering():
     agg_prims = [NMostCommon(n=3), Sum, Mean, Mean(skipna=False), "min", "max"]
     where_prims = ["count", Sum]
 
-    seed_num_chars = ft.Feature(
+    seed_num_chars = Feature(
         es["customers"].ww["favorite_quote"], primitive=NumCharacters
     )
-    seed_is_null = ft.Feature(es["customers"].ww["age"], primitive=IsNull)
+    seed_is_null = Feature(es["customers"].ww["age"], primitive=IsNull)
     seed_features = [seed_num_chars, seed_is_null]
 
     dfs_obj = DeepFeatureSynthesis(
@@ -1879,7 +1878,7 @@ def test_no_transform_stacking():
 
     dataframes = {"first": (df1, "id"), "second": (df2, "index")}
     relationships = [("first", "id", "second", "first_id")]
-    es = ft.EntitySet("data", dataframes, relationships)
+    es = EntitySet("data", dataframes, relationships)
 
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="second",
@@ -1915,9 +1914,7 @@ def test_no_transform_stacking():
 
 
 def test_builds_seed_features_on_foreign_key_col(es):
-    seed_feature_sessions = ft.Feature(
-        es["sessions"].ww["customer_id"], primitive=Negate
-    )
+    seed_feature_sessions = Feature(es["sessions"].ww["customer_id"], primitive=Negate)
 
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="sessions",
