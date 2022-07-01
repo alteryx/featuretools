@@ -434,20 +434,20 @@ def test_diff_datetime(pd_es):
     print(vals)
     expected_vals = [
         np.nan,
-        6000000000,
-        6000000000,
-        6000000000,
-        6000000000,
+        pd.Timedelta(6000000000),
+        pd.Timedelta(6000000000),
+        pd.Timedelta(6000000000),
+        pd.Timedelta(6000000000),
         np.nan,
-        9000000000,
-        9000000000,
-        9000000000,
+        pd.Timedelta(9000000000),
+        pd.Timedelta(9000000000),
+        pd.Timedelta(9000000000),
         np.nan,
         np.nan,
-        1000000000,
+        pd.Timedelta(1000000000),
         np.nan,
-        3000000000,
-        3000000000,
+        pd.Timedelta(3000000000),
+        pd.Timedelta(3000000000),
     ]
     np.testing.assert_equal(vals, expected_vals)
 
