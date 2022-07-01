@@ -6,12 +6,11 @@ import pytest
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime
 
-from featuretools import EntitySet, Feature
+from featuretools import EntitySet, Feature, GroupByTransformFeature
 from featuretools.entityset.entityset import LTI_COLUMN_NAME
 from featuretools.feature_base import (
     AggregationFeature,
     DirectFeature,
-    GroupByTransformFeature,
     IdentityFeature,
     TransformFeature,
 )
