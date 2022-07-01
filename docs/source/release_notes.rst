@@ -2,15 +2,17 @@
 
 Release Notes
 -------------
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
+      * Augment single table entry in DFS to include information about passing in a dictionary for `dataframes` argument (:pr:`2160`)
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+  Thanks to the following people for contributing to this release:
+  :user:`sbadithe`
 
 v1.11.0 Jun 30, 2022
 ====================
@@ -25,7 +27,6 @@ v1.11.0 Jun 30, 2022
         * Improve serialization and deserialization to reduce storage of duplicate primitive information (:pr:`2136`, :pr:`2127`, :pr:`2144`)
         * Sort core requirements and test requirements in setup cfg (:pr:`2152`)
     * Documentation Changes
-        * Augment single table entry in DFS to include information about passing in a dictionary for `dataframes` argument (:pr:`2160`)
     * Testing Changes
         * Fix pandas warning and reduce dask .apply warnings (:pr:`2145`)
         * Pin graphviz version used in windows tests (:pr:`2159`)
