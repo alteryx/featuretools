@@ -6,7 +6,19 @@ from pympler.asizeof import asizeof
 from smart_open import open
 from woodwork.column_schema import ColumnSchema
 
-import featuretools as ft
+from featuretools import (
+    AggregationFeature,
+    DirectFeature,
+    Feature,
+    GroupByTransformFeature,
+    IdentityFeature,
+    TransformFeature,
+    dfs,
+    feature_base,
+    load_features,
+    primitives,
+    save_features,
+)
 from featuretools.entityset.serialize import SCHEMA_VERSION as ENTITYSET_SCHEMA_VERSION
 from featuretools.feature_base import FeatureOutputSlice
 from featuretools.feature_base.features_deserializer import FeaturesDeserializer
@@ -65,19 +77,19 @@ def assert_features(original, deserialized):
 def pickle_features_test_helper(es_size, features_original, dir_path):
     filepath = os.path.join(dir_path, "test_feature")
 
-    ft.save_features(features_original, filepath)
-    features_deserializedA = ft.load_features(filepath)
+    save_features(features_original, filepath)
+    features_deserializedA = load_features(filepath)
     assert os.path.getsize(filepath) < es_size
     os.remove(filepath)
 
     with open(filepath, "w") as f:
-        ft.save_features(features_original, f)
-    features_deserializedB = ft.load_features(open(filepath))
+        save_features(features_original, f)
+    features_deserializedB = load_features(open(filepath))
     assert os.path.getsize(filepath) < es_size
     os.remove(filepath)
 
-    features = ft.save_features(features_original)
-    features_deserializedC = ft.load_features(features)
+    features = save_features(features_original)
+    features_deserializedC = load_features(features)
     assert asizeof(features) < es_size
 
     features_deserialized_options = [
@@ -90,7 +102,7 @@ def pickle_features_test_helper(es_size, features_original, dir_path):
 
 
 def test_pickle_features(es, tmpdir):
-    features_original = ft.dfs(
+    features_original = dfs(
         target_dataframe_name="sessions", entityset=es, features_only=True
     )
     pickle_features_test_helper(asizeof(es), features_original, str(tmpdir))
@@ -102,7 +114,7 @@ def test_pickle_features_with_custom_primitive(pd_es, tmpdir):
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
         return_type = ColumnSchema(semantic_tags={"numeric"})
 
-    features_original = ft.dfs(
+    features_original = dfs(
         target_dataframe_name="sessions",
         entityset=pd_es,
         agg_primitives=["Last", "Mean", NewMax],
@@ -132,39 +144,37 @@ def test_serialized_renamed_features(es):
         deserialized = deserializer.to_list()[0]
         check_names(deserialized, new_name, new_names)
 
-    identity_original = ft.IdentityFeature(es["log"].ww["value"])
+    identity_original = IdentityFeature(es["log"].ww["value"])
     assert identity_original.get_name() == "value"
 
-    value = ft.IdentityFeature(es["log"].ww["value"])
+    value = IdentityFeature(es["log"].ww["value"])
 
-    primitive = ft.primitives.Max()
-    agg_original = ft.AggregationFeature(value, "customers", primitive)
+    primitive = primitives.Max()
+    agg_original = AggregationFeature(value, "customers", primitive)
     assert agg_original.get_name() == "MAX(log.value)"
 
-    direct_original = ft.DirectFeature(
-        ft.IdentityFeature(es["customers"].ww["age"]), "sessions"
+    direct_original = DirectFeature(
+        IdentityFeature(es["customers"].ww["age"]), "sessions"
     )
     assert direct_original.get_name() == "customers.age"
 
-    primitive = ft.primitives.MultiplyNumericScalar(value=2)
-    transform_original = ft.TransformFeature(value, primitive)
+    primitive = primitives.MultiplyNumericScalar(value=2)
+    transform_original = TransformFeature(value, primitive)
     assert transform_original.get_name() == "value * 2"
 
-    zipcode = ft.IdentityFeature(es["log"].ww["zipcode"])
+    zipcode = IdentityFeature(es["log"].ww["zipcode"])
     primitive = CumSum()
-    groupby_original = ft.feature_base.GroupByTransformFeature(
-        value, primitive, zipcode
-    )
+    groupby_original = feature_base.GroupByTransformFeature(value, primitive, zipcode)
     assert groupby_original.get_name() == "CUM_SUM(value) by zipcode"
 
-    multioutput_original = ft.Feature(
+    multioutput_original = Feature(
         es["log"].ww["product_id"],
         parent_dataframe_name="customers",
         primitive=NMostCommon(n=2),
     )
     assert multioutput_original.get_name() == "N_MOST_COMMON(log.product_id, n=2)"
 
-    featureslice_original = ft.feature_base.FeatureOutputSlice(multioutput_original, 0)
+    featureslice_original = feature_base.FeatureOutputSlice(multioutput_original, 0)
     assert featureslice_original.get_name() == "N_MOST_COMMON(log.product_id, n=2)[0]"
 
     feature_type_list = [
@@ -201,30 +211,30 @@ def s3_bucket(s3_client):
 
 
 def test_serialize_features_mock_s3(es, s3_client, s3_bucket):
-    features_original = ft.dfs(
+    features_original = dfs(
         target_dataframe_name="sessions", entityset=es, features_only=True
     )
 
-    ft.save_features(features_original, TEST_S3_URL)
+    save_features(features_original, TEST_S3_URL)
 
     obj = list(s3_bucket.objects.all())[0].key
     s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL="public-read-write")
 
-    features_deserialized = ft.load_features(TEST_S3_URL)
+    features_deserialized = load_features(TEST_S3_URL)
     assert_features(features_original, features_deserialized)
 
 
 def test_serialize_features_mock_anon_s3(es, s3_client, s3_bucket):
-    features_original = ft.dfs(
+    features_original = dfs(
         target_dataframe_name="sessions", entityset=es, features_only=True
     )
 
-    ft.save_features(features_original, TEST_S3_URL, profile_name=False)
+    save_features(features_original, TEST_S3_URL, profile_name=False)
 
     obj = list(s3_bucket.objects.all())[0].key
     s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL="public-read-write")
 
-    features_deserialized = ft.load_features(TEST_S3_URL, profile_name=False)
+    features_deserialized = load_features(TEST_S3_URL, profile_name=False)
     assert_features(features_original, features_deserialized)
 
 
@@ -263,16 +273,16 @@ def setup_test_profile(monkeypatch, tmpdir):
 
 @pytest.mark.parametrize("profile_name", ["test", False])
 def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile, profile_name):
-    features_original = ft.dfs(
+    features_original = dfs(
         target_dataframe_name="sessions", entityset=es, features_only=True
     )
 
-    ft.save_features(features_original, TEST_S3_URL, profile_name="test")
+    save_features(features_original, TEST_S3_URL, profile_name="test")
 
     obj = list(s3_bucket.objects.all())[0].key
     s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL="public-read-write")
 
-    features_deserialized = ft.load_features(TEST_S3_URL, profile_name=profile_name)
+    features_deserialized = load_features(TEST_S3_URL, profile_name=profile_name)
     assert_features(features_original, features_deserialized)
 
 
@@ -293,24 +303,24 @@ def test_deserialize_features_s3(pd_es, url, profile_name):
 
     trans_primitives = [Day, Year, Month, Weekday, Haversine, NumWords, NumCharacters]
 
-    features_original = ft.dfs(
+    features_original = dfs(
         target_dataframe_name="sessions",
         entityset=pd_es,
         features_only=True,
         agg_primitives=agg_primitives,
         trans_primitives=trans_primitives,
     )
-    features_deserialized = ft.load_features(url, profile_name=profile_name)
+    features_deserialized = load_features(url, profile_name=profile_name)
     assert_features(features_original, features_deserialized)
 
 
 def test_serialize_url(es):
-    features_original = ft.dfs(
+    features_original = dfs(
         target_dataframe_name="sessions", entityset=es, features_only=True
     )
     error_text = "Writing to URLs is not supported"
     with pytest.raises(ValueError, match=error_text):
-        ft.save_features(features_original, URL)
+        save_features(features_original, URL)
 
 
 def test_custom_feature_names_retained_during_serialization(pd_es, tmpdir):
@@ -320,21 +330,21 @@ def test_custom_feature_names_retained_during_serialization(pd_es, tmpdir):
         return_type = ColumnSchema(semantic_tags={"numeric"})
         number_output_features = 3
 
-    multi_output_trans_feat = ft.Feature(
+    multi_output_trans_feat = Feature(
         pd_es["log"].ww["value"], primitive=MultiCumulative
     )
-    groupby_trans_feat = ft.GroupByTransformFeature(
+    groupby_trans_feat = GroupByTransformFeature(
         pd_es["log"].ww["value"],
         primitive=MultiCumulative,
         groupby=pd_es["log"].ww["product_id"],
     )
-    multi_output_agg_feat = ft.Feature(
+    multi_output_agg_feat = Feature(
         pd_es["log"].ww["product_id"],
         parent_dataframe_name="customers",
         primitive=NMostCommon(n=2),
     )
     slice = FeatureOutputSlice(multi_output_trans_feat, 1)
-    stacked_feat = ft.Feature(slice, primitive=Negate)
+    stacked_feat = Feature(slice, primitive=Negate)
 
     trans_names = ["cumulative_sum", "cumulative_max", "cumulative_min"]
     multi_output_trans_feat.set_feature_names(trans_names)
@@ -350,8 +360,8 @@ def test_custom_feature_names_retained_during_serialization(pd_es, tmpdir):
         stacked_feat,
     ]
     file = os.path.join(tmpdir, "features.json")
-    ft.save_features(features, file)
-    deserialized_features = ft.load_features(file)
+    save_features(features, file)
+    deserialized_features = load_features(file)
 
     new_trans, new_agg, new_groupby, new_stacked = deserialized_features
     assert new_trans.get_feature_names() == trans_names
@@ -361,7 +371,7 @@ def test_custom_feature_names_retained_during_serialization(pd_es, tmpdir):
 
 
 def test_deserializer_uses_common_primitive_instances_no_args(es, tmp_path):
-    features = ft.dfs(
+    features = dfs(
         entityset=es,
         target_dataframe_name="products",
         features_only=True,
@@ -383,8 +393,8 @@ def test_deserializer_uses_common_primitive_instances_no_args(es, tmp_path):
     assert all([f.primitive is sum_primitive for f in sum_features])
 
     file = os.path.join(tmp_path, "features.json")
-    ft.save_features(features, file)
-    deserialized_features = ft.load_features(file)
+    save_features(features, file)
+    deserialized_features = load_features(file)
     new_is_null_features = [
         f for f in deserialized_features if f.primitive.name == "is_null"
     ]
@@ -401,7 +411,7 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
     # Single argument
     scalar1 = MultiplyNumericScalar(value=1)
     scalar5 = MultiplyNumericScalar(value=5)
-    features = ft.dfs(
+    features = dfs(
         entityset=es,
         target_dataframe_name="products",
         features_only=True,
@@ -429,8 +439,8 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
     assert all([f.primitive is scalar5 for f in scalar5_features])
 
     file = os.path.join(tmp_path, "features.json")
-    ft.save_features(features, file)
-    deserialized_features = ft.load_features(file)
+    save_features(features, file)
+    deserialized_features = load_features(file)
 
     new_scalar1_features = [
         f
@@ -456,7 +466,7 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
         distance_to_holiday = DistanceToHoliday(
             holiday="Victoria Day", country="Canada"
         )
-        features = ft.dfs(
+        features = dfs(
             entityset=es,
             target_dataframe_name="customers",
             features_only=True,
@@ -474,8 +484,8 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
         assert all([f.primitive is distance_to_holiday for f in distance_features])
 
         file = os.path.join(tmp_path, "distance_features.json")
-        ft.save_features(distance_features, file)
-        new_distance_features = ft.load_features(file)
+        save_features(distance_features, file)
+        new_distance_features = load_features(file)
 
         # After deserialization all features that share a primitive should use the same primitive instance
         new_distance_primitive = new_distance_features[0].primitive
@@ -487,7 +497,7 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
 
     # Test primitive with list arg
     is_in = IsIn(list_of_outputs=[5, True, "coke zero"])
-    features = ft.dfs(
+    features = dfs(
         entityset=es,
         target_dataframe_name="customers",
         features_only=True,
@@ -502,8 +512,8 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
     assert all([f.primitive is is_in for f in is_in_features])
 
     file = os.path.join(tmp_path, "distance_features.json")
-    ft.save_features(is_in_features, file)
-    new_is_in_features = ft.load_features(file)
+    save_features(is_in_features, file)
+    new_is_in_features = load_features(file)
 
     # After deserialization all features that share a primitive should use the same primitive instance
     new_is_in_primitive = new_is_in_features[0].primitive
