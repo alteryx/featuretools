@@ -1,7 +1,8 @@
 import dask.dataframe as dd
 import pandas as pd
 import pytest
-from woodwork import ww_list_logical_types, ww_list_semantic_tags
+from woodwork import list_logical_types as ww_list_logical_types
+from woodwork import list_semantic_tags as ww_list_semantic_tags
 
 from featuretools import list_logical_types, list_semantic_tags
 from featuretools.utils.gen_utils import (
