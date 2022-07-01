@@ -26,14 +26,13 @@ v1.11.0 Jun 30, 2022
     * Changes
         * Improve serialization and deserialization to reduce storage of duplicate primitive information (:pr:`2136`, :pr:`2127`, :pr:`2144`)
         * Sort core requirements and test requirements in setup cfg (:pr:`2152`)
-    * Documentation Changes
     * Testing Changes
         * Fix pandas warning and reduce dask .apply warnings (:pr:`2145`)
         * Pin graphviz version used in windows tests (:pr:`2159`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`, :user:`thehomebrewnerd`
-
+    
 v1.10.0 Jun 23, 2022
 ====================
     * Enhancements
