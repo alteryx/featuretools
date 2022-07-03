@@ -424,7 +424,6 @@ def test_diff_single_value_is_nan(pd_es):
 def test_diff_datetime(pd_es):
     diff = ft.Feature(
         pd_es["log"].ww["datetime"],
-        groupby=ft.Feature(pd_es["log"].ww["session_id"]),
         primitive=DiffDatetime,
     )
     feature_set = FeatureSet([diff])
@@ -433,23 +432,23 @@ def test_diff_datetime(pd_es):
     vals = df[diff.get_name()].tolist()
     print(vals)
     expected_vals = [
-        np.nan,
-        pd.Timedelta(6000000000),
-        pd.Timedelta(6000000000),
-        pd.Timedelta(6000000000),
-        pd.Timedelta(6000000000),
-        np.nan,
-        pd.Timedelta(9000000000),
-        pd.Timedelta(9000000000),
-        pd.Timedelta(9000000000),
-        np.nan,
-        np.nan,
-        pd.Timedelta(1000000000),
-        np.nan,
-        pd.Timedelta(3000000000),
-        pd.Timedelta(3000000000),
+        np.datetime64("NaT"),
+        pd.Timedelta(seconds=6),
+        pd.Timedelta(seconds=6),
+        pd.Timedelta(seconds=6),
+        pd.Timedelta(seconds=6),
+        pd.Timedelta(seconds=36),
+        pd.Timedelta(seconds=9),
+        pd.Timedelta(seconds=9),
+        pd.Timedelta(seconds=9),
+        pd.Timedelta(minutes=8, seconds=33),
+        pd.Timedelta(days=1),
+        pd.Timedelta(seconds=1),
+        pd.Timedelta(seconds=59),
+        pd.Timedelta(seconds=3),
+        pd.Timedelta(seconds=3),
     ]
-    np.testing.assert_equal(vals, expected_vals)
+    pd.util.testing.assert_equal(vals, expected_vals)
 
 
 def test_compare_of_identity(es):
