@@ -452,7 +452,7 @@ def test_diff_datetime(pd_es):
         if i == 0:
             assert pd.isnull(vals[i])
         else:
-            pd.util.testing.assert_equal(vals[i], expected_vals[i])
+            assert vals[i] == expected_vals[i]
 
 
 def test_compare_of_identity(es):
