@@ -14,7 +14,7 @@ Release Notes
 
 
 v1.11.1 Jul 5, 2022
-====================
+===================
     * Fixes
         * Remove 24th hour from PartOfDay primitive and add 0th hour (:pr:`2167`)
 
