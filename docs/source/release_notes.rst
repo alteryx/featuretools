@@ -10,7 +10,7 @@ Future Release
     * Fixes
         * Remove 24th hour from PartOfDay primitive and add 0th hour (:pr:`2167`)
     * Changes
-        * Drop Python 3.6 support (:pr:`2169`)
+        * Drop Python 3.7 support (:pr:`2169`)
     * Documentation Changes
     * Testing Changes
 
