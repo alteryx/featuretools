@@ -7,5 +7,5 @@ from .cli_utils import (
 )
 from .entry_point import entry_point
 from .gen_utils import make_tqdm_iterator
-from .time_utils import convert_time_units, make_temporal_cutoffs
+from .time_utils import convert_time_units, make_temporal_cutoffs, calculate_trend
 from .trie import Trie
