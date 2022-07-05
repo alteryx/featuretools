@@ -20,6 +20,7 @@ from featuretools.primitives import (
     Count,
     Day,
     Diff,
+    DiffDatetime,
     DivideByFeature,
     DivideNumeric,
     DivideNumericScalar,
@@ -60,7 +61,6 @@ from featuretools.primitives import (
     TransformPrimitive,
     get_transform_primitives,
 )
-from featuretools.primitives.standard.transform_primitive import DiffDatetime
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
@@ -450,6 +450,31 @@ def test_diff_datetime(pd_es):
     ]
     for i in range(0, len(expected_vals)):
         if i == 0:
+            assert pd.isnull(vals[i])
+        else:
+            assert vals[i] == expected_vals[i]
+
+
+def test_diff_datetime_shift(pd_es):
+    diff = ft.Feature(
+        pd_es["log"].ww["datetime"],
+        primitive=DiffDatetime(periods=1),
+    )
+    feature_set = FeatureSet([diff])
+    calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
+    df = calculator.run(np.array(range(6)))
+    vals = df[diff.get_name()].tolist()
+    print(vals)
+    expected_vals = [
+        np.datetime64("NaT"),
+        np.datetime64("NaT"),
+        pd.Timedelta(seconds=6),
+        pd.Timedelta(seconds=6),
+        pd.Timedelta(seconds=6),
+        pd.Timedelta(seconds=6),
+    ]
+    for i in range(0, len(expected_vals)):
+        if i == 0 or i == 1:
             assert pd.isnull(vals[i])
         else:
             assert vals[i] == expected_vals[i]
