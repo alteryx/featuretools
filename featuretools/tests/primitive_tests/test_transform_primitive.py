@@ -183,9 +183,9 @@ def test_is_lunch_time_default():
     is_lunch_time = IsLunchTime()
     dates = pd.Series(
         [
-            datetime(2022, 6, 26, 12, 12, 12),  # Weekend date
-            datetime(2022, 6, 28, 12, 3, 4),  # Weekday date
-            datetime(2022, 6, 28, 11, 3, 4),  # Weekday date
+            datetime(2022, 6, 26, 12, 12, 12), 
+            datetime(2022, 6, 28, 12, 3, 4), 
+            datetime(2022, 6, 28, 11, 3, 4),  
             np.nan,
         ]
     )
@@ -198,9 +198,9 @@ def test_is_lunch_time_configurable():
     is_lunch_time = IsLunchTime(14)
     dates = pd.Series(
         [
-            datetime(2022, 6, 26, 12, 12, 12),  # Weekend date
-            datetime(2022, 6, 28, 14, 3, 4),  # Weekday date
-            datetime(2022, 6, 28, 11, 3, 4),  # Weekday date
+            datetime(2022, 6, 26, 12, 12, 12),  
+            datetime(2022, 6, 28, 14, 3, 4),  
+            datetime(2022, 6, 28, 11, 3, 4), 
             np.nan,
         ]
     )
@@ -213,9 +213,9 @@ def test_is_working_hours_standard_hours():
     is_working_hours = IsWorkingHours()
     dates = pd.Series(
         [
-            datetime(2022, 6, 21, 16, 3, 3),  # Weekday date
-            datetime(2019, 1, 3, 4, 4, 4),  # Weekday date
-            datetime(2022, 1, 1, 12, 1, 2),  # New Year's -- Holiday date
+            datetime(2022, 6, 21, 16, 3, 3),  
+            datetime(2019, 1, 3, 4, 4, 4),  
+            datetime(2022, 1, 1, 12, 1, 2),  
         ]
     )
     actual = is_working_hours(dates).tolist()
@@ -227,9 +227,9 @@ def test_is_working_hours_configured_hours():
     is_working_hours = IsWorkingHours(15, 18)
     dates = pd.Series(
         [
-            datetime(2022, 6, 21, 16, 3, 3),  # Weekday date
-            datetime(2022, 6, 26, 14, 4, 4),  # Weekend date
-            datetime(2022, 1, 1, 12, 1, 2),  # New Year's -- Holiday date
+            datetime(2022, 6, 21, 16, 3, 3),  
+            datetime(2022, 6, 26, 14, 4, 4),  
+            datetime(2022, 1, 1, 12, 1, 2), 
         ]
     )
     answer = is_working_hours(dates).tolist()
