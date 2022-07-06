@@ -6,6 +6,7 @@ from woodwork.logical_types import (
     Boolean,
     BooleanNullable,
     Categorical,
+    Datetime,
     Double,
     EmailAddress,
     NaturalLanguage,
@@ -267,10 +268,7 @@ class Diff(TransformPrimitive):
     """
 
     name = "diff"
-    input_types = [
-        [ColumnSchema(semantic_tags={"numeric"})],
-        [ColumnSchema(semantic_tags={"time_index"})],
-    ]
+    input_types = [ColumnSchema(semantic_tags={"numeric"})]
     return_type = ColumnSchema(semantic_tags={"numeric"})
     uses_full_dataframe = True
     description_template = "the difference from the previous value of {}"
@@ -307,9 +305,7 @@ class DiffDatetime(Diff):
     """
 
     name = "diff_datetime"
-    input_types = [
-        [ColumnSchema(semantic_tags={"time_index"})],
-    ]
+    input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=Timedelta)
     uses_full_dataframe = True
     description_template = "the difference from the previous value of {}"

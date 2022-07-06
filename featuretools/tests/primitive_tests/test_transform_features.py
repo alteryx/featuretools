@@ -348,17 +348,12 @@ def test_diff(pd_es):
     )
     diff2 = ft.Feature(value, groupby=customer_id_feat, primitive=Diff)
 
-    diff_periods = ft.Feature(
-        value, groupby=customer_id_feat, primitive=Diff(periods=1)
-    )
-
-    feature_set = FeatureSet([diff1, diff2, diff_periods])
+    feature_set = FeatureSet([diff1, diff2])
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array(range(15)))
 
     val1 = df[diff1.get_name()].tolist()
     val2 = df[diff2.get_name()].tolist()
-    val3 = df[diff_periods.get_name()].tolist()
 
     correct_vals1 = [
         np.nan,
@@ -378,9 +373,23 @@ def test_diff(pd_es):
         7,
     ]
     correct_vals2 = [np.nan, 5, 5, 5, 5, -20, 1, 1, 1, -3, np.nan, 5, -5, 7, 7]
-    correct_vals3 = [np.nan, np.nan, 5, 5, 5, 5, -20, 1, 1, 1, np.nan, np.nan, 5, -5, 7]
     np.testing.assert_equal(val1, correct_vals1)
     np.testing.assert_equal(val2, correct_vals2)
+
+
+def test_diff_shift(pd_es):
+    value = ft.Feature(pd_es["log"].ww["value"])
+    customer_id_feat = ft.Feature(pd_es["sessions"].ww["customer_id"], "log")
+    diff_periods = ft.Feature(
+        value, groupby=customer_id_feat, primitive=Diff(periods=1)
+    )
+
+    feature_set = FeatureSet([diff_periods])
+    calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
+    df = calculator.run(np.array(range(15)))
+    val3 = df[diff_periods.get_name()].tolist()
+
+    correct_vals3 = [np.nan, np.nan, 5, 5, 5, 5, -20, 1, 1, 1, np.nan, np.nan, 5, -5, 7]
     np.testing.assert_equal(val3, correct_vals3)
 
 
@@ -430,7 +439,6 @@ def test_diff_datetime(pd_es):
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array(range(15)))
     vals = df[diff.get_name()].tolist()
-    print(vals)
     expected_vals = [
         np.datetime64("NaT"),
         pd.Timedelta(seconds=6),
@@ -448,11 +456,7 @@ def test_diff_datetime(pd_es):
         pd.Timedelta(seconds=3),
         pd.Timedelta(seconds=3),
     ]
-    for i in range(0, len(expected_vals)):
-        if i == 0:
-            assert pd.isnull(vals[i])
-        else:
-            assert vals[i] == expected_vals[i]
+    pd.util.testing.assert_equal(vals, expected_vals)
 
 
 def test_diff_datetime_shift(pd_es):
@@ -464,7 +468,6 @@ def test_diff_datetime_shift(pd_es):
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array(range(6)))
     vals = df[diff.get_name()].tolist()
-    print(vals)
     expected_vals = [
         np.datetime64("NaT"),
         np.datetime64("NaT"),
@@ -473,11 +476,7 @@ def test_diff_datetime_shift(pd_es):
         pd.Timedelta(seconds=6),
         pd.Timedelta(seconds=6),
     ]
-    for i in range(0, len(expected_vals)):
-        if i == 0 or i == 1:
-            assert pd.isnull(vals[i])
-        else:
-            assert vals[i] == expected_vals[i]
+    pd.util.testing.assert_equal(vals, expected_vals)
 
 
 def test_compare_of_identity(es):
