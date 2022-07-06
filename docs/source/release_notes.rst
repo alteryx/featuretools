@@ -24,7 +24,6 @@ v1.11.1 Jul 5, 2022
     Thanks to the following people for contributing to this release:
     :user:`tamargrey`
 
-
 v1.11.0 Jun 30, 2022
 ====================
     * Enhancements
