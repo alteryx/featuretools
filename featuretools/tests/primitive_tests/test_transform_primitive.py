@@ -196,39 +196,18 @@ def test_is_lunch_time():
     np.testing.assert_array_equal(actual, expected)
 
 
-def test_is_lunch_time_weekdays_only():
-    ilt = IsLunchTime(include_weekends=False)
-    dates = [
-        datetime(2022, 6, 26, 12, 12, 12),  # Weekend date
-        datetime(2022, 6, 28, 12, 3, 4),  # Weekday date
-        datetime(2022, 6, 28, 11, 3, 4),  # Weekday date
-        datetime(2022, 7, 4, 12, 1, 1),  # July 4th -- Holiday date
-    ]
-    actual = ilt(dates)
-    expected = [False, True, False, False]
-    np.testing.assert_array_equal(actual, expected)
-    dates = ps.Series(dates)
-    primitive_func = ilt.get_function()
-    actual = primitive_func(dates).to_numpy()
-    np.testing.assert_array_equal(actual, expected)
-
-
-def test_is_lunch_time_include_holidays():
-    ilt = IsLunchTime(include_weekends=False, include_holidays=True)
+def test_is_lunch_time_configurable():
+    ilt = IsLunchTime(14)
     dates = pd.Series(
         [
             datetime(2022, 6, 26, 12, 12, 12),  # Weekend date
-            datetime(2022, 6, 21, 12, 3, 4),  # Weekday date
-            datetime(2022, 6, 21, 11, 3, 4),  # Weekday date
-            datetime(2022, 7, 4, 12, 1, 1),  # July 4th -- Holiday date
+            datetime(2022, 6, 28, 14, 3, 4),  # Weekday date
+            datetime(2022, 6, 28, 11, 3, 4),  # Weekday date
+            np.nan,
         ]
     )
-    expected = [False, True, False, True]
     actual = ilt(dates)
-    np.testing.assert_array_equal(actual, expected)
-    dates = ps.Series(dates)
-    primitive_func = ilt.get_function()
-    actual = primitive_func(dates).to_numpy()
+    expected = [False, True, False, False]
     np.testing.assert_array_equal(actual, expected)
 
 
@@ -242,11 +221,21 @@ def test_is_working_hours_standard_hours():
         ]
     )
     actual = iwh(dates)
-    expected = [True, False, False]
+    expected = [True, False, True]
     np.testing.assert_array_equal(actual, expected)
-    dates = ps.Series(dates)
-    primitive_func = iwh.get_function()
-    actual = primitive_func(dates).to_numpy()
+
+
+def test_is_working_hours_configurable_hours():
+    iwh = IsWorkingHours(17, 22)
+    dates = pd.Series(
+        [
+            datetime(2022, 6, 21, 16, 3, 3),  # Weekday date
+            datetime(2019, 1, 3, 19, 4, 4),  # Weekday date
+            datetime(2022, 1, 1, 22, 1, 2),  # New Year's -- Holiday date
+        ]
+    )
+    actual = iwh(dates)
+    expected = [False, True, True]
     np.testing.assert_array_equal(actual, expected)
 
 
