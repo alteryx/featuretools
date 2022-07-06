@@ -49,6 +49,7 @@ from featuretools.primitives import (
     LessThanEqualToScalar,
     LessThanScalar,
     Longitude,
+    Min,
     Mode,
     MultiplyBoolean,
     MultiplyNumeric,
@@ -138,7 +139,7 @@ def test_relationship_path(es):
 
 def test_serialization(es):
     value = IdentityFeature(es["log"].ww["value"])
-    primitive = primitives.MultiplyNumericScalar(value=2)
+    primitive = MultiplyNumericScalar(value=2)
     value_x2 = TransformFeature(value, primitive)
 
     dictionary = {
@@ -538,7 +539,7 @@ def test_compare_all_nans(es):
         nan_feat = Feature(
             es["log"].ww["value"],
             parent_dataframe_name="sessions",
-            primitive=primitives.Min,
+            primitive=Min,
         )
         compare = nan_feat == 0.0
     else:
