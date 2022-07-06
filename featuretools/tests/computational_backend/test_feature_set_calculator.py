@@ -13,7 +13,6 @@ from featuretools import (
     Feature,
     Timedelta,
     calculate_feature_matrix,
-    primitives,
 )
 from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
@@ -41,7 +40,7 @@ from featuretools.primitives import (
     TimeSinceLast,
     Trend,
 )
-from featuretools.primitives.base import AggregationPrimitive
+from featuretools.base import AggregationPrimitive
 from featuretools.tests.testing_utils import backward_path, to_pandas
 from featuretools.utils import Trie
 from featuretools.utils.gen_utils import Library
@@ -721,11 +720,11 @@ def test_diamond_entityset(diamond_es):
     amount = IdentityFeature(es["transactions"].ww["amount"])
     path = backward_path(es, ["regions", "customers", "transactions"])
     through_customers = AggregationFeature(
-        amount, "regions", primitive=primitives.Sum, relationship_path=path
+        amount, "regions", primitive=Sum, relationship_path=path
     )
     path = backward_path(es, ["regions", "stores", "transactions"])
     through_stores = AggregationFeature(
-        amount, "regions", primitive=primitives.Sum, relationship_path=path
+        amount, "regions", primitive=Sum, relationship_path=path
     )
 
     feature_set = FeatureSet([through_customers, through_stores])
@@ -747,14 +746,14 @@ def test_two_relationships_to_single_dataframe(games_es):
         Feature(es["games"].ww["home_team_score"]),
         "teams",
         relationship_path=path,
-        primitive=primitives.Mean,
+        primitive=Mean,
     )
     path = RelationshipPath([(False, away_team)])
     mean_at_away = AggregationFeature(
         Feature(es["games"].ww["away_team_score"]),
         "teams",
         relationship_path=path,
-        primitive=primitives.Mean,
+        primitive=Mean,
     )
     home_team_mean = DirectFeature(mean_at_home, "games", relationship=home_team)
     away_team_mean = DirectFeature(mean_at_away, "games", relationship=away_team)
