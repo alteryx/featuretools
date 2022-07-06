@@ -496,7 +496,7 @@ class IsWeekend(TransformPrimitive):
 
 
 class IsWorkingHours(TransformPrimitive):
-    """Determines if a datetime falls during working hours. Can configure start_hour and end_hour.
+    """Determines if a datetime falls during working hours on a 24-hour clock. Can configure start_hour and end_hour.
 
     Args:
         start_hour (int): Start hour of workday. Must adhere to 24-hour clock. Default is 8 (8am).
