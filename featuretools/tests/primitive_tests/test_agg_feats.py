@@ -20,6 +20,7 @@ from featuretools import (
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.primitives import (
     Count,
+    Max,
     Mean,
     Median,
     NMostCommon,

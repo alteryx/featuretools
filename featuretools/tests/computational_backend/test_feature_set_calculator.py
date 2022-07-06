@@ -14,6 +14,7 @@ from featuretools import (
     Timedelta,
     calculate_feature_matrix,
 )
+from featuretools.base import AggregationPrimitive
 from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
     FeatureSetCalculator,
@@ -40,7 +41,6 @@ from featuretools.primitives import (
     TimeSinceLast,
     Trend,
 )
-from featuretools.base import AggregationPrimitive
 from featuretools.tests.testing_utils import backward_path, to_pandas
 from featuretools.utils import Trie
 from featuretools.utils.gen_utils import Library

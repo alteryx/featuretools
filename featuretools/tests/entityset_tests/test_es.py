@@ -26,7 +26,7 @@ from woodwork.logical_types import (
 )
 
 from featuretools import Relationship
-from featuretools.demo import load_retail 
+from featuretools.demo import load_retail
 from featuretools.entityset import EntitySet
 from featuretools.entityset.entityset import LTI_COLUMN_NAME, WW_SCHEMA_KEY
 from featuretools.tests.testing_utils import get_df_tags, to_pandas

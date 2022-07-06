@@ -221,9 +221,7 @@ def test_unknown_primitive_type(es):
     with pytest.raises(RuntimeError) as excinfo:
         FeaturesDeserializer(dictionary)
 
-    error_text = (
-        'Primitive "FakePrimitive" in module "%s" not found' % Max.__module__
-    )
+    error_text = 'Primitive "FakePrimitive" in module "%s" not found' % Max.__module__
     assert error_text == str(excinfo.value)
 
 
