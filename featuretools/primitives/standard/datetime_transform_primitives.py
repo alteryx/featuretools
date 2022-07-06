@@ -1,4 +1,3 @@
-import dask as dd
 import holidays
 import numpy as np
 import pandas as pd
@@ -335,16 +334,10 @@ class IsLeapYear(TransformPrimitive):
 
 
 class IsLunchTime(TransformPrimitive):
-    """Determines if a datetime falls during lunch time (non-holiday weekday with hour=12)
+    """Determines if a datetime falls during configurable lunch hour
 
     Args:
-        country (str): Country to use for determining Holidays.
-            Default is 'US'. Should be one of the available countries here:
-            https://github.com/dr-prodigy/python-holidays#available-countries
-        include_weekend (bool): Include weekend dates as datetimes with valid
-            lunch times. Default is True.
-        include_holidays (bool): Include holiday dates as datetimes with valid
-            lunch times. Default is False.
+        lunch_hour (int): Time when lunch is taken. Defaults to 12
 
     Examples:
         >>> from datetime import datetime
@@ -354,7 +347,7 @@ class IsLunchTime(TransformPrimitive):
         ...          np.nan]
         >>> ilt = IsLunchTime()
         >>> ilt(dates).tolist()
-        [True, False, False, False]
+        [True, False, True, False]
     """
 
     name = "is_lunch_time"
@@ -363,39 +356,9 @@ class IsLunchTime(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "whether {} falls during lunch time"
 
-    def __init__(self, country="US", include_weekends=True, include_holidays=False):
-        self.country = country
-        years_list = [1950 + x for x in range(150)]
-        self.federal_holidays = getattr(holidays, self.country)(years=years_list)
-        self.include_weekends = include_weekends
-        self.include_holidays = include_holidays
-        self.holidays_df = pd.DataFrame(
-            sorted(self.federal_holidays.items()), columns=["dates", "names"]
-        )
-        self.timestamp_dates = [pd.Timestamp(i) for i in self.holidays_df.dates]
-
-    def spark_mask(self, v):
-        lunch_mask = v.hour == 12
-        if not self.include_weekends:
-            lunch_mask = lunch_mask and (v.dayofweek < 5)
-        if not self.include_holidays:
-            holiday_mask = v.normalize() in self.timestamp_dates
-            lunch_mask = lunch_mask and not holiday_mask
-        return lunch_mask
-
     def get_function(self):
-        def is_lunch_time(vals):
-            if isinstance(vals, pd.Series) or isinstance(vals, dd.dataframe.Series):
-                lunch_time_mask = vals.dt.hour == 12
-                if not self.include_weekends:
-                    weekday_mask = vals.dt.dayofweek < 5
-                    lunch_time_mask = (weekday_mask) & (lunch_time_mask)
-                if not self.include_holidays:
-                    holiday_mask = ~(vals.dt.normalize().isin(self.holidays_df.dates))
-                    lunch_time_mask = (holiday_mask) & (lunch_time_mask)
-                return lunch_time_mask.values
-            else:
-                return vals.apply(self.spark_mask)
+        def is_lunch_time(vals, lunch_hour=12):
+            return vals.dt.hour == lunch_hour
 
         return is_lunch_time
 
@@ -529,14 +492,11 @@ class IsWeekend(TransformPrimitive):
 
 
 class IsWorkingHours(TransformPrimitive):
-    """Determines if a datetime falls during working hours
+    """Determines if a datetime falls during configurable working hours
 
     Args:
         start_time (int): Start hour of workday. Default is 8 (8am)
         end_time (int): End hour of workday. Default is 18 (6pm)
-        country (str): Country to use for determining Holidays.
-            Default is 'US'. Should be one of the available countries here:
-            https://github.com/dr-prodigy/python-holidays#available-countries
 
     Examples:
         >>> from datetime import datetime
@@ -545,7 +505,7 @@ class IsWorkingHours(TransformPrimitive):
         ...          datetime(2022, 1, 1, 12, 1, 2)]
         >>> iwh = IsWorkingHours()
         >>> iwh(dates).tolist()
-        [True, False, False]
+        [True, False, True]
     """
 
     name = "is_working_hours"
@@ -554,37 +514,9 @@ class IsWorkingHours(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "whether {} falls during working hours"
 
-    def __init__(self, start_time=8, end_time=18, country="US"):
-        self.country = country
-        years_list = [1950 + x for x in range(150)]
-        self.federal_holidays = getattr(holidays, self.country)(years=years_list)
-        self.start_time = start_time
-        self.end_time = end_time
-        self.holidays_df = pd.DataFrame(
-            sorted(self.federal_holidays.items()), columns=["dates", "names"]
-        )
-        self.timestamp_dates = [pd.Timestamp(i) for i in self.holidays_df.dates]
-
-    def spark_mask(self, v):
-        return (
-            v.dayofweek < 5
-            and v.hour >= self.start_time
-            and v.hour <= self.end_time
-            and not (v.normalize() in self.timestamp_dates)
-        )
-
     def get_function(self):
-        def is_working_hours(vals):
-            if isinstance(vals, pd.Series) or isinstance(vals, dd.dataframe.Series):
-                is_weekday = (
-                    (vals.dt.dayofweek < 5)
-                    & (vals.dt.hour >= self.start_time)
-                    & (vals.dt.hour <= self.end_time)
-                    & ~(vals.dt.normalize().isin(self.holidays_df.dates))
-                )
-                return is_weekday.values
-            else:
-                return vals.apply(self.spark_mask)
+        def is_working_hours(vals, start_hour=8, end_hour=18):
+            return vals.dt.hour >= start_hour & vals.dt.hour <= end_hour
 
         return is_working_hours
 
