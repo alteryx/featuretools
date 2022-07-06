@@ -8,14 +8,21 @@ Future Release
         This release of Featuretools will not support Python 3.7
     * Enhancements
     * Fixes
-        * Remove 24th hour from PartOfDay primitive and add 0th hour (:pr:`2167`)
     * Changes
         * Drop Python 3.7 support (:pr:`2169`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tamargrey`
+    :user:`gsheni`
+
+v1.11.1 Jul 5, 2022
+===================
+    * Fixes
+        * Remove 24th hour from PartOfDay primitive and add 0th hour (:pr:`2167`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`tamargrey`
 
 
 v1.11.0 Jun 30, 2022
