@@ -5,11 +5,11 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Add periods parameter to ``Diff`` primitive (:pr:`2155`)
+        * Add periods parameter to ``Diff`` and add ``DiffDatetime`` primitive (:pr:`2155`)
     * Fixes
     * Changes
     * Documentation Changes
-      * Augment single table entry in DFS to include information about passing in a dictionary for `dataframes` argument (:pr:`2160`)
+        * Augment single table entry in DFS to include information about passing in a dictionary for `dataframes` argument (:pr:`2160`)
     * Testing Changes
 
   Thanks to the following people for contributing to this release:
