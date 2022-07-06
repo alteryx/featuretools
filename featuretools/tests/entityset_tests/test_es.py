@@ -25,7 +25,8 @@ from woodwork.logical_types import (
     SubRegionCode,
 )
 
-from featuretools import Relationship, demo
+from featuretools import Relationship
+from featuretools.demo import load_retail 
 from featuretools.entityset import EntitySet
 from featuretools.entityset.entityset import LTI_COLUMN_NAME, WW_SCHEMA_KEY
 from featuretools.tests.testing_utils import get_df_tags, to_pandas
@@ -2120,7 +2121,7 @@ def test_add_interesting_values_multiple_dataframes(pd_es):
 
 
 def test_add_interesting_values_verbose_output(caplog):
-    es = demo.load_retail(nrows=200)
+    es = load_retail(nrows=200)
     es["order_products"].ww.set_types({"quantity": "Categorical"})
     es["orders"].ww.set_types({"country": "Categorical"})
     logger = logging.getLogger("featuretools")
