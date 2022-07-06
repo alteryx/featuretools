@@ -106,7 +106,7 @@ def load_mock_customer(
             ("customers", "customer_id", "sessions", "customer_id"),
         ]
         es = es.add_relationships(rels)
-        #es.add_last_time_indexes()
+        es.add_last_time_indexes()
         return es
 
     return {
