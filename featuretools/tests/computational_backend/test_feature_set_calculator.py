@@ -14,7 +14,7 @@ from featuretools import (
     Timedelta,
     calculate_feature_matrix,
 )
-from featuretools.base import AggregationPrimitive
+from featuretools.primitives.base import AggregationPrimitive
 from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
     FeatureSetCalculator,
