@@ -30,8 +30,6 @@ from featuretools.primitives import (
     get_transform_primitives,
 )
 
-ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-
 
 def test_time_since():
     time_since = TimeSince()
@@ -291,10 +289,6 @@ def test_is_working_hours_configured_hours():
     answer = iwh(dates)
     expected = [True, False, False]
     np.testing.assert_array_equal(answer, expected)
-    dates = ps.Series(dates)
-    primitive_func = iwh.get_function()
-    actual = primitive_func(dates).to_numpy()
-    np.testing.assert_array_equal(actual, expected)
 
 
 def test_is_working_hours_boxing_day():
@@ -309,10 +303,6 @@ def test_is_working_hours_boxing_day():
     answer = iwh(dates)
     expected = [False, False, False]
     np.testing.assert_array_equal(answer, expected)
-    dates = ps.Series(dates)
-    primitive_func = iwh.get_function()
-    actual = primitive_func(dates).to_numpy()
-    np.testing.assert_array_equal(actual, expected)
 
 
 def test_is_working_hours_holiday_before_established_and_after():
