@@ -179,8 +179,8 @@ def test_is_quarter_start():
     np.testing.assert_array_equal(iqs_bools, correct_bools)
 
 
-def test_is_lunch_time():
-    ilt = IsLunchTime()
+def test_is_lunch_time_default():
+    is_lunch_time = IsLunchTime()
     dates = pd.Series(
         [
             datetime(2022, 6, 26, 12, 12, 12),  # Weekend date
@@ -189,13 +189,13 @@ def test_is_lunch_time():
             np.nan,
         ]
     )
-    actual = ilt(dates)
+    actual = is_lunch_time(dates)
     expected = [True, True, False, False]
     np.testing.assert_array_equal(actual, expected)
 
 
 def test_is_lunch_time_configurable():
-    ilt = IsLunchTime(14)
+    is_lunch_time = IsLunchTime(14)
     dates = pd.Series(
         [
             datetime(2022, 6, 26, 12, 12, 12),  # Weekend date
@@ -204,13 +204,13 @@ def test_is_lunch_time_configurable():
             np.nan,
         ]
     )
-    actual = ilt(dates)
+    actual = is_lunch_time(dates)
     expected = [False, True, False, False]
     np.testing.assert_array_equal(actual, expected)
 
 
 def test_is_working_hours_standard_hours():
-    iwh = IsWorkingHours()
+    is_working_hours = IsWorkingHours()
     dates = pd.Series(
         [
             datetime(2022, 6, 21, 16, 3, 3),  # Weekday date
@@ -218,23 +218,23 @@ def test_is_working_hours_standard_hours():
             datetime(2022, 1, 1, 12, 1, 2),  # New Year's -- Holiday date
         ]
     )
-    actual = iwh(dates)
+    actual = is_working_hours(dates).tolist()
     expected = [True, False, True]
     np.testing.assert_array_equal(actual, expected)
 
 
-def test_is_working_hours_configurable_hours():
-    iwh = IsWorkingHours(17, 22)
+def test_is_working_hours_configured_hours():
+    is_working_hours = IsWorkingHours(15, 18)
     dates = pd.Series(
         [
             datetime(2022, 6, 21, 16, 3, 3),  # Weekday date
-            datetime(2019, 1, 3, 19, 4, 4),  # Weekday date
-            datetime(2022, 1, 1, 22, 1, 2),  # New Year's -- Holiday date
+            datetime(2022, 6, 26, 14, 4, 4),  # Weekend date
+            datetime(2022, 1, 1, 12, 1, 2),  # New Year's -- Holiday date
         ]
     )
-    actual = iwh(dates)
-    expected = [False, True, True]
-    np.testing.assert_array_equal(actual, expected)
+    answer = is_working_hours(dates).tolist()
+    expected = [True, False, False]
+    np.testing.assert_array_equal(answer, expected)
 
 
 def test_part_of_day():
@@ -277,49 +277,6 @@ def test_is_year_end():
     answer = is_year_end(dates)
     correct_answer = [True, False, False]
     np.testing.assert_array_equal(answer, correct_answer)
-
-
-def test_is_working_hours_configured_hours():
-    iwh = IsWorkingHours(15, 18)
-    dates = pd.Series(
-        [
-            datetime(2022, 6, 21, 16, 3, 3),  # Weekday date
-            datetime(2022, 6, 26, 14, 4, 4),  # Weekend date
-            datetime(2022, 1, 1, 12, 1, 2),  # New Year's -- Holiday date
-        ]
-    )
-    answer = iwh(dates)
-    expected = [True, False, False]
-    np.testing.assert_array_equal(answer, expected)
-
-
-def test_is_working_hours_boxing_day():
-    iwh = IsWorkingHours(country="CA")  # tests Canadian holidays
-    dates = pd.Series(
-        [
-            datetime(2022, 12, 26, 16, 3, 3),  # Boxing Day 2022 -- Holiday date
-            datetime(2021, 12, 26, 16, 3, 3),  # Boxing Day 2021 -- Holiday date
-            datetime(2020, 12, 26, 16, 3, 3),  # Boxing Day 2020 -- Holiday date
-        ]
-    )
-    answer = iwh(dates)
-    expected = [False, False, False]
-    np.testing.assert_array_equal(answer, expected)
-
-
-def test_is_working_hours_holiday_before_established_and_after():
-    iwh = IsWorkingHours()
-    dates = pd.Series(
-        [
-            datetime(1962, 6, 19, 16, 3, 3),  # Before Juneteenth was a Federal holiday
-            datetime(
-                2023, 6, 19, 16, 3, 3
-            ),  # Weekday, after Juneteenth was declared a Federal holiday
-        ]
-    )
-    actual = iwh(dates)
-    expected = [True, False]
-    np.testing.assert_array_equal(actual, expected)
 
 
 def test_is_year_start():

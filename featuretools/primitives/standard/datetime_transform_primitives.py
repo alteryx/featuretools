@@ -354,9 +354,12 @@ class IsLunchTime(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "whether {} falls during lunch time"
 
+    def __init__(self, lunch_hour=12):
+        self.lunch_hour = lunch_hour
+
     def get_function(self):
-        def is_lunch_time(vals, lunch_hour=12):
-            return vals.dt.hour == lunch_hour
+        def is_lunch_time(vals):
+            return vals.dt.hour == self.lunch_hour
 
         return is_lunch_time
 
@@ -512,9 +515,13 @@ class IsWorkingHours(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "whether {} falls during working hours"
 
+    def __init__(self, start_hour=8, end_hour=18):
+        self.start_hour = start_hour
+        self.end_hour = end_hour
+
     def get_function(self):
-        def is_working_hours(vals, start_hour=8, end_hour=18):
-            return vals.dt.hour >= start_hour & vals.dt.hour <= end_hour
+        def is_working_hours(vals):
+            return (vals.dt.hour >= self.start_hour) & (vals.dt.hour <= self.end_hour)
 
         return is_working_hours
 
