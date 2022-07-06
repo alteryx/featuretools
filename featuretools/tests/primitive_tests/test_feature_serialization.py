@@ -230,6 +230,8 @@ def test_serialize_features_mock_anon_s3(es, s3_client, s3_bucket):
 
 @pytest.fixture
 def setup_test_profile(monkeypatch, tmpdir):
+    print(f"tmpdir: {tmpdir}, type(tmpdir): {type(tmpdir)}")
+    print(f"tmpdir.join(cache): {tmpdir.join('.cache')}, type: {type(tmpdir.join('.cache'))}")  
     cache = str(tmpdir.join(".cache").mkdir())
     test_path = os.path.join(cache, "test_credentials")
     test_path_config = os.path.join(cache, "test_config")
