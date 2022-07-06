@@ -181,6 +181,7 @@ def test_part_of_day():
     pod = PartOfDay()
     dates = pd.Series(
         [
+            datetime(2020, 1, 11, 0, 2, 1),
             datetime(2020, 1, 11, 1, 2, 1),
             datetime(2021, 3, 31, 4, 2, 1),
             datetime(2020, 3, 4, 6, 2, 1),
@@ -195,6 +196,7 @@ def test_part_of_day():
     actual = pod(dates)
     expected = pd.Series(
         [
+            "midnight",
             "midnight",
             "dawn",
             "early morning",
