@@ -332,20 +332,23 @@ class IsLeapYear(TransformPrimitive):
 
 
 class IsLunchTime(TransformPrimitive):
-    """Determines if a datetime falls during configurable lunch hour
+    """Determines if a datetime falls during configurable lunch hour, on a 24-hour clock.
 
     Args:
-        lunch_hour (int): Time when lunch is taken. Defaults to 12
+        lunch_hour (int): Hour when lunch is taken. Must adhere to 24-hour clock. Defaults to 12.
 
     Examples:
         >>> from datetime import datetime
         >>> dates = [datetime(2022, 6, 21, 12, 3, 3),
         ...          datetime(2019, 1, 3, 4, 4, 4),
-        ...          datetime(2022, 1, 1, 12, 1, 2),
+        ...          datetime(2022, 1, 1, 11, 1, 2),
         ...          np.nan]
-        >>> ilt = IsLunchTime()
-        >>> ilt(dates).tolist()
-        [True, False, True, False]
+        >>> is_lunch_time = IsLunchTime()
+        >>> is_lunch_time(dates).tolist()
+        [True, False, False, False]
+        >>> is_lunch_time = IsLunchTime(11)
+        >>> is_lunch_time(dates).tolist()
+        [False, False, True, False]
     """
 
     name = "is_lunch_time"
@@ -493,20 +496,23 @@ class IsWeekend(TransformPrimitive):
 
 
 class IsWorkingHours(TransformPrimitive):
-    """Determines if a datetime falls during configurable working hours
+    """Determines if a datetime falls during working hours. Can configure start_hour and end_hour.
 
     Args:
-        start_time (int): Start hour of workday. Default is 8 (8am)
-        end_time (int): End hour of workday. Default is 18 (6pm)
+        start_hour (int): Start hour of workday. Must adhere to 24-hour clock. Default is 8 (8am).
+        end_hour (int): End hour of workday. Must adhere to 24-hour clock. Default is 18 (6pm).
 
     Examples:
         >>> from datetime import datetime
         >>> dates = [datetime(2022, 6, 21, 16, 3, 3),
         ...          datetime(2019, 1, 3, 4, 4, 4),
         ...          datetime(2022, 1, 1, 12, 1, 2)]
-        >>> iwh = IsWorkingHours()
-        >>> iwh(dates).tolist()
+        >>> is_working_hour = IsWorkingHours()
+        >>> is_working_hour(dates).tolist()
         [True, False, True]
+        >>> is_working_hour = IsWorkingHours(15, 17)
+        >>> is_working_hour(dates).tolist()
+        [True, False, False]
     """
 
     name = "is_working_hours"
