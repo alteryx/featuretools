@@ -678,7 +678,7 @@ class PartOfDay(TransformPrimitive):
             tdict[hour] = "evening"
         for hour in [20, 21, 22]:
             tdict[hour] = "night"
-        for hour in [23, 24, 1, 2, 3]:
+        for hour in [23, 0, 1, 2, 3]:
             tdict[hour] = "midnight"
         return tdict
 

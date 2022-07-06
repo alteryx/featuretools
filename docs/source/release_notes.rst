@@ -14,6 +14,16 @@ Future Release
     Thanks to the following people for contributing to this release:
     :user:`sbadithe`
 
+
+v1.11.1 Jul 5, 2022
+===================
+    * Fixes
+        * Remove 24th hour from PartOfDay primitive and add 0th hour (:pr:`2167`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`tamargrey`
+
+
 v1.11.0 Jun 30, 2022
 ====================
     * Enhancements
