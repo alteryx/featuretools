@@ -9,7 +9,6 @@ from featuretools import (
     IdentityFeature,
     TransformFeature,
     __version__,
-    primitives,
 )
 from featuretools.feature_base.features_deserializer import FeaturesDeserializer
 from featuretools.feature_base.features_serializer import SCHEMA_VERSION
@@ -223,7 +222,7 @@ def test_unknown_primitive_type(es):
         FeaturesDeserializer(dictionary)
 
     error_text = (
-        'Primitive "FakePrimitive" in module "%s" not found' % primitives.Max.__module__
+        'Primitive "FakePrimitive" in module "%s" not found' % Max.__module__
     )
     assert error_text == str(excinfo.value)
 

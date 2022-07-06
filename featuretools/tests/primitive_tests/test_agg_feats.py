@@ -303,7 +303,7 @@ def test_invalid_init_args(diamond_es):
         AggregationFeature(
             IdentityFeature(diamond_es["transactions"].ww["amount"]),
             "customers",
-            primitives.Mean,
+            Mean,
             relationship_path=path,
         )
 
@@ -315,7 +315,7 @@ def test_invalid_init_args(diamond_es):
         AggregationFeature(
             IdentityFeature(diamond_es["transactions"].ww["amount"]),
             "regions",
-            primitives.Mean,
+            Mean,
             relationship_path=path,
         )
 
@@ -327,7 +327,7 @@ def test_invalid_init_args(diamond_es):
         AggregationFeature(
             IdentityFeature(diamond_es["transactions"].ww["amount"]),
             "transactions",
-            primitives.Mean,
+            Mean,
             relationship_path=path,
         )
 
@@ -341,7 +341,7 @@ def test_init_with_multiple_possible_paths(diamond_es):
         AggregationFeature(
             IdentityFeature(diamond_es["transactions"].ww["amount"]),
             "regions",
-            primitives.Mean,
+            Mean,
         )
 
     # Does not raise if path specified.
@@ -349,7 +349,7 @@ def test_init_with_multiple_possible_paths(diamond_es):
     AggregationFeature(
         IdentityFeature(diamond_es["transactions"].ww["amount"]),
         "regions",
-        primitives.Mean,
+        Mean,
         relationship_path=path,
     )
 
@@ -360,7 +360,7 @@ def test_init_with_single_possible_path(diamond_es):
     feat = AggregationFeature(
         IdentityFeature(diamond_es["transactions"].ww["amount"]),
         "customers",
-        primitives.Mean,
+        Mean,
     )
     expected_path = backward_path(diamond_es, ["customers", "transactions"])
     assert feat.relationship_path == expected_path
@@ -372,7 +372,7 @@ def test_init_with_no_path(diamond_es):
         AggregationFeature(
             IdentityFeature(diamond_es["customers"].ww["name"]),
             "transactions",
-            primitives.Count,
+            Count,
         )
 
     error_text = 'No backward path from "transactions" to "transactions" found.'
@@ -380,7 +380,7 @@ def test_init_with_no_path(diamond_es):
         AggregationFeature(
             IdentityFeature(diamond_es["transactions"].ww["amount"]),
             "transactions",
-            primitives.Mean,
+            Mean,
         )
 
 
@@ -389,7 +389,7 @@ def test_name_with_multiple_possible_paths(diamond_es):
     feat = AggregationFeature(
         IdentityFeature(diamond_es["transactions"].ww["amount"]),
         "regions",
-        primitives.Mean,
+        Mean,
         relationship_path=path,
     )
 
@@ -406,7 +406,7 @@ def test_copy(games_es):
         IdentityFeature(games_es["games"].ww["home_team_score"]),
         "teams",
         relationship_path=path,
-        primitive=primitives.Mean,
+        primitive=Mean,
     )
     copied = feat.copy()
     assert copied.dataframe_name == feat.dataframe_name
@@ -417,7 +417,7 @@ def test_copy(games_es):
 
 def test_serialization(es):
     value = IdentityFeature(es["log"].ww["value"])
-    primitive = primitives.Max()
+    primitive = Max()
     max1 = AggregationFeature(value, "customers", primitive)
 
     path = next(es.find_backward_paths("customers", "log"))

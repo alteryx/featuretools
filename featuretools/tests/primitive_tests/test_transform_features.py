@@ -15,7 +15,6 @@ from featuretools import (
     TransformFeature,
     calculate_feature_matrix,
     dfs,
-    primitives,
 )
 from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
