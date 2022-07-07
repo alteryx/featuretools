@@ -1,6 +1,6 @@
 import numpy as np
 
-import featuretools as ft
+from featuretools import dfs
 from featuretools.computational_backends import replace_inf_values
 from featuretools.primitives import DivideByFeature, DivideNumericScalar
 from featuretools.tests.testing_utils import to_pandas
@@ -16,7 +16,7 @@ def test_replace_inf_values(divide_by_zero_es):
         div_by_feature,
         div_by_feature_neg,
     ]:
-        fm, _ = ft.dfs(
+        fm, _ = dfs(
             entityset=divide_by_zero_es,
             target_dataframe_name="zero",
             trans_primitives=[primitive],
@@ -36,7 +36,7 @@ def test_replace_inf_values(divide_by_zero_es):
 
 def test_replace_inf_values_specify_cols(divide_by_zero_es):
     div_by_scalar = DivideNumericScalar(value=0)
-    fm, _ = ft.dfs(
+    fm, _ = dfs(
         entityset=divide_by_zero_es,
         target_dataframe_name="zero",
         trans_primitives=[div_by_scalar],

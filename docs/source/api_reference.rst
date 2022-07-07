@@ -128,11 +128,13 @@ Datetime Transform Primitives
     Minute
     Weekday
     IsLeapYear
+    IsLunchTime
     IsMonthEnd
     IsMonthStart
     IsQuarterEnd
     IsQuarterStart
     IsWeekend
+    IsWorkingHours
     IsYearEnd
     IsYearStart
     Hour
@@ -184,6 +186,7 @@ Cumulative Transform Primitives
     :toctree: generated/
 
     Diff
+    DiffDatetime
     TimeSincePrevious
     CumCount
     CumSum

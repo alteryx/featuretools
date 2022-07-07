@@ -11,10 +11,12 @@ from featuretools.primitives import (
     EmailAddressToDomain,
     IsFreeEmailDomain,
     IsLeapYear,
+    IsLunchTime,
     IsMonthEnd,
     IsMonthStart,
     IsQuarterEnd,
     IsQuarterStart,
+    IsWorkingHours,
     IsYearEnd,
     IsYearStart,
     NumericLag,
@@ -175,6 +177,64 @@ def test_is_quarter_start():
     iqs_bools = iqs(dates)
     correct_bools = [True, False]
     np.testing.assert_array_equal(iqs_bools, correct_bools)
+
+
+def test_is_lunch_time_default():
+    is_lunch_time = IsLunchTime()
+    dates = pd.Series(
+        [
+            datetime(2022, 6, 26, 12, 12, 12),
+            datetime(2022, 6, 28, 12, 3, 4),
+            datetime(2022, 6, 28, 11, 3, 4),
+            np.nan,
+        ]
+    )
+    actual = is_lunch_time(dates)
+    expected = [True, True, False, False]
+    np.testing.assert_array_equal(actual, expected)
+
+
+def test_is_lunch_time_configurable():
+    is_lunch_time = IsLunchTime(14)
+    dates = pd.Series(
+        [
+            datetime(2022, 6, 26, 12, 12, 12),
+            datetime(2022, 6, 28, 14, 3, 4),
+            datetime(2022, 6, 28, 11, 3, 4),
+            np.nan,
+        ]
+    )
+    actual = is_lunch_time(dates)
+    expected = [False, True, False, False]
+    np.testing.assert_array_equal(actual, expected)
+
+
+def test_is_working_hours_standard_hours():
+    is_working_hours = IsWorkingHours()
+    dates = pd.Series(
+        [
+            datetime(2022, 6, 21, 16, 3, 3),
+            datetime(2019, 1, 3, 4, 4, 4),
+            datetime(2022, 1, 1, 12, 1, 2),
+        ]
+    )
+    actual = is_working_hours(dates).tolist()
+    expected = [True, False, True]
+    np.testing.assert_array_equal(actual, expected)
+
+
+def test_is_working_hours_configured_hours():
+    is_working_hours = IsWorkingHours(15, 18)
+    dates = pd.Series(
+        [
+            datetime(2022, 6, 21, 16, 3, 3),
+            datetime(2022, 6, 26, 14, 4, 4),
+            datetime(2022, 1, 1, 12, 1, 2),
+        ]
+    )
+    answer = is_working_hours(dates).tolist()
+    expected = [True, False, False]
+    np.testing.assert_array_equal(answer, expected)
 
 
 def test_part_of_day():
