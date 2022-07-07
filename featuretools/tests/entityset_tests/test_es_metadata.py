@@ -2,7 +2,6 @@ import pandas as pd
 import pytest
 from dask import dataframe as dd
 
-import featuretools as ft
 from featuretools import EntitySet
 from featuretools.tests.testing_utils import backward_path, forward_path
 
@@ -163,7 +162,7 @@ def employee_df(request):
 def test_find_forward_paths_ignores_loops(employee_df):
     dataframes = {"employees": (employee_df, "id")}
     relationships = [("employees", "id", "employees", "manager_id")]
-    es = ft.EntitySet(dataframes=dataframes, relationships=relationships)
+    es = EntitySet(dataframes=dataframes, relationships=relationships)
 
     paths = list(es.find_forward_paths("employees", "employees"))
     assert len(paths) == 1

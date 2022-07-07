@@ -1,6 +1,12 @@
 import pandas as pd
 
-import featuretools as ft
+from featuretools import (
+    AggregationFeature,
+    Feature,
+    IdentityFeature,
+    TransformFeature,
+    __version__,
+)
 from featuretools.entityset.deserialize import description_to_entityset
 from featuretools.feature_base.features_serializer import FeaturesSerializer
 from featuretools.primitives import (
@@ -16,11 +22,11 @@ SCHEMA_VERSION = "9.0.0"
 
 
 def test_single_feature(es):
-    feature = ft.IdentityFeature(es["log"].ww["value"])
+    feature = IdentityFeature(es["log"].ww["value"])
     serializer = FeaturesSerializer([feature])
 
     expected = {
-        "ft_version": ft.__version__,
+        "ft_version": __version__,
         "schema_version": SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [feature.unique_name()],
@@ -32,13 +38,13 @@ def test_single_feature(es):
 
 
 def test_base_features_in_list(es):
-    value = ft.IdentityFeature(es["log"].ww["value"])
-    max_feature = ft.AggregationFeature(value, "sessions", Max)
+    value = IdentityFeature(es["log"].ww["value"])
+    max_feature = AggregationFeature(value, "sessions", Max)
     features = [max_feature, value]
     serializer = FeaturesSerializer(features)
 
     expected = {
-        "ft_version": ft.__version__,
+        "ft_version": __version__,
         "schema_version": SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [max_feature.unique_name(), value.unique_name()],
@@ -57,15 +63,15 @@ def test_base_features_in_list(es):
 
 
 def test_multi_output_features(es):
-    product_id = ft.IdentityFeature(es["log"].ww["product_id"])
+    product_id = IdentityFeature(es["log"].ww["product_id"])
     threecommon = NMostCommon()
     num_unique = NumUnique()
-    tc = ft.Feature(product_id, parent_dataframe_name="sessions", primitive=threecommon)
+    tc = Feature(product_id, parent_dataframe_name="sessions", primitive=threecommon)
 
     features = [tc, product_id]
     for i in range(3):
         features.append(
-            ft.Feature(
+            Feature(
                 tc[i],
                 parent_dataframe_name="customers",
                 primitive=num_unique,
@@ -80,7 +86,7 @@ def test_multi_output_features(es):
     fdict = dict(zip(flist, fd))
 
     expected = {
-        "ft_version": ft.__version__,
+        "ft_version": __version__,
         "schema_version": SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": flist,
@@ -103,14 +109,14 @@ def test_multi_output_features(es):
 def test_base_features_not_in_list(es):
     max_primitive = Max()
     mult_primitive = MultiplyNumericScalar(value=2)
-    value = ft.IdentityFeature(es["log"].ww["value"])
-    value_x2 = ft.TransformFeature(value, mult_primitive)
-    max_feature = ft.AggregationFeature(value_x2, "sessions", max_primitive)
+    value = IdentityFeature(es["log"].ww["value"])
+    value_x2 = TransformFeature(value, mult_primitive)
+    max_feature = AggregationFeature(value_x2, "sessions", max_primitive)
     features = [max_feature]
     serializer = FeaturesSerializer(features)
 
     expected = {
-        "ft_version": ft.__version__,
+        "ft_version": __version__,
         "schema_version": SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [max_feature.unique_name()],
@@ -137,16 +143,16 @@ def test_base_features_not_in_list(es):
 
 def test_where_feature_dependency(es):
     max_primitive = Max()
-    value = ft.IdentityFeature(es["log"].ww["value"])
-    is_purchased = ft.IdentityFeature(es["log"].ww["purchased"])
-    max_feature = ft.AggregationFeature(
+    value = IdentityFeature(es["log"].ww["value"])
+    is_purchased = IdentityFeature(es["log"].ww["purchased"])
+    max_feature = AggregationFeature(
         value, "sessions", max_primitive, where=is_purchased
     )
     features = [max_feature]
     serializer = FeaturesSerializer(features)
 
     expected = {
-        "ft_version": ft.__version__,
+        "ft_version": __version__,
         "schema_version": SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [max_feature.unique_name()],
@@ -168,17 +174,17 @@ def test_where_feature_dependency(es):
 
 
 def test_feature_use_previous_pd_timedelta(es):
-    value = ft.IdentityFeature(es["log"].ww["id"])
+    value = IdentityFeature(es["log"].ww["id"])
     td = pd.Timedelta(12, "W")
     count_primitive = Count()
-    count_feature = ft.AggregationFeature(
+    count_feature = AggregationFeature(
         value, "customers", count_primitive, use_previous=td
     )
     features = [count_feature, value]
     serializer = FeaturesSerializer(features)
 
     expected = {
-        "ft_version": ft.__version__,
+        "ft_version": __version__,
         "schema_version": SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [count_feature.unique_name(), value.unique_name()],
@@ -197,17 +203,17 @@ def test_feature_use_previous_pd_timedelta(es):
 
 
 def test_feature_use_previous_pd_dateoffset(es):
-    value = ft.IdentityFeature(es["log"].ww["id"])
+    value = IdentityFeature(es["log"].ww["id"])
     do = pd.DateOffset(months=3)
     count_primitive = Count()
-    count_feature = ft.AggregationFeature(
+    count_feature = AggregationFeature(
         value, "customers", count_primitive, use_previous=do
     )
     features = [count_feature, value]
     serializer = FeaturesSerializer(features)
 
     expected = {
-        "ft_version": ft.__version__,
+        "ft_version": __version__,
         "schema_version": SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [count_feature.unique_name(), value.unique_name()],
@@ -224,16 +230,16 @@ def test_feature_use_previous_pd_dateoffset(es):
     actual = serializer.to_dict()
     _compare_feature_dicts(expected, actual)
 
-    value = ft.IdentityFeature(es["log"].ww["id"])
+    value = IdentityFeature(es["log"].ww["id"])
     do = pd.DateOffset(months=3, days=2, minutes=30)
-    count_feature = ft.AggregationFeature(
+    count_feature = AggregationFeature(
         value, "customers", count_primitive, use_previous=do
     )
     features = [count_feature, value]
     serializer = FeaturesSerializer(features)
 
     expected = {
-        "ft_version": ft.__version__,
+        "ft_version": __version__,
         "schema_version": SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [count_feature.unique_name(), value.unique_name()],
