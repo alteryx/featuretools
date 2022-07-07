@@ -8,6 +8,7 @@ Future Release
         This release of Featuretools will not support Python 3.7
         
     * Enhancements
+        * Add ``IsWorkingHours`` and ``IsLunchTime`` transform primitives (:pr:`2130`)  
     * Fixes
     * Changes
         * Drop Python 3.7 support (:pr:`2169`)
