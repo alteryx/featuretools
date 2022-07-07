@@ -13,8 +13,8 @@ Future Release
     * Testing Changes
        * Standardize imports across test files to simplify accessing featuretools functions (:pr:`2166`) 
 
-  Thanks to the following people for contributing to this release:
-  :user:`sbadithe`
+    Thanks to the following people for contributing to this release:
+    :user:`sbadithe`
 
 v1.11.1 Jul 5, 2022
 ===================
