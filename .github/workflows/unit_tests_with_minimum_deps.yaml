@@ -7,7 +7,7 @@ on:
       - main
 jobs:
   py37_unit_tests_minimum_dependencies:
-    name: Unit Tests - 3.7 Minimum Dependencies
+    name: Unit Tests - 3.8 Minimum Dependencies
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -18,10 +18,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-      - name: Set up python 3.7
+      - name: Set up python 3.8
         uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: 3.8
       - name: Config pip, upgrade pip, and install graphviz
         run: |
           sudo apt update
