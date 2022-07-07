@@ -438,24 +438,26 @@ def test_diff_datetime(pd_es):
     feature_set = FeatureSet([diff])
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array(range(15)))
-    vals = df[diff.get_name()].tolist()
-    expected_vals = [
-        np.datetime64("NaT"),
-        pd.Timedelta(seconds=6),
-        pd.Timedelta(seconds=6),
-        pd.Timedelta(seconds=6),
-        pd.Timedelta(seconds=6),
-        pd.Timedelta(seconds=36),
-        pd.Timedelta(seconds=9),
-        pd.Timedelta(seconds=9),
-        pd.Timedelta(seconds=9),
-        pd.Timedelta(minutes=8, seconds=33),
-        pd.Timedelta(days=1),
-        pd.Timedelta(seconds=1),
-        pd.Timedelta(seconds=59),
-        pd.Timedelta(seconds=3),
-        pd.Timedelta(seconds=3),
-    ]
+    vals = pd.array(df[diff.get_name()].tolist())
+    expected_vals = pd.array(
+        [
+            pd.NaT,
+            pd.Timedelta(seconds=6),
+            pd.Timedelta(seconds=6),
+            pd.Timedelta(seconds=6),
+            pd.Timedelta(seconds=6),
+            pd.Timedelta(seconds=36),
+            pd.Timedelta(seconds=9),
+            pd.Timedelta(seconds=9),
+            pd.Timedelta(seconds=9),
+            pd.Timedelta(minutes=8, seconds=33),
+            pd.Timedelta(days=1),
+            pd.Timedelta(seconds=1),
+            pd.Timedelta(seconds=59),
+            pd.Timedelta(seconds=3),
+            pd.Timedelta(seconds=3),
+        ]
+    )
     pd.util.testing.assert_equal(vals, expected_vals)
 
 
