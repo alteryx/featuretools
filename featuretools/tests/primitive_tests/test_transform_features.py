@@ -388,11 +388,9 @@ def test_diff(pd_es):
 
 
 def test_diff_shift(pd_es):
-    value = ft.Feature(pd_es["log"].ww["value"])
-    customer_id_feat = ft.Feature(pd_es["sessions"].ww["customer_id"], "log")
-    diff_periods = ft.Feature(
-        value, groupby=customer_id_feat, primitive=Diff(periods=1)
-    )
+    value = Feature(pd_es["log"].ww["value"])
+    customer_id_feat = Feature(pd_es["sessions"].ww["customer_id"], "log")
+    diff_periods = Feature(value, groupby=customer_id_feat, primitive=Diff(periods=1))
 
     feature_set = FeatureSet([diff_periods])
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
@@ -441,7 +439,7 @@ def test_diff_single_value_is_nan(pd_es):
 
 
 def test_diff_datetime(pd_es):
-    diff = ft.Feature(
+    diff = Feature(
         pd_es["log"].ww["datetime"],
         primitive=DiffDatetime,
     )
@@ -472,7 +470,7 @@ def test_diff_datetime(pd_es):
 
 
 def test_diff_datetime_shift(pd_es):
-    diff = ft.Feature(
+    diff = Feature(
         pd_es["log"].ww["datetime"],
         primitive=DiffDatetime(periods=1),
     )
