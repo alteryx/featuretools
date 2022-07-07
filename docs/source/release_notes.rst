@@ -11,10 +11,12 @@ Future Release
     * Changes
         * Drop Python 3.7 support (:pr:`2169`)
     * Documentation Changes
+      * Augment single table entry in DFS to include information about passing in a dictionary for `dataframes` argument (:pr:`2160`)
     * Testing Changes
+       * Standardize imports across test files to simplify accessing featuretools functions (:pr:`2166`) 
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`sbadithe`
 
 v1.11.1 Jul 5, 2022
 ===================
@@ -42,7 +44,7 @@ v1.11.0 Jun 30, 2022
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`, :user:`thehomebrewnerd`
-
+    
 v1.10.0 Jun 23, 2022
 ====================
     * Enhancements
