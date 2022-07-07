@@ -469,15 +469,17 @@ def test_diff_datetime_shift(pd_es):
     feature_set = FeatureSet([diff])
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array(range(6)))
-    vals = df[diff.get_name()].tolist()
-    expected_vals = [
-        np.datetime64("NaT"),
-        np.datetime64("NaT"),
-        pd.Timedelta(seconds=6),
-        pd.Timedelta(seconds=6),
-        pd.Timedelta(seconds=6),
-        pd.Timedelta(seconds=6),
-    ]
+    vals = pd.array(df[diff.get_name()].tolist())
+    expected_vals = pd.array(
+        [
+            pd.NaT,
+            pd.NaT,
+            pd.Timedelta(seconds=6),
+            pd.Timedelta(seconds=6),
+            pd.Timedelta(seconds=6),
+            pd.Timedelta(seconds=6),
+        ]
+    )
     pd.util.testing.assert_equal(vals, expected_vals)
 
 
