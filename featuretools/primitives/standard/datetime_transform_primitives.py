@@ -513,7 +513,7 @@ class IsWorkingHours(TransformPrimitive):
         [True, False, True, False]
         >>> is_working_hour = IsWorkingHours(15, 17)
         >>> is_working_hour(dates).tolist()
-        [True, False, False]
+        [True, False, False, False]
     """
 
     name = "is_working_hours"
