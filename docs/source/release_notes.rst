@@ -4,6 +4,7 @@ Release Notes
 -------------
 Future Release
 ==============
+
     .. warning::
         This release of Featuretools will not support Python 3.7
     * Enhancements
