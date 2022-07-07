@@ -7,7 +7,7 @@ import pytest
 from distributed import LocalCluster
 from woodwork.logical_types import Boolean, Integer
 
-import featuretools as ft
+from featuretools import EntitySet, demo
 from featuretools.tests.testing_utils import make_ecommerce_entityset, to_pandas
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.spark_utils import pd_to_spark_clean
@@ -65,7 +65,7 @@ def pd_int_es(make_int_es):
 
 @pytest.fixture
 def dask_int_es(pd_int_es):
-    es = ft.EntitySet(id=pd_int_es.id)
+    es = EntitySet(id=pd_int_es.id)
     for df in pd_int_es.dataframes:
         dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
         dd_df.ww.init(schema=df.ww.schema)
@@ -84,7 +84,7 @@ def dask_int_es(pd_int_es):
 @pytest.fixture
 def spark_int_es(pd_int_es):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    es = ft.EntitySet(id=pd_int_es.id)
+    es = EntitySet(id=pd_int_es.id)
     for df in pd_int_es.dataframes:
         cleaned_df = pd_to_spark_clean(df).reset_index(drop=True)
         spark_df = ps.from_pandas(cleaned_df)
@@ -108,7 +108,7 @@ def int_es(request):
 
 @pytest.fixture
 def dask_es(pd_es):
-    es = ft.EntitySet(id=pd_es.id)
+    es = EntitySet(id=pd_es.id)
     for df in pd_es.dataframes:
         dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
         dd_df.ww.init(schema=df.ww.schema)
@@ -127,7 +127,7 @@ def dask_es(pd_es):
 @pytest.fixture
 def spark_es(pd_es):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    es = ft.EntitySet(id=pd_es.id)
+    es = EntitySet(id=pd_es.id)
     for df in pd_es.dataframes:
         cleaned_df = pd_to_spark_clean(df).reset_index(drop=True)
         spark_df = ps.from_pandas(cleaned_df)
@@ -228,7 +228,7 @@ def pd_diamond_es():
         ("stores", "id", "transactions", "store_id"),
         ("customers", "id", "transactions", "customer_id"),
     ]
-    return ft.EntitySet(
+    return EntitySet(
         id="ecommerce_diamond", dataframes=dataframes, relationships=relationships
     )
 
@@ -251,7 +251,7 @@ def dask_diamond_es(pd_diamond_es):
         for rel in pd_diamond_es.relationships
     ]
 
-    return ft.EntitySet(
+    return EntitySet(
         id=pd_diamond_es.id, dataframes=dataframes, relationships=relationships
     )
 
@@ -275,7 +275,7 @@ def spark_diamond_es(pd_diamond_es):
         for rel in pd_diamond_es.relationships
     ]
 
-    return ft.EntitySet(
+    return EntitySet(
         id=pd_diamond_es.id, dataframes=dataframes, relationships=relationships
     )
 
@@ -295,7 +295,7 @@ def pd_default_value_es():
 
     sessions = pd.DataFrame({"id": ["a", "b"]})
 
-    es = ft.EntitySet()
+    es = EntitySet()
     es.add_dataframe(dataframe_name="transactions", dataframe=transactions, index="id")
     es.add_dataframe(dataframe_name="sessions", dataframe=sessions, index="id")
 
@@ -321,7 +321,7 @@ def dask_default_value_es(pd_default_value_es):
         for rel in pd_default_value_es.relationships
     ]
 
-    return ft.EntitySet(
+    return EntitySet(
         id=pd_default_value_es.id, dataframes=dataframes, relationships=relationships
     )
 
@@ -345,7 +345,7 @@ def spark_default_value_es(pd_default_value_es):
         for rel in pd_default_value_es.relationships
     ]
 
-    return ft.EntitySet(
+    return EntitySet(
         id=pd_default_value_es.id, dataframes=dataframes, relationships=relationships
     )
 
@@ -371,7 +371,7 @@ def pd_home_games_es():
     )
     dataframes = {"teams": (teams, "id"), "games": (games, "id")}
     relationships = [("teams", "id", "games", "home_team_id")]
-    return ft.EntitySet(dataframes=dataframes, relationships=relationships)
+    return EntitySet(dataframes=dataframes, relationships=relationships)
 
 
 @pytest.fixture
@@ -392,7 +392,7 @@ def dask_home_games_es(pd_home_games_es):
         for rel in pd_home_games_es.relationships
     ]
 
-    return ft.EntitySet(
+    return EntitySet(
         id=pd_home_games_es.id, dataframes=dataframes, relationships=relationships
     )
 
@@ -416,7 +416,7 @@ def spark_home_games_es(pd_home_games_es):
         for rel in pd_home_games_es.relationships
     ]
 
-    return ft.EntitySet(
+    return EntitySet(
         id=pd_home_games_es.id, dataframes=dataframes, relationships=relationships
     )
 
@@ -428,7 +428,7 @@ def games_es(home_games_es):
 
 @pytest.fixture
 def pd_mock_customer():
-    return ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
+    return demo.load_mock_customer(return_entityset=True, random_seed=0)
 
 
 @pytest.fixture
@@ -453,7 +453,7 @@ def dd_mock_customer(pd_mock_customer):
         for rel in pd_mock_customer.relationships
     ]
 
-    return ft.EntitySet(
+    return EntitySet(
         id=pd_mock_customer.id, dataframes=dataframes, relationships=relationships
     )
 
@@ -481,7 +481,7 @@ def spark_mock_customer(pd_mock_customer):
         for rel in pd_mock_customer.relationships
     ]
 
-    return ft.EntitySet(
+    return EntitySet(
         id=pd_mock_customer.id, dataframes=dataframes, relationships=relationships
     )
 
@@ -621,7 +621,7 @@ def pd_transform_es():
             "P": [10, 15, 12],
         }
     )
-    es = ft.EntitySet(id="test")
+    es = EntitySet(id="test")
     # Add dataframe to entityset
     es.add_dataframe(
         dataframe_name="first", dataframe=df, index="index", make_index=True
@@ -632,7 +632,7 @@ def pd_transform_es():
 
 @pytest.fixture
 def dask_transform_es(pd_transform_es):
-    es = ft.EntitySet(id=pd_transform_es.id)
+    es = EntitySet(id=pd_transform_es.id)
     for df in pd_transform_es.dataframes:
         es.add_dataframe(
             dataframe_name=df.ww.name,
@@ -646,7 +646,7 @@ def dask_transform_es(pd_transform_es):
 @pytest.fixture
 def spark_transform_es(pd_transform_es):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    es = ft.EntitySet(id=pd_transform_es.id)
+    es = EntitySet(id=pd_transform_es.id)
     for df in pd_transform_es.dataframes:
         es.add_dataframe(
             dataframe_name=df.ww.name,
@@ -673,12 +673,12 @@ def divide_by_zero_es_pd():
             "col2": [0, 0, 0, 4],
         }
     )
-    return ft.EntitySet("data", {"zero": (df, "id", None)})
+    return EntitySet("data", {"zero": (df, "id", None)})
 
 
 @pytest.fixture
 def divide_by_zero_es_dask(divide_by_zero_es_pd):
-    es = ft.EntitySet(id=divide_by_zero_es_pd.id)
+    es = EntitySet(id=divide_by_zero_es_pd.id)
     for df in divide_by_zero_es_pd.dataframes:
         es.add_dataframe(
             dataframe_name=df.ww.name,
@@ -692,7 +692,7 @@ def divide_by_zero_es_dask(divide_by_zero_es_pd):
 @pytest.fixture
 def divide_by_zero_es_spark(divide_by_zero_es_pd):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    es = ft.EntitySet(id=divide_by_zero_es_pd.id)
+    es = EntitySet(id=divide_by_zero_es_pd.id)
     for df in divide_by_zero_es_pd.dataframes:
         es.add_dataframe(
             dataframe_name=df.ww.name,

@@ -22,8 +22,14 @@ from woodwork.logical_types import (
     IntegerNullable,
 )
 
-import featuretools as ft
-from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
+from featuretools import (
+    EntitySet,
+    Feature,
+    GroupByTransformFeature,
+    Timedelta,
+    calculate_feature_matrix,
+    dfs,
+)
 from featuretools.computational_backends import utils
 from featuretools.computational_backends.calculate_feature_matrix import (
     FEATURE_CALCULATION_PERCENTAGE,
@@ -86,7 +92,7 @@ def test_calc_feature_matrix(es):
     cutoff_time = pd.DataFrame({"time": times, es["log"].ww.index: instances})
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
 
-    property_feature = ft.Feature(es["log"].ww["value"]) > 10
+    property_feature = Feature(es["log"].ww["value"]) > 10
 
     feature_matrix = calculate_feature_matrix(
         [property_feature], es, cutoff_time=cutoff_time, verbose=True
@@ -159,7 +165,7 @@ def test_cfm_warns_dask_cutoff_time(es):
     cutoff_time = pd.DataFrame({"time": times, es["log"].ww.index: instances})
     cutoff_time = dd.from_pandas(cutoff_time, npartitions=4)
 
-    property_feature = ft.Feature(es["log"].ww["value"]) > 10
+    property_feature = Feature(es["log"].ww["value"]) > 10
 
     match = (
         "cutoff_time should be a Pandas DataFrame: "
@@ -170,7 +176,7 @@ def test_cfm_warns_dask_cutoff_time(es):
 
 
 def test_cfm_compose(es, lt):
-    property_feature = ft.Feature(es["log"].ww["value"]) > 10
+    property_feature = Feature(es["log"].ww["value"]) > 10
 
     feature_matrix = calculate_feature_matrix(
         [property_feature], es, cutoff_time=lt, verbose=True
@@ -186,7 +192,7 @@ def test_cfm_compose_approximate(es, lt):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("dask does not support approximate")
 
-    property_feature = ft.Feature(es["log"].ww["value"]) > 10
+    property_feature = Feature(es["log"].ww["value"]) > 10
 
     feature_matrix = calculate_feature_matrix(
         [property_feature], es, cutoff_time=lt, approximate="1s", verbose=True
@@ -200,7 +206,7 @@ def test_cfm_compose_approximate(es, lt):
 
 
 def test_cfm_dask_compose(dask_es, lt):
-    property_feature = ft.Feature(dask_es["log"].ww["value"]) > 10
+    property_feature = Feature(dask_es["log"].ww["value"]) > 10
 
     feature_matrix = calculate_feature_matrix(
         [property_feature], dask_es, cutoff_time=lt, verbose=True
@@ -275,10 +281,10 @@ def test_cfm_approximate_correct_ordering():
 
 # uses approximate, skip for dask/spark entitysets
 def test_cfm_no_cutoff_time_index(pd_es):
-    agg_feat = ft.Feature(
+    agg_feat = Feature(
         pd_es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
     )
-    agg_feat4 = ft.Feature(agg_feat, parent_dataframe_name="customers", primitive=Sum)
+    agg_feat4 = Feature(agg_feat, parent_dataframe_name="customers", primitive=Sum)
     dfeat = DirectFeature(agg_feat4, "sessions")
     cutoff_time = pd.DataFrame(
         {
@@ -330,7 +336,7 @@ def test_cfm_duplicated_index_in_cutoff_time(es):
     ]
 
     instances = [1, 1, 2, 2]
-    property_feature = ft.Feature(es["log"].ww["value"]) > 10
+    property_feature = Feature(es["log"].ww["value"]) > 10
     cutoff_time = pd.DataFrame({"id": instances, "time": times}, index=[1, 1, 1, 1])
 
     feature_matrix = calculate_feature_matrix(
@@ -352,7 +358,7 @@ def test_saveprogress(es, tmpdir):
         + [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)]
     )
     cutoff_time = pd.DataFrame({"time": times, "instance_id": range(17)})
-    property_feature = ft.Feature(es["log"].ww["value"]) > 10
+    property_feature = Feature(es["log"].ww["value"]) > 10
     save_progress = str(tmpdir)
     fm_save = calculate_feature_matrix(
         [property_feature], es, cutoff_time=cutoff_time, save_progress=save_progress
@@ -377,7 +383,7 @@ def test_saveprogress(es, tmpdir):
 
 
 def test_cutoff_time_correctly(es):
-    property_feature = ft.Feature(
+    property_feature = Feature(
         es["log"].ww["id"], parent_dataframe_name="customers", primitive=Count
     )
     times = [datetime(2011, 4, 10), datetime(2011, 4, 11), datetime(2011, 4, 7)]
@@ -426,7 +432,7 @@ def test_cutoff_time_binning():
 
 
 def test_training_window_fails_dask(dask_es):
-    property_feature = ft.Feature(
+    property_feature = Feature(
         dask_es["log"].ww["id"], parent_dataframe_name="customers", primitive=Count
     )
 
@@ -436,7 +442,7 @@ def test_training_window_fails_dask(dask_es):
 
 
 def test_cutoff_time_columns_order(es):
-    property_feature = ft.Feature(
+    property_feature = Feature(
         es["log"].ww["id"], parent_dataframe_name="customers", primitive=Count
     )
     times = [datetime(2011, 4, 10), datetime(2011, 4, 11), datetime(2011, 4, 7)]
@@ -462,7 +468,7 @@ def test_cutoff_time_columns_order(es):
 
 
 def test_cutoff_time_df_redundant_column_names(es):
-    property_feature = ft.Feature(
+    property_feature = Feature(
         es["log"].ww["id"], parent_dataframe_name="customers", primitive=Count
     )
     times = [datetime(2011, 4, 10), datetime(2011, 4, 11), datetime(2011, 4, 7)]
@@ -499,10 +505,10 @@ def test_cutoff_time_df_redundant_column_names(es):
 
 
 def test_training_window(pd_es):
-    property_feature = ft.Feature(
+    property_feature = Feature(
         pd_es["log"].ww["id"], parent_dataframe_name="customers", primitive=Count
     )
-    top_level_agg = ft.Feature(
+    top_level_agg = Feature(
         pd_es["customers"].ww["id"], parent_dataframe_name="régions", primitive=Count
     )
 
@@ -597,8 +603,8 @@ def test_training_window(pd_es):
 def test_training_window_overlap(pd_es):
     pd_es.add_last_time_indexes()
 
-    count_log = ft.Feature(
-        ft.Feature(pd_es["log"].ww["id"]),
+    count_log = Feature(
+        Feature(pd_es["log"].ww["id"]),
         parent_dataframe_name="customers",
         primitive=Count,
     )
@@ -638,8 +644,8 @@ def test_training_window_overlap(pd_es):
 def test_include_cutoff_time_without_training_window(es):
     es.add_last_time_indexes()
 
-    count_log = ft.Feature(
-        base=ft.Feature(es["log"].ww["id"]),
+    count_log = Feature(
+        base=Feature(es["log"].ww["id"]),
         parent_dataframe_name="customers",
         primitive=Count,
     )
@@ -699,10 +705,10 @@ def test_include_cutoff_time_without_training_window(es):
 
 
 def test_approximate_dfeat_of_agg_on_target_include_cutoff_time(pd_es):
-    agg_feat = ft.Feature(
+    agg_feat = Feature(
         pd_es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
     )
-    agg_feat2 = ft.Feature(agg_feat, parent_dataframe_name="customers", primitive=Sum)
+    agg_feat2 = Feature(agg_feat, parent_dataframe_name="customers", primitive=Sum)
     dfeat = DirectFeature(agg_feat2, "sessions")
 
     cutoff_time = pd.DataFrame(
@@ -772,10 +778,10 @@ def test_training_window_recent_time_index(pd_es):
     )
     pd_es.add_last_time_indexes()
 
-    property_feature = ft.Feature(
+    property_feature = Feature(
         pd_es["log"].ww["id"], parent_dataframe_name="customers", primitive=Count
     )
-    top_level_agg = ft.Feature(
+    top_level_agg = Feature(
         pd_es["customers"].ww["id"], parent_dataframe_name="régions", primitive=Count
     )
     dagg = DirectFeature(top_level_agg, "customers")
@@ -821,7 +827,7 @@ def test_training_window_recent_time_index(pd_es):
 
 # TODO: add test to fail w/ spark
 def test_approximate_fails_dask(dask_es):
-    agg_feat = ft.Feature(
+    agg_feat = Feature(
         dask_es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
     )
     error_text = "Using approximate is not supported with Dask dataframes"
@@ -830,10 +836,10 @@ def test_approximate_fails_dask(dask_es):
 
 
 def test_approximate_multiple_instances_per_cutoff_time(pd_es):
-    agg_feat = ft.Feature(
+    agg_feat = Feature(
         pd_es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
     )
-    agg_feat2 = ft.Feature(agg_feat, parent_dataframe_name="customers", primitive=Sum)
+    agg_feat2 = Feature(agg_feat, parent_dataframe_name="customers", primitive=Sum)
     dfeat = DirectFeature(agg_feat2, "sessions")
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
     cutoff_time = pd.DataFrame({"time": times, "instance_id": [0, 2]})
@@ -850,8 +856,8 @@ def test_approximate_multiple_instances_per_cutoff_time(pd_es):
 def test_approximate_with_multiple_paths(pd_diamond_es):
     pd_es = pd_diamond_es
     path = backward_path(pd_es, ["regions", "customers", "transactions"])
-    agg_feat = ft.AggregationFeature(
-        ft.Feature(pd_es["transactions"].ww["id"]),
+    agg_feat = AggregationFeature(
+        Feature(pd_es["transactions"].ww["id"]),
         parent_dataframe_name="regions",
         relationship_path=path,
         primitive=Count,
@@ -866,10 +872,10 @@ def test_approximate_with_multiple_paths(pd_diamond_es):
 
 
 def test_approximate_dfeat_of_agg_on_target(pd_es):
-    agg_feat = ft.Feature(
+    agg_feat = Feature(
         pd_es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
     )
-    agg_feat2 = ft.Feature(agg_feat, parent_dataframe_name="customers", primitive=Sum)
+    agg_feat2 = Feature(agg_feat, parent_dataframe_name="customers", primitive=Sum)
     dfeat = DirectFeature(agg_feat2, "sessions")
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
     cutoff_time = pd.DataFrame({"time": times, "instance_id": [0, 2]})
@@ -885,9 +891,9 @@ def test_approximate_dfeat_of_agg_on_target(pd_es):
 
 
 def test_approximate_dfeat_of_need_all_values(pd_es):
-    p = ft.Feature(pd_es["log"].ww["value"], primitive=Percentile)
-    agg_feat = ft.Feature(p, parent_dataframe_name="sessions", primitive=Sum)
-    agg_feat2 = ft.Feature(agg_feat, parent_dataframe_name="customers", primitive=Sum)
+    p = Feature(pd_es["log"].ww["value"], primitive=Percentile)
+    agg_feat = Feature(p, parent_dataframe_name="sessions", primitive=Sum)
+    agg_feat2 = Feature(agg_feat, parent_dataframe_name="customers", primitive=Sum)
     dfeat = DirectFeature(agg_feat2, "sessions")
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
     cutoff_time = pd.DataFrame({"time": times, "instance_id": [0, 2]})
@@ -934,14 +940,14 @@ def test_approximate_dfeat_of_need_all_values(pd_es):
 
 
 def test_uses_full_dataframe_feat_of_approximate(pd_es):
-    agg_feat = ft.Feature(
+    agg_feat = Feature(
         pd_es["log"].ww["value"], parent_dataframe_name="sessions", primitive=Sum
     )
-    agg_feat2 = ft.Feature(agg_feat, parent_dataframe_name="customers", primitive=Sum)
-    agg_feat3 = ft.Feature(agg_feat, parent_dataframe_name="customers", primitive=Max)
+    agg_feat2 = Feature(agg_feat, parent_dataframe_name="customers", primitive=Sum)
+    agg_feat3 = Feature(agg_feat, parent_dataframe_name="customers", primitive=Max)
     dfeat = DirectFeature(agg_feat2, "sessions")
     dfeat2 = DirectFeature(agg_feat3, "sessions")
-    p = ft.Feature(dfeat, primitive=Percentile)
+    p = Feature(dfeat, primitive=Percentile)
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
     cutoff_time = pd.DataFrame({"time": times, "instance_id": [0, 2]})
     # only dfeat2 should be approximated
@@ -995,11 +1001,11 @@ def test_uses_full_dataframe_feat_of_approximate(pd_es):
 
 
 def test_approximate_dfeat_of_dfeat_of_agg_on_target(pd_es):
-    agg_feat = ft.Feature(
+    agg_feat = Feature(
         pd_es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
     )
-    agg_feat2 = ft.Feature(agg_feat, parent_dataframe_name="customers", primitive=Sum)
-    dfeat = DirectFeature(ft.Feature(agg_feat2, "sessions"), "log")
+    agg_feat2 = Feature(agg_feat, parent_dataframe_name="customers", primitive=Sum)
+    dfeat = DirectFeature(Feature(agg_feat2, "sessions"), "log")
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
     cutoff_time = pd.DataFrame({"time": times, "instance_id": [0, 2]})
     feature_matrix = calculate_feature_matrix(
@@ -1014,10 +1020,10 @@ def test_empty_path_approximate_full(pd_es):
     )
     # Need to reassign the `foreign_key` tag as the column reassignment above removes it
     pd_es["sessions"].ww.set_types(semantic_tags={"customer_id": "foreign_key"})
-    agg_feat = ft.Feature(
+    agg_feat = Feature(
         pd_es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
     )
-    agg_feat2 = ft.Feature(agg_feat, parent_dataframe_name="customers", primitive=Sum)
+    agg_feat2 = Feature(agg_feat, parent_dataframe_name="customers", primitive=Sum)
     dfeat = DirectFeature(agg_feat2, "sessions")
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
     cutoff_time = pd.DataFrame({"time": times, "instance_id": [0, 2]})
@@ -1035,12 +1041,10 @@ def test_empty_path_approximate_full(pd_es):
 
 
 def test_approx_base_feature_is_also_first_class_feature(pd_es):
-    log_to_products = DirectFeature(ft.Feature(pd_es["products"].ww["rating"]), "log")
+    log_to_products = DirectFeature(Feature(pd_es["products"].ww["rating"]), "log")
     # This should still be computed properly
-    agg_feat = ft.Feature(
-        log_to_products, parent_dataframe_name="sessions", primitive=Min
-    )
-    customer_agg_feat = ft.Feature(
+    agg_feat = Feature(log_to_products, parent_dataframe_name="sessions", primitive=Min)
+    customer_agg_feat = Feature(
         agg_feat, parent_dataframe_name="customers", primitive=Sum
     )
     # This is to be approximated
@@ -1061,10 +1065,10 @@ def test_approx_base_feature_is_also_first_class_feature(pd_es):
 
 
 def test_approximate_time_split_returns_the_same_result(pd_es):
-    agg_feat = ft.Feature(
+    agg_feat = Feature(
         pd_es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
     )
-    agg_feat2 = ft.Feature(agg_feat, parent_dataframe_name="customers", primitive=Sum)
+    agg_feat2 = Feature(agg_feat, parent_dataframe_name="customers", primitive=Sum)
     dfeat = DirectFeature(agg_feat2, "sessions")
 
     cutoff_df = pd.DataFrame(
@@ -1101,7 +1105,7 @@ def test_approximate_time_split_returns_the_same_result(pd_es):
 
 
 def test_approximate_returns_correct_empty_default_values(pd_es):
-    agg_feat = ft.Feature(
+    agg_feat = Feature(
         pd_es["log"].ww["id"], parent_dataframe_name="customers", primitive=Count
     )
     dfeat = DirectFeature(agg_feat, "sessions")
@@ -1123,11 +1127,11 @@ def test_approximate_returns_correct_empty_default_values(pd_es):
 
 
 def test_approximate_child_aggs_handled_correctly(pd_es):
-    agg_feat = ft.Feature(
+    agg_feat = Feature(
         pd_es["customers"].ww["id"], parent_dataframe_name="régions", primitive=Count
     )
     dfeat = DirectFeature(agg_feat, "customers")
-    agg_feat_2 = ft.Feature(
+    agg_feat_2 = Feature(
         pd_es["log"].ww["value"], parent_dataframe_name="customers", primitive=Sum
     )
     cutoff_df = pd.DataFrame(
@@ -1154,7 +1158,7 @@ def test_approximate_child_aggs_handled_correctly(pd_es):
 
 
 def test_cutoff_time_naming(es):
-    agg_feat = ft.Feature(
+    agg_feat = Feature(
         es["customers"].ww["id"], parent_dataframe_name="régions", primitive=Count
     )
     dfeat = DirectFeature(agg_feat, "customers")
@@ -1196,7 +1200,7 @@ def test_cutoff_time_naming(es):
 def test_cutoff_time_extra_columns(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Distributed result not ordered")
-    agg_feat = ft.Feature(
+    agg_feat = Feature(
         es["customers"].ww["id"], parent_dataframe_name="régions", primitive=Count
     )
     dfeat = DirectFeature(agg_feat, "customers")
@@ -1221,7 +1225,7 @@ def test_cutoff_time_extra_columns(es):
 
 
 def test_cutoff_time_extra_columns_approximate(pd_es):
-    agg_feat = ft.Feature(
+    agg_feat = Feature(
         pd_es["customers"].ww["id"], parent_dataframe_name="régions", primitive=Count
     )
     dfeat = DirectFeature(agg_feat, "customers")
@@ -1250,7 +1254,7 @@ def test_cutoff_time_extra_columns_approximate(pd_es):
 def test_cutoff_time_extra_columns_same_name(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Distributed result not ordered")
-    agg_feat = ft.Feature(
+    agg_feat = Feature(
         es["customers"].ww["id"], parent_dataframe_name="régions", primitive=Count
     )
     dfeat = DirectFeature(agg_feat, "customers")
@@ -1276,7 +1280,7 @@ def test_cutoff_time_extra_columns_same_name(es):
 
 
 def test_cutoff_time_extra_columns_same_name_approximate(pd_es):
-    agg_feat = ft.Feature(
+    agg_feat = Feature(
         pd_es["customers"].ww["id"], parent_dataframe_name="régions", primitive=Count
     )
     dfeat = DirectFeature(agg_feat, "customers")
@@ -1304,7 +1308,7 @@ def test_cutoff_time_extra_columns_same_name_approximate(pd_es):
 
 
 def test_instances_after_cutoff_time_removed(es):
-    property_feature = ft.Feature(
+    property_feature = Feature(
         es["log"].ww["id"], parent_dataframe_name="customers", primitive=Count
     )
     cutoff_time = datetime(2011, 4, 8)
@@ -1326,7 +1330,7 @@ def test_instances_after_cutoff_time_removed(es):
 def test_instances_with_id_kept_after_cutoff(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail("Distributed result not ordered, missing extra instances")
-    property_feature = ft.Feature(
+    property_feature = Feature(
         es["log"].ww["id"], parent_dataframe_name="customers", primitive=Count
     )
     cutoff_time = datetime(2011, 4, 8)
@@ -1355,7 +1359,7 @@ def test_cfm_returns_original_time_indexes(es):
         pytest.xfail(
             "Distributed result not ordered, indexes are lost due to not multiindexing"
         )
-    agg_feat = ft.Feature(
+    agg_feat = Feature(
         es["customers"].ww["id"], parent_dataframe_name="régions", primitive=Count
     )
     dfeat = DirectFeature(agg_feat, "customers")
@@ -1382,11 +1386,11 @@ def test_cfm_returns_original_time_indexes(es):
 
 
 def test_cfm_returns_original_time_indexes_approximate(pd_es):
-    agg_feat = ft.Feature(
+    agg_feat = Feature(
         pd_es["customers"].ww["id"], parent_dataframe_name="régions", primitive=Count
     )
     dfeat = DirectFeature(agg_feat, "customers")
-    agg_feat_2 = ft.Feature(
+    agg_feat_2 = Feature(
         pd_es["sessions"].ww["id"], parent_dataframe_name="customers", primitive=Count
     )
     cutoff_df = pd.DataFrame(
@@ -1813,17 +1817,17 @@ def test_no_data_for_cutoff_time(mock_customer):
         {"customer_id": [4], "time": pd.Timestamp("2011-04-08 20:08:13")}
     )
 
-    trans_per_session = ft.Feature(
+    trans_per_session = Feature(
         es["transactions"].ww["transaction_id"],
         parent_dataframe_name="sessions",
         primitive=Count,
     )
-    trans_per_customer = ft.Feature(
+    trans_per_customer = Feature(
         es["transactions"].ww["transaction_id"],
         parent_dataframe_name="customers",
         primitive=Count,
     )
-    max_count = ft.Feature(
+    max_count = Feature(
         trans_per_session, parent_dataframe_name="customers", primitive=Max
     )
     features = [trans_per_customer, max_count]
@@ -1851,7 +1855,7 @@ def test_instances_not_in_data(pd_es):
     identity_feature = IdentityFeature(pd_es["log"].ww["value"])
     property_feature = identity_feature > 10
     agg_feat = AggregationFeature(
-        ft.Feature(pd_es["log"].ww["value"]),
+        Feature(pd_es["log"].ww["value"]),
         parent_dataframe_name="sessions",
         primitive=Max,
     )
@@ -1880,7 +1884,7 @@ def test_some_instances_not_in_data(pd_es):
     identity_feature = IdentityFeature(pd_es["log"].ww["value"])
     property_feature = identity_feature > 10
     agg_feat = AggregationFeature(
-        ft.Feature(pd_es["log"].ww["value"]),
+        Feature(pd_es["log"].ww["value"]),
         parent_dataframe_name="sessions",
         primitive=Max,
     )
@@ -1910,7 +1914,7 @@ def test_some_instances_not_in_data(pd_es):
 
 def test_missing_instances_with_categorical_index(pd_es):
     instance_ids = ["coke zero", "car", 3, "taco clock"]
-    features = ft.dfs(
+    features = dfs(
         entityset=pd_es, target_dataframe_name="products", features_only=True
     )
 
@@ -1981,17 +1985,17 @@ def test_calls_progress_callback(mock_customer):
     es = mock_customer
 
     # make sure to calculate features that have different paths to same base feature
-    trans_per_session = ft.Feature(
+    trans_per_session = Feature(
         es["transactions"].ww["transaction_id"],
         parent_dataframe_name="sessions",
         primitive=Count,
     )
-    trans_per_customer = ft.Feature(
+    trans_per_customer = Feature(
         es["transactions"].ww["transaction_id"],
         parent_dataframe_name="customers",
         primitive=Count,
     )
-    features = [trans_per_session, ft.Feature(trans_per_customer, "sessions")]
+    features = [trans_per_session, Feature(trans_per_customer, "sessions")]
     calculate_feature_matrix(
         features, entityset=es, progress_callback=mock_progress_callback
     )
@@ -2045,17 +2049,17 @@ def test_calls_progress_callback_cluster(pd_mock_customer, dask_cluster):
 
     mock_progress_callback = MockProgressCallback()
 
-    trans_per_session = ft.Feature(
+    trans_per_session = Feature(
         pd_mock_customer["transactions"].ww["transaction_id"],
         parent_dataframe_name="sessions",
         primitive=Count,
     )
-    trans_per_customer = ft.Feature(
+    trans_per_customer = Feature(
         pd_mock_customer["transactions"].ww["transaction_id"],
         parent_dataframe_name="customers",
         primitive=Count,
     )
-    features = [trans_per_session, ft.Feature(trans_per_customer, "sessions")]
+    features = [trans_per_session, Feature(trans_per_customer, "sessions")]
 
     dkwargs = {"cluster": dask_cluster.scheduler.address}
     calculate_feature_matrix(
@@ -2084,9 +2088,9 @@ def test_closes_tqdm(es):
 
             return error
 
-    value = ft.Feature(es["log"].ww["value"])
+    value = Feature(es["log"].ww["value"])
     property_feature = value > 10
-    error_feature = ft.Feature(value, primitive=ErrorPrim)
+    error_feature = Feature(value, primitive=ErrorPrim)
 
     calculate_feature_matrix([property_feature], es, verbose=True)
 
@@ -2148,7 +2152,7 @@ def test_calc_feature_matrix_with_cutoff_df_and_instance_ids(es):
     cutoff_time = pd.DataFrame({"time": times, es["log"].ww.index: instances})
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
 
-    property_feature = ft.Feature(es["log"].ww["value"]) > 10
+    property_feature = Feature(es["log"].ww["value"]) > 10
 
     match = "Passing 'instance_ids' is valid only if 'cutoff_time' is a single value or None - ignoring"
     with pytest.warns(UserWarning, match=match):
@@ -2165,14 +2169,14 @@ def test_calc_feature_matrix_with_cutoff_df_and_instance_ids(es):
 
 
 def test_calculate_feature_matrix_returns_default_values(default_value_es):
-    sum_features = ft.Feature(
+    sum_features = Feature(
         default_value_es["transactions"].ww["value"],
         parent_dataframe_name="sessions",
         primitive=Sum,
     )
-    sessions_sum = ft.Feature(sum_features, "transactions")
+    sessions_sum = Feature(sum_features, "transactions")
 
-    feature_matrix = ft.calculate_feature_matrix(
+    feature_matrix = calculate_feature_matrix(
         features=[sessions_sum], entityset=default_value_es
     )
 
@@ -2183,7 +2187,7 @@ def test_calculate_feature_matrix_returns_default_values(default_value_es):
 
 
 def test_dataframes_relationships(dataframes, relationships):
-    fm_1, features = ft.dfs(
+    fm_1, features = dfs(
         dataframes=dataframes,
         relationships=relationships,
         target_dataframe_name="transactions",
@@ -2199,7 +2203,7 @@ def test_dataframes_relationships(dataframes, relationships):
 
 
 def test_no_dataframes(dataframes, relationships):
-    features = ft.dfs(
+    features = dfs(
         dataframes=dataframes,
         relationships=relationships,
         target_dataframe_name="transactions",
@@ -2212,7 +2216,7 @@ def test_no_dataframes(dataframes, relationships):
 
 
 def test_no_relationships(dataframes):
-    fm_1, features = ft.dfs(
+    fm_1, features = dfs(
         dataframes=dataframes, relationships=None, target_dataframe_name="transactions"
     )
 
@@ -2226,9 +2230,7 @@ def test_no_relationships(dataframes):
 
 
 def test_cfm_with_invalid_time_index(es):
-    features = ft.dfs(
-        entityset=es, target_dataframe_name="customers", features_only=True
-    )
+    features = dfs(entityset=es, target_dataframe_name="customers", features_only=True)
     es["customers"].ww.set_types(logical_types={"signup_date": "integer"})
     match = "customers time index is numeric type "
     match += "which differs from other entityset time indexes"
@@ -2240,9 +2242,9 @@ def test_cfm_introduces_nan_values_in_direct_feats(es):
     es["customers"].ww.set_types(
         logical_types={"age": "Age", "engagement_level": "Integer"}
     )
-    age_feat = ft.Feature(es["customers"].ww["age"])
-    engagement_feat = ft.Feature(es["customers"].ww["engagement_level"])
-    loves_ice_cream_feat = ft.Feature(es["customers"].ww["loves_ice_cream"])
+    age_feat = Feature(es["customers"].ww["age"])
+    engagement_feat = Feature(es["customers"].ww["engagement_level"])
+    loves_ice_cream_feat = Feature(es["customers"].ww["loves_ice_cream"])
     features = [age_feat, engagement_feat, loves_ice_cream_feat]
     fm = calculate_feature_matrix(
         features=features,
@@ -2273,7 +2275,7 @@ def test_feature_origins_present_on_all_fm_cols(pd_es):
 
             return multi_cum_sum
 
-    feature_matrix, _ = ft.dfs(
+    feature_matrix, _ = dfs(
         entityset=pd_es, target_dataframe_name="log", trans_primitives=[MultiCumSum]
     )
 
@@ -2295,21 +2297,21 @@ def test_renamed_features_have_expected_column_names_in_feature_matrix(pd_es):
 
             return multi_cum_sum
 
-    multi_output_trans_feat = ft.Feature(
+    multi_output_trans_feat = Feature(
         pd_es["log"].ww["value"], primitive=MultiCumulative
     )
-    groupby_trans_feat = ft.GroupByTransformFeature(
+    groupby_trans_feat = GroupByTransformFeature(
         pd_es["log"].ww["value"],
         primitive=MultiCumulative,
         groupby=pd_es["log"].ww["product_id"],
     )
-    multi_output_agg_feat = ft.Feature(
+    multi_output_agg_feat = Feature(
         pd_es["log"].ww["product_id"],
         parent_dataframe_name="customers",
         primitive=NMostCommon(n=2),
     )
     slice = FeatureOutputSlice(multi_output_trans_feat, 1)
-    stacked_feat = ft.Feature(slice, primitive=Negate)
+    stacked_feat = Feature(slice, primitive=Negate)
 
     multi_output_trans_names = ["cumulative_sum", "cumulative_max", "cumulative_min"]
     multi_output_trans_feat.set_feature_names(multi_output_trans_names)

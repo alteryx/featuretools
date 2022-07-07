@@ -8,7 +8,7 @@ from woodwork.logical_types import (
     NaturalLanguage,
 )
 
-import featuretools as ft
+from featuretools import dfs
 from featuretools.entityset import EntitySet
 from featuretools.utils.gen_utils import import_or_none
 
@@ -46,18 +46,18 @@ def test_single_table_spark_entityset():
         dataframe_name="data", dataframe=values_dd, index="id", logical_types=ltypes
     )
 
-    spark_fm, _ = ft.dfs(
+    spark_fm, _ = dfs(
         entityset=spark_es,
         target_dataframe_name="data",
         trans_primitives=primitives_list,
     )
 
-    pd_es = ft.EntitySet(id="pd_es")
+    pd_es = EntitySet(id="pd_es")
     pd_es.add_dataframe(
         dataframe_name="data", dataframe=df, index="id", logical_types=ltypes
     )
 
-    fm, _ = ft.dfs(
+    fm, _ = dfs(
         entityset=pd_es, target_dataframe_name="data", trans_primitives=primitives_list
     )
 
@@ -104,18 +104,18 @@ def test_single_table_spark_entityset_ids_not_sorted():
         dataframe_name="data", dataframe=values_dd, index="id", logical_types=ltypes
     )
 
-    spark_fm, _ = ft.dfs(
+    spark_fm, _ = dfs(
         entityset=spark_es,
         target_dataframe_name="data",
         trans_primitives=primitives_list,
     )
 
-    pd_es = ft.EntitySet(id="pd_es")
+    pd_es = EntitySet(id="pd_es")
     pd_es.add_dataframe(
         dataframe_name="data", dataframe=df, index="id", logical_types=ltypes
     )
 
-    fm, _ = ft.dfs(
+    fm, _ = dfs(
         entityset=pd_es, target_dataframe_name="data", trans_primitives=primitives_list
     )
 
@@ -160,19 +160,19 @@ def test_single_table_spark_entityset_with_instance_ids():
         dataframe_name="data", dataframe=values_dd, index="id", logical_types=ltypes
     )
 
-    spark_fm, _ = ft.dfs(
+    spark_fm, _ = dfs(
         entityset=spark_es,
         target_dataframe_name="data",
         trans_primitives=primitives_list,
         instance_ids=instance_ids,
     )
 
-    pd_es = ft.EntitySet(id="pd_es")
+    pd_es = EntitySet(id="pd_es")
     pd_es.add_dataframe(
         dataframe_name="data", dataframe=df, index="id", logical_types=ltypes
     )
 
-    fm, _ = ft.dfs(
+    fm, _ = dfs(
         entityset=pd_es,
         target_dataframe_name="data",
         trans_primitives=primitives_list,
@@ -218,19 +218,19 @@ def test_single_table_spark_entityset_single_cutoff_time():
         dataframe_name="data", dataframe=values_dd, index="id", logical_types=ltypes
     )
 
-    spark_fm, _ = ft.dfs(
+    spark_fm, _ = dfs(
         entityset=spark_es,
         target_dataframe_name="data",
         trans_primitives=primitives_list,
         cutoff_time=pd.Timestamp("2019-01-05 04:00"),
     )
 
-    pd_es = ft.EntitySet(id="pd_es")
+    pd_es = EntitySet(id="pd_es")
     pd_es.add_dataframe(
         dataframe_name="data", dataframe=df, index="id", logical_types=ltypes
     )
 
-    fm, _ = ft.dfs(
+    fm, _ = dfs(
         entityset=pd_es,
         target_dataframe_name="data",
         trans_primitives=primitives_list,
@@ -291,14 +291,14 @@ def test_single_table_spark_entityset_cutoff_time_df():
         {"id": ids, "time": times, "labels": labels}, columns=["id", "time", "labels"]
     )
 
-    spark_fm, _ = ft.dfs(
+    spark_fm, _ = dfs(
         entityset=spark_es,
         target_dataframe_name="data",
         trans_primitives=primitives_list,
         cutoff_time=cutoff_times,
     )
 
-    pd_es = ft.EntitySet(id="pd_es")
+    pd_es = EntitySet(id="pd_es")
     pd_es.add_dataframe(
         dataframe_name="data",
         dataframe=df,
@@ -307,7 +307,7 @@ def test_single_table_spark_entityset_cutoff_time_df():
         logical_types=ltypes,
     )
 
-    fm, _ = ft.dfs(
+    fm, _ = dfs(
         entityset=pd_es,
         target_dataframe_name="data",
         trans_primitives=primitives_list,
@@ -358,14 +358,14 @@ def test_single_table_spark_entityset_dates_not_sorted():
         logical_types=ltypes,
     )
 
-    spark_fm, _ = ft.dfs(
+    spark_fm, _ = dfs(
         entityset=spark_es,
         target_dataframe_name="data",
         trans_primitives=primitives_list,
         max_depth=1,
     )
 
-    pd_es = ft.EntitySet(id="pd_es")
+    pd_es = EntitySet(id="pd_es")
     pd_es.add_dataframe(
         dataframe_name="data",
         dataframe=df,
@@ -374,7 +374,7 @@ def test_single_table_spark_entityset_dates_not_sorted():
         logical_types=ltypes,
     )
 
-    fm, _ = ft.dfs(
+    fm, _ = dfs(
         entityset=pd_es,
         target_dataframe_name="data",
         trans_primitives=primitives_list,
@@ -408,8 +408,8 @@ def test_spark_entityset_secondary_time_index():
     flights_df["origin"] = ["BOS", "LAX", "BOS", "LAX"]
     flights_spark = ps.from_pandas(flights_df)
 
-    pd_es = ft.EntitySet("flights")
-    spark_es = ft.EntitySet("flights_spark")
+    pd_es = EntitySet("flights")
+    spark_es = EntitySet("flights_spark")
 
     log_ltypes = {
         "scheduled_time": Datetime,
@@ -453,7 +453,7 @@ def test_spark_entityset_secondary_time_index():
     cutoff_df["id"] = [0, 1, 1]
     cutoff_df["time"] = pd.to_datetime(["2019-02-02", "2019-02-02", "2019-02-20"])
 
-    fm, _ = ft.dfs(
+    fm, _ = dfs(
         entityset=pd_es,
         target_dataframe_name="logs",
         cutoff_time=cutoff_df,
@@ -461,7 +461,7 @@ def test_spark_entityset_secondary_time_index():
         trans_primitives=["month"],
     )
 
-    spark_fm, _ = ft.dfs(
+    spark_fm, _ = dfs(
         entityset=spark_es,
         target_dataframe_name="logs",
         cutoff_time=cutoff_df,
