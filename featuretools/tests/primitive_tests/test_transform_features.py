@@ -29,6 +29,7 @@ from featuretools.primitives import (
     Count,
     Day,
     Diff,
+    DiffDatetime,
     DivideByFeature,
     DivideNumeric,
     DivideNumericScalar,
@@ -363,6 +364,7 @@ def test_diff(pd_es):
 
     val1 = df[diff1.get_name()].tolist()
     val2 = df[diff2.get_name()].tolist()
+
     correct_vals1 = [
         np.nan,
         5,
@@ -381,17 +383,22 @@ def test_diff(pd_es):
         7,
     ]
     correct_vals2 = [np.nan, 5, 5, 5, 5, -20, 1, 1, 1, -3, np.nan, 5, -5, 7, 7]
-    for i, v in enumerate(val1):
-        v1 = val1[i]
-        if np.isnan(v1):
-            assert np.isnan(correct_vals1[i])
-        else:
-            assert v1 == correct_vals1[i]
-        v2 = val2[i]
-        if np.isnan(v2):
-            assert np.isnan(correct_vals2[i])
-        else:
-            assert v2 == correct_vals2[i]
+    np.testing.assert_equal(val1, correct_vals1)
+    np.testing.assert_equal(val2, correct_vals2)
+
+
+def test_diff_shift(pd_es):
+    value = Feature(pd_es["log"].ww["value"])
+    customer_id_feat = Feature(pd_es["sessions"].ww["customer_id"], "log")
+    diff_periods = Feature(value, groupby=customer_id_feat, primitive=Diff(periods=1))
+
+    feature_set = FeatureSet([diff_periods])
+    calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
+    df = calculator.run(np.array(range(15)))
+    val3 = df[diff_periods.get_name()].tolist()
+
+    correct_vals3 = [np.nan, np.nan, 5, 5, 5, 5, -20, 1, 1, 1, np.nan, np.nan, 5, -5, 7]
+    np.testing.assert_equal(val3, correct_vals3)
 
 
 def test_diff_single_value(pd_es):
@@ -429,6 +436,59 @@ def test_diff_single_value_is_nan(pd_es):
     df = calculator.run(np.array([5]))
     assert df.shape[0] == 1
     assert df[diff.get_name()].dropna().shape[0] == 0
+
+
+def test_diff_datetime(pd_es):
+    diff = Feature(
+        pd_es["log"].ww["datetime"],
+        primitive=DiffDatetime,
+    )
+    feature_set = FeatureSet([diff])
+    calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
+    df = calculator.run(np.array(range(15)))
+    vals = pd.array(df[diff.get_name()].tolist())
+    expected_vals = pd.array(
+        [
+            pd.NaT,
+            pd.Timedelta(seconds=6),
+            pd.Timedelta(seconds=6),
+            pd.Timedelta(seconds=6),
+            pd.Timedelta(seconds=6),
+            pd.Timedelta(seconds=36),
+            pd.Timedelta(seconds=9),
+            pd.Timedelta(seconds=9),
+            pd.Timedelta(seconds=9),
+            pd.Timedelta(minutes=8, seconds=33),
+            pd.Timedelta(days=1),
+            pd.Timedelta(seconds=1),
+            pd.Timedelta(seconds=59),
+            pd.Timedelta(seconds=3),
+            pd.Timedelta(seconds=3),
+        ]
+    )
+    pd.util.testing.assert_equal(vals, expected_vals)
+
+
+def test_diff_datetime_shift(pd_es):
+    diff = Feature(
+        pd_es["log"].ww["datetime"],
+        primitive=DiffDatetime(periods=1),
+    )
+    feature_set = FeatureSet([diff])
+    calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
+    df = calculator.run(np.array(range(6)))
+    vals = pd.array(df[diff.get_name()].tolist())
+    expected_vals = pd.array(
+        [
+            pd.NaT,
+            pd.NaT,
+            pd.Timedelta(seconds=6),
+            pd.Timedelta(seconds=6),
+            pd.Timedelta(seconds=6),
+            pd.Timedelta(seconds=6),
+        ]
+    )
+    pd.util.testing.assert_equal(vals, expected_vals)
 
 
 def test_compare_of_identity(es):

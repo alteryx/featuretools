@@ -186,6 +186,7 @@ Cumulative Transform Primitives
     :toctree: generated/
 
     Diff
+    DiffDatetime
     TimeSincePrevious
     CumCount
     CumSum

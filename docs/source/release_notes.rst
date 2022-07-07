@@ -9,16 +9,17 @@ Future Release
         
     * Enhancements
         * Add ``IsWorkingHours`` and ``IsLunchTime`` transform primitives (:pr:`2130`)  
+        * Add periods parameter to ``Diff`` and add ``DiffDatetime`` primitive (:pr:`2155`)
     * Fixes
     * Changes
         * Drop Python 3.7 support (:pr:`2169`)
     * Documentation Changes
-      * Augment single table entry in DFS to include information about passing in a dictionary for `dataframes` argument (:pr:`2160`)
+        * Augment single table entry in DFS to include information about passing in a dictionary for `dataframes` argument (:pr:`2160`)
     * Testing Changes
        * Standardize imports across test files to simplify accessing featuretools functions (:pr:`2166`) 
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`sbadithe`
+    :user:`gsheni`, :user:`sbadithe`, :user:`ozzieD`
 
 v1.11.1 Jul 5, 2022
 ===================
