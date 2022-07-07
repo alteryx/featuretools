@@ -284,7 +284,7 @@ class Diff(TransformPrimitive):
 
 
 class DiffDatetime(Diff):
-    """Compute the time delta difference between a datetime in a list and the
+    """Compute the timedelta between a datetime in a list and the
     previous datetime in that list.
 
     Args:
@@ -294,7 +294,7 @@ class DiffDatetime(Diff):
     Description:
         Given a list of datetimes, compute the difference from the previous
         item in the list. The result for the first element of the list will
-        always be `NaN`.
+        always be `NaT`.
 
     Examples:
         >>> from datetime import datetime
@@ -302,6 +302,12 @@ class DiffDatetime(Diff):
         >>> diff_dt = Diff()
         >>> diff_dt(dt_values).tolist()
         [NaT, Timedelta('121 days 00:00:00'), Timedelta('140 days 00:00:00'), Timedelta('74 days 00:00:00'), Timedelta('41 days 00:00:00')]
+
+        You can specify the number of periods to shift the values
+
+        >>> diff_dt_periods = Diff(periods = 1)
+        >>> diff_dt_periods(dt_values).tolist()
+        [NaT, NaT, Timedelta('121 days 00:00:00'), Timedelta('140 days 00:00:00'), Timedelta('74 days 00:00:00')]
     """
 
     name = "diff_datetime"
