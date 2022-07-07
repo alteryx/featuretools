@@ -128,11 +128,13 @@ Datetime Transform Primitives
     Minute
     Weekday
     IsLeapYear
+    IsLunchTime
     IsMonthEnd
     IsMonthStart
     IsQuarterEnd
     IsQuarterStart
     IsWeekend
+    IsWorkingHours
     IsYearEnd
     IsYearStart
     Hour
