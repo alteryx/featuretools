@@ -25,7 +25,8 @@ from woodwork.logical_types import (
     SubRegionCode,
 )
 
-import featuretools as ft
+from featuretools import Relationship
+from featuretools.demo import load_retail
 from featuretools.entityset import EntitySet
 from featuretools.entityset.entityset import LTI_COLUMN_NAME, WW_SCHEMA_KEY
 from featuretools.tests.testing_utils import get_df_tags, to_pandas
@@ -277,7 +278,7 @@ def test_add_relationship_errors_child_v_index(es):
 
 
 def test_add_relationship_empty_child_convert_dtype(es):
-    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
+    relationship = Relationship(es, "sessions", "id", "log", "session_id")
     empty_log_df = pd.DataFrame(columns=es["log"].columns)
     if es.dataframe_type == Library.DASK.value:
         empty_log_df = dd.from_pandas(empty_log_df, npartitions=2)
@@ -298,19 +299,19 @@ def test_add_relationship_empty_child_convert_dtype(es):
 
 
 def test_add_relationship_with_relationship_object(es):
-    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
+    relationship = Relationship(es, "sessions", "id", "log", "session_id")
     es.add_relationship(relationship=relationship)
     assert relationship in es.relationships
 
 
 def test_add_relationships_with_relationship_object(es):
-    relationships = [ft.Relationship(es, "sessions", "id", "log", "session_id")]
+    relationships = [Relationship(es, "sessions", "id", "log", "session_id")]
     es.add_relationships(relationships)
     assert relationships[0] in es.relationships
 
 
 def test_add_relationship_error(es):
-    relationship = ft.Relationship(es, "sessions", "id", "log", "session_id")
+    relationship = Relationship(es, "sessions", "id", "log", "session_id")
     error_message = (
         "Cannot specify dataframe and column name values and also supply a Relationship"
     )
@@ -327,7 +328,7 @@ def test_query_by_values_returns_rows_in_given_order():
         }
     )
 
-    es = ft.EntitySet()
+    es = EntitySet()
     es = es.add_dataframe(
         dataframe=data,
         dataframe_name="test",
@@ -991,7 +992,7 @@ def test_nonstr_column_names(bad_df):
     if isinstance(bad_df, dd.DataFrame):
         pytest.xfail("Dask DataFrames cannot handle integer column names")
 
-    es = ft.EntitySet(id="Failure")
+    es = EntitySet(id="Failure")
     error_text = r"All column names must be strings \(Columns \[3\] are not strings\)"
     with pytest.raises(ValueError, match=error_text):
         es.add_dataframe(dataframe_name="str_cols", dataframe=bad_df, index="a")
@@ -1596,13 +1597,13 @@ def pd_normalize_es():
             ],
         }
     )
-    es = ft.EntitySet("es")
+    es = EntitySet("es")
     return es.add_dataframe(dataframe_name="data", dataframe=df, index="id")
 
 
 @pytest.fixture
 def dd_normalize_es(pd_normalize_es):
-    es = ft.EntitySet(id=pd_normalize_es.id)
+    es = EntitySet(id=pd_normalize_es.id)
     dd_df = dd.from_pandas(pd_normalize_es["data"], npartitions=2)
     dd_df.ww.init(schema=pd_normalize_es["data"].ww.schema)
 
@@ -1613,7 +1614,7 @@ def dd_normalize_es(pd_normalize_es):
 @pytest.fixture
 def spark_normalize_es(pd_normalize_es):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    es = ft.EntitySet(id=pd_normalize_es.id)
+    es = EntitySet(id=pd_normalize_es.id)
     spark_df = ps.from_pandas(pd_normalize_es["data"])
     spark_df.ww.init(schema=pd_normalize_es["data"].ww.schema)
     es.add_dataframe(dataframe=spark_df)
@@ -1752,7 +1753,7 @@ def test_normalize_dataframe_same_index(es):
             "first_df_time": [1, 2, 3],
         }
     )
-    es = ft.EntitySet("example")
+    es = EntitySet("example")
     es.add_dataframe(
         dataframe_name="df",
         index="id",
@@ -1798,22 +1799,22 @@ def test_sizeof(es):
 
 
 def test_construct_without_id():
-    assert ft.EntitySet().id is None
+    assert EntitySet().id is None
 
 
 def test_repr_without_id():
     match = "Entityset: None\n  DataFrames:\n  Relationships:\n    No relationships"
-    assert repr(ft.EntitySet()) == match
+    assert repr(EntitySet()) == match
 
 
 def test_getitem_without_id():
     error_text = "DataFrame test does not exist in entity set"
     with pytest.raises(KeyError, match=error_text):
-        ft.EntitySet()["test"]
+        EntitySet()["test"]
 
 
 def test_metadata_without_id():
-    es = ft.EntitySet()
+    es = EntitySet()
     assert es.metadata.id is None
 
 
@@ -1898,7 +1899,7 @@ def test_same_index_values(index_df):
     else:
         logical_types = None
 
-    es = ft.EntitySet("example")
+    es = EntitySet("example")
 
     error_text = (
         '"id" is already set as the index. An index cannot also be the time index.'
@@ -1948,7 +1949,7 @@ def test_use_time_index(index_df):
         bad_semantic_tags = {"transaction_time": "time_index"}
         logical_types = None
 
-    es = ft.EntitySet()
+    es = EntitySet()
 
     error_text = re.escape(
         "Cannot add 'time_index' tag directly for column transaction_time. To set a column as the time index, use DataFrame.ww.set_time_index() instead."
@@ -2036,12 +2037,10 @@ def test_entityset_init():
         ),
     }
     relationships = [("cards", "id", "transactions", "card_id")]
-    es = ft.EntitySet(
-        id="fraud_data", dataframes=dataframes, relationships=relationships
-    )
+    es = EntitySet(id="fraud_data", dataframes=dataframes, relationships=relationships)
     assert es["transactions"].ww.index == "id"
     assert es["transactions"].ww.time_index == "transaction_time"
-    es_copy = ft.EntitySet(id="fraud_data")
+    es_copy = EntitySet(id="fraud_data")
     es_copy.add_dataframe(dataframe_name="cards", dataframe=cards_df.copy(), index="id")
     es_copy.add_dataframe(
         dataframe_name="transactions",
@@ -2122,7 +2121,7 @@ def test_add_interesting_values_multiple_dataframes(pd_es):
 
 
 def test_add_interesting_values_verbose_output(caplog):
-    es = ft.demo.load_retail(nrows=200)
+    es = load_retail(nrows=200)
     es["order_products"].ww.set_types({"quantity": "Categorical"})
     es["orders"].ww.set_types({"country": "Categorical"})
     logger = logging.getLogger("featuretools")
@@ -2452,7 +2451,7 @@ def test_pd_es_pickling(pd_es):
 
 
 def test_empty_es_pickling():
-    es = ft.EntitySet(id="empty")
+    es = EntitySet(id="empty")
     pkl = pickle.dumps(es)
     unpickled = pickle.loads(pkl)
 
@@ -2461,7 +2460,7 @@ def test_empty_es_pickling():
 
 @patch("featuretools.EntitySet.add_dataframe")
 def test_setitem(add_dataframe):
-    es = ft.EntitySet()
+    es = EntitySet()
     df = pd.DataFrame()
     es["new_df"] = df
     assert add_dataframe.called
