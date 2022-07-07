@@ -5,6 +5,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ``RollingTrend`` primitve (:pr:`2170`)
     * Fixes
     * Changes
     * Documentation Changes
