@@ -507,7 +507,7 @@ class IsWorkingHours(TransformPrimitive):
         >>> dates = [datetime(2022, 6, 21, 16, 3, 3),
         ...          datetime(2019, 1, 3, 4, 4, 4),
         ...          datetime(2022, 1, 1, 12, 1, 2),
-                     np.nan]
+        ...          np.nan]
         >>> is_working_hour = IsWorkingHours()
         >>> is_working_hour(dates).tolist()
         [True, False, True, False]
