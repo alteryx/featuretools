@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -14,7 +14,7 @@ from woodwork.logical_types import (
 )
 
 from featuretools.primitives.base.aggregation_primitive_base import AggregationPrimitive
-from featuretools.utils import convert_time_units, calculate_trend
+from featuretools.utils import calculate_trend, convert_time_units
 from featuretools.utils.gen_utils import Library
 
 
@@ -772,7 +772,8 @@ class Trend(AggregationPrimitive):
 
     def get_function(self, agg_type=Library.PANDAS):
         def pd_trend(y, x):
-            return calculate_trend(y, x)
+
+            return calculate_trend(pd.Series(data=y.values, index=x.values))
 
         return pd_trend
 

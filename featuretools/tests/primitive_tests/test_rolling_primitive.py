@@ -9,8 +9,8 @@ from featuretools.primitives import (
     RollingMean,
     RollingMin,
     RollingSTD,
+    roll_series_with_gap,
 )
-from featuretools.primitives.utils import _roll_series_with_gap
 from featuretools.tests.primitive_tests.utils import get_number_from_offset
 
 
@@ -29,7 +29,7 @@ def test_rolling_max(min_periods, window_length, gap, rolling_series_pd):
     window_length_num = get_number_from_offset(window_length)
     # Since we're using a uniform series we can check correctness using numeric parameters
     expected_vals = (
-        _roll_series_with_gap(
+        roll_series_with_gap(
             rolling_series_pd, window_length_num, gap=gap_num, min_periods=min_periods
         )
         .max()
@@ -68,7 +68,7 @@ def test_rolling_min(min_periods, window_length, gap, rolling_series_pd):
 
     # Since we're using a uniform series we can check correctness using numeric parameters
     expected_vals = (
-        _roll_series_with_gap(
+        roll_series_with_gap(
             rolling_series_pd, window_length_num, gap=gap_num, min_periods=min_periods
         )
         .min()
@@ -107,7 +107,7 @@ def test_rolling_mean(min_periods, window_length, gap, rolling_series_pd):
 
     # Since we're using a uniform series we can check correctness using numeric parameters
     expected_vals = (
-        _roll_series_with_gap(
+        roll_series_with_gap(
             rolling_series_pd, window_length_num, gap=gap_num, min_periods=min_periods
         )
         .mean()
@@ -146,7 +146,7 @@ def test_rolling_std(min_periods, window_length, gap, rolling_series_pd):
 
     # Since we're using a uniform series we can check correctness using numeric parameters
     expected_vals = (
-        _roll_series_with_gap(
+        roll_series_with_gap(
             rolling_series_pd, window_length_num, gap=gap_num, min_periods=min_periods
         )
         .std()
@@ -188,7 +188,7 @@ def test_rolling_count(window_length, gap, rolling_series_pd):
     window_length_num = get_number_from_offset(window_length)
 
     expected_vals = (
-        _roll_series_with_gap(
+        roll_series_with_gap(
             rolling_series_pd,
             window_length_num,
             gap=gap_num,
@@ -207,7 +207,7 @@ def test_rolling_count(window_length, gap, rolling_series_pd):
 
     num_nans = gap_num + window_length_num - 1
     assert actual_vals.isna().sum() == num_nans
-    # RollingCount will not match the exact _roll_series_with_gap call,
+    # RollingCount will not match the exact roll_series_with_gap call,
     # because it handles the min_periods difference within the primitive
     pd.testing.assert_series_equal(
         pd.Series(expected_vals).iloc[num_nans:], actual_vals.iloc[num_nans:]
@@ -312,9 +312,7 @@ def test_rolling_std_non_uniform():
 @pytest.mark.parametrize(
     "primitive", [RollingCount, RollingMax, RollingMin, RollingMean, RollingSTD]
 )
-@patch(
-    "featuretools.primitives.rolling_transform_primitive._apply_roll_with_offset_gap"
-)
+@patch("featuretools.primitives.rolling_transform_primitive.apply_roll_with_offset_gap")
 def test_no_call_to_apply_roll_with_offset_gap_with_numeric(
     mock_apply_roll, primitive, rolling_series_pd
 ):

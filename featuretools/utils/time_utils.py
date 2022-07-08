@@ -1,6 +1,7 @@
+from datetime import datetime, timedelta
+
 import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
 
 
 def make_temporal_cutoffs(
@@ -100,8 +101,8 @@ def find_dividend_by_unit(time):
     return 1
 
 
-def calculate_trend(y, x):
-    df = pd.DataFrame({"x": x, "y": y}).dropna()
+def calculate_trend(series):
+    df = pd.DataFrame({"x": series.index, "y": series.values}).dropna()
     if df.shape[0] <= 2:
         return np.nan
     if isinstance(df["x"].iloc[0], (datetime, pd.Timestamp)):
