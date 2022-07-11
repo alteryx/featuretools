@@ -434,6 +434,42 @@ class RollingSTD(TransformPrimitive):
 
 
 class RollingTrend(TransformPrimitive):
+    """Calculates the trend of a given window of entries of a column over time.
+
+    Description:
+        Given a list of numbers and a corresponding list of
+        datetimes, return a rolling slope of the linear trend
+        of values, starting at the row `gap` rows away from the current row and looking backward
+        over the specified time window (by `window_length` and `gap`).
+
+        Input datetimes should be monotonic.
+
+    Examples:
+        >>> import pandas as pd
+        >>> rolling_trend = RollingTrend()
+        >>> times = pd.date_range(start="2019-01-01", freq="1D", periods=10)
+        >>> rolling_trend(times, [1, 2, 4, 8, 16, 24, 48, 96, 192, 384]).tolist()
+       [nan, nan, 1.5, 3, 6, 8, 16, 36, 72, 144]
+
+        We can also control the gap before the rolling calculation.
+
+        >>> rolling_trend = RollingTrend(gap=1)
+        >>> rolling_trend(times, [1, 2, 4, 8, 16, 24, 48, 96, 192, 384]).tolist()
+       [nan, nan, nan, 3, 6, 8, 16, 36, 72]
+
+       We can also control the minimum number of periods required for the rolling calculation.
+
+        >>> rolling_trend = RollingTrend(window_length=4, min_periods=4)
+        >>> rolling_trend(times, [[1, 2, 4, 8, 16, 24, 48, 96, 192, 384]).tolist()
+        [nan, nan, 1.5, 2.3, 4.6, 6.8, 12.8, 26.4, 55.2,110.4]
+
+        We can also set the window_length and gap using offset alias strings.
+
+        >>> rolling_trend = RollingTrend(window_length="4D", gap="1D")
+        >>> rolling_trend(times, [[1, 2, 4, 8, 16, 24, 48, 96, 192, 384]).tolist()
+        [nan, 1, 1.5, 2.33333333, 3.75, 7.5, 13, 24, 46, 90])
+    """
+
     name = "rolling_trend"
     input_types = [
         ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"}),
