@@ -1,18 +1,18 @@
 # flake8: noqa
-from .version import __version__
-from .config_init import config
-from .entityset.api import *
-from . import primitives
-from .synthesis.api import *
-from .primitives import list_primitives, summarize_primitives
-from .computational_backends.api import *
-from . import tests
-from .utils.time_utils import *
-from .utils.cli_utils import show_info
+from featuretools.version import __version__
+from featuretools.config_init import config
+from featuretools.entityset.api import *
+from featuretools import primitives
+from featuretools.synthesis.api import *
+from featuretools.primitives import list_primitives, summarize_primitives
+from featuretools.computational_backends.api import *
+from featuretools import tests
+from featuretools.utils.time_utils import *
+from featuretools.utils.cli_utils import show_info
 import featuretools.demo
-from . import feature_base
-from . import selection
-from .feature_base import (
+from featuretools import feature_base
+from featuretools import selection
+from featuretools.feature_base import (
     AggregationFeature,
     DirectFeature,
     Feature,

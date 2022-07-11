@@ -295,7 +295,7 @@ Feature Matrix utils
     :toctree: generated/
 
     replace_inf_values
-    
+
 
 Saving and Loading Features
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

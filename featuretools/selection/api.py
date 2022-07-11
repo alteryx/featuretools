@@ -1,2 +1,2 @@
 # flake8: noqa
-from .selection import *
+from featuretools.selection.selection import *

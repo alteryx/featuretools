@@ -4,7 +4,7 @@ import logging
 import pkg_resources
 import traceback
 
-from .api import *  # noqa: F403
+from featuretools.primitives.api import *  # noqa: F403
 
 
 def _load_primitives():

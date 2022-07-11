@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   workflow_run:
     workflows: ["Unit Tests - Latest Dependencies", "Unit Tests - 3.8 Minimum Dependencies"]
-    branches:    
+    branches:
       - 'latest-dep-update-[a-f0-9]+'
       - 'min-dep-update-[a-f0-9]+'
     types:
