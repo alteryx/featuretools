@@ -288,12 +288,8 @@ def test_rolling_count_with_no_gap(
         ),
     ],
 )
-def test_rolling_trend(
-    min_periods, window_length, gap, expected_vals, rolling_series_pd
-):
-    primitive_instance = RollingTrend(
-        window_length=window_length, gap=gap, min_periods=min_periods
-    )
+def test_rolling_trend(window_length, gap, expected_vals, rolling_series_pd):
+    primitive_instance = RollingTrend(window_length=window_length, gap=gap)
 
     actual_vals = primitive_instance(rolling_series_pd.index, rolling_series_pd.values)
 
