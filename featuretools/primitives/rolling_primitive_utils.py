@@ -103,7 +103,7 @@ def _get_rolled_series_without_gap(window, gap_offset):
 
     # If the gap is larger than the series, no rows are left in the window
     if gap_bound < window_start_date:
-        return Series()
+        return Series(dtype="float64")
 
     # Only return the rows that are within the offset's bounds
     return window[window.index <= gap_bound]

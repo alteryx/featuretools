@@ -449,15 +449,15 @@ class RollingTrend(TransformPrimitive):
         >>> rolling_trend = RollingTrend()
         >>> times = pd.date_range(start="2019-01-01", freq="1D", periods=10)
         >>> rolling_trend(times, [1, 2, 4, 8, 16, 24, 48, 96, 192, 384]).tolist()
-       [nan, nan, 1.5, 3, 6, 8, 16, 36, 72, 144]
+        [nan, nan, 1.5, 3, 6, 8, 16, 36, 72, 144]
 
         We can also control the gap before the rolling calculation.
 
         >>> rolling_trend = RollingTrend(gap=1)
         >>> rolling_trend(times, [1, 2, 4, 8, 16, 24, 48, 96, 192, 384]).tolist()
-       [nan, nan, nan, 3, 6, 8, 16, 36, 72]
+        [nan, nan, nan, 3, 6, 8, 16, 36, 72]
 
-       We can also control the minimum number of periods required for the rolling calculation.
+        We can also control the minimum number of periods required for the rolling calculation.
 
         >>> rolling_trend = RollingTrend(window_length=4, min_periods=4)
         >>> rolling_trend(times, [[1, 2, 4, 8, 16, 24, 48, 96, 192, 384]).tolist()

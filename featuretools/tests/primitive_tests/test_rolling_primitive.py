@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import pandas as pd
 import pytest
+from numpy import isnan, nan
 
 from featuretools.primitives import (
     RollingCount,
@@ -9,6 +10,7 @@ from featuretools.primitives import (
     RollingMean,
     RollingMin,
     RollingSTD,
+    RollingTrend,
     roll_series_with_gap,
 )
 from featuretools.tests.primitive_tests.utils import get_number_from_offset
@@ -249,7 +251,125 @@ def test_rolling_count_with_no_gap(
 
 
 @pytest.mark.parametrize(
-    "primitive", [RollingCount, RollingMax, RollingMin, RollingMean]
+    "window_length, gap, expected_vals",
+    [
+        (3, 0, [nan, nan, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]),
+        (4, 1, [nan, nan, nan, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]),
+        (
+            "5d",
+            "7d",
+            [
+                nan,
+                nan,
+                nan,
+                nan,
+                nan,
+                nan,
+                nan,
+                0,
+                0.5,
+                1,
+                1.5,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+            ],
+        ),
+        (
+            "5d",
+            "0d",
+            [0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+        ),
+    ],
+)
+def test_rolling_trend(
+    min_periods, window_length, gap, expected_vals, rolling_series_pd
+):
+    primitive_instance = RollingTrend(
+        window_length=window_length, gap=gap, min_periods=min_periods
+    )
+
+    actual_vals = primitive_instance(rolling_series_pd.index, rolling_series_pd.values)
+
+    pd.testing.assert_series_equal(pd.Series(expected_vals), pd.Series(actual_vals))
+
+
+def test_rolling_trend_window_length_less_than_three(rolling_series_pd):
+    primitive_instance = RollingTrend(window_length=2)
+
+    vals = primitive_instance(rolling_series_pd.index, rolling_series_pd.values)
+
+    for v in vals:
+        assert isnan(v)
+
+
+@pytest.mark.parametrize(
+    "min_periods,expected_vals",
+    [
+        (
+            0,
+            [
+                nan,
+                1,
+                1.5,
+                2.33333333,
+                3.75,
+                7.5,
+                13,
+                24,
+                46,
+                90,
+            ],
+        ),
+        (
+            2,
+            [
+                nan,
+                nan,
+                1.5,
+                2.33333333,
+                3.75,
+                7.5,
+                13,
+                24,
+                46,
+                90,
+            ],
+        ),
+        (
+            3,
+            [
+                nan,
+                nan,
+                nan,
+                2.33333333,
+                3.75,
+                7.5,
+                13,
+                24,
+                46,
+                90,
+            ],
+        ),
+    ],
+)
+def test_rolling_trend_min_periods(min_periods, expected_vals):
+    times = pd.date_range(start="2019-01-01", freq="1D", periods=10)
+    primitive_instance = RollingTrend(
+        window_length="4D", gap="1D", min_periods=min_periods
+    )
+    actual_vals = primitive_instance(times, [1, 2, 4, 8, 16, 24, 48, 96, 192, 384])
+    pd.testing.assert_series_equal(pd.Series(expected_vals), pd.Series(actual_vals))
+
+
+@pytest.mark.parametrize(
+    "primitive", [RollingCount, RollingMax, RollingMin, RollingMean, RollingTrend]
 )
 def test_rolling_primitives_non_uniform(primitive):
     # When the data isn't uniform, this impacts the number of values in each rolling window
@@ -310,7 +430,8 @@ def test_rolling_std_non_uniform():
 
 
 @pytest.mark.parametrize(
-    "primitive", [RollingCount, RollingMax, RollingMin, RollingMean, RollingSTD]
+    "primitive",
+    [RollingCount, RollingMax, RollingMin, RollingMean, RollingSTD, RollingTrend],
 )
 @patch("featuretools.primitives.rolling_transform_primitive.apply_roll_with_offset_gap")
 def test_no_call_to_apply_roll_with_offset_gap_with_numeric(
