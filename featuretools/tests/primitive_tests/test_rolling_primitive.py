@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pandas as pd
 import pytest
-from numpy import isnan, nan
+import numpy as np
 
 from featuretools.primitives import (
     RollingCount,
@@ -253,38 +253,42 @@ def test_rolling_count_with_no_gap(
 @pytest.mark.parametrize(
     "window_length, gap, expected_vals",
     [
-        (3, 0, [nan, nan, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]),
-        (4, 1, [nan, nan, nan, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]),
+        (3, 0, [np.nan, np.nan, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]),
+        (
+            4,
+            1,
+            [np.nan, np.nan, np.nan, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        ),
         (
             "5d",
             "7d",
             [
-                nan,
-                nan,
-                nan,
-                nan,
-                nan,
-                nan,
-                nan,
-                0,
-                0.5,
+                np.nan,
+                np.nan,
+                np.nan,
+                np.nan,
+                np.nan,
+                np.nan,
+                np.nan,
+                np.nan,
+                np.nan,
                 1,
-                1.5,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
             ],
         ),
         (
             "5d",
             "0d",
-            [0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+            [np.nan, np.nan, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         ),
     ],
 )
@@ -302,56 +306,20 @@ def test_rolling_trend_window_length_less_than_three(rolling_series_pd):
     vals = primitive_instance(rolling_series_pd.index, rolling_series_pd.values)
 
     for v in vals:
-        assert isnan(v)
+        assert np.isnan(v)
 
 
 @pytest.mark.parametrize(
     "min_periods,expected_vals",
     [
-        (
-            0,
-            [
-                nan,
-                1,
-                1.5,
-                2.33333333,
-                3.75,
-                7.5,
-                13,
-                24,
-                46,
-                90,
-            ],
-        ),
+        (0, [np.nan, np.nan, np.nan, 1.5, 2.3, 4.6, 6.8, 12.8, 26.4, 55.2]),
         (
             2,
-            [
-                nan,
-                nan,
-                1.5,
-                2.33333333,
-                3.75,
-                7.5,
-                13,
-                24,
-                46,
-                90,
-            ],
+            [np.nan, np.nan, np.nan, 1.5, 2.3, 4.6, 6.8, 12.8, 26.4, 55.2],
         ),
         (
             3,
-            [
-                nan,
-                nan,
-                nan,
-                2.33333333,
-                3.75,
-                7.5,
-                13,
-                24,
-                46,
-                90,
-            ],
+            [np.nan, np.nan, np.nan, 1.5, 2.3, 4.6, 6.8, 12.8, 26.4, 55.2],
         ),
     ],
 )
