@@ -13,6 +13,7 @@ Future Release
     * Fixes
     * Changes
         * Drop Python 3.7 support (:pr:`2169`)
+        * Add pre-commit hooks for linting (:pr:`2177`)
     * Documentation Changes
         * Augment single table entry in DFS to include information about passing in a dictionary for `dataframes` argument (:pr:`2160`)
     * Testing Changes
