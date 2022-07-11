@@ -15,27 +15,41 @@ repos:
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
+  - repo: https://github.com/MarcoGorelli/absolufy-imports
+    rev: v0.3.1
+    hooks:
+    -   id: absolufy-imports
+        files: ^featuretools/
   - repo: https://github.com/asottile/pyupgrade
     rev: v2.29.0
     hooks:
       - id: pyupgrade
+        name: Upgrade syntax for newer versions
         args:
-          - --py10-plus
+          - --py310-plus
   - repo: https://github.com/asottile/add-trailing-comma
     rev: v2.2.0
     hooks:
       - id: add-trailing-comma
+        name: Add trailing comma
+  - repo: https://github.com/asottile/blacken-docs
+    rev: v1.12.1
+    hooks:
+    -   id: blacken-docs
+        additional_dependencies: [black==22.3.0]
+  - repo: https://github.com/asottile/reorder_python_imports
+    rev: v3.8.1
+    hooks:
+    -   id: reorder-python-imports
   - repo: local
     hooks:
       - id: isort
-        name: isort
+        name: Run isort
         stages: [commit]
         language: system
         entry: isort
         types: [python]
-      - id: black
-        name: black
-        entry: black
-        language: python
-        types:
-        - python
+  - repo: https://github.com/python/black
+    rev: 22.6.0
+    hooks:
+    -   id: black
