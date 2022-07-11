@@ -100,7 +100,7 @@ Before starting major work, you should touch base with the maintainers of Featur
   # view docs locally
   open build/html/index.html
   ```
-* There is also some pre-commit hooks will run before you commit. You can manually run this as follows:
+* Before you commit, a few lint fixing hooks will run. You can also manually run these.
   ```bash
   pip install pre-commit
   pre-commit install
