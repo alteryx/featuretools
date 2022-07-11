@@ -1,0 +1,33 @@
+# .pre-commit-config.yaml
+minimum_pre_commit_version: 2.20.0
+exclude: ^LICENSES/|\.(html|csv|svg)$
+ci:
+    autofix_prs: false
+repos:
+    - repo: local
+      hooks:
+          - id: local
+
+default_stages: [commit]
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: local
+    hooks:
+      - id: isort
+        name: isort
+        stages: [commit]
+        language: system
+        entry: isort
+        types: [python]
+      - id: black
+        name: black
+        entry: black -t py310
+        additional_dependencies:
+        - black==22.3.0
+        language: python
+        types:
+        - python
