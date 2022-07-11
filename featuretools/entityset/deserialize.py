@@ -76,7 +76,8 @@ def empty_dataframe(description):
 
         ltype_metadata = col["logical_type"]
         ltype = ww_type_system.str_to_logical_type(
-            ltype_metadata["type"], params=ltype_metadata["parameters"]
+            ltype_metadata["type"],
+            params=ltype_metadata["parameters"],
         )
 
         tags = col["semantic_tags"]

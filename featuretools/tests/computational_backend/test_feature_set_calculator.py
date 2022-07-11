@@ -59,7 +59,8 @@ def test_make_identity(es):
 
 def test_make_dfeat(es):
     f = DirectFeature(
-        Feature(es["customers"].ww["age"]), child_dataframe_name="sessions"
+        Feature(es["customers"].ww["age"]),
+        child_dataframe_name="sessions",
     )
 
     feature_set = FeatureSet([f])
@@ -72,7 +73,9 @@ def test_make_dfeat(es):
 
 def test_make_agg_feat_of_identity_column(es):
     agg_feat = Feature(
-        es["log"].ww["value"], parent_dataframe_name="sessions", primitive=Sum
+        es["log"].ww["value"],
+        parent_dataframe_name="sessions",
+        primitive=Sum,
     )
 
     feature_set = FeatureSet([agg_feat])
@@ -86,7 +89,9 @@ def test_make_agg_feat_of_identity_column(es):
 # full_dataframe not supported with Dask
 def test_full_dataframe_trans_of_agg(pd_es):
     agg_feat = Feature(
-        pd_es["log"].ww["value"], parent_dataframe_name="customers", primitive=Sum
+        pd_es["log"].ww["value"],
+        parent_dataframe_name="customers",
+        primitive=Sum,
     )
     trans_feat = Feature(agg_feat, primitive=CumSum)
 
@@ -100,7 +105,9 @@ def test_full_dataframe_trans_of_agg(pd_es):
 
 def test_full_dataframe_error_dask(dask_es):
     agg_feat = Feature(
-        dask_es["log"].ww["value"], parent_dataframe_name="customers", primitive=Sum
+        dask_es["log"].ww["value"],
+        parent_dataframe_name="customers",
+        primitive=Sum,
     )
     trans_feat = Feature(agg_feat, primitive=CumSum)
 
@@ -114,7 +121,9 @@ def test_full_dataframe_error_dask(dask_es):
 
 def test_make_agg_feat_of_identity_index_column(es):
     agg_feat = Feature(
-        es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
+        es["log"].ww["id"],
+        parent_dataframe_name="sessions",
+        primitive=Count,
     )
 
     feature_set = FeatureSet([agg_feat])
@@ -151,7 +160,9 @@ def test_make_agg_feat_using_prev_time(es):
 
     feature_set = FeatureSet([agg_feat])
     calculator = FeatureSetCalculator(
-        es, time_last=datetime(2011, 4, 9, 10, 30, 10), feature_set=feature_set
+        es,
+        time_last=datetime(2011, 4, 9, 10, 30, 10),
+        feature_set=feature_set,
     )
     df = to_pandas(calculator.run(np.array([0])))
 
@@ -159,7 +170,9 @@ def test_make_agg_feat_using_prev_time(es):
     assert v == 2
 
     calculator = FeatureSetCalculator(
-        es, time_last=datetime(2011, 4, 9, 10, 30, 30), feature_set=feature_set
+        es,
+        time_last=datetime(2011, 4, 9, 10, 30, 30),
+        feature_set=feature_set,
     )
     df = to_pandas(calculator.run(np.array([0])))
 
@@ -190,7 +203,9 @@ def test_make_agg_feat_using_prev_n_events(es):
 
     feature_set = FeatureSet([agg_feat_1, agg_feat_2])
     calculator = FeatureSetCalculator(
-        es, time_last=datetime(2011, 4, 9, 10, 30, 6), feature_set=feature_set
+        es,
+        time_last=datetime(2011, 4, 9, 10, 30, 6),
+        feature_set=feature_set,
     )
     df = calculator.run(np.array([0]))
 
@@ -201,7 +216,9 @@ def test_make_agg_feat_using_prev_n_events(es):
     assert v2 == 0
 
     calculator = FeatureSetCalculator(
-        es, time_last=datetime(2011, 4, 9, 10, 30, 30), feature_set=feature_set
+        es,
+        time_last=datetime(2011, 4, 9, 10, 30, 30),
+        feature_set=feature_set,
     )
     df = calculator.run(np.array([0]))
 
@@ -214,7 +231,7 @@ def test_make_agg_feat_using_prev_n_events(es):
 def test_make_agg_feat_multiple_dtypes(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail(
-            "Currently no Dask or Spark compatible agg prims that use multiple dtypes"
+            "Currently no Dask or Spark compatible agg prims that use multiple dtypes",
         )
     compare_prod = IdentityFeature(es["log"].ww["product_id"]) == "coke zero"
 
@@ -262,11 +279,13 @@ def test_make_agg_feat_where_different_identity_feat(es):
                     primitive=where_cmp(datetime(2011, 4, 10, 10, 40, 1)),
                 ),
                 primitive=Count,
-            )
+            ),
         )
 
     df = calculate_feature_matrix(
-        entityset=es, features=feats, instance_ids=[0, 1, 2, 3]
+        entityset=es,
+        features=feats,
+        instance_ids=[0, 1, 2, 3],
     )
     df = to_pandas(df, index="id", sort_index=True)
 
@@ -308,7 +327,9 @@ def test_make_agg_feat_where_different_identity_feat(es):
 
 def test_make_agg_feat_of_grandchild_dataframe(es):
     agg_feat = Feature(
-        es["log"].ww["id"], parent_dataframe_name="customers", primitive=Count
+        es["log"].ww["id"],
+        parent_dataframe_name="customers",
+        primitive=Count,
     )
 
     feature_set = FeatureSet([agg_feat])
@@ -326,7 +347,9 @@ def test_make_agg_feat_where_count_feat(es):
     number of logs in the session is less than 3
     """
     log_count_feat = Feature(
-        es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
+        es["log"].ww["id"],
+        parent_dataframe_name="sessions",
+        primitive=Count,
     )
 
     feat = Feature(
@@ -355,11 +378,15 @@ def test_make_compare_feat(es):
     number of logs in the session is less than 3
     """
     log_count_feat = Feature(
-        es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
+        es["log"].ww["id"],
+        parent_dataframe_name="sessions",
+        primitive=Count,
     )
 
     mean_agg_feat = Feature(
-        log_count_feat, parent_dataframe_name="customers", primitive=Mean
+        log_count_feat,
+        parent_dataframe_name="customers",
+        primitive=Mean,
     )
 
     mean_feat = DirectFeature(mean_agg_feat, child_dataframe_name="sessions")
@@ -386,7 +413,9 @@ def test_make_agg_feat_where_count_and_device_type_feat(es):
     number of logs in the session is less than 3
     """
     log_count_feat = Feature(
-        es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
+        es["log"].ww["id"],
+        parent_dataframe_name="sessions",
+        primitive=Count,
     )
 
     compare_count = log_count_feat == 1
@@ -416,7 +445,9 @@ def test_make_agg_feat_where_count_or_device_type_feat(es):
     number of logs in the session is less than 3
     """
     log_count_feat = Feature(
-        es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
+        es["log"].ww["id"],
+        parent_dataframe_name="sessions",
+        primitive=Count,
     )
 
     compare_count = log_count_feat > 1
@@ -441,11 +472,15 @@ def test_make_agg_feat_where_count_or_device_type_feat(es):
 
 def test_make_agg_feat_of_agg_feat(es):
     log_count_feat = Feature(
-        es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
+        es["log"].ww["id"],
+        parent_dataframe_name="sessions",
+        primitive=Count,
     )
 
     customer_sum_feat = Feature(
-        log_count_feat, parent_dataframe_name="customers", primitive=Sum
+        log_count_feat,
+        parent_dataframe_name="customers",
+        primitive=Sum,
     )
 
     feature_set = FeatureSet([customer_sum_feat])
@@ -465,7 +500,7 @@ def pd_df():
             "e2": ["x", "x", "y", "y", "x"],
             "e3": ["z", "z", "z", "z", "z"],
             "val": [1, 1, 1, 1, 1],
-        }
+        },
     )
 
 
@@ -498,7 +533,10 @@ def test_make_3_stacked_agg_feats(df):
     es = EntitySet()
     ltypes = {"e1": Categorical, "e2": Categorical, "e3": Categorical, "val": Double}
     es.add_dataframe(
-        dataframe=df, index="id", dataframe_name="e0", logical_types=ltypes
+        dataframe=df,
+        index="id",
+        dataframe_name="e0",
+        logical_types=ltypes,
     )
 
     es.normalize_dataframe(
@@ -516,7 +554,9 @@ def test_make_3_stacked_agg_feats(df):
     )
 
     es.normalize_dataframe(
-        base_dataframe_name="e2", new_dataframe_name="e3", index="e3"
+        base_dataframe_name="e2",
+        new_dataframe_name="e3",
+        index="e3",
     )
 
     sum_1 = Feature(es["e0"].ww["val"], parent_dataframe_name="e1", primitive=Sum)
@@ -543,11 +583,14 @@ def test_make_dfeat_of_agg_feat_on_self(es):
     We're trying to calculate a DFeat from C to R on an agg_feat of R on C.
     """
     customer_count_feat = Feature(
-        es["customers"].ww["id"], parent_dataframe_name="régions", primitive=Count
+        es["customers"].ww["id"],
+        parent_dataframe_name="régions",
+        primitive=Count,
     )
 
     num_customers_feat = DirectFeature(
-        customer_count_feat, child_dataframe_name="customers"
+        customer_count_feat,
+        child_dataframe_name="customers",
     )
 
     feature_set = FeatureSet([num_customers_feat])
@@ -573,7 +616,9 @@ def test_make_dfeat_of_agg_feat_through_parent(es):
     store_id_feat = IdentityFeature(es["stores"].ww["id"])
 
     store_count_feat = Feature(
-        store_id_feat, parent_dataframe_name="régions", primitive=Count
+        store_id_feat,
+        parent_dataframe_name="régions",
+        primitive=Count,
     )
 
     num_stores_feat = DirectFeature(store_count_feat, child_dataframe_name="customers")
@@ -600,13 +645,17 @@ def test_make_deep_agg_feat_of_dfeat_of_agg_feat(es):
     then aggregate it with another agg_feat of C on L.
     """
     log_count_feat = Feature(
-        es["log"].ww["id"], parent_dataframe_name="products", primitive=Count
+        es["log"].ww["id"],
+        parent_dataframe_name="products",
+        primitive=Count,
     )
 
     product_purchases_feat = DirectFeature(log_count_feat, child_dataframe_name="log")
 
     purchase_popularity = Feature(
-        product_purchases_feat, parent_dataframe_name="customers", primitive=Mean
+        product_purchases_feat,
+        parent_dataframe_name="customers",
+        primitive=Mean,
     )
 
     feature_set = FeatureSet([purchase_popularity])
@@ -623,11 +672,15 @@ def test_deep_agg_feat_chain(es):
         region.Mean(customer.Count(Log))
     """
     customer_count_feat = Feature(
-        es["log"].ww["id"], parent_dataframe_name="customers", primitive=Count
+        es["log"].ww["id"],
+        parent_dataframe_name="customers",
+        primitive=Count,
     )
 
     region_avg_feat = Feature(
-        customer_count_feat, parent_dataframe_name="régions", primitive=Mean
+        customer_count_feat,
+        parent_dataframe_name="régions",
+        primitive=Mean,
     )
 
     feature_set = FeatureSet([region_avg_feat])
@@ -655,7 +708,7 @@ def test_topn(pd_es):
             ["toothpaste", "coke zero"],
             ["coke zero", "Haribo sugar-free gummy bears"],
             ["taco clock", np.nan],
-        ]
+        ],
     )
     assert [name in df.columns for name in topn.get_feature_names()]
 
@@ -685,7 +738,9 @@ def test_trend(pd_es):
     true_results = [-0.812730, 4.870378, np.nan]
 
     np.testing.assert_almost_equal(
-        df[trend.get_name()].tolist(), true_results, decimal=5
+        df[trend.get_name()].tolist(),
+        true_results,
+        decimal=5,
     )
 
 
@@ -701,13 +756,17 @@ def test_direct_squared(es):
 
 def test_agg_empty_child(es):
     customer_count_feat = Feature(
-        es["log"].ww["id"], parent_dataframe_name="customers", primitive=Count
+        es["log"].ww["id"],
+        parent_dataframe_name="customers",
+        primitive=Count,
     )
     feature_set = FeatureSet([customer_count_feat])
 
     # time last before the customer had any events, so child frame is empty
     calculator = FeatureSetCalculator(
-        es, time_last=datetime(2011, 4, 8), feature_set=feature_set
+        es,
+        time_last=datetime(2011, 4, 8),
+        feature_set=feature_set,
     )
     df = to_pandas(calculator.run(np.array([0])), index="id")
 
@@ -720,16 +779,24 @@ def test_diamond_entityset(diamond_es):
     amount = IdentityFeature(es["transactions"].ww["amount"])
     path = backward_path(es, ["regions", "customers", "transactions"])
     through_customers = AggregationFeature(
-        amount, "regions", primitive=Sum, relationship_path=path
+        amount,
+        "regions",
+        primitive=Sum,
+        relationship_path=path,
     )
     path = backward_path(es, ["regions", "stores", "transactions"])
     through_stores = AggregationFeature(
-        amount, "regions", primitive=Sum, relationship_path=path
+        amount,
+        "regions",
+        primitive=Sum,
+        relationship_path=path,
     )
 
     feature_set = FeatureSet([through_customers, through_stores])
     calculator = FeatureSetCalculator(
-        es, time_last=datetime(2011, 4, 8), feature_set=feature_set
+        es,
+        time_last=datetime(2011, 4, 8),
+        feature_set=feature_set,
     )
     df = calculator.run(np.array([0, 1, 2]))
     df = to_pandas(df, index="id", sort_index=True)
@@ -760,7 +827,9 @@ def test_two_relationships_to_single_dataframe(games_es):
 
     feature_set = FeatureSet([home_team_mean, away_team_mean])
     calculator = FeatureSetCalculator(
-        es, time_last=datetime(2011, 8, 28), feature_set=feature_set
+        es,
+        time_last=datetime(2011, 8, 28),
+        feature_set=feature_set,
     )
     df = calculator.run(np.array(range(3)))
     df = to_pandas(df, index="id", sort_index=True)
@@ -779,7 +848,7 @@ def pd_parent_child():
             "time_index": pd.date_range(start="1/1/2018", periods=3),
             "value": [10, 5, 2],
             "cat": ["a", "a", "b"],
-        }
+        },
     ).astype({"cat": "category"})
     return (parent_df, child_df)
 
@@ -828,7 +897,9 @@ def test_empty_child_dataframe(parent_child):
 
     # create regular agg
     count = Feature(
-        es["child"].ww["id"], parent_dataframe_name="parent", primitive=Count
+        es["child"].ww["id"],
+        parent_dataframe_name="parent",
+        primitive=Count,
     )
 
     # create agg feature that requires multiple arguments
@@ -840,7 +911,9 @@ def test_empty_child_dataframe(parent_child):
 
     # create multi-output agg feature
     n_most_common = Feature(
-        es["child"].ww["cat"], parent_dataframe_name="parent", primitive=NMostCommon
+        es["child"].ww["cat"],
+        parent_dataframe_name="parent",
+        primitive=NMostCommon,
     )
 
     # create aggs with where
@@ -894,13 +967,18 @@ def test_empty_child_dataframe(parent_child):
 
     # cutoff time before all rows
     fm = calculate_feature_matrix(
-        entityset=es, features=features, cutoff_time=pd.Timestamp("12/31/2017")
+        entityset=es,
+        features=features,
+        cutoff_time=pd.Timestamp("12/31/2017"),
     )
     fm = to_pandas(fm)
 
     for column in data.keys():
         pd.testing.assert_series_equal(
-            fm[column], answer[column], check_names=False, check_index=False
+            fm[column],
+            answer[column],
+            check_names=False,
+            check_index=False,
         )
 
     # cutoff time after all rows, but where clause filters all rows
@@ -918,13 +996,18 @@ def test_empty_child_dataframe(parent_child):
     answer = pd.DataFrame(data)
 
     fm2 = calculate_feature_matrix(
-        entityset=es, features=features, cutoff_time=pd.Timestamp("1/4/2018")
+        entityset=es,
+        features=features,
+        cutoff_time=pd.Timestamp("1/4/2018"),
     )
     fm2 = to_pandas(fm2)
 
     for column in data.keys():
         pd.testing.assert_series_equal(
-            fm[column], answer[column], check_names=False, check_index=False
+            fm[column],
+            answer[column],
+            check_names=False,
+            check_index=False,
         )
 
 
@@ -932,7 +1015,9 @@ def test_with_features_built_from_es_metadata(es):
     metadata = es.metadata
 
     agg_feat = Feature(
-        metadata["log"].ww["id"], parent_dataframe_name="customers", primitive=Count
+        metadata["log"].ww["id"],
+        parent_dataframe_name="customers",
+        primitive=Count,
     )
 
     feature_set = FeatureSet([agg_feat])
@@ -947,7 +1032,7 @@ def test_with_features_built_from_es_metadata(es):
 def test_handles_primitive_function_name_uniqueness(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail(
-            "Fails with Dask and Spark due conflicting aggregation primitive names"
+            "Fails with Dask and Spark due conflicting aggregation primitive names",
         )
 
     class SumTimesN(AggregationPrimitive):
@@ -995,10 +1080,14 @@ def test_handles_primitive_function_name_uniqueness(es):
     # different primitives, same function returned by get_function,
     # different base features
     f3 = Feature(
-        es["log"].ww["value"], parent_dataframe_name="customers", primitive=Sum
+        es["log"].ww["value"],
+        parent_dataframe_name="customers",
+        primitive=Sum,
     )
     f4 = Feature(
-        es["log"].ww["purchased"], parent_dataframe_name="customers", primitive=NumTrue
+        es["log"].ww["purchased"],
+        parent_dataframe_name="customers",
+        primitive=NumTrue,
     )
     fm = calculate_feature_matrix(features=[f3, f4], entityset=es)
 
@@ -1048,13 +1137,19 @@ def test_handles_primitive_function_name_uniqueness(es):
             return np.sum
 
     f5 = Feature(
-        es["log"].ww["value"], parent_dataframe_name="customers", primitive=Sum1
+        es["log"].ww["value"],
+        parent_dataframe_name="customers",
+        primitive=Sum1,
     )
     f6 = Feature(
-        es["log"].ww["value"], parent_dataframe_name="customers", primitive=Sum2
+        es["log"].ww["value"],
+        parent_dataframe_name="customers",
+        primitive=Sum2,
     )
     f7 = Feature(
-        es["log"].ww["value"], parent_dataframe_name="customers", primitive=Sum3
+        es["log"].ww["value"],
+        parent_dataframe_name="customers",
+        primitive=Sum3,
     )
     fm = calculate_feature_matrix(features=[f5, f6, f7], entityset=es)
     assert all(fm[f5.get_name()].sort_index() == value_sum)
@@ -1080,7 +1175,9 @@ def test_calls_progress_callback(es):
     identity = Feature(es["customers"].ww["age"])
     direct = Feature(es["cohorts"].ww["cohort_name"], "customers")
     agg = Feature(
-        es["sessions"].ww["id"], parent_dataframe_name="customers", primitive=Count
+        es["sessions"].ww["id"],
+        parent_dataframe_name="customers",
+        primitive=Count,
     )
     agg_apply = Feature(
         es["log"].ww["datetime"],
@@ -1090,7 +1187,9 @@ def test_calls_progress_callback(es):
     trans = Feature(agg, primitive=Negate)
     trans_full = Feature(agg, primitive=CumSum)
     groupby_trans = Feature(
-        agg, primitive=CumSum, groupby=Feature(es["customers"].ww["cohort"])
+        agg,
+        primitive=CumSum,
+        groupby=Feature(es["customers"].ww["cohort"]),
     )
 
     if es.dataframe_type != Library.PANDAS.value:
@@ -1126,7 +1225,9 @@ def test_calls_progress_callback(es):
     # testing again with a time_last with no data
     feature_set = FeatureSet(all_features)
     calculator = FeatureSetCalculator(
-        es, time_last=pd.Timestamp("1950"), feature_set=feature_set
+        es,
+        time_last=pd.Timestamp("1950"),
+        feature_set=feature_set,
     )
 
     mock_progress_callback = MockProgressCallback()
@@ -1162,10 +1263,11 @@ def test_precalculated_features(pd_es):
     # Set up a FeatureSet which knows which features are precalculated.
     precalculated_feature_trie = Trie(default=set, path_constructor=RelationshipPath)
     precalculated_feature_trie.get_node(direct.relationship_path).value.add(
-        agg2.unique_name()
+        agg2.unique_name(),
     )
     feature_set = FeatureSet(
-        [direct], approximate_feature_trie=precalculated_feature_trie
+        [direct],
+        approximate_feature_trie=precalculated_feature_trie,
     )
 
     # Fake precalculated data.
@@ -1175,7 +1277,9 @@ def test_precalculated_features(pd_es):
     precalculated_fm_trie.get_node(direct.relationship_path).value = parent_fm
 
     calculator = FeatureSetCalculator(
-        pd_es, feature_set=feature_set, precalculated_features=precalculated_fm_trie
+        pd_es,
+        feature_set=feature_set,
+        precalculated_features=precalculated_fm_trie,
     )
 
     instance_ids = [0, 2, 3, 5]

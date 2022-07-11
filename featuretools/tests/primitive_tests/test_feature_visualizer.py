@@ -132,10 +132,13 @@ def test_groupby_transform(es):
 
 def test_groupby_transform_direct_groupby(es):
     groupby = DirectFeature(
-        IdentityFeature(es["cohorts"].ww["cohort_name"]), "customers"
+        IdentityFeature(es["cohorts"].ww["cohort_name"]),
+        "customers",
     )
     feat = GroupByTransformFeature(
-        IdentityFeature(es["customers"].ww["age"]), CumMax, groupby
+        IdentityFeature(es["customers"].ww["age"]),
+        CumMax,
+        groupby,
     )
     graph = graph_feature(feat).source
 
@@ -249,7 +252,9 @@ def test_aggregation(es):
 
 def test_multioutput(es):
     multioutput = AggregationFeature(
-        IdentityFeature(es["log"].ww["zipcode"]), "sessions", NMostCommon
+        IdentityFeature(es["log"].ww["zipcode"]),
+        "sessions",
+        NMostCommon,
     )
     feat = FeatureOutputSlice(multioutput, 0)
     graph = graph_feature(feat).source
@@ -303,7 +308,8 @@ def test_multioutput(es):
 
 def test_direct(es):
     d1 = DirectFeature(
-        IdentityFeature(es["customers"].ww["engagement_level"]), "sessions"
+        IdentityFeature(es["customers"].ww["engagement_level"]),
+        "sessions",
     )
     d2 = DirectFeature(d1, "log")
     graph = graph_feature(d2).source
@@ -376,7 +382,8 @@ def test_stacked(es, trans_feat):
 
     trans_prim_edge = 'customers:cancel_date -> "{}"'.format(trans_primitive)
     intermediate_edge = '"{}" -> customers:"{}"'.format(
-        trans_primitive, intermediate_name
+        trans_primitive,
+        intermediate_name,
     )
     groupby_edge = 'customers:cohort -> "{}"'.format(groupby_node)
     groupby_input = 'customers:"{}" -> "{}"'.format(intermediate_name, groupby_node)
@@ -437,7 +444,9 @@ def test_description_auto_caption_metadata(trans_feat, tmpdir):
     with open(metadata_path, "w") as f:
         json.dump(metadata, f)
     json_metadata_graph = graph_feature(
-        trans_feat, description=True, metadata_file=metadata_path
+        trans_feat,
+        description=True,
+        metadata_file=metadata_path,
     ).source
     assert metadata_label in json_metadata_graph
 
@@ -445,7 +454,8 @@ def test_description_auto_caption_metadata(trans_feat, tmpdir):
 def test_description_custom_caption(trans_feat):
     custom_description = "A custom feature description"
     custom_description_graph = graph_feature(
-        trans_feat, description=custom_description
+        trans_feat,
+        description=custom_description,
     ).source
     custom_description_label = 'label="A custom feature description"'
     assert custom_description_label in custom_description_graph

@@ -32,7 +32,7 @@ def test_empty_es():
 @pytest.fixture
 def pd_df():
     return pd.DataFrame({"id": [0, 1, 2], "category": ["a", "b", "c"]}).astype(
-        {"category": "category"}
+        {"category": "category"},
     )
 
 
@@ -91,7 +91,8 @@ def test_init_es_with_dataframe_and_params(df):
     logical_types = {"id": "NaturalLanguage", "category": NaturalLanguage}
     semantic_tags = {"category": "new_tag"}
     es = EntitySet(
-        "es", dataframes={"table": (df, "id", None, logical_types, semantic_tags)}
+        "es",
+        dataframes={"table": (df, "id", None, logical_types, semantic_tags)},
     )
 
     assert es.id == "es"
@@ -138,7 +139,10 @@ def test_add_dataframe_to_es(df):
     es1 = EntitySet("es")
     assert es1.dataframe_dict == {}
     es1.add_dataframe(
-        df, dataframe_name="table", index="id", semantic_tags={"category": "new_tag"}
+        df,
+        dataframe_name="table",
+        index="id",
+        semantic_tags={"category": "new_tag"},
     )
     assert len(es1.dataframe_dict) == 1
 
@@ -224,27 +228,32 @@ def dates_df():
                 "2013-08-01",
                 "2019-08-01",
             ],
-        }
+        },
     )
 
 
 def test_add_secondary_time_index(dates_df):
     dates_df.ww.init(
-        name="dates_table", index="backwards_order", time_index="dates_backwards"
+        name="dates_table",
+        index="backwards_order",
+        time_index="dates_backwards",
     )
     es = EntitySet("es")
     es.add_dataframe(
-        dates_df, secondary_time_index={"repeating_dates": ["random_order", "special"]}
+        dates_df,
+        secondary_time_index={"repeating_dates": ["random_order", "special"]},
     )
 
     assert dates_df.ww.metadata["secondary_time_index"] == {
-        "repeating_dates": ["random_order", "special", "repeating_dates"]
+        "repeating_dates": ["random_order", "special", "repeating_dates"],
     }
 
 
 def test_time_type_check_order(dates_df):
     dates_df.ww.init(
-        name="dates_table", index="backwards_order", time_index="random_order"
+        name="dates_table",
+        index="backwards_order",
+        time_index="random_order",
     )
     es = EntitySet("es")
 
@@ -260,16 +269,19 @@ def test_time_type_check_order(dates_df):
 
 def test_add_time_index_through_woodwork_different_type(dates_df):
     dates_df.ww.init(
-        name="dates_table", index="backwards_order", time_index="dates_backwards"
+        name="dates_table",
+        index="backwards_order",
+        time_index="dates_backwards",
     )
     es = EntitySet("es")
 
     es.add_dataframe(
-        dates_df, secondary_time_index={"repeating_dates": ["random_order", "special"]}
+        dates_df,
+        secondary_time_index={"repeating_dates": ["random_order", "special"]},
     )
 
     assert dates_df.ww.metadata["secondary_time_index"] == {
-        "repeating_dates": ["random_order", "special", "repeating_dates"]
+        "repeating_dates": ["random_order", "special", "repeating_dates"],
     }
     assert es.time_type == Datetime
 
@@ -285,7 +297,9 @@ def test_add_time_index_through_woodwork_different_type(dates_df):
 
 def test_init_with_mismatched_time_types(dates_df):
     dates_df.ww.init(
-        name="dates_table", index="backwards_order", time_index="repeating_dates"
+        name="dates_table",
+        index="backwards_order",
+        time_index="repeating_dates",
     )
     es = EntitySet("es")
     es.add_dataframe(dates_df, secondary_time_index={"special_dates": ["special"]})
@@ -343,7 +357,7 @@ def test_normalize_dataframe():
             "age": pd.Series([33, None, 33, 57], dtype="Int64"),
             "signup_date": [pd.to_datetime("2020-09-01")] * 4,
             "is_registered": pd.Series([True, False, True, None], dtype="boolean"),
-        }
+        },
     )
 
     df.ww.init(name="first_table", index="id", time_index="signup_date")
@@ -385,7 +399,7 @@ def test_replace_dataframe():
             "age": pd.Series([33, None, 33, 57], dtype="Int64"),
             "signup_date": [pd.to_datetime("2020-09-01")] * 4,
             "is_registered": pd.Series([True, False, True, None], dtype="boolean"),
-        }
+        },
     )
 
     df.ww.init(name="table", index="id")
@@ -419,10 +433,10 @@ def test_add_last_time_non_numeric_index(pd_es, spark_es, dask_es):
     spark_es.add_last_time_indexes(["products"])
 
     assert list(to_pandas(pd_es["products"][LTI_COLUMN_NAME]).sort_index()) == list(
-        to_pandas(dask_es["products"][LTI_COLUMN_NAME]).sort_index()
+        to_pandas(dask_es["products"][LTI_COLUMN_NAME]).sort_index(),
     )
     assert list(to_pandas(pd_es["products"][LTI_COLUMN_NAME]).sort_index()) == list(
-        to_pandas(spark_es["products"]).sort_values("id")[LTI_COLUMN_NAME]
+        to_pandas(spark_es["products"]).sort_values("id")[LTI_COLUMN_NAME],
     )
 
     assert pd_es["products"].ww.schema == dask_es["products"].ww.schema
@@ -486,7 +500,10 @@ def test_dataframe_with_name_parameter(es):
     assert new_df.ww.schema is None
 
     new_es.add_dataframe(
-        new_df, dataframe_name="df_name", index="id", logical_types={"id": "Integer"}
+        new_df,
+        dataframe_name="df_name",
+        index="id",
+        logical_types={"id": "Integer"},
     )
     assert new_es["df_name"].ww.name == "df_name"
 
@@ -645,7 +662,7 @@ def test_replace_dataframe_already_sorted(es):
 def test_replace_dataframe_invalid_schema(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail(
-            "Invalid schema checks able to be caught by Woodwork only relevant for Pandas"
+            "Invalid schema checks able to be caught by Woodwork only relevant for Pandas",
         )
     df = es["customers"].copy()
     df["id"] = pd.Series([1, 1, 1])
@@ -658,7 +675,7 @@ def test_replace_dataframe_invalid_schema(es):
 def test_replace_dataframe_mismatched_index(es):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail(
-            "Only pandas checks whether underlying index matches the Woodwork index"
+            "Only pandas checks whether underlying index matches the Woodwork index",
         )
     df = es["customers"].copy()
     df["id"] = pd.Series([99, 88, 77])
@@ -701,7 +718,7 @@ def latlong_df_pandas():
             "bracketless_string_tuple": pd.Series(["1, 2", "3, 4"]),
             "list_strings": pd.Series([["1", "2"], ["3", "4"]]),
             "combo_tuple_types": pd.Series(["[1, 2]", "(3, 4)"]),
-        }
+        },
     )
     latlong_df.set_index("string_tuple", drop=False, inplace=True)
     latlong_df.index.name = None
@@ -719,8 +736,8 @@ def latlong_df_spark(latlong_df_pandas):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(
         latlong_df_pandas.applymap(
-            lambda tup: list(tup) if isinstance(tup, tuple) else tup
-        )
+            lambda tup: list(tup) if isinstance(tup, tuple) else tup,
+        ),
     )
 
 
@@ -782,7 +799,7 @@ def test_replace_dataframe_different_woodwork_initialized(es):
     # Initialize Woodwork on the new DataFrame and change the schema so it won't match the original DataFrame's schema
     df.ww.init(schema=es["customers"].ww.schema)
     df.ww.set_types(
-        logical_types={"id": "NaturalLanguage", "cancel_date": "NaturalLanguage"}
+        logical_types={"id": "NaturalLanguage", "cancel_date": "NaturalLanguage"},
     )
     assert df["id"].dtype == "string"
     assert df["cancel_date"].dtype == "string"
@@ -818,7 +835,7 @@ def test_replace_dataframe_different_dataframe_types():
                 pd.to_datetime("2017-08-25"),
             ],
             "strings": ["I am a string", "23", "abcdef ghijk", ""],
-        }
+        },
     )
     sessions_dask = dd.from_pandas(sessions, npartitions=2)
     sessions_logical_types = {
@@ -850,10 +867,10 @@ def test_replace_dataframe_and_min_last_time_index(es):
 
     if ps and isinstance(original_time_index, ps.Series):
         new_time_index = ps.from_pandas(
-            original_time_index.to_pandas() + pd.Timedelta(days=1)
+            original_time_index.to_pandas() + pd.Timedelta(days=1),
         )
         expected_last_time_index = ps.from_pandas(
-            original_last_time_index.to_pandas() + pd.Timedelta(days=1)
+            original_last_time_index.to_pandas() + pd.Timedelta(days=1),
         )
     else:
         new_time_index = original_time_index + pd.Timedelta(days=1)
@@ -885,7 +902,7 @@ def test_replace_dataframe_dont_recalculate_last_time_index_present(es):
 
     if ps and isinstance(original_time_index, ps.Series):
         new_time_index = ps.from_pandas(
-            original_time_index.to_pandas() + pd.Timedelta(days=10)
+            original_time_index.to_pandas() + pd.Timedelta(days=10),
         )
     else:
         new_time_index = original_time_index + pd.Timedelta(days=10)
@@ -894,7 +911,9 @@ def test_replace_dataframe_dont_recalculate_last_time_index_present(es):
     new_dataframe["signup_date"] = new_time_index
 
     es.replace_dataframe(
-        "customers", new_dataframe, recalculate_last_time_indexes=False
+        "customers",
+        new_dataframe,
+        recalculate_last_time_indexes=False,
     )
     pd.testing.assert_series_equal(
         to_pandas(es["customers"][LTI_COLUMN_NAME], sort_index=True),
@@ -911,7 +930,7 @@ def test_replace_dataframe_dont_recalculate_last_time_index_not_present(es):
 
     if ps and isinstance(original_time_index, ps.Series):
         new_time_index = ps.from_pandas(
-            original_time_index.to_pandas() + pd.Timedelta(days=10)
+            original_time_index.to_pandas() + pd.Timedelta(days=10),
         )
     else:
         new_time_index = original_time_index + pd.Timedelta(days=10)
@@ -921,7 +940,9 @@ def test_replace_dataframe_dont_recalculate_last_time_index_not_present(es):
     new_dataframe.pop(LTI_COLUMN_NAME)
 
     es.replace_dataframe(
-        "customers", new_dataframe, recalculate_last_time_indexes=False
+        "customers",
+        new_dataframe,
+        recalculate_last_time_indexes=False,
     )
     assert "last_time_index" not in es["customers"].ww.metadata
     assert original_lti_name not in es["customers"].columns
@@ -934,7 +955,7 @@ def test_replace_dataframe_recalculate_last_time_index_not_present(es):
 
     if ps and isinstance(original_time_index, ps.Series):
         new_time_index = ps.from_pandas(
-            original_time_index.to_pandas() + pd.Timedelta(days=10)
+            original_time_index.to_pandas() + pd.Timedelta(days=10),
         )
     else:
         new_time_index = original_time_index + pd.Timedelta(days=10)
@@ -963,7 +984,7 @@ def test_replace_dataframe_recalculate_last_time_index_present(es):
 
     if ps and isinstance(original_time_index, ps.Series):
         new_time_index = ps.from_pandas(
-            original_time_index.to_pandas() + pd.Timedelta(days=10)
+            original_time_index.to_pandas() + pd.Timedelta(days=10),
         )
     else:
         new_time_index = original_time_index + pd.Timedelta(days=10)
@@ -1028,7 +1049,7 @@ def test_normalize_ww_init():
             "col": ["a", "b", "c", "d"],
             "df2_id": [1, 1, 2, 2],
             "df2_col": [True, False, True, True],
-        }
+        },
     )
 
     df.ww.init(index="id", name="test_name")
@@ -1038,7 +1059,10 @@ def test_normalize_ww_init():
     assert es["test_name"].ww.schema.name == "test_name"
 
     es.normalize_dataframe(
-        "test_name", "new_df", "df2_id", additional_columns=["df2_col"]
+        "test_name",
+        "new_df",
+        "df2_id",
+        additional_columns=["df2_col"],
     )
 
     assert es["test_name"].ww.name == "test_name"

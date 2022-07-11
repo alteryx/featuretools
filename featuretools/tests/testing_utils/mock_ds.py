@@ -37,7 +37,7 @@ def make_ecommerce_entityset(with_integer_time_index=False):
           L     Log
     """
     dataframes = make_ecommerce_dataframes(
-        with_integer_time_index=with_integer_time_index
+        with_integer_time_index=with_integer_time_index,
     )
     dataframe_names = dataframes.keys()
     es_id = "ecommerce"
@@ -84,7 +84,7 @@ def make_ecommerce_entityset(with_integer_time_index=False):
             ("customers", "id", "sessions", "customer_id"),
             ("sessions", "id", "log", "session_id"),
             ("products", "id", "log", "product_id"),
-        ]
+        ],
     )
 
     return es
@@ -92,7 +92,7 @@ def make_ecommerce_entityset(with_integer_time_index=False):
 
 def make_ecommerce_dataframes(with_integer_time_index=False):
     region_df = pd.DataFrame(
-        {"id": ["United States", "Mexico"], "language": ["en", "sp"]}
+        {"id": ["United States", "Mexico"], "language": ["en", "sp"]},
     )
 
     store_df = pd.DataFrame(
@@ -100,7 +100,7 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
             "id": range(6),
             "région_id": ["United States"] * 3 + ["Mexico"] * 2 + [np.nan],
             "num_square_feet": list(range(30000, 60000, 6000)) + [np.nan],
-        }
+        },
     )
 
     product_df = pd.DataFrame(
@@ -130,7 +130,7 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
                 "bit.ly",
                 "featuretools.com/demos/",
             ],
-        }
+        },
     )
     customer_times = {
         "signup_date": [
@@ -181,7 +181,7 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
             "email": ["john.smith@example.com", np.nan, "team@featuretools.com"],
             "phone_number": ["555-555-5555", "555-555-5555", "1-(555)-555-5555"],
             "birthday": customer_times["birthday"],
-        }
+        },
     )
 
     ips = [
@@ -209,7 +209,7 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
             "device_name": ["PC", "Mobile", "Mobile", "PC", "PC", "Mobile"],
             "ip": ips,
             "filepath": filepaths,
-        }
+        },
     )
 
     times = list(
@@ -218,7 +218,7 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
         + [datetime(2011, 4, 9, 10, 40, 0)]
         + [datetime(2011, 4, 10, 10, 40, i) for i in range(2)]
         + [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)]
-        + [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)]
+        + [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)],
     )
     if with_integer_time_index:
         times = list(range(8, 18)) + list(range(19, 26))
@@ -229,7 +229,7 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
         + [0]
         + [i * 5 for i in range(2)]
         + [i * 7 for i in range(3)]
-        + [np.nan] * 2
+        + [np.nan] * 2,
     )
 
     values_2 = list(
@@ -238,7 +238,7 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
         + [0]
         + [i * 2 for i in range(2)]
         + [i * 3 for i in range(3)]
-        + [np.nan] * 2
+        + [np.nan] * 2,
     )
 
     values_many_nans = list(
@@ -247,7 +247,7 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
         + [0]
         + [np.nan] * 2
         + [i * 3 for i in range(3)]
-        + [np.nan] * 2
+        + [np.nan] * 2,
     )
 
     latlong = list([(values[i], values_2[i]) for i, _ in enumerate(values)])
@@ -258,11 +258,11 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
         + ["0"]
         + ["1234567890"] * 2
         + ["12345-6789"] * 2
-        + [np.nan] * 3
+        + [np.nan] * 3,
     )
     countrycodes = list(["US"] * 5 + ["AL"] * 4 + [np.nan] * 5 + ["ALB"] * 2 + ["USA"])
     subregioncodes = list(
-        ["US-AZ"] * 5 + ["US-MT"] * 4 + [np.nan] * 3 + ["UG-219"] * 2 + ["ZM-06"] * 3
+        ["US-AZ"] * 5 + ["US-MT"] * 4 + [np.nan] * 3 + ["UG-219"] * 2 + ["ZM-06"] * 3,
     )
     log_df = pd.DataFrame(
         {
@@ -310,7 +310,7 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
             + [gummy_review()]
             + ["I loved it"] * 4
             + taco_clock_reviews(),
-        }
+        },
     )
 
     return {

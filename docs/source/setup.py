@@ -6,7 +6,8 @@ import featuretools as ft
 def load_feature_plots():
     es = ft.demo.load_mock_customer(return_entityset=True)
     path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "getting_started/graphs/"
+        os.path.dirname(os.path.abspath(__file__)),
+        "getting_started/graphs/",
     )
     agg_feat = ft.AggregationFeature(
         ft.IdentityFeature(es["sessions"].ww["session_id"]),

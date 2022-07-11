@@ -240,7 +240,7 @@ def calculate_feature_matrix(
             {
                 "instance_id": cutoff_time[1],
                 "time": [cutoff_time[0]] * len(cutoff_time[1]),
-            }
+            },
         )
         target_dataframe = features[0].dataframe
         ltype = target_dataframe.ww.logical_types[target_dataframe.ww.index]
@@ -253,7 +253,8 @@ def calculate_feature_matrix(
         approximate_feature_trie = gather_approximate_features(feature_set)
         # Make a new FeatureSet that ignores approximated features
         feature_set = FeatureSet(
-            features, approximate_feature_trie=approximate_feature_trie
+            features,
+            approximate_feature_trie=approximate_feature_trie,
         )
 
     # Check if there are any non-approximated aggregation features
@@ -355,13 +356,14 @@ def calculate_feature_matrix(
                     pd.MultiIndex.from_frame(
                         cutoff_time[["instance_id", "time"]],
                         names=feature_matrix.index.names,
-                    )
+                    ),
                 )
             else:
                 # Maintain index dtype
                 index_dtype = feature_matrix.index.get_level_values(0).dtype
                 feature_matrix = feature_matrix.ww.reindex(
-                    cutoff_time[1].astype(index_dtype), level=0
+                    cutoff_time[1].astype(index_dtype),
+                    level=0,
                 )
             if not cutoff_time_in_index:
                 feature_matrix.ww.reset_index(level="time", drop=True, inplace=True)
@@ -427,14 +429,18 @@ def calculate_chunk(
                         progress_percent,
                         time_elapsed,
                     ) = update_progress_callback_parameters(
-                        progress_bar, previous_progress
+                        progress_bar,
+                        previous_progress,
                     )
                     progress_callback(update, progress_percent, time_elapsed)
 
         time_last = cutoff_time[0]
         ids = cutoff_time[1]
         calculator = FeatureSetCalculator(
-            entityset, feature_set, time_last, training_window=training_window
+            entityset,
+            feature_set,
+            time_last,
+            training_window=training_window,
         )
         _feature_matrix = calculator.run(
             ids,
@@ -485,7 +491,8 @@ def calculate_chunk(
                                 progress_percent,
                                 time_elapsed,
                             ) = update_progress_callback_parameters(
-                                progress_bar, previous_progress
+                                progress_bar,
+                                previous_progress,
                             )
                             progress_callback(update, progress_percent, time_elapsed)
 
@@ -545,10 +552,14 @@ def calculate_chunk(
                     cols = [c for c in _feature_matrix.columns if c not in pass_columns]
                     indexer = group[["instance_id", target_time] + pass_columns]
                     _feature_matrix = _feature_matrix[cols].merge(
-                        indexer, right_on=["instance_id"], left_index=True, how="right"
+                        indexer,
+                        right_on=["instance_id"],
+                        left_index=True,
+                        how="right",
                     )
                     _feature_matrix.set_index(
-                        ["instance_id", target_time], inplace=True
+                        ["instance_id", target_time],
+                        inplace=True,
                     )
                     _feature_matrix.index.set_names([id_name, "time"], inplace=True)
                     _feature_matrix.sort_index(level=1, kind="mergesort", inplace=True)
@@ -569,7 +580,8 @@ def calculate_chunk(
                     if isinstance(_feature_matrix, pd.DataFrame):
                         time_index = pd.Index([time_last] * num_rows, name="time")
                         _feature_matrix = _feature_matrix.set_index(
-                            time_index, append=True
+                            time_index,
+                            append=True,
                         )
                         if len(pass_columns) > 0:
                             pass_through.set_index([id_name, "time"], inplace=True)
@@ -585,7 +597,8 @@ def calculate_chunk(
                                 npartitions=_feature_matrix.npartitions,
                             )
                             _feature_matrix = _feature_matrix.merge(
-                                pass_df, how="outer"
+                                pass_df,
+                                how="outer",
                             )
                         _feature_matrix = _feature_matrix.drop(columns=["time"])
                     elif is_instance(_feature_matrix, ps, "DataFrame") and (
@@ -594,16 +607,20 @@ def calculate_chunk(
                         _feature_matrix["time"] = time_last
                         for col in pass_columns:
                             pass_df = ps.from_pandas(
-                                pass_through[[id_name, "time", col]]
+                                pass_through[[id_name, "time", col]],
                             )
                             _feature_matrix = _feature_matrix.merge(
-                                pass_df, how="outer"
+                                pass_df,
+                                how="outer",
                             )
                         _feature_matrix = _feature_matrix.drop(columns=["time"])
                 feature_matrix.append(_feature_matrix)
 
     ww_init_kwargs = get_ww_types_from_features(
-        feature_set.target_features, entityset, pass_columns, cutoff_time
+        feature_set.target_features,
+        entityset,
+        pass_columns,
+        cutoff_time,
     )
     feature_matrix = init_ww_and_concat_fm(feature_matrix, ww_init_kwargs)
     return feature_matrix
@@ -684,7 +701,8 @@ def approximate_features(
         cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids[columns_we_want]
         cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids.drop_duplicates()
         cutoffs_with_approx_e_ids.dropna(
-            subset=[new_approx_dataframe_index_col], inplace=True
+            subset=[new_approx_dataframe_index_col],
+            inplace=True,
         )
 
         approx_features = [
@@ -694,7 +712,8 @@ def approximate_features(
             approx_fm = gen_empty_approx_features_df(approx_features)
         else:
             cutoffs_with_approx_e_ids.sort_values(
-                [cutoff_df_time_col, new_approx_dataframe_index_col], inplace=True
+                [cutoff_df_time_col, new_approx_dataframe_index_col],
+                inplace=True,
             )
             # CFM assumes specific column names for cutoff_time argument
             rename = {new_approx_dataframe_index_col: cutoff_df_instance_col}
@@ -772,7 +791,7 @@ def parallel_calculate_chunks(
         _saved_features = client.scatter(pickled_feats)
         client.replicate([_es, _saved_features])
         num_scattered_workers = len(
-            client.who_has([Future(es_token)]).get(es_token, [])
+            client.who_has([Future(es_token)]).get(es_token, []),
         )
         num_workers = len(client.scheduler_info()["workers"].values())
 
@@ -844,7 +863,8 @@ def parallel_calculate_chunks(
                         progress_percent,
                         time_elapsed,
                     ) = update_progress_callback_parameters(
-                        progress_bar, previous_progress
+                        progress_bar,
+                        previous_progress,
                     )
                     progress_callback(update, progress_percent, time_elapsed)
 
@@ -858,7 +878,10 @@ def parallel_calculate_chunks(
             cluster.close()  # pragma: no cover
 
     ww_init_kwargs = get_ww_types_from_features(
-        feature_set.target_features, entityset, pass_columns, cutoff_time
+        feature_set.target_features,
+        entityset,
+        pass_columns,
+        cutoff_time,
     )
     feature_matrix = init_ww_and_concat_fm(feature_matrix, ww_init_kwargs)
     return feature_matrix
@@ -885,7 +908,9 @@ def _add_approx_dataframe_index_col(es, target_dataframe_name, cutoffs, path):
         to_rename = {relationship._child_column_name: new_col_name}
         child_df = child_df.rename(columns=to_rename)
         cutoffs = cutoffs.merge(
-            child_df, left_on=last_child_col, right_on=last_parent_col
+            child_df,
+            left_on=last_child_col,
+            right_on=last_parent_col,
         )
 
         # These will be used in the next iteration.

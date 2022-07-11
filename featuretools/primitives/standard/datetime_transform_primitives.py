@@ -99,7 +99,10 @@ class DateToHoliday(TransformPrimitive):
             df["date"] = df["date"].dt.date.astype("datetime64[ns]")
 
             df = df.merge(
-                holiday_df, how="left", left_on="date", right_on="holiday_date"
+                holiday_df,
+                how="left",
+                left_on="date",
+                right_on="holiday_date",
             )
             return df.names.values
 
@@ -122,7 +125,8 @@ class Day(TransformPrimitive):
     name = "day"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(1, 32))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(1, 32))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the day of the month of {}"
@@ -154,7 +158,8 @@ class DayOfYear(TransformPrimitive):
     name = "day_of_year"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(1, 367))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(1, 367))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the day of year from {}"
@@ -182,7 +187,8 @@ class DaysInMonth(TransformPrimitive):
     name = "days_in_month"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(1, 32))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(1, 32))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the days in the month of {}"
@@ -293,7 +299,8 @@ class Hour(TransformPrimitive):
     name = "hour"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(24))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(24))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the hour value of {}"
@@ -603,7 +610,8 @@ class Minute(TransformPrimitive):
     name = "minute"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(60))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(60))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the minutes value of {}"
@@ -631,7 +639,8 @@ class Month(TransformPrimitive):
     name = "month"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(1, 13))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(1, 13))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the month of {}"
@@ -722,7 +731,8 @@ class Quarter(TransformPrimitive):
     name = "quarter"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(1, 5))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(1, 5))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the quarter that describes {}"
@@ -750,7 +760,8 @@ class Second(TransformPrimitive):
     name = "second"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(60))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(60))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the seconds value of {}"
@@ -847,7 +858,8 @@ class TimeSincePrevious(TransformPrimitive):
     def get_function(self):
         def pd_diff(values):
             return convert_time_units(
-                values.diff().apply(lambda x: x.total_seconds()), self.unit
+                values.diff().apply(lambda x: x.total_seconds()),
+                self.unit,
             )
 
         return pd_diff
@@ -874,7 +886,8 @@ class Week(TransformPrimitive):
     name = "week"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(1, 54))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(1, 54))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the week of the year of {}"
@@ -909,7 +922,8 @@ class Weekday(TransformPrimitive):
     name = "weekday"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(7))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(7))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the day of the week of {}"
@@ -937,7 +951,8 @@ class Year(TransformPrimitive):
     name = "year"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(1, 3000))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(1, 3000))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the year of {}"
@@ -987,7 +1002,8 @@ class IsFederalHoliday(TransformPrimitive):
     def get_function(self):
         def is_federal_holiday(x):
             holidays_df = pd.DataFrame(
-                sorted(self.federal_holidays.items()), columns=["dates", "names"]
+                sorted(self.federal_holidays.items()),
+                columns=["dates", "names"],
             )
             is_holiday = x.dt.normalize().isin(holidays_df.dates)
             if x.isnull().values.any():

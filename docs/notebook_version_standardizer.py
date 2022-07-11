@@ -147,21 +147,21 @@ def check_execution():
         executed_notebooks = "\n".join(executed_notebooks)
         raise SystemExit(
             f"The following notebooks have executed outputs:\n {executed_notebooks}\n"
-            "Please run make lint-fix to fix this."
+            "Please run make lint-fix to fix this.",
         )
     if empty_cells:
         empty_cells = ["\t" + notebook for notebook in empty_cells]
         empty_cells = "\n".join(empty_cells)
         raise SystemExit(
             f"The following notebooks have empty cells at the end:\n {empty_cells}\n"
-            "Please run make lint-fix to fix this."
+            "Please run make lint-fix to fix this.",
         )
     if versions:
         versions = ["\t" + notebook for notebook in versions]
         versions = "\n".join(versions)
         raise SystemExit(
             f"The following notebooks have the wrong Python version: \n {versions}\n"
-            "Please run make lint-fix to fix this."
+            "Please run make lint-fix to fix this.",
         )
 
 

@@ -1,7 +1,17 @@
 # .pre-commit-config.yaml
-exclude: ^LICENSES/|\.(html|csv|svg|md|)$
 default_stages: [commit]
 repos:
+
+  - repo: https://github.com/MarcoGorelli/absolufy-imports
+    rev: v0.3.1
+    hooks:
+    -   id: absolufy-imports
+        files: ^featuretools/
+  - repo: https://github.com/asottile/add-trailing-comma
+    rev: v2.2.0
+    hooks:
+      - id: add-trailing-comma
+        name: Add trailing comma
   - repo: https://github.com/PyCQA/isort
     rev: 5.10.1
     hooks:

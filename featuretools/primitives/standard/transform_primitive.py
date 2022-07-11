@@ -227,7 +227,7 @@ class IsIn(TransformPrimitive):
         else:
             stringified_output_list = ", ".join([str(x) for x in list_of_outputs])
         self.description_template = "whether {{}} is in {}".format(
-            stringified_output_list
+            stringified_output_list,
         )
 
     def get_function(self):

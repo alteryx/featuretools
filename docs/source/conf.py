@@ -86,7 +86,7 @@ latex_documents = [
 latex_elements = {
     "preamble": r"""
 \usepackage[utf8]{inputenc}
-"""
+""",
 }
 
 # The version info for the project you're documenting, acts as replacement for
@@ -402,6 +402,7 @@ def setup(app):
     ipython_p.mkdir(parents=True, exist_ok=True)
     file_p = os.path.abspath(os.path.dirname(__file__))
     shutil.copy(
-        file_p + "/set-headers.py", home_dir + "/.ipython/profile_default/startup"
+        file_p + "/set-headers.py",
+        home_dir + "/.ipython/profile_default/startup",
     )
     app.add_css_file("style.css")
