@@ -4,23 +4,29 @@ repos:
     rev: v4.0.1
     hooks:
       - id: end-of-file-fixer
+        verbose: false
       - id: trailing-whitespace
+        verbose: false
   - repo: https://github.com/MarcoGorelli/absolufy-imports
     rev: v0.3.1
     hooks:
     -   id: absolufy-imports
         files: ^featuretools/
+        verbose: false
   - repo: https://github.com/asottile/add-trailing-comma
     rev: v2.2.0
     hooks:
       - id: add-trailing-comma
         name: Add trailing comma
+        verbose: false
   - repo: https://github.com/PyCQA/isort
     rev: 5.10.1
     hooks:
       - id: isort
+        verbose: false
   - repo: https://github.com/python/black
     rev: 22.3.0
     hooks:
       - id: black
         args: [--target-version=py310]
+        verbose: false
