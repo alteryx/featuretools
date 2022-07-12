@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         python_version: ["3.8", "3.9", "3.10"]
-        libraries: ["core", "spark"]
+        libraries: ["spark"]
 
     steps:
       - name: Set up python ${{ matrix.python_version }}
@@ -45,69 +45,27 @@ jobs:
           JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           python -m pip install -e unpacked_sdist/[spark]
           python -m pip install -e unpacked_sdist/[test]
-      - if: ${{ matrix.python_version != 3.7 || matrix.libraries != 'spark' }}
-        name: Run unit tests (no code coverage)
+      - name: Run doc tests (no code coverage)
         run: |
           cd unpacked_sdist
-          pytest featuretools/ -n 2
-      - if: ${{ matrix.python_version == 3.7 && matrix.libraries == 'spark' }}
-        name: Run unit tests with code coverage
-        run: |
-          cd unpacked_sdist/
-          coverage erase
-          pytest featuretools/ -n 2 --cov=featuretools --cov-config=../pyproject.toml --cov-report=xml:../coverage.xml
-      - if: ${{ matrix.python_version == 3.7 && matrix.libraries == 'spark' }}
-        name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          fail_ci_if_error: true
-          files: ${{ github.workspace }}/coverage.xml
-          verbose: true
-
-  win_unit_tests:
-    name: ${{ matrix.python_version }} windows unit tests
-    runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python_version: ["3.8", "3.9", "3.10"]
-    steps:
-      - name: Download miniconda
-        shell: pwsh
-        run: |
-          $File = "Miniconda3-4.7.12.1-Windows-x86_64.exe"
-          $Uri = "https://repo.anaconda.com/miniconda/$File"
-          $ProgressPreference = "silentlyContinue"
-          Invoke-WebRequest -Uri $Uri -Outfile "$env:USERPROFILE/$File"
-          $hashFromFile = Get-FileHash "$env:USERPROFILE/$File" -Algorithm SHA256
-          $hashFromUrl = "f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45"
-          if ($hashFromFile.Hash -ne "$hashFromUrl") {
-            Throw "File hashes did not match!"
-          }
-      - name: Install miniconda
-        shell: cmd
-        run: start /wait "" %UserProfile%\Miniconda3-4.7.12.1-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /S /D=%UserProfile%\Miniconda3
-      - name: Create python ${{ matrix.python_version }} environment
-        shell: pwsh
-        run: |
-          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
-          conda create -n featuretools python=${{ matrix.python_version }}
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-      - name: Install featuretools with test requirements
-        shell: pwsh
-        run: |
-          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
-          conda activate featuretools
-          conda config --add channels conda-forge
-          conda install -q -y -c conda-forge python-graphviz=0.16 graphviz=2.38
-          python -m pip install --upgrade pip
-          python -m pip install .[test]
-      - name: Run unit tests
-        run: |
-          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
-          conda activate featuretools
-          pytest featuretools\ -n 2
+          pytest featuretools/ --ignore featuretools/tests/ -n 2
+      - name: Run cli tests
+        run: pytest featuretools/tests/cli_tests -n 2
+      - name: Run computational_backend tests
+        run: pytest featuretools/tests/computational_backend -n 2
+      - name: Run config_tests
+        run: pytest featuretools/tests/config_tests -n 2
+      - name: Run demo_tests
+        run: pytest featuretools/tests/demo_tests -n 2
+      - name: Run entityset_tests
+        run: pytest featuretools/tests/entityset_tests -n 2
+      - name: Run entry_point_tests
+        run: pytest featuretools/tests/entry_point_tests -n 2
+      - name: Run primitive_tests
+        run: pytest featuretools/tests/primitive_tests -n 2
+      - name: Run selection tests
+        run: pytest featuretools/tests/selection -n 2
+      - name: Run synthesis
+        run: pytest featuretools/tests/synthesis -n 2
+      - name: Run utils tests
+        run: pytest featuretools/tests/utils_tests -n 2
