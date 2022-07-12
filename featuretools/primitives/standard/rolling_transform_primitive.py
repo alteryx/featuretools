@@ -481,25 +481,25 @@ class RollingTrend(TransformPrimitive):
         >>> rolling_trend = RollingTrend()
         >>> times = pd.date_range(start="2019-01-01", freq="1D", periods=10)
         >>> rolling_trend(times, [1, 2, 4, 8, 16, 24, 48, 96, 192, 384]).tolist()
-        [nan, nan, 1.4999999999999998, 2.9999999999999996, 5.999999999999999, 7.999999999999999, 16, 36, 72, 144]
+        [nan, nan, 1.4999999999999998, 2.9999999999999996, 5.999999999999999, 7.999999999999999, 16.0, 36.0, 72.0, 144.0]
 
         We can also control the gap before the rolling calculation.
 
         >>> rolling_trend = RollingTrend(gap=1)
         >>> rolling_trend(times, [1, 2, 4, 8, 16, 24, 48, 96, 192, 384]).tolist()
-        [nan, nan, nan, 3, 6, 8, 16, 36, 72]
+        [nan, nan, nan, 1.4999999999999998, 2.9999999999999996, 5.999999999999999, 7.999999999999999, 16.0, 36.0, 72.0]
 
         We can also control the minimum number of periods required for the rolling calculation.
 
         >>> rolling_trend = RollingTrend(window_length=4, min_periods=4)
-        >>> rolling_trend(times, [[1, 2, 4, 8, 16, 24, 48, 96, 192, 384]).tolist()
-        [nan, nan, 1.5, 2.3, 4.6, 6.8, 12.8, 26.4, 55.2,110.4]
+        >>> rolling_trend(times, [1, 2, 4, 8, 16, 24, 48, 96, 192, 384]).tolist()
+        [nan, nan, nan, 2.299999999999999, 4.599999999999998, 6.799999999999996, 12.799999999999992, 26.399999999999984, 55.19999999999997, 110.39999999999993]
 
         We can also set the window_length and gap using offset alias strings.
 
         >>> rolling_trend = RollingTrend(window_length="4D", gap="1D")
-        >>> rolling_trend(times, [[1, 2, 4, 8, 16, 24, 48, 96, 192, 384]).tolist()
-        [nan, 1, 1.5, 2.33333333, 3.75, 7.5, 13, 24, 46, 90])
+        >>> rolling_trend(times, [1, 2, 4, 8, 16, 24, 48, 96, 192, 384]).tolist()
+        [nan, nan, nan, 1.4999999999999998, 2.299999999999999, 4.599999999999998, 6.799999999999996, 12.799999999999992, 26.399999999999984, 55.19999999999997]
     """
 
     name = "rolling_trend"
