@@ -19,7 +19,7 @@ UNSUPPORTED += [
 
 def test_transform(pd_es, dask_es):
     pytest.skip(
-        "TODO: Dask issue with `series.eq`. Fix once Dask Issue #7957 is closed."
+        "TODO: Dask issue with `series.eq`. Fix once Dask Issue #7957 is closed.",
     )
     primitives = list_primitives()
     trans_list = primitives[primitives["type"] == "transform"]["name"].tolist()
@@ -53,10 +53,14 @@ def test_transform(pd_es, dask_es):
         # Calculate feature matrix values to confirm output is the same between dask and pandas.
         # Not testing on all returned features due to long run times.
         fm = calculate_feature_matrix(
-            features=features[:100], entityset=pd_es, cutoff_time=cutoff_time
+            features=features[:100],
+            entityset=pd_es,
+            cutoff_time=cutoff_time,
         )
         dask_fm = calculate_feature_matrix(
-            features=dask_features[:100], entityset=dask_es, cutoff_time=cutoff_time
+            features=dask_features[:100],
+            entityset=dask_es,
+            cutoff_time=cutoff_time,
         )
 
         # Categorical categories can be ordered differently, this makes sure they are the same

@@ -51,7 +51,7 @@ def test_multioutput_feature(es):
                 tc[i],
                 parent_dataframe_name="customers",
                 primitive=num_unique,
-            )
+            ),
         )
         features.append(tc[i])
 
@@ -190,7 +190,7 @@ def test_unknown_feature_type(es):
         "entityset": es.to_dictionary(),
         "feature_list": ["feature_1"],
         "feature_definitions": {
-            "feature_1": {"type": "FakeFeature", "dependencies": [], "arguments": {}}
+            "feature_1": {"type": "FakeFeature", "dependencies": [], "arguments": {}},
         },
         "primitive_definitions": {},
     }
@@ -254,7 +254,10 @@ def test_feature_use_previous_pd_timedelta(es):
     td = pd.Timedelta(12, "W")
     count_primitive = Count()
     count_feature = AggregationFeature(
-        value, "customers", count_primitive, use_previous=td
+        value,
+        "customers",
+        count_primitive,
+        use_previous=td,
     )
     dictionary = {
         "ft_version": __version__,
@@ -281,7 +284,10 @@ def test_feature_use_previous_pd_dateoffset(es):
     do = pd.DateOffset(months=3)
     count_primitive = Count()
     count_feature = AggregationFeature(
-        value, "customers", count_primitive, use_previous=do
+        value,
+        "customers",
+        count_primitive,
+        use_previous=do,
     )
     dictionary = {
         "ft_version": __version__,
@@ -305,7 +311,10 @@ def test_feature_use_previous_pd_dateoffset(es):
     value = IdentityFeature(es["log"].ww["id"])
     do = pd.DateOffset(months=3, days=2, minutes=30)
     count_feature = AggregationFeature(
-        value, "customers", count_primitive, use_previous=do
+        value,
+        "customers",
+        count_primitive,
+        use_previous=do,
     )
     dictionary = {
         "ft_version": __version__,

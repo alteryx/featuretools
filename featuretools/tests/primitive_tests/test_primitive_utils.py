@@ -60,7 +60,7 @@ def test_list_primitives_order():
             assert actual_desc == row["description"]
         assert row["dask_compatible"] == (Library.DASK in primitive.compatibility)
         assert row["valid_inputs"] == ", ".join(
-            _get_unique_input_types(primitive.input_types)
+            _get_unique_input_types(primitive.input_types),
         )
         expected_return_type = (
             str(primitive.return_type) if primitive.return_type is not None else None
@@ -169,7 +169,6 @@ def test_errors_no_primitive_in_file(bad_primitives_files_dir):
     with pytest.raises(RuntimeError) as excinfo:
         load_primitive_from_file(primitive_file)
     assert str(excinfo.value) == error_text
-
 
 def test_check_input_types():
     primitives = [Sum, Weekday, PercentTrue, Day, Std, NumericLag]

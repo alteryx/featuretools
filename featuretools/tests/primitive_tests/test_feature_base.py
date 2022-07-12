@@ -24,7 +24,9 @@ from featuretools.tests.testing_utils import check_rename
 
 def test_copy_features_does_not_copy_entityset(es):
     agg = Feature(
-        es["log"].ww["value"], parent_dataframe_name="sessions", primitive=Sum
+        es["log"].ww["value"],
+        parent_dataframe_name="sessions",
+        primitive=Sum,
     )
     agg_where = Feature(
         es["log"].ww["value"],
@@ -125,7 +127,9 @@ def test_return_type_inference_direct_feature(es):
 
 def test_return_type_inference_index(es):
     last = Feature(
-        es["log"].ww["id"], parent_dataframe_name="customers", primitive=Last
+        es["log"].ww["id"],
+        parent_dataframe_name="customers",
+        primitive=Last,
     )
     assert "index" not in last.column_schema.semantic_tags
     assert isinstance(last.column_schema.logical_type, Integer)
@@ -133,14 +137,18 @@ def test_return_type_inference_index(es):
 
 def test_return_type_inference_datetime_time_index(es):
     last = Feature(
-        es["log"].ww["datetime"], parent_dataframe_name="customers", primitive=Last
+        es["log"].ww["datetime"],
+        parent_dataframe_name="customers",
+        primitive=Last,
     )
     assert isinstance(last.column_schema.logical_type, Datetime)
 
 
 def test_return_type_inference_numeric_time_index(int_es):
     last = Feature(
-        int_es["log"].ww["datetime"], parent_dataframe_name="customers", primitive=Last
+        int_es["log"].ww["datetime"],
+        parent_dataframe_name="customers",
+        primitive=Last,
     )
     assert "numeric" in last.column_schema.semantic_tags
 
@@ -152,7 +160,9 @@ def test_return_type_inference_id(es):
 
     # aggregations of foreign key types should get converted
     last_feat = Feature(
-        es["log"].ww["session_id"], parent_dataframe_name="customers", primitive=Last
+        es["log"].ww["session_id"],
+        parent_dataframe_name="customers",
+        primitive=Last,
     )
     assert "foreign_key" not in last_feat.column_schema.semantic_tags
     assert isinstance(last_feat.column_schema.logical_type, Integer)
@@ -195,7 +205,8 @@ def test_set_data_path(es):
 
 def test_to_dictionary_direct(es):
     actual = Feature(
-        IdentityFeature(es["sessions"].ww["customer_id"]), "log"
+        IdentityFeature(es["sessions"].ww["customer_id"]),
+        "log",
     ).to_dictionary()
 
     expected = {
@@ -235,7 +246,9 @@ def test_to_dictionary_identity(es):
 def test_to_dictionary_agg(es):
     primitive = Sum()
     actual = Feature(
-        es["customers"].ww["age"], primitive=primitive, parent_dataframe_name="cohorts"
+        es["customers"].ww["age"],
+        primitive=primitive,
+        parent_dataframe_name="cohorts",
     ).to_dictionary()
 
     expected = {
@@ -250,7 +263,7 @@ def test_to_dictionary_agg(es):
                     "child_dataframe_name": "customers",
                     "parent_column_name": "cohort",
                     "child_column_name": "cohort",
-                }
+                },
             ],
             "primitive": primitive,
             "where": None,
@@ -282,7 +295,7 @@ def test_to_dictionary_where(es):
                     "child_dataframe_name": "log",
                     "parent_column_name": "id",
                     "child_column_name": "session_id",
-                }
+                },
             ],
             "primitive": primitive,
             "where": "log: value = 2",
@@ -314,7 +327,9 @@ def test_to_dictionary_groupby_trans(es):
     primitive = Negate()
     id_feat = Feature(es["log"].ww["product_id"])
     groupby_feature = Feature(
-        es["log"].ww["value"], primitive=primitive, groupby=id_feat
+        es["log"].ww["value"],
+        primitive=primitive,
+        groupby=id_feat,
     )
 
     expected = {
@@ -421,7 +436,9 @@ def test_multi_output_index_error(es):
 
 def test_rename(es):
     feat = Feature(
-        es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
+        es["log"].ww["id"],
+        parent_dataframe_name="sessions",
+        primitive=Count,
     )
     new_name = "session_test"
     new_names = ["session_test"]
@@ -459,7 +476,7 @@ def test_set_feature_names_wrong_number_of_names(es):
     )
     new_names = ["col1"]
     error_msg = re.escape(
-        "Number of names provided must match the number of output features: 1 name(s) provided, 2 expected."
+        "Number of names provided must match the number of output features: 1 name(s) provided, 2 expected.",
     )
     with pytest.raises(ValueError, match=error_msg):
         feat.set_feature_names(new_names)

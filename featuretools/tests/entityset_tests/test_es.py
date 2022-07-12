@@ -126,7 +126,7 @@ def test_add_relationships_convert_type(es):
         assert parent_df.ww.index == r._parent_column_name
         assert "foreign_key" in r.child_column.ww.semantic_tags
         assert str(parent_df[r._parent_column_name].dtype) == str(
-            child_df[r._child_column_name].dtype
+            child_df[r._child_column_name].dtype,
         )
 
 
@@ -325,7 +325,7 @@ def test_query_by_values_returns_rows_in_given_order():
             "id": [1, 2, 3, 4, 5],
             "value": ["a", "c", "b", "a", "a"],
             "time": [1000, 2000, 3000, 4000, 5000],
-        }
+        },
     )
 
     es = EntitySet()
@@ -435,7 +435,9 @@ def test_query_by_column_with_lti_and_training_window(es):
 
 def test_query_by_indexed_column(es):
     df = es.query_by_values(
-        dataframe_name="log", instance_vals=["taco clock"], column_name="product_id"
+        dataframe_name="log",
+        instance_vals=["taco clock"],
+        column_name="product_id",
     )
     # Account for different ordering between pandas and dask/spark
     df = to_pandas(df).reset_index(drop=True).sort_values("id")
@@ -468,13 +470,17 @@ def test_check_columns_and_dataframe(df):
     logical_types = {"id": Integer, "category": Categorical}
     es = EntitySet(id="test")
     es.add_dataframe(
-        df, dataframe_name="test_dataframe", index="id", logical_types=logical_types
+        df,
+        dataframe_name="test_dataframe",
+        index="id",
+        logical_types=logical_types,
     )
     assert isinstance(
-        es.dataframe_dict["test_dataframe"].ww.logical_types["category"], Categorical
+        es.dataframe_dict["test_dataframe"].ww.logical_types["category"],
+        Categorical,
     )
     assert es.dataframe_dict["test_dataframe"].ww.semantic_tags["category"] == {
-        "category"
+        "category",
     }
 
 
@@ -577,7 +583,7 @@ def test_extra_column_type(df):
     logical_types = {"id": Integer, "category": Categorical, "category2": Categorical}
 
     error_text = re.escape(
-        "logical_types contains columns that are not present in dataframe: ['category2']"
+        "logical_types contains columns that are not present in dataframe: ['category2']",
     )
     with pytest.raises(LookupError, match=error_text):
         es = EntitySet(id="test")
@@ -672,7 +678,7 @@ def test_unknown_index(df3):
         )
     assert es["test_dataframe"].ww.index == "id"
     assert list(to_pandas(es["test_dataframe"]["id"], sort_index=True)) == list(
-        range(3)
+        range(3),
     )
 
 
@@ -712,7 +718,7 @@ def pd_df4():
             "category_int": [1, 2, 3],
             "ints": ["1", "2", "3"],
             "floats": ["1", "2", "3.0"],
-        }
+        },
     )
     df["category_int"] = df["category_int"].astype("category")
     return df
@@ -854,7 +860,7 @@ def pd_datetime2():
     actual = pd.Timestamp("Jan 2, 2011")
     time_strs = [actual.strftime(datetime_format)] * 3
     return pd.DataFrame(
-        {"id": [0, 1, 2], "time_format": time_strs, "time_no_format": time_strs}
+        {"id": [0, 1, 2], "time_format": time_strs, "time_no_format": time_strs},
     )
 
 
@@ -927,7 +933,7 @@ def test_dataframe_init(es):
             "time": [datetime(2011, 4, 9, 10, 31, 3 * i) for i in range(3)],
             "category": ["a", "b", "a"],
             "number": [4, 5, 6],
-        }
+        },
     )
     if es.dataframe_type == Library.DASK.value:
         df = dd.from_pandas(df, npartitions=2)
@@ -1009,11 +1015,12 @@ def test_sort_time_id():
             "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s")[
                 ::-1
             ],
-        }
+        },
     )
 
     es = EntitySet(
-        "test", dataframes={"t": (transactions_df.copy(), "id", "transaction_time")}
+        "test",
+        dataframes={"t": (transactions_df.copy(), "id", "transaction_time")},
     )
     assert es["t"] is not transactions_df
     times = list(es["t"].transaction_time)
@@ -1032,7 +1039,7 @@ def test_already_sorted_parameter():
                 datetime(2015, 4, 8),
                 datetime(2016, 4, 9),
             ],
-        }
+        },
     )
 
     es = EntitySet(id="test")
@@ -1256,7 +1263,7 @@ def pd_transactions_df():
             "card_id": [1, 2, 1, 3, 4, 5],
             "transaction_time": [10, 12, 13, 20, 21, 20],
             "fraud": [True, False, False, False, True, True],
-        }
+        },
     )
 
 
@@ -1272,7 +1279,7 @@ def spark_transactions_df(pd_transactions_df):
 
 
 @pytest.fixture(
-    params=["pd_transactions_df", "dd_transactions_df", "spark_transactions_df"]
+    params=["pd_transactions_df", "dd_transactions_df", "spark_transactions_df"],
 )
 def transactions_df(request):
     return request.getfixturevalue(request.param)
@@ -1321,10 +1328,10 @@ def test_sets_time_when_adding_dataframe(transactions_df):
                 datetime(2006, 3, 20),
                 datetime(2011, 11, 11),
             ],
-        }
+        },
     )
     accounts_df_string = pd.DataFrame(
-        {"id": [3, 4, 5], "signup_date": ["element", "exporting", "editable"]}
+        {"id": [3, 4, 5], "signup_date": ["element", "exporting", "editable"]},
     )
     if isinstance(transactions_df, dd.DataFrame):
         accounts_df = dd.from_pandas(accounts_df, npartitions=2)
@@ -1445,7 +1452,7 @@ def test_checks_time_type_setting_secondary_time_index(es):
             "transaction_city": ["City A"] * 6,
             "transaction_date": [datetime(1989, 2, i) for i in range(1, 7)],
             "fraud": [True, False, False, False, True, True],
-        }
+        },
     )
     dataframes = {
         "cards": (cards_df, "id"),
@@ -1488,13 +1495,19 @@ def test_normalize_dataframe(es):
     error_text = "'additional_columns' must be a list, but received type.*"
     with pytest.raises(TypeError, match=error_text):
         es.normalize_dataframe(
-            "sessions", "device_types", "device_type", additional_columns="log"
+            "sessions",
+            "device_types",
+            "device_type",
+            additional_columns="log",
         )
 
     error_text = "'copy_columns' must be a list, but received type.*"
     with pytest.raises(TypeError, match=error_text):
         es.normalize_dataframe(
-            "sessions", "device_types", "device_type", copy_columns="log"
+            "sessions",
+            "device_types",
+            "device_type",
+            copy_columns="log",
         )
 
     es.normalize_dataframe(
@@ -1595,7 +1608,7 @@ def pd_normalize_es():
                 datetime(2020, 5, 1),
                 datetime(2020, 4, 22),
             ],
-        }
+        },
     )
     es = EntitySet("es")
     return es.add_dataframe(dataframe_name="data", dataframe=df, index="id")
@@ -1674,9 +1687,9 @@ def test_normalize_dataframe_copies_logical_types(es):
     es["log"].ww.set_types(
         logical_types={
             "value": Ordinal(
-                order=[0.0, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 14.0, 15.0, 20.0]
-            )
-        }
+                order=[0.0, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 14.0, 15.0, 20.0],
+            ),
+        },
     )
 
     assert isinstance(es["log"].ww.logical_types["value"], Ordinal)
@@ -1716,7 +1729,10 @@ def test_make_time_index_keeps_original_sorting():
     df = pd.DataFrame.from_dict(trips)
     es = EntitySet("flights")
     es.add_dataframe(
-        dataframe=df, dataframe_name="trips", index="trip_id", time_index="flight_time"
+        dataframe=df,
+        dataframe_name="trips",
+        index="trip_id",
+        time_index="flight_time",
     )
     assert (es["trips"]["trip_id"] == order).all()
     es.normalize_dataframe(
@@ -1751,7 +1767,7 @@ def test_normalize_dataframe_same_index(es):
             "id": [1, 2, 3],
             "transaction_time": pd.date_range(start="10:00", periods=3, freq="10s"),
             "first_df_time": [1, 2, 3],
-        }
+        },
     )
     es = EntitySet("example")
     es.add_dataframe(
@@ -1785,7 +1801,7 @@ def test_secondary_time_index(es):
     assert isinstance(es["values"].ww.logical_types["second_ti"], Datetime)
     assert es["values"].ww.semantic_tags["second_ti"] == set()
     assert es["values"].ww.metadata["secondary_time_index"] == {
-        "second_ti": ["comments", "second_ti"]
+        "second_ti": ["comments", "second_ti"],
     }
 
 
@@ -1869,7 +1885,7 @@ def pd_index_df():
             "id": [1, 2, 3, 4, 5, 6],
             "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s"),
             "first_dataframe_time": [1, 2, 3, 5, 6, 6],
-        }
+        },
     )
 
 
@@ -1952,7 +1968,7 @@ def test_use_time_index(index_df):
     es = EntitySet()
 
     error_text = re.escape(
-        "Cannot add 'time_index' tag directly for column transaction_time. To set a column as the time index, use DataFrame.ww.set_time_index() instead."
+        "Cannot add 'time_index' tag directly for column transaction_time. To set a column as the time index, use DataFrame.ww.set_time_index() instead.",
     )
     with pytest.raises(ValueError, match=error_text):
         es.add_dataframe(
@@ -2000,7 +2016,7 @@ def test_normalize_with_numeric_time_index(int_es):
 def test_normalize_with_invalid_time_index(es):
     if es.dataframe_type == Library.DASK.value:
         pytest.skip(
-            "Woodwork raises different error with Dask. Remove this skip once WW is updated."
+            "Woodwork raises different error with Dask. Remove this skip once WW is updated.",
         )
     error_text = "Time index column must contain datetime or numeric values"
     with pytest.raises(TypeError, match=error_text):
@@ -2022,7 +2038,7 @@ def test_entityset_init():
             "transaction_time": [10, 12, 13, 20, 21, 20],
             "upgrade_date": [51, 23, 45, 12, 22, 53],
             "fraud": [True, False, False, False, True, True],
-        }
+        },
     )
     logical_types = {"fraud": "boolean", "card_id": "integer"}
     dataframes = {
@@ -2419,13 +2435,14 @@ def test_deepcopy_entityset_featuretools_changes(es):
     assert copied_es is not es
 
     copied_es.set_secondary_time_index(
-        "customers", {"upgrade_date": ["engagement_level"]}
+        "customers",
+        {"upgrade_date": ["engagement_level"]},
     )
     assert copied_es["customers"].ww.metadata["secondary_time_index"] == {
-        "upgrade_date": ["engagement_level", "upgrade_date"]
+        "upgrade_date": ["engagement_level", "upgrade_date"],
     }
     assert es["customers"].ww.metadata["secondary_time_index"] == {
-        "cancel_date": ["cancel_reason", "cancel_date"]
+        "cancel_date": ["cancel_reason", "cancel_date"],
     }
 
 
@@ -2469,7 +2486,9 @@ def test_setitem(add_dataframe):
 
 def test_latlong_nan_normalization(latlong_df):
     latlong_df.ww.init(
-        name="latLong", index="idx", logical_types={"latLong": "LatLong"}
+        name="latLong",
+        index="idx",
+        logical_types={"latLong": "LatLong"},
     )
 
     dataframes = {"latLong": (latlong_df,)}
@@ -2481,7 +2500,7 @@ def test_latlong_nan_normalization(latlong_df):
     normalized_df = to_pandas(es["latLong"], sort_index=True)
 
     expected_df = pd.DataFrame(
-        {"idx": [0, 1, 2], "latLong": [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]}
+        {"idx": [0, 1, 2], "latLong": [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]},
     )
 
     pd.testing.assert_frame_equal(normalized_df, expected_df)
@@ -2489,7 +2508,9 @@ def test_latlong_nan_normalization(latlong_df):
 
 def test_latlong_nan_normalization_add_dataframe(latlong_df):
     latlong_df.ww.init(
-        name="latLong", index="idx", logical_types={"latLong": "LatLong"}
+        name="latLong",
+        index="idx",
+        logical_types={"latLong": "LatLong"},
     )
 
     es = EntitySet("latlong-test")
@@ -2499,7 +2520,7 @@ def test_latlong_nan_normalization_add_dataframe(latlong_df):
     normalized_df = to_pandas(es["latLong"], sort_index=True)
 
     expected_df = pd.DataFrame(
-        {"idx": [0, 1, 2], "latLong": [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]}
+        {"idx": [0, 1, 2], "latLong": [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]},
     )
 
     pd.testing.assert_frame_equal(normalized_df, expected_df)

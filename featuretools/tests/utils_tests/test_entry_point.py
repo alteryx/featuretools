@@ -14,7 +14,7 @@ def pd_entry_point_dfs():
             "card_id": [1, 2, 1, 3, 4, 5],
             "transaction_time": [10, 12, 13, 20, 21, 20],
             "fraud": [True, False, True, False, True, True],
-        }
+        },
     )
     return cards_df, transactions_df
 
@@ -94,7 +94,7 @@ def test_entry_point_detect_arg(monkeypatch, entry_points_dfs):
             "card_id": [1, 2, 1, 3, 4, 5],
             "transaction_time": [10, 12, 13, 20, 21, 20],
             "fraud": [True, False, True, False, True, True],
-        }
+        },
     )
     dataframes = {
         "cards": (cards_df, "id"),

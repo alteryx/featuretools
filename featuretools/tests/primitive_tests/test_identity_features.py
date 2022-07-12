@@ -18,5 +18,8 @@ def test_serialization(es):
 
     assert dictionary == value.get_arguments()
     assert value == IdentityFeature.from_dictionary(
-        dictionary, es, {}, PrimitivesDeserializer
+        dictionary,
+        es,
+        {},
+        PrimitivesDeserializer,
     )

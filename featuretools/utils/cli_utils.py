@@ -78,7 +78,7 @@ def get_sys_info():
                 ("LC_ALL", "{lc}".format(lc=os.environ.get("LC_ALL", "None"))),
                 ("LANG", "{lang}".format(lang=os.environ.get("LANG", "None"))),
                 ("LOCALE", ".".join(map(str, locale.getlocale()))),
-            ]
+            ],
         )
     except (KeyError, ValueError):
         pass

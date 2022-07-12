@@ -32,7 +32,7 @@ Before starting major work, you should touch base with the maintainers of Featur
   cd featuretools
   git remote add upstream https://github.com/alteryx/featuretools
   ```
-* Once you have obtained a copy of the code, you should create a development environment that is separate from your existing Python environment so that you can make and test changes without compromising your own work environment. You can run the following steps to create a separate virtual environment, and install Featuretools in editable mode. 
+* Once you have obtained a copy of the code, you should create a development environment that is separate from your existing Python environment so that you can make and test changes without compromising your own work environment. You can run the following steps to create a separate virtual environment, and install Featuretools in editable mode.
   ```bash
   python -m venv venv
   source venv/bin/activate
@@ -54,7 +54,7 @@ Before starting major work, you should touch base with the maintainers of Featur
      echo 'export JAVA_HOME=$(/usr/libexec/java_home)' >> ~/.zshrc
      echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
      ```
-     
+
      **macOS (M1)** (use [Homebrew](https://brew.sh/)):
      ```console
      brew install openjdk@11 scala apache-spark graphviz pandoc
@@ -99,6 +99,14 @@ Before starting major work, you should touch base with the maintainers of Featur
 
   # view docs locally
   open build/html/index.html
+  ```
+* Before you commit, a few lint fixing hooks will run. You can also manually run these.
+  ```bash
+  # run linting hooks only on changed files
+  pre-commit run
+
+  # run linting hooks on all files
+  pre-commit run --all-files
   ```
 
 #### 3. Submit your Pull Request

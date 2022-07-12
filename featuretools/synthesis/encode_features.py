@@ -120,14 +120,14 @@ def encode_features(
         # TODO: features with multiple columns are not encoded by this method,
         # which can cause an "encoded" matrix with non-numeric values
         is_discrete = {"category", "foreign_key"}.intersection(
-            f.column_schema.semantic_tags
+            f.column_schema.semantic_tags,
         )
         if f.number_output_features > 1 or not is_discrete:
             if f.number_output_features > 1:
                 logger.warning(
                     "Feature %s has multiple columns and will not "
                     "be encoded.  This may result in a matrix with"
-                    " non-numeric values." % (f)
+                    " non-numeric values." % (f),
                 )
             new_feature_list.append(f)
             kept_columns.extend(f.get_feature_names())

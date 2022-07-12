@@ -83,7 +83,8 @@ def test_feature_trie_with_needs_full_dataframe(diamond_es):
     amount = IdentityFeature(pd_es["transactions"].ww["amount"])
 
     path_through_customers = backward_path(
-        pd_es, ["regions", "customers", "transactions"]
+        pd_es,
+        ["regions", "customers", "transactions"],
     )
     agg = AggregationFeature(
         amount,
@@ -171,7 +172,8 @@ def test_feature_trie_ignores_approximate_features(es):
     approximate_feature_trie = Trie(default=list, path_constructor=RelationshipPath)
     approximate_feature_trie.get_node(direct.relationship_path).value = [agg_of_agg]
     feature_set = FeatureSet(
-        features, approximate_feature_trie=approximate_feature_trie
+        features,
+        approximate_feature_trie=approximate_feature_trie,
     )
     trie = feature_set.feature_trie
 

@@ -141,7 +141,8 @@ class Timedelta(object):
         all_units = self.get_units()
         if self.has_multiple_units() is False:
             return "{} {}".format(
-                self.times[all_units[0]], self._readable_units[all_units[0]]
+                self.times[all_units[0]],
+                self._readable_units[all_units[0]],
             )
         final_str = ""
         for unit, value in self.times.items():

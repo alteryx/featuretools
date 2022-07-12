@@ -24,12 +24,13 @@ def bin_cutoff_times(cutoff_time, bin_size):
     binned_cutoff_time = cutoff_time.ww.copy()
     if type(bin_size) == int:
         binned_cutoff_time["time"] = binned_cutoff_time["time"].apply(
-            lambda x: x / bin_size * bin_size
+            lambda x: x / bin_size * bin_size,
         )
     else:
         bin_size = _check_timedelta(bin_size)
         binned_cutoff_time["time"] = datetime_round(
-            binned_cutoff_time["time"], bin_size
+            binned_cutoff_time["time"],
+            bin_size,
         )
     return binned_cutoff_time
 
@@ -201,7 +202,7 @@ def create_client_and_cluster(n_jobs, dask_kwargs, entityset_size):
                 " size of the EntitySet. If errors occur that do"
                 " not occur with n_jobs equals 1, this may be the "
                 "cause.  See https://featuretools.alteryx.com/en/stable/guides/performance.html#parallel-feature-computation"
-                " for more information."
+                " for more information.",
             )
             warned_of_memory = True
 
@@ -240,11 +241,12 @@ def _validate_cutoff_time(
             if target_dataframe.ww.index not in cutoff_time.columns:
                 raise AttributeError(
                     "Cutoff time DataFrame must contain a column with either the same name"
-                    ' as the target dataframe index or a column named "instance_id"'
+                    ' as the target dataframe index or a column named "instance_id"',
                 )
             # rename to instance_id
             cutoff_time.rename(
-                columns={target_dataframe.ww.index: "instance_id"}, inplace=True
+                columns={target_dataframe.ww.index: "instance_id"},
+                inplace=True,
             )
 
         if "time" not in cutoff_time.columns:
@@ -254,11 +256,12 @@ def _validate_cutoff_time(
             ):
                 raise AttributeError(
                     "Cutoff time DataFrame must contain a column with either the same name"
-                    ' as the target dataframe time_index or a column named "time"'
+                    ' as the target dataframe time_index or a column named "time"',
                 )
             # rename to time
             cutoff_time.rename(
-                columns={target_dataframe.ww.time_index: "time"}, inplace=True
+                columns={target_dataframe.ww.time_index: "time"},
+                inplace=True,
             )
 
         # Make sure user supplies only one valid name for instance id and time columns
@@ -269,7 +272,7 @@ def _validate_cutoff_time(
         ):
             raise AttributeError(
                 'Cutoff time DataFrame cannot contain both a column named "instance_id" and a column'
-                " with the same name as the target dataframe index"
+                " with the same name as the target dataframe index",
             )
         if (
             "time" in cutoff_time.columns
@@ -278,7 +281,7 @@ def _validate_cutoff_time(
         ):
             raise AttributeError(
                 'Cutoff time DataFrame cannot contain both a column named "time" and a column'
-                " with the same name as the target dataframe time index"
+                " with the same name as the target dataframe time index",
             )
 
         assert (
@@ -315,12 +318,12 @@ def _check_cutoff_time_type(cutoff_time, es_time_type):
 
     if es_time_type == "numeric" and not is_numeric:
         raise TypeError(
-            "cutoff_time times must be numeric: try casting " "via pd.to_numeric()"
+            "cutoff_time times must be numeric: try casting " "via pd.to_numeric()",
         )
     if es_time_type == Datetime and not is_datetime:
         raise TypeError(
             "cutoff_time times must be datetime type: try casting "
-            "via pd.to_datetime()"
+            "via pd.to_datetime()",
         )
 
 
@@ -341,13 +344,17 @@ def replace_inf_values(feature_matrix, replacement_value=np.nan, columns=None):
         feature_matrix = feature_matrix.replace([np.inf, -np.inf], replacement_value)
     else:
         feature_matrix[columns] = feature_matrix[columns].replace(
-            [np.inf, -np.inf], replacement_value
+            [np.inf, -np.inf],
+            replacement_value,
         )
     return feature_matrix
 
 
 def get_ww_types_from_features(
-    features, entityset, pass_columns=None, cutoff_time=None
+    features,
+    entityset,
+    pass_columns=None,
+    cutoff_time=None,
 ):
     """Given a list of features and entityset (and optionally a list of pass
     through columns and the cutoff time dataframe), returns the logical types,

@@ -4,7 +4,11 @@ from featuretools.entityset.relationship import Relationship, RelationshipPath
 def test_relationship_path(es):
     log_to_sessions = Relationship(es, "sessions", "id", "log", "session_id")
     sessions_to_customers = Relationship(
-        es, "customers", "id", "sessions", "customer_id"
+        es,
+        "customers",
+        "id",
+        "sessions",
+        "customer_id",
     )
     path_list = [
         (True, log_to_sessions),
@@ -24,7 +28,11 @@ def test_relationship_path_name(es):
 
     log_to_sessions = Relationship(es, "sessions", "id", "log", "session_id")
     sessions_to_customers = Relationship(
-        es, "customers", "id", "sessions", "customer_id"
+        es,
+        "customers",
+        "id",
+        "sessions",
+        "customer_id",
     )
 
     forward_path = [(True, log_to_sessions), (True, sessions_to_customers)]
@@ -42,7 +50,11 @@ def test_relationship_path_dataframes(es):
 
     log_to_sessions = Relationship(es, "sessions", "id", "log", "session_id")
     sessions_to_customers = Relationship(
-        es, "customers", "id", "sessions", "customer_id"
+        es,
+        "customers",
+        "id",
+        "sessions",
+        "customer_id",
     )
 
     forward_path = [(True, log_to_sessions), (True, sessions_to_customers)]

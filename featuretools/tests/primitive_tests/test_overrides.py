@@ -86,7 +86,9 @@ def test_overrides(es):
 
 def test_override_boolean(es):
     count = Feature(
-        es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
+        es["log"].ww["id"],
+        parent_dataframe_name="sessions",
+        primitive=Count,
     )
     count_lo = Feature(count, primitive=GreaterThanScalar(1))
     count_hi = Feature(count, primitive=LessThanScalar(10))
@@ -99,7 +101,9 @@ def test_override_boolean(es):
     features.append(~(count_lo.AND(count_hi)))
 
     df = calculate_feature_matrix(
-        entityset=es, features=features, instance_ids=[0, 1, 2]
+        entityset=es,
+        features=features,
+        instance_ids=[0, 1, 2],
     )
     df = to_pandas(df, index="id", sort_index=True)
     for i, test in enumerate(to_test):
@@ -186,7 +190,9 @@ def test_override_cmp_from_column(es):
 
     df = to_pandas(
         calculate_feature_matrix(
-            entityset=es, features=features, instance_ids=[0, 1, 2]
+            entityset=es,
+            features=features,
+            instance_ids=[0, 1, 2],
         ),
         index="id",
         sort_index=True,
@@ -198,10 +204,14 @@ def test_override_cmp_from_column(es):
 
 def test_override_cmp(es):
     count = Feature(
-        es["log"].ww["id"], parent_dataframe_name="sessions", primitive=Count
+        es["log"].ww["id"],
+        parent_dataframe_name="sessions",
+        primitive=Count,
     )
     _sum = Feature(
-        es["log"].ww["value"], parent_dataframe_name="sessions", primitive=Sum
+        es["log"].ww["value"],
+        parent_dataframe_name="sessions",
+        primitive=Sum,
     )
     gt_lo = count > 1
     gt_other = count > _sum
@@ -238,7 +248,9 @@ def test_override_cmp(es):
     ]
 
     df = calculate_feature_matrix(
-        entityset=es, features=features, instance_ids=[0, 1, 2]
+        entityset=es,
+        features=features,
+        instance_ids=[0, 1, 2],
     )
     df = to_pandas(df, index="id", sort_index=True)
     for i, test in enumerate(to_test):

@@ -60,7 +60,9 @@ def test_get_depth(es):
     customer_id_feat = IdentityFeature(es["customers"].ww["id"])
     count_logs = Feature(log_id_feat, parent_dataframe_name="sessions", primitive=Count)
     sum_count_logs = Feature(
-        count_logs, parent_dataframe_name="customers", primitive=Sum
+        count_logs,
+        parent_dataframe_name="customers",
+        primitive=Sum,
     )
     num_logs_greater_than_5 = sum_count_logs > 5
     count_customers = Feature(
@@ -135,14 +137,19 @@ def test_count_null(pd_es):
 
 def test_check_input_types(es):
     count = Feature(
-        es["sessions"].ww["id"], parent_dataframe_name="customers", primitive=Count
+        es["sessions"].ww["id"],
+        parent_dataframe_name="customers",
+        primitive=Count,
     )
     mean = Feature(count, parent_dataframe_name="régions", primitive=Mean)
     assert mean._check_input_types()
 
     boolean = count > 3
     mean = Feature(
-        count, parent_dataframe_name="régions", where=boolean, primitive=Mean
+        count,
+        parent_dataframe_name="régions",
+        where=boolean,
+        primitive=Mean,
     )
     assert mean._check_input_types()
 
@@ -166,7 +173,9 @@ def test_mean_nan(es):
 
     # test naming
     default_feat = Feature(
-        es["log"].ww["value"], parent_dataframe_name="customers", primitive=Mean
+        es["log"].ww["value"],
+        parent_dataframe_name="customers",
+        primitive=Mean,
     )
     assert default_feat.get_name() == "MEAN(log.value)"
     ignore_nan_feat = Feature(
@@ -185,7 +194,9 @@ def test_mean_nan(es):
 
 def test_base_of_and_stack_on_heuristic(es, test_primitive):
     child = Feature(
-        es["sessions"].ww["id"], parent_dataframe_name="customers", primitive=Count
+        es["sessions"].ww["id"],
+        parent_dataframe_name="customers",
+        primitive=Count,
     )
     test_primitive.stack_on = []
     child.primitive.base_of = []
@@ -232,7 +243,9 @@ def test_base_of_and_stack_on_heuristic(es, test_primitive):
 def test_stack_on_self(es, test_primitive):
     # test stacks on self
     child = Feature(
-        es["log"].ww["value"], parent_dataframe_name="régions", primitive=test_primitive
+        es["log"].ww["value"],
+        parent_dataframe_name="régions",
+        primitive=test_primitive,
     )
     test_primitive.stack_on = []
     child.primitive.base_of = []
@@ -289,7 +302,9 @@ def test_init_and_name(es):
                 raise Exception("Agg Primitive %s not tested" % agg_prim.name)
             for t in matching_types:
                 instance = Feature(
-                    t, parent_dataframe_name="sessions", primitive=agg_prim
+                    t,
+                    parent_dataframe_name="sessions",
+                    primitive=agg_prim,
                 )
 
                 # try to get name and calculate
@@ -433,14 +448,21 @@ def test_serialization(es):
 
     assert dictionary == max1.get_arguments()
     deserialized = AggregationFeature.from_dictionary(
-        dictionary, es, {value.unique_name(): value}, primitive
+        dictionary,
+        es,
+        {value.unique_name(): value},
+        primitive,
     )
     _assert_agg_feats_equal(max1, deserialized)
 
     is_purchased = IdentityFeature(es["log"].ww["purchased"])
     use_previous = Timedelta(3, "d")
     max2 = AggregationFeature(
-        value, "customers", primitive, where=is_purchased, use_previous=use_previous
+        value,
+        "customers",
+        primitive,
+        where=is_purchased,
+        use_previous=use_previous,
     )
 
     dictionary = {
@@ -458,7 +480,10 @@ def test_serialization(es):
         is_purchased.unique_name(): is_purchased,
     }
     deserialized = AggregationFeature.from_dictionary(
-        dictionary, es, dependencies, primitive
+        dictionary,
+        es,
+        dependencies,
+        primitive,
     )
     _assert_agg_feats_equal(max2, deserialized)
 
@@ -470,7 +495,10 @@ def test_time_since_last(pd_es):
         primitive=TimeSinceLast,
     )
     fm = calculate_feature_matrix(
-        [f], entityset=pd_es, instance_ids=[0, 1, 2], cutoff_time=datetime(2015, 6, 8)
+        [f],
+        entityset=pd_es,
+        instance_ids=[0, 1, 2],
+        cutoff_time=datetime(2015, 6, 8),
     )
 
     correct = [131376000.0, 131289534.0, 131287797.0]
@@ -485,7 +513,10 @@ def test_time_since_first(pd_es):
         primitive=TimeSinceFirst,
     )
     fm = calculate_feature_matrix(
-        [f], entityset=pd_es, instance_ids=[0, 1, 2], cutoff_time=datetime(2015, 6, 8)
+        [f],
+        entityset=pd_es,
+        instance_ids=[0, 1, 2],
+        cutoff_time=datetime(2015, 6, 8),
     )
 
     correct = [131376600.0, 131289600.0, 131287800.0]
@@ -500,7 +531,10 @@ def test_median(pd_es):
         primitive=Median,
     )
     fm = calculate_feature_matrix(
-        [f], entityset=pd_es, instance_ids=[0, 1, 2], cutoff_time=datetime(2015, 6, 8)
+        [f],
+        entityset=pd_es,
+        instance_ids=[0, 1, 2],
+        cutoff_time=datetime(2015, 6, 8),
     )
 
     correct = [1, 3, np.nan]
@@ -542,10 +576,14 @@ def test_agg_same_method_name(es):
             return custom_primitive
 
     f_sum = Feature(
-        es["log"].ww["value"], parent_dataframe_name="customers", primitive=Sum
+        es["log"].ww["value"],
+        parent_dataframe_name="customers",
+        primitive=Sum,
     )
     f_max = Feature(
-        es["log"].ww["value"], parent_dataframe_name="customers", primitive=Max
+        es["log"].ww["value"],
+        parent_dataframe_name="customers",
+        primitive=Max,
     )
 
     fm = calculate_feature_matrix([f_sum, f_max], entityset=es)
@@ -569,10 +607,14 @@ def test_agg_same_method_name(es):
             return lambda x: x.max()
 
     f_sum = Feature(
-        es["log"].ww["value"], parent_dataframe_name="customers", primitive=Sum
+        es["log"].ww["value"],
+        parent_dataframe_name="customers",
+        primitive=Sum,
     )
     f_max = Feature(
-        es["log"].ww["value"], parent_dataframe_name="customers", primitive=Max
+        es["log"].ww["value"],
+        parent_dataframe_name="customers",
+        primitive=Max,
     )
     fm = calculate_feature_matrix([f_sum, f_max], entityset=es)
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
@@ -582,7 +624,7 @@ def test_time_since_last_custom(pd_es):
     class TimeSinceLast(AggregationPrimitive):
         name = "time_since_last"
         input_types = [
-            ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"})
+            ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"}),
         ]
         return_type = ColumnSchema(semantic_tags={"numeric"})
         uses_calc_time = True
@@ -600,7 +642,10 @@ def test_time_since_last_custom(pd_es):
         primitive=TimeSinceLast,
     )
     fm = calculate_feature_matrix(
-        [f], entityset=pd_es, instance_ids=[0, 1, 2], cutoff_time=datetime(2015, 6, 8)
+        [f],
+        entityset=pd_es,
+        instance_ids=[0, 1, 2],
+        cutoff_time=datetime(2015, 6, 8),
     )
 
     correct = [131376600, 131289600, 131287800]
@@ -726,7 +771,7 @@ def test_make_three_most_common(pd_es):
     df = fm[["PD_TOP3(log.product_id)[%s]" % i for i in range(3)]]
 
     assert set(df.iloc[0].values[:2]) == set(
-        ["coke zero", "toothpaste"]
+        ["coke zero", "toothpaste"],
     )  # coke zero and toothpaste have same number of occurrences
     assert df.iloc[0].values[2] in [
         "car",
@@ -756,7 +801,7 @@ def test_stacking_multi(pd_es):
     stacked = []
     for i in range(3):
         stacked.append(
-            Feature(tc[i], parent_dataframe_name="customers", primitive=NumUnique)
+            Feature(tc[i], parent_dataframe_name="customers", primitive=NumUnique),
         )
 
     fm = calculate_feature_matrix(stacked, entityset=pd_es, instance_ids=[0, 1, 2])
@@ -813,7 +858,8 @@ def test_override_multi_feature_names(pd_es):
         use_prev_str,
     ):
         base_string = "Custom_%s({}.{})".format(
-            parent_dataframe_name, base_feature_names
+            parent_dataframe_name,
+            base_feature_names,
         )
         return [base_string % i for i in range(primitive.number_output_features)]
 
@@ -852,7 +898,12 @@ def test_override_multi_feature_names(pd_es):
     base_names = [["value"], ["value_2"], ["value_many_nans"]]
     for name in base_names:
         expected_names += gen_custom_names(
-            NMostCommoner, name, None, "products", None, None
+            NMostCommoner,
+            name,
+            None,
+            "products",
+            None,
+            None,
         )
 
     for name in expected_names:

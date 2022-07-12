@@ -5,7 +5,11 @@ import pandas as pd
 
 
 def make_temporal_cutoffs(
-    instance_ids, cutoffs, window_size=None, num_windows=None, start=None
+    instance_ids,
+    cutoffs,
+    window_size=None,
+    num_windows=None,
+    start=None,
 ):
     """Makes a set of equally spaced cutoff times prior to a set of input cutoffs and instance ids.
 
@@ -29,7 +33,7 @@ def make_temporal_cutoffs(
     """
     if window_size is not None and num_windows is not None and start is not None:
         raise ValueError(
-            "Only supply 2 of the 3 optional args, window_size, num_windows and start"
+            "Only supply 2 of the 3 optional args, window_size, num_windows and start",
         )
     out = []
     for i, id_time in enumerate(zip(instance_ids, cutoffs)):
@@ -43,7 +47,10 @@ def make_temporal_cutoffs(
                 _start = start[i]
         to_add = pd.DataFrame()
         to_add["time"] = pd.date_range(
-            end=time, periods=num_windows, freq=_window_size, start=_start
+            end=time,
+            periods=num_windows,
+            freq=_window_size,
+            start=_start,
         )
         to_add["instance_id"] = [_id] * len(to_add["time"])
         out.append(to_add)

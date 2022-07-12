@@ -24,7 +24,7 @@ def feature_matrix():
             "many_value": [1, 2, 3],
             "dup_value": [1, 1, 2],
             "one_value": [1, 1, 1],
-        }
+        },
     )
     return feature_matrix
 
@@ -63,12 +63,12 @@ def test_remove_highly_null_features():
             "all_nulls": [None, None, None, None],
             "quarter": ["a", "b", None, "c"],
             "vals": [True, True, False, False],
-        }
+        },
     )
 
     es = EntitySet("data", {"nulls": (nulls_df, "id")})
     es["nulls"].ww.set_types(
-        logical_types={"all_nulls": "categorical", "quarter": "categorical"}
+        logical_types={"all_nulls": "categorical", "quarter": "categorical"},
     )
     fm, features = dfs(
         entityset=es,
@@ -130,7 +130,7 @@ def test_remove_single_value_features():
             "all_categorical": ["a", "a", "a", "a"],
             "all_bools": [True, True, True, True],
             "diff_vals": ["hi", "bye", "bye", "hi"],
-        }
+        },
     )
 
     es = EntitySet("data", {"single_vals": (same_vals_df, "id")})
@@ -139,7 +139,7 @@ def test_remove_single_value_features():
             "all_nulls": "categorical",
             "all_categorical": "categorical",
             "diff_vals": "categorical",
-        }
+        },
     )
     fm, features = dfs(
         entityset=es,
@@ -155,7 +155,9 @@ def test_remove_single_value_features():
     assert "diff_vals" in no_params_cols
 
     nan_as_value, nan_as_value_features = remove_single_value_features(
-        fm, features, count_nan_as_value=True
+        fm,
+        features,
+        count_nan_as_value=True,
     )
     nan_cols = set(nan_as_value.columns)
     assert len(nan_as_value_features) == 3
@@ -179,11 +181,12 @@ def test_remove_highly_correlated_features():
             "corr_words": [4, 24, 7, 3],
             "corr_1": [99, 88, 77, 33],
             "corr_2": [99, 88, 77, 33],
-        }
+        },
     )
 
     es = EntitySet(
-        "data", {"correlated": (correlated_df, "id", None, {"words": NaturalLanguage})}
+        "data",
+        {"correlated": (correlated_df, "id", None, {"words": NaturalLanguage})},
     )
     fm, _ = dfs(
         entityset=es,
@@ -205,12 +208,14 @@ def test_remove_highly_correlated_features():
         remove_highly_correlated_features(fm, pct_corr_threshold=-0.1)
 
     with pytest.raises(
-        AssertionError, match="feature named not_a_feature is not in feature matrix"
+        AssertionError,
+        match="feature named not_a_feature is not in feature matrix",
     ):
         remove_highly_correlated_features(fm, features_to_check=["not_a_feature"])
 
     to_check = remove_highly_correlated_features(
-        fm, features_to_check=["corr_words", "NUM_CHARACTERS(words)", "diff_ints"]
+        fm,
+        features_to_check=["corr_words", "NUM_CHARACTERS(words)", "diff_ints"],
     )
     to_check_columns = set(to_check.columns)
     assert len(to_check_columns) == 4
@@ -219,7 +224,8 @@ def test_remove_highly_correlated_features():
     assert "corr_2" in to_check_columns
 
     to_keep = remove_highly_correlated_features(
-        fm, features_to_keep=["NUM_CHARACTERS(words)"]
+        fm,
+        features_to_keep=["NUM_CHARACTERS(words)"],
     )
     to_keep_names = set(to_keep.columns)
     assert len(to_keep_names) == 4
@@ -248,11 +254,12 @@ def test_remove_highly_correlated_features_init_woodwork():
             "corr_words": [4, 24, 7, 3],
             "corr_1": [99, 88, 77, 33],
             "corr_2": [99, 88, 77, 33],
-        }
+        },
     )
 
     es = EntitySet(
-        "data", {"correlated": (correlated_df, "id", None, {"words": NaturalLanguage})}
+        "data",
+        {"correlated": (correlated_df, "id", None, {"words": NaturalLanguage})},
     )
     fm, _ = dfs(
         entityset=es,
@@ -279,7 +286,7 @@ def test_multi_output_selection():
             "first_id": [0, 1, 1, 3],
             "all_nulls": [None, None, None, None],
             "quarter": ["a", "b", None, "c"],
-        }
+        },
     )
 
     dataframes = {
@@ -290,7 +297,7 @@ def test_multi_output_selection():
     relationships = [("first", "id", "second", "first_id")]
     es = EntitySet("data", dataframes, relationships=relationships)
     es["second"].ww.set_types(
-        logical_types={"all_nulls": "categorical", "quarter": "categorical"}
+        logical_types={"all_nulls": "categorical", "quarter": "categorical"},
     )
 
     fm, features = dfs(

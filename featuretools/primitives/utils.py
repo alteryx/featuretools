@@ -45,7 +45,7 @@ def get_transform_primitives():
 def list_primitives():
     """Returns a DataFrame that lists and describes each built-in primitive."""
     trans_names, trans_primitives, valid_inputs, return_type = _get_names_primitives(
-        get_transform_primitives
+        get_transform_primitives,
     )
     trans_dask = [
         Library.DASK in primitive.compatibility for primitive in trans_primitives
@@ -61,12 +61,12 @@ def list_primitives():
             "spark_compatible": trans_spark,
             "valid_inputs": valid_inputs,
             "return_type": return_type,
-        }
+        },
     )
     transform_df["type"] = "transform"
 
     agg_names, agg_primitives, valid_inputs, return_type = _get_names_primitives(
-        get_aggregation_primitives
+        get_aggregation_primitives,
     )
     agg_dask = [Library.DASK in primitive.compatibility for primitive in agg_primitives]
     agg_spark = [
@@ -80,7 +80,7 @@ def list_primitives():
             "spark_compatible": agg_spark,
             "valid_inputs": valid_inputs,
             "return_type": return_type,
-        }
+        },
     )
     agg_df["type"] = "aggregation"
 
@@ -127,16 +127,16 @@ def summarize_primitives() -> pd.DataFrame:
         {
             f"uses_{ltype}_input": count
             for ltype, count in primitives_summary["logical_type_input_metrics"].items()
-        }
+        },
     )
     summary_dict.update(
         {
             f"uses_{tag}_tag_input": count
             for tag, count in primitives_summary["semantic_tag_metrics"].items()
-        }
+        },
     )
     summary_df = pd.DataFrame(
-        [{"Metric": k, "Count": v} for k, v in summary_dict.items()]
+        [{"Metric": k, "Count": v} for k, v in summary_dict.items()],
     )
     return summary_df
 
@@ -197,7 +197,7 @@ def _get_summary_primitives(primitives: List) -> Dict[str, int]:
         sem_tag: 0 for sem_tag in list(list_semantic_tags()["name"])
     }
     semantic_tag_metrics.update(
-        {"foreign_key": 0}
+        {"foreign_key": 0},
     )  # not currently in list_semantic_tags()
 
     for prim in primitives:
@@ -205,7 +205,10 @@ def _get_summary_primitives(primitives: List) -> Dict[str, int]:
         sem_tag_type_checks = set()
         input_types = prim.flatten_nested_input_types(prim.input_types)
         _check_input_types(
-            input_types, log_in_type_checks, sem_tag_type_checks, unique_input_types
+            input_types,
+            log_in_type_checks,
+            sem_tag_type_checks,
+            unique_input_types,
         )
         for ltype in list(log_in_type_checks):
             logical_type_metrics[ltype] += 1
@@ -271,7 +274,7 @@ def _get_names_primitives(primitive_func):
         input_types = _get_unique_input_types(primitive.input_types)
         valid_inputs.append(", ".join(input_types))
         return_type.append(
-            str(primitive.return_type)
+            str(primitive.return_type),
         ) if primitive.return_type is not None else return_type.append(None)
     return names, primitives, valid_inputs, return_type
 
@@ -378,7 +381,7 @@ class PrimitivesDeserializer(object):
 
         if not cls:
             raise RuntimeError(
-                'Primitive "%s" in module "%s" not found' % (class_name, module_name)
+                'Primitive "%s" in module "%s" not found' % (class_name, module_name),
             )
         arguments = primitive_dict["arguments"]
         primitive_instance = cls(**arguments)
@@ -392,7 +395,6 @@ class PrimitivesDeserializer(object):
 
             if cls_key == search_key:
                 return cls
-
 
 def _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_2s, unit):
     # https://stackoverflow.com/a/29546836/2512385
@@ -422,7 +424,8 @@ class HolidayUtil:
 
     def to_df(self):
         holidays_df = pd.DataFrame(
-            sorted(self.federal_holidays.items()), columns=["holiday_date", "names"]
+            sorted(self.federal_holidays.items()),
+            columns=["holiday_date", "names"],
         )
         holidays_df.holiday_date = holidays_df.holiday_date.astype("datetime64")
         return holidays_df

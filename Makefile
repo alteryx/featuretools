@@ -10,12 +10,12 @@ clean:
 lint:
 	isort --check-only featuretools
 	python docs/notebook_version_standardizer.py check-execution
-	black featuretools -t py310 --check
+	black featuretools docs/source -t py310 --check
 	flake8 featuretools
 
 .PHONY: lint-fix
 lint-fix:
-	black -t py310 featuretools
+	black featuretools docs/source -t py310
 	isort featuretools
 	python docs/notebook_version_standardizer.py standardize
 
@@ -30,6 +30,7 @@ testcoverage:
 .PHONY: installdeps
 installdeps: upgradepip
 	pip install -e ".[dev]"
+	pre-commit install
 
 .PHONY: checkdeps
 checkdeps:

@@ -4,7 +4,10 @@ import featuretools as ft
 
 
 def describe_feature(
-    feature, feature_descriptions=None, primitive_templates=None, metadata_file=None
+    feature,
+    feature_descriptions=None,
+    primitive_templates=None,
+    metadata_file=None,
 ):
     """Generates an English language description of a feature.
 
@@ -24,13 +27,15 @@ def describe_feature(
 
     if metadata_file:
         file_feature_descriptions, file_primitive_templates = parse_json_metadata(
-            metadata_file
+            metadata_file,
         )
         feature_descriptions = {**file_feature_descriptions, **feature_descriptions}
         primitive_templates = {**file_primitive_templates, **primitive_templates}
 
     description = generate_description(
-        feature, feature_descriptions, primitive_templates
+        feature,
+        feature_descriptions,
+        primitive_templates,
     )
     return description[:1].upper() + description[1:] + "."
 
@@ -39,7 +44,7 @@ def generate_description(feature, feature_descriptions, primitive_templates):
     # Check if feature has custom description
     if feature in feature_descriptions or feature.unique_name() in feature_descriptions:
         description = feature_descriptions.get(feature) or feature_descriptions.get(
-            feature.unique_name()
+            feature.unique_name(),
         )
         return description
 
@@ -54,7 +59,9 @@ def generate_description(feature, feature_descriptions, primitive_templates):
     if isinstance(feature, ft.DirectFeature):
         base_feature, direct_description = get_direct_description(feature)
         direct_base = generate_description(
-            base_feature, feature_descriptions, primitive_templates
+            base_feature,
+            feature_descriptions,
+            primitive_templates,
         )
         return direct_base + direct_description
 
@@ -66,7 +73,9 @@ def generate_description(feature, feature_descriptions, primitive_templates):
 
     for input_col in input_columns:
         col_description = generate_description(
-            input_col, feature_descriptions, primitive_templates
+            input_col,
+            feature_descriptions,
+            primitive_templates,
         )
         input_descriptions.append(col_description)
 
@@ -82,11 +91,13 @@ def generate_description(feature, feature_descriptions, primitive_templates):
         or feature.primitive.name in primitive_templates
     ):
         template_override = primitive_templates.get(
-            feature.primitive
+            feature.primitive,
         ) or primitive_templates.get(feature.primitive.name)
     slice_num = feature.n if hasattr(feature, "n") else None
     primitive_description = feature.primitive.get_description(
-        input_descriptions, slice_num=slice_num, template_override=template_override
+        input_descriptions,
+        slice_num=slice_num,
+        template_override=template_override,
     )
     if isinstance(feature, ft.feature_base.FeatureOutputSlice):
         feature = feature.base_feature
@@ -105,19 +116,21 @@ def generate_description(feature, feature_descriptions, primitive_templates):
     if isinstance(feature, ft.AggregationFeature):
         if feature.use_previous:
             dataframe_description = "of the previous {} of ".format(
-                feature.use_previous.get_name().lower()
+                feature.use_previous.get_name().lower(),
             )
         else:
             dataframe_description = "of all instances of "
         dataframe_description += '"{}"'.format(
-            feature.relationship_path[-1][1].child_dataframe.ww.name
+            feature.relationship_path[-1][1].child_dataframe.ww.name,
         )
 
     # Generate where phrase
     where = ""
     if hasattr(feature, "where") and feature.where:
         where_col = generate_description(
-            feature.where.base_features[0], feature_descriptions, primitive_templates
+            feature.where.base_features[0],
+            feature_descriptions,
+            primitive_templates,
         )
         where = "where {} is {}".format(where_col, feature.where.primitive.value)
 
@@ -146,7 +159,7 @@ def get_direct_description(feature):
     while isinstance(base_features[0], ft.DirectFeature):
         base_feat = base_features[0]
         base_feat_description = ' the instance of "{}" associated ' "with".format(
-            base_feat.relationship_path[-1][1].parent_dataframe.ww.name
+            base_feat.relationship_path[-1][1].parent_dataframe.ww.name,
         )
         direct_description = base_feat_description + direct_description
         base_features = base_feat.base_features
@@ -160,11 +173,11 @@ def get_aggregation_groupby(feature, feature_descriptions=None):
         feature_descriptions = {}
     groupby_name = feature.dataframe.ww.index
     groupby = ft.IdentityFeature(
-        feature.entityset[feature.dataframe_name].ww[groupby_name]
+        feature.entityset[feature.dataframe_name].ww[groupby_name],
     )
     if groupby in feature_descriptions or groupby.unique_name() in feature_descriptions:
         return feature_descriptions.get(groupby) or feature_descriptions.get(
-            groupby.unique_name()
+            groupby.unique_name(),
         )
     else:
         return '"{}" in "{}"'.format(groupby_name, feature.dataframe_name)
