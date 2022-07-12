@@ -1,4 +1,3 @@
-from featuretools.feature_base import AggregationFeature
 from featuretools.primitives.base.primitive_base import PrimitiveBase
 
 
@@ -54,15 +53,18 @@ class AggregationPrimitive(PrimitiveBase):
             return cls.has_agg_type
 
         has_agg_type = False
-        if hasattr(cls.primitive, "is_agg_type"):
+        if hasattr(cls.primitive, "has_agg_type"):
             return cls.primitive.has_agg_type
-        if hasattr(cls, "is_agg_type"):
+        if hasattr(cls, "has_agg_type"):
             return cls.has_agg_type
-        if isinstance(cls, AggregationFeature):
-            has_agg_type = "agg_type" in cls.primitive.get_function.__code__.co_varnames
-            cls.primitive.has_agg_type = has_agg_type
         else:
             has_agg_type = "agg_type" in cls.get_function.__code__.co_varnames
             cls.is_agg_type = has_agg_type
         cls.computed_has_agg_type = True
         cls.has_agg_type = has_agg_type
+
+        """
+        if isinstance(cls, AggregationFeature):
+            has_agg_type = "agg_type" in cls.primitive.get_function.__code__.co_varnames
+            cls.primitive.has_agg_type = has_agg_type
+        """

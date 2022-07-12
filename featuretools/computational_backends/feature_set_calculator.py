@@ -752,13 +752,13 @@ class FeatureSetCalculator(object):
                     if column_id not in to_agg:
                         to_agg[column_id] = []
                     if isinstance(base_frame, dd.DataFrame):
-                        is_agg_type = feature.is_agg_type()
+                        is_agg_type = feature.has_agg_type()
                         if is_agg_type:
                             func = feature.get_function(agg_type=Library.DASK)
                         else:
                             func = feature.get_function(series_library=Library.DASK)
                     elif is_instance(base_frame, ps, "DataFrame"):
-                        is_agg_type = feature.is_agg_type()
+                        is_agg_type = feature.has_agg_type()
                         if is_agg_type:
                             func = feature.get_function(agg_type=Library.SPARK)
                         else:
