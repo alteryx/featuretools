@@ -312,28 +312,32 @@ def test_rolling_trend_window_length_less_than_three(rolling_series_pd):
 @pytest.mark.parametrize(
     "min_periods,expected_vals",
     [
-        (0, [np.nan, np.nan, np.nan, 1.5, 2.3, 4.6, 6.8, 12.8, 26.4, 55.2]),
+        (0, [np.nan, np.nan, 1.5, 2.3, 4.6, 6.8, 12.8, 26.4, 55.2, 110.4]),
         (
             2,
-            [np.nan, np.nan, np.nan, 1.5, 2.3, 4.6, 6.8, 12.8, 26.4, 55.2],
+            [np.nan, np.nan, 1.5, 2.3, 4.6, 6.8, 12.8, 26.4, 55.2, 110.4],
         ),
         (
             3,
-            [np.nan, np.nan, np.nan, 1.5, 2.3, 4.6, 6.8, 12.8, 26.4, 55.2],
+            [np.nan, np.nan, 1.5, 2.3, 4.6, 6.8, 12.8, 26.4, 55.2, 110.4],
         ),
     ],
 )
 def test_rolling_trend_min_periods(min_periods, expected_vals):
     times = pd.date_range(start="2019-01-01", freq="1D", periods=10)
-    primitive_instance = RollingTrend(
-        window_length="4D", gap="1D", min_periods=min_periods
-    )
+    primitive_instance = RollingTrend(window_length=3, min_periods=min_periods)
     actual_vals = primitive_instance(times, [1, 2, 4, 8, 16, 24, 48, 96, 192, 384])
     pd.testing.assert_series_equal(pd.Series(expected_vals), pd.Series(actual_vals))
 
 
 @pytest.mark.parametrize(
-    "primitive", [RollingCount, RollingMax, RollingMin, RollingMean, RollingTrend]
+    "primitive",
+    [
+        RollingCount,
+        RollingMax,
+        RollingMin,
+        RollingMean,
+    ],
 )
 def test_rolling_primitives_non_uniform(primitive):
     # When the data isn't uniform, this impacts the number of values in each rolling window
