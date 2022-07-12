@@ -1,4 +1,3 @@
-import inspect
 from datetime import datetime
 from functools import partial
 
@@ -746,28 +745,26 @@ class FeatureSetCalculator(object):
             to_apply = set()
             # apply multi-column and time-dependent features as we find them, and
             # save aggregable features for later
-            for f in features:
+            for feature in features:
                 if _can_agg(f):
 
-                    column_id = f.base_features[0].get_name()
+                    column_id = feature.base_features[0].get_name()
                     if column_id not in to_agg:
                         to_agg[column_id] = []
                     if isinstance(base_frame, dd.DataFrame):
-                        is_agg_type = is_agg_type_in_primitive_or_feature(f)
-
+                        is_agg_type = feature.is_agg_type()
                         if is_agg_type:
-                            func = f.get_function(agg_type=Library.DASK)
+                            func = feature.get_function(agg_type=Library.DASK)
                         else:
-                            func = f.get_function(series_library=Library.DASK)
+                            func = feature.get_function(series_library=Library.DASK)
                     elif is_instance(base_frame, ps, "DataFrame"):
-                        is_agg_type = is_agg_type_in_primitive_or_feature(f)
-
+                        is_agg_type = feature.is_agg_type()
                         if is_agg_type:
-                            func = f.get_function(agg_type=Library.SPARK)
+                            func = feature.get_function(agg_type=Library.SPARK)
                         else:
-                            func = f.get_function(series_library=Library.SPARK)
+                            func = feature.get_function(series_library=Library.SPARK)
                     else:
-                        func = f.get_function()
+                        func = feature.get_function()
 
                     # for some reason, using the string count is significantly
                     # faster than any method a primitive can return
@@ -794,10 +791,10 @@ class FeatureSetCalculator(object):
 
                     to_agg[column_id].append(func)
                     # this is used below to rename columns that pandas names for us
-                    agg_rename["{}-{}".format(column_id, funcname)] = f.get_name()
+                    agg_rename["{}-{}".format(column_id, funcname)] = feature.get_name()
                     continue
 
-                to_apply.add(f)
+                to_apply.add(feature)
 
             # Apply the non-aggregable functions generate a new dataframe, and merge
             # it with the existing one

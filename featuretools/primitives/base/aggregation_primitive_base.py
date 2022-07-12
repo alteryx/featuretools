@@ -1,3 +1,4 @@
+from featuretools.feature_base import AggregationFeature
 from featuretools.primitives.base.primitive_base import PrimitiveBase
 
 
@@ -7,7 +8,9 @@ class AggregationPrimitive(PrimitiveBase):
     base_of = None  # whitelist of primitives this prim can be input for
     base_of_exclude = None  # primitives this primitive can't be input for
     stack_on_self = True  # whether or not it can be in input_types of self
-    is_agg_type = False #
+
+    computed_has_agg_type = False
+    has_agg_type = None
 
     def generate_name(
         self,
@@ -45,4 +48,21 @@ class AggregationPrimitive(PrimitiveBase):
         )
         return [base_name + "[%s]" % i for i in range(n)]
 
-    def is_agg_type(self):
+    @classmethod
+    def is_agg_type(cls):
+        if cls.computed_has_agg_type:
+            return cls.has_agg_type
+
+        has_agg_type = False
+        if hasattr(cls.primitive, "is_agg_type"):
+            return cls.primitive.has_agg_type
+        if hasattr(cls, "is_agg_type"):
+            return cls.has_agg_type
+        if isinstance(cls, AggregationFeature):
+            has_agg_type = "agg_type" in cls.primitive.get_function.__code__.co_varnames
+            cls.primitive.has_agg_type = has_agg_type
+        else:
+            has_agg_type = "agg_type" in cls.get_function.__code__.co_varnames
+            cls.is_agg_type = has_agg_type
+        cls.computed_has_agg_type = True
+        cls.has_agg_type = has_agg_type
