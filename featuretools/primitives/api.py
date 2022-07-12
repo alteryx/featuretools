@@ -1,5 +1,4 @@
 # flake8: noqa
-from .rolling_primitive_utils import apply_roll_with_offset_gap, roll_series_with_gap
 from featuretools.primitives.standard import *
 from featuretools.primitives.utils import (
     get_aggregation_primitives,

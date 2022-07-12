@@ -43,7 +43,6 @@ from featuretools.primitives.utils import (
     list_primitive_files,
     load_primitive_from_file,
 )
-
 from featuretools.utils.gen_utils import Library
 
 
@@ -169,6 +168,7 @@ def test_errors_no_primitive_in_file(bad_primitives_files_dir):
     with pytest.raises(RuntimeError) as excinfo:
         load_primitive_from_file(primitive_file)
     assert str(excinfo.value) == error_text
+
 
 def test_check_input_types():
     primitives = [Sum, Weekday, PercentTrue, Day, Std, NumericLag]

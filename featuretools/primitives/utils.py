@@ -396,6 +396,7 @@ class PrimitivesDeserializer(object):
             if cls_key == search_key:
                 return cls
 
+
 def _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_2s, unit):
     # https://stackoverflow.com/a/29546836/2512385
     lon1, lat1, lon2, lat2 = map(np.radians, [lon_1s, lat_1s, lon_2s, lat_2s])

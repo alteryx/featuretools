@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+
 from featuretools.primitives.rolling_primitive_utils import (
     _get_rolled_series_without_gap,
     apply_roll_with_offset_gap,
