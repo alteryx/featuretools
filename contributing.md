@@ -102,9 +102,11 @@ Before starting major work, you should touch base with the maintainers of Featur
   ```
 * Before you commit, a few lint fixing hooks will run. You can also manually run these.
   ```bash
-  pip install pre-commit
-  pre-commit install
+  # run linting hooks only on changed files
   pre-commit run
+
+  # run linting hooks on all files
+  pre-commit run --all-files
   ```
 
 #### 3. Submit your Pull Request
