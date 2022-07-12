@@ -346,7 +346,7 @@ class LessThanEqualToScalar(TransformPrimitive):
     def __init__(self, value=0):
         self.value = value
         self.description_template = "whether {{}} is less than or equal to {}".format(
-            self.value
+            self.value,
         )
 
     def get_function(self, series_library=Library.PANDAS):
@@ -388,16 +388,17 @@ class Equal(TransformPrimitive):
     def get_function(self, series_library=Library.PANDAS):
         def equal(x_vals, y_vals):
             if isinstance(x_vals.dtype, pd.CategoricalDtype) and isinstance(
-                y_vals.dtype, pd.CategoricalDtype
+                y_vals.dtype,
+                pd.CategoricalDtype,
             ):
                 categories = set(x_vals.cat.categories).union(
-                    set(y_vals.cat.categories)
+                    set(y_vals.cat.categories),
                 )
                 x_vals = x_vals.cat.add_categories(
-                    categories.difference(set(x_vals.cat.categories))
+                    categories.difference(set(x_vals.cat.categories)),
                 )
                 y_vals = y_vals.cat.add_categories(
-                    categories.difference(set(y_vals.cat.categories))
+                    categories.difference(set(y_vals.cat.categories)),
                 )
             return x_vals.eq(y_vals)
 
@@ -463,16 +464,17 @@ class NotEqual(TransformPrimitive):
     def get_function(self, series_library=Library.PANDAS):
         def not_equal(x_vals, y_vals):
             if isinstance(x_vals.dtype, pd.CategoricalDtype) and isinstance(
-                y_vals.dtype, pd.CategoricalDtype
+                y_vals.dtype,
+                pd.CategoricalDtype,
             ):
                 categories = set(x_vals.cat.categories).union(
-                    set(y_vals.cat.categories)
+                    set(y_vals.cat.categories),
                 )
                 x_vals = x_vals.cat.add_categories(
-                    categories.difference(set(x_vals.cat.categories))
+                    categories.difference(set(x_vals.cat.categories)),
                 )
                 y_vals = y_vals.cat.add_categories(
-                    categories.difference(set(y_vals.cat.categories))
+                    categories.difference(set(y_vals.cat.categories)),
                 )
             return x_vals.ne(y_vals)
 
@@ -881,7 +883,10 @@ class DivideNumeric(TransformPrimitive):
         self.commutative = commutative
 
     def get_function(self, series_library=Library.PANDAS):
-        return np.divide
+        def divide_numeric(val1, val2):
+            return val1 / val2
+
+        return divide_numeric
 
     def generate_name(self, base_feature_names):
         return "%s / %s" % (base_feature_names[0], base_feature_names[1])
@@ -908,7 +913,7 @@ class DivideNumericScalar(TransformPrimitive):
     def __init__(self, value=1):
         self.value = value
         self.description_template = "the result of {{}} divided by {}".format(
-            self.value
+            self.value,
         )
 
     def get_function(self, series_library=Library.PANDAS):
@@ -943,7 +948,7 @@ class DivideByFeature(TransformPrimitive):
     def __init__(self, value=1):
         self.value = value
         self.description_template = "the result of {} divided by {{}}".format(
-            self.value
+            self.value,
         )
 
     def get_function(self, series_library=Library.PANDAS):
@@ -1008,7 +1013,7 @@ class ModuloNumericScalar(TransformPrimitive):
     def __init__(self, value=1):
         self.value = value
         self.description_template = "the remainder after dividing {{}} by {}".format(
-            self.value
+            self.value,
         )
 
     def get_function(self, series_library=Library.PANDAS):
@@ -1043,7 +1048,7 @@ class ModuloByFeature(TransformPrimitive):
     def __init__(self, value=1):
         self.value = value
         self.description_template = "the remainder after dividing {} by {{}}".format(
-            self.value
+            self.value,
         )
 
     def get_function(self, series_library=Library.PANDAS):

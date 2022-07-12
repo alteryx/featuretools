@@ -6,9 +6,11 @@ from woodwork.logical_types import (
     Boolean,
     BooleanNullable,
     Categorical,
+    Datetime,
     Double,
     EmailAddress,
     NaturalLanguage,
+    Timedelta,
 )
 
 from featuretools.primitives.base import TransformPrimitive
@@ -81,7 +83,9 @@ class NaturalLogarithm(TransformPrimitive):
 
     Examples:
         >>> log = NaturalLogarithm()
-        >>> log([1.0, np.e]).tolist()
+        >>> results = log([1.0, np.e]).tolist()
+        >>> results = [round(x, 2) for x in results]
+        >>> results
         [0.0, 1.0]
     """
 
@@ -223,7 +227,7 @@ class IsIn(TransformPrimitive):
         else:
             stringified_output_list = ", ".join([str(x) for x in list_of_outputs])
         self.description_template = "whether {{}} is in {}".format(
-            stringified_output_list
+            stringified_output_list,
         )
 
     def get_function(self, series_library=Library.PANDAS):
@@ -240,17 +244,27 @@ class Diff(TransformPrimitive):
     """Compute the difference between the value in a list and the
     previous value in that list.
 
+    Args:
+        periods (int): The number of periods by which to shift the index row.
+            Default is 0. Periods correspond to rows.
+
     Description:
         Given a list of values, compute the difference from the previous
         item in the list. The result for the first element of the list will
-        always be `NaN`. If the values are datetimes, the output will be a
-        timedelta.
+        always be `NaN`.
 
     Examples:
         >>> diff = Diff()
         >>> values = [1, 10, 3, 4, 15]
         >>> diff(values).tolist()
         [nan, 9.0, -7.0, 1.0, 11.0]
+
+        You can specify the number of periods to shift the values
+
+        >>> values = [1, 2, 4, 7, 11, 16]
+        >>> diff_periods = Diff(periods = 1)
+        >>> diff_periods(values).tolist()
+        [nan, nan, 1.0, 2.0, 3.0, 4.0]
     """
 
     name = "diff"
@@ -259,11 +273,51 @@ class Diff(TransformPrimitive):
     uses_full_dataframe = True
     description_template = "the difference from the previous value of {}"
 
-    def get_function(self, series_library=Library.PANDAS):
+    def __init__(self, periods=0):
+        self.periods = periods
+
+    def get_function(self):
         def pd_diff(values):
-            return values.diff()
+            return values.shift(self.periods).diff()
 
         return pd_diff
+
+
+class DiffDatetime(Diff):
+    """Compute the timedelta between a datetime in a list and the
+    previous datetime in that list.
+
+    Args:
+        periods (int): The number of periods by which to shift the index row.
+            Default is 0. Periods correspond to rows.
+
+    Description:
+        Given a list of datetimes, compute the difference from the previous
+        item in the list. The result for the first element of the list will
+        always be `NaT`.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dt_values = [datetime(2019, 3, 1), datetime(2019, 6, 30), datetime(2019, 11, 17), datetime(2020, 1, 30), datetime(2020, 3, 11)]
+        >>> diff_dt = Diff()
+        >>> diff_dt(dt_values).tolist()
+        [NaT, Timedelta('121 days 00:00:00'), Timedelta('140 days 00:00:00'), Timedelta('74 days 00:00:00'), Timedelta('41 days 00:00:00')]
+
+        You can specify the number of periods to shift the values
+
+        >>> diff_dt_periods = Diff(periods = 1)
+        >>> diff_dt_periods(dt_values).tolist()
+        [NaT, NaT, Timedelta('121 days 00:00:00'), Timedelta('140 days 00:00:00'), Timedelta('74 days 00:00:00')]
+    """
+
+    name = "diff_datetime"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=Timedelta)
+    uses_full_dataframe = True
+    description_template = "the difference from the previous value of {}"
+
+    def __init__(self, periods=0):
+        super().__init__(periods)
 
 
 class Negate(TransformPrimitive):

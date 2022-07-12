@@ -1,5 +1,3 @@
-import warnings
-
 import holidays
 import numpy as np
 import pandas as pd
@@ -101,7 +99,10 @@ class DateToHoliday(TransformPrimitive):
             df["date"] = df["date"].dt.date.astype("datetime64[ns]")
 
             df = df.merge(
-                holiday_df, how="left", left_on="date", right_on="holiday_date"
+                holiday_df,
+                how="left",
+                left_on="date",
+                right_on="holiday_date",
             )
             return df.names.values
 
@@ -124,7 +125,8 @@ class Day(TransformPrimitive):
     name = "day"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(1, 32))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(1, 32))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the day of the month of {}"
@@ -156,7 +158,8 @@ class DayOfYear(TransformPrimitive):
     name = "day_of_year"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(1, 367))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(1, 367))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the day of year from {}"
@@ -166,6 +169,35 @@ class DayOfYear(TransformPrimitive):
             return vals.dt.dayofyear
 
         return dayOfYear
+
+
+class DaysInMonth(TransformPrimitive):
+    """Determines the day of the month from a datetime.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 12, 1),
+        ...          datetime(2019, 1, 3),
+        ...          datetime(2020, 2, 1)]
+        >>> days_in_month = DaysInMonth()
+        >>> days_in_month(dates).tolist()
+        [31, 31, 29]
+    """
+
+    name = "days_in_month"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(
+        logical_type=Ordinal(order=list(range(1, 32))),
+        semantic_tags={"category"},
+    )
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "the days in the month of {}"
+
+    def get_function(self):
+        def days_in_month(vals):
+            return vals.dt.daysinmonth
+
+        return days_in_month
 
 
 class DistanceToHoliday(TransformPrimitive):
@@ -267,7 +299,8 @@ class Hour(TransformPrimitive):
     name = "hour"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(24))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(24))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the hour value of {}"
@@ -277,6 +310,170 @@ class Hour(TransformPrimitive):
             return vals.dt.hour
 
         return hour
+
+
+class IsLeapYear(TransformPrimitive):
+    """Determines the is_leap_year attribute of a datetime column.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 3, 1),
+        ...          datetime(2020, 3, 3, 11, 10, 50),
+        ...          datetime(2021, 3, 31, 19, 45, 15)]
+        >>> ily = IsLeapYear()
+        >>> ily(dates).tolist()
+        [False, True, False]
+    """
+
+    name = "is_leap_year"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=BooleanNullable)
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "whether the year of {} is a leap year"
+
+    def get_function(self):
+        def is_leap_year(vals):
+            return vals.dt.is_leap_year
+
+        return is_leap_year
+
+
+class IsLunchTime(TransformPrimitive):
+    """Determines if a datetime falls during configurable lunch hour, on a 24-hour clock.
+
+    Args:
+        lunch_hour (int): Hour when lunch is taken. Must adhere to 24-hour clock. Defaults to 12.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2022, 6, 21, 12, 3, 3),
+        ...          datetime(2019, 1, 3, 4, 4, 4),
+        ...          datetime(2022, 1, 1, 11, 1, 2),
+        ...          np.nan]
+        >>> is_lunch_time = IsLunchTime()
+        >>> is_lunch_time(dates).tolist()
+        [True, False, False, False]
+        >>> is_lunch_time = IsLunchTime(11)
+        >>> is_lunch_time(dates).tolist()
+        [False, False, True, False]
+    """
+
+    name = "is_lunch_time"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=BooleanNullable)
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "whether {} falls during lunch time"
+
+    def __init__(self, lunch_hour=12):
+        self.lunch_hour = lunch_hour
+
+    def get_function(self):
+        def is_lunch_time(vals):
+            return vals.dt.hour == self.lunch_hour
+
+        return is_lunch_time
+
+
+class IsMonthEnd(TransformPrimitive):
+    """Determines the is_month_end attribute of a datetime column.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 3, 1),
+        ...          datetime(2021, 2, 28),
+        ...          datetime(2020, 2, 29)]
+        >>> ime = IsMonthEnd()
+        >>> ime(dates).tolist()
+        [False, True, True]
+    """
+
+    name = "is_month_end"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=BooleanNullable)
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "whether {} is at the end of a month"
+
+    def get_function(self):
+        def is_month_end(vals):
+            return vals.dt.is_month_end
+
+        return is_month_end
+
+
+class IsMonthStart(TransformPrimitive):
+    """Determines the is_month_start attribute of a datetime column.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 3, 1),
+        ...          datetime(2020, 2, 13),
+        ...          datetime(2020, 2, 29)]
+        >>> ims = IsMonthStart()
+        >>> ims(dates).tolist()
+        [True, False, False]
+    """
+
+    name = "is_month_start"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=BooleanNullable)
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "whether {} is at the start of a month"
+
+    def get_function(self):
+        def is_month_start(vals):
+            return vals.dt.is_month_start
+
+        return is_month_start
+
+
+class IsQuarterEnd(TransformPrimitive):
+    """Determines the is_quarter_end attribute of a datetime column.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> iqe = IsQuarterEnd()
+        >>> dates = [datetime(2020, 3, 31),
+        ...          datetime(2020, 1, 1)]
+        >>> iqe(dates).tolist()
+        [True, False]
+    """
+
+    name = "is_quarter_end"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=BooleanNullable)
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "whether {} is a quarter end"
+
+    def get_function(self):
+        def is_quarter_end(vals):
+            return vals.dt.is_quarter_end
+
+        return is_quarter_end
+
+
+class IsQuarterStart(TransformPrimitive):
+    """Determines the is_quarter_start attribute of a datetime column.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> iqs = IsQuarterStart()
+        >>> dates = [datetime(2020, 3, 31),
+        ...          datetime(2020, 1, 1)]
+        >>> iqs(dates).tolist()
+        [False, True]
+    """
+
+    name = "is_quarter_start"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=BooleanNullable)
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "whether {} is a quarter start"
+
+    def get_function(self):
+        def is_quarter_start(vals):
+            return vals.dt.is_quarter_start
+
+        return is_quarter_start
 
 
 class IsWeekend(TransformPrimitive):
@@ -305,6 +502,98 @@ class IsWeekend(TransformPrimitive):
         return is_weekend
 
 
+class IsWorkingHours(TransformPrimitive):
+    """Determines if a datetime falls during working hours on a 24-hour clock. Can configure start_hour and end_hour.
+
+    Args:
+        start_hour (int): Start hour of workday. Must adhere to 24-hour clock. Default is 8 (8am).
+        end_hour (int): End hour of workday. Must adhere to 24-hour clock. Default is 18 (6pm).
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2022, 6, 21, 16, 3, 3),
+        ...          datetime(2019, 1, 3, 4, 4, 4),
+        ...          datetime(2022, 1, 1, 12, 1, 2),
+        ...          np.nan]
+        >>> is_working_hour = IsWorkingHours()
+        >>> is_working_hour(dates).tolist()
+        [True, False, True, False]
+        >>> is_working_hour = IsWorkingHours(15, 17)
+        >>> is_working_hour(dates).tolist()
+        [True, False, False, False]
+    """
+
+    name = "is_working_hours"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=BooleanNullable)
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "whether {} falls during working hours"
+
+    def __init__(self, start_hour=8, end_hour=18):
+        self.start_hour = start_hour
+        self.end_hour = end_hour
+
+    def get_function(self):
+        def is_working_hours(vals):
+            return (vals.dt.hour >= self.start_hour) & (vals.dt.hour <= self.end_hour)
+
+        return is_working_hours
+
+
+class IsYearEnd(TransformPrimitive):
+    """Determines if a date falls on the end of a year.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 12, 31),
+        ...          datetime(2019, 1, 1),
+        ...          datetime(2019, 11, 30),
+        ...          np.nan]
+        >>> is_year_end = IsYearEnd()
+        >>> is_year_end(dates).tolist()
+        [True, False, False, False]
+    """
+
+    name = "is_year_end"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=BooleanNullable)
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "whether {} occurred on the end of a year"
+
+    def get_function(self):
+        def is_year_end(vals):
+            return vals.dt.is_year_end
+
+        return is_year_end
+
+
+class IsYearStart(TransformPrimitive):
+    """Determines if a date falls on the start of a year.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 12, 31),
+        ...          datetime(2019, 1, 1),
+        ...          datetime(2019, 11, 30),
+        ...          np.nan]
+        >>> is_year_start = IsYearStart()
+        >>> is_year_start(dates).tolist()
+        [False, True, False, False]
+    """
+
+    name = "is_year_start"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=BooleanNullable)
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "whether {} occurred on the start of a year"
+
+    def get_function(self):
+        def is_year_start(vals):
+            return vals.dt.is_year_start
+
+        return is_year_start
+
+
 class Minute(TransformPrimitive):
     """Determines the minutes value of a datetime.
 
@@ -321,7 +610,8 @@ class Minute(TransformPrimitive):
     name = "minute"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(60))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(60))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the minutes value of {}"
@@ -349,7 +639,8 @@ class Month(TransformPrimitive):
     name = "month"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(1, 13))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(1, 13))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the month of {}"
@@ -359,6 +650,98 @@ class Month(TransformPrimitive):
             return vals.dt.month
 
         return month
+
+
+class PartOfDay(TransformPrimitive):
+    """Determines the part of day of a datetime.
+
+    Description:
+        For a list of datetimes, determines the part of day the datetime
+        falls into, based on the hour.
+        If the hour falls from 4 to 5, the part of day is 'dawn'.
+        If the hour falls from 6 to 7, the part of day is 'early morning'.
+        If the hour falls from 8 to 10, the part of day is 'late morning'.
+        If the hour falls from 11 to 13, the part of day is 'noon'.
+        If the hour falls from 14 to 16, the part of day is 'afternoon'.
+        If the hour falls from 17 to 19, the part of day is 'evening'.
+        If the hour falls from 20 to 22, the part of day is 'night'.
+        If the hour falls into 23, 24, or 1 to 3, the part of day is 'midnight'.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2020, 1, 11, 6, 2, 1),
+        ...          datetime(2021, 3, 31, 4, 2, 1),
+        ...          datetime(2020, 3, 4, 9, 2, 1)]
+        >>> part_of_day = PartOfDay()
+        >>> part_of_day(dates).tolist()
+        ['early morning', 'dawn', 'late morning']
+    """
+
+    name = "part_of_day"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(logical_type=Categorical, semantic_tags={"category"})
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "the part of day {} falls in"
+
+    @staticmethod
+    def construct_replacement_dict():
+        tdict = dict()
+        tdict[pd.NaT] = np.nan
+        for hour in [4, 5]:
+            tdict[hour] = "dawn"
+        for hour in [6, 7]:
+            tdict[hour] = "early morning"
+        for hour in [8, 9, 10]:
+            tdict[hour] = "late morning"
+        for hour in [11, 12, 13]:
+            tdict[hour] = "noon"
+        for hour in [14, 15, 16]:
+            tdict[hour] = "afternoon"
+        for hour in [17, 18, 19]:
+            tdict[hour] = "evening"
+        for hour in [20, 21, 22]:
+            tdict[hour] = "night"
+        for hour in [23, 0, 1, 2, 3]:
+            tdict[hour] = "midnight"
+        return tdict
+
+    def get_function(self):
+        replacement_dict = self.construct_replacement_dict()
+
+        def part_of_day(vals):
+            ans = vals.dt.hour.replace(replacement_dict)
+            return ans
+
+        return part_of_day
+
+
+class Quarter(TransformPrimitive):
+    """Determines the quarter a datetime column falls into (1, 2, 3, 4)
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019,12,1),
+        ...          datetime(2019,1,3),
+        ...          datetime(2020,2,1)]
+        >>> q = Quarter()
+        >>> q(dates).tolist()
+        [4, 1, 1]
+    """
+
+    name = "quarter"
+    input_types = [ColumnSchema(logical_type=Datetime)]
+    return_type = ColumnSchema(
+        logical_type=Ordinal(order=list(range(1, 5))),
+        semantic_tags={"category"},
+    )
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    description_template = "the quarter that describes {}"
+
+    def get_function(self):
+        def quarter(vals):
+            return vals.dt.quarter
+
+        return quarter
 
 
 class Second(TransformPrimitive):
@@ -377,7 +760,8 @@ class Second(TransformPrimitive):
     name = "second"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(60))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(60))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the seconds value of {}"
@@ -474,7 +858,8 @@ class TimeSincePrevious(TransformPrimitive):
     def get_function(self, series_library=Library.PANDAS):
         def pd_diff(values):
             return convert_time_units(
-                values.diff().apply(lambda x: x.total_seconds()), self.unit
+                values.diff().apply(lambda x: x.total_seconds()),
+                self.unit,
             )
 
         return pd_diff
@@ -501,21 +886,18 @@ class Week(TransformPrimitive):
     name = "week"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(1, 54))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(1, 54))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the week of the year of {}"
 
     def get_function(self, series_library=Library.PANDAS):
         def week(vals):
-            warnings.filterwarnings(
-                "ignore",
-                message=(
-                    "Series.dt.weekofyear and Series.dt.week " "have been deprecated."
-                ),
-                module="featuretools",
-            )
-            return vals.dt.week
+            if hasattr(vals.dt, "isocalendar"):
+                return vals.dt.isocalendar().week
+            else:
+                return vals.dt.week
 
         return week
 
@@ -540,7 +922,8 @@ class Weekday(TransformPrimitive):
     name = "weekday"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(7))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(7))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the day of the week of {}"
@@ -568,7 +951,8 @@ class Year(TransformPrimitive):
     name = "year"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(
-        logical_type=Ordinal(order=list(range(1, 3000))), semantic_tags={"category"}
+        logical_type=Ordinal(order=list(range(1, 3000))),
+        semantic_tags={"category"},
     )
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the year of {}"
@@ -618,7 +1002,8 @@ class IsFederalHoliday(TransformPrimitive):
     def get_function(self, series_library=Library.PANDAS):
         def is_federal_holiday(x):
             holidays_df = pd.DataFrame(
-                sorted(self.federal_holidays.items()), columns=["dates", "names"]
+                sorted(self.federal_holidays.items()),
+                columns=["dates", "names"],
             )
             is_holiday = x.dt.normalize().isin(holidays_df.dates)
             if x.isnull().values.any():

@@ -23,7 +23,7 @@
     </a>
     <a href="https://stackoverflow.com/questions/tagged/featuretools" target="_blank">
         <img src="http://img.shields.io/badge/questions-on_stackoverflow-blue.svg" alt="StackOverflow" />
-    </a> 
+    </a>
     <a href="https://pepy.tech/project/featuretools" target="_blank">
         <img src="https://pepy.tech/badge/featuretools/month" alt="PyPI Downloads" />
     </a>

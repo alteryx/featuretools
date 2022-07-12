@@ -26,7 +26,9 @@ TARGET_TEMPLATE = """
     <TR>
         <TD ALIGN="LEFT" port="{}" BGCOLOR="{target_color}">{}</TD>
     </TR>""".format(
-    "{}", "{}", target_color=TARGET_COLOR
+    "{}",
+    "{}",
+    target_color=TARGET_COLOR,
 )
 
 
@@ -51,7 +53,9 @@ def graph_feature(feature, to_file=None, description=False, **kwargs):
 
     # Initialize a new directed graph
     graph = graphviz.Digraph(
-        feature.get_name(), format=format_, graph_attr={"rankdir": "LR"}
+        feature.get_name(),
+        format=format_,
+        graph_attr={"rankdir": "LR"},
     )
 
     dataframes = {}
@@ -60,7 +64,12 @@ def graph_feature(feature, to_file=None, description=False, **kwargs):
     groupbys = []
 
     _, max_depth = get_feature_data(
-        feature, dataframes, groupbys, edges, primitives, layer=0
+        feature,
+        dataframes,
+        groupbys,
+        edges,
+        primitives,
+        layer=0,
     )
     dataframes[feature.dataframe_name]["targets"].add(feature.get_name())
 
@@ -90,7 +99,9 @@ def graph_feature(feature, to_file=None, description=False, **kwargs):
             type_str = "   " + prim_type if prim_type else ""
             prim_label = (
                 '<<FONT POINT-SIZE="12"><B>{}:</B>{}<BR></BR></FONT>{}>'.format(
-                    step, type_str, prim_label
+                    step,
+                    type_str,
+                    prim_label,
                 )
             )
 
@@ -187,7 +198,12 @@ def get_feature_data(feat, dataframes, groupbys, edges, primitives, layer=0):
     if hasattr(feat, "groupby"):
         groupby = feat.groupby
         _ = get_feature_data(
-            groupby, dataframes, groupbys, edges, primitives, layer + 1
+            groupby,
+            dataframes,
+            groupbys,
+            edges,
+            primitives,
+            layer + 1,
         )
         dependencies.remove((groupby.hash(), groupby))
 
@@ -210,7 +226,12 @@ def get_feature_data(feat, dataframes, groupbys, edges, primitives, layer=0):
     max_depth = layer
     for _, f in dependencies:
         dependent_node, depth = get_feature_data(
-            f, dataframes, groupbys, edges, primitives, layer + 1
+            f,
+            dataframes,
+            groupbys,
+            edges,
+            primitives,
+            layer + 1,
         )
         edges[1].append([dependent_node, base_node])
 
@@ -257,6 +278,7 @@ def get_dataframe_table(dataframe_name, dataframe_dict):
         rows.append(template.format(col, col))
 
     table = TABLE_TEMPLATE.format(
-        dataframe_name=dataframe_name, table_cols="\n".join(rows)
+        dataframe_name=dataframe_name,
+        table_cols="\n".join(rows),
     )
     return table

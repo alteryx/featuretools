@@ -21,7 +21,7 @@ BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
 TEST_FILE = "test_serialization_data_entityset_schema_{}_2022_4_26.tar".format(
-    SCHEMA_VERSION
+    SCHEMA_VERSION,
 )
 S3_URL = "s3://featuretools-static/" + TEST_FILE
 URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
@@ -73,7 +73,8 @@ def test_with_custom_ww_logical_type():
     description = serialize.entityset_to_description(es)
     _es = deserialize.description_to_entityset(description)
     assert isinstance(
-        _es["custom_type"].ww.logical_types["custom_logical_type"], CustomLogicalType
+        _es["custom_type"].ww.logical_types["custom_logical_type"],
+        CustomLogicalType,
     )
     assert es.__eq__(_es, deep=True)
 
@@ -113,13 +114,14 @@ def test_to_csv_interesting_values(pd_es, tmpdir):
 
 def test_to_csv_manual_interesting_values(es, tmpdir):
     es.add_interesting_values(
-        dataframe_name="log", values={"product_id": ["coke_zero"]}
+        dataframe_name="log",
+        values={"product_id": ["coke_zero"]},
     )
     es.to_csv(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
     assert new_es["log"].ww["product_id"].ww.metadata["interesting_values"] == [
-        "coke_zero"
+        "coke_zero",
     ]
 
 
@@ -155,13 +157,14 @@ def test_to_pickle_interesting_values(pd_es, tmpdir):
 # Dask/Spark do not support to_pickle
 def test_to_pickle_manual_interesting_values(pd_es, tmpdir):
     pd_es.add_interesting_values(
-        dataframe_name="log", values={"product_id": ["coke_zero"]}
+        dataframe_name="log",
+        values={"product_id": ["coke_zero"]},
     )
     pd_es.to_pickle(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert pd_es.__eq__(new_es, deep=True)
     assert new_es["log"].ww["product_id"].ww.metadata["interesting_values"] == [
-        "coke_zero"
+        "coke_zero",
     ]
 
 
@@ -177,13 +180,14 @@ def test_to_parquet(es, tmpdir):
 
 def test_to_parquet_manual_interesting_values(es, tmpdir):
     es.add_interesting_values(
-        dataframe_name="log", values={"product_id": ["coke_zero"]}
+        dataframe_name="log",
+        values={"product_id": ["coke_zero"]},
     )
     es.to_parquet(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
     assert new_es["log"].ww["product_id"].ww.metadata["interesting_values"] == [
-        "coke_zero"
+        "coke_zero",
     ]
 
 
@@ -239,7 +243,7 @@ def make_public(s3_client, s3_bucket):
 def test_serialize_s3_csv(es, s3_client, s3_bucket, profile_name):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail(
-            "tmp file disappears after deserialize step, cannot check equality with Dask"
+            "tmp file disappears after deserialize step, cannot check equality with Dask",
         )
     es.to_csv(TEST_S3_URL, encoding="utf-8", engine="python", profile_name=profile_name)
     make_public(s3_client, s3_bucket)
@@ -261,7 +265,7 @@ def test_serialize_s3_pickle(pd_es, s3_client, s3_bucket, profile_name):
 def test_serialize_s3_parquet(es, s3_client, s3_bucket, profile_name):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail(
-            "tmp file disappears after deserialize step, cannot check equality with Dask or Spark"
+            "tmp file disappears after deserialize step, cannot check equality with Dask or Spark",
         )
     es.to_parquet(TEST_S3_URL, profile_name=profile_name)
     make_public(s3_client, s3_bucket)
@@ -310,7 +314,7 @@ def setup_test_profile(monkeypatch, tmpdir):
 def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
     if es.dataframe_type != Library.PANDAS.value:
         pytest.xfail(
-            "tmp file disappears after deserialize step, cannot check equality with Dask"
+            "tmp file disappears after deserialize step, cannot check equality with Dask",
         )
     es.to_csv(TEST_S3_URL, encoding="utf-8", engine="python", profile_name="test")
     make_public(s3_client, s3_bucket)

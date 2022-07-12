@@ -7,9 +7,21 @@ import pytest
 from featuretools.primitives import (
     Age,
     DayOfYear,
+    DaysInMonth,
     EmailAddressToDomain,
     IsFreeEmailDomain,
+    IsLeapYear,
+    IsLunchTime,
+    IsMonthEnd,
+    IsMonthStart,
+    IsQuarterEnd,
+    IsQuarterStart,
+    IsWorkingHours,
+    IsYearEnd,
+    IsYearStart,
     NumericLag,
+    PartOfDay,
+    Quarter,
     TimeSince,
     URLToDomain,
     URLToProtocol,
@@ -27,7 +39,7 @@ def test_time_since():
             datetime(2019, 3, 1, 0, 0, 0, 1),
             datetime(2019, 3, 1, 0, 0, 1, 0),
             datetime(2019, 3, 1, 0, 2, 0, 0),
-        ]
+        ],
     )
     cutoff_time = datetime(2019, 3, 1, 0, 0, 0, 0)
     values = time_since(array=times, time=cutoff_time)
@@ -55,7 +67,7 @@ def test_time_since():
             datetime(2019, 3, 1, 0, 0, 0, 1),
             datetime(2020, 3, 1, 0, 0, 1, 0),
             datetime(2017, 3, 1, 0, 0, 0, 0),
-        ]
+        ],
     )
 
     time_since = TimeSince(unit="Years")
@@ -107,10 +119,255 @@ def test_age_nan():
 
 def test_day_of_year():
     doy = DayOfYear()
-    dates = pd.Series(datetime(2020, 12, 31))
+    dates = pd.Series([datetime(2019, 12, 31), np.nan, datetime(2020, 12, 31)])
     days_of_year = doy(dates)
-    correct_days = [366]
+    correct_days = [365, np.nan, 366]
     np.testing.assert_array_equal(days_of_year, correct_days)
+
+
+def test_days_in_month():
+    dim = DaysInMonth()
+    dates = pd.Series(
+        [datetime(2010, 1, 1), datetime(2019, 2, 1), np.nan, datetime(2020, 2, 1)],
+    )
+    days_in_month = dim(dates)
+    correct_days = [31, 28, np.nan, 29]
+    np.testing.assert_array_equal(days_in_month, correct_days)
+
+
+def test_is_leap_year():
+    ily = IsLeapYear()
+    dates = pd.Series([datetime(2020, 1, 1), datetime(2021, 1, 1)])
+    leap_year_bools = ily(dates)
+    correct_bools = [True, False]
+    np.testing.assert_array_equal(leap_year_bools, correct_bools)
+
+
+def test_is_month_end():
+    ime = IsMonthEnd()
+    dates = pd.Series(
+        [datetime(2019, 3, 1), datetime(2021, 2, 28), datetime(2020, 2, 29)],
+    )
+    ime_bools = ime(dates)
+    correct_bools = [False, True, True]
+    np.testing.assert_array_equal(ime_bools, correct_bools)
+
+
+def test_is_month_start():
+    ims = IsMonthStart()
+    dates = pd.Series(
+        [datetime(2019, 3, 1), datetime(2020, 2, 28), datetime(2020, 2, 29)],
+    )
+    ims_bools = ims(dates)
+    correct_bools = [True, False, False]
+    np.testing.assert_array_equal(ims_bools, correct_bools)
+
+
+def test_is_quarter_end():
+    iqe = IsQuarterEnd()
+    dates = pd.Series([datetime(2020, 1, 1), datetime(2021, 3, 31)])
+    iqe_bools = iqe(dates)
+    correct_bools = [False, True]
+    np.testing.assert_array_equal(iqe_bools, correct_bools)
+
+
+def test_is_quarter_start():
+    iqs = IsQuarterStart()
+    dates = pd.Series([datetime(2020, 1, 1), datetime(2021, 3, 31)])
+    iqs_bools = iqs(dates)
+    correct_bools = [True, False]
+    np.testing.assert_array_equal(iqs_bools, correct_bools)
+
+
+def test_is_lunch_time_default():
+    is_lunch_time = IsLunchTime()
+    dates = pd.Series(
+        [
+            datetime(2022, 6, 26, 12, 12, 12),
+            datetime(2022, 6, 28, 12, 3, 4),
+            datetime(2022, 6, 28, 11, 3, 4),
+            np.nan,
+        ],
+    )
+    actual = is_lunch_time(dates)
+    expected = [True, True, False, False]
+    np.testing.assert_array_equal(actual, expected)
+
+
+def test_is_lunch_time_configurable():
+    is_lunch_time = IsLunchTime(14)
+    dates = pd.Series(
+        [
+            datetime(2022, 6, 26, 12, 12, 12),
+            datetime(2022, 6, 28, 14, 3, 4),
+            datetime(2022, 6, 28, 11, 3, 4),
+            np.nan,
+        ],
+    )
+    actual = is_lunch_time(dates)
+    expected = [False, True, False, False]
+    np.testing.assert_array_equal(actual, expected)
+
+
+def test_is_working_hours_standard_hours():
+    is_working_hours = IsWorkingHours()
+    dates = pd.Series(
+        [
+            datetime(2022, 6, 21, 16, 3, 3),
+            datetime(2019, 1, 3, 4, 4, 4),
+            datetime(2022, 1, 1, 12, 1, 2),
+        ],
+    )
+    actual = is_working_hours(dates).tolist()
+    expected = [True, False, True]
+    np.testing.assert_array_equal(actual, expected)
+
+
+def test_is_working_hours_configured_hours():
+    is_working_hours = IsWorkingHours(15, 18)
+    dates = pd.Series(
+        [
+            datetime(2022, 6, 21, 16, 3, 3),
+            datetime(2022, 6, 26, 14, 4, 4),
+            datetime(2022, 1, 1, 12, 1, 2),
+        ],
+    )
+    answer = is_working_hours(dates).tolist()
+    expected = [True, False, False]
+    np.testing.assert_array_equal(answer, expected)
+
+
+def test_part_of_day():
+    pod = PartOfDay()
+    dates = pd.Series(
+        [
+            datetime(2020, 1, 11, 0, 2, 1),
+            datetime(2020, 1, 11, 1, 2, 1),
+            datetime(2021, 3, 31, 4, 2, 1),
+            datetime(2020, 3, 4, 6, 2, 1),
+            datetime(2020, 3, 4, 8, 2, 1),
+            datetime(2020, 3, 4, 11, 2, 1),
+            datetime(2020, 3, 4, 14, 2, 3),
+            datetime(2020, 3, 4, 17, 2, 3),
+            datetime(2020, 2, 2, 20, 2, 2),
+            np.nan,
+        ],
+    )
+    actual = pod(dates)
+    expected = pd.Series(
+        [
+            "midnight",
+            "midnight",
+            "dawn",
+            "early morning",
+            "late morning",
+            "noon",
+            "afternoon",
+            "evening",
+            "night",
+            np.nan,
+        ],
+    )
+    pd.testing.assert_series_equal(expected, actual)
+
+
+def test_is_year_end():
+    is_year_end = IsYearEnd()
+    dates = pd.Series([datetime(2020, 12, 31), np.nan, datetime(2020, 1, 1)])
+    answer = is_year_end(dates)
+    correct_answer = [True, False, False]
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_is_year_start():
+    is_year_start = IsYearStart()
+    dates = pd.Series([datetime(2020, 12, 31), np.nan, datetime(2020, 1, 1)])
+    answer = is_year_start(dates)
+    correct_answer = [False, False, True]
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_quarter_regular():
+    q = Quarter()
+    array = pd.Series(
+        [
+            pd.to_datetime("2018-01-01"),
+            pd.to_datetime("2018-04-01"),
+            pd.to_datetime("2018-07-01"),
+            pd.to_datetime("2018-10-01"),
+        ],
+    )
+    answer = q(array)
+    correct_answer = pd.Series([1, 2, 3, 4])
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_quarter_leap_year():
+    q = Quarter()
+    array = pd.Series(
+        [
+            pd.to_datetime("2016-02-29"),
+            pd.to_datetime("2018-04-01"),
+            pd.to_datetime("2018-07-01"),
+            pd.to_datetime("2018-10-01"),
+        ],
+    )
+    answer = q(array)
+    correct_answer = pd.Series([1, 2, 3, 4])
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_quarter_nan_and_nat_input():
+    q = Quarter()
+    array = pd.Series(
+        [
+            pd.to_datetime("2016-02-29"),
+            np.nan,
+            np.datetime64("NaT"),
+            pd.to_datetime("2018-10-01"),
+        ],
+    )
+    answer = q(array)
+    correct_answer = pd.Series([1, np.nan, np.nan, 4])
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_quarter_year_before_1970():
+    q = Quarter()
+    array = pd.Series(
+        [
+            pd.to_datetime("2018-01-01"),
+            pd.to_datetime("1950-04-01"),
+            pd.to_datetime("1874-07-01"),
+            pd.to_datetime("2018-10-01"),
+        ],
+    )
+    answer = q(array)
+    correct_answer = pd.Series([1, 2, 3, 4])
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_quarter_year_after_2038():
+    q = Quarter()
+    array = pd.Series(
+        [
+            pd.to_datetime("2018-01-01"),
+            pd.to_datetime("2050-04-01"),
+            pd.to_datetime("2174-07-01"),
+            pd.to_datetime("2018-10-01"),
+        ],
+    )
+    answer = q(array)
+    correct_answer = pd.Series([1, 2, 3, 4])
+    np.testing.assert_array_equal(answer, correct_answer)
+
+
+def test_quarter():
+    q = Quarter()
+    dates = [datetime(2019, 12, 1), datetime(2019, 1, 3), datetime(2020, 2, 1)]
+    quarter = q(dates)
+    correct_quarters = [4, 1, 1]
+    np.testing.assert_array_equal(quarter, correct_quarters)
 
 
 def test_week_no_deprecation_message():
@@ -142,7 +399,7 @@ def test_url_to_domain_urls():
             "facebook.com",
             "https://www.compzets.net?asd=10",
             "http://www.featuretools.org",
-        ]
+        ],
     )
     correct_urls = [
         "play.google.com",
@@ -173,8 +430,8 @@ def test_url_to_domain_long_url():
                         6%7C6%7C6%7C6%7C5%7C5&chdl=android%7Cjava%7Cstack-trace%7Cbro \
                         adcastreceiver%7Candroid-ndk%7Cuser-agent%7Candroid-webview%7 \
                         Cwebview%7Cbackground%7Cmultithreading%7Candroid-source%7Csms \
-                        %7Cadb%7Csollections%7Cactivity|Chart"
-        ]
+                        %7Cadb%7Csollections%7Cactivity|Chart",
+        ],
     )
     correct_urls = ["chart.apis.google.com"]
     results = url_to_domain(urls)
@@ -204,7 +461,7 @@ def test_url_to_protocol_urls():
             "https://www.compzets.net?asd=10",
             "http://www.featuretools.org",
             "https://featuretools.com",
-        ]
+        ],
     )
     correct_urls = pd.Series(
         [
@@ -219,7 +476,7 @@ def test_url_to_protocol_urls():
             "https",
             "http",
             "https",
-        ]
+        ],
     )
     results = url_to_protocol(urls)
     pd.testing.assert_series_equal(results, correct_urls)
@@ -236,8 +493,8 @@ def test_url_to_protocol_long_url():
                         6%7C6%7C6%7C6%7C5%7C5&chdl=android%7Cjava%7Cstack-trace%7Cbro \
                         adcastreceiver%7Candroid-ndk%7Cuser-agent%7Candroid-webview%7 \
                         Cwebview%7Cbackground%7Cmultithreading%7Candroid-source%7Csms \
-                        %7Cadb%7Csollections%7Cactivity|Chart"
-        ]
+                        %7Cadb%7Csollections%7Cactivity|Chart",
+        ],
     )
     correct_urls = ["http"]
     results = url_to_protocol(urls)
@@ -269,7 +526,7 @@ def test_url_to_tld_urls():
             "https://www.compzets.net?asd=10",
             "http://www.featuretools.org",
             "featuretools.org",
-        ]
+        ],
     )
     correct_urls = [
         "com",
@@ -300,8 +557,8 @@ def test_url_to_tld_long_url():
                         6%7C6%7C6%7C6%7C5%7C5&chdl=android%7Cjava%7Cstack-trace%7Cbro \
                         adcastreceiver%7Candroid-ndk%7Cuser-agent%7Candroid-webview%7 \
                         Cwebview%7Cbackground%7Cmultithreading%7Candroid-source%7Csms \
-                        %7Cadb%7Csollections%7Cactivity|Chart"
-        ]
+                        %7Cadb%7Csollections%7Cactivity|Chart",
+        ],
     )
     correct_urls = ["com"]
     np.testing.assert_array_equal(url_to_tld(urls), correct_urls)
@@ -310,7 +567,8 @@ def test_url_to_tld_long_url():
 def test_url_to_tld_nan():
     url_to_tld = URLToTLD()
     urls = pd.Series(
-        ["www.featuretools.com", np.nan, "featuretools", ""], dtype="object"
+        ["www.featuretools.com", np.nan, "featuretools", ""],
+        dtype="object",
     )
     correct_urls = pd.Series(["com", np.nan, np.nan, np.nan], dtype="object")
     results = url_to_tld(urls)
@@ -325,7 +583,7 @@ def test_is_free_email_domain_valid_addresses():
             "name@featuretools.com",
             "nobody@yahoo.com",
             "free@gmail.com",
-        ]
+        ],
     )
     answers = pd.Series(is_free_email_domain(array))
     correct_answers = pd.Series([True, False, True, True])
@@ -340,7 +598,7 @@ def test_is_free_email_domain_valid_addresses_whitespace():
             " name@featuretools.com",
             "nobody@yahoo.com ",
             " free@gmail.com ",
-        ]
+        ],
     )
     answers = pd.Series(is_free_email_domain(array))
     correct_answers = pd.Series([True, False, True, True])
@@ -382,7 +640,7 @@ def test_is_free_email_domain_invalid_email():
             1234,
             1.23,
             True,
-        ]
+        ],
     )
     answers = pd.Series(is_free_email_domain(array))
     correct_answers = pd.Series([np.nan, np.nan, False, True, np.nan, np.nan, np.nan])
@@ -405,11 +663,11 @@ def test_email_address_to_domain_valid_addresses():
             "name@featuretools.com",
             "nobody@yahoo.com",
             "free@gmail.com",
-        ]
+        ],
     )
     answers = pd.Series(email_address_to_domain(array))
     correct_answers = pd.Series(
-        ["hotmail.com", "featuretools.com", "yahoo.com", "gmail.com"]
+        ["hotmail.com", "featuretools.com", "yahoo.com", "gmail.com"],
     )
     pd.testing.assert_series_equal(answers, correct_answers)
 
@@ -422,11 +680,11 @@ def test_email_address_to_domain_valid_addresses_whitespace():
             " name@featuretools.com",
             "nobody@yahoo.com ",
             " free@gmail.com ",
-        ]
+        ],
     )
     answers = pd.Series(email_address_to_domain(array))
     correct_answers = pd.Series(
-        ["hotmail.com", "featuretools.com", "yahoo.com", "gmail.com"]
+        ["hotmail.com", "featuretools.com", "yahoo.com", "gmail.com"],
     )
     pd.testing.assert_series_equal(answers, correct_answers)
 
@@ -466,11 +724,11 @@ def test_email_address_to_domain_invalid_email():
             1234,
             1.23,
             True,
-        ]
+        ],
     )
     answers = pd.Series(email_address_to_domain(array))
     correct_answers = pd.Series(
-        [np.nan, np.nan, "featuretools.com", "yahoo.com", np.nan, np.nan, np.nan]
+        [np.nan, np.nan, "featuretools.com", "yahoo.com", np.nan, np.nan, np.nan],
     )
     pd.testing.assert_series_equal(answers, correct_answers)
 

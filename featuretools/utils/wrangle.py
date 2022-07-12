@@ -69,7 +69,7 @@ def _check_timedelta(td):
             except Exception:
                 raise ValueError(
                     "Unable to parse value {} from ".format(value)
-                    + "timedelta string: {}".format(td)
+                    + "timedelta string: {}".format(td),
                 )
         times = {unit: value}
         return Timedelta(times)

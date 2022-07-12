@@ -4,7 +4,6 @@ import pytest
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime
 
-import featuretools as ft
 from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
     FeatureSetCalculator,
@@ -98,7 +97,9 @@ def test_direct_copy(games_es):
         r for r in games_es.relationships if r._child_column_name == "home_team_id"
     )
     feat = DirectFeature(
-        IdentityFeature(games_es["teams"].ww["name"]), "games", relationship=home_team
+        IdentityFeature(games_es["teams"].ww["name"]),
+        "games",
+        relationship=home_team,
     )
     copied = feat.copy()
     assert copied.dataframe_name == feat.dataframe_name
@@ -181,7 +182,8 @@ def test_direct_features_of_multi_output_agg_primitives(pd_es):
     for feature in fl:
         is_base = False
         if len(feature.base_features) > 0 and isinstance(
-            feature.base_features[0].primitive, ThreeMostCommonCat
+            feature.base_features[0].primitive,
+            ThreeMostCommonCat,
         ):
             is_base = True
         has_nmost_as_base.append(is_base)
@@ -274,7 +276,7 @@ def test_direct_with_no_path(diamond_es):
 
 
 def test_serialization(es):
-    value = ft.IdentityFeature(es["products"].ww["rating"])
+    value = IdentityFeature(es["products"].ww["rating"])
     direct = DirectFeature(value, "log")
 
     log_to_products = next(
@@ -283,12 +285,15 @@ def test_serialization(es):
         if r.parent_dataframe.ww.name == "products"
     )
     dictionary = {
-        "name": None,
+        "name": direct.get_name(),
         "base_feature": value.unique_name(),
         "relationship": log_to_products.to_dictionary(),
     }
 
     assert dictionary == direct.get_arguments()
     assert direct == DirectFeature.from_dictionary(
-        dictionary, es, {value.unique_name(): value}, PrimitivesDeserializer()
+        dictionary,
+        es,
+        {value.unique_name(): value},
+        PrimitivesDeserializer(),
     )

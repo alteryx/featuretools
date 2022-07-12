@@ -16,7 +16,7 @@ def test_datetoholiday():
             datetime(2016, 2, 27),
             datetime(2017, 5, 29, 10, 30, 5),
             datetime(2018, 7, 4),
-        ]
+        ],
     )
 
     holiday_series = date_to_holiday(dates).tolist()
@@ -41,7 +41,7 @@ def test_nat():
             "NaT",
             "2016-02-15",
             "NaT",
-        ]
+        ],
     ).astype("datetime64")
     answer = ["Columbus Day", np.nan, "Washington's Birthday", np.nan]
     given_answer = date_to_holiday(case).astype("str")
@@ -56,7 +56,7 @@ def test_valid_country():
             "2016-11-11",
             "2017-12-26",
             "2018-09-03",
-        ]
+        ],
     ).astype("datetime64")
     answer = ["Canada Day", np.nan, "Boxing Day", "Labour Day"]
     given_answer = date_to_holiday(case).astype("str")
@@ -115,16 +115,19 @@ def test_with_timezone_aware_datetimes():
     df = pd.DataFrame(
         {
             "non_timezone_aware_with_time": pd.date_range(
-                "2018-07-03 09:00", periods=3
+                "2018-07-03 09:00",
+                periods=3,
             ),
             "non_timezone_aware_no_time": pd.date_range("2018-07-03", periods=3),
             "timezone_aware_with_time": pd.date_range(
-                "2018-07-03 09:00", periods=3
+                "2018-07-03 09:00",
+                periods=3,
             ).tz_localize(tz="US/Eastern"),
             "timezone_aware_no_time": pd.date_range(
-                "2018-07-03", periods=3
+                "2018-07-03",
+                periods=3,
             ).tz_localize(tz="US/Eastern"),
-        }
+        },
     )
 
     date_to_holiday = DateToHoliday(country="US")

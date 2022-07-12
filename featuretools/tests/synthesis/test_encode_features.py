@@ -14,7 +14,9 @@ def test_encodes_features(pd_es):
 
     features = [f1, f2, f3]
     feature_matrix = calculate_feature_matrix(
-        features, pd_es, instance_ids=[0, 1, 2, 3, 4, 5]
+        features,
+        pd_es,
+        instance_ids=[0, 1, 2, 3, 4, 5],
     )
 
     _, features_encoded = encode_features(feature_matrix, features)
@@ -24,7 +26,9 @@ def test_encodes_features(pd_es):
     assert len(features_encoded) == 5
 
     _, features_encoded = encode_features(
-        feature_matrix, features, include_unknown=False
+        feature_matrix,
+        features,
+        include_unknown=False,
     )
     assert len(features_encoded) == 5
 
@@ -36,7 +40,9 @@ def test_dask_errors_encode_features(dask_es):
 
     features = [f1, f2, f3]
     feature_matrix = calculate_feature_matrix(
-        features, dask_es, instance_ids=[0, 1, 2, 3, 4, 5]
+        features,
+        dask_es,
+        instance_ids=[0, 1, 2, 3, 4, 5],
     )
     error_text = "feature_matrix must be a Pandas DataFrame"
 
@@ -49,7 +55,9 @@ def test_inplace_encodes_features(pd_es):
 
     features = [f1]
     feature_matrix = calculate_feature_matrix(
-        features, pd_es, instance_ids=[0, 1, 2, 3, 4, 5]
+        features,
+        pd_es,
+        instance_ids=[0, 1, 2, 3, 4, 5],
     )
 
     feature_matrix_shape = feature_matrix.shape
@@ -69,7 +77,9 @@ def test_to_encode_features(pd_es):
 
     features = [f1, f2, f3]
     feature_matrix = calculate_feature_matrix(
-        features, pd_es, instance_ids=[0, 1, 2, 3, 4, 5]
+        features,
+        pd_es,
+        instance_ids=[0, 1, 2, 3, 4, 5],
     )
 
     feature_matrix_encoded, _ = encode_features(feature_matrix, features)
@@ -79,7 +89,9 @@ def test_to_encode_features(pd_es):
     # and not have the same shape as previous encoded matrix due to fewer encoded features
     to_encode = []
     feature_matrix_encoded, _ = encode_features(
-        feature_matrix, features, to_encode=to_encode
+        feature_matrix,
+        features,
+        to_encode=to_encode,
     )
     assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
     assert feature_matrix_encoded["datetime"].dtype == "datetime64[ns]"
@@ -87,7 +99,9 @@ def test_to_encode_features(pd_es):
 
     to_encode = ["value"]
     feature_matrix_encoded, _ = encode_features(
-        feature_matrix, features, to_encode=to_encode
+        feature_matrix,
+        features,
+        to_encode=to_encode,
     )
     assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
     assert feature_matrix_encoded["datetime"].dtype == "datetime64[ns]"
@@ -117,13 +131,17 @@ def test_encode_features_handles_pass_columns(pd_es):
     # to_encode should keep product_id as a string, and not create 3 additional columns
     to_encode = []
     feature_matrix_encoded, _ = encode_features(
-        feature_matrix, features, to_encode=to_encode
+        feature_matrix,
+        features,
+        to_encode=to_encode,
     )
     assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
 
     to_encode = ["value"]
     feature_matrix_encoded, _ = encode_features(
-        feature_matrix, features, to_encode=to_encode
+        feature_matrix,
+        features,
+        to_encode=to_encode,
     )
     assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
 
@@ -156,12 +174,15 @@ def test_encode_features_catches_features_mismatch(pd_es):
 def test_encode_unknown_features():
     # Dataframe with categorical column with "unknown" string
     df = pd.DataFrame({"category": ["unknown", "b", "c", "d", "e"]}).astype(
-        {"category": "category"}
+        {"category": "category"},
     )
 
     pd_es = EntitySet("test")
     pd_es.add_dataframe(
-        dataframe_name="a", dataframe=df, index="index", make_index=True
+        dataframe_name="a",
+        dataframe=df,
+        index="index",
+        make_index=True,
     )
     features, feature_defs = dfs(entityset=pd_es, target_dataframe_name="a")
 
@@ -190,7 +211,9 @@ def test_encode_features_topn(pd_es):
         agg_primitives=[NMostCommon(n=3)],
     )
     features_enc, feature_defs_enc = encode_features(
-        features, feature_defs, include_unknown=True
+        features,
+        feature_defs,
+        include_unknown=True,
     )
     assert topn.unique_name() in [feat.unique_name() for feat in feature_defs_enc]
     for name in topn.get_feature_names():
@@ -200,20 +223,30 @@ def test_encode_features_topn(pd_es):
 
 def test_encode_features_drop_first():
     df = pd.DataFrame({"category": ["ao", "b", "c", "d", "e"]}).astype(
-        {"category": "category"}
+        {"category": "category"},
     )
     pd_es = EntitySet("test")
     pd_es.add_dataframe(
-        dataframe_name="a", dataframe=df, index="index", make_index=True
+        dataframe_name="a",
+        dataframe=df,
+        index="index",
+        make_index=True,
     )
     features, feature_defs = dfs(entityset=pd_es, target_dataframe_name="a")
     features_enc, _ = encode_features(
-        features, feature_defs, drop_first=True, include_unknown=False
+        features,
+        feature_defs,
+        drop_first=True,
+        include_unknown=False,
     )
     assert len(features_enc.columns) == 4
 
     features_enc, feature_defs = encode_features(
-        features, feature_defs, top_n=3, drop_first=True, include_unknown=False
+        features,
+        feature_defs,
+        top_n=3,
+        drop_first=True,
+        include_unknown=False,
     )
 
     assert len(features_enc.columns) == 2
@@ -250,7 +283,9 @@ def test_encode_features_handles_dictionary_input(pd_es):
 
     top_n_dict = {}
     feature_matrix_encoded, features_encoded = encode_features(
-        feature_matrix, features, top_n=top_n_dict
+        feature_matrix,
+        features,
+        top_n=top_n_dict,
     )
     assert len(features_encoded) == 15
     for col in true_values:
@@ -258,7 +293,9 @@ def test_encode_features_handles_dictionary_input(pd_es):
 
     top_n_dict = {f1.get_name(): 4, f3.get_name(): 3}
     feature_matrix_encoded, features_encoded = encode_features(
-        feature_matrix, features, top_n=top_n_dict
+        feature_matrix,
+        features,
+        top_n=top_n_dict,
     )
     assert len(features_encoded) == 10
     true_values = [
@@ -277,7 +314,10 @@ def test_encode_features_handles_dictionary_input(pd_es):
         assert col in list(feature_matrix_encoded.columns)
 
     feature_matrix_encoded, features_encoded = encode_features(
-        feature_matrix, features, top_n=top_n_dict, include_unknown=False
+        feature_matrix,
+        features,
+        top_n=top_n_dict,
+        include_unknown=False,
     )
     true_values = [
         "product_id = coke zero",
@@ -296,17 +336,22 @@ def test_encode_features_handles_dictionary_input(pd_es):
 
 def test_encode_features_matches_calculate_feature_matrix():
     df = pd.DataFrame({"category": ["b", "c", "d", "e"]}).astype(
-        {"category": "category"}
+        {"category": "category"},
     )
 
     pd_es = EntitySet("test")
     pd_es.add_dataframe(
-        dataframe_name="a", dataframe=df, index="index", make_index=True
+        dataframe_name="a",
+        dataframe=df,
+        index="index",
+        make_index=True,
     )
     features, feature_defs = dfs(entityset=pd_es, target_dataframe_name="a")
 
     features_enc, feature_defs_enc = encode_features(
-        features, feature_defs, to_encode=["category"]
+        features,
+        feature_defs,
+        to_encode=["category"],
     )
 
     features_calc = calculate_feature_matrix(feature_defs_enc, entityset=pd_es)

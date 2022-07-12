@@ -39,7 +39,9 @@ def _check_execution_and_output(notebook):
     with open(notebook, "r") as f:
         source = json.load(f)
     for cells in source["cells"]:
-        if cells["cell_type"] == "code" and (cells["execution_count"] is not None or cells['outputs']!= []):
+        if cells["cell_type"] == "code" and (
+            cells["execution_count"] is not None or cells["outputs"] != []
+        ):
             return False
     return True
 
@@ -110,55 +112,58 @@ def cli():
 @cli.command()
 def standardize():
     notebooks = _get_ipython_notebooks(DOCS_PATH)
-    executed_notebooks, empty_cells, versions = _get_notebooks_with_executions_and_empty(notebooks)
+    (
+        executed_notebooks,
+        empty_cells,
+        versions,
+    ) = _get_notebooks_with_executions_and_empty(notebooks)
     if executed_notebooks:
         _standardize_outputs(executed_notebooks)
         executed_notebooks = ["\t" + notebook for notebook in executed_notebooks]
         executed_notebooks = "\n".join(executed_notebooks)
-        click.echo(
-            f"Removed the outputs for:\n {executed_notebooks}"
-        )
+        click.echo(f"Removed the outputs for:\n {executed_notebooks}")
     if empty_cells:
         _remove_notebook_empty_last_cell(empty_cells)
         empty_cells = ["\t" + notebook for notebook in empty_cells]
         empty_cells = "\n".join(empty_cells)
-        click.echo(
-            f"Removed the empty cells for:\n {empty_cells}"
-        )
+        click.echo(f"Removed the empty cells for:\n {empty_cells}")
     if versions:
         _fix_versions(versions)
         versions = ["\t" + notebook for notebook in versions]
         versions = "\n".join(versions)
-        click.echo(
-            f"Fixed python versions for:\n {versions}"
-        )
+        click.echo(f"Fixed python versions for:\n {versions}")
 
 
 @cli.command()
 def check_execution():
     notebooks = _get_ipython_notebooks(DOCS_PATH)
-    executed_notebooks, empty_cells, versions = _get_notebooks_with_executions_and_empty(notebooks)
+    (
+        executed_notebooks,
+        empty_cells,
+        versions,
+    ) = _get_notebooks_with_executions_and_empty(notebooks)
     if executed_notebooks:
         executed_notebooks = ["\t" + notebook for notebook in executed_notebooks]
         executed_notebooks = "\n".join(executed_notebooks)
         raise SystemExit(
             f"The following notebooks have executed outputs:\n {executed_notebooks}\n"
-            "Please run make lint-fix to fix this."
+            "Please run make lint-fix to fix this.",
         )
     if empty_cells:
         empty_cells = ["\t" + notebook for notebook in empty_cells]
         empty_cells = "\n".join(empty_cells)
         raise SystemExit(
             f"The following notebooks have empty cells at the end:\n {empty_cells}\n"
-            "Please run make lint-fix to fix this."
+            "Please run make lint-fix to fix this.",
         )
     if versions:
         versions = ["\t" + notebook for notebook in versions]
         versions = "\n".join(versions)
         raise SystemExit(
             f"The following notebooks have the wrong Python version: \n {versions}\n"
-            "Please run make lint-fix to fix this."
+            "Please run make lint-fix to fix this.",
         )
+
 
 if __name__ == "__main__":
     cli()

@@ -45,7 +45,7 @@ def remove_highly_null_features(feature_matrix, features=None, pct_null_threshol
     """
     if pct_null_threshold < 0 or pct_null_threshold > 1:
         raise ValueError(
-            "pct_null_threshold must be a float between 0 and 1, inclusive."
+            "pct_null_threshold must be a float between 0 and 1, inclusive.",
         )
 
     percent_null_by_col = (feature_matrix.isnull().mean()).to_dict()
@@ -67,7 +67,9 @@ def remove_highly_null_features(feature_matrix, features=None, pct_null_threshol
 
 
 def remove_single_value_features(
-    feature_matrix, features=None, count_nan_as_value=False
+    feature_matrix,
+    features=None,
+    count_nan_as_value=False,
 ):
     """Removes columns in feature matrix where all the values are the same.
 
@@ -85,7 +87,7 @@ def remove_single_value_features(
             If no feature list is provided as input, the feature list will not be returned.
     """
     unique_counts_by_col = feature_matrix.nunique(
-        dropna=not count_nan_as_value
+        dropna=not count_nan_as_value,
     ).to_dict()
 
     keep = [
@@ -140,7 +142,7 @@ def remove_highly_correlated_features(
 
     if pct_corr_threshold < 0 or pct_corr_threshold > 1:
         raise ValueError(
-            "pct_corr_threshold must be a float between 0 and 1, inclusive."
+            "pct_corr_threshold must be a float between 0 and 1, inclusive.",
         )
 
     if features_to_check is None:

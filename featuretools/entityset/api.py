@@ -1,5 +1,5 @@
 # flake8: noqa
-from .deserialize import read_entityset
-from .entityset import EntitySet
-from .relationship import Relationship
-from .timedelta import Timedelta
+from featuretools.entityset.deserialize import read_entityset
+from featuretools.entityset.entityset import EntitySet
+from featuretools.entityset.relationship import Relationship
+from featuretools.entityset.timedelta import Timedelta

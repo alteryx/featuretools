@@ -87,7 +87,7 @@ def test_isingeobox():
             (np.nan, np.nan),
             (-2, np.nan),
             (np.nan, 1),
-        ]
+        ],
     )
     bottomleft = (-5, -5)
     topright = (5, 5)

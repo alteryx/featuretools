@@ -14,7 +14,8 @@ def test_is_valid_input():
 
     assert is_valid_input(
         candidate=ColumnSchema(
-            logical_type=Integer, semantic_tags={"index", "numeric"}
+            logical_type=Integer,
+            semantic_tags={"index", "numeric"},
         ),
         template=ColumnSchema(semantic_tags={"index"}),
     )
@@ -55,9 +56,11 @@ def test_is_valid_input():
     )
 
     assert not is_valid_input(
-        candidate=ColumnSchema(), template=ColumnSchema(logical_type=Integer)
+        candidate=ColumnSchema(),
+        template=ColumnSchema(logical_type=Integer),
     )
 
     assert not is_valid_input(
-        candidate=ColumnSchema(), template=ColumnSchema(semantic_tags={"index"})
+        candidate=ColumnSchema(),
+        template=ColumnSchema(semantic_tags={"index"}),
     )
