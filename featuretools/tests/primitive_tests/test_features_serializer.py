@@ -75,7 +75,7 @@ def test_multi_output_features(es):
                 tc[i],
                 parent_dataframe_name="customers",
                 primitive=num_unique,
-            )
+            ),
         )
         features.append(tc[i])
 
@@ -146,7 +146,10 @@ def test_where_feature_dependency(es):
     value = IdentityFeature(es["log"].ww["value"])
     is_purchased = IdentityFeature(es["log"].ww["purchased"])
     max_feature = AggregationFeature(
-        value, "sessions", max_primitive, where=is_purchased
+        value,
+        "sessions",
+        max_primitive,
+        where=is_purchased,
     )
     features = [max_feature]
     serializer = FeaturesSerializer(features)
@@ -178,7 +181,10 @@ def test_feature_use_previous_pd_timedelta(es):
     td = pd.Timedelta(12, "W")
     count_primitive = Count()
     count_feature = AggregationFeature(
-        value, "customers", count_primitive, use_previous=td
+        value,
+        "customers",
+        count_primitive,
+        use_previous=td,
     )
     features = [count_feature, value]
     serializer = FeaturesSerializer(features)
@@ -207,7 +213,10 @@ def test_feature_use_previous_pd_dateoffset(es):
     do = pd.DateOffset(months=3)
     count_primitive = Count()
     count_feature = AggregationFeature(
-        value, "customers", count_primitive, use_previous=do
+        value,
+        "customers",
+        count_primitive,
+        use_previous=do,
     )
     features = [count_feature, value]
     serializer = FeaturesSerializer(features)
@@ -233,7 +242,10 @@ def test_feature_use_previous_pd_dateoffset(es):
     value = IdentityFeature(es["log"].ww["id"])
     do = pd.DateOffset(months=3, days=2, minutes=30)
     count_feature = AggregationFeature(
-        value, "customers", count_primitive, use_previous=do
+        value,
+        "customers",
+        count_primitive,
+        use_previous=do,
     )
     features = [count_feature, value]
     serializer = FeaturesSerializer(features)

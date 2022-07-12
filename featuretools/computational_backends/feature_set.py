@@ -36,7 +36,8 @@ class FeatureSet(object):
 
         if not approximate_feature_trie:
             approximate_feature_trie = Trie(
-                default=list, path_constructor=RelationshipPath
+                default=list,
+                path_constructor=RelationshipPath,
             )
         self.approximate_feature_trie = approximate_feature_trie
 
@@ -89,7 +90,8 @@ class FeatureSet(object):
         Build the feature trie by adding the target features and their dependencies recursively.
         """
         feature_trie = Trie(
-            default=lambda: (False, set(), set()), path_constructor=RelationshipPath
+            default=lambda: (False, set(), set()),
+            path_constructor=RelationshipPath,
         )
 
         for f in self.target_features:
@@ -199,7 +201,8 @@ class FeatureSet(object):
                 dependencies = f.get_dependencies()
                 for dep in dependencies:
                     order[dep.unique_name()] = min(
-                        order[f.unique_name()] - 1, order[dep.unique_name()]
+                        order[f.unique_name()] - 1,
+                        order[dep.unique_name()],
                     )
                     queue.append(dep)
 

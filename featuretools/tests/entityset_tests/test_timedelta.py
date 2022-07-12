@@ -163,7 +163,7 @@ def test_serialization():
 
     # Deserialize
     assert mult_td == Timedelta.from_dictionary(
-        {"value": [4, 3, 2], "unit": ["Y", "mo", "d"]}
+        {"value": [4, 3, 2], "unit": ["Y", "mo", "d"]},
     )
 
 

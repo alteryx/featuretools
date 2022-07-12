@@ -93,7 +93,10 @@ class FeaturesSerializer(object):
             if _is_s3(location):
                 transport_params = get_transport_params(profile_name)
                 use_smartopen_features(
-                    location, features_dict, transport_params, read=False
+                    location,
+                    features_dict,
+                    transport_params,
+                    read=False,
                 )
             else:
                 with open(location, "w") as f:

@@ -160,7 +160,7 @@ class DeepFeatureSynthesis(object):
         if len(entityset.dataframe_dict) == 1 and (max_depth is None or max_depth > 1):
             warnings.warn(
                 "Only one dataframe in entityset, changing max_depth to "
-                "1 since deeper features cannot be created"
+                "1 since deeper features cannot be created",
             )
             max_depth = 1
 
@@ -225,7 +225,7 @@ class DeepFeatureSynthesis(object):
                     transform_primitive_dict,
                 )
                 for p in agg_primitives
-            ]
+            ],
         )
 
         if trans_primitives is None:
@@ -237,10 +237,13 @@ class DeepFeatureSynthesis(object):
         self.trans_primitives = sorted(
             [
                 check_primitive(
-                    p, "transform", aggregation_primitive_dict, transform_primitive_dict
+                    p,
+                    "transform",
+                    aggregation_primitive_dict,
+                    transform_primitive_dict,
                 )
                 for p in trans_primitives
-            ]
+            ],
         )
 
         if where_primitives is None:
@@ -248,10 +251,13 @@ class DeepFeatureSynthesis(object):
         self.where_primitives = sorted(
             [
                 check_primitive(
-                    p, "where", aggregation_primitive_dict, transform_primitive_dict
+                    p,
+                    "where",
+                    aggregation_primitive_dict,
+                    transform_primitive_dict,
                 )
                 for p in where_primitives
-            ]
+            ],
         )
 
         if groupby_trans_primitives is None:
@@ -265,7 +271,7 @@ class DeepFeatureSynthesis(object):
                     transform_primitive_dict,
                 )
                 for p in groupby_trans_primitives
-            ]
+            ],
         )
 
         if primitive_options is None:
@@ -453,7 +459,8 @@ class DeepFeatureSynthesis(object):
         """
 
         backward_dataframes = self.es.get_backward_dataframes(
-            dataframe.ww.name, deep=True
+            dataframe.ww.name,
+            deep=True,
         )
         for b_dataframe_id, sub_relationship_path in backward_dataframes:
             if b_dataframe_id in self.ignore_dataframes:
@@ -537,7 +544,10 @@ class DeepFeatureSynthesis(object):
         """
 
         self._build_transform_features(
-            all_features, dataframe, max_depth=max_depth, require_direct_input=True
+            all_features,
+            dataframe,
+            max_depth=max_depth,
+            require_direct_input=True,
         )
 
         # now that all  features are added, build where clauses
@@ -570,7 +580,7 @@ class DeepFeatureSynthesis(object):
         ):
             logger.warning(
                 "Attempting to add feature %s which is already "
-                "present. This is likely a bug." % new_feature
+                "present. This is likely a bug." % new_feature,
             )
             return
 
@@ -613,7 +623,9 @@ class DeepFeatureSynthesis(object):
             if isinstance(f, IdentityFeature):
                 return True
             if isinstance(f, DirectFeature) and getattr(
-                f.base_features[0], "column_name", None
+                f.base_features[0],
+                "column_name",
+                None,
             ):
                 return True
             return False
@@ -639,7 +651,11 @@ class DeepFeatureSynthesis(object):
                     self.where_clauses[dataframe.ww.name].add(feat == val)
 
     def _build_transform_features(
-        self, all_features, dataframe, max_depth=0, require_direct_input=False
+        self,
+        all_features,
+        dataframe,
+        max_depth=0,
+        require_direct_input=False,
     ):
         """Creates trans_features for all the columns in a dataframe
 
@@ -661,7 +677,8 @@ class DeepFeatureSynthesis(object):
 
         for trans_prim in self.trans_primitives:
             current_options = self.primitive_options.get(
-                trans_prim, self.primitive_options.get(trans_prim.name)
+                trans_prim,
+                self.primitive_options.get(trans_prim.name),
             )
             if ignore_dataframe_for_primitive(current_options, dataframe):
                 continue
@@ -687,7 +704,8 @@ class DeepFeatureSynthesis(object):
 
         for groupby_prim in self.groupby_trans_primitives:
             current_options = self.primitive_options.get(
-                groupby_prim, self.primitive_options.get(groupby_prim.name)
+                groupby_prim,
+                self.primitive_options.get(groupby_prim.name),
             )
             if ignore_dataframe_for_primitive(current_options, dataframe, groupby=True):
                 continue
@@ -707,7 +725,7 @@ class DeepFeatureSynthesis(object):
                     "include_groupby_columns" in option
                     and dataframe.ww.name in option["include_groupby_columns"]
                     for option in current_options
-                ]
+                ],
             ):
                 column_schemas = "all"
             else:
@@ -719,7 +737,8 @@ class DeepFeatureSynthesis(object):
                 column_schemas=column_schemas,
             )
             groupby_matches = filter_groupby_matches_by_options(
-                groupby_matches, current_options
+                groupby_matches,
+                current_options,
             )
 
             # If require_direct_input, require a DirectFeature in input or as a
@@ -736,7 +755,7 @@ class DeepFeatureSynthesis(object):
                                 [
                                     isinstance(feature, DirectFeature)
                                     for feature in (matching_input + (groupby,))
-                                ]
+                                ],
                             )
                         ):
                             continue
@@ -790,7 +809,8 @@ class DeepFeatureSynthesis(object):
             new_max_depth = max_depth - 1
         for agg_prim in self.agg_primitives:
             current_options = self.primitive_options.get(
-                agg_prim, self.primitive_options.get(agg_prim.name)
+                agg_prim,
+                self.primitive_options.get(agg_prim.name),
             )
 
             if ignore_dataframe_for_primitive(current_options, child_dataframe):
@@ -814,7 +834,8 @@ class DeepFeatureSynthesis(object):
             )
 
             matching_inputs = filter_matches_by_options(
-                matching_inputs, current_options
+                matching_inputs,
+                current_options,
             )
             wheres = list(self.where_clauses[child_dataframe.ww.name])
 
@@ -852,7 +873,7 @@ class DeepFeatureSynthesis(object):
                     [
                         issubclass(type(agg_prim), type(primitive))
                         for primitive in self.where_primitives
-                    ]
+                    ],
                 ):
                     continue
 
@@ -863,7 +884,7 @@ class DeepFeatureSynthesis(object):
                         [
                             base_feat.unique_name() in base_names
                             for base_feat in where.base_features
-                        ]
+                        ],
                     ):
                         continue
 
@@ -877,7 +898,11 @@ class DeepFeatureSynthesis(object):
                     self._handle_new_feature(new_f, all_features)
 
     def _features_by_type(
-        self, all_features, dataframe, max_depth, column_schemas=None
+        self,
+        all_features,
+        dataframe,
+        max_depth,
+        column_schemas=None,
     ):
 
         selected_features = []
@@ -974,7 +999,9 @@ class DeepFeatureSynthesis(object):
                 if not _all_direct_and_same_path(inputs)
             }
         matching_inputs = filter_matches_by_options(
-            matching_inputs, primitive_options, commutative=primitive.commutative
+            matching_inputs,
+            primitive_options,
+            commutative=primitive.commutative,
         )
 
         # Don't build features on numeric foreign key columns
@@ -998,7 +1025,8 @@ def check_transform_stacking(inputs):
         if isinstance(f.primitive, TransformPrimitive):
             return False
         if isinstance(f, DirectFeature) and isinstance(
-            f.base_features[0].primitive, TransformPrimitive
+            f.base_features[0].primitive,
+            TransformPrimitive,
         ):
             return False
     return True
@@ -1055,7 +1083,11 @@ def match_by_schema(features, column_schema):
 
 
 def match(
-    input_types, features, replace=False, commutative=False, require_direct_input=False
+    input_types,
+    features,
+    replace=False,
+    commutative=False,
+    require_direct_input=False,
 ):
     to_match = input_types[0]
 
@@ -1078,7 +1110,8 @@ def match(
 
         # If we need a DirectFeature and this is not a DirectFeature then one of the rest must be.
         still_require_direct_input = require_direct_input and not isinstance(
-            m, DirectFeature
+            m,
+            DirectFeature,
         )
         rest = match(
             input_types[1:],
@@ -1115,7 +1148,10 @@ def handle_primitive(primitive):
 
 
 def check_primitive(
-    primitive, prim_type, aggregation_primitive_dict, transform_primitive_dict
+    primitive,
+    prim_type,
+    aggregation_primitive_dict,
+    transform_primitive_dict,
 ):
     if prim_type == "transform" or prim_type == "groupby transform":
         prim_dict = transform_primitive_dict
@@ -1140,14 +1176,14 @@ def check_primitive(
             raise ValueError(
                 "Unknown {} primitive {}. "
                 "Call ft.primitives.list_primitives() to get"
-                " a list of available primitives".format(prim_type, primitive)
+                " a list of available primitives".format(prim_type, primitive),
             )
         primitive = prim_dict[prim_string]
     primitive = handle_primitive(primitive)
     if not isinstance(primitive, supertype):
         raise ValueError(
             "Primitive {} in {} is not {} "
-            "primitive".format(type(primitive), arg_name, s)
+            "primitive".format(type(primitive), arg_name, s),
         )
     return primitive
 

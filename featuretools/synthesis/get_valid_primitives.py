@@ -62,7 +62,7 @@ def get_valid_primitives(
                 else:
                     raise ValueError(
                         f"Selected primitive {prim} is not an "
-                        "AggregationPrimitive, TransformPrimitive, or str"
+                        "AggregationPrimitive, TransformPrimitive, or str",
                     )
             elif prim in available_aggs:
                 prim = available_aggs[prim]

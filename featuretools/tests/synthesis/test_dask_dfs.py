@@ -34,12 +34,15 @@ def test_single_table_dask_entityset():
                 pd.to_datetime("2017-08-25"),
             ],
             "strings": ["I am a string", "23", "abcdef ghijk", ""],
-        }
+        },
     )
     values_dd = dd.from_pandas(df, npartitions=2)
     ltypes = {"values": Integer, "dates": Datetime, "strings": NaturalLanguage}
     dask_es.add_dataframe(
-        dataframe_name="data", dataframe=values_dd, index="id", logical_types=ltypes
+        dataframe_name="data",
+        dataframe=values_dd,
+        index="id",
+        logical_types=ltypes,
     )
 
     dask_fm, _ = dfs(
@@ -50,11 +53,16 @@ def test_single_table_dask_entityset():
 
     pd_es = EntitySet(id="pd_es")
     pd_es.add_dataframe(
-        dataframe_name="data", dataframe=df, index="id", logical_types=ltypes
+        dataframe_name="data",
+        dataframe=df,
+        index="id",
+        logical_types=ltypes,
     )
 
     fm, _ = dfs(
-        entityset=pd_es, target_dataframe_name="data", trans_primitives=primitives_list
+        entityset=pd_es,
+        target_dataframe_name="data",
+        trans_primitives=primitives_list,
     )
 
     # Use the same columns and make sure both indexes are sorted the same
@@ -86,12 +94,15 @@ def test_single_table_dask_entityset_ids_not_sorted():
                 pd.to_datetime("2017-08-25"),
             ],
             "strings": ["I am a string", "23", "abcdef ghijk", ""],
-        }
+        },
     )
     values_dd = dd.from_pandas(df, npartitions=2)
     ltypes = {"values": Integer, "dates": Datetime, "strings": NaturalLanguage}
     dask_es.add_dataframe(
-        dataframe_name="data", dataframe=values_dd, index="id", logical_types=ltypes
+        dataframe_name="data",
+        dataframe=values_dd,
+        index="id",
+        logical_types=ltypes,
     )
 
     dask_fm, _ = dfs(
@@ -102,17 +113,24 @@ def test_single_table_dask_entityset_ids_not_sorted():
 
     pd_es = EntitySet(id="pd_es")
     pd_es.add_dataframe(
-        dataframe_name="data", dataframe=df, index="id", logical_types=ltypes
+        dataframe_name="data",
+        dataframe=df,
+        index="id",
+        logical_types=ltypes,
     )
 
     fm, _ = dfs(
-        entityset=pd_es, target_dataframe_name="data", trans_primitives=primitives_list
+        entityset=pd_es,
+        target_dataframe_name="data",
+        trans_primitives=primitives_list,
     )
 
     # Make sure both indexes are sorted the same
     dask_fm = dask_fm.compute().astype({"id": "int64"})
     pd.testing.assert_frame_equal(
-        fm, dask_fm.set_index("id").loc[fm.index], check_dtype=False
+        fm,
+        dask_fm.set_index("id").loc[fm.index],
+        check_dtype=False,
     )
 
 
@@ -139,13 +157,16 @@ def test_single_table_dask_entityset_with_instance_ids():
                 pd.to_datetime("2017-08-25"),
             ],
             "strings": ["I am a string", "23", "abcdef ghijk", ""],
-        }
+        },
     )
 
     values_dd = dd.from_pandas(df, npartitions=2)
     ltypes = {"values": Integer, "dates": Datetime, "strings": NaturalLanguage}
     dask_es.add_dataframe(
-        dataframe_name="data", dataframe=values_dd, index="id", logical_types=ltypes
+        dataframe_name="data",
+        dataframe=values_dd,
+        index="id",
+        logical_types=ltypes,
     )
 
     dask_fm, _ = dfs(
@@ -157,7 +178,10 @@ def test_single_table_dask_entityset_with_instance_ids():
 
     pd_es = EntitySet(id="pd_es")
     pd_es.add_dataframe(
-        dataframe_name="data", dataframe=df, index="id", logical_types=ltypes
+        dataframe_name="data",
+        dataframe=df,
+        index="id",
+        logical_types=ltypes,
     )
 
     fm, _ = dfs(
@@ -170,7 +194,9 @@ def test_single_table_dask_entityset_with_instance_ids():
     # Make sure both indexes are sorted the same
     dask_fm = dask_fm.compute().astype({"id": "int64"})
     pd.testing.assert_frame_equal(
-        fm, dask_fm.set_index("id").loc[fm.index], check_dtype=False
+        fm,
+        dask_fm.set_index("id").loc[fm.index],
+        check_dtype=False,
     )
 
 
@@ -196,12 +222,15 @@ def test_single_table_dask_entityset_single_cutoff_time():
                 pd.to_datetime("2017-08-25"),
             ],
             "strings": ["I am a string", "23", "abcdef ghijk", ""],
-        }
+        },
     )
     values_dd = dd.from_pandas(df, npartitions=2)
     ltypes = {"values": Integer, "dates": Datetime, "strings": NaturalLanguage}
     dask_es.add_dataframe(
-        dataframe_name="data", dataframe=values_dd, index="id", logical_types=ltypes
+        dataframe_name="data",
+        dataframe=values_dd,
+        index="id",
+        logical_types=ltypes,
     )
 
     dask_fm, _ = dfs(
@@ -213,7 +242,10 @@ def test_single_table_dask_entityset_single_cutoff_time():
 
     pd_es = EntitySet(id="pd_es")
     pd_es.add_dataframe(
-        dataframe_name="data", dataframe=df, index="id", logical_types=ltypes
+        dataframe_name="data",
+        dataframe=df,
+        index="id",
+        logical_types=ltypes,
     )
 
     fm, _ = dfs(
@@ -226,7 +258,9 @@ def test_single_table_dask_entityset_single_cutoff_time():
     # Make sure both indexes are sorted the same
     dask_fm = dask_fm.compute().astype({"id": "int64"})
     pd.testing.assert_frame_equal(
-        fm, dask_fm.set_index("id").loc[fm.index], check_dtype=False
+        fm,
+        dask_fm.set_index("id").loc[fm.index],
+        check_dtype=False,
     )
 
 
@@ -251,7 +285,7 @@ def test_single_table_dask_entityset_cutoff_time_df():
                 pd.to_datetime("2019-01-01"),
             ],
             "strings": ["I am a string", "23", "abcdef ghijk"],
-        }
+        },
     )
     values_dd = dd.from_pandas(df, npartitions=2)
     ltypes = {"values": IntegerNullable, "dates": Datetime, "strings": NaturalLanguage}
@@ -272,7 +306,8 @@ def test_single_table_dask_entityset_cutoff_time_df():
     ]
     labels = [True, False, True, False]
     cutoff_times = pd.DataFrame(
-        {"id": ids, "time": times, "labels": labels}, columns=["id", "time", "labels"]
+        {"id": ids, "time": times, "labels": labels},
+        columns=["id", "time", "labels"],
     )
 
     dask_fm, _ = dfs(
@@ -317,7 +352,7 @@ def test_single_table_dask_entityset_dates_not_sorted():
                 pd.to_datetime("2019-01-01"),
                 pd.to_datetime("2017-08-25"),
             ],
-        }
+        },
     )
 
     primitives_list = ["absolute", "is_weekend", "year", "day"]
@@ -359,7 +394,9 @@ def test_single_table_dask_entityset_dates_not_sorted():
 
     dask_fm = dask_fm.compute().astype({"id": "int64"})
     pd.testing.assert_frame_equal(
-        fm, dask_fm.set_index("id").loc[fm.index], check_dtype=False
+        fm,
+        dask_fm.set_index("id").loc[fm.index],
+        check_dtype=False,
     )
 
 
@@ -367,13 +404,23 @@ def test_dask_entityset_secondary_time_index():
     log_df = pd.DataFrame()
     log_df["id"] = [0, 1, 2, 3]
     log_df["scheduled_time"] = pd.to_datetime(
-        ["2019-01-01", "2019-01-01", "2019-01-01", "2019-01-01"]
+        ["2019-01-01", "2019-01-01", "2019-01-01", "2019-01-01"],
     )
     log_df["departure_time"] = pd.to_datetime(
-        ["2019-02-01 09:00", "2019-02-06 10:00", "2019-02-12 10:00", "2019-03-01 11:30"]
+        [
+            "2019-02-01 09:00",
+            "2019-02-06 10:00",
+            "2019-02-12 10:00",
+            "2019-03-01 11:30",
+        ],
     )
     log_df["arrival_time"] = pd.to_datetime(
-        ["2019-02-01 11:23", "2019-02-06 12:45", "2019-02-12 13:53", "2019-03-01 14:07"]
+        [
+            "2019-02-01 11:23",
+            "2019-02-06 12:45",
+            "2019-02-12 13:53",
+            "2019-03-01 14:07",
+        ],
     )
     log_df["delay"] = [-2, 10, 60, 0]
     log_df["flight_id"] = [0, 1, 0, 1]

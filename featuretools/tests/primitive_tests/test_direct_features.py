@@ -97,7 +97,9 @@ def test_direct_copy(games_es):
         r for r in games_es.relationships if r._child_column_name == "home_team_id"
     )
     feat = DirectFeature(
-        IdentityFeature(games_es["teams"].ww["name"]), "games", relationship=home_team
+        IdentityFeature(games_es["teams"].ww["name"]),
+        "games",
+        relationship=home_team,
     )
     copied = feat.copy()
     assert copied.dataframe_name == feat.dataframe_name
@@ -180,7 +182,8 @@ def test_direct_features_of_multi_output_agg_primitives(pd_es):
     for feature in fl:
         is_base = False
         if len(feature.base_features) > 0 and isinstance(
-            feature.base_features[0].primitive, ThreeMostCommonCat
+            feature.base_features[0].primitive,
+            ThreeMostCommonCat,
         ):
             is_base = True
         has_nmost_as_base.append(is_base)
@@ -289,5 +292,8 @@ def test_serialization(es):
 
     assert dictionary == direct.get_arguments()
     assert direct == DirectFeature.from_dictionary(
-        dictionary, es, {value.unique_name(): value}, PrimitivesDeserializer()
+        dictionary,
+        es,
+        {value.unique_name(): value},
+        PrimitivesDeserializer(),
     )

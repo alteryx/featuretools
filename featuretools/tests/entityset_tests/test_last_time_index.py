@@ -39,7 +39,7 @@ def true_values_lti():
             datetime(2011, 4, 9, 10, 30, 18),
             datetime(2011, 4, 9, 10, 30, 24),
             datetime(2011, 4, 10, 11, 10, 3),
-        ]
+        ],
     )
     return true_values_lti
 
@@ -54,7 +54,7 @@ def true_sessions_lti():
             datetime(2011, 4, 10, 10, 40, 1),
             datetime(2011, 4, 10, 10, 41, 6),
             datetime(2011, 4, 10, 11, 10, 3),
-        ]
+        ],
     )
     return sessions_lti
 
@@ -82,7 +82,7 @@ def wishlist_df():
                 "brown bag",
                 "coke zero",
             ],
-        }
+        },
     )
     return wishlist_df
 
@@ -133,7 +133,7 @@ class TestLastTimeIndex(object):
         # test dataframe with time index and all instances in child dataframe
         if values_es.dataframe_type != Library.PANDAS.value:
             pytest.xfail(
-                "possible issue with either normalize_dataframe or add_last_time_indexes"
+                "possible issue with either normalize_dataframe or add_last_time_indexes",
             )
         values_es.add_last_time_indexes()
         values = values_es["values"]
@@ -186,7 +186,10 @@ class TestLastTimeIndex(object):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_parent_no_time_index_missing(
-        self, es, extra_session_df, true_sessions_lti
+        self,
+        es,
+        extra_session_df,
+        true_sessions_lti,
     ):
         # test dataframe without time index and not all instance have children
 
@@ -271,7 +274,11 @@ class TestLastTimeIndex(object):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_multiple_children_left_missing(
-        self, es, extra_session_df, wishlist_df, true_sessions_lti
+        self,
+        es,
+        extra_session_df,
+        wishlist_df,
+        true_sessions_lti,
     ):
         if es.dataframe_type == Library.SPARK.value:
             pytest.xfail("Cannot make index on a Spark DataFrame")
@@ -320,7 +327,11 @@ class TestLastTimeIndex(object):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_multiple_children_all_combined(
-        self, es, extra_session_df, wishlist_df, true_sessions_lti
+        self,
+        es,
+        extra_session_df,
+        wishlist_df,
+        true_sessions_lti,
     ):
         if es.dataframe_type == Library.SPARK.value:
             pytest.xfail("Cannot make index on a Spark DataFrame")
@@ -371,7 +382,11 @@ class TestLastTimeIndex(object):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_multiple_children_both_missing(
-        self, es, extra_session_df, wishlist_df, true_sessions_lti
+        self,
+        es,
+        extra_session_df,
+        wishlist_df,
+        true_sessions_lti,
     ):
         if es.dataframe_type == Library.SPARK.value:
             pytest.xfail("Cannot make index on a Spark DataFrame")
@@ -439,7 +454,7 @@ class TestLastTimeIndex(object):
                 datetime(2011, 4, 9, 10, 40, 1),
                 datetime(2011, 4, 10, 10, 41, 6),
                 datetime(2011, 4, 10, 11, 10, 3),
-            ]
+            ],
         )
 
         lti_name = customers.ww.metadata.get("last_time_index")

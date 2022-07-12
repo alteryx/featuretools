@@ -36,7 +36,8 @@ def test_identity_description(es):
 
 def test_direct_description(es):
     feature = DirectFeature(
-        IdentityFeature(es["customers"].ww["loves_ice_cream"]), "sessions"
+        IdentityFeature(es["customers"].ww["loves_ice_cream"]),
+        "sessions",
     )
     description = (
         'The "loves_ice_cream" for the instance of "customers" associated '
@@ -53,7 +54,9 @@ def test_direct_description(es):
     assert describe_feature(deep_direct) == deep_description
 
     agg = AggregationFeature(
-        IdentityFeature(es["log"].ww["purchased"]), "sessions", PercentTrue
+        IdentityFeature(es["log"].ww["purchased"]),
+        "sessions",
+        PercentTrue,
     )
     complicated_direct = DirectFeature(agg, "log")
     agg_on_direct = AggregationFeature(complicated_direct, "products", Mean)
@@ -86,7 +89,9 @@ def test_groupby_transform_description(es):
 
 def test_aggregation_description(es):
     feature = AggregationFeature(
-        IdentityFeature(es["log"].ww["value"]), "sessions", Mean
+        IdentityFeature(es["log"].ww["value"]),
+        "sessions",
+        Mean,
     )
     description = 'The average of the "value" of all instances of "log" for each "id" in "sessions".'
     assert describe_feature(feature) == description
@@ -101,10 +106,14 @@ def test_aggregation_description(es):
 
 def test_aggregation_description_where(es):
     where_feature = TransformFeature(
-        IdentityFeature(es["log"].ww["countrycode"]), EqualScalar("US")
+        IdentityFeature(es["log"].ww["countrycode"]),
+        EqualScalar("US"),
     )
     feature = AggregationFeature(
-        IdentityFeature(es["log"].ww["value"]), "sessions", Mean, where=where_feature
+        IdentityFeature(es["log"].ww["value"]),
+        "sessions",
+        Mean,
+        where=where_feature,
     )
     description = (
         'The average of the "value" of all instances of "log" where the '
@@ -116,7 +125,10 @@ def test_aggregation_description_where(es):
 
 def test_aggregation_description_use_previous(es):
     feature = AggregationFeature(
-        IdentityFeature(es["log"].ww["value"]), "sessions", Mean, use_previous="5d"
+        IdentityFeature(es["log"].ww["value"]),
+        "sessions",
+        Mean,
+        use_previous="5d",
     )
     description = 'The average of the "value" of the previous 5 days of "log" for each "id" in "sessions".'
 
@@ -126,7 +138,9 @@ def test_aggregation_description_use_previous(es):
 def test_multioutput_description(es):
     n_most_common = NMostCommon(2)
     n_most_common_feature = AggregationFeature(
-        IdentityFeature(es["log"].ww["zipcode"]), "sessions", n_most_common
+        IdentityFeature(es["log"].ww["zipcode"]),
+        "sessions",
+        n_most_common,
     )
     first_most_common_slice = n_most_common_feature[0]
     second_most_common_slice = n_most_common_feature[1]
@@ -153,7 +167,8 @@ def test_multioutput_description(es):
         number_output_features = 4
 
     custom_feat = TransformFeature(
-        IdentityFeature(es["log"].ww["zipcode"]), CustomMultiOutput
+        IdentityFeature(es["log"].ww["zipcode"]),
+        CustomMultiOutput,
     )
 
     generic_base = 'The result of applying CUSTOM_MULTIOUTPUT to the "zipcode".'
@@ -222,13 +237,16 @@ def test_generic_description(es):
     assert describe_feature(no_name) == no_name_description
 
     custom_agg = AggregationFeature(
-        IdentityFeature(es["log"].ww["zipcode"]), "customers", CustomAgg
+        IdentityFeature(es["log"].ww["zipcode"]),
+        "customers",
+        CustomAgg,
     )
     custom_agg_description = 'The result of applying CUSTOM_AGGREGATION to the "zipcode" of all instances of "log" for each "id" in "customers".'
     assert describe_feature(custom_agg) == custom_agg_description
 
     custom_trans = TransformFeature(
-        IdentityFeature(es["log"].ww["zipcode"]), CustomTrans
+        IdentityFeature(es["log"].ww["zipcode"]),
+        CustomTrans,
     )
     custom_trans_description = (
         'The result of applying CUSTOM_TRANSFORM to the "zipcode".'
@@ -252,7 +270,9 @@ def test_metadata(es, tmpdir):
         "customers: id": "the customer's id",
     }
     agg_feat = AggregationFeature(
-        IdentityFeature(es["sessions"].ww["device_name"]), "customers", NumUnique
+        IdentityFeature(es["sessions"].ww["device_name"]),
+        "customers",
+        NumUnique,
     )
     agg_description = (
         "The number of unique elements in the name of the device used for each "
@@ -276,7 +296,9 @@ def test_metadata(es, tmpdir):
     )
 
     custom_agg = AggregationFeature(
-        IdentityFeature(es["log"].ww["zipcode"]), "sessions", Mode
+        IdentityFeature(es["log"].ww["zipcode"]),
+        "sessions",
+        Mode,
     )
     auto_description = 'The most frequently occurring value of the "zipcode" of all instances of "log" for each "id" in "sessions".'
     custom_agg_description = "the most frequently used zipcode"

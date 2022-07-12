@@ -148,12 +148,15 @@ class TestCumMin:
 def test_cum_sum(pd_es):
     log_value_feat = IdentityFeature(pd_es["log"].ww["value"])
     dfeat = Feature(
-        IdentityFeature(pd_es["sessions"].ww["device_type"]), dataframe_name="log"
+        IdentityFeature(pd_es["sessions"].ww["device_type"]),
+        dataframe_name="log",
     )
     cum_sum = Feature(log_value_feat, groupby=dfeat, primitive=CumSum)
     features = [cum_sum]
     df = calculate_feature_matrix(
-        entityset=pd_es, features=features, instance_ids=range(15)
+        entityset=pd_es,
+        features=features,
+        instance_ids=range(15),
     )
     cvalues = df[cum_sum.get_name()].values
     assert len(cvalues) == 15
@@ -171,7 +174,9 @@ def test_cum_min(pd_es):
     )
     features = [cum_min]
     df = calculate_feature_matrix(
-        entityset=pd_es, features=features, instance_ids=range(15)
+        entityset=pd_es,
+        features=features,
+        instance_ids=range(15),
     )
     cvalues = df[cum_min.get_name()].values
     assert len(cvalues) == 15
@@ -189,7 +194,9 @@ def test_cum_max(pd_es):
     )
     features = [cum_max]
     df = calculate_feature_matrix(
-        entityset=pd_es, features=features, instance_ids=range(15)
+        entityset=pd_es,
+        features=features,
+        instance_ids=range(15),
     )
     cvalues = df[cum_max.get_name()].values
     assert len(cvalues) == 15
@@ -217,7 +224,9 @@ def test_cum_sum_group_on_nan(pd_es):
     )
     features = [cum_sum]
     df = calculate_feature_matrix(
-        entityset=pd_es, features=features, instance_ids=range(17)
+        entityset=pd_es,
+        features=features,
+        instance_ids=range(17),
     )
     cvalues = df[cum_sum.get_name()].values
     assert len(cvalues) == 17
@@ -283,7 +292,9 @@ def test_cum_sum_numpy_group_on_nan(pd_es):
     assert cum_sum.get_name() == "CUM_SUM(value) by product_id"
     features = [cum_sum]
     df = calculate_feature_matrix(
-        entityset=pd_es, features=features, instance_ids=range(17)
+        entityset=pd_es,
+        features=features,
+        instance_ids=range(17),
     )
     cvalues = df[cum_sum.get_name()].values
     assert len(cvalues) == 17
@@ -319,7 +330,9 @@ def test_cum_handles_uses_full_dataframe(pd_es):
     def check(feature):
         feature_set = FeatureSet([feature])
         calculator = FeatureSetCalculator(
-            pd_es, feature_set=feature_set, time_last=None
+            pd_es,
+            feature_set=feature_set,
+            time_last=None,
         )
         df_1 = calculator.run(np.array([0, 1, 2]))
         df_2 = calculator.run(np.array([2, 4]))
@@ -333,7 +346,7 @@ def test_cum_handles_uses_full_dataframe(pd_es):
                 pd_es["log"].ww["value"],
                 groupby=IdentityFeature(pd_es["log"].ww["session_id"]),
                 primitive=primitive,
-            )
+            ),
         )
 
     check(
@@ -341,7 +354,7 @@ def test_cum_handles_uses_full_dataframe(pd_es):
             pd_es["log"].ww["product_id"],
             groupby=Feature(pd_es["log"].ww["product_id"]),
             primitive=CumCount,
-        )
+        ),
     )
 
 
@@ -354,7 +367,9 @@ def test_cum_mean(pd_es):
     )
     features = [cum_mean]
     df = calculate_feature_matrix(
-        entityset=pd_es, features=features, instance_ids=range(15)
+        entityset=pd_es,
+        features=features,
+        instance_ids=range(15),
     )
     cvalues = df[cum_mean.get_name()].values
     assert len(cvalues) == 15
@@ -371,7 +386,9 @@ def test_cum_count(pd_es):
     )
     features = [cum_count]
     df = calculate_feature_matrix(
-        entityset=pd_es, features=features, instance_ids=range(15)
+        entityset=pd_es,
+        features=features,
+        instance_ids=range(15),
     )
     cvalues = df[cum_count.get_name()].values
     assert len(cvalues) == 15
@@ -393,7 +410,7 @@ def test_rename(pd_es):
         [
             x.generate_name() == y.generate_name()
             for x, y in zip(cum_count.base_features, copy_feat.base_features)
-        ]
+        ],
     )
     assert cum_count.dataframe_name == copy_feat.dataframe_name
 
@@ -406,7 +423,9 @@ def test_groupby_no_data(pd_es):
     )
     last_feat = Feature(cum_count, parent_dataframe_name="customers", primitive=Last)
     df = calculate_feature_matrix(
-        entityset=pd_es, features=[last_feat], cutoff_time=pd.Timestamp("2011-04-08")
+        entityset=pd_es,
+        features=[last_feat],
+        cutoff_time=pd.Timestamp("2011-04-08"),
     )
     cvalues = df[last_feat.get_name()].values
     assert len(cvalues) == 2
@@ -511,7 +530,10 @@ def test_serialization(pd_es):
         zipcode.unique_name(): zipcode,
     }
     assert groupby == feature_base.GroupByTransformFeature.from_dictionary(
-        dictionary, pd_es, dependencies, primitive
+        dictionary,
+        pd_es,
+        dependencies,
+        primitive,
     )
 
 

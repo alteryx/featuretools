@@ -61,7 +61,10 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
 
             transport_params = get_transport_params(profile_name)
             use_smartopen_es(
-                file_path, path, read=False, transport_params=transport_params
+                file_path,
+                path,
+                read=False,
+                transport_params=transport_params,
             )
     elif _is_url(path):
         raise ValueError("Writing to URLs is not supported")

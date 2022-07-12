@@ -6,17 +6,18 @@ Future Release
 ==============
     .. warning::
         This release of Featuretools will not support Python 3.7
-        
+
     * Enhancements
-        * Add ``IsWorkingHours`` and ``IsLunchTime`` transform primitives (:pr:`2130`)  
+        * Add ``IsWorkingHours`` and ``IsLunchTime`` transform primitives (:pr:`2130`)
         * Add periods parameter to ``Diff`` and add ``DiffDatetime`` primitive (:pr:`2155`)
     * Fixes
     * Changes
         * Drop Python 3.7 support (:pr:`2169`)
+        * Add pre-commit hooks for linting (:pr:`2177`)
     * Documentation Changes
         * Augment single table entry in DFS to include information about passing in a dictionary for `dataframes` argument (:pr:`2160`)
     * Testing Changes
-       * Standardize imports across test files to simplify accessing featuretools functions (:pr:`2166`) 
+       * Standardize imports across test files to simplify accessing featuretools functions (:pr:`2166`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`sbadithe`, :user:`ozzieD`
@@ -32,7 +33,7 @@ v1.11.1 Jul 5, 2022
 v1.11.0 Jun 30, 2022
 ====================
     * Enhancements
-        * Add datetime and string types as valid arguments to dfs ``cutoff_time`` (:pr:`2147`) 
+        * Add datetime and string types as valid arguments to dfs ``cutoff_time`` (:pr:`2147`)
         * Add ``PartOfDay`` transform primitive (:pr:`2128`)
         * Add ``IsYearEnd``, ``IsYearStart`` transform primitives (:pr:`2124`)
         * Add ``Feature.set_feature_names`` method to directly set output column names for multi-output features (:pr:`2142`)
@@ -47,7 +48,7 @@ v1.11.0 Jun 30, 2022
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`, :user:`thehomebrewnerd`
-    
+
 v1.10.0 Jun 23, 2022
 ====================
     * Enhancements
@@ -100,7 +101,7 @@ v1.9.1 May 27, 2022
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
-    
+
 v1.9.0 Apr 27, 2022
 ===================
     * Enhancements
@@ -121,7 +122,7 @@ v1.9.0 Apr 27, 2022
     * Testing Changes
         * Update unit tests with Woodwork main branch workflow name (:pr:`2033`)
         * Add slack alert for failing unit tests with Woodwork main branch (:pr:`2040`)
-    
+
     Thanks to the following people for contributing to this release:
     :user:`dvreed77`, :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`thehomebrewnerd`
 
@@ -150,7 +151,7 @@ v1.8.0 Mar 31, 2022
 
 Breaking Changes
 ++++++++++++++++
-* The utility functions ``make_trans_primitive`` and ``make_agg_primitive`` have been removed. To create custom 
+* The utility functions ``make_trans_primitive`` and ``make_agg_primitive`` have been removed. To create custom
   primitives, define the primitive class directly.
 
 v1.7.0 Mar 16, 2022
@@ -273,7 +274,7 @@ v1.3.0 Dec 2, 2021
         * Add Docker install instructions and documentation on the install page. (:pr:`1785`)
         * Update install page on documentation with correct python version (:pr:`1784`)
         * Fix formatting in Improving Computational Performance guide (:pr:`1786`)
-  
+
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`HenryRocha`, :user:`tamargrey` :user:`thehomebrewnerd`
 
@@ -437,7 +438,7 @@ Breaking Changes
   Woodwork has not been initialized on the DataFrame. When adding a dataframe that already has Woodwork
   initialized, if there is no index set, an error will be raised (:pr:`1405`).
 * Featuretools will no longer re-order columns in DataFrames so that the index column is the first column of the DataFrame (:pr:`1405`).
-* Type inference can now be performed on Dask and Koalas dataframes, though a warning will be issued 
+* Type inference can now be performed on Dask and Koalas dataframes, though a warning will be issued
   indicating that this may be computationally intensive (:pr:`1405`).
 * EntitySet.time_type is no longer stored as Variable objects. Instead, Woodwork typing is used, and a
   numeric time type will be indicated by the ``'numeric'`` semantic tag string, and a datetime time type
@@ -563,10 +564,10 @@ v0.26.2 Aug 17, 2021
         * Remove GA token from the layout html (:pr:`1622`)
     * Testing Changes
         * Add additional reviewers to minimum and latest dependency checkers (:pr:`1558`, :pr:`1562`, :pr:`1564`, :pr:`1567`)
-    
+
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`simha104`
-    
+
 v0.26.1 Jul 23, 2021
 ====================
     * Fixes

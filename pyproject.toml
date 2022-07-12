@@ -22,6 +22,9 @@ known_first_party = "featuretools"
 skip = "__init__.py"
 multi_line_output = 3
 
+[tool.black]
+target-version = ['py10']
+
 [tool.coverage.run]
 source = ["featuretools"]
 omit = [
