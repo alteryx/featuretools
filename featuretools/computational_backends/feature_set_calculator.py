@@ -504,10 +504,10 @@ class FeatureSetCalculator(object):
     ):
         frame_empty = frame.empty if isinstance(frame, pd.DataFrame) else False
         feature_values = []
-        for f in features:
+        for feature in features:
             # handle when no data
             if frame_empty:
-                set_default_column(frame, f)
+                set_default_column(frame, feature)
 
                 progress_callback(1 / float(self.num_features))
 
@@ -515,39 +515,36 @@ class FeatureSetCalculator(object):
 
             # collect only the columns we need for this transformation
 
-            column_data = [frame[bf.get_name()] for bf in f.base_features]
+            column_data = [frame[bf.get_name()] for bf in feature.base_features]
 
-            has_series_lib_parameter = "series_library" in f.get_function.__code__.co_varnames
+            has_series_lib_parameter = (
+                "series_library" in feature.get_function.__code__.co_varnames
+            )
 
-            if isinstance(frame, dd.DataFrame):
-                if has_series_lib_parameter:
-                    feature_func = f.get_function(series_library=Library.DASK)
-                    f.series_library = Library.DASK
-                else:
-                    feature_func = f.get_function()
-            elif is_instance(frame, ps, "DataFrame"):
-                if has_series_lib_parameter:
-                    feature_func = f.get_function(series_library=Library.SPARK)
-                    f.series_library = Library.SPARK
-                else:
-                    feature_func = f.get_function()
+            if has_series_lib_parameter:
+                if isinstance(frame, dd.DataFrame):
+                    feature_func = feature.get_function(series_library=Library.DASK)
+                    feature.series_library = Library.DASK
+                elif isinstance(frame, ps, "DataFrame"):
+                    feature_func = feature.get_function(series_library=Library.SPARK)
+                    feature.series_library = Library.SPARK
             else:
-                feature_func = f.get_function()
+                feature_func = feature.get_function()
 
             # apply the function to the relevant dataframe slice and add the
             # feature row to the results dataframe.
-            if f.primitive.uses_calc_time:
+            if feature.primitive.uses_calc_time:
                 values = feature_func(*column_data, time=self.time_last)
             else:
                 values = feature_func(*column_data)
 
             # if we don't get just the values, the assignment breaks when indexes don't match
-            if f.number_output_features > 1:
+            if feature.number_output_features > 1:
                 values = [strip_values_if_series(value) for value in values]
             else:
                 values = [strip_values_if_series(values)]
 
-            feature_values.append((f, values))
+            feature_values.append((feature, values))
 
             progress_callback(1 / float(self.num_features))
 
