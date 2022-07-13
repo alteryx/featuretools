@@ -37,8 +37,8 @@ jobs:
         run: |
           sudo apt install -y openjdk-11-jre-headless
           JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
-          python -m pip install -e unpacked_sdist/[spark]
-          python -m pip install -e unpacked_sdist/[test]
+          python -m pip install unpacked_sdist/[spark]
+          python -m pip install unpacked_sdist/[test]
           cd unpacked_sdist
       - if: ${{ matrix.tests == 'misc' }}
         name: Run miscellaneious tests
