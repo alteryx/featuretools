@@ -1,4 +1,3 @@
-import warnings
 from datetime import datetime
 from functools import partial
 
@@ -759,7 +758,6 @@ class FeatureSetCalculator(object):
                         ):
                             func = feature.primitive.get_function(agg_type=Library.DASK)
                         else:
-                            print("series lib!")
                             func = feature.primitive.get_function(
                                 series_library=Library.DASK,
                             )
@@ -772,7 +770,6 @@ class FeatureSetCalculator(object):
                                 agg_type=Library.SPARK,
                             )
                         else:
-                            print("series lib!")
                             func = feature.primitive.get_function(
                                 series_library=Library.SPARK,
                             )
