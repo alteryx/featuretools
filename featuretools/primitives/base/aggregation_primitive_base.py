@@ -62,9 +62,4 @@ class AggregationPrimitive(PrimitiveBase):
             cls.is_agg_type = has_agg_type
         cls.computed_has_agg_type = True
         cls.has_agg_type = has_agg_type
-
-        """
-        if isinstance(cls, AggregationFeature):
-            has_agg_type = "agg_type" in cls.primitive.get_function.__code__.co_varnames
-            cls.primitive.has_agg_type = has_agg_type
-        """
+        return cls.has_agg_type
