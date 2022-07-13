@@ -58,7 +58,9 @@ jobs:
         run: pytest featuretools/ -n=2
       - if: ${{ matrix.libraries == 'spark - misc' }}
         name: Run unit tests (misc)
-        run: pytest featuretools/ -n=2 --ignore=featuretools/tests/computational_backend --ignore=featuretools/tests/entityset_tests --ignore=featuretools/tests/primitive_tests ${{ env.coverage_args }}
+        run: |
+          pwd
+          pytest featuretools/ -n=2 --ignore=featuretools/tests/computational_backend --ignore=featuretools/tests/entityset_tests --ignore=featuretools/tests/primitive_tests ${{ env.coverage_args }}
       - if: ${{ matrix.libraries == 'spark - computational' }}
         name: Run unit tests (computational backend)
         run: pytest featuretools/tests/computational_backend/ -n=2 ${{ env.coverage_args }}
