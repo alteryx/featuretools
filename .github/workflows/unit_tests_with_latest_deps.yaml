@@ -39,11 +39,10 @@ jobs:
           JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           python -m pip install -e unpacked_sdist/[spark]
           python -m pip install -e unpacked_sdist/[test]
+          cd unpacked_sdist
       - if: ${{ matrix.tests == 'computational' }}
         name: Test calc feature matrix
-        run: |
-          cd unpacked_sdist
-          pytest featuretools/tests/computational_backend/test_calculate_feature_matrix.py -n 2 --durations=0
+        run: pytest featuretools/tests/computational_backend/test_calculate_feature_matrix.py -n 2 --durations=0
       - if: ${{ matrix.tests == 'computational' }}
         name: Test dask features
         run: pytest featuretools/tests/computational_backend/test_dask_features.py -n 2 --durations=0
@@ -73,7 +72,7 @@ jobs:
         run: pytest featuretools/tests/entityset_tests/test_plotting.py -n 2 --durations=0
       - if: ${{ matrix.tests == 'entityset' }}
         name: Run relationship tests
-        run: pytest featuretools/tests/entityset_tests/test_relationsihp.py -n 2 --durations=0
+        run: pytest featuretools/tests/entityset_tests/test_relationship.py -n 2 --durations=0
       - if: ${{ matrix.tests == 'entityset' }}
         name: Run es serialization tests
         run: pytest featuretools/tests/entityset_tests/test_serialization.py -n 2 --durations=0
@@ -103,7 +102,7 @@ jobs:
         run: pytest featuretools/tests/primitive_tests/test_direct_features.py -n 2 --durations=0
       - if: ${{ matrix.tests == 'primitive' }}
         name: Run distancetoholiday tests
-        run: pytest featuretools/tests/primitive_tests/test_distancetoholdiay_primitive.py -n 2 --durations=0
+        run: pytest featuretools/tests/primitive_tests/test_distancetoholiday_primitive.py -n 2 --durations=0
       - if: ${{ matrix.tests == 'primitive' }}
         name: Run feature base tests
         run: pytest featuretools/tests/primitive_tests/test_feature_base.py -n 2 --durations=0
@@ -148,7 +147,7 @@ jobs:
         run: pytest featuretools/tests/primitive_tests/test_primitive_utils.py -n 2 --durations=0
       - if: ${{ matrix.tests == 'primitive' }}
         name: Run rolling primitive tests
-        run: pytest featuretools/tests/primitive_tests/test_features_serializer.py -n 2 --durations=0
+        run: pytest featuretools/tests/primitive_tests/test_rolling_primitive.py -n 2 --durations=0
       - if: ${{ matrix.tests == 'primitive' }}
         name: Run transform feature tests
         run: pytest featuretools/tests/primitive_tests/test_transform_features.py -n 2 --durations=0
