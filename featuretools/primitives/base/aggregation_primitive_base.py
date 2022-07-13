@@ -49,6 +49,8 @@ class AggregationPrimitive(PrimitiveBase):
 
     @classmethod
     def has_agg_type(cls):
+        print(f"Type: {type(cls)}, cls: {cls}")
+        print(f"dir(cls): {dir(cls)}")
         if cls.computed_has_agg_type:
             return cls.has_agg_type
 

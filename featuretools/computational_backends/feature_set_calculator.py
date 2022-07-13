@@ -753,21 +753,19 @@ class FeatureSetCalculator(object):
                     if column_id not in to_agg:
                         to_agg[column_id] = []
                     if isinstance(base_frame, dd.DataFrame):
-                        is_agg_type = has_agg_type_in_primitive_or_feature(feature)
-                        if is_agg_type:
+                        if (
+                            "series_library"
+                            not in feature.get_function.__code__.co_varnames
+                        ):
                             func = feature.get_function(agg_type=Library.DASK)
-                            warnings.warn(
-                                "agg_type argument for AggregationPrimitive is deprecated, use series_type instead",
-                            )
                         else:
                             func = feature.get_function(series_library=Library.DASK)
                     elif is_instance(base_frame, ps, "DataFrame"):
-                        is_agg_type = has_agg_type_in_primitive_or_feature(feature)
-                        if is_agg_type:
+                        if (
+                            "series_library"
+                            not in feature.get_function.__code__.co_varnames
+                        ):
                             func = feature.get_function(agg_type=Library.SPARK)
-                            warnings.warn(
-                                "agg_type argument for AggregationPrimitive is deprecated, use series_type instead",
-                            )
                         else:
                             func = feature.get_function(series_library=Library.SPARK)
                     else:
@@ -973,4 +971,9 @@ def strip_values_if_series(values):
 
 
 def has_agg_type_in_primitive_or_feature(feature):
-    return feature.has_agg_type()
+    if isinstance(feature, AggregationFeature):
+        is_agg_type = "agg_type" in feature.primitive.get_function.__code__.co_varnames
+        feature.primitive.is_agg_type = is_agg_type
+        return is_agg_type
+    else:
+        return feature.has_agg_type()
