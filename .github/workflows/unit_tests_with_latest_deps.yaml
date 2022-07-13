@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         python_version: ["3.10"]
-        tests: ["entityset", "primitive", "computational", "synthesis"]
+        tests: ["misc", "computational", "entityset_1", "entityset_2", "primitives"]
 
     steps:
       - name: Set up python ${{ matrix.python_version }}
@@ -40,135 +40,18 @@ jobs:
           python -m pip install -e unpacked_sdist/[spark]
           python -m pip install -e unpacked_sdist/[test]
           cd unpacked_sdist
+      - if: ${{ matrix.tests == 'misc' }}
+        name: Run miscellaneious tests
+        run: pytest featuretools/ -n=2 --ignore=featuretools/tests/computational_backend --ignore=featuretools/tests/entityset_tests --ignore=featuretools/tests/primitive_tests
       - if: ${{ matrix.tests == 'computational' }}
-        name: Test calc feature matrix
-        run: pytest featuretools/tests/computational_backend/test_calculate_feature_matrix.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'computational' }}
-        name: Test dask features
-        run: pytest featuretools/tests/computational_backend/test_dask_features.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'computational' }}
-        name: Test feature set calcuator
-        run: pytest featuretools/tests/computational_backend/test_feature_set_calculator.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'computational' }}
-        name: Test feature set
-        run: pytest featuretools/tests/computational_backend/test_feature_set.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'computational' }}
-        name: Test computational utils
-        run: pytest featuretools/tests/computational_backend/test_utils.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'entityset' }}
-        name: Run dask es tests
-        run: pytest featuretools/tests/entityset_tests/test_dask_es.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'entityset' }}
-        name: Run es metadata tests
-        run: pytest featuretools/tests/entityset_tests/test_es_metadata.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'entityset' }}
-        name: Run es tests
-        run: pytest featuretools/tests/entityset_tests/test_es.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'entityset' }}
-        name: Run last time index tests
-        run: pytest featuretools/tests/entityset_tests/test_last_time_index.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'entityset' }}
-        name: Run es plotting tests
-        run: pytest featuretools/tests/entityset_tests/test_plotting.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'entityset' }}
-        name: Run relationship tests
-        run: pytest featuretools/tests/entityset_tests/test_relationship.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'entityset' }}
-        name: Run es serialization tests
-        run: pytest featuretools/tests/entityset_tests/test_serialization.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'entityset' }}
-        name: Run spark es tests
-        run: pytest featuretools/tests/entityset_tests/test_spark_es.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'entityset' }}
-        name: Run timedelta tests
-        run: pytest featuretools/tests/entityset_tests/test_timedelta.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'entityset' }}
-        name: Run ww es tests
-        run: pytest featuretools/tests/entityset_tests/test_ww_es.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run agg feat tests
-        run: pytest featuretools/tests/primitive_tests/test_agg_feats.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run agg primitives tests
-        run: pytest featuretools/tests/primitive_tests/test_agg_primitives.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run dask primitive tests
-        run: pytest featuretools/tests/primitive_tests/test_dask_primitives.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run datetoholiday tests
-        run: pytest featuretools/tests/primitive_tests/test_datetoholiday_primitive.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run direct features tests
-        run: pytest featuretools/tests/primitive_tests/test_direct_features.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run distancetoholiday tests
-        run: pytest featuretools/tests/primitive_tests/test_distancetoholiday_primitive.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run feature base tests
-        run: pytest featuretools/tests/primitive_tests/test_feature_base.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run feature description tests
-        run: pytest featuretools/tests/primitive_tests/test_feature_descriptions.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run feature serialization tests
-        run: pytest featuretools/tests/primitive_tests/test_feature_serialization.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run feat utils tests
-        run: pytest featuretools/tests/primitive_tests/test_feature_utils.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run feature visualizer tests
-        run: pytest featuretools/tests/primitive_tests/test_feature_visualizer.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run feature deserializer tests
-        run: pytest featuretools/tests/primitive_tests/test_features_deserializer.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run feature serializer tests
-        run: pytest featuretools/tests/primitive_tests/test_features_serializer.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run groupby primitive tests
-        run: pytest featuretools/tests/primitive_tests/test_groupby_transform_primitives.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run identity feature tests
-        run: pytest featuretools/tests/primitive_tests/test_identity_features.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run is federal holiday tests
-        run: pytest featuretools/tests/primitive_tests/test_is_federal_holiday.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run latlong primitive tests
-        run: pytest featuretools/tests/primitive_tests/test_latlong_primitives.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run ovveride tests
-        run: pytest featuretools/tests/primitive_tests/test_overrides.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run primitive base tests
-        run: pytest featuretools/tests/primitive_tests/test_primitive_base.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run primitive utils tests
-        run: pytest featuretools/tests/primitive_tests/test_primitive_utils.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run rolling primitive tests
-        run: pytest featuretools/tests/primitive_tests/test_rolling_primitive.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run transform feature tests
-        run: pytest featuretools/tests/primitive_tests/test_transform_features.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'primitive' }}
-        name: Run transform primitive tests
-        run: pytest featuretools/tests/primitive_tests/test_transform_primitive.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'synthesis' }}
-        name: Run dask dfs tests
-        run: pytest featuretools/tests/synthesis/test_dask_dfs.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'synthesis' }}
-        name: Run deep feature synthesis tests
-        run: pytest featuretools/tests/synthesis/test_deep_feature_synthesis.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'synthesis' }}
-        name: Run dfs method tests
-        run: pytest featuretools/tests/synthesis/test_dfs_method.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'synthesis' }}
-        name: Run encode features tests
-        run: pytest featuretools/tests/synthesis/test_encode_features.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'synthesis' }}
-        name: Run get valid primitives tests
-        run: pytest featuretools/tests/synthesis/test_get_valid_primitives.py -n 2 --durations=0
-      - if: ${{ matrix.tests == 'synthesis' }}
-        name: Run spark dfs tests
-        run: pytest featuretools/tests/synthesis/test_spark_dfs.py -n 2 --durations=0
+        name: Run computational backend tests
+        run: pytest featuretools/tests/computational_backend/ -n=2
+      - if: ${{ matrix.tests == 'entityset_1' }}
+        name: Run first batch of entityset tests
+        run: pytest featuretools/tests/entityset_tests -n=2 --ignore=featuretools/tests/entityset_tests/test_es.py --ignore=featuretools/tests/entityset_tests/test_ww_es.py
+      - if: ${{ matrix.tests == 'entityset_2' }}
+        name: Run second batch of entityset tests
+        run: pytest featuretools/tests/entityset_tests/test_es.py featuretools/tests/entityset_tests/test_ww_es.py -n=2
+      - if: ${{ matrix.tests == 'primitives' }}
+        name: Run primitive tests
+        run: pytest featuretools/tests/primitive_tests -n=2
