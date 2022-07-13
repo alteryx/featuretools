@@ -13,8 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.10"]
-        tests: ["misc", "computational", "entityset_1", "entityset_2", "primitives"]
+        python_version: ["3.8"]
+        libraries: ["core", "spark - misc", "spark - computational", "spark - entityset_1", "spark - entityset_2", "spark - primitives"]
 
     steps:
       - name: Set up python ${{ matrix.python_version }}
@@ -33,25 +33,48 @@ jobs:
           pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
           sudo apt update && sudo apt install -y graphviz
-      - name: Install spark pkg, featuretools with test requirements and spark requirements
+      - if: ${{ !startsWith(matrix.libraries, 'spark') }}
+        name: Install featuretools with test requirements
+        run: |
+          python -m pip install unpacked_sdist/
+          python -m pip install unpacked_sdist/[test]
+      - if: ${{ startsWith(matrix.libraries, 'spark') }}
+        name: Install spark pkg, featuretools with test requirements and spark requirements
         run: |
           sudo apt install -y openjdk-11-jre-headless
           JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           python -m pip install unpacked_sdist/[spark]
           python -m pip install unpacked_sdist/[test]
-          cd unpacked_sdist
-      - if: ${{ matrix.tests == 'misc' }}
-        name: Run miscellaneious tests
-        run: pytest featuretools/ -n=2 --ignore=featuretools/tests/computational_backend --ignore=featuretools/tests/entityset_tests --ignore=featuretools/tests/primitive_tests
-      - if: ${{ matrix.tests == 'computational' }}
-        name: Run computational backend tests
-        run: pytest featuretools/tests/computational_backend/ -n=2
-      - if: ${{ matrix.tests == 'entityset_1' }}
-        name: Run first batch of entityset tests
-        run: pytest featuretools/tests/entityset_tests -n=2 --ignore=featuretools/tests/entityset_tests/test_es.py --ignore=featuretools/tests/entityset_tests/test_ww_es.py
-      - if: ${{ matrix.tests == 'entityset_2' }}
-        name: Run second batch of entityset tests
-        run: pytest featuretools/tests/entityset_tests/test_es.py featuretools/tests/entityset_tests/test_ww_es.py -n=2
-      - if: ${{ matrix.tests == 'primitives' }}
-        name: Run primitive tests
-        run: pytest featuretools/tests/primitive_tests -n=2
+      - name: Change directory into unpacked sdist
+        run: cd unpacked_sdist
+      - if: ${{ matrix.python_version == 3.8 && startsWith(matrix.libraries, 'spark') }}
+        name: Generate coverage args
+        run: echo "coverage_args=--cov=featuretools --cov-config=../pyproject.toml --cov-report=xml:../coverage.xml" >> $GITHUB_ENV
+      - if: ${{ env.coverage_args }}
+        name: Erase coverage files
+        run: coverage erase
+      - if: ${{ !startsWith(matrix.libraries, 'spark') }}
+        name: Run unit tests (no code coverage)
+        run: pytest featuretools/ -n=2
+      - if: ${{ matrix.libraries == 'spark - misc' }}
+        name: Run unit tests (misc)
+        run: pytest featuretools/ -n=2 --ignore=featuretools/tests/computational_backend --ignore=featuretools/tests/entityset_tests --ignore=featuretools/tests/primitive_tests ${{ env.coverage_args }}
+      - if: ${{ matrix.libraries == 'spark - computational' }}
+        name: Run unit tests (computational backend)
+        run: pytest featuretools/tests/computational_backend/ -n=2 ${{ env.coverage_args }}
+      - if: ${{ matrix.libraries == 'spark - entityset_1' }}
+        name: Run unit tests (entityset batch 1)
+        run: pytest featuretools/tests/entityset_tests -n=2 --ignore=featuretools/tests/entityset_tests/test_es.py --ignore=featuretools/tests/entityset_tests/test_ww_es.py ${{ env.coverage_args }}
+      - if: ${{ matrix.libraries == 'spark - entityset_2' }}
+        name: Run unit tests (entityset batch 2)
+        run: pytest featuretools/tests/entityset_tests/test_es.py featuretools/tests/entityset_tests/test_ww_es.py -n=2 ${{ env.coverage_args }}
+      - if: ${{ matrix.libraries == 'spark - primitives' }}
+        name: Run unit tests (primitives)
+        run: pytest featuretools/tests/primitive_tests -n=2 ${{ env.coverage_args }}
+      - if: ${{ env.coverage_args }}
+        name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          fail_ci_if_error: true
+          files: ${{ github.workspace }}/coverage.xml
+          verbose: true
