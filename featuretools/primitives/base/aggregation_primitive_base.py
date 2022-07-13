@@ -48,7 +48,7 @@ class AggregationPrimitive(PrimitiveBase):
         return [base_name + "[%s]" % i for i in range(n)]
 
     @classmethod
-    def is_agg_type(cls):
+    def has_agg_type(cls):
         if cls.computed_has_agg_type:
             return cls.has_agg_type
 

@@ -752,13 +752,13 @@ class FeatureSetCalculator(object):
                     if column_id not in to_agg:
                         to_agg[column_id] = []
                     if isinstance(base_frame, dd.DataFrame):
-                        is_agg_type = feature.has_agg_type()
+                        is_agg_type = has_agg_type_in_primitive_or_feature(feature)
                         if is_agg_type:
                             func = feature.get_function(agg_type=Library.DASK)
                         else:
                             func = feature.get_function(series_library=Library.DASK)
                     elif is_instance(base_frame, ps, "DataFrame"):
-                        is_agg_type = feature.has_agg_type()
+                        is_agg_type = has_agg_type_in_primitive_or_feature(feature)
                         if is_agg_type:
                             func = feature.get_function(agg_type=Library.SPARK)
                         else:
@@ -965,18 +965,10 @@ def strip_values_if_series(values):
     return values
 
 
-def is_agg_type_in_primitive_or_feature(f):
-    is_agg_type = False
-    if hasattr(f.primitive, "is_agg_type"):
-        return f.primitive.is_agg_type
-
-    if hasattr(f, "is_agg_type"):
-        return f.is_agg_type
-
-    if isinstance(f, AggregationFeature):
-        is_agg_type = "agg_type" in f.primitive.get_function.__code__.co_varnames
-        f.primitive.is_agg_type = is_agg_type
+def has_agg_type_in_primitive_or_feature(feature):
+    if isinstance(feature, AggregationFeature):
+        is_agg_type = "agg_type" in feature.primitive.get_function.__code__.co_varnames
+        feature.primitive.is_agg_type = is_agg_type
+        return is_agg_type
     else:
-        is_agg_type = "agg_type" in f.get_function.__code__.co_varnames
-        f.is_agg_type = is_agg_type
-    return is_agg_type
+        return feature.has_agg_type()
