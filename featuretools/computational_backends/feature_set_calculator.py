@@ -973,9 +973,4 @@ def strip_values_if_series(values):
 
 
 def has_agg_type_in_primitive_or_feature(feature):
-    if isinstance(feature, AggregationFeature):
-        is_agg_type = "agg_type" in feature.primitive.get_function.__code__.co_varnames
-        feature.primitive.is_agg_type = is_agg_type
-        return is_agg_type
-    else:
-        return feature.has_agg_type()
+    return feature.has_agg_type()
