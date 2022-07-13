@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from itertools import chain
 
 import numpy as np
@@ -5,6 +6,10 @@ import pandas as pd
 import pytest
 
 from featuretools.utils import convert_time_units, make_temporal_cutoffs
+from featuretools.utils.time_utils import (
+    convert_datetime_to_floats,
+    convert_timedelta_to_floats,
+)
 
 
 def test_make_temporal_cutoffs():
@@ -111,3 +116,90 @@ def test_convert_time_units():
     error_text = "Invalid unit given, make sure it is plural"
     with pytest.raises(ValueError, match=error_text):
         convert_time_units("jnkwjgn", 10)
+
+
+@pytest.mark.parametrize(
+    "dt, expected_floats",
+    [
+        (
+            pd.Series(
+                [
+                    datetime(2010, 1, 1, 11, 45, 0),
+                    datetime(2010, 1, 1, 12, 55, 15),
+                    datetime(2010, 1, 1, 11, 57, 30),
+                    datetime(2010, 1, 1, 11, 12),
+                    datetime(2010, 1, 1, 11, 12, 15),
+                ]
+            ),
+            pd.Series([21039105.0, 21039175.25, 21039117.5, 21039072.0, 21039072.25]),
+        ),
+        (
+            pd.Series(
+                list(pd.date_range(start="2017-01-01", freq="1d", periods=3))
+                + list(pd.date_range(start="2017-01-10", freq="2d", periods=4))
+                + list(pd.date_range(start="2017-01-22", freq="1d", periods=7))
+            ),
+            pd.Series(
+                [
+                    17167.0,
+                    17168.0,
+                    17169.0,
+                    17176.0,
+                    17178.0,
+                    17180.0,
+                    17182.0,
+                    17188.0,
+                    17189.0,
+                    17190.0,
+                    17191.0,
+                    17192.0,
+                    17193.0,
+                    17194.0,
+                ]
+            ),
+        ),
+    ],
+)
+def test_convert_datetime_floats(dt, expected_floats):
+    actual_floats = convert_datetime_to_floats(dt)
+    pd.testing.assert_series_equal(pd.Series(actual_floats), expected_floats)
+
+
+@pytest.mark.parametrize(
+    "td, expected_floats",
+    [
+        (
+            pd.Series(
+                [
+                    pd.Timedelta(2, "day"),
+                    pd.Timedelta(120000000),
+                    pd.Timedelta(48, "sec"),
+                    pd.Timedelta(30, "min"),
+                    pd.Timedelta(12, "hour"),
+                ]
+            ),
+            pd.Series(
+                [
+                    2.0,
+                    1.388888888888889e-06,
+                    0.0005555555555555556,
+                    0.020833333333333332,
+                    0.5,
+                ]
+            ),
+        ),
+        (
+            pd.Series(
+                [
+                    timedelta(days=4),
+                    timedelta(milliseconds=4000000),
+                    timedelta(hours=2, seconds=49),
+                ]
+            ),
+            pd.Series([4.0, 0.0462962962962963, 0.08390046296296297]),
+        ),
+    ],
+)
+def test_convert_timedelta_to_floats(td, expected_floats):
+    actual_floats = convert_timedelta_to_floats(td)
+    pd.testing.assert_series_equal(pd.Series(actual_floats), expected_floats)
