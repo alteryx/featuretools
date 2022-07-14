@@ -1043,7 +1043,7 @@ def test_handles_primitive_function_name_uniqueness(es):
         def __init__(self, n):
             self.n = n
 
-        def get_function(self, agg_type="pandas"):
+        def get_function(self, series_library="pandas"):
             def my_function(values):
                 return values.sum() * self.n
 
@@ -1249,7 +1249,7 @@ def test_precalculated_features(pd_es):
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
         return_type = ColumnSchema(semantic_tags={"numeric"})
 
-        def get_function(self, agg_type="pandas"):
+        def get_function(self, series_library="pandas"):
             def error(s):
                 raise RuntimeError(error_msg)
 

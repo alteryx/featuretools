@@ -517,7 +517,7 @@ class FeatureSetCalculator(object):
             column_data = [frame[bf.get_name()] for bf in feature.base_features]
 
             has_series_lib_parameter = (
-                "series_library" in feature.get_function.__code__.co_varnames
+                "series_library" in feature.primitive.get_function.__code__.co_varnames
             )
 
             if has_series_lib_parameter:
