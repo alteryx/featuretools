@@ -516,19 +516,7 @@ class FeatureSetCalculator(object):
 
             column_data = [frame[bf.get_name()] for bf in feature.base_features]
 
-            has_series_lib_parameter = (
-                "series_library" in feature.primitive.get_function.__code__.co_varnames
-            )
-
-            if has_series_lib_parameter:
-                if isinstance(frame, dd.DataFrame):
-                    feature_func = feature.get_function(series_library=Library.DASK)
-                    feature.series_library = Library.DASK
-                elif isinstance(frame, ps, "DataFrame"):
-                    feature_func = feature.get_function(series_library=Library.SPARK)
-                    feature.series_library = Library.SPARK
-            else:
-                feature_func = feature.get_function()
+            feature_func = feature.get_function()
 
             # apply the function to the relevant dataframe slice and add the
             # feature row to the results dataframe.
