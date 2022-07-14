@@ -10,7 +10,7 @@ Future Release
     * Enhancements
         * Add ``IsWorkingHours`` and ``IsLunchTime`` transform primitives (:pr:`2130`)
         * Add periods parameter to ``Diff`` and add ``DiffDatetime`` primitive (:pr:`2155`)
-        * Add ``RollingTrend`` primitve (:pr:`2170`)
+        * Add ``RollingTrend`` primitive (:pr:`2170`)
     * Fixes
     * Changes
         * Drop Python 3.7 support (:pr:`2169`)
