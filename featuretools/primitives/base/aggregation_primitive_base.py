@@ -8,9 +8,6 @@ class AggregationPrimitive(PrimitiveBase):
     base_of_exclude = None  # primitives this primitive can't be input for
     stack_on_self = True  # whether or not it can be in input_types of self
 
-    computed_has_agg_type = False
-    has_agg_type = None
-
     def generate_name(
         self,
         base_feature_names,
@@ -46,22 +43,3 @@ class AggregationPrimitive(PrimitiveBase):
             use_prev_str,
         )
         return [base_name + "[%s]" % i for i in range(n)]
-
-    @classmethod
-    def has_agg_type(cls):
-        print(f"Type: {type(cls)}, cls: {cls}")
-        print(f"dir(cls): {dir(cls)}")
-        if cls.computed_has_agg_type:
-            return cls.has_agg_type
-
-        has_agg_type = False
-        if hasattr(cls.primitive, "has_agg_type"):
-            return cls.primitive.has_agg_type
-        if hasattr(cls, "has_agg_type"):
-            return cls.has_agg_type
-        else:
-            has_agg_type = "agg_type" in cls.get_function.__code__.co_varnames
-            cls.has_agg_type = has_agg_type
-        cls.computed_has_agg_type = True
-        cls.has_agg_type = has_agg_type
-        return cls.has_agg_type
