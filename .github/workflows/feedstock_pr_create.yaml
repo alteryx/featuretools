@@ -12,20 +12,30 @@ jobs:
         with:
           repository: 'alteryx/featuretools'
           ref: "${{ github.event.release.tag_name }}"
-      - name: Pull latest from upstream
-        run: |
-          gh auth status
-          gh repo sync alteryx/featuretools-feedstock --branch master --source conda-forge/featuretools-feedstock
-          git clone --depth 1 https://github.com/regro/cf-scripts.git
-        env:
-          GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
+      - uses: actions/checkout@v3
+        with:
+          repository: 'regro/cf-scripts.git'
+          ref: 'master'
       - uses: actions/checkout@v3
         with:
           repository: 'alteryx/featuretools-feedstock'
-          ref: 'master'
+          ref: 'master'          
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          python-version: "3.8"
+      - name: Pull latest from upstream for alteryx forked feestock
+        run: |
+          gh auth status
+          gh repo sync alteryx/featuretools-feedstock --branch master --source conda-forge/featuretools-feedstock
+        env:
+          GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
+      - name: Install conda_forge_tick
+        run: |
+          cd cf-scripts
+          conda install --file requirements/run --file requirements/test
       - name: Modify meta.yaml
         id: branch
-        shell: python
+        shell: bash -l {0}
         run: |
           import configparser
           new_version = "${{ github.event.release.tag_name }}"
