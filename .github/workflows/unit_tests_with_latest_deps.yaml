@@ -45,7 +45,7 @@ jobs:
           JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           python -m pip install -e unpacked_sdist/[spark]
           python -m pip install -e unpacked_sdist/[test]
-      - if: ${{ matrix.python_version != 3.7 || matrix.libraries != 'spark' }}
+      - if: ${{ matrix.libraries != 'spark' }}
         name: Run unit tests (no code coverage)
         run: |
           cd unpacked_sdist
