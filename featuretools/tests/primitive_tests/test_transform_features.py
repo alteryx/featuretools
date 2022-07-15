@@ -816,7 +816,7 @@ def test_boolean_multiply(boolean_mult_es):
         if row[0] == "bool" and row[1] == "bool":
             assert fm[col_name].equals((df[row[0]] & df[row[1]]).astype("boolean"))
         else:
-            assert fm[col_name].equals((df[row[0]] * df[row[1]]))
+            assert fm[col_name].equals(df[row[0]] * df[row[1]])
 
 
 # TODO: rework test to be Dask and Spark compatible
