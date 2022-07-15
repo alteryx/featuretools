@@ -2,7 +2,7 @@ on:
   pull_request:
     types: [opened, synchronize]
 
-name: Create feedstock PR for conda release 
+name: Create Feedstock PR
 jobs:
   pull_latest_main:
     name: Pull latest in forked feestock
@@ -26,7 +26,8 @@ jobs:
       - name: Pull latest from upstream for alteryx forked feestock
         run: |
           gh auth status
-          gh repo sync alteryx/featuretools-feedstock --branch master --source conda-forge/featuretools-feedstock
+          gh repo clone conda-forge/featuretools-feedstock
+          gh repo sync machineAYX/featuretools-feedstock --branch main --source conda-forge/featuretools-feedstock --branch main
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
       - name: Install conda_forge_tick
