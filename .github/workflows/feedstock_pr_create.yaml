@@ -16,6 +16,7 @@ jobs:
         run: |
           gh auth status
           gh repo sync alteryx/featuretools-feedstock --branch master --source conda-forge/featuretools-feedstock
+          git clone --depth 1 https://github.com/regro/cf-scripts.git
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
       - uses: actions/checkout@v3
@@ -28,26 +29,87 @@ jobs:
         run: |
           import configparser
           new_version = "${{ github.event.release.tag_name }}"
-          new_version = new_version[1:]
-          with open('featuretools-feedstock/recipe/meta.yaml') as f:
-              data = f.readlines()
-          current_version = re.search('\d+\.\d+\.\d', data[0])
-          data[0] = data[0].replace(current_version[0], new_version)
+          import requests
+          from packaging.requirements import Requirement
+
+          project = "featuretools"
+
+          requirements = []
+          test_requirements = []
+
+          new_pypi_version = "v1.11.1"
+          new_pypi_version_no_v = new_pypi_version[1:]
+
+          current_conda_sha256 = None
+          current_conda_version = None
+
+          new_pypi_sha256 = None
+
+          current_python_version = None
+          new_python_version = None
+
+          add_graphviz_test = False
+          url = "https://pypi.python.org/pypi/{}/{}/json".format(project, new_pypi_version_no_v)
+          r = requests.get(url)
+          if r.status_code == requests.codes.ok:
+              data = r.json()
+
+          py_min_start_idx = data['info']['requires_python'].find(">=")
+          current_python_version = data['info']['requires_python'][py_min_start_idx + 2:]
+          new_python_version = "python >=" + current_python_version + ".*"
+
+          requirements.append(new_python_version)
+          requirements = sorted(requirements)
+
+          for x in data['urls']:
+              if x['python_version'] == 'source':
+                  new_pypi_sha256 = x['digests']['sha256']
+                  break
+          pypi_to_conda = {
+              'dask[dataframe]': 'dask',
+              'moto[all]': 'moto',
+              'smart-open': 'smart_open',
+              'graphviz': 'python-graphviz'
+          }
           config = configparser.ConfigParser()
           config.read('featuretools/setup.cfg')
+
           def clean_cfg_section(section):
+              cleaned = []
               section = section.split('\n')
-              section = [x for x in section if len(x) > 1]
-              return section
-          requirements += clean_cfg_section(config['options']['install_requires'])
-          test_requirements += clean_cfg_section(config['options.extras_require']['test'])
+              for idx, req in enumerate(section):
+                  if len(req) > 1:
+                      package = Requirement(req)
+                      pypi_name = package.name
+                      if len(package.extras) > 0:
+                          pypi_name = package.name + "[" + package.extras.pop() + "]"
+                      if pypi_name in pypi_to_conda:
+                          req = pypi_to_conda.pop(pypi_name) + " " + str(package.specifier)
+                      req = req.replace(">= ", ">=")
+                      cleaned.append(req)
+              return cleaned
+          requirements = clean_cfg_section(config['options']['install_requires'])
+          test_requirements = clean_cfg_section(config['options.extras_require']['test'])
+          if "graphviz" not in pypi_to_conda:
+              add_graphviz_test = True
+          if add_graphviz_test:
+              test_requirements.append("graphviz >=5.0.0")
+              test_requirements = sorted(test_requirements)
+              
+          from conda_forge_tick.recipe_parser import CondaMetaYAML
+
+          with open('featuretools-feedstock/recipe/meta.yaml') as f:
+              meta_yaml_as_string = f.read()
+
+          cmeta = CondaMetaYAML(meta_yaml_as_string)
           
-          with open('featuretools-feedstock/recipe/meta.yaml', 'w') as f:
-              f.writelines(data)
+          cmeta.jinja2_vars['version'] =  new_pypi_version_no_v
+          cmeta.meta["source"]['sha256'] = new_pypi_sha256
+          cmeta.meta["requirements"]["run"] = requirements
+          cmeta.meta["test"]["requires"] = test_requirements
+          
       - name: Create branch
         run: |
           gh pr create --repo alteryx/featuretools-feedstock
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
-
-        
