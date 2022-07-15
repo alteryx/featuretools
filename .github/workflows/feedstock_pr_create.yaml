@@ -30,7 +30,7 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/regro/cf-scripts.git
           cd cf-scripts
-          conda install --file requirements/run --file requirements/test
+          conda install -c conda-forge --file requirements/run
       - name: Modify meta.yaml
         id: branch
         shell: bash -l {0}
