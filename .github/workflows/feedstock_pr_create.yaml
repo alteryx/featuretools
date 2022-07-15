@@ -7,7 +7,14 @@ jobs:
   pull_latest_main:
     name: Pull latest in forked feestock
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
     steps:
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          python-version: "3.8"
       - uses: actions/checkout@v3
         with:
           repository: 'alteryx/featuretools'
@@ -23,10 +30,6 @@ jobs:
           gh repo sync machineAYX/featuretools-feedstock --branch main --source conda-forge/featuretools-feedstock --branch main
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
-      - uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-update-conda: true
-          python-version: "3.8"
       - name: Install conda_forge_tick
         run: |
           git clone --depth 1 https://github.com/regro/cf-scripts.git
@@ -117,6 +120,8 @@ jobs:
           cmeta.meta["requirements"]["run"] = requirements
           cmeta.meta["test"]["requires"] = test_requirements
           
+          with open('featuretools-feedstock/recipe/meta.yaml', "w") as fp:
+              cmeta.dump(fp)
       - name: Create branch
         run: |
           gh pr create --repo alteryx/featuretools-feedstock
