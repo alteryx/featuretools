@@ -11,7 +11,10 @@ def test_make_temporal_cutoffs():
     instance_ids = pd.Series(range(10))
     cutoffs = pd.date_range(start="1/2/2015", periods=10, freq="1d")
     temporal_cutoffs_by_nwindows = make_temporal_cutoffs(
-        instance_ids, cutoffs, window_size="1h", num_windows=2
+        instance_ids,
+        cutoffs,
+        window_size="1h",
+        num_windows=2,
     )
 
     assert temporal_cutoffs_by_nwindows.shape[0] == 20
@@ -42,7 +45,8 @@ def test_make_temporal_cutoffs():
     actual_times = [pd.Timestamp(c) for c in actual_times]
 
     for computed, actual in zip(
-        temporal_cutoffs_by_nwindows["instance_id"], actual_instances
+        temporal_cutoffs_by_nwindows["instance_id"],
+        actual_instances,
     ):
         assert computed == actual
     for computed, actual in zip(temporal_cutoffs_by_nwindows["time"], actual_times):
@@ -54,11 +58,15 @@ def test_make_temporal_cutoffs():
     actual_times += ["1/2/2015 00:00:00", "1/3/2015 00:00:00"]
     actual_times = [pd.Timestamp(c) for c in actual_times]
     temporal_cutoffs_by_wsz_start = make_temporal_cutoffs(
-        instance_ids, cutoffs, window_size="1d", start=starts
+        instance_ids,
+        cutoffs,
+        window_size="1d",
+        start=starts,
     )
 
     for computed, actual in zip(
-        temporal_cutoffs_by_wsz_start["instance_id"], actual_instances
+        temporal_cutoffs_by_wsz_start["instance_id"],
+        actual_instances,
     ):
         assert computed == actual
     for computed, actual in zip(temporal_cutoffs_by_wsz_start["time"], actual_times):
@@ -70,11 +78,15 @@ def test_make_temporal_cutoffs():
     actual_times += ["1/1/2015 00:00:00", "1/3/2015 00:00:00"]
     actual_times = [pd.Timestamp(c) for c in actual_times]
     temporal_cutoffs_by_nw_start = make_temporal_cutoffs(
-        instance_ids, cutoffs, num_windows=2, start=starts
+        instance_ids,
+        cutoffs,
+        num_windows=2,
+        start=starts,
     )
 
     for computed, actual in zip(
-        temporal_cutoffs_by_nw_start["instance_id"], actual_instances
+        temporal_cutoffs_by_nw_start["instance_id"],
+        actual_instances,
     ):
         assert computed == actual
     for computed, actual in zip(temporal_cutoffs_by_nw_start["time"], actual_times):

@@ -46,7 +46,7 @@ def get_transform_primitives():
 def list_primitives():
     """Returns a DataFrame that lists and describes each built-in primitive."""
     trans_names, trans_primitives, valid_inputs, return_type = _get_names_primitives(
-        get_transform_primitives
+        get_transform_primitives,
     )
     trans_dask = [
         Library.DASK in primitive.compatibility for primitive in trans_primitives
@@ -62,12 +62,12 @@ def list_primitives():
             "spark_compatible": trans_spark,
             "valid_inputs": valid_inputs,
             "return_type": return_type,
-        }
+        },
     )
     transform_df["type"] = "transform"
 
     agg_names, agg_primitives, valid_inputs, return_type = _get_names_primitives(
-        get_aggregation_primitives
+        get_aggregation_primitives,
     )
     agg_dask = [Library.DASK in primitive.compatibility for primitive in agg_primitives]
     agg_spark = [
@@ -81,7 +81,7 @@ def list_primitives():
             "spark_compatible": agg_spark,
             "valid_inputs": valid_inputs,
             "return_type": return_type,
-        }
+        },
     )
     agg_df["type"] = "aggregation"
 
@@ -128,16 +128,16 @@ def summarize_primitives() -> pd.DataFrame:
         {
             f"uses_{ltype}_input": count
             for ltype, count in primitives_summary["logical_type_input_metrics"].items()
-        }
+        },
     )
     summary_dict.update(
         {
             f"uses_{tag}_tag_input": count
             for tag, count in primitives_summary["semantic_tag_metrics"].items()
-        }
+        },
     )
     summary_df = pd.DataFrame(
-        [{"Metric": k, "Count": v} for k, v in summary_dict.items()]
+        [{"Metric": k, "Count": v} for k, v in summary_dict.items()],
     )
     return summary_df
 
@@ -198,7 +198,7 @@ def _get_summary_primitives(primitives: List) -> Dict[str, int]:
         sem_tag: 0 for sem_tag in list(list_semantic_tags()["name"])
     }
     semantic_tag_metrics.update(
-        {"foreign_key": 0}
+        {"foreign_key": 0},
     )  # not currently in list_semantic_tags()
 
     for prim in primitives:
@@ -206,7 +206,10 @@ def _get_summary_primitives(primitives: List) -> Dict[str, int]:
         sem_tag_type_checks = set()
         input_types = prim.flatten_nested_input_types(prim.input_types)
         _check_input_types(
-            input_types, log_in_type_checks, sem_tag_type_checks, unique_input_types
+            input_types,
+            log_in_type_checks,
+            sem_tag_type_checks,
+            unique_input_types,
         )
         for ltype in list(log_in_type_checks):
             logical_type_metrics[ltype] += 1
@@ -272,7 +275,7 @@ def _get_names_primitives(primitive_func):
         input_types = _get_unique_input_types(primitive.input_types)
         valid_inputs.append(", ".join(input_types))
         return_type.append(
-            str(primitive.return_type)
+            str(primitive.return_type),
         ) if primitive.return_type is not None else return_type.append(None)
     return names, primitives, valid_inputs, return_type
 
@@ -352,12 +355,15 @@ class PrimitivesDeserializer(object):
     This class wraps a cache and a generator which iterates over all primitive
     classes. When deserializing a primitive if it is not in the cache then we
     iterate until it is found, adding every seen class to the cache. When
-    deseriazing the next primitive the iteration resumes where it left off. This
+    deserializing the next primitive the iteration resumes where it left off. This
     means that we never visit a class more than once.
     """
 
     def __init__(self):
-        self.class_cache = {}  # (class_name, module_name) -> class
+        # Cache to avoid repeatedly searching for primitive class
+        # (class_name, module_name) -> class
+        self.class_cache = {}
+
         self.primitive_classes = find_descendents(PrimitiveBase)
 
     def deserialize_primitive(self, primitive_dict):
@@ -367,21 +373,21 @@ class PrimitivesDeserializer(object):
         """
         class_name = primitive_dict["type"]
         module_name = primitive_dict["module"]
-        cache_key = (class_name, module_name)
+        class_cache_key = (class_name, module_name)
 
-        if cache_key in self.class_cache:
-            cls = self.class_cache[cache_key]
+        if class_cache_key in self.class_cache:
+            cls = self.class_cache[class_cache_key]
         else:
-            cls = self._find_class_in_descendants(cache_key)
+            cls = self._find_class_in_descendants(class_cache_key)
 
-            if not cls:
-                raise RuntimeError(
-                    'Primitive "%s" in module "%s" not found'
-                    % (class_name, module_name)
-                )
-
+        if not cls:
+            raise RuntimeError(
+                'Primitive "%s" in module "%s" not found' % (class_name, module_name),
+            )
         arguments = primitive_dict["arguments"]
-        return cls(**arguments)
+        primitive_instance = cls(**arguments)
+
+        return primitive_instance
 
     def _find_class_in_descendants(self, search_key):
         for cls in self.primitive_classes:
@@ -532,7 +538,7 @@ def _check_window_size(window_size):
             to_offset(window_size)
         except ValueError:
             raise ValueError(
-                f"Cannot roll series. The specified window length, {window_size}, is not a valid offset alias."
+                f"Cannot roll series. The specified window length, {window_size}, is not a valid offset alias.",
             )
     # Or an integer greater than zero
     elif isinstance(window_size, int):
@@ -549,13 +555,13 @@ def _check_gap(window_size, gap):
             raise TypeError(
                 f"Cannot roll series with offset gap, {gap}, and numeric window length, {window_size}. "
                 "If an offset alias is used for gap, the window length must also be defined as an offset alias. "
-                "Please either change gap to be numeric or change window length to be an offset alias."
+                "Please either change gap to be numeric or change window length to be an offset alias.",
             )
         try:
             to_offset(gap)
         except ValueError:
             raise ValueError(
-                f"Cannot roll series. The specified gap, {gap}, is not a valid offset alias."
+                f"Cannot roll series. The specified gap, {gap}, is not a valid offset alias.",
             )
     # Or an integer greater than or equal to zero
     elif isinstance(gap, int):
@@ -593,7 +599,8 @@ class HolidayUtil:
 
     def to_df(self):
         holidays_df = pd.DataFrame(
-            sorted(self.federal_holidays.items()), columns=["holiday_date", "names"]
+            sorted(self.federal_holidays.items()),
+            columns=["holiday_date", "names"],
         )
         holidays_df.holiday_date = holidays_df.holiday_date.astype("datetime64")
         return holidays_df

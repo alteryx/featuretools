@@ -1,10 +1,11 @@
 import json
 
+from featuretools.primitives.utils import serialize_primitive
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_features
 from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.version import __version__ as ft_version
 
-SCHEMA_VERSION = "8.0.0"
+SCHEMA_VERSION = "9.0.0"
 
 
 def save_features(features, location=None, profile_name=None):
@@ -45,13 +46,17 @@ def save_features(features, location=None, profile_name=None):
 
             features = [f1, f2, f3]
 
+            # Option 1
             filepath = os.path.join('/Home/features/', 'list.json')
             ft.save_features(features, filepath)
 
-            f = open(filepath, 'w')
-            ft.save_features(features, f)
+            # Option 2
+            filepath = os.path.join('/Home/features/', 'list.json')
+            with open(filepath, 'w') as f:
+                ft.save_features(features, f)
 
-            features_str = ft.save_features(features)
+            # Option 3
+            features_string = ft.save_features(features)
     .. seealso::
         :func:`.load_features`
     """
@@ -67,12 +72,15 @@ class FeaturesSerializer(object):
         names_list = [feat.unique_name() for feat in self.feature_list]
         es = self.feature_list[0].entityset
 
+        feature_defs, primitive_defs = self._feature_definitions()
+
         return {
             "schema_version": SCHEMA_VERSION,
             "ft_version": ft_version,
             "entityset": es.to_dictionary(),
             "feature_list": names_list,
-            "feature_definitions": self._feature_definitions(),
+            "feature_definitions": feature_defs,
+            "primitive_definitions": primitive_defs,
         }
 
     def save(self, location, profile_name):
@@ -85,7 +93,10 @@ class FeaturesSerializer(object):
             if _is_s3(location):
                 transport_params = get_transport_params(profile_name)
                 use_smartopen_features(
-                    location, features_dict, transport_params, read=False
+                    location,
+                    features_dict,
+                    transport_params,
+                    read=False,
                 )
             else:
                 with open(location, "w") as f:
@@ -96,11 +107,36 @@ class FeaturesSerializer(object):
     def _feature_definitions(self):
         if not self._features_dict:
             self._features_dict = {}
+            self._primitives_dict = {}
 
             for feature in self.feature_list:
                 self._serialize_feature(feature)
 
-        return self._features_dict
+            primitive_number = 0
+            primitive_id_to_key = {}
+            for name, feature in self._features_dict.items():
+                primitive = feature["arguments"].get("primitive")
+                if primitive:
+                    primitive_id = id(primitive)
+                    if primitive_id not in primitive_id_to_key.keys():
+                        # Primitive we haven't seen before, add to dict and increment primitive_id counter
+                        # Always use string for keys because json conversion results in integer dict keys
+                        # being converted to strings, but integer dict values are not.
+                        primitives_dict_key = str(primitive_number)
+                        primitive_id_to_key[primitive_id] = primitives_dict_key
+                        self._primitives_dict[
+                            primitives_dict_key
+                        ] = serialize_primitive(primitive)
+                        self._features_dict[name]["arguments"][
+                            "primitive"
+                        ] = primitives_dict_key
+                        primitive_number += 1
+                    else:
+                        # Primitive we have seen already - use existing primitive_id key
+                        key = primitive_id_to_key[primitive_id]
+                        self._features_dict[name]["arguments"]["primitive"] = key
+
+        return self._features_dict, self._primitives_dict
 
     def _serialize_feature(self, feature):
         name = feature.unique_name()

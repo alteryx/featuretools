@@ -35,7 +35,7 @@ class Relationship(object):
         ):
             raise AttributeError(
                 f"Parent column '{self._parent_column_name}' is not the index of "
-                f"dataframe {self._parent_dataframe_name}"
+                f"dataframe {self._parent_dataframe_name}",
             )
 
     @classmethod
@@ -74,7 +74,7 @@ class Relationship(object):
                 self._child_dataframe_name,
                 self._parent_column_name,
                 self._child_column_name,
-            )
+            ),
         )
 
     @property
@@ -130,7 +130,7 @@ class Relationship(object):
                 r
                 for r in relationships
                 if r._parent_dataframe_name == self._parent_dataframe_name
-            ]
+            ],
         )
 
         assert n > 0, "This relationship is missing from the entityset"
@@ -169,7 +169,7 @@ class RelationshipPath(object):
 
     def __add__(self, other):
         return RelationshipPath(
-            self._relationships_with_direction + other._relationships_with_direction
+            self._relationships_with_direction + other._relationships_with_direction,
         )
 
     def __getitem__(self, index):

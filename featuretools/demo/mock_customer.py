@@ -50,10 +50,12 @@ def load_mock_customer(
     transactions_df["session_id"] = choice(sessions_df["session_id"], n_transactions)
     transactions_df = transactions_df.sort_values("session_id").reset_index(drop=True)
     transactions_df["transaction_time"] = pd.date_range(
-        "1/1/2014", periods=n_transactions, freq="65s"
+        "1/1/2014",
+        periods=n_transactions,
+        freq="65s",
     )  # todo make these less regular
     transactions_df["product_id"] = pd.Categorical(
-        choice(products_df["product_id"], n_transactions)
+        choice(products_df["product_id"], n_transactions),
     )
     transactions_df["amount"] = random.randint(500, 15000, n_transactions) / 100
 
@@ -82,7 +84,9 @@ def load_mock_customer(
         )
 
         es = es.add_dataframe(
-            dataframe_name="products", dataframe=products_df, index="product_id"
+            dataframe_name="products",
+            dataframe=products_df,
+            index="product_id",
         )
 
         es = es.add_dataframe(

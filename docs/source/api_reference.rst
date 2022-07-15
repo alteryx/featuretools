@@ -128,17 +128,22 @@ Datetime Transform Primitives
     Minute
     Weekday
     IsLeapYear
+    IsLunchTime
     IsMonthEnd
     IsMonthStart
     IsQuarterEnd
     IsQuarterStart
     IsWeekend
+    IsWorkingHours
+    IsYearEnd
+    IsYearStart
     Hour
     Day
     DayOfYear
     DaysInMonth
     Week
     Month
+    PartOfDay
     Quarter
     Year
 
@@ -181,6 +186,7 @@ Cumulative Transform Primitives
     :toctree: generated/
 
     Diff
+    DiffDatetime
     TimeSincePrevious
     CumCount
     CumSum
@@ -289,7 +295,7 @@ Feature Matrix utils
     :toctree: generated/
 
     replace_inf_values
-    
+
 
 Saving and Loading Features
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

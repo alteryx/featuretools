@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.7", "3.8", "3.9", "3.10"]
+        python_version: ["3.8", "3.9", "3.10"]
         libraries: ["core", "spark"]
 
     steps:
@@ -70,7 +70,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.7", "3.8", "3.9", "3.10"]
+        python_version: ["3.8", "3.9", "3.10"]
     steps:
       - name: Download miniconda
         shell: pwsh
@@ -103,7 +103,7 @@ jobs:
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate featuretools
           conda config --add channels conda-forge
-          conda install -q -y -c conda-forge python-graphviz
+          conda install -q -y -c conda-forge python-graphviz=0.16 graphviz=2.38
           python -m pip install --upgrade pip
           python -m pip install .[test]
       - name: Run unit tests

@@ -1,4 +1,4 @@
 # flake8: noqa
-from .aggregation_primitive_base import AggregationPrimitive
-from .primitive_base import PrimitiveBase
-from .transform_primitive_base import TransformPrimitive
+from featuretools.primitives.base.aggregation_primitive_base import AggregationPrimitive
+from featuretools.primitives.base.primitive_base import PrimitiveBase
+from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
