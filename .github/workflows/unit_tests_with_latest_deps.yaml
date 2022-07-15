@@ -13,9 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.8"]
-        # libraries: ["core", "spark - misc", "spark - computational", "spark - entityset_1", "spark - entityset_2", "spark - primitives"]
-        libraries: ["spark - primitives"]
+        python_version: ["3.10"]
+        libraries: ["spark"]
 
     steps:
       - name: Set up python ${{ matrix.python_version }}
@@ -59,31 +58,11 @@ jobs:
         run: |
           cd unpacked_sdist
           pytest featuretools/ -n=2
-      - if: ${{ matrix.libraries == 'spark - misc' }}
+      - if: ${{ matrix.libraries == 'spark' }}
         name: Run unit tests (misc)
         run: |
           cd unpacked_sdist
-          pytest featuretools/ -n=2 --ignore=featuretools/tests/computational_backend --ignore=featuretools/tests/entityset_tests --ignore=featuretools/tests/primitive_tests ${{ env.coverage_args }}
-      - if: ${{ matrix.libraries == 'spark - computational' }}
-        name: Run unit tests (computational backend)
-        run: |
-          cd unpacked_sdist
-          pytest featuretools/tests/computational_backend/ -n=2 ${{ env.coverage_args }}
-      - if: ${{ matrix.libraries == 'spark - entityset_1' }}
-        name: Run unit tests (entityset batch 1)
-        run: |
-          cd unpacked_sdist
-          pytest featuretools/tests/entityset_tests -n=2 --ignore=featuretools/tests/entityset_tests/test_es.py --ignore=featuretools/tests/entityset_tests/test_ww_es.py ${{ env.coverage_args }}
-      - if: ${{ matrix.libraries == 'spark - entityset_2' }}
-        name: Run unit tests (entityset batch 2)
-        run: |
-          cd unpacked_sdist
-          pytest featuretools/tests/entityset_tests/test_es.py featuretools/tests/entityset_tests/test_ww_es.py -n=2 ${{ env.coverage_args }}
-      - if: ${{ matrix.libraries == 'spark - primitives' }}
-        name: Run unit tests (primitives)
-        run: |
-          cd unpacked_sdist
-          pytest featuretools/tests/primitive_tests/test_transform_features.py::test_init_and_name
+          pytest featuretools/ --durations=0
       - if: ${{ env.coverage_args }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
