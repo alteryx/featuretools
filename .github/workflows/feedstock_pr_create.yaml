@@ -14,10 +14,6 @@ jobs:
           ref: "${{ github.event.release.tag_name }}"
       - uses: actions/checkout@v3
         with:
-          repository: 'regro/cf-scripts.git'
-          ref: 'master'
-      - uses: actions/checkout@v3
-        with:
           repository: 'alteryx/featuretools-feedstock'
           ref: 'master'          
       - uses: conda-incubator/setup-miniconda@v2
@@ -32,6 +28,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
       - name: Install conda_forge_tick
         run: |
+          git clone --depth 1 https://github.com/regro/cf-scripts.git
           cd cf-scripts
           conda install --file requirements/run --file requirements/test
       - name: Modify meta.yaml
