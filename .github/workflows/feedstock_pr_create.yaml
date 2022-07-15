@@ -1,6 +1,6 @@
 on:
-  release:
-    types: [published]
+  pull_request:
+    types: [opened, synchronize]
 
 name: Create feedstock PR for conda release 
 jobs:
