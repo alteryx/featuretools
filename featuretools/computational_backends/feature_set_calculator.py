@@ -742,24 +742,24 @@ class FeatureSetCalculator(object):
                     if isinstance(base_frame, dd.DataFrame):
                         if (
                             "series_library"
-                            not in feature.primitive.get_function.__code__.co_varnames
+                            in feature.primitive.get_function.__code__.co_varnames
                         ):
-                            func = feature.primitive.get_function(agg_type=Library.DASK)
-                        else:
                             func = feature.primitive.get_function(
                                 series_library=Library.DASK,
                             )
+                        else:
+                            func = feature.primitive.get_function(agg_type=Library.DASK)
                     elif is_instance(base_frame, ps, "DataFrame"):
                         if (
                             "series_library"
-                            not in feature.primitive.get_function.__code__.co_varnames
+                            in feature.primitive.get_function.__code__.co_varnames
                         ):
                             func = feature.primitive.get_function(
-                                agg_type=Library.SPARK,
+                                series_library=Library.SPARK,
                             )
                         else:
                             func = feature.primitive.get_function(
-                                series_library=Library.SPARK,
+                                agg_type=Library.SPARK,
                             )
                     else:
                         func = feature.get_function()

@@ -1043,7 +1043,7 @@ def test_handles_primitive_function_name_uniqueness(es):
         def __init__(self, n):
             self.n = n
 
-        def get_function(self, agg_type="pandas"):
+        def get_function(self, series_library="pandas"):
             def my_function(values):
                 return values.sum() * self.n
 
@@ -1107,7 +1107,7 @@ def test_handles_primitive_function_name_uniqueness(es):
         stack_on_exclude = [Count]
         default_value = 0
 
-        def get_function(self, agg_type="pandas"):
+        def get_function(self, series_library="pandas"):
             return np.sum
 
     class Sum2(AggregationPrimitive):
@@ -1120,7 +1120,7 @@ def test_handles_primitive_function_name_uniqueness(es):
         stack_on_exclude = [Count]
         default_value = 0
 
-        def get_function(self, agg_type="pandas"):
+        def get_function(self, series_library="pandas"):
             return np.sum
 
     class Sum3(AggregationPrimitive):
@@ -1133,7 +1133,7 @@ def test_handles_primitive_function_name_uniqueness(es):
         stack_on_exclude = [Count]
         default_value = 0
 
-        def get_function(self, agg_type="pandas"):
+        def get_function(self, series_library="pandas"):
             return np.sum
 
     f5 = Feature(
@@ -1237,8 +1237,7 @@ def test_calls_progress_callback(es):
 
 
 # precalculated_features is only used with approximate
-@pytest.mark.parametrize("library", [Library.DASK, Library.PANDAS, Library.SPARK])
-def test_precalculated_features(library, pd_es):
+def test_precalculated_features(pd_es):
     error_msg = (
         "This primitive should never be used because the features are precalculated"
     )
@@ -1250,7 +1249,7 @@ def test_precalculated_features(library, pd_es):
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
         return_type = ColumnSchema(semantic_tags={"numeric"})
 
-        def get_function(self, series_type=library):
+        def get_function(self, series_library="pandas"):
             def error(s):
                 raise RuntimeError(error_msg)
 
