@@ -36,7 +36,6 @@ class Count(AggregationPrimitive):
     description_template = "the number"
 
     def get_function(self, series_library=Library.PANDAS):
-
         if series_library in [Library.DASK, Library.SPARK]:
             return "count"
 
@@ -72,7 +71,6 @@ class Sum(AggregationPrimitive):
     description_template = "the sum of {}"
 
     def get_function(self, series_library=Library.PANDAS):
-
         if series_library in [Library.DASK, Library.SPARK]:
             return "sum"
 
@@ -108,7 +106,6 @@ class Mean(AggregationPrimitive):
         self.skipna = skipna
 
     def get_function(self, series_library=Library.PANDAS):
-
         if series_library in [Library.DASK, Library.SPARK]:
             return "mean"
 
@@ -188,7 +185,6 @@ class Max(AggregationPrimitive):
     description_template = "the maximum of {}"
 
     def get_function(self, series_library=Library.PANDAS):
-
         if series_library in [Library.DASK, Library.SPARK]:
             return "max"
 
@@ -217,7 +213,6 @@ class NumUnique(AggregationPrimitive):
     description_template = "the number of unique elements in {}"
 
     def get_function(self, series_library=Library.PANDAS):
-
         if series_library == Library.DASK:
 
             def chunk(s):
@@ -271,7 +266,6 @@ class NumTrue(AggregationPrimitive):
     description_template = "the number of times {} is true"
 
     def get_function(self, series_library=Library.PANDAS):
-
         if series_library == Library.DASK:
 
             def chunk(s):
@@ -316,7 +310,6 @@ class PercentTrue(AggregationPrimitive):
     description_template = "the percentage of true values in {}"
 
     def get_function(self, series_library=Library.PANDAS):
-
         if series_library == Library.DASK:
 
             def chunk(s):
@@ -523,7 +516,6 @@ class Std(AggregationPrimitive):
     description_template = "the standard deviation of {}"
 
     def get_function(self, series_library=Library.PANDAS):
-
         if series_library in [Library.DASK, Library.SPARK]:
             return "std"
 
@@ -598,7 +590,6 @@ class Any(AggregationPrimitive):
     description_template = "whether any of {} are true"
 
     def get_function(self, series_library=Library.PANDAS):
-
         if series_library == Library.DASK:
 
             def chunk(s):
@@ -636,7 +627,6 @@ class All(AggregationPrimitive):
     description_template = "whether all of {} are true"
 
     def get_function(self, series_library=Library.PANDAS):
-
         if series_library == Library.DASK:
 
             def chunk(s):
