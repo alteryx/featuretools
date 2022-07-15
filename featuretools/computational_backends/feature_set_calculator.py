@@ -503,10 +503,10 @@ class FeatureSetCalculator(object):
     ):
         frame_empty = frame.empty if isinstance(frame, pd.DataFrame) else False
         feature_values = []
-        for feature in features:
+        for f in features:
             # handle when no data
             if frame_empty:
-                set_default_column(frame, feature)
+                set_default_column(frame, f)
 
                 progress_callback(1 / float(self.num_features))
 
@@ -514,24 +514,24 @@ class FeatureSetCalculator(object):
 
             # collect only the columns we need for this transformation
 
-            column_data = [frame[bf.get_name()] for bf in feature.base_features]
+            column_data = [frame[bf.get_name()] for bf in f.base_features]
 
-            feature_func = feature.get_function()
+            feature_func = f.get_function()
 
             # apply the function to the relevant dataframe slice and add the
             # feature row to the results dataframe.
-            if feature.primitive.uses_calc_time:
+            if f.primitive.uses_calc_time:
                 values = feature_func(*column_data, time=self.time_last)
             else:
                 values = feature_func(*column_data)
 
             # if we don't get just the values, the assignment breaks when indexes don't match
-            if feature.number_output_features > 1:
+            if f.number_output_features > 1:
                 values = [strip_values_if_series(value) for value in values]
             else:
                 values = [strip_values_if_series(values)]
 
-            feature_values.append((feature, values))
+            feature_values.append((f, values))
 
             progress_callback(1 / float(self.num_features))
 
