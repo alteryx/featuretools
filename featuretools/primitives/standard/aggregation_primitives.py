@@ -36,8 +36,8 @@ class Count(AggregationPrimitive):
     description_template = "the number"
 
     def get_function(self, series_library=Library.PANDAS):
-        lib = series_library or agg_type
-        if lib in [Library.DASK, Library.SPARK]:
+
+        if series_library in [Library.DASK, Library.SPARK]:
             return "count"
 
         return pd.Series.count
@@ -72,8 +72,8 @@ class Sum(AggregationPrimitive):
     description_template = "the sum of {}"
 
     def get_function(self, series_library=Library.PANDAS):
-        lib = series_library or agg_type
-        if lib in [Library.DASK, Library.SPARK]:
+
+        if series_library in [Library.DASK, Library.SPARK]:
             return "sum"
 
         return np.sum
@@ -108,8 +108,8 @@ class Mean(AggregationPrimitive):
         self.skipna = skipna
 
     def get_function(self, series_library=Library.PANDAS):
-        lib = series_library or agg_type
-        if lib in [Library.DASK, Library.SPARK]:
+
+        if series_library in [Library.DASK, Library.SPARK]:
             return "mean"
 
         if self.skipna:
@@ -165,8 +165,7 @@ class Min(AggregationPrimitive):
     description_template = "the minimum of {}"
 
     def get_function(self, series_library=Library.PANDAS):
-        lib = series_library or agg_type
-        if lib in [Library.DASK, Library.SPARK]:
+        if series_library in [Library.DASK, Library.SPARK]:
             return "min"
 
         return np.min
@@ -189,8 +188,8 @@ class Max(AggregationPrimitive):
     description_template = "the maximum of {}"
 
     def get_function(self, series_library=Library.PANDAS):
-        lib = series_library or agg_type
-        if lib in [Library.DASK, Library.SPARK]:
+
+        if series_library in [Library.DASK, Library.SPARK]:
             return "max"
 
         return np.max
@@ -218,8 +217,8 @@ class NumUnique(AggregationPrimitive):
     description_template = "the number of unique elements in {}"
 
     def get_function(self, series_library=Library.PANDAS):
-        lib = series_library or agg_type
-        if lib == Library.DASK:
+
+        if series_library == Library.DASK:
 
             def chunk(s):
                 def inner_chunk(x):
@@ -240,7 +239,7 @@ class NumUnique(AggregationPrimitive):
 
             return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
 
-        elif lib == Library.SPARK:
+        elif series_library == Library.SPARK:
             return "nunique"
 
         return pd.Series.nunique
@@ -272,8 +271,8 @@ class NumTrue(AggregationPrimitive):
     description_template = "the number of times {} is true"
 
     def get_function(self, series_library=Library.PANDAS):
-        lib = series_library or agg_type
-        if lib == Library.DASK:
+
+        if series_library == Library.DASK:
 
             def chunk(s):
                 chunk_sum = s.agg(np.sum)
@@ -317,8 +316,8 @@ class PercentTrue(AggregationPrimitive):
     description_template = "the percentage of true values in {}"
 
     def get_function(self, series_library=Library.PANDAS):
-        lib = series_library or agg_type
-        if lib == Library.DASK:
+
+        if series_library == Library.DASK:
 
             def chunk(s):
                 def format_chunk(x):
@@ -524,8 +523,8 @@ class Std(AggregationPrimitive):
     description_template = "the standard deviation of {}"
 
     def get_function(self, series_library=Library.PANDAS):
-        lib = series_library or agg_type
-        if lib in [Library.DASK, Library.SPARK]:
+
+        if series_library in [Library.DASK, Library.SPARK]:
             return "std"
 
         return np.std
@@ -599,8 +598,8 @@ class Any(AggregationPrimitive):
     description_template = "whether any of {} are true"
 
     def get_function(self, series_library=Library.PANDAS):
-        lib = series_library or agg_type
-        if lib == Library.DASK:
+
+        if series_library == Library.DASK:
 
             def chunk(s):
                 return s.agg(np.any)
@@ -637,8 +636,8 @@ class All(AggregationPrimitive):
     description_template = "whether all of {} are true"
 
     def get_function(self, series_library=Library.PANDAS):
-        lib = series_library or agg_type
-        if lib == Library.DASK:
+
+        if series_library == Library.DASK:
 
             def chunk(s):
                 return s.agg(np.all)
