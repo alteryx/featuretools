@@ -1107,7 +1107,7 @@ def test_handles_primitive_function_name_uniqueness(es):
         stack_on_exclude = [Count]
         default_value = 0
 
-        def get_function(self, series_library="pandas"):
+        def get_function(self, agg_type="pandas"):
             return np.sum
 
     class Sum2(AggregationPrimitive):
@@ -1120,7 +1120,7 @@ def test_handles_primitive_function_name_uniqueness(es):
         stack_on_exclude = [Count]
         default_value = 0
 
-        def get_function(self, series_library="pandas"):
+        def get_function(self, agg_type="pandas"):
             return np.sum
 
     class Sum3(AggregationPrimitive):
@@ -1133,7 +1133,7 @@ def test_handles_primitive_function_name_uniqueness(es):
         stack_on_exclude = [Count]
         default_value = 0
 
-        def get_function(self, series_library="pandas"):
+        def get_function(self, agg_type="pandas"):
             return np.sum
 
     f5 = Feature(
@@ -1242,7 +1242,7 @@ def test_precalculated_features(pd_es):
         "This primitive should never be used because the features are precalculated"
     )
 
-    class ErrorPrim(AggregationPrimitive):
+    class ErrorPrim_series_library(AggregationPrimitive):
         """A primitive whose function raises an error."""
 
         name = "error_prim"
@@ -1255,38 +1255,62 @@ def test_precalculated_features(pd_es):
 
             return error
 
-    value = Feature(pd_es["log"].ww["value"])
-    agg = Feature(value, parent_dataframe_name="sessions", primitive=ErrorPrim)
-    agg2 = Feature(agg, parent_dataframe_name="customers", primitive=ErrorPrim)
-    direct = Feature(agg2, dataframe_name="sessions")
+    class ErrorPrim_agg_type(AggregationPrimitive):
+        """A primitive whose function raises an error."""
 
-    # Set up a FeatureSet which knows which features are precalculated.
-    precalculated_feature_trie = Trie(default=set, path_constructor=RelationshipPath)
-    precalculated_feature_trie.get_node(direct.relationship_path).value.add(
-        agg2.unique_name(),
-    )
-    feature_set = FeatureSet(
-        [direct],
-        approximate_feature_trie=precalculated_feature_trie,
-    )
+        name = "error_prim"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
 
-    # Fake precalculated data.
-    values = [0, 1, 2]
-    parent_fm = pd.DataFrame({agg2.get_name(): values})
-    precalculated_fm_trie = Trie(path_constructor=RelationshipPath)
-    precalculated_fm_trie.get_node(direct.relationship_path).value = parent_fm
+        def get_function(self, agg_type="pandas"):
+            def error(s):
+                raise RuntimeError(error_msg)
 
-    calculator = FeatureSetCalculator(
-        pd_es,
-        feature_set=feature_set,
-        precalculated_features=precalculated_fm_trie,
-    )
+            return error
 
-    instance_ids = [0, 2, 3, 5]
-    fm = calculator.run(np.array(instance_ids))
+    for ErrorPrim in [ErrorPrim_series_library, ErrorPrim_series_library]:
+        value = Feature(pd_es["log"].ww["value"])
+        agg = Feature(value, parent_dataframe_name="sessions", primitive=ErrorPrim)
+        agg2 = Feature(agg, parent_dataframe_name="customers", primitive=ErrorPrim)
+        direct = Feature(agg2, dataframe_name="sessions")
 
-    assert list(fm[direct.get_name()]) == [values[0], values[0], values[1], values[2]]
+        # Set up a FeatureSet which knows which features are precalculated.
+        precalculated_feature_trie = Trie(
+            default=set,
+            path_constructor=RelationshipPath,
+        )
+        precalculated_feature_trie.get_node(direct.relationship_path).value.add(
+            agg2.unique_name(),
+        )
+        feature_set = FeatureSet(
+            [direct],
+            approximate_feature_trie=precalculated_feature_trie,
+        )
 
-    # Calculating without precalculated features should error.
-    with pytest.raises(RuntimeError, match=error_msg):
-        FeatureSetCalculator(pd_es, feature_set=FeatureSet([direct])).run(instance_ids)
+        # Fake precalculated data.
+        values = [0, 1, 2]
+        parent_fm = pd.DataFrame({agg2.get_name(): values})
+        precalculated_fm_trie = Trie(path_constructor=RelationshipPath)
+        precalculated_fm_trie.get_node(direct.relationship_path).value = parent_fm
+
+        calculator = FeatureSetCalculator(
+            pd_es,
+            feature_set=feature_set,
+            precalculated_features=precalculated_fm_trie,
+        )
+
+        instance_ids = [0, 2, 3, 5]
+        fm = calculator.run(np.array(instance_ids))
+
+        assert list(fm[direct.get_name()]) == [
+            values[0],
+            values[0],
+            values[1],
+            values[2],
+        ]
+
+        # Calculating without precalculated features should error.
+        with pytest.raises(RuntimeError, match=error_msg):
+            FeatureSetCalculator(pd_es, feature_set=FeatureSet([direct])).run(
+                instance_ids,
+            )
