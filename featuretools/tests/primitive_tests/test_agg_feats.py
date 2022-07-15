@@ -49,7 +49,7 @@ def test_primitive():
         return_type = ColumnSchema(semantic_tags={"numeric"})
         stack_on = []
 
-        def get_function(self, agg_type="pandas"):
+        def get_function(self, series_library="pandas"):
             return None
 
     return TestAgg

@@ -158,7 +158,7 @@ def test_direct_features_of_multi_output_agg_primitives(pd_es):
         return_type = ColumnSchema(semantic_tags={"category"})
         number_output_features = 3
 
-        def get_function(self, agg_type="pandas"):
+        def get_function(self, series_library="pandas"):
             def pd_top3(x):
                 counts = x.value_counts()
                 counts = counts[counts > 0]
