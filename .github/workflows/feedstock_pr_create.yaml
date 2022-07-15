@@ -16,9 +16,6 @@ jobs:
         with:
           repository: 'alteryx/featuretools-feedstock'
           ref: 'master'          
-      - uses: conda-incubator/setup-miniconda@v2
-        with:
-          python-version: "3.8"
       - name: Pull latest from upstream for alteryx forked feestock
         run: |
           gh auth status
@@ -26,6 +23,10 @@ jobs:
           gh repo sync machineAYX/featuretools-feedstock --branch main --source conda-forge/featuretools-feedstock --branch main
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          python-version: "3.8"
       - name: Install conda_forge_tick
         run: |
           git clone --depth 1 https://github.com/regro/cf-scripts.git
