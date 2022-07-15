@@ -1,4 +1,3 @@
-from collections import defaultdict
 from inspect import isclass
 
 import dask.dataframe as dd
@@ -109,7 +108,6 @@ def test_init_and_name(es):
             prim for prim in trans_primitives if Library.SPARK in prim.compatibility
         ]
 
-    instances = defaultdict(list)
     for transform_prim in trans_primitives:
         # skip automated testing if a few special cases
         features_to_use = log_features
@@ -131,10 +129,7 @@ def test_init_and_name(es):
 
             # try to get name and calculate
             instance.get_name()
-            instances[instance.dataframe_name].append(instance)
-
-    for feature_list in instances.values():
-        calculate_feature_matrix(feature_list, entityset=es)
+            calculate_feature_matrix([instance], entityset=es)
 
 
 def test_relationship_path(es):
