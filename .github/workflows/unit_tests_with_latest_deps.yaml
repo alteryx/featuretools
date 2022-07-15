@@ -14,7 +14,8 @@ jobs:
       fail-fast: false
       matrix:
         python_version: ["3.8"]
-        libraries: ["core", "spark - misc", "spark - computational", "spark - entityset_1", "spark - entityset_2", "spark - primitives"]
+        # libraries: ["core", "spark - misc", "spark - computational", "spark - entityset_1", "spark - entityset_2", "spark - primitives"]
+        libraries: ["spark - primitives"]
 
     steps:
       - name: Set up python ${{ matrix.python_version }}
@@ -82,7 +83,7 @@ jobs:
         name: Run unit tests (primitives)
         run: |
           cd unpacked_sdist
-          pytest featuretools/tests/primitive_tests -n=2 ${{ env.coverage_args }}
+          pytest featuretools/tests/primitive_tests/test_transform_features.py::test_init_and_name
       - if: ${{ env.coverage_args }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
