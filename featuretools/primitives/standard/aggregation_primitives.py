@@ -35,7 +35,7 @@ class Count(AggregationPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the number"
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         lib = series_library or agg_type
         if lib in [Library.DASK, Library.SPARK]:
             return "count"
@@ -71,7 +71,7 @@ class Sum(AggregationPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the sum of {}"
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         lib = series_library or agg_type
         if lib in [Library.DASK, Library.SPARK]:
             return "sum"
@@ -107,7 +107,7 @@ class Mean(AggregationPrimitive):
     def __init__(self, skipna=True):
         self.skipna = skipna
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         lib = series_library or agg_type
         if lib in [Library.DASK, Library.SPARK]:
             return "mean"
@@ -164,7 +164,7 @@ class Min(AggregationPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the minimum of {}"
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         lib = series_library or agg_type
         if lib in [Library.DASK, Library.SPARK]:
             return "min"
@@ -188,7 +188,7 @@ class Max(AggregationPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the maximum of {}"
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         lib = series_library or agg_type
         if lib in [Library.DASK, Library.SPARK]:
             return "max"
@@ -217,7 +217,7 @@ class NumUnique(AggregationPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the number of unique elements in {}"
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         lib = series_library or agg_type
         if lib == Library.DASK:
 
@@ -271,7 +271,7 @@ class NumTrue(AggregationPrimitive):
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "the number of times {} is true"
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         lib = series_library or agg_type
         if lib == Library.DASK:
 
@@ -316,7 +316,7 @@ class PercentTrue(AggregationPrimitive):
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "the percentage of true values in {}"
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         lib = series_library or agg_type
         if lib == Library.DASK:
 
@@ -379,7 +379,7 @@ class NMostCommon(AggregationPrimitive):
             *["the {nth_slice} most common value of {}"] * (n - 1),
         ]
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         def n_most_common(x):
             # Counts of 0 remain in value_counts output if dtype is category
             # so we need to remove them
@@ -428,7 +428,7 @@ class AvgTimeBetween(AggregationPrimitive):
     def __init__(self, unit="seconds"):
         self.unit = unit.lower()
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         def pd_avg_time_between(x):
             """Assumes time scales are closer to order
             of seconds than to nanoseconds
@@ -478,7 +478,7 @@ class Median(AggregationPrimitive):
     return_type = ColumnSchema(semantic_tags={"numeric"})
     description_template = "the median of {}"
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         return pd.Series.median
 
 
@@ -503,7 +503,7 @@ class Skew(AggregationPrimitive):
     stack_on_self = False
     description_template = "the skewness of {}"
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         return pd.Series.skew
 
 
@@ -523,7 +523,7 @@ class Std(AggregationPrimitive):
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the standard deviation of {}"
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         lib = series_library or agg_type
         if lib in [Library.DASK, Library.SPARK]:
             return "std"
@@ -546,7 +546,7 @@ class First(AggregationPrimitive):
     stack_on_self = False
     description_template = "the first instance of {}"
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         def pd_first(x):
             return x.iloc[0]
 
@@ -568,7 +568,7 @@ class Last(AggregationPrimitive):
     stack_on_self = False
     description_template = "the last instance of {}"
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         def pd_last(x):
             return x.iloc[-1]
 
@@ -598,7 +598,7 @@ class Any(AggregationPrimitive):
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "whether any of {} are true"
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         lib = series_library or agg_type
         if lib == Library.DASK:
 
@@ -636,7 +636,7 @@ class All(AggregationPrimitive):
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "whether all of {} are true"
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         lib = series_library or agg_type
         if lib == Library.DASK:
 
@@ -694,7 +694,7 @@ class TimeSinceLast(AggregationPrimitive):
     def __init__(self, unit="seconds"):
         self.unit = unit.lower()
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         def time_since_last(values, time=None):
             time_since = time - values.iloc[-1]
             return convert_time_units(time_since.total_seconds(), self.unit)
@@ -745,7 +745,7 @@ class TimeSinceFirst(AggregationPrimitive):
     def __init__(self, unit="seconds"):
         self.unit = unit.lower()
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         def time_since_first(values, time=None):
             time_since = time - values.iloc[0]
             return convert_time_units(time_since.total_seconds(), self.unit)
@@ -781,7 +781,7 @@ class Trend(AggregationPrimitive):
     return_type = ColumnSchema(semantic_tags={"numeric"})
     description_template = "the linear trend of {} over time"
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         def pd_trend(y, x):
             df = pd.DataFrame({"x": x, "y": y}).dropna()
             if df.shape[0] <= 2:
@@ -870,7 +870,7 @@ class Entropy(AggregationPrimitive):
         self.dropna = dropna
         self.base = base
 
-    def get_function(self, series_library=Library.PANDAS, *, agg_type=Library.PANDAS):
+    def get_function(self, series_library=Library.PANDAS):
         def pd_entropy(s):
             distribution = s.value_counts(normalize=True, dropna=self.dropna)
             return stats.entropy(distribution, base=self.base)
