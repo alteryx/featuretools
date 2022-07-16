@@ -50,13 +50,13 @@ jobs:
         run: |
           cd unpacked_sdist
           pytest featuretools/ -n 2
-      - if: ${{ matrix.python_version == 3.7 && matrix.libraries == 'spark' }}
+      - if: ${{ matrix.libraries == 'spark' }}
         name: Run unit tests with code coverage
         run: |
           cd unpacked_sdist/
           coverage erase
           pytest featuretools/ -n 2 --cov=featuretools --cov-config=../pyproject.toml --cov-report=xml:../coverage.xml
-      - if: ${{ matrix.python_version == 3.7 && matrix.libraries == 'spark' }}
+      - if: ${{ matrix.libraries == 'spark' }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
