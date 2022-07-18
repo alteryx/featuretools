@@ -1136,21 +1136,6 @@ def test_handles_primitive_function_name_uniqueness(es):
         def get_function(self, series_library="pandas"):
             return np.sum
 
-    class Sum4WithAggType(AggregationPrimitive):
-        """Sums elements of a numeric or boolean feature.
-        Tests use of deprecated "agg_type" argument.
-        """
-
-        name = "sum4"
-        input_types = [ColumnSchema(semantic_tags={"numeric"})]
-        return_type = ColumnSchema(semantic_tags={"numeric"})
-        stack_on_self = False
-        stack_on_exclude = [Count]
-        default_value = 0
-
-        def get_function(self, agg_type="pandas"):
-            return np.sum
-
     f5 = Feature(
         es["log"].ww["value"],
         parent_dataframe_name="customers",
@@ -1166,16 +1151,11 @@ def test_handles_primitive_function_name_uniqueness(es):
         parent_dataframe_name="customers",
         primitive=Sum3,
     )
-    f8 = Feature(
-        es["log"].ww["value"],
-        parent_dataframe_name="customers",
-        primitive=Sum4WithAggType,
-    )
-    fm = calculate_feature_matrix(features=[f5, f6, f7, f8], entityset=es)
+
+    fm = calculate_feature_matrix(features=[f5, f6, f7], entityset=es)
     assert all(fm[f5.get_name()].sort_index() == value_sum)
     assert all(fm[f6.get_name()].sort_index() == value_sum)
     assert all(fm[f7.get_name()].sort_index() == value_sum)
-    assert all(fm[f8.get_name()].sort_index() == value_sum)
 
 
 # No order guarantees w/ Dask
@@ -1193,12 +1173,30 @@ def test_returns_order_of_instance_ids(pd_es):
 
 def test_calls_progress_callback(es):
     # call with all feature types. make sure progress callback calls sum to 1
+    class CountWithAggType(AggregationPrimitive):
+        """Sums elements of a numeric or boolean feature.
+        Tests use of deprecated "agg_type" argument.
+        """
+
+        name = "count"
+        input_types = [ColumnSchema(semantic_tags={"index"})]
+        stack_on_self = False
+        default_value = 0
+        compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+        description_template = "the number"
+
+        def get_function(self, agg_type="pandas"):
+            if agg_type in [Library.DASK, Library.SPARK]:
+                return "count"
+
+            return pd.Series.count
+
     identity = Feature(es["customers"].ww["age"])
     direct = Feature(es["cohorts"].ww["cohort_name"], "customers")
     agg = Feature(
         es["sessions"].ww["id"],
         parent_dataframe_name="customers",
-        primitive=Count,
+        primitive=CountWithAggType,
     )
     agg_apply = Feature(
         es["log"].ww["datetime"],
