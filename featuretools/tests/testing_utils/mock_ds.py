@@ -345,7 +345,11 @@ def make_semantic_tags():
 def make_logical_types(with_integer_time_index=False):
     region_logical_types = {"id": Categorical, "language": Categorical}
 
-    store_logical_types = {"id": Integer, "région_id": Categorical}
+    store_logical_types = {
+        "id": Integer,
+        "région_id": Categorical,
+        "num_square_feet": Double,
+    }
 
     product_logical_types = {
         "id": Categorical,
