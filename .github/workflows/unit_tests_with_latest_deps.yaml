@@ -45,18 +45,18 @@ jobs:
           JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           python -m pip install -e unpacked_sdist/[spark]
           python -m pip install -e unpacked_sdist/[test]
-      - if: ${{ matrix.libraries != 'spark' }}
+      - if: ${{ matrix.libraries != '3.8' || matrix.libraries != 'spark' }}
         name: Run unit tests (no code coverage)
         run: |
           cd unpacked_sdist
           pytest featuretools/ -n 2
-      - if: ${{ matrix.libraries == 'spark' }}
+      - if: ${{ matrix.libraries == '3.8' || matrix.libraries == 'spark' }}
         name: Run unit tests with code coverage
         run: |
           cd unpacked_sdist/
           coverage erase
           pytest featuretools/ -n 2 --cov=featuretools --cov-config=../pyproject.toml --cov-report=xml:../coverage.xml
-      - if: ${{ matrix.libraries == 'spark' }}
+      - if: ${{ matrix.libraries == '3.8' || matrix.libraries == 'spark' }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
