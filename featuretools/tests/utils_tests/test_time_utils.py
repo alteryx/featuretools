@@ -7,6 +7,7 @@ import pytest
 
 from featuretools.utils import convert_time_units, make_temporal_cutoffs
 from featuretools.utils.time_utils import (
+    calculate_trend,
     convert_datetime_to_floats,
     convert_timedelta_to_floats,
 )
@@ -129,7 +130,7 @@ def test_convert_time_units():
                     datetime(2010, 1, 1, 11, 57, 30),
                     datetime(2010, 1, 1, 11, 12),
                     datetime(2010, 1, 1, 11, 12, 15),
-                ]
+                ],
             ),
             pd.Series([21039105.0, 21039175.25, 21039117.5, 21039072.0, 21039072.25]),
         ),
@@ -137,7 +138,7 @@ def test_convert_time_units():
             pd.Series(
                 list(pd.date_range(start="2017-01-01", freq="1d", periods=3))
                 + list(pd.date_range(start="2017-01-10", freq="2d", periods=4))
-                + list(pd.date_range(start="2017-01-22", freq="1d", periods=7))
+                + list(pd.date_range(start="2017-01-22", freq="1d", periods=7)),
             ),
             pd.Series(
                 [
@@ -155,7 +156,7 @@ def test_convert_time_units():
                     17192.0,
                     17193.0,
                     17194.0,
-                ]
+                ],
             ),
         ),
     ],
@@ -176,7 +177,7 @@ def test_convert_datetime_floats(dt, expected_floats):
                     pd.Timedelta(48, "sec"),
                     pd.Timedelta(30, "min"),
                     pd.Timedelta(12, "hour"),
-                ]
+                ],
             ),
             pd.Series(
                 [
@@ -185,7 +186,7 @@ def test_convert_datetime_floats(dt, expected_floats):
                     0.0005555555555555556,
                     0.020833333333333332,
                     0.5,
-                ]
+                ],
             ),
         ),
         (
@@ -194,7 +195,7 @@ def test_convert_datetime_floats(dt, expected_floats):
                     timedelta(days=4),
                     timedelta(milliseconds=4000000),
                     timedelta(hours=2, seconds=49),
-                ]
+                ],
             ),
             pd.Series([4.0, 0.0462962962962963, 0.08390046296296297]),
         ),
@@ -203,3 +204,34 @@ def test_convert_datetime_floats(dt, expected_floats):
 def test_convert_timedelta_to_floats(td, expected_floats):
     actual_floats = convert_timedelta_to_floats(td)
     pd.testing.assert_series_equal(pd.Series(actual_floats), expected_floats)
+
+
+@pytest.mark.parametrize(
+    "series,expected_trends",
+    [
+        (
+            pd.Series(
+                data=[0, 5, 10],
+                index=pd.date_range(start="2019-01-01", freq="1D", periods=3),
+            ),
+            5.0,
+        ),
+        (
+            pd.Series(
+                data=[0, -5, 3],
+                index=pd.date_range(start="2019-01-01", freq="1D", periods=3),
+            ),
+            1.4999999999999998,
+        ),
+        (
+            pd.Series(
+                data=[1, 2, 4, 8, 16],
+                index=pd.date_range(start="2019-01-01", freq="1D", periods=5),
+            ),
+            3.6000000000000005,
+        ),
+    ],
+)
+def test_calculate_trend(series, expected_trends):
+    actual_trends = calculate_trend(series)
+    assert actual_trends == expected_trends
