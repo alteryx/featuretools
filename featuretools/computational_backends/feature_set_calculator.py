@@ -735,25 +735,18 @@ class FeatureSetCalculator(object):
             # save aggregable features for later
             for feature in features:
                 if _can_agg(f):
-
                     column_id = feature.base_features[0].get_name()
                     if column_id not in to_agg:
                         to_agg[column_id] = []
                     if isinstance(base_frame, dd.DataFrame):
-                        if (
-                            "series_library"
-                            in feature.primitive.get_function.__code__.co_varnames
-                        ):
+                        if feature.primitive.uses_series_library_argument():
                             func = feature.primitive.get_function(
                                 series_library=Library.DASK,
                             )
                         else:
                             func = feature.primitive.get_function(agg_type=Library.DASK)
                     elif is_instance(base_frame, ps, "DataFrame"):
-                        if (
-                            "series_library"
-                            in feature.primitive.get_function.__code__.co_varnames
-                        ):
+                        if feature.primitive.uses_series_library_argument():
                             func = feature.primitive.get_function(
                                 series_library=Library.SPARK,
                             )

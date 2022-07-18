@@ -7,6 +7,18 @@ class AggregationPrimitive(PrimitiveBase):
     base_of = None  # whitelist of primitives this prim can be input for
     base_of_exclude = None  # primitives this primitive can't be input for
     stack_on_self = True  # whether or not it can be in input_types of self
+    has_series_library = False
+    computed_has_series_library = False
+
+    @classmethod
+    def uses_series_library_argument(cls):
+        if cls.computed_has_series_library:
+            return cls.has_series_library
+        if "series_library" in cls.get_function.__code__.co_varnames:
+            cls.has_series_library = True
+        else:
+            cls.has_series_library = False
+        return cls.has_series_library
 
     def generate_name(
         self,
