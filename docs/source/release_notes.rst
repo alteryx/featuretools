@@ -12,6 +12,7 @@ Future Release
         * Add periods parameter to ``Diff`` and add ``DiffDatetime`` primitive (:pr:`2155`)
     * Fixes
         * Resolves Woodwork integration test failure and removes Python version check for codecov (:pr:`2182`)
+        * Add back code coverage runs with specific Python version (:pr:`2184`)
     * Changes
         * Drop Python 3.7 support (:pr:`2169`)
         * Add pre-commit hooks for linting (:pr:`2177`)
