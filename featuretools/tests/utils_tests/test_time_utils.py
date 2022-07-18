@@ -210,13 +210,19 @@ def test_convert_timedelta_to_floats(td, expected_floats):
     "series,expected_trends",
     [
         (
+            # using datetimes
             pd.Series(
                 data=[0, 5, 10],
-                index=pd.date_range(start="2019-01-01", freq="1D", periods=3),
+                index=[
+                    datetime(2019, 1, 1),
+                    datetime(2019, 1, 2),
+                    datetime(2019, 1, 3),
+                ],
             ),
             5.0,
         ),
         (
+            # using pd.Timestamp
             pd.Series(
                 data=[0, -5, 3],
                 index=pd.date_range(start="2019-01-01", freq="1D", periods=3),
