@@ -13,7 +13,7 @@ Future Release
     * Fixes
         * Resolves Woodwork integration test failure and removes Python version check for codecov (:pr:`2182`)
     * Changes
-        * Drop Python 3.7 support (:pr:`2169`)
+        * Drop Python 3.7 support (:pr:`2169`, :pr:`2186`)
         * Add pre-commit hooks for linting (:pr:`2177`)
     * Documentation Changes
         * Augment single table entry in DFS to include information about passing in a dictionary for `dataframes` argument (:pr:`2160`)
