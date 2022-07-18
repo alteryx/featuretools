@@ -1107,7 +1107,7 @@ def test_handles_primitive_function_name_uniqueness(es):
         stack_on_exclude = [Count]
         default_value = 0
 
-        def get_function(self, agg_type="pandas"):
+        def get_function(self, series_library="pandas"):
             return np.sum
 
     class Sum2(AggregationPrimitive):
@@ -1120,13 +1120,28 @@ def test_handles_primitive_function_name_uniqueness(es):
         stack_on_exclude = [Count]
         default_value = 0
 
-        def get_function(self, agg_type="pandas"):
+        def get_function(self, series_library="pandas"):
             return np.sum
 
     class Sum3(AggregationPrimitive):
         """Sums elements of a numeric or boolean feature."""
 
         name = "sum3"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
+        stack_on_self = False
+        stack_on_exclude = [Count]
+        default_value = 0
+
+        def get_function(self, series_library="pandas"):
+            return np.sum
+
+    class Sum4WithAggType(AggregationPrimitive):
+        """Sums elements of a numeric or boolean feature.
+        Tests use of deprecated "agg_type" argument.
+        """
+
+        name = "sum4"
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
         return_type = ColumnSchema(semantic_tags={"numeric"})
         stack_on_self = False
@@ -1151,10 +1166,16 @@ def test_handles_primitive_function_name_uniqueness(es):
         parent_dataframe_name="customers",
         primitive=Sum3,
     )
-    fm = calculate_feature_matrix(features=[f5, f6, f7], entityset=es)
+    f8 = Feature(
+        es["log"].ww["value"],
+        parent_dataframe_name="customers",
+        primitive=Sum4WithAggType,
+    )
+    fm = calculate_feature_matrix(features=[f5, f6, f7, f8], entityset=es)
     assert all(fm[f5.get_name()].sort_index() == value_sum)
     assert all(fm[f6.get_name()].sort_index() == value_sum)
     assert all(fm[f7.get_name()].sort_index() == value_sum)
+    assert all(fm[f8.get_name()].sort_index() == value_sum)
 
 
 # No order guarantees w/ Dask
@@ -1242,7 +1263,7 @@ def test_precalculated_features(pd_es):
         "This primitive should never be used because the features are precalculated"
     )
 
-    class ErrorPrim_series_library(AggregationPrimitive):
+    class ErrorPrim(AggregationPrimitive):
         """A primitive whose function raises an error."""
 
         name = "error_prim"
@@ -1255,62 +1276,38 @@ def test_precalculated_features(pd_es):
 
             return error
 
-    class ErrorPrim_agg_type(AggregationPrimitive):
-        """A primitive whose function raises an error."""
+    value = Feature(pd_es["log"].ww["value"])
+    agg = Feature(value, parent_dataframe_name="sessions", primitive=ErrorPrim)
+    agg2 = Feature(agg, parent_dataframe_name="customers", primitive=ErrorPrim)
+    direct = Feature(agg2, dataframe_name="sessions")
 
-        name = "error_prim"
-        input_types = [ColumnSchema(semantic_tags={"numeric"})]
-        return_type = ColumnSchema(semantic_tags={"numeric"})
+    # Set up a FeatureSet which knows which features are precalculated.
+    precalculated_feature_trie = Trie(default=set, path_constructor=RelationshipPath)
+    precalculated_feature_trie.get_node(direct.relationship_path).value.add(
+        agg2.unique_name(),
+    )
+    feature_set = FeatureSet(
+        [direct],
+        approximate_feature_trie=precalculated_feature_trie,
+    )
 
-        def get_function(self, agg_type="pandas"):
-            def error(s):
-                raise RuntimeError(error_msg)
+    # Fake precalculated data.
+    values = [0, 1, 2]
+    parent_fm = pd.DataFrame({agg2.get_name(): values})
+    precalculated_fm_trie = Trie(path_constructor=RelationshipPath)
+    precalculated_fm_trie.get_node(direct.relationship_path).value = parent_fm
 
-            return error
+    calculator = FeatureSetCalculator(
+        pd_es,
+        feature_set=feature_set,
+        precalculated_features=precalculated_fm_trie,
+    )
 
-    for ErrorPrim in [ErrorPrim_series_library, ErrorPrim_series_library]:
-        value = Feature(pd_es["log"].ww["value"])
-        agg = Feature(value, parent_dataframe_name="sessions", primitive=ErrorPrim)
-        agg2 = Feature(agg, parent_dataframe_name="customers", primitive=ErrorPrim)
-        direct = Feature(agg2, dataframe_name="sessions")
+    instance_ids = [0, 2, 3, 5]
+    fm = calculator.run(np.array(instance_ids))
 
-        # Set up a FeatureSet which knows which features are precalculated.
-        precalculated_feature_trie = Trie(
-            default=set,
-            path_constructor=RelationshipPath,
-        )
-        precalculated_feature_trie.get_node(direct.relationship_path).value.add(
-            agg2.unique_name(),
-        )
-        feature_set = FeatureSet(
-            [direct],
-            approximate_feature_trie=precalculated_feature_trie,
-        )
+    assert list(fm[direct.get_name()]) == [values[0], values[0], values[1], values[2]]
 
-        # Fake precalculated data.
-        values = [0, 1, 2]
-        parent_fm = pd.DataFrame({agg2.get_name(): values})
-        precalculated_fm_trie = Trie(path_constructor=RelationshipPath)
-        precalculated_fm_trie.get_node(direct.relationship_path).value = parent_fm
-
-        calculator = FeatureSetCalculator(
-            pd_es,
-            feature_set=feature_set,
-            precalculated_features=precalculated_fm_trie,
-        )
-
-        instance_ids = [0, 2, 3, 5]
-        fm = calculator.run(np.array(instance_ids))
-
-        assert list(fm[direct.get_name()]) == [
-            values[0],
-            values[0],
-            values[1],
-            values[2],
-        ]
-
-        # Calculating without precalculated features should error.
-        with pytest.raises(RuntimeError, match=error_msg):
-            FeatureSetCalculator(pd_es, feature_set=FeatureSet([direct])).run(
-                instance_ids,
-            )
+    # Calculating without precalculated features should error.
+    with pytest.raises(RuntimeError, match=error_msg):
+        FeatureSetCalculator(pd_es, feature_set=FeatureSet([direct])).run(instance_ids)
