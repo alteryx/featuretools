@@ -14,10 +14,9 @@ class AggregationPrimitive(PrimitiveBase):
     def uses_series_library_argument(cls):
         if cls.computed_has_series_library:
             return cls.has_series_library
-        if "series_library" in cls.get_function.__code__.co_varnames:
-            cls.has_series_library = True
-        else:
-            cls.has_series_library = False
+        cls.has_series_library = (
+            "series_library" in cls.get_function.__code__.co_varnames
+        )
         return cls.has_series_library
 
     def generate_name(
