@@ -60,9 +60,3 @@ for entry_point in pkg_resources.iter_entry_points("featuretools_plugin"):
         message += "For a full stack trace, set logging to debug."
         logger.warning(message.format(entry_point.name, entry_point.module_name))
         logger.debug(traceback.format_exc())
-
-if sys.version_info.major == 3 and sys.version_info.minor == 7:
-    warnings.warn(
-        "Featuretools may not support Python 3.7 in next non-bugfix release.",
-        FutureWarning,
-    )
