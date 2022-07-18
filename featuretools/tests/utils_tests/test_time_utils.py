@@ -236,6 +236,18 @@ def test_convert_timedelta_to_floats(td, expected_floats):
             ),
             3.6000000000000005,
         ),
+        (
+            # using pd.Timedelta with no change in time
+            pd.Series(
+                data=[1, 2, 3],
+                index=[
+                    pd.Timedelta(120000000),
+                    pd.Timedelta(120000000),
+                    pd.Timedelta(120000000),
+                ],
+            ),
+            0,
+        ),
     ],
 )
 def test_calculate_trend(series, expected_trends):
