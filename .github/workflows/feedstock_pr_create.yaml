@@ -52,20 +52,6 @@ jobs:
           add_to_test_requirements: "graphviz !=2.47.2"
       - name: View updated meta yaml
         run: cat featuretools-feedstock/recipe/meta.yaml
-      - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v4
-        with:
-          path: featuretools-feedstock/
-          token: ${{ secrets.AUTO_APPROVE_TOKEN }}
-          commit-message: "v1.12.0"
-          title: "v1.12.0"
-          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          body: "This is an auto-generated PR."
-          branch: conda-autocreate
-          branch-suffix: short-commit-hash
-          base: main
-          push-to-fork: machineAYX/featuretools-feedstock
       - name: View URL for release PR
         run: |
-          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+          echo "Pull Request URL - https://github.com/conda-forge/featuretools-feedstock/compare/main...machineAYX:${{ pull-request-head-sha }}"
