@@ -10,8 +10,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: "${{ github.action_repository  }}"
-          ref: "${{ github.event.release.tag_name }}"
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.release.tag_name }}
       - name: Pull latest from upstream for user forked feedstock
         run: |
           gh auth status
@@ -24,3 +24,12 @@ jobs:
         with:
           repository: machineAYX/featuretools-feedstock
           ref: main
+      - name: Run Minimum Dependency Generator
+        id: create-feedstock-meta
+        uses: alteryx/create-feedstock-meta-yaml@main
+        with:
+          project: featuretools
+          pypi_version: ${{ github.event.release.tag_name }}
+          setup_cfg_filepath: setup.cfg
+          meta_yaml_filepath: featuretools-feedstock/recipe/meta.yaml
+          test_reqs_to_add: "python-graphviz"
