@@ -37,7 +37,7 @@ jobs:
           ref: main
       - name: Run Create Feedstock meta YAML
         id: create-feedstock-meta
-        uses: alteryx/create-feedstock-meta-yaml@v2
+        uses: alteryx/create-feedstock-meta-yaml@v3
         with:
           project: "featuretools"
           pypi_version: "v1.12.0"
