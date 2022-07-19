@@ -24,6 +24,10 @@ jobs:
         with:
           repository: machineAYX/featuretools-feedstock
           ref: main
+      - uses: actions/checkout@v3
+        with:
+          repository: alteryx/create-feedstock-meta-yaml
+          ref: main
       - name: Run Minimum Dependency Generator
         id: create-feedstock-meta
         uses: alteryx/create-feedstock-meta-yaml@v1
