@@ -4,8 +4,11 @@ import logging
 import pkg_resources
 import traceback
 
-from featuretools.primitives.api import *  # noqa: F403
+from featuretools.primitives.core.aggregation_primitive import AggregationPrimitive
+from featuretools.primitives.core.transform_primitive import TransformPrimitive
 
+from featuretools.primitives.utils import get_aggregation_primitives, get_transform_primitives
+from .aggregation import *
 
 def _load_primitives():
     """Load in a list of primitives registered by other libraries into Featuretools.

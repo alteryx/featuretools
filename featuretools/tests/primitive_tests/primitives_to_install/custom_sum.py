@@ -1,6 +1,6 @@
 from woodwork.column_schema import ColumnSchema
 
-from featuretools.primitives.base import AggregationPrimitive
+from featuretools.primitives.core import AggregationPrimitive
 
 
 class CustomSum(AggregationPrimitive):

@@ -31,7 +31,7 @@ from featuretools.primitives import (
     TimeSinceLast,
     get_aggregation_primitives,
 )
-from featuretools.primitives.base import AggregationPrimitive
+from featuretools.primitives.core import AggregationPrimitive
 from featuretools.synthesis.deep_feature_synthesis import (
     DeepFeatureSynthesis,
     check_stacking,

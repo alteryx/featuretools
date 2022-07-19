@@ -10,7 +10,7 @@ from woodwork import list_logical_types, list_semantic_tags
 from woodwork.column_schema import ColumnSchema
 
 import featuretools
-from featuretools.primitives.base import (
+from featuretools.primitives.core import (
     AggregationPrimitive,
     PrimitiveBase,
     TransformPrimitive,
