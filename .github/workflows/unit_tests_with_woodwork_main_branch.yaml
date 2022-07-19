@@ -11,10 +11,7 @@ jobs:
       matrix:
         python_version: ["3.8", "3.9", "3.10"]
         libraries: ["core", "spark - misc", "spark - computational", "spark - entityset_1", "spark - entityset_2", "spark - primitives"]
-        # TODO: why this exclude?
-        # exclude:
-        #   - python_version: "3.10"
-        #     libraries: "spark"
+
     steps:
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -29,7 +26,7 @@ jobs:
           pip config --site set global.progress_bar off
           python -m pip install -U pip
           sudo apt update && sudo apt install -y graphviz
-      - if: ${{ matrix.libraries == 'spark' && matrix.python_version != '3.10' }}
+      - if: ${{ startsWith(matrix.libraries, 'spark')}}
         name: Install Woodwork & Featuretools with spark pkg - spark requirements
         run: |
           sudo apt install -y openjdk-11-jre-headless
