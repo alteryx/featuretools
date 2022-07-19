@@ -1,21 +1,28 @@
 on:
   pull_request:
     types: [opened, synchronize]
-
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'project library name'
+        required: true
+      pypi_version:
+        description: 'released PyPI version to use'
+        required: true
+        
 name: Create Feedstock PR
 jobs:
   create_feedstock_pr:
-    name: Pull latest in forked feestock, and create feedstock PR
+    name: Create Feedstock PR
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event.release.tag_name || github.event.inputs.pypi_version }}
       - name: Pull latest from upstream for user forked feedstock
         run: |
           gh auth status
-          rm -rf featuretools-feedstock
           gh repo fork conda-forge/featuretools-feedstock --clone
           gh repo sync machineAYX/featuretools-feedstock --branch main --source conda-forge/featuretools-feedstock --branch main --force
         env:
@@ -34,7 +41,7 @@ jobs:
         uses: ./alteryx/create-feedstock-meta-yaml/
         with:
           project: featuretools
-          pypi_version: ${{ github.event.release.tag_name }}
+          pypi_version: ${{ github.event.release.tag_name || github.event.inputs.pypi_version }}
           setup_cfg_filepath: setup.cfg
           meta_yaml_filepath: featuretools-feedstock/recipe/meta.yaml
-          test_reqs_to_add: "python-graphviz"
+          test_reqs_to_add: "python-graphviz >=0.8.4"
