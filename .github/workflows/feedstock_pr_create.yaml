@@ -73,7 +73,7 @@ jobs:
         run: |
           cd featuretools-feedstock/
           git push origin HEAD
-          gh pr create --base conda-forge/main --repo conda-forge/featuretools-feedstock --title "v1.12.0" --body "This is an auto-generated PR." --head machineAYX:conda-autocreate
+          gh pr create --base main --repo conda-forge/featuretools-feedstock --title "v1.12.0" --body "This is an auto-generated PR." --head machineAYX:conda-autocreate
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
       - name: Create Pull Request
