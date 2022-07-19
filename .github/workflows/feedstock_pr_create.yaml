@@ -51,7 +51,9 @@ jobs:
           meta_yaml_filepath: "featuretools-feedstock/recipe/meta.yaml"
           add_to_test_requirements: "graphviz !=2.47.2"
       - name: View updated meta yaml
-        run: cat featuretools-feedstock/recipe/meta.yaml
+        run: |
+          cat featuretools-feedstock/recipe/meta.yaml
+          git remote set-origin
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v4
@@ -67,4 +69,4 @@ jobs:
           base: main
       - name: View URL for release PR
         run: |
-          echo "Pull Request URL - https://github.com/conda-forge/featuretools-feedstock/compare/main...machineAYX:${{ steps.cpr.pull-request-head-sha }}"
+          echo "Pull Request URL - https://github.com/conda-forge/featuretools-feedstock/compare/main...machineAYX:${{ steps.cpr.outputs.pull-request-head-sha }}"  >> $GITHUB_STEP_SUMMARY
