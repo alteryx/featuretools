@@ -20,3 +20,7 @@ jobs:
           gh repo sync machineAYX/featuretools-feedstock --branch main --source conda-forge/featuretools-feedstock --branch main --force
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
+      - uses: actions/checkout@v3
+        with:
+          repository: machineAYX/featuretools-feedstock
+          ref: main
