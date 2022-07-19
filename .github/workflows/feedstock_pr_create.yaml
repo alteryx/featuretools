@@ -38,6 +38,7 @@ jobs:
           repository: machineAYX/featuretools-feedstock
           ref: main
           path: "./featuretools-feedstock"
+          fetch-depth: '0'
       - name: list files
         run: ls
       - name: Run Create Feedstock meta YAML
@@ -56,8 +57,12 @@ jobs:
       - name: add and commit
         run: |
           cd featuretools-feedstock/
-          git config user.name "machineAYX"
+          git config user.name "machineAYX Bot"
           git config user.email "<>"
+      - name: add and commit
+        run: |
+          cd featuretools-feedstock/
+          git status
           git branch -D conda-autocreate &>/dev/null
           git checkout -b conda-autocreate
         env:
