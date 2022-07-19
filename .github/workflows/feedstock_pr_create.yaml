@@ -4,39 +4,19 @@ on:
 
 name: Create Feedstock PR
 jobs:
-  pull_latest_main:
-    name: Pull latest in forked feestock
+  create_feedstock_pr:
+    name: Pull latest in forked feestock, and create feedstock PR
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash -l {0}
     steps:
-      - uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-update-conda: true
-          python-version: "3.8"
       - uses: actions/checkout@v3
         with:
-          repository: 'alteryx/featuretools'
+          repository: "${{ github.action_repository  }}"
           ref: "${{ github.event.release.tag_name }}"
-      - uses: actions/checkout@v3
-        with:
-          repository: 'alteryx/featuretools-feedstock'
-          ref: 'master'          
-      - name: Pull latest from upstream for alteryx forked feestock
+      - name: Pull latest from upstream for user forked feedstock
         run: |
           gh auth status
-          gh repo clone conda-forge/featuretools-feedstock --depth 1
-          gh repo sync machineAYX/featuretools-feedstock --branch main --source conda-forge/featuretools-feedstock --branch main
-        env:
-          GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
-      - name: Install conda_forge_tick
-        run: |
-          git clone --depth 1 https://github.com/regro/cf-scripts.git
-          cd cf-scripts
-          conda install -c conda-forge --file requirements/run
-      - name: Create branch
-        run: |
-          gh pr create --repo alteryx/featuretools-feedstock
+          rm -rf featuretools-feedstock
+          gh repo fork conda-forge/featuretools-feedstock --clone
+          gh repo sync machineAYX/featuretools-feedstock --branch main --source conda-forge/featuretools-feedstock --branch main --force
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
