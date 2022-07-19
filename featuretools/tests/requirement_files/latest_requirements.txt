@@ -4,9 +4,9 @@ dask==2022.7.0
 distributed==2022.7.0
 holidays==0.14.2
 numpy==1.23.1
-pandas==1.3.5
+pandas==1.4.3
 psutil==5.9.1
-pyspark==3.3.0
+pyspark==3.2.2
 scipy==1.8.1
 tqdm==4.64.0
-woodwork==0.16.4
+woodwork==0.17.0
