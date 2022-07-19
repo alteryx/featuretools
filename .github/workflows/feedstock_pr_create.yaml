@@ -50,32 +50,10 @@ jobs:
           setup_cfg_filepath: "featuretools/setup.cfg"
           meta_yaml_filepath: "featuretools-feedstock/recipe/meta.yaml"
           add_to_test_requirements: "graphviz !=2.47.2"
-      - name: view updated meta yaml
-        run: |
-          ls
-          cat featuretools-feedstock/recipe/meta.yaml
-      - name: git config
-        run: |
-          cd featuretools-feedstock/
-          git config user.name "machineAYX Bot"
-          git config user.email "<>"
-      - name: add and commit
-        run: |
-          cd featuretools-feedstock/
-          git branch -D conda-autocreate &>/dev/null || true
-          git status
-          git checkout -b conda-autocreate
-          git add recipe/meta.yaml
-          git commit -m "This is an auto-generated commit."
-        env:
-          GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
-      - name: push
-        run: |
-          cd featuretools-feedstock/
-          gh pr create --base main --repo conda-forge/featuretools-feedstock --title "v1.12.0" --body "This is an auto-generated PR." --head machineAYX:conda-autocreate
-        env:
-          GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
+      - name: View updated meta yaml
+        run: cat featuretools-feedstock/recipe/meta.yaml
       - name: Create Pull Request
+        id: cpr
         uses: peter-evans/create-pull-request@v4
         with:
           path: featuretools-feedstock/
@@ -87,4 +65,7 @@ jobs:
           branch: conda-autocreate
           branch-suffix: short-commit-hash
           base: main
-          push-to-fork: conda-forge/featuretools-feedstock
+          push-to-fork: machineAYX/featuretools-feedstock
+      - name: View URL for release PR
+        run: |
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
