@@ -4,7 +4,7 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, Double
 
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
-from featuretools.primitives.rolling_primitive_utils import (
+from featuretools.primitives.transform.rolling.utils import (
     apply_roll_with_offset_gap,
     roll_series_with_gap,
 )
