@@ -68,4 +68,4 @@ jobs:
           push-to-fork: machineAYX/featuretools-feedstock
       - name: View URL for release PR
         run: |
-          echo "Pull Request URL - https://github.com/conda-forge/featuretools-feedstock/compare/main...machineAYX:${{ pull-request-head-sha }}"
+          echo "Pull Request URL - https://github.com/conda-forge/featuretools-feedstock/compare/main...machineAYX:${{ steps.cpr.pull-request-head-sha }}"
