@@ -9,6 +9,15 @@ from featuretools.primitives.core.transform_primitive import TransformPrimitive
 
 from featuretools.primitives.utils import get_aggregation_primitives, get_transform_primitives
 from .aggregation import *
+from featuretools.primitives.utils import (
+    get_aggregation_primitives,
+    get_default_aggregation_primitives,
+    get_default_transform_primitives,
+    get_transform_primitives,
+    list_primitives,
+    summarize_primitives,
+)
+from .transform import *
 
 def _load_primitives():
     """Load in a list of primitives registered by other libraries into Featuretools.

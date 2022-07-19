@@ -16,7 +16,7 @@ from featuretools.feature_base import (
     TransformFeature,
 )
 from featuretools.feature_base.utils import is_valid_input
-from featuretools.primitives.base import (
+from featuretools.primitives.core import (
     AggregationPrimitive,
     PrimitiveBase,
     TransformPrimitive,

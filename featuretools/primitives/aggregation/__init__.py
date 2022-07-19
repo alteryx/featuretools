@@ -1,1 +1,1 @@
-from standard import *
+from .standard import *

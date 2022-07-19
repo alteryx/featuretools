@@ -5,7 +5,7 @@ from featuretools import primitives
 from featuretools.entityset.relationship import Relationship, RelationshipPath
 from featuretools.entityset.timedelta import Timedelta
 from featuretools.feature_base.utils import is_valid_input
-from featuretools.primitives.base import (
+from featuretools.primitives.core import (
     AggregationPrimitive,
     PrimitiveBase,
     TransformPrimitive,
