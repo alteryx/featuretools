@@ -69,3 +69,8 @@ jobs:
       - name: View URL for release PR
         run: |
           echo "Pull Request URL - https://github.com/conda-forge/featuretools-feedstock/compare/main...machineAYX:${{ steps.cpr.outputs.pull-request-head-sha }}"  >> $GITHUB_STEP_SUMMARY
+      - name: Raise PR to upstream feedstock
+        run: |
+          gh pr create --repo conda-forge/featuretools-feedstock --head machineAXY:steps.cpr.outputs.pull-request-head-sha --base main
+        env:
+          GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
