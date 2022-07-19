@@ -72,6 +72,6 @@ jobs:
       - name: Raise PR to upstream feedstock
         run: |
           cd featuretools-feedstock/
-          gh pr create --repo "conda-forge/featuretools-feedstock" --head "machineAXY/conda-autocreate-fc47d8f" --base "conda-forge/main" --body "hello" --title "test"
+          gh pr create --repo "conda-forge:featuretools-feedstock" --head "machineAXY/conda-autocreate-fc47d8f" --base "conda-forge:main" --body "hello" --title "test"
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
