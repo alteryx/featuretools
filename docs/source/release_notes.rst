@@ -5,9 +5,9 @@ Release Notes
 Future Release
 ==============
     .. warning::
-        Aggregations Primitives change the name of ``agg_type`` parameter
-        in ``get_function`` to ``series_library``.
-        This release of Featuretools will not support Python 3.7
+        * This release of Featuretools will not support Python 3.7
+        * The ``agg_type`` parameter in ``get_function`` for Aggregation Primitives has been deprecated and the ``series_library`` parameter should be used intead. ``agg_type`` will be removed in a future release.
+
         
     * Enhancements
         * Add series_library argument to transform primitives (:pr:`2111`)
