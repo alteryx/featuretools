@@ -53,7 +53,6 @@ jobs:
       - name: View updated meta yaml
         run: |
           cat featuretools-feedstock/recipe/meta.yaml
-          git remote set-origin
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v4
