@@ -48,7 +48,7 @@ jobs:
           pypi_version: "v1.12.0"
           setup_cfg_filepath: "featuretools/setup.cfg"
           meta_yaml_filepath: "featuretools-feedstock/recipe/meta.yaml"
-          add_to_test_requirements: "python-graphviz >=0.8.4"
+          add_to_test_requirements: "graphviz !=2.47.2"
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
@@ -61,3 +61,4 @@ jobs:
           branch: conda-autocreate
           branch-suffix: short-commit-hash
           base: main
+          push-to-fork: conda-forge/featuretools-feedstock
