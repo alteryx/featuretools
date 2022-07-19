@@ -20,6 +20,7 @@ Future Release
         * Augment single table entry in DFS to include information about passing in a dictionary for `dataframes` argument (:pr:`2160`)
     * Testing Changes
        * Standardize imports across test files to simplify accessing featuretools functions (:pr:`2166`)
+       * Split spark tests into multiple CI jobs to speed up runtime (:pr:`2183`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`ozzieD`
