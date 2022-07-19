@@ -13,10 +13,18 @@ jobs:
     name: Create Feedstock PR
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - if: ${{ github.event.release.tag_name }}
+        name: Checkout published version
+        uses: actions/checkout@v3
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.release.tag_name || github.event.inputs.pypi_version }}
+          ref: ${{ github.event.release.tag_name }}
+      - if: ${{ github.event.inputs.pypi_version }}
+        name: Checkout inputted version
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.inputs.pypi_version }}
       - name: Pull latest from upstream for user forked feedstock
         run: |
           gh auth status
@@ -28,17 +36,12 @@ jobs:
         with:
           repository: machineAYX/featuretools-feedstock
           ref: main
-      - uses: actions/checkout@v3
-        with:
-          repository: alteryx/create-feedstock-meta-yaml
-          ref: main
-          token: ${{ secrets.AUTO_APPROVE_TOKEN }}
       - name: Run Create Feedstock meta YAML
         id: create-feedstock-meta
         uses: alteryx/create-feedstock-meta-yaml@v2
         with:
-          project: featuretools
+          project: "featuretools"
           pypi_version: "v1.12.0"
-          setup_cfg_filepath: setup.cfg
-          meta_yaml_filepath: featuretools-feedstock/recipe/meta.yaml
+          setup_cfg_filepath: "setup.cfg"
+          meta_yaml_filepath: "featuretools-feedstock/recipe/meta.yaml"
           add_to_test_requirements: "python-graphviz >=0.8.4"
