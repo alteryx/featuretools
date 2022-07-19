@@ -1063,11 +1063,13 @@ def check_stacking(primitive, inputs):
             if isinstance(f.primitive, tuple(primitive.stack_on)):
                 continue
         else:
+            raise ValueError("uncovered 1")
             continue
         if f.primitive.base_of is not None:
             if primitive.__class__ in f.primitive.base_of:
                 continue
         else:
+            raise ValueError("uncovered 2")
             continue
         return False
 
