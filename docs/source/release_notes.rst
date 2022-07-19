@@ -10,6 +10,7 @@ Future Release
     * Enhancements
         * Add ``IsWorkingHours`` and ``IsLunchTime`` transform primitives (:pr:`2130`)
         * Add periods parameter to ``Diff`` and add ``DiffDatetime`` primitive (:pr:`2155`)
+        * Add ``RollingTrend`` primitive (:pr:`2170`)
     * Fixes
         * Resolves Woodwork integration test failure and removes Python version check for codecov (:pr:`2182`)
     * Changes
