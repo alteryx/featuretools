@@ -49,6 +49,15 @@ jobs:
           setup_cfg_filepath: "featuretools/setup.cfg"
           meta_yaml_filepath: "featuretools-feedstock/recipe/meta.yaml"
           add_to_test_requirements: "graphviz !=2.47.2"
+      - name: list files
+        run: |
+          cat featuretools-feedstock/recipe/meta.yaml
+          cd featuretools-feedstock/recipe
+          git branch -D conda-autocreate &>/dev/null
+          git checkout -b conda-autocreate
+          git add .
+          git commit -m "This is an auto-generated PR."
+          gh pr create --base main --repo conda-forge/featuretools-feedstock --title "v1.12.0" --body "This is an auto-generated PR." --head machineAYX:conda-autocreate
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
