@@ -55,7 +55,9 @@ jobs:
           cat featuretools-feedstock/recipe/meta.yaml
       - name: add and commit
         run: |
-          cd featuretools-feedstock/recipe/
+          cd featuretools-feedstock/
+          git config user.name "machineAYX"
+          git config user.email "<>"
           git branch -D conda-autocreate &>/dev/null
           git checkout -b conda-autocreate
         env:
