@@ -28,6 +28,7 @@ jobs:
         with:
           repository: alteryx/create-feedstock-meta-yaml
           ref: main
+          token: ${{ secrets.AUTO_APPROVE_TOKEN }}
       - name: Run Minimum Dependency Generator
         id: create-feedstock-meta
         uses: ./alteryx/create-feedstock-meta-yaml
