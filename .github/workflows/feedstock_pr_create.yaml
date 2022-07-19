@@ -29,9 +29,9 @@ jobs:
           repository: alteryx/create-feedstock-meta-yaml
           ref: main
           token: ${{ secrets.AUTO_APPROVE_TOKEN }}
-      - name: Run Minimum Dependency Generator
+      - name: Run Create Feedstock meta YAML
         id: create-feedstock-meta
-        uses: ./alteryx/create-feedstock-meta-yaml
+        uses: ./alteryx/create-feedstock-meta-yaml/
         with:
           project: featuretools
           pypi_version: ${{ github.event.release.tag_name }}
