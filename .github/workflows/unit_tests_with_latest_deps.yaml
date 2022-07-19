@@ -45,7 +45,7 @@ jobs:
           JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           python -m pip install -e unpacked_sdist/[spark]
           python -m pip install -e unpacked_sdist/[test]
-      - if: ${{ matrix.python_version == 3.8 && startsWith(matrix.libraries, 'spark') }}
+      - if: ${{ matrix.python_version == 3.10 && startsWith(matrix.libraries, 'spark') }}
         name: Generate coverage args
         run: echo "coverage_args=--cov=featuretools --cov-config=../pyproject.toml --cov-report=xml:../coverage.xml" >> $GITHUB_ENV
       - if: ${{ env.coverage_args }}
