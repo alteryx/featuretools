@@ -26,7 +26,7 @@ jobs:
           ref: main
       - name: Run Minimum Dependency Generator
         id: create-feedstock-meta
-        uses: alteryx/create-feedstock-meta-yaml@latest
+        uses: alteryx/create-feedstock-meta-yaml@v1
         with:
           project: featuretools
           pypi_version: ${{ github.event.release.tag_name }}
