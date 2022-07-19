@@ -51,7 +51,7 @@ jobs:
           add_to_test_requirements: "graphviz !=2.47.2"
       - name: view updated meta yaml
         run: cat featuretools-feedstock/recipe/meta.yaml
-      - name: view updated meta yaml
+      - name: add and commit
         run: |
           cd featuretools-feedstock/recipe/
           git branch -D conda-autocreate &>/dev/null
@@ -59,6 +59,8 @@ jobs:
           git add .
           git commit -m "This is an auto-generated PR."
           gh pr create --base main --repo conda-forge/featuretools-feedstock --title "v1.12.0" --body "This is an auto-generated PR." --head machineAYX:conda-autocreate
+        env:
+          GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
