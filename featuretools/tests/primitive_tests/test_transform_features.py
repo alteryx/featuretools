@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean, Datetime, Integer, Ordinal
+from woodwork.logical_types import Boolean, Datetime, Double, Integer, Ordinal
 
 from featuretools import (
     AggregationFeature,
@@ -771,7 +771,12 @@ def pd_boolean_mult_es():
         },
     )
 
-    es.add_dataframe(dataframe_name="test", dataframe=df, index="index")
+    es.add_dataframe(
+        dataframe_name="test",
+        dataframe=df,
+        index="index",
+        logical_types={"numeric": Double},
+    )
 
     return es
 

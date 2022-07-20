@@ -6,7 +6,7 @@ holidays==0.13
 numpy==1.21.0
 pandas==1.3.0
 psutil==5.6.6
-pyspark==3.2.0
 scipy==1.3.3
 tqdm==4.32.0
 woodwork==0.16.2
+woodwork[spark]==0.16.2

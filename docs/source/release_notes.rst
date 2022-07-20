@@ -2,25 +2,39 @@
 
 Release Notes
 -------------
-Future Release
-==============
+
+.. Future Release
+     ==============
+       * Enhancements
+       * Fixes
+       * Changes
+       * Documentation Changes
+       * Testing Changes
+
+   .. Thanks to the following people for contributing to this release:
+
+v1.12.0 Jul 19, 2022
+====================
     .. warning::
         This release of Featuretools will not support Python 3.7
 
     * Enhancements
         * Add ``IsWorkingHours`` and ``IsLunchTime`` transform primitives (:pr:`2130`)
         * Add periods parameter to ``Diff`` and add ``DiffDatetime`` primitive (:pr:`2155`)
+        * Add ``RollingTrend`` primitive (:pr:`2170`)
     * Fixes
+        * Resolves Woodwork integration test failure and removes Python version check for codecov (:pr:`2182`)
     * Changes
-        * Drop Python 3.7 support (:pr:`2169`)
+        * Drop Python 3.7 support (:pr:`2169`, :pr:`2186`)
         * Add pre-commit hooks for linting (:pr:`2177`)
     * Documentation Changes
         * Augment single table entry in DFS to include information about passing in a dictionary for `dataframes` argument (:pr:`2160`)
     * Testing Changes
-       * Standardize imports across test files to simplify accessing featuretools functions (:pr:`2166`)
+        * Standardize imports across test files to simplify accessing featuretools functions (:pr:`2166`)
+        * Split spark tests into multiple CI jobs to speed up runtime (:pr:`2183`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`sbadithe`, :user:`ozzieD`
+    :user:`dvreed77`, :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`
 
 v1.11.1 Jul 5, 2022
 ===================

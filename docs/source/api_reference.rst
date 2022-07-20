@@ -157,6 +157,7 @@ Rolling Transform Primitives
     RollingMean
     RollingMin
     RollingSTD
+    RollingTrend
 
 NaturalLanguage Transform Primitives
 ************************************
