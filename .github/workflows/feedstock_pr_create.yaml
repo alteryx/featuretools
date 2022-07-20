@@ -61,4 +61,6 @@ jobs:
           git add recipe/meta.yaml
           git commit -m "auto commit"
           git push origin main
-          "Conda Feedstock Pull Request: https://github.com/machineAYX/featuretools-feedstock/pull/new/main" >> $GITHUB_STEP_SUMMARY
+      - name: Adding URL to job output
+        run: |
+          echo "Conda Feedstock Pull Request: https://github.com/machineAYX/featuretools-feedstock/pull/new/main" >> $GITHUB_STEP_SUMMARY
