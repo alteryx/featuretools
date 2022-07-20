@@ -31,6 +31,7 @@ jobs:
           gh auth status
           gh repo fork conda-forge/featuretools-feedstock --clone
           gh repo sync machineAYX/featuretools-feedstock --branch main --source conda-forge/featuretools-feedstock --branch main --force
+          gh repo sync machineAYX/featuretools-feedstock --branch main --source conda-forge/featuretools-feedstock --branch conda-create-test --force
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
       - uses: actions/checkout@v3
@@ -59,12 +60,7 @@ jobs:
           git config --global user.name "machineAYX Bot"
           git remote set-url origin https://${{ secrets.AUTO_APPROVE_TOKEN }}@github.com/machineAYX/featuretools-feedstock
           git checkout -b conda-create-test
-          git add .
+          git add recipe/meta.yaml
           git commit -m "auto commit"
           git push origin conda-create-test
-      - name: Raise PR to upstream feedstock
-        run: |
-          cd featuretools-feedstock/
-          gh pr create --repo "conda-forge/featuretools-feedstock" --head "machineAXY/featuretools-feedstock:conda-create-test" --base "main" --body "hello" --title "test"
-        env:
-          GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
+          "Conda Feedstock Pull Request: https://github.com/machineAYX/featuretools-feedstock/pull/new/conda-create-test" >> $GITHUB_STEP_SUMMARY
