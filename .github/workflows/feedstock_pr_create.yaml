@@ -54,6 +54,8 @@ jobs:
         run: |
           cat featuretools-feedstock/recipe/meta.yaml
           cd featuretools-feedstock
+          git config --global user.email "machineOSS@alteryx.com"
+          git config --global user.name "machineAYX Bot"
           git checkout -b conda-create-test
           git add .
           git commit -m "auto commit"
