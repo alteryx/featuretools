@@ -11,8 +11,7 @@ jobs:
     name: Create Feedstock PR
     runs-on: ubuntu-latest
     steps:
-      - if: ${{ github.event.inputs.pypi_version }}
-        name: Checkout inputted version
+      - name: Checkout inputted version
         uses: actions/checkout@v3
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
