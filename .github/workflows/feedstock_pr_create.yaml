@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: "v1.12.0"
+          ref: "v1.11.1"
           path: "./featuretools"
       - if: ${{ github.event.inputs.pypi_version }}
         name: Checkout inputted version
@@ -46,7 +46,7 @@ jobs:
         uses: alteryx/create-feedstock-meta-yaml@v3
         with:
           project: "featuretools"
-          pypi_version: "v1.12.0"
+          pypi_version: "v1.11.1"
           setup_cfg_filepath: "featuretools/setup.cfg"
           meta_yaml_filepath: "featuretools-feedstock/recipe/meta.yaml"
           add_to_test_requirements: "graphviz !=2.47.2"
