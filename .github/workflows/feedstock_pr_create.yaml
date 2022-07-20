@@ -54,6 +54,7 @@ jobs:
         run: |
           cat featuretools-feedstock/recipe/meta.yaml
           cd featuretools-feedstock
+          git config --unset-all http.https://github.com/.extraheader
           git config --global user.email "machineOSS@alteryx.com"
           git config --global user.name "machineAYX Bot"
           git remote set-url origin https://${{ secrets.AUTO_APPROVE_TOKEN }}@github.com/machineAYX/featuretools-feedstock
