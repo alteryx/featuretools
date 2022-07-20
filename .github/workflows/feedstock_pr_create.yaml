@@ -56,6 +56,7 @@ jobs:
           cd featuretools-feedstock
           git config --global user.email "machineOSS@alteryx.com"
           git config --global user.name "machineAYX Bot"
+          git remote set-url origin https://${{ secrets.AUTO_APPROVE_TOKEN }}@github.com/machineAYX/featuretools-feedstock
           git checkout -b conda-create-test
           git add .
           git commit -m "auto commit"
