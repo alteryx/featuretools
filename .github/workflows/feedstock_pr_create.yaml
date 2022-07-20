@@ -53,25 +53,14 @@ jobs:
       - name: View updated meta yaml
         run: |
           cat featuretools-feedstock/recipe/meta.yaml
-      - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v4
-        with:
-          path: featuretools-feedstock/
-          token: ${{ secrets.AUTO_APPROVE_TOKEN }}
-          commit-message: "v1.12.0"
-          title: "v1.12.0"
-          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          body: "This is an auto-generated PR."
-          branch: conda-autocreate
-          branch-suffix: short-commit-hash
-          base: main
-      - name: View URL for release PR
-        run: |
-          echo "Pull Request URL - https://github.com/conda-forge/featuretools-feedstock/compare/main...machineAYX:${{ steps.cpr.outputs.pull-request-head-sha }}"  >> $GITHUB_STEP_SUMMARY
+          cd featuretools-feedstock
+          git checkout -b conda-create-test
+          git add .
+          git commit -m "auto commit"
+          git push origin conda-create-test
       - name: Raise PR to upstream feedstock
         run: |
           cd featuretools-feedstock/
-          gh pr create --repo "conda-forge/featuretools-feedstock" --head "machineAXY/conda-autocreate-fc47d8f" --base "conda-forge:main" --body "hello" --title "test"
+          gh pr create --repo "conda-forge/featuretools-feedstock" --head "machineAXY/featuretools-feedstock:conda-create-test" --base "main" --body "hello" --title "test"
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
