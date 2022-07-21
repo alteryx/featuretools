@@ -1,20 +1,11 @@
 import numpy as np
-import pandas as pd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import (
-    URL,
-    Boolean,
-    BooleanNullable,
-    Categorical,
-    Datetime,
+
     Double,
-    EmailAddress,
-    NaturalLanguage,
-    Timedelta,
 )
 
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
-from featuretools.utils.common_tld_utils import COMMON_TLDS
 from featuretools.utils.gen_utils import Library
 
 

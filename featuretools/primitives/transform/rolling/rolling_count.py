@@ -8,7 +8,6 @@ from featuretools.primitives.transform.rolling.utils import (
     apply_roll_with_offset_gap,
     roll_series_with_gap,
 )
-from featuretools.utils import calculate_trend
 
 
 class RollingCount(TransformPrimitive):

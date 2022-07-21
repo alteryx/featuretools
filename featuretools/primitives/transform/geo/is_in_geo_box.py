@@ -1,7 +1,6 @@
 import numpy as np
-import pandas as pd
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import BooleanNullable, Double, LatLong
+from woodwork.logical_types import BooleanNullable, LatLong
 
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
 from featuretools.primitives.utils import _haversine_calculate
