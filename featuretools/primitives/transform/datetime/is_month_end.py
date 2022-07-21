@@ -1,18 +1,7 @@
-import holidays
-import numpy as np
-import pandas as pd
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import (
-    AgeFractional,
-    BooleanNullable,
-    Categorical,
-    Datetime,
-    Ordinal,
-)
+from woodwork.logical_types import BooleanNullable, Datetime
 
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
-from featuretools.primitives.utils import HolidayUtil
-from featuretools.utils import convert_time_units
 from featuretools.utils.gen_utils import Library
 
 
