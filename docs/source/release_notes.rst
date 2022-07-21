@@ -2,8 +2,21 @@
 
 Release Notes
 -------------
+
 Future Release
 ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+        * Limit performance tests to python 3.8 (:pr:`2198`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`rwedge`
+
+v1.12.0 Jul 19, 2022
+====================
     .. warning::
         This release of Featuretools will not support Python 3.7
 
@@ -20,10 +33,11 @@ Future Release
     * Documentation Changes
         * Augment single table entry in DFS to include information about passing in a dictionary for `dataframes` argument (:pr:`2160`)
     * Testing Changes
-       * Standardize imports across test files to simplify accessing featuretools functions (:pr:`2166`)
+        * Standardize imports across test files to simplify accessing featuretools functions (:pr:`2166`)
+        * Split spark tests into multiple CI jobs to speed up runtime (:pr:`2183`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`ozzieD`
+    :user:`dvreed77`, :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`
 
 v1.11.1 Jul 5, 2022
 ===================
