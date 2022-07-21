@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-     ==============
-       * Enhancements
-       * Fixes
-       * Changes
-       * Documentation Changes
-       * Testing Changes
+Future Release
+==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+        * Limit performance tests to python 3.8 (:pr:`2198`)
 
-   .. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`rwedge`
 
 v1.12.0 Jul 19, 2022
 ====================
