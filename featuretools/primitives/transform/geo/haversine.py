@@ -6,6 +6,7 @@ from woodwork.logical_types import BooleanNullable, Double, LatLong
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
 from featuretools.primitives.utils import _haversine_calculate
 
+
 class Haversine(TransformPrimitive):
     """Calculates the approximate haversine distance between two LatLong columns.
 

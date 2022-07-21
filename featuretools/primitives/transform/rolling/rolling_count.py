@@ -10,6 +10,7 @@ from featuretools.primitives.transform.rolling.utils import (
 )
 from featuretools.utils import calculate_trend
 
+
 class RollingCount(TransformPrimitive):
     """Determines a rolling count of events over a given window.
 

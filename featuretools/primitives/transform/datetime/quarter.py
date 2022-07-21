@@ -15,6 +15,7 @@ from featuretools.primitives.utils import HolidayUtil
 from featuretools.utils import convert_time_units
 from featuretools.utils.gen_utils import Library
 
+
 class Quarter(TransformPrimitive):
     """Determines the quarter a datetime column falls into (1, 2, 3, 4)
 

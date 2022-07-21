@@ -12,11 +12,12 @@ from woodwork.logical_types import (
     Double,
     IntegerNullable,
 )
+
 from featuretools.primitives.aggregation.standard.count import Count
 from featuretools.primitives.core.aggregation_primitive import AggregationPrimitive
-
 from featuretools.utils import convert_time_units
 from featuretools.utils.gen_utils import Library
+
 
 class Sum(AggregationPrimitive):
     """Calculates the total addition, ignoring `NaN`.

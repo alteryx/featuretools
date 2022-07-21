@@ -4,6 +4,7 @@ from woodwork.logical_types import IntegerNullable
 
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
 
+
 class CumMin(TransformPrimitive):
     """Calculates the cumulative minimum.
 

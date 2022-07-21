@@ -7,6 +7,7 @@ from woodwork.logical_types import Boolean, BooleanNullable, Datetime, Ordinal
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
 from featuretools.utils.gen_utils import Library
 
+
 class GreaterThanScalar(TransformPrimitive):
     """Determines if values are greater than a given scalar.
 

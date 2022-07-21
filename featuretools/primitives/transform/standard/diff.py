@@ -17,6 +17,7 @@ from featuretools.primitives.core.transform_primitive import TransformPrimitive
 from featuretools.utils.common_tld_utils import COMMON_TLDS
 from featuretools.utils.gen_utils import Library
 
+
 class Diff(TransformPrimitive):
     """Compute the difference between the value in a list and the
     previous value in that list.

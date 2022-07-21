@@ -12,10 +12,11 @@ from woodwork.logical_types import (
     Double,
     IntegerNullable,
 )
-from featuretools.primitives.core.aggregation_primitive import AggregationPrimitive
 
+from featuretools.primitives.core.aggregation_primitive import AggregationPrimitive
 from featuretools.utils import convert_time_units
 from featuretools.utils.gen_utils import Library
+
 
 class Any(AggregationPrimitive):
     """Determines if any value is 'True' in a list.

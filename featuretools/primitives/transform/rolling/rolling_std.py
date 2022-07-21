@@ -10,6 +10,7 @@ from featuretools.primitives.transform.rolling.utils import (
 )
 from featuretools.utils import calculate_trend
 
+
 class RollingSTD(TransformPrimitive):
     """Calculates the standard deviation of entries over a given window.
 

@@ -7,6 +7,7 @@ from woodwork.logical_types import Boolean, BooleanNullable, Datetime, Ordinal
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
 from featuretools.utils.gen_utils import Library
 
+
 class ModuloByFeature(TransformPrimitive):
     """Return the modulo of a scalar by each element in the list.
 

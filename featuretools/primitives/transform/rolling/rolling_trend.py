@@ -7,6 +7,7 @@ from featuretools.primitives.core.transform_primitive import TransformPrimitive
 from featuretools.primitives.transform.rolling.utils import roll_series_with_gap
 from featuretools.utils import calculate_trend
 
+
 class RollingTrend(TransformPrimitive):
     """Calculates the trend of a given window of entries of a column over time.
 

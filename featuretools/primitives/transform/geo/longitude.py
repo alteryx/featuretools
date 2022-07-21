@@ -6,6 +6,7 @@ from woodwork.logical_types import BooleanNullable, Double, LatLong
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
 from featuretools.primitives.utils import _haversine_calculate
 
+
 class Longitude(TransformPrimitive):
     """Returns the second tuple value in a list of LatLong tuples.
        For use with the LatLong logical type.

@@ -15,6 +15,7 @@ from featuretools.primitives.utils import HolidayUtil
 from featuretools.utils import convert_time_units
 from featuretools.utils.gen_utils import Library
 
+
 class TimeSincePrevious(TransformPrimitive):
     """Compute the time since the previous entry in a list.
 

@@ -7,6 +7,7 @@ from woodwork.logical_types import Boolean, BooleanNullable, Datetime, Ordinal
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
 from featuretools.utils.gen_utils import Library
 
+
 class MultiplyNumericBoolean(TransformPrimitive):
     """Element-wise multiplication of a numeric list with a boolean list.
 

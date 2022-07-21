@@ -10,6 +10,7 @@ from featuretools.primitives.transform.rolling.utils import (
 )
 from featuretools.utils import calculate_trend
 
+
 class RollingMin(TransformPrimitive):
     """Determines the minimum of entries over a given window.
 

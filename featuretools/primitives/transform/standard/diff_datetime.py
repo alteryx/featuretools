@@ -18,6 +18,7 @@ from featuretools.primitives.transform.standard.diff import Diff
 from featuretools.utils.common_tld_utils import COMMON_TLDS
 from featuretools.utils.gen_utils import Library
 
+
 class DiffDatetime(Diff):
     """Compute the timedelta between a datetime in a list and the
     previous datetime in that list.

@@ -15,6 +15,7 @@ from featuretools.primitives.utils import HolidayUtil
 from featuretools.utils import convert_time_units
 from featuretools.utils.gen_utils import Library
 
+
 class DistanceToHoliday(TransformPrimitive):
     """Computes the number of days before or after a given holiday.
 

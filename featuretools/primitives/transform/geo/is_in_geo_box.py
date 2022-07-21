@@ -6,6 +6,7 @@ from woodwork.logical_types import BooleanNullable, Double, LatLong
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
 from featuretools.primitives.utils import _haversine_calculate
 
+
 class IsInGeoBox(TransformPrimitive):
     """Determines if coordinates are inside a box defined by two
     corner coordinate points.

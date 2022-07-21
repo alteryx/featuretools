@@ -10,6 +10,7 @@ from featuretools.primitives.transform.rolling.utils import (
 )
 from featuretools.utils import calculate_trend
 
+
 class RollingMean(TransformPrimitive):
     """Calculates the mean of entries over a given window.
 

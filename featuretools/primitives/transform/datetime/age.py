@@ -15,6 +15,7 @@ from featuretools.primitives.utils import HolidayUtil
 from featuretools.utils import convert_time_units
 from featuretools.utils.gen_utils import Library
 
+
 class Age(TransformPrimitive):
     """Calculates the age in years as a floating point number given a
        date of birth.

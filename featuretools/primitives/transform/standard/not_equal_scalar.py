@@ -7,6 +7,7 @@ from woodwork.logical_types import Boolean, BooleanNullable, Datetime, Ordinal
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
 from featuretools.utils.gen_utils import Library
 
+
 class NotEqualScalar(TransformPrimitive):
     """Determines if values in a list are not equal to a given scalar.
 

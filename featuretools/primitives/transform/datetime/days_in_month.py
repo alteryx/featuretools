@@ -15,6 +15,7 @@ from featuretools.primitives.utils import HolidayUtil
 from featuretools.utils import convert_time_units
 from featuretools.utils.gen_utils import Library
 
+
 class DaysInMonth(TransformPrimitive):
     """Determines the day of the month from a datetime.
 

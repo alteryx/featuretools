@@ -4,7 +4,6 @@ import pytest
 
 from featuretools import list_primitives, summarize_primitives
 from featuretools.primitives import (
-    PrimitiveBase,
     AddNumericScalar,
     Age,
     Count,
@@ -25,6 +24,7 @@ from featuretools.primitives import (
     NumUnique,
     NumWords,
     PercentTrue,
+    PrimitiveBase,
     Skew,
     Std,
     Sum,

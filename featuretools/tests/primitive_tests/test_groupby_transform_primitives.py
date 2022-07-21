@@ -14,7 +14,15 @@ from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
     FeatureSetCalculator,
 )
-from featuretools.primitives import TransformPrimitive, CumCount, CumMax, CumMean, CumMin, CumSum, Last
+from featuretools.primitives import (
+    CumCount,
+    CumMax,
+    CumMean,
+    CumMin,
+    CumSum,
+    Last,
+    TransformPrimitive,
+)
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import feature_with_name
 
