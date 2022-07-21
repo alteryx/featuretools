@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-     ==============
-       * Enhancements
-       * Fixes
-       * Changes
-       * Documentation Changes
-       * Testing Changes
+Future Release
+==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+        * Add create feedstock PR workflow (:pr:`2181`)
 
-   .. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 v1.12.0 Jul 19, 2022
 ====================
