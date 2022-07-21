@@ -2,7 +2,7 @@ on:
   workflow_dispatch:
     inputs:
       pypi_version:
-        description: 'released PyPI version to use'
+        description: 'released PyPI version to use (include v, example v1.11.1)'
         required: true
         
 name: Create Feedstock PR
@@ -47,6 +47,7 @@ jobs:
           git config --global user.email "machineOSS@alteryx.com"
           git config --global user.name "machineAYX Bot"
           git remote set-url origin https://${{ secrets.AUTO_APPROVE_TOKEN }}@github.com/machineAYX/featuretools-feedstock
+          git checkout -b conda-autocreate-${{ github.event.inputs.pypi_version }}
           git add recipe/meta.yaml
           git commit -m "auto commit"
           git push origin main
