@@ -82,6 +82,16 @@ After the release pull request has been merged into the `main` branch, it is tim
 
 ## Release on conda-forge
 
+In order to release on conda-forge, you can either wait for a bot to create a PR, or manually kickoff the creation with GitHub Actions
+
+### Option 1: Manually create the new PR with GitHub Actions
+1. Go to this GitHub Action: https://github.com/alteryx/featuretools/actions/workflows/create_feedstock_pr.yaml
+2. Input the released version with the v prefix (e.g. v0.13.3)
+3. Kickoff the GitHub action, and monitor the Job Summary. At the completion of the job, you should see summary output, with the URL: 
+  a. You can also just go to: https://github.com/machineAYX/featuretools-feedstock/pull/new/conda-autocreate-v0.13.3 (change the last part to the released version)
+
+### Option 2: Waiting for bot to create new PR
+
 1. A bot should automatically create a new PR in [conda-forge/featuretools-feedstock](https://github.com/conda-forge/featuretools-feedstock/pulls) - note, the PR may take up to a few hours to be created
 2. Update requirements changes in `recipe/meta.yaml` (bot should have handled version and source links on its own)
 3. After tests pass, a maintainer will merge the PR in
