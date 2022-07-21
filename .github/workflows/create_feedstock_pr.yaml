@@ -51,7 +51,7 @@ jobs:
           git checkout -b conda-autocreate-${{ github.event.inputs.pypi_version }}
           git add recipe/meta.yaml
           git commit -m "auto commit"
-          git push origin main
+          git push origin conda-autocreate-${{ github.event.inputs.pypi_version }}
       - name: Adding URL to job output
         run: |
           echo "Conda Feedstock Pull Request: https://github.com/machineAYX/featuretools-feedstock/pull/new/conda-autocreate-${{ github.event.inputs.pypi_version }}" >> $GITHUB_STEP_SUMMARY
