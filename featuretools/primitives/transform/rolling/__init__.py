@@ -4,3 +4,12 @@ from .rolling_mean import RollingMean
 from .rolling_min import RollingMin
 from .rolling_std import RollingSTD
 from .rolling_trend import RollingTrend
+
+__all__ = [
+    "RollingCount",
+    "RollingMax",
+    "RollingMean",
+    "RollingMin",
+    "RollingSTD",
+    "RollingTrend",
+]
