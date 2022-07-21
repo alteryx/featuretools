@@ -57,7 +57,7 @@ from featuretools.primitives import (
     Sum,
     TransformPrimitive,
 )
-from featuretools.primitives.standard.transform_primitive import Negate
+from featuretools.primitives import Negate
 from featuretools.tests.testing_utils import (
     backward_path,
     get_mock_client_cluster,
