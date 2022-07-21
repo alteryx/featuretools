@@ -1,5 +1,3 @@
-from datetime import datetime, timedelta
-
 from woodwork.column_schema import ColumnSchema
 
 from featuretools.primitives.core.aggregation_primitive import AggregationPrimitive

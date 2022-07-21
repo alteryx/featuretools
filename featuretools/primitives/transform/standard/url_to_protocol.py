@@ -1,8 +1,5 @@
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import (
-    URL,
-    Categorical,
-)
+from woodwork.logical_types import URL, Categorical
 
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
 

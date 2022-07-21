@@ -1,10 +1,7 @@
 import numpy as np
 import pandas as pd
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import (
-    BooleanNullable,
-    EmailAddress,
-)
+from woodwork.logical_types import BooleanNullable, EmailAddress
 
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
 

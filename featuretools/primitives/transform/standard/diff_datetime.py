@@ -1,8 +1,5 @@
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import (
-    Datetime,
-    Timedelta,
-)
+from woodwork.logical_types import Datetime, Timedelta
 
 from featuretools.primitives.transform.standard.diff import Diff
 

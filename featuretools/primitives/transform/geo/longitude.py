@@ -3,7 +3,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import LatLong
 
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
-from featuretools.primitives.utils import _haversine_calculate
 
 
 class Longitude(TransformPrimitive):

@@ -1,4 +1,3 @@
-import numpy as np
 from woodwork.column_schema import ColumnSchema
 
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
