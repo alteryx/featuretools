@@ -13,6 +13,7 @@ class IsLunchTime(TransformPrimitive):
 
     Examples:
         >>> from datetime import datetime
+        >>> import numpy as np
         >>> dates = [datetime(2022, 6, 21, 12, 3, 3),
         ...          datetime(2019, 1, 3, 4, 4, 4),
         ...          datetime(2022, 1, 1, 11, 1, 2),

@@ -10,6 +10,7 @@ class IsYearStart(TransformPrimitive):
 
     Examples:
         >>> from datetime import datetime
+        >>> import numpy as np
         >>> dates = [datetime(2019, 12, 31),
         ...          datetime(2019, 1, 1),
         ...          datetime(2019, 11, 30),

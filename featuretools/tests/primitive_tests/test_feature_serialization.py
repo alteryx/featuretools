@@ -52,7 +52,7 @@ from featuretools.primitives import (
     Weekday,
     Year,
 )
-from featuretools.primitives.base import AggregationPrimitive
+from featuretools.primitives import AggregationPrimitive
 from featuretools.tests.testing_utils import check_names
 from featuretools.utils.gen_utils import Library
 

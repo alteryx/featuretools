@@ -40,7 +40,7 @@ from featuretools.primitives import (
     TimeSinceLast,
     Trend,
 )
-from featuretools.primitives.base import AggregationPrimitive
+from featuretools.primitives import AggregationPrimitive
 from featuretools.tests.testing_utils import backward_path, to_pandas
 from featuretools.utils import Trie
 from featuretools.utils.gen_utils import Library
