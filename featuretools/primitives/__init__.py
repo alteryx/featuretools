@@ -4,8 +4,7 @@ import logging
 import pkg_resources
 import traceback
 
-from featuretools.primitives.core.aggregation_primitive import AggregationPrimitive
-from featuretools.primitives.core.transform_primitive import TransformPrimitive
+from featuretools.primitives.core import *
 
 from featuretools.primitives.utils import get_aggregation_primitives, get_transform_primitives
 from .aggregation import *

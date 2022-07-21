@@ -4,6 +4,7 @@ import pytest
 
 from featuretools import list_primitives, summarize_primitives
 from featuretools.primitives import (
+    PrimitiveBase,
     AddNumericScalar,
     Age,
     Count,
@@ -34,7 +35,6 @@ from featuretools.primitives import (
     get_default_transform_primitives,
     get_transform_primitives,
 )
-from featuretools.primitives.base import PrimitiveBase
 from featuretools.primitives.utils import (
     _check_input_types,
     _get_descriptions,

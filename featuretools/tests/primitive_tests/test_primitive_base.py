@@ -4,8 +4,7 @@ import numpy as np
 import pandas as pd
 from pytest import raises
 
-from featuretools.primitives import Haversine, IsIn, IsNull, Max, TimeSinceLast
-from featuretools.primitives.base import TransformPrimitive
+from featuretools.primitives import TransformPrimitive, Haversine, IsIn, IsNull, Max, TimeSinceLast
 
 
 def test_call_agg():

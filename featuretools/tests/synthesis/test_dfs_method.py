@@ -13,8 +13,7 @@ from featuretools.computational_backends.calculate_feature_matrix import (
 )
 from featuretools.entityset import EntitySet, Timedelta
 from featuretools.exceptions import UnusedPrimitiveWarning
-from featuretools.primitives import GreaterThanScalar, Max, Mean, Min, Sum
-from featuretools.primitives.base import AggregationPrimitive, TransformPrimitive
+from featuretools.primitives import AggregationPrimitive, TransformPrimitive, GreaterThanScalar, Max, Mean, Min, Sum
 from featuretools.synthesis import dfs
 from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
 from featuretools.tests.testing_utils import to_pandas

@@ -11,8 +11,9 @@ from featuretools.primitives import (
     RollingMin,
     RollingSTD,
     RollingTrend,
-    roll_series_with_gap,
 )
+
+from featuretools.primitives.transform.rolling.utils import roll_series_with_gap
 from featuretools.tests.primitive_tests.utils import get_number_from_offset
 
 
