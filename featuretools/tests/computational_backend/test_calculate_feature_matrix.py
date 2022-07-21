@@ -52,12 +52,12 @@ from featuretools.primitives import (
     Count,
     Max,
     Min,
+    Negate,
     NMostCommon,
     Percentile,
     Sum,
     TransformPrimitive,
 )
-from featuretools.primitives import Negate
 from featuretools.tests.testing_utils import (
     backward_path,
     get_mock_client_cluster,

@@ -1,4 +1,4 @@
-from featuretools.primitives.base import TransformPrimitive
+from featuretools.primitives import TransformPrimitive
 
 
 class NewPrimitive(TransformPrimitive):

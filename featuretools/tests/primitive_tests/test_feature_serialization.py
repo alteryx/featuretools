@@ -27,6 +27,7 @@ from featuretools.feature_base.features_serializer import (
     FeaturesSerializer,
 )
 from featuretools.primitives import (
+    AggregationPrimitive,
     Count,
     CumSum,
     Day,
@@ -52,7 +53,6 @@ from featuretools.primitives import (
     Weekday,
     Year,
 )
-from featuretools.primitives import AggregationPrimitive
 from featuretools.tests.testing_utils import check_names
 from featuretools.utils.gen_utils import Library
 
