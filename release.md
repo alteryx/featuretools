@@ -87,10 +87,12 @@ In order to release on conda-forge, you can either wait for a bot to create a PR
 ### Option 1: Manually create the new PR with GitHub Actions
 1. Go to this GitHub Action: https://github.com/alteryx/featuretools/actions/workflows/create_feedstock_pr.yaml
 2. Input the released version with the v prefix (e.g. v0.13.3)
-3. Kickoff the GitHub action, and monitor the Job Summary. At the completion of the job, you should see summary output, with a URL. You will need to visit this URL, and create a PR.
-  - You can also just go to: https://github.com/machineAYX/featuretools-feedstock/pull/new/conda-autocreate-v0.13.3 (change the last part to the released version)
-4. Verify the `requirements['run']` (in __recipe/meta.yml__) match the `install_requires` in __featuretools/setup.cfg__.
-  - Verify the `test['requires']` (in __recipe/meta.yml__) match the test requirements (which are in `[options.extras_require]`) __featuretools/setup.cfg__
+3. Kickoff the GitHub action, and monitor the Job Summary.
+4. At the completion of the job, you should see summary output, with a URL. You will need to visit this URL, and create a PR.
+    * You can also just go to: https://github.com/machineAYX/featuretools-feedstock/pull/new/conda-autocreate-v0.13.3 
+    * *Change the last part to the released version*
+5. Verify the `requirements['run']` (in __recipe/meta.yml__) match the `install_requires` in __featuretools/setup.cfg__.
+    * Verify the `test['requires']` (in __recipe/meta.yml__) match the test requirements in `[options.extras_require]` in __featuretools/setup.cfg__
 
 ### Option 2: Waiting for bot to create new PR
 
