@@ -4,7 +4,7 @@ on:
       pypi_version:
         description: 'released PyPI version to use (include v, example v1.11.1)'
         required: true
-        
+
 name: Create Feedstock PR
 jobs:
   create_feedstock_pr:
@@ -42,7 +42,7 @@ jobs:
       - name: View updated meta yaml
         run: cat featuretools-feedstock/recipe/meta.yaml
       - name: Push updated yaml
-        run: | 
+        run: |
           cd featuretools-feedstock
           git config --unset-all http.https://github.com/.extraheader
           git config --global user.email "machineOSS@alteryx.com"
