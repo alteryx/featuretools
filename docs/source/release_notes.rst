@@ -13,6 +13,7 @@ Future Release
         * Add create feedstock PR workflow (:pr:`2181`)
         * Limit performance tests to python 3.8 (:pr:`2198`)
         * Add test to ensure primitive docstrings use standardized verbs (:pr:`2200`)
+
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`
 
