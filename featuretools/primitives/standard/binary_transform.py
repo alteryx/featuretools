@@ -517,7 +517,7 @@ class NotEqualScalar(TransformPrimitive):
 
 
 class AddNumeric(TransformPrimitive):
-    """Computes element-wise addition of two lists.
+    """Performs element-wise addition of two lists.
 
     Description:
         Given a list of values X and a list of values
@@ -580,7 +580,7 @@ class AddNumericScalar(TransformPrimitive):
 
 
 class SubtractNumeric(TransformPrimitive):
-    """Computes element-wise subtraction of two lists.
+    """Performs element-wise subtraction of two lists.
 
     Description:
         Given a list of values X and a list of values
@@ -683,7 +683,7 @@ class ScalarSubtractNumericFeature(TransformPrimitive):
 
 
 class MultiplyNumeric(TransformPrimitive):
-    """Computes element-wise multiplication of two lists.
+    """Performs element-wise multiplication of two lists.
 
     Description:
         Given a list of values X and a list of values
@@ -746,7 +746,7 @@ class MultiplyNumericScalar(TransformPrimitive):
 
 
 class MultiplyBoolean(TransformPrimitive):
-    """Computes element-wise multiplication of two lists of boolean values.
+    """Performs element-wise multiplication of two lists of boolean values.
 
     Description:
         Given a list of boolean values X and a list of boolean
@@ -788,7 +788,7 @@ class MultiplyBoolean(TransformPrimitive):
 
 
 class MultiplyNumericBoolean(TransformPrimitive):
-    """Computes element-wise multiplication of a numeric list with a boolean list.
+    """Performs element-wise multiplication of a numeric list with a boolean list.
 
     Description:
         Given a list of numeric values X and a list of
@@ -852,7 +852,7 @@ class MultiplyNumericBoolean(TransformPrimitive):
 
 
 class DivideNumeric(TransformPrimitive):
-    """Computes element-wise division of two lists.
+    """Performs element-wise division of two lists.
 
     Description:
         Given a list of values X and a list of values
@@ -962,7 +962,7 @@ class DivideByFeature(TransformPrimitive):
 
 
 class ModuloNumeric(TransformPrimitive):
-    """Computes element-wise modulo of two lists.
+    """Performs element-wise modulo of two lists.
 
     Description:
         Given a list of values X and a list of values Y,
@@ -1062,7 +1062,7 @@ class ModuloByFeature(TransformPrimitive):
 
 
 class And(TransformPrimitive):
-    """Computes element-wise logical AND of two lists.
+    """Performs element-wise logical AND of two lists.
 
     Description:
         Given a list of booleans X and a list of booleans Y,
@@ -1104,7 +1104,7 @@ class And(TransformPrimitive):
 
 
 class Or(TransformPrimitive):
-    """Computes element-wise logical OR of two lists.
+    """Performs element-wise logical OR of two lists.
 
     Description:
         Given a list of booleans X and a list of booleans Y,

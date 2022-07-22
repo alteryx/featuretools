@@ -14,6 +14,7 @@ def docstring_is_uniform(primitive):
         "Subtracts",
         "Multiplies",
         "Divides",
+        "Performs",
         "Returns",
         "Shifts",
         "Extracts",
