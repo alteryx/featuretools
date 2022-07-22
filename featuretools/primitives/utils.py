@@ -3,8 +3,6 @@ import os
 from inspect import getfullargspec, getsource, isclass
 from typing import Dict, List
 
-import holidays
-import numpy as np
 import pandas as pd
 from woodwork import list_logical_types, list_semantic_tags
 from woodwork.column_schema import ColumnSchema
@@ -395,38 +393,3 @@ class PrimitivesDeserializer(object):
 
             if cls_key == search_key:
                 return cls
-
-
-def _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_2s, unit):
-    # https://stackoverflow.com/a/29546836/2512385
-    lon1, lat1, lon2, lat2 = map(np.radians, [lon_1s, lat_1s, lon_2s, lat_2s])
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-    a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.0) ** 2
-    radius_earth = 3958.7613
-    if unit == "kilometers":
-        radius_earth = 6371.0088
-    distances = radius_earth * 2 * np.arcsin(np.sqrt(a))
-    return distances
-
-
-class HolidayUtil:
-    def __init__(self, country="US"):
-        try:
-            holidays.country_holidays(country=country)
-        except NotImplementedError:
-            available_countries = (
-                "https://github.com/dr-prodigy/python-holidays#available-countries"
-            )
-            error = "must be one of the available countries:\n%s" % available_countries
-            raise ValueError(error)
-
-        self.federal_holidays = getattr(holidays, country)(years=range(1950, 2100))
-
-    def to_df(self):
-        holidays_df = pd.DataFrame(
-            sorted(self.federal_holidays.items()),
-            columns=["holiday_date", "names"],
-        )
-        holidays_df.holiday_date = holidays_df.holiday_date.astype("datetime64")
-        return holidays_df
