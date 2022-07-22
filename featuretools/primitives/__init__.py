@@ -5,12 +5,8 @@ import pkg_resources
 import traceback
 
 from featuretools.primitives.core import *
-
-from featuretools.primitives.utils import (
-    get_aggregation_primitives,
-    get_transform_primitives,
-)
-from .aggregation import *
+from featuretools.primitives.aggregation import *
+from featuretools.primitives.transform import *
 from featuretools.primitives.utils import (
     get_aggregation_primitives,
     get_default_aggregation_primitives,
@@ -19,7 +15,6 @@ from featuretools.primitives.utils import (
     list_primitives,
     summarize_primitives,
 )
-from .transform import *
 
 
 def _load_primitives():
