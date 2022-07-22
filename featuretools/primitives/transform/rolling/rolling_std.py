@@ -3,10 +3,8 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, Double
 
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
-from featuretools.primitives.transform.rolling.utils import (
-    apply_roll_with_offset_gap,
-    roll_series_with_gap,
-)
+import featuretools.primitives.transform.rolling.utils as rolling_utils
+
 
 
 class RollingSTD(TransformPrimitive):
@@ -99,7 +97,7 @@ class RollingSTD(TransformPrimitive):
     def get_function(self):
         def rolling_std(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = roll_series_with_gap(
+            rolled_series = rolling_utils.roll_series_with_gap(
                 x,
                 self.window_length,
                 gap=self.gap,
@@ -114,7 +112,7 @@ class RollingSTD(TransformPrimitive):
                 additional_args = (self.gap, _pandas_std, self.min_periods)
 
                 return rolled_series.apply(
-                    apply_roll_with_offset_gap,
+                    rolling_utils.apply_roll_with_offset_gap,
                     args=additional_args,
                 ).values
             return rolled_series.std().values

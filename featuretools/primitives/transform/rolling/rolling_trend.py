@@ -3,10 +3,8 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, Double
 
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
-from featuretools.primitives.transform.rolling.utils import (
-    apply_roll_with_offset_gap,
-    roll_series_with_gap,
-)
+import featuretools.primitives.transform.rolling.utils as rolling_utils
+
 from featuretools.utils import calculate_trend
 
 
@@ -83,13 +81,13 @@ class RollingTrend(TransformPrimitive):
     def get_function(self):
         def rolling_trend(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = roll_series_with_gap(
+            rolled_series = rolling_utils.roll_series_with_gap(
                 x, self.window_length, gap=self.gap, min_periods=self.min_periods
             )
             if isinstance(self.gap, str):
                 additional_args = (self.gap, calculate_trend, self.min_periods)
                 return rolled_series.apply(
-                    apply_roll_with_offset_gap,
+                    rolling_utils.apply_roll_with_offset_gap,
                     args=additional_args,
                 ).values
             return rolled_series.apply(calculate_trend).values

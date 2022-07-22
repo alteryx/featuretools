@@ -4,10 +4,7 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, Double
 
 from featuretools.primitives.core.transform_primitive import TransformPrimitive
-from featuretools.primitives.transform.rolling.utils import (
-    apply_roll_with_offset_gap,
-    roll_series_with_gap,
-)
+import featuretools.primitives.transform.rolling.utils as rolling_utils
 
 
 class RollingCount(TransformPrimitive):
@@ -98,7 +95,7 @@ class RollingCount(TransformPrimitive):
     def get_function(self):
         def rolling_count(datetime):
             x = pd.Series(1, index=datetime)
-            rolled_series = roll_series_with_gap(
+            rolled_series = rolling_utils.roll_series_with_gap(
                 x,
                 self.window_length,
                 gap=self.gap,
@@ -110,7 +107,7 @@ class RollingCount(TransformPrimitive):
                 # it produces correct results
                 additional_args = (self.gap, len, self.min_periods)
                 return rolled_series.apply(
-                    apply_roll_with_offset_gap,
+                    rolling_utils.apply_roll_with_offset_gap,
                     args=additional_args,
                 ).values
 
