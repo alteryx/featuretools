@@ -32,19 +32,24 @@ def test_rolling_max(min_periods, window_length, gap, rolling_series_pd):
     # Since we're using a uniform series we can check correctness using numeric parameters
     expected_vals = (
         roll_series_with_gap(
-            rolling_series_pd, window_length_num, gap=gap_num, min_periods=min_periods
+            rolling_series_pd,
+            window_length_num,
+            gap=gap_num,
+            min_periods=min_periods,
         )
         .max()
         .values
     )
 
     primitive_instance = RollingMax(
-        window_length=window_length, gap=gap, min_periods=min_periods
+        window_length=window_length,
+        gap=gap,
+        min_periods=min_periods,
     )
     primitive_func = primitive_instance.get_function()
 
     actual_vals = pd.Series(
-        primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values))
+        primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)),
     )
 
     # Since min_periods of 0 is the same as min_periods of 1
@@ -71,19 +76,24 @@ def test_rolling_min(min_periods, window_length, gap, rolling_series_pd):
     # Since we're using a uniform series we can check correctness using numeric parameters
     expected_vals = (
         roll_series_with_gap(
-            rolling_series_pd, window_length_num, gap=gap_num, min_periods=min_periods
+            rolling_series_pd,
+            window_length_num,
+            gap=gap_num,
+            min_periods=min_periods,
         )
         .min()
         .values
     )
 
     primitive_instance = RollingMin(
-        window_length=window_length, gap=gap, min_periods=min_periods
+        window_length=window_length,
+        gap=gap,
+        min_periods=min_periods,
     )
     primitive_func = primitive_instance.get_function()
 
     actual_vals = pd.Series(
-        primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values))
+        primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)),
     )
 
     # Since min_periods of 0 is the same as min_periods of 1
@@ -110,19 +120,24 @@ def test_rolling_mean(min_periods, window_length, gap, rolling_series_pd):
     # Since we're using a uniform series we can check correctness using numeric parameters
     expected_vals = (
         roll_series_with_gap(
-            rolling_series_pd, window_length_num, gap=gap_num, min_periods=min_periods
+            rolling_series_pd,
+            window_length_num,
+            gap=gap_num,
+            min_periods=min_periods,
         )
         .mean()
         .values
     )
 
     primitive_instance = RollingMean(
-        window_length=window_length, gap=gap, min_periods=min_periods
+        window_length=window_length,
+        gap=gap,
+        min_periods=min_periods,
     )
     primitive_func = primitive_instance.get_function()
 
     actual_vals = pd.Series(
-        primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values))
+        primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)),
     )
 
     # Since min_periods of 0 is the same as min_periods of 1
@@ -149,19 +164,24 @@ def test_rolling_std(min_periods, window_length, gap, rolling_series_pd):
     # Since we're using a uniform series we can check correctness using numeric parameters
     expected_vals = (
         roll_series_with_gap(
-            rolling_series_pd, window_length_num, gap=gap_num, min_periods=min_periods
+            rolling_series_pd,
+            window_length_num,
+            gap=gap_num,
+            min_periods=min_periods,
         )
         .std()
         .values
     )
 
     primitive_instance = RollingSTD(
-        window_length=window_length, gap=gap, min_periods=min_periods
+        window_length=window_length,
+        gap=gap,
+        min_periods=min_periods,
     )
     primitive_func = primitive_instance.get_function()
 
     actual_vals = pd.Series(
-        primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values))
+        primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)),
     )
 
     # Since min_periods of 0 is the same as min_periods of 1
@@ -201,7 +221,9 @@ def test_rolling_count(window_length, gap, rolling_series_pd):
     )
 
     primitive_instance = RollingCount(
-        window_length=window_length, gap=gap, min_periods=window_length_num
+        window_length=window_length,
+        gap=gap,
+        min_periods=window_length_num,
     )
     primitive_func = primitive_instance.get_function()
 
@@ -212,7 +234,8 @@ def test_rolling_count(window_length, gap, rolling_series_pd):
     # RollingCount will not match the exact roll_series_with_gap call,
     # because it handles the min_periods difference within the primitive
     pd.testing.assert_series_equal(
-        pd.Series(expected_vals).iloc[num_nans:], actual_vals.iloc[num_nans:]
+        pd.Series(expected_vals).iloc[num_nans:],
+        actual_vals.iloc[num_nans:],
     )
 
 
@@ -222,10 +245,16 @@ def test_rolling_count(window_length, gap, rolling_series_pd):
 )
 @pytest.mark.parametrize("window_length, gap", [("5d", "2d"), (5, 2)])
 def test_rolling_count_primitive_min_periods_nans(
-    window_length, gap, min_periods, expected_num_nams, rolling_series_pd
+    window_length,
+    gap,
+    min_periods,
+    expected_num_nams,
+    rolling_series_pd,
 ):
     primitive_instance = RollingCount(
-        window_length=window_length, gap=gap, min_periods=min_periods
+        window_length=window_length,
+        gap=gap,
+        min_periods=min_periods,
     )
     primitive_func = primitive_instance.get_function()
     vals = pd.Series(primitive_func(rolling_series_pd.index))
@@ -239,10 +268,16 @@ def test_rolling_count_primitive_min_periods_nans(
 )
 @pytest.mark.parametrize("window_length, gap", [("5d", "0d"), (5, 0)])
 def test_rolling_count_with_no_gap(
-    window_length, gap, min_periods, expected_num_nams, rolling_series_pd
+    window_length,
+    gap,
+    min_periods,
+    expected_num_nams,
+    rolling_series_pd,
 ):
     primitive_instance = RollingCount(
-        window_length=window_length, gap=gap, min_periods=min_periods
+        window_length=window_length,
+        gap=gap,
+        min_periods=min_periods,
     )
     primitive_func = primitive_instance.get_function()
     vals = pd.Series(primitive_func(rolling_series_pd.index))
@@ -329,7 +364,7 @@ def test_rolling_primitives_non_uniform(primitive):
 
     # Should match RollingCount exactly and have same nan values as other primitives
     expected_series = pd.Series(
-        [None, 1, 2] + [None, 1, 1, 1] + [None, 1, 2, 3, 3, 3, 3]
+        [None, 1, 2] + [None, 1, 1, 1] + [None, 1, 2, 3, 3, 3, 3],
     )
 
     primitive_instance = primitive(window_length="3d", gap="1d")
@@ -338,7 +373,7 @@ def test_rolling_primitives_non_uniform(primitive):
         pd.testing.assert_series_equal(rolled_series, expected_series)
     else:
         rolled_series = pd.Series(
-            primitive_instance(no_freq_series.index, pd.Series(no_freq_series.values))
+            primitive_instance(no_freq_series.index, pd.Series(no_freq_series.values)),
         )
         pd.testing.assert_series_equal(expected_series.isna(), rolled_series.isna())
 
@@ -365,12 +400,12 @@ def test_rolling_std_non_uniform():
             1.0,
             1.0,
             1.0,
-        ]
+        ],
     )
 
     primitive_instance = RollingSTD(window_length="3d", gap="1d")
     rolled_series = pd.Series(
-        primitive_instance(no_freq_series.index, pd.Series(no_freq_series.values))
+        primitive_instance(no_freq_series.index, pd.Series(no_freq_series.values)),
     )
 
     pd.testing.assert_series_equal(rolled_series, expected_series)
@@ -394,65 +429,146 @@ def test_rolling_trend_non_uniform():
             1.0,
             1.0,
             1.0,
-        ]
+        ],
     )
     primitive_instance = RollingTrend(window_length="3d", gap="1d")
     rolled_series = pd.Series(
-        primitive_instance(no_freq_series.index, pd.Series(no_freq_series.values))
+        primitive_instance(no_freq_series.index, pd.Series(no_freq_series.values)),
     )
     pd.testing.assert_series_equal(rolled_series, expected_series)
 
 
 @pytest.mark.parametrize(
-    "primitive",
-    [RollingCount, RollingMax, RollingMin, RollingMean, RollingSTD, RollingTrend],
+    "window_length,gap,called",
+    [(3, 1, False), ("3d", 1, False), ("3d", 0, False), ("3d", "1d", True)],
 )
-@patch("featuretools.primitives.transform.rolling.utils.apply_roll_with_offset_gap")
-def test_no_call_to_apply_roll_with_offset_gap_with_numeric(
-    mock_apply_roll, primitive, rolling_series_pd
+@patch(
+    "featuretools.primitives.transform.rolling.rolling_count.apply_roll_with_offset_gap",
+)
+def test_no_call_to_apply_roll_with_offset_gap_with_numeric_rolling_count(
+    mock_apply_roll,
+    window_length,
+    gap,
+    called,
+    rolling_series_pd,
 ):
-    assert not mock_apply_roll.called
+    primitive = RollingCount(window_length=window_length, gap=gap)
+    primitive_func = primitive.get_function()
+    pd.Series(primitive_func(rolling_series_pd.index))
 
-    fully_numeric_primitive = primitive(window_length=3, gap=1)
-    primitive_func = fully_numeric_primitive.get_function()
-    if isinstance(fully_numeric_primitive, RollingCount):
-        pd.Series(primitive_func(rolling_series_pd.index))
-    else:
-        pd.Series(
-            primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values))
-        )
+    assert mock_apply_roll.called == called
 
-    assert not mock_apply_roll.called
 
-    offset_window_primitive = primitive(window_length="3d", gap=1)
-    primitive_func = offset_window_primitive.get_function()
-    if isinstance(offset_window_primitive, RollingCount):
-        pd.Series(primitive_func(rolling_series_pd.index))
-    else:
-        pd.Series(
-            primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values))
-        )
+@pytest.mark.parametrize(
+    "window_length,gap,called",
+    [(3, 1, False), ("3d", 1, False), ("3d", 0, False), ("3d", "1d", True)],
+)
+@patch(
+    "featuretools.primitives.transform.rolling.rolling_max.apply_roll_with_offset_gap",
+)
+def test_no_call_to_apply_roll_with_offset_gap_with_numeric_rolling_max(
+    mock_apply_roll,
+    window_length,
+    gap,
+    called,
+    rolling_series_pd,
+):
+    primitive = RollingMax(window_length=window_length, gap=gap)
+    primitive_func = primitive.get_function()
+    pd.Series(
+        primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)),
+    )
 
-    assert not mock_apply_roll.called
+    assert mock_apply_roll.called == called
 
-    no_gap_specified_primitive = primitive(window_length="3d")
-    primitive_func = no_gap_specified_primitive.get_function()
-    if isinstance(no_gap_specified_primitive, RollingCount):
-        pd.Series(primitive_func(rolling_series_pd.index))
-    else:
-        pd.Series(
-            primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values))
-        )
 
-    assert not mock_apply_roll.called
+@pytest.mark.parametrize(
+    "window_length,gap,called",
+    [(3, 1, False), ("3d", 1, False), ("3d", 0, False), ("3d", "1d", True)],
+)
+@patch(
+    "featuretools.primitives.transform.rolling.rolling_min.apply_roll_with_offset_gap",
+)
+def test_no_call_to_apply_roll_with_offset_gap_with_numeric_rolling_min(
+    mock_apply_roll,
+    window_length,
+    gap,
+    called,
+    rolling_series_pd,
+):
+    primitive = RollingMin(window_length=window_length, gap=gap)
+    primitive_func = primitive.get_function()
+    pd.Series(
+        primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)),
+    )
 
-    no_gap_specified_primitive = primitive(window_length="3d", gap="1d")
-    primitive_func = no_gap_specified_primitive.get_function()
-    if isinstance(no_gap_specified_primitive, RollingCount):
-        pd.Series(primitive_func(rolling_series_pd.index))
-    else:
-        pd.Series(
-            primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values))
-        )
+    assert mock_apply_roll.called == called
 
-    assert mock_apply_roll.called
+
+@pytest.mark.parametrize(
+    "window_length,gap,called",
+    [(3, 1, False), ("3d", 1, False), ("3d", 0, False), ("3d", "1d", True)],
+)
+@patch(
+    "featuretools.primitives.transform.rolling.rolling_mean.apply_roll_with_offset_gap",
+)
+def test_no_call_to_apply_roll_with_offset_gap_with_numeric_rolling_mean(
+    mock_apply_roll,
+    window_length,
+    gap,
+    called,
+    rolling_series_pd,
+):
+    primitive = RollingMean(window_length=window_length, gap=gap)
+    primitive_func = primitive.get_function()
+    pd.Series(
+        primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)),
+    )
+
+    assert mock_apply_roll.called == called
+
+
+@pytest.mark.parametrize(
+    "window_length,gap,called",
+    [(3, 1, False), ("3d", 1, False), ("3d", 0, False), ("3d", "1d", True)],
+)
+@patch(
+    "featuretools.primitives.transform.rolling.rolling_std.apply_roll_with_offset_gap",
+)
+def test_no_call_to_apply_roll_with_offset_gap_with_numeric_rolling_std(
+    mock_apply_roll,
+    window_length,
+    gap,
+    called,
+    rolling_series_pd,
+):
+    primitive = RollingSTD(window_length=window_length, gap=gap)
+    primitive_func = primitive.get_function()
+    pd.Series(
+        primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)),
+    )
+
+    assert mock_apply_roll.called == called
+
+
+@pytest.mark.parametrize(
+    "window_length,gap,called",
+    [(3, 1, False), ("3d", 1, False), ("3d", 0, False), ("3d", "1d", True)],
+)
+@patch(
+    "featuretools.primitives.transform.rolling.rolling_trend.apply_roll_with_offset_gap",
+)
+def test_no_call_to_apply_roll_with_offset_gap_with_numeric_rolling_trend(
+    mock_apply_roll,
+    window_length,
+    gap,
+    called,
+    rolling_series_pd,
+):
+    primitive = RollingTrend(window_length=window_length, gap=gap)
+    primitive_func = primitive.get_function()
+    pd.Series(
+        primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)),
+    )
+
+    assert mock_apply_roll.called == called
