@@ -1,8 +1,3 @@
-from lib2to3.pgen2.pgen import DFAState
-
-import numpy as np
-import pandas as pd
-
 from featuretools.primitives import get_aggregation_primitives, get_transform_primitives
 
 
