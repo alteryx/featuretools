@@ -10,10 +10,11 @@ Future Release
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Add create feedstock PR workflow (:pr:`2181`)
         * Limit performance tests to python 3.8 (:pr:`2198`)
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`
+    :user:`gsheni`, :user:`rwedge`
 
 v1.12.0 Jul 19, 2022
 ====================
