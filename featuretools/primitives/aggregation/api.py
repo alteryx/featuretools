@@ -1,8 +1,4 @@
-from featuretools.primitives.core import (
-    AggregationPrimitive,
-    TransformPrimitive,
-    PrimitiveBase,
-)
+from featuretools.primitives.aggregation import *
 from warnings import warn
 
 warn(
