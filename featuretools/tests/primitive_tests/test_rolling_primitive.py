@@ -407,7 +407,7 @@ def test_rolling_trend_non_uniform():
     "primitive",
     [RollingCount, RollingMax, RollingMin, RollingMean, RollingSTD, RollingTrend],
 )
-@patch("featuretools.primitives.rolling_transform_primitive.apply_roll_with_offset_gap")
+@patch("featuretools.primitives.transform.rolling.utils.apply_roll_with_offset_gap")
 def test_no_call_to_apply_roll_with_offset_gap_with_numeric(
     mock_apply_roll, primitive, rolling_series_pd
 ):
