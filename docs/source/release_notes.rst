@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
-        * Update so ``Trend`` and ``RollingTrend`` primitives work with ``IntegerNullable`` inputs (:pr:`2204``)
+        * Update ``Trend`` and ``RollingTrend`` primitives to work with ``IntegerNullable`` inputs (:pr:`2204`)
     * Changes
     * Documentation Changes
     * Testing Changes
