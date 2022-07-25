@@ -109,6 +109,9 @@ def find_dividend_by_unit(time):
 
 
 def calculate_trend(series):
+    # numpy can't handle `Int64` values, so cast to float
+    if series.dtype == "Int64":
+        series = series.astype("float64")
     df = pd.DataFrame({"x": series.index, "y": series.values}).dropna()
     if df.shape[0] <= 2:
         return np.nan
