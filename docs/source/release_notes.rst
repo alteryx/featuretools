@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Update ``Trend`` and ``RollingTrend`` primitives to work with ``IntegerNullable`` inputs (:pr:`2204`)
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -15,7 +16,7 @@ Future Release
         * Add test to ensure primitive docstrings use standardized verbs (:pr:`2200`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`
+    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v1.12.0 Jul 19, 2022
 ====================
