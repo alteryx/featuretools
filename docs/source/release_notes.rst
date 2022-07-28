@@ -14,6 +14,7 @@ Future Release
         * Add create feedstock PR workflow (:pr:`2181`)
         * Add performance tests for python 3.9 and 3.10 (:pr:`2198`, :pr:`2208`)
         * Add test to ensure primitive docstrings use standardized verbs (:pr:`2200`)
+        * Configure codecov to avoid premature PR comments (:pr:`2209`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
