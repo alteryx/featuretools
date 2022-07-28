@@ -9,7 +9,7 @@ Future Release
     * Fixes
         * Update ``Trend`` and ``RollingTrend`` primitives to work with ``IntegerNullable`` inputs (:pr:`2204`)
     * Changes
-        * Add ``series_library`` property on ``PrimitiveBase`` (:pr:`2210`)
+        * Add ``series_library`` attribute to ``PrimitiveBase`` (:pr:`2210`)
     * Documentation Changes
     * Testing Changes
         * Add create feedstock PR workflow (:pr:`2181`)
