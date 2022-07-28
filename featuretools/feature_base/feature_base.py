@@ -52,11 +52,11 @@ class FeatureBase(object):
         if not isinstance(primitive, PrimitiveBase):
             primitive = primitive()
 
-            # default library is PANDAS
-            if isinstance(dataframe, dd.DataFrame):
-                primitive.set_series_library(Library.DASK)
-            elif is_instance(dataframe, ps, "DataFrame"):
-                primitive.set_series_library(Library.SPARK)
+        # default library is PANDAS
+        if isinstance(dataframe, dd.DataFrame):
+            primitive.set_series_library(Library.DASK)
+        elif is_instance(dataframe, ps, "DataFrame"):
+            primitive.set_series_library(Library.SPARK)
 
         self.primitive = primitive
 
