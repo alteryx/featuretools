@@ -1,3 +1,6 @@
+import dask.dataframe as dd
+import pandas as pd
+import pyspark.pandas as ps
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
 
@@ -10,6 +13,7 @@ from featuretools.primitives.base import (
     PrimitiveBase,
     TransformPrimitive,
 )
+from featuretools.utils.gen_utils import Library
 from featuretools.utils.wrangle import _check_time_against_column, _check_timedelta
 
 _ES_REF = {}
@@ -47,6 +51,13 @@ class FeatureBase(object):
         # initialize if not already initialized
         if not isinstance(primitive, PrimitiveBase):
             primitive = primitive()
+
+            # default library is PANDAS
+            if isinstance(dataframe, dd.DataFrame):
+                primitive.set_series_library(Library.DASK)
+            elif isinstance(dataframe, ps.DataFrame):
+                primitive.set_series_library(Library.SPARK)
+
         self.primitive = primitive
 
         self.relationship_path = relationship_path

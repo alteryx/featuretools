@@ -44,7 +44,7 @@ class PrimitiveBase(object):
     description_template = None
 
     def __init__(self):
-        pass
+        self.series_library = Library.PANDAS
 
     def __call__(self, *args, **kwargs):
         series_args = [pd.Series(arg) for arg in args]
@@ -156,3 +156,6 @@ class PrimitiveBase(object):
                 sub_input for input_obj in input_types for sub_input in input_obj
             ]
         return input_types
+
+    def set_series_library(self, series_library: str):
+        self.series_library = series_library
