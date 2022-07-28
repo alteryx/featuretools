@@ -11,7 +11,7 @@ from featuretools.primitives.base import (
     PrimitiveBase,
     TransformPrimitive,
 )
-from featuretools.utils.gen_utils import Library, import_or_none
+from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.utils.wrangle import _check_time_against_column, _check_timedelta
 
 ps = import_or_none("pyspark.pandas")
@@ -55,7 +55,7 @@ class FeatureBase(object):
             # default library is PANDAS
             if isinstance(dataframe, dd.DataFrame):
                 primitive.set_series_library(Library.DASK)
-            elif isinstance(dataframe, ps.DataFrame):
+            elif is_instance(dataframe, ps, "DataFrame"):
                 primitive.set_series_library(Library.SPARK)
 
         self.primitive = primitive
