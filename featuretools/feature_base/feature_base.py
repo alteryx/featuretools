@@ -54,9 +54,9 @@ class FeatureBase(object):
 
         # default library is PANDAS
         if isinstance(dataframe, dd.DataFrame):
-            primitive.set_series_library(Library.DASK)
+            primitive.series_library = Library.DASK
         elif is_instance(dataframe, ps, "DataFrame"):
-            primitive.set_series_library(Library.SPARK)
+            primitive.series_library = Library.SPARK
 
         self.primitive = primitive
 

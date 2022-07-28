@@ -156,6 +156,3 @@ class PrimitiveBase(object):
                 sub_input for input_obj in input_types for sub_input in input_obj
             ]
         return input_types
-
-    def set_series_library(self, series_library: str):
-        self.series_library = series_library
