@@ -124,7 +124,7 @@ def dask_es(pd_es):
     return es
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def spark_es(pd_es):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     es = EntitySet(id=pd_es.id)
