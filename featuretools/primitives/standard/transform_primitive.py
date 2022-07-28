@@ -241,7 +241,7 @@ class IsIn(TransformPrimitive):
 
 
 class Diff(TransformPrimitive):
-    """Compute the difference between the value in a list and the
+    """Computes the difference between the value in a list and the
     previous value in that list.
 
     Args:
@@ -284,7 +284,7 @@ class Diff(TransformPrimitive):
 
 
 class DiffDatetime(Diff):
-    """Compute the timedelta between a datetime in a list and the
+    """Computes the timedelta between a datetime in a list and the
     previous datetime in that list.
 
     Args:

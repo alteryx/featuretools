@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from pandas.core.dtypes.dtypes import CategoricalDtype
 
-from featuretools.primitives import NMostCommon, get_aggregation_primitives
+from featuretools.primitives import NMostCommon, Trend, get_aggregation_primitives
 
 
 def test_nmostcommon_categorical():
@@ -26,3 +26,15 @@ def test_agg_primitives_can_init_without_params():
     agg_primitives = get_aggregation_primitives().values()
     for agg_primitive in agg_primitives:
         agg_primitive()
+
+
+def test_trend_works_with_different_input_dtypes():
+    dates = pd.to_datetime(["2020-01-01", "2020-01-02", "2020-01-03"])
+    numeric = pd.Series([1, 2, 3])
+
+    trend = Trend()
+    dtypes = ["float64", "int64", "Int64"]
+
+    for dtype in dtypes:
+        actual = trend(numeric.astype(dtype), dates)
+        assert np.isclose(actual, 1)

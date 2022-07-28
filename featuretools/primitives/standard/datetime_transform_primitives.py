@@ -823,7 +823,7 @@ class TimeSince(TransformPrimitive):
 
 
 class TimeSincePrevious(TransformPrimitive):
-    """Compute the time since the previous entry in a list.
+    """Computes the time since the previous entry in a list.
 
     Args:
         unit (str): Defines the unit of time to count from.

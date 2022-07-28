@@ -7,14 +7,16 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Update ``Trend`` and ``RollingTrend`` primitives to work with ``IntegerNullable`` inputs (:pr:`2204`)
     * Changes
     * Documentation Changes
     * Testing Changes
         * Add create feedstock PR workflow (:pr:`2181`)
-        * Limit performance tests to python 3.8 (:pr:`2198`)
+        * Add performance tests for python 3.9 and 3.10 (:pr:`2198`, :pr:`2208`)
+        * Add test to ensure primitive docstrings use standardized verbs (:pr:`2200`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`
+    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v1.12.0 Jul 19, 2022
 ====================
