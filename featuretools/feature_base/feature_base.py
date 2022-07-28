@@ -1,5 +1,4 @@
 import dask.dataframe as dd
-import pandas as pd
 import pyspark.pandas as ps
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
