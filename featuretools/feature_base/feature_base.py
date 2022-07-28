@@ -1,5 +1,4 @@
 import dask.dataframe as dd
-import pyspark.pandas as ps
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
 
@@ -12,8 +11,10 @@ from featuretools.primitives.base import (
     PrimitiveBase,
     TransformPrimitive,
 )
-from featuretools.utils.gen_utils import Library
+from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.utils.wrangle import _check_time_against_column, _check_timedelta
+
+ps = import_or_none("pyspark.pandas")
 
 _ES_REF = {}
 
