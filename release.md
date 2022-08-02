@@ -101,7 +101,7 @@ In order to release on conda-forge, you can either wait for a bot to create a PR
 3. After tests pass, a maintainer will merge the PR in
 
 # Miscellaneous
-## Add new users to featuretools-feedstock
+## Add new maintainers to featuretools-feedstock
 
 Per the instructions [here](https://conda-forge.org/docs/maintainer/updating_pkgs.html#updating-the-maintainer-list):
 1. Ask an existing maintainer to create an issue on the [repo](https://github.com/conda-forge/featuretools-feedstock).
