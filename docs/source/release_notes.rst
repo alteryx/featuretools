@@ -10,6 +10,7 @@ Future Release
         * Update ``Trend`` and ``RollingTrend`` primitives to work with ``IntegerNullable`` inputs (:pr:`2204`)
     * Changes
     * Documentation Changes
+        * Add instructions to add new users to featuretools feedstock (:pr:`2215`)
     * Testing Changes
         * Add create feedstock PR workflow (:pr:`2181`)
         * Add performance tests for python 3.9 and 3.10 (:pr:`2198`, :pr:`2208`)

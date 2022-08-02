@@ -99,3 +99,17 @@ In order to release on conda-forge, you can either wait for a bot to create a PR
 1. A bot should automatically create a new PR in [conda-forge/featuretools-feedstock](https://github.com/conda-forge/featuretools-feedstock/pulls) - note, the PR may take up to a few hours to be created
 2. Update requirements changes in `recipe/meta.yaml` (bot should have handled version and source links on its own)
 3. After tests pass, a maintainer will merge the PR in
+
+# Miscellaneous
+## Add new maintainers to featuretools-feedstock
+
+Per the instructions [here](https://conda-forge.org/docs/maintainer/updating_pkgs.html#updating-the-maintainer-list):
+1. Ask an existing maintainer to create an issue on the [repo](https://github.com/conda-forge/featuretools-feedstock).
+  a. Select *Bot commands* and put the following title (change `username`):
+
+  ```text
+  @conda-forge-admin, please add user @username
+  ```
+
+2. A PR will be auto-created on the repo, and will need to be merged by an existing maintainer.
+3. The new user will need to **check their email for an invite link to click**, which should be https://github.com/conda-forge
