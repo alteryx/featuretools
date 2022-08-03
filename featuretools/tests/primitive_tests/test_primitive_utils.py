@@ -100,14 +100,15 @@ def test_get_descriptions_doesnt_truncate_primitive_description():
     # single line
     descr = _get_descriptions([IsNull])
     assert descr[0] == "Determines if a value is null."
+
     # multiple line; one sentence
     descr = _get_descriptions([Diff])
     assert (
         descr[0]
         == "Compute the difference between the value in a list and the previous value in that list."
     )
-    # multiple lines multiple sentences
 
+    # multiple lines; multiple sentences
     class TestPrimitive(TransformPrimitive):
         """This is text that continues on after the line break
             and ends in a period.
