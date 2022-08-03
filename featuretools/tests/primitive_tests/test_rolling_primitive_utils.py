@@ -70,8 +70,18 @@ def test_get_rolled_series_without_gap_large_bound(rolling_series_pd):
     ],
 )
 def test_roll_series_with_gap(window_length, gap, rolling_series_pd):
-    rolling_max = roll_series_with_gap(rolling_series_pd, window_length, gap=gap).max()
-    rolling_min = roll_series_with_gap(rolling_series_pd, window_length, gap=gap).min()
+    rolling_max = roll_series_with_gap(
+        rolling_series_pd,
+        window_length,
+        gap=gap,
+        min_periods=1,
+    ).max()
+    rolling_min = roll_series_with_gap(
+        rolling_series_pd,
+        window_length,
+        gap=gap,
+        min_periods=1,
+    ).min()
 
     assert len(rolling_max) == len(rolling_series_pd)
     assert len(rolling_min) == len(rolling_series_pd)
@@ -105,7 +115,12 @@ def test_roll_series_with_gap(window_length, gap, rolling_series_pd):
 
 @pytest.mark.parametrize("window_length", [3, "3d"])
 def test_roll_series_with_no_gap(window_length, rolling_series_pd):
-    actual_rolling = roll_series_with_gap(rolling_series_pd, window_length).mean()
+    actual_rolling = roll_series_with_gap(
+        rolling_series_pd,
+        window_length,
+        gap=0,
+        min_periods=1,
+    ).mean()
     expected_rolling = rolling_series_pd.rolling(window_length, min_periods=1).mean()
 
     pd.testing.assert_series_equal(actual_rolling, expected_rolling)
@@ -129,6 +144,7 @@ def test_roll_series_with_gap_early_values(window_length, gap, rolling_series_pd
         rolling_series_pd,
         window_length,
         gap=gap,
+        min_periods=1,
     ).count()
     num_empty_aggregates = len(default_partial_values.loc[default_partial_values == 0])
     num_partial_aggregates = len(
@@ -171,6 +187,7 @@ def test_roll_series_with_gap_early_values(window_length, gap, rolling_series_pd
 def test_roll_series_with_gap_nullable_types(rolling_series_pd):
     window_length = 3
     gap = 2
+    min_periods = 1
     # Because we're inserting nans, confirm that nullability of the dtype doesn't have an impact on the results
     nullable_series = rolling_series_pd.astype("Int64")
     non_nullable_series = rolling_series_pd.astype("int64")
@@ -179,11 +196,13 @@ def test_roll_series_with_gap_nullable_types(rolling_series_pd):
         nullable_series,
         window_length,
         gap=gap,
+        min_periods=min_periods,
     ).max()
     non_nullable_rolling_max = roll_series_with_gap(
         non_nullable_series,
         window_length,
         gap=gap,
+        min_periods=min_periods,
     ).max()
 
     pd.testing.assert_series_equal(nullable_rolling_max, non_nullable_rolling_max)
@@ -192,6 +211,7 @@ def test_roll_series_with_gap_nullable_types(rolling_series_pd):
 def test_roll_series_with_gap_nullable_types_with_nans(rolling_series_pd):
     window_length = 3
     gap = 2
+    min_periods = 1
     nullable_floats = rolling_series_pd.astype("float64").replace(
         {1: np.nan, 3: np.nan},
     )
@@ -201,11 +221,13 @@ def test_roll_series_with_gap_nullable_types_with_nans(rolling_series_pd):
         nullable_ints,
         window_length,
         gap=gap,
+        min_periods=min_periods,
     ).max()
     nullable_floats_rolling_max = roll_series_with_gap(
         nullable_floats,
         window_length,
         gap=gap,
+        min_periods=min_periods,
     ).max()
 
     pd.testing.assert_series_equal(
@@ -238,13 +260,23 @@ def test_apply_roll_with_offset_gap(window_length, gap, rolling_series_pd):
     def max_wrapper(sub_s):
         return apply_roll_with_offset_gap(sub_s, gap, max, min_periods=1)
 
-    rolling_max_obj = roll_series_with_gap(rolling_series_pd, window_length, gap=gap)
+    rolling_max_obj = roll_series_with_gap(
+        rolling_series_pd,
+        window_length,
+        gap=gap,
+        min_periods=1,
+    )
     rolling_max_series = rolling_max_obj.apply(max_wrapper)
 
     def min_wrapper(sub_s):
         return apply_roll_with_offset_gap(sub_s, gap, min, min_periods=1)
 
-    rolling_min_obj = roll_series_with_gap(rolling_series_pd, window_length, gap=gap)
+    rolling_min_obj = roll_series_with_gap(
+        rolling_series_pd,
+        window_length,
+        gap=gap,
+        min_periods=1,
+    )
     rolling_min_series = rolling_min_obj.apply(min_wrapper)
 
     assert len(rolling_max_series) == len(rolling_series_pd)
@@ -285,7 +317,12 @@ def test_apply_roll_with_offset_gap_default_min_periods(min_periods, rolling_ser
     def count_wrapper(sub_s):
         return apply_roll_with_offset_gap(sub_s, gap, len, min_periods=min_periods)
 
-    rolling_count_obj = roll_series_with_gap(rolling_series_pd, window_length, gap=gap)
+    rolling_count_obj = roll_series_with_gap(
+        rolling_series_pd,
+        window_length,
+        gap=gap,
+        min_periods=min_periods,
+    )
     rolling_count_series = rolling_count_obj.apply(count_wrapper)
 
     # gap essentially creates a rolling series that has no elements; which should be nan
@@ -314,7 +351,12 @@ def test_apply_roll_with_offset_gap_min_periods(min_periods, rolling_series_pd):
     def count_wrapper(sub_s):
         return apply_roll_with_offset_gap(sub_s, gap, len, min_periods=min_periods)
 
-    rolling_count_obj = roll_series_with_gap(rolling_series_pd, window_length, gap=gap)
+    rolling_count_obj = roll_series_with_gap(
+        rolling_series_pd,
+        window_length,
+        gap=gap,
+        min_periods=min_periods,
+    )
     rolling_count_series = rolling_count_obj.apply(count_wrapper)
 
     # gap essentially creates rolling series that have no elements; which should be nan
@@ -333,6 +375,7 @@ def test_apply_roll_with_offset_gap_min_periods(min_periods, rolling_series_pd):
 def test_apply_roll_with_offset_gap_non_uniform():
     window_length = "3d"
     gap = "3d"
+    min_periods = 1
     # When the data isn't uniform, this impacts the number of values in each rolling window
     datetimes = (
         list(pd.date_range(start="2017-01-01", freq="1d", periods=7))
@@ -351,9 +394,14 @@ def test_apply_roll_with_offset_gap_non_uniform():
     )
 
     def count_wrapper(sub_s):
-        return apply_roll_with_offset_gap(sub_s, gap, len, min_periods=1)
+        return apply_roll_with_offset_gap(sub_s, gap, len, min_periods=min_periods)
 
-    rolling_count_obj = roll_series_with_gap(no_freq_series, window_length, gap=gap)
+    rolling_count_obj = roll_series_with_gap(
+        no_freq_series,
+        window_length,
+        gap=gap,
+        min_periods=min_periods,
+    )
     rolling_count_series = rolling_count_obj.apply(count_wrapper)
 
     pd.testing.assert_series_equal(rolling_count_series, expected_series)
@@ -451,21 +499,29 @@ def test_roll_series_with_gap_different_input_types_same_result_uniform(
     offset_window_length = "5d"
     int_gap = 2
     int_window_length = 5
+    min_periods = 1
 
     # Rolling series' with matching input types
     expected_rolling_numeric = roll_series_with_gap(
         rolling_series_pd,
         window_size=int_window_length,
         gap=int_gap,
+        min_periods=min_periods,
     ).max()
 
     def count_wrapper(sub_s):
-        return apply_roll_with_offset_gap(sub_s, offset_gap, max, min_periods=1)
+        return apply_roll_with_offset_gap(
+            sub_s,
+            offset_gap,
+            max,
+            min_periods=min_periods,
+        )
 
     rolling_count_obj = roll_series_with_gap(
         rolling_series_pd,
         window_size=offset_window_length,
         gap=offset_gap,
+        min_periods=min_periods,
     )
     expected_rolling_offset = rolling_count_obj.apply(count_wrapper)
 
@@ -477,6 +533,7 @@ def test_roll_series_with_gap_different_input_types_same_result_uniform(
         rolling_series_pd,
         window_size=offset_window_length,
         gap=int_gap,
+        min_periods=min_periods,
     ).max()
     # Confirm the mismatched results also produce the same results
     pd.testing.assert_series_equal(expected_rolling_numeric, mismatched_numeric_gap)
@@ -485,31 +542,41 @@ def test_roll_series_with_gap_different_input_types_same_result_uniform(
 def test_roll_series_with_gap_incorrect_types(rolling_series_pd):
     error = "Window length must be either an offset string or an integer."
     with pytest.raises(TypeError, match=error):
-        roll_series_with_gap(rolling_series_pd, window_size=4.2, gap=4)
+        roll_series_with_gap(rolling_series_pd, window_size=4.2, gap=4, min_periods=1),
 
     error = "Gap must be either an offset string or an integer."
     with pytest.raises(TypeError, match=error):
-        roll_series_with_gap(rolling_series_pd, window_size=4, gap=4.2)
+        roll_series_with_gap(rolling_series_pd, window_size=4, gap=4.2, min_periods=1)
 
 
 def test_roll_series_with_gap_negative_inputs(rolling_series_pd):
     error = "Window length must be greater than zero."
     with pytest.raises(ValueError, match=error):
-        roll_series_with_gap(rolling_series_pd, window_size=-4, gap=4)
+        roll_series_with_gap(rolling_series_pd, window_size=-4, gap=4, min_periods=1)
 
     error = "Gap must be greater than or equal to zero."
     with pytest.raises(ValueError, match=error):
-        roll_series_with_gap(rolling_series_pd, window_size=4, gap=-4)
+        roll_series_with_gap(rolling_series_pd, window_size=4, gap=-4, min_periods=1)
 
 
 def test_roll_series_with_non_offset_string_inputs(rolling_series_pd):
     error = "Cannot roll series. The specified gap, test, is not a valid offset alias."
     with pytest.raises(ValueError, match=error):
-        roll_series_with_gap(rolling_series_pd, window_size="4D", gap="test")
+        roll_series_with_gap(
+            rolling_series_pd,
+            window_size="4D",
+            gap="test",
+            min_periods=1,
+        )
 
     error = "Cannot roll series. The specified window length, test, is not a valid offset alias."
     with pytest.raises(ValueError, match=error):
-        roll_series_with_gap(rolling_series_pd, window_size="test", gap="7D")
+        roll_series_with_gap(
+            rolling_series_pd,
+            window_size="test",
+            gap="7D",
+            min_periods=1,
+        )
 
     # Test mismatched types error
     error = (
@@ -518,7 +585,12 @@ def test_roll_series_with_non_offset_string_inputs(rolling_series_pd):
         "Please either change gap to be numeric or change window length to be an offset alias."
     )
     with pytest.raises(TypeError, match=error):
-        roll_series_with_gap(rolling_series_pd, window_size=7, gap="2d").max()
+        roll_series_with_gap(
+            rolling_series_pd,
+            window_size=7,
+            gap="2d",
+            min_periods=1,
+        ).max()
 
 
 @pytest.mark.parametrize(

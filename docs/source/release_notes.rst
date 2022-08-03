@@ -9,6 +9,7 @@ Future Release
     * Fixes
         * Update ``Trend`` and ``RollingTrend`` primitives to work with ``IntegerNullable`` inputs (:pr:`2204`)
     * Changes
+        * Extract duplicated logic for Rolling primitives into a general utility function (:pr:`2218`)
     * Documentation Changes
         * Add instructions to add new users to featuretools feedstock (:pr:`2215`)
     * Testing Changes
@@ -18,7 +19,7 @@ Future Release
         * Configure codecov to avoid premature PR comments (:pr:`2209`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`, :user:`ozzieD`
 
 v1.12.0 Jul 19, 2022
 ====================
