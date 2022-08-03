@@ -10,7 +10,7 @@ from featuretools.primitives import (
     RollingSTD,
     RollingTrend,
 )
-from featuretools.primitives.rolling_primitive_utils import roll_series_with_gap
+from featuretools.primitives.rolling_primitive_utils import apply_rolling_agg_to_series
 from featuretools.tests.primitive_tests.utils import get_number_from_offset
 
 
@@ -28,15 +28,12 @@ def test_rolling_max(min_periods, window_length, gap, rolling_series_pd):
     gap_num = get_number_from_offset(gap)
     window_length_num = get_number_from_offset(window_length)
     # Since we're using a uniform series we can check correctness using numeric parameters
-    expected_vals = (
-        roll_series_with_gap(
-            rolling_series_pd,
-            window_length_num,
-            gap=gap_num,
-            min_periods=min_periods,
-        )
-        .max()
-        .values
+    expected_vals = apply_rolling_agg_to_series(
+        rolling_series_pd,
+        lambda x: x.max(),
+        window_length_num,
+        gap=gap_num,
+        min_periods=min_periods,
     )
 
     primitive_instance = RollingMax(
@@ -72,15 +69,12 @@ def test_rolling_min(min_periods, window_length, gap, rolling_series_pd):
     window_length_num = get_number_from_offset(window_length)
 
     # Since we're using a uniform series we can check correctness using numeric parameters
-    expected_vals = (
-        roll_series_with_gap(
-            rolling_series_pd,
-            window_length_num,
-            gap=gap_num,
-            min_periods=min_periods,
-        )
-        .min()
-        .values
+    expected_vals = apply_rolling_agg_to_series(
+        rolling_series_pd,
+        lambda x: x.min(),
+        window_length_num,
+        gap=gap_num,
+        min_periods=min_periods,
     )
 
     primitive_instance = RollingMin(
@@ -116,15 +110,12 @@ def test_rolling_mean(min_periods, window_length, gap, rolling_series_pd):
     window_length_num = get_number_from_offset(window_length)
 
     # Since we're using a uniform series we can check correctness using numeric parameters
-    expected_vals = (
-        roll_series_with_gap(
-            rolling_series_pd,
-            window_length_num,
-            gap=gap_num,
-            min_periods=min_periods,
-        )
-        .mean()
-        .values
+    expected_vals = apply_rolling_agg_to_series(
+        rolling_series_pd,
+        np.mean,
+        window_length_num,
+        gap=gap_num,
+        min_periods=min_periods,
     )
 
     primitive_instance = RollingMean(
@@ -160,15 +151,12 @@ def test_rolling_std(min_periods, window_length, gap, rolling_series_pd):
     window_length_num = get_number_from_offset(window_length)
 
     # Since we're using a uniform series we can check correctness using numeric parameters
-    expected_vals = (
-        roll_series_with_gap(
-            rolling_series_pd,
-            window_length_num,
-            gap=gap_num,
-            min_periods=min_periods,
-        )
-        .std()
-        .values
+    expected_vals = apply_rolling_agg_to_series(
+        rolling_series_pd,
+        lambda x: x.std(),
+        window_length_num,
+        gap=gap_num,
+        min_periods=min_periods,
     )
 
     primitive_instance = RollingSTD(
@@ -207,15 +195,11 @@ def test_rolling_count(window_length, gap, rolling_series_pd):
     gap_num = get_number_from_offset(gap)
     window_length_num = get_number_from_offset(window_length)
 
-    expected_vals = (
-        roll_series_with_gap(
-            rolling_series_pd,
-            window_length_num,
-            gap=gap_num,
-            min_periods=window_length_num,
-        )
-        .count()
-        .values
+    expected_vals = apply_rolling_agg_to_series(
+        rolling_series_pd,
+        lambda x: x.count(),
+        window_length_num,
+        gap=gap_num,
     )
 
     primitive_instance = RollingCount(

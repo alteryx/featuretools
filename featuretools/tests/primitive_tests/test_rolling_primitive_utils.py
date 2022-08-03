@@ -15,6 +15,7 @@ from featuretools.primitives import (
 from featuretools.primitives.rolling_primitive_utils import (
     _get_rolled_series_without_gap,
     apply_roll_with_offset_gap,
+    apply_rolling_agg_to_series,
     roll_series_with_gap,
 )
 from featuretools.tests.primitive_tests.utils import get_number_from_offset
