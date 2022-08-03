@@ -4,10 +4,7 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, Double
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
-from featuretools.primitives.rolling_primitive_utils import (
-    apply_roll_with_offset_gap,
-    roll_series_with_gap,
-)
+from featuretools.primitives.rolling_primitive_utils import apply_rolling_agg_to_series
 from featuretools.utils import calculate_trend
 
 
@@ -102,21 +99,17 @@ class RollingMax(TransformPrimitive):
 
     def get_function(self):
         def rolling_max(datetime, numeric):
-            x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = roll_series_with_gap(
-                x,
-                self.window_length,
-                gap=self.gap,
-                min_periods=self.min_periods,
-            )
+            def _pandas_max(series):
+                return series.max()
 
-            if isinstance(self.gap, str):
-                additional_args = (self.gap, max, self.min_periods)
-                return rolled_series.apply(
-                    apply_roll_with_offset_gap,
-                    args=additional_args,
-                ).values
-            return rolled_series.max().values
+            x = pd.Series(numeric.values, index=datetime.values)
+            return apply_rolling_agg_to_series(
+                x,
+                _pandas_max,
+                self.window_length,
+                self.gap,
+                self.min_periods,
+            )
 
         return rolling_max
 
@@ -210,22 +203,18 @@ class RollingMin(TransformPrimitive):
         self.min_periods = min_periods
 
     def get_function(self):
+        def _pandas_min(series):
+            return series.min()
+
         def rolling_min(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = roll_series_with_gap(
+            return apply_rolling_agg_to_series(
                 x,
+                _pandas_min,
                 self.window_length,
-                gap=self.gap,
-                min_periods=self.min_periods,
+                self.gap,
+                self.min_periods,
             )
-
-            if isinstance(self.gap, str):
-                additional_args = (self.gap, min, self.min_periods)
-                return rolled_series.apply(
-                    apply_roll_with_offset_gap,
-                    args=additional_args,
-                ).values
-            return rolled_series.min().values
 
         return rolling_min
 
@@ -314,19 +303,13 @@ class RollingMean(TransformPrimitive):
     def get_function(self):
         def rolling_mean(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = roll_series_with_gap(
+            return apply_rolling_agg_to_series(
                 x,
+                np.mean,
                 self.window_length,
-                gap=self.gap,
-                min_periods=self.min_periods,
+                self.gap,
+                self.min_periods,
             )
-
-            if isinstance(self.gap, str):
-                additional_args = (self.gap, np.mean, self.min_periods)
-                return rolled_series.apply(
-                    apply_roll_with_offset_gap, args=additional_args
-                ).values
-            return rolled_series.mean().values
 
         return rolling_mean
 
@@ -420,26 +403,17 @@ class RollingSTD(TransformPrimitive):
 
     def get_function(self):
         def rolling_std(datetime, numeric):
+            def _pandas_std(series):
+                return series.std()
+
             x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = roll_series_with_gap(
+            return apply_rolling_agg_to_series(
                 x,
+                _pandas_std,
                 self.window_length,
-                gap=self.gap,
-                min_periods=self.min_periods,
+                self.gap,
+                self.min_periods,
             )
-
-            if isinstance(self.gap, str):
-
-                def _pandas_std(series):
-                    return series.std()
-
-                additional_args = (self.gap, _pandas_std, self.min_periods)
-
-                return rolled_series.apply(
-                    apply_roll_with_offset_gap,
-                    args=additional_args,
-                ).values
-            return rolled_series.std().values
 
         return rolling_std
 
@@ -517,16 +491,13 @@ class RollingTrend(TransformPrimitive):
     def get_function(self):
         def rolling_trend(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = roll_series_with_gap(
-                x, self.window_length, gap=self.gap, min_periods=self.min_periods
+            return apply_rolling_agg_to_series(
+                x,
+                calculate_trend,
+                self.window_length,
+                self.gap,
+                self.min_periods,
             )
-            if isinstance(self.gap, str):
-                additional_args = (self.gap, calculate_trend, self.min_periods)
-                return rolled_series.apply(
-                    apply_roll_with_offset_gap,
-                    args=additional_args,
-                ).values
-            return rolled_series.apply(calculate_trend).values
 
         return rolling_trend
 
@@ -618,34 +589,17 @@ class RollingCount(TransformPrimitive):
 
     def get_function(self):
         def rolling_count(datetime):
+            def _pandas_count(series):
+                return series.count()
+
             x = pd.Series(1, index=datetime)
-            rolled_series = roll_series_with_gap(
+            return apply_rolling_agg_to_series(
                 x,
+                _pandas_count,
                 self.window_length,
-                gap=self.gap,
-                min_periods=self.min_periods,
+                self.gap,
+                self.min_periods,
+                ignore_window_nans=True,
             )
-
-            if isinstance(self.gap, str):
-                # Since apply_roll_with_offset_gap doesn't artificially add nans before rolling,
-                # it produces correct results
-                additional_args = (self.gap, len, self.min_periods)
-                return rolled_series.apply(
-                    apply_roll_with_offset_gap,
-                    args=additional_args,
-                ).values
-
-            rolling_count_series = rolled_series.count()
-
-            # The shift made to account for gap adds NaNs to the rolled series
-            # Those values get counted towards min_periods when they shouldn't.
-            # So we need to replace any of those partial values with NaNs
-            if not self.min_periods:
-                # when min periods is 0 or None it's treated the same as if it's 1
-                num_nans = self.gap
-            else:
-                num_nans = self.min_periods - 1 + self.gap
-            rolling_count_series.iloc[range(num_nans)] = np.nan
-            return rolling_count_series.values
 
         return rolling_count

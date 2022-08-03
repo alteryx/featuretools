@@ -3,7 +3,7 @@ from pandas import Series
 from pandas.tseries.frequencies import to_offset
 
 
-def roll_series_with_gap(series, window_size, gap=0, min_periods=1):
+def roll_series_with_gap(series, window_size, gap, min_periods):
     """Provide rolling window calculations where the windows are determined using both a gap parameter
     that indicates the amount of time between each instance and its window and a window length parameter
     that determines the amount of data in each window.
@@ -143,7 +143,7 @@ def _check_window_size(window_size):
             to_offset(window_size)
         except ValueError:
             raise ValueError(
-                f"Cannot roll series. The specified window length, {window_size}, is not a valid offset alias."
+                f"Cannot roll series. The specified window length, {window_size}, is not a valid offset alias.",
             )
     # Or an integer greater than zero
     elif isinstance(window_size, int):
@@ -160,13 +160,13 @@ def _check_gap(window_size, gap):
             raise TypeError(
                 f"Cannot roll series with offset gap, {gap}, and numeric window length, {window_size}. "
                 "If an offset alias is used for gap, the window length must also be defined as an offset alias. "
-                "Please either change gap to be numeric or change window length to be an offset alias."
+                "Please either change gap to be numeric or change window length to be an offset alias.",
             )
         try:
             to_offset(gap)
         except ValueError:
             raise ValueError(
-                f"Cannot roll series. The specified gap, {gap}, is not a valid offset alias."
+                f"Cannot roll series. The specified gap, {gap}, is not a valid offset alias.",
             )
     # Or an integer greater than or equal to zero
     elif isinstance(gap, int):
@@ -174,3 +174,33 @@ def _check_gap(window_size, gap):
             raise ValueError("Gap must be greater than or equal to zero.")
     else:
         raise TypeError("Gap must be either an offset string or an integer.")
+
+
+def apply_rolling_agg_to_series(
+    series,
+    agg_func,
+    window_size,
+    gap=0,
+    min_periods=1,
+    ignore_window_nans=False,
+):
+    rolled_series = roll_series_with_gap(series, window_size, gap, min_periods)
+    if isinstance(gap, str):
+        additional_args = (gap, agg_func, min_periods)
+        return rolled_series.apply(
+            apply_roll_with_offset_gap,
+            args=additional_args,
+        ).values
+    applied_rolled_series = rolled_series.apply(agg_func)
+
+    # The shift made to account for gap adds NaNs to the rolled series
+    # Those values get counted towards min_periods when they shouldn't.
+    # So we need to replace any of those partial values with NaNs
+    if ignore_window_nans:
+        if not min_periods:
+            # when min periods is 0 or None it's treated the same as if it's 1
+            num_nans = gap
+        else:
+            num_nans = min_periods - 1 + gap
+        rolled_series.iloc[range(num_nans)] = np.nan
+    return applied_rolled_series.values
