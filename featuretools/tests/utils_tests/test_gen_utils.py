@@ -90,4 +90,5 @@ def test_camel_and_title_to_snake():
         camel_and_title_to_snake("alteryx_machine_learning")
         == "alteryx_machine_learning"
     )
+    assert camel_and_title_to_snake("a_1") == "a_1"
     assert camel_and_title_to_snake("USDValue") == "usd_value"
