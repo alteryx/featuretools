@@ -105,7 +105,7 @@ def test_get_descriptions_doesnt_truncate_primitive_description():
     descr = _get_descriptions([Diff])
     assert (
         descr[0]
-        == "Compute the difference between the value in a list and the previous value in that list."
+        == "Computes the difference between the value in a list and the previous value in that list."
     )
 
     # multiple lines; multiple sentences
