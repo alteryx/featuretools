@@ -99,13 +99,10 @@ class RollingMax(TransformPrimitive):
 
     def get_function(self):
         def rolling_max(datetime, numeric):
-            def _pandas_max(series):
-                return series.max()
-
             x = pd.Series(numeric.values, index=datetime.values)
             return apply_rolling_agg_to_series(
                 x,
-                _pandas_max,
+                lambda series: series.max(),
                 self.window_length,
                 self.gap,
                 self.min_periods,
@@ -203,14 +200,11 @@ class RollingMin(TransformPrimitive):
         self.min_periods = min_periods
 
     def get_function(self):
-        def _pandas_min(series):
-            return series.min()
-
         def rolling_min(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
             return apply_rolling_agg_to_series(
                 x,
-                _pandas_min,
+                lambda series: series.min(),
                 self.window_length,
                 self.gap,
                 self.min_periods,
@@ -403,13 +397,10 @@ class RollingSTD(TransformPrimitive):
 
     def get_function(self):
         def rolling_std(datetime, numeric):
-            def _pandas_std(series):
-                return series.std()
-
             x = pd.Series(numeric.values, index=datetime.values)
             return apply_rolling_agg_to_series(
                 x,
-                _pandas_std,
+                lambda series: series.std(),
                 self.window_length,
                 self.gap,
                 self.min_periods,
@@ -589,13 +580,10 @@ class RollingCount(TransformPrimitive):
 
     def get_function(self):
         def rolling_count(datetime):
-            def _pandas_count(series):
-                return series.count()
-
             x = pd.Series(1, index=datetime)
             return apply_rolling_agg_to_series(
                 x,
-                _pandas_count,
+                lambda series: series.count(),
                 self.window_length,
                 self.gap,
                 self.min_periods,
