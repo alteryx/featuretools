@@ -202,5 +202,5 @@ def apply_rolling_agg_to_series(
             num_nans = gap
         else:
             num_nans = min_periods - 1 + gap
-        rolled_series.iloc[range(num_nans)] = np.nan
+        applied_rolled_series.iloc[range(num_nans)] = np.nan
     return applied_rolled_series.values

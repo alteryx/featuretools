@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -12,10 +10,7 @@ from featuretools.primitives import (
     RollingSTD,
     RollingTrend,
 )
-from featuretools.primitives.rolling_primitive_utils import (
-    apply_rolling_agg_to_series,
-    roll_series_with_gap,
-)
+from featuretools.primitives.rolling_primitive_utils import roll_series_with_gap
 from featuretools.tests.primitive_tests.utils import get_number_from_offset
 
 
@@ -439,72 +434,3 @@ def test_rolling_trend_non_uniform():
         primitive_instance(no_freq_series.index, pd.Series(no_freq_series.values)),
     )
     pd.testing.assert_series_equal(rolled_series, expected_series)
-
-
-@pytest.mark.parametrize(
-    "primitive",
-    [RollingCount, RollingMax, RollingMin, RollingMean, RollingSTD, RollingTrend],
-)
-@patch("featuretools.primitives.rolling_transform_primitive.apply_roll_with_offset_gap")
-def test_no_call_to_apply_roll_with_offset_gap_with_numeric(
-    mock_apply_roll,
-    primitive,
-    rolling_series_pd,
-):
-    assert not mock_apply_roll.called
-
-    fully_numeric_primitive = primitive(window_length=3, gap=1)
-    primitive_func = fully_numeric_primitive.get_function()
-    if isinstance(fully_numeric_primitive, RollingCount):
-        pd.Series(primitive_func(rolling_series_pd.index))
-    else:
-        pd.Series(
-            primitive_func(
-                rolling_series_pd.index,
-                pd.Series(rolling_series_pd.values),
-            ),
-        )
-
-    assert not mock_apply_roll.called
-
-    offset_window_primitive = primitive(window_length="3d", gap=1)
-    primitive_func = offset_window_primitive.get_function()
-    if isinstance(offset_window_primitive, RollingCount):
-        pd.Series(primitive_func(rolling_series_pd.index))
-    else:
-        pd.Series(
-            primitive_func(
-                rolling_series_pd.index,
-                pd.Series(rolling_series_pd.values),
-            ),
-        )
-
-    assert not mock_apply_roll.called
-
-    no_gap_specified_primitive = primitive(window_length="3d")
-    primitive_func = no_gap_specified_primitive.get_function()
-    if isinstance(no_gap_specified_primitive, RollingCount):
-        pd.Series(primitive_func(rolling_series_pd.index))
-    else:
-        pd.Series(
-            primitive_func(
-                rolling_series_pd.index,
-                pd.Series(rolling_series_pd.values),
-            ),
-        )
-
-    assert not mock_apply_roll.called
-
-    no_gap_specified_primitive = primitive(window_length="3d", gap="1d")
-    primitive_func = no_gap_specified_primitive.get_function()
-    if isinstance(no_gap_specified_primitive, RollingCount):
-        pd.Series(primitive_func(rolling_series_pd.index))
-    else:
-        pd.Series(
-            primitive_func(
-                rolling_series_pd.index,
-                pd.Series(rolling_series_pd.values),
-            ),
-        )
-
-    assert mock_apply_roll.called
