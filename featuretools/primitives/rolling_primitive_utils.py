@@ -98,7 +98,7 @@ def apply_roll_with_offset_gap(
     gap_offset: str,
     reducer_fn: Callable[[Series], float],
     min_periods: int,
-) -> Union[np.nan, float]:
+) -> float:
     """Takes in a series to which an offset gap will be applied, removing however many
     rows fall under the gap before applying the reducing function.
 
