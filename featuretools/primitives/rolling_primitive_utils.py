@@ -13,7 +13,7 @@ def roll_series_with_gap(
     window_size: Union[int, str],
     gap: Union[int, str],
     min_periods: int,
-) -> Rolling:
+) -> "Rolling":
     """Provide rolling window calculations where the windows are determined using both a gap parameter
     that indicates the amount of time between each instance and its window and a window length parameter
     that determines the amount of data in each window.
