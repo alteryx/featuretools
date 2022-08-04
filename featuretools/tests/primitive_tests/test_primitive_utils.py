@@ -8,9 +8,11 @@ from featuretools.primitives import (
     Age,
     Count,
     Day,
+    Diff,
     GreaterThan,
     Haversine,
     IsFreeEmailDomain,
+    IsNull,
     Last,
     Max,
     Mean,
@@ -35,6 +37,7 @@ from featuretools.primitives import (
     get_transform_primitives,
 )
 from featuretools.primitives.base import PrimitiveBase
+from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
 from featuretools.primitives.utils import (
     _check_input_types,
     _get_descriptions,
@@ -91,6 +94,54 @@ def test_descriptions():
         GreaterThan: "Determines if values in one list are greater than another list.",
     }
     assert _get_descriptions(list(primitives.keys())) == list(primitives.values())
+
+
+def test_get_descriptions_doesnt_truncate_primitive_description():
+    # single line
+    descr = _get_descriptions([IsNull])
+    assert descr[0] == "Determines if a value is null."
+
+    # multiple line; one sentence
+    descr = _get_descriptions([Diff])
+    assert (
+        descr[0]
+        == "Computes the difference between the value in a list and the previous value in that list."
+    )
+
+    # multiple lines; multiple sentences
+    class TestPrimitive(TransformPrimitive):
+        """This is text that continues on after the line break
+            and ends in a period.
+            This is text on one line without a period
+
+        Examples:
+            >>> absolute = Absolute()
+            >>> absolute([3.0, -5.0, -2.4]).tolist()
+            [3.0, 5.0, 2.4]
+        """
+
+        name = "test_primitive"
+
+    descr = _get_descriptions([TestPrimitive])
+    assert (
+        descr[0]
+        == "This is text that continues on after the line break and ends in a period. This is text on one line without a period"
+    )
+
+    # docstring ends after description
+    class TestPrimitive2(TransformPrimitive):
+        """This is text that continues on after the line break
+        and ends in a period.
+        This is text on one line without a period
+        """
+
+        name = "test_primitive"
+
+    descr = _get_descriptions([TestPrimitive2])
+    assert (
+        descr[0]
+        == "This is text that continues on after the line break and ends in a period. This is text on one line without a period"
+    )
 
 
 def test_get_default_aggregation_primitives():
