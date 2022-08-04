@@ -8,8 +8,10 @@ Future Release
     * Enhancements
     * Fixes
         * Update ``Trend`` and ``RollingTrend`` primitives to work with ``IntegerNullable`` inputs (:pr:`2204`)
+        * ``camel_and_title_to_snake`` handles snake case strings with numbers (:pr:`2220`)
     * Changes
         * Extract duplicated logic for Rolling primitives into a general utility function (:pr:`2218`)
+        * Change ``_get_description`` to split on blank lines to avoid truncating primitive descriptions (:pr:`2219`)
     * Documentation Changes
         * Add instructions to add new users to featuretools feedstock (:pr:`2215`)
     * Testing Changes
@@ -19,7 +21,7 @@ Future Release
         * Configure codecov to avoid premature PR comments (:pr:`2209`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`, :user:`ozzieD`
+    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`ozzieD`
 
 v1.12.0 Jul 19, 2022
 ====================
