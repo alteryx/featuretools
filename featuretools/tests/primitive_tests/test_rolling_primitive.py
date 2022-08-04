@@ -179,7 +179,7 @@ def test_rolling_std(min_periods, window_length, gap, rolling_series_pd):
     else:
         num_nans = gap_num + num_nans_from_min_periods - 1
 
-    # The extra 1 at the beinning is because the std pandas function returns NaN if there's only one value
+    # The extra 1 at the beginning is because the std pandas function returns NaN if there's only one value
     assert actual_vals.isna().sum() == num_nans
     pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
 

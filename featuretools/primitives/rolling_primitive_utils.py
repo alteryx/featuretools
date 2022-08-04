@@ -17,18 +17,18 @@ def roll_series_with_gap(
     that determines the amount of data in each window.
 
     Args:
-        series (Series): The series over which rolling windows will be created. Must be numeric in nature
+        series (Series): The series over which rolling windows will be created. The series must have a numeric column
             and have a DatetimeIndex.
         window_size (int, string): Specifies the amount of data included in each window.
-            If an integer is provided, will correspond to a number of rows. For data with a uniform sampling frequency,
+            If an integer is provided, it will correspond to a number of rows. For data with a uniform sampling frequency,
             for example of one day, the window_length will correspond to a period of time, in this case,
             7 days for a window_length of 7.
             If a string is provided, it must be one of pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time that each window should span.
-            The list of available offset aliases, can be found at
+            The list of available offset aliases can be found at
             https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
         gap (int, string, optional): Specifies a gap backwards from each instance before the
-            window of usable data begins. If an integer is provided, will correspond to a number of rows.
+            window of usable data begins. If an integer is provided, it will correspond to a number of rows.
             If a string is provided, it must be one of pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time between a target instance and the beginning of its window.
             Defaults to 0, which will include the target instance in the window.
@@ -174,19 +174,19 @@ def apply_rolling_agg_to_series(
     """Applies a given aggregation function to a rolled series.
 
     Args:
-        series (Series): The series over which rolling windows will be created. Must be numeric in nature
+        series (Series): The series over which rolling windows will be created. The series must have a numeric column
             and have a DatetimeIndex.
         agg_func (callable[Series -> float]): The aggregation function to apply to a rolled series.
         window_size (int, string): Specifies the amount of data included in each window.
-            If an integer is provided, will correspond to a number of rows. For data with a uniform sampling frequency,
+            If an integer is provided, it will correspond to a number of rows. For data with a uniform sampling frequency,
             for example of one day, the window_length will correspond to a period of time, in this case,
             7 days for a window_length of 7.
             If a string is provided, it must be one of pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time that each window should span.
-            The list of available offset aliases, can be found at
+            The list of available offset aliases can be found at
             https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
         gap (int, string, optional): Specifies a gap backwards from each instance before the
-            window of usable data begins. If an integer is provided, will correspond to a number of rows.
+            window of usable data begins. If an integer is provided, it will correspond to a number of rows.
             If a string is provided, it must be one of pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time between a target instance and the beginning of its window.
             Defaults to 0, which will include the target instance in the window.
@@ -196,7 +196,8 @@ def apply_rolling_agg_to_series(
             to not choose a min_periods that will always be larger than the number of observations in a window.
             Defaults to 1.
         ignore_window_nans (bool, optional): Whether or not NaNs in the rolling window should be included in the rolling calculation.
-            NaNs by default get counted towards min_periods. When set to true, all partial values calculated by `agg_func` in the rolling window get replaced with NaN.
+            NaNs by default get counted towards min_periods. When set to true,
+            all partial values calculated by `agg_func` in the rolling window get replaced with NaN.
 
     Returns:
         numpy.ndarray: The array of rolling calculated values.
@@ -206,16 +207,17 @@ def apply_rolling_agg_to_series(
         on the Rolling object returned here may treat NaNs as periods to include in window calculations.
         So a window [NaN, 1, 3]  when `min_periods=3` will proceed with count, saying there are three periods
         but only two values and would return count=2. The calculation `max` on the other hand,
-        would say that there are not three periods in that window and would return max=NaN.
+        would not recognize NaN as a valid period, and would therefore return `max=NaN` as the window has
+        less valid periods (two, in this case) than `min_periods` (three, in this case).
         Most rolling calculations act this way. The implication of that here is that in order to
-        achieve the gap, we insert NaNs at the beinning of the series, which would cause `count` to calculate
+        achieve the gap, we insert NaNs at the beginning of the series, which would cause `count` to calculate
         on windows that technically should not have the correct number of periods. Any primitive that uses this function
         should determine whether `ignore_window_nans` should be set to `true`.
 
     Note:
         Only offset aliases with fixed frequencies can be used when defining gap and window_length.
         This means that aliases such as `M` or `W` cannot be used, as they can indicate different
-        numbers of days. ('M', because different months are different numbers of days;
+        numbers of days. ('M', because different months have different numbers of days;
         'W' because week will indicate a certain day of the week, like W-Wed, so that will
         indicate a different number of days depending on the anchoring date.)
 
