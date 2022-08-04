@@ -46,7 +46,7 @@ jobs:
           git config --unset-all http.https://github.com/.extraheader
           git config --global user.email "machineOSS@alteryx.com"
           git config --global user.name "machineAYX Bot"
-          git remote set-url origin https://${{ secrets.AUTO_APPROVE_TOKEN }}@github.com/machineAYX/featuretools-feedstock
+          git remote set-url origin https://${{ secrets.AUTO_APPROVE_TOKEN }}@github.com/alteryx/featuretools-feedstock
           git checkout -b conda-autocreate-${{ github.event.inputs.pypi_version }}
           git add recipe/meta.yaml
           git commit -m "auto commit"
