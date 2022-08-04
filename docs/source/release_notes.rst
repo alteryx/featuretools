@@ -14,7 +14,7 @@ Release Notes
 .. Thanks to the following people for contributing to this release:
 
 v1.12.1 Aug 4, 2022
-====================
+===================
     * Fixes
         * Update ``Trend`` and ``RollingTrend`` primitives to work with ``IntegerNullable`` inputs (:pr:`2204`)
         * ``camel_and_title_to_snake`` handles snake case strings with numbers (:pr:`2220`)
