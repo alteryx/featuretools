@@ -53,4 +53,4 @@ jobs:
           git push origin conda-autocreate-${{ github.event.inputs.pypi_version }}
       - name: Adding URL to job output
         run: |
-          echo "Conda Feedstock Pull Request: https://github.com/machineAYX/featuretools-feedstock/pull/new/conda-autocreate-${{ github.event.inputs.pypi_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "Conda Feedstock Pull Request: https://github.com/alteryx/featuretools-feedstock/pull/new/conda-autocreate-${{ github.event.inputs.pypi_version }}" >> $GITHUB_STEP_SUMMARY
