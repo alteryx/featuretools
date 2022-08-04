@@ -20,13 +20,12 @@ jobs:
       - name: Pull latest from upstream for user forked feedstock
         run: |
           gh auth status
-          gh repo fork conda-forge/featuretools-feedstock --clone
-          gh repo sync machineAYX/featuretools-feedstock --branch main --source conda-forge/featuretools-feedstock --force
+          gh repo sync alteryx/featuretools-feedstock --branch main --source conda-forge/featuretools-feedstock --force
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
       - uses: actions/checkout@v3
         with:
-          repository: machineAYX/featuretools-feedstock
+          repository: alteryx/featuretools-feedstock
           ref: main
           path: "./featuretools-feedstock"
           fetch-depth: '0'
