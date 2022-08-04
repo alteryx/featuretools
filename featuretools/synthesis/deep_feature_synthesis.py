@@ -1176,7 +1176,7 @@ def check_primitive(
             raise ValueError(
                 "Unknown {} primitive {}. "
                 "Call ft.primitives.list_primitives() to get"
-                " a list of available primitives".format(prim_type, primitive),
+                " a list of available primitives".format(prim_type, prim_string),
             )
         primitive = prim_dict[prim_string]
     primitive = handle_primitive(primitive)
