@@ -6,11 +6,25 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ``series_library`` attribute to ``PrimitiveBase`` (:pr:`2210`)
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+        * Update create feedstock PR forked repo to use (:pr:`2223`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, user:`sbadithe`
+    
+v1.12.1 Aug 4, 2022
+===================
     * Fixes
         * Update ``Trend`` and ``RollingTrend`` primitives to work with ``IntegerNullable`` inputs (:pr:`2204`)
+        * ``camel_and_title_to_snake`` handles snake case strings with numbers (:pr:`2220`)
     * Changes
-        * Add ``series_library`` attribute to ``PrimitiveBase`` (:pr:`2210`)
+        * Change ``_get_description`` to split on blank lines to avoid truncating primitive descriptions (:pr:`2219`)
     * Documentation Changes
+        * Add instructions to add new users to featuretools feedstock (:pr:`2215`)
     * Testing Changes
         * Add create feedstock PR workflow (:pr:`2181`)
         * Add performance tests for python 3.9 and 3.10 (:pr:`2198`, :pr:`2208`)
@@ -18,7 +32,7 @@ Future Release
         * Configure codecov to avoid premature PR comments (:pr:`2209`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 v1.12.0 Jul 19, 2022
 ====================
