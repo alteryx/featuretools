@@ -82,18 +82,21 @@ After the release pull request has been merged into the `main` branch, it is tim
 
 ## Release on conda-forge
 
-In order to release on conda-forge, you can either wait for a bot to create a PR, or manually kickoff the creation with GitHub Actions
+In order to release on conda-forge, you can either wait for a bot to create a pull request, or manually kickoff the creation with GitHub Actions
 
-### Option 1: Manually create the new PR with GitHub Actions
+### Option 1: Manually create the new pull request with GitHub Actions
 1. Go to this GitHub Action: https://github.com/alteryx/featuretools/actions/workflows/create_feedstock_pr.yaml
-2. Input the released version with the v prefix (e.g. v0.13.3)
-3. Kickoff the GitHub action, and monitor the Job Summary.
+2. Click **Run workflow** and input the released version with the v prefix (e.g. `v0.13.3`)
+3. Kickoff the GitHub Action, and monitor the Job Summary.
 4. At the completion of the job, you should see summary output, with a URL. 
-    * You will need to visit this URL, and create a PR.
-    * You can also create the PR by clicking the branch name (ex - `conda-autocreate-v0.13.3`): 
+    * You will need to visit this URL, and create a pull request.
+    * You can also create the pull request by clicking the branch name (e.g. - `v0.13.3`): 
       - https://github.com/alteryx/featuretools-feedstock/branches
-5. Verify the `requirements['run']` (in __recipe/meta.yml__) match the `install_requires` in __featuretools/setup.cfg__.
-    * Verify the `test['requires']` (in __recipe/meta.yml__) match the test requirements in `[options.extras_require]` in __featuretools/setup.cfg__
+5. Verify that the PR has the following: 
+    * The `build['number']` is 0 (in __recipe/meta.yml__).
+    * The `requirements['run']` (in __recipe/meta.yml__) match the `install_requires` in __woodwork/setup.cfg__.
+    * The `test['requires']` (in __recipe/meta.yml__) match the test requirements in `[options.extras_require]` in __woodwork/setup.cfg__
+6. Satisfy the conditions in pull request description and **merge it if the CI passes**. 
 
 ### Option 2: Waiting for bot to create new PR
 
