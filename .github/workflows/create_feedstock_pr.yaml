@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.inputs.pypi_version }}
+          ref: ${{ github.event.inputs.version }}
           path: "./featuretools"
       - name: Pull latest from upstream for user forked feedstock
         run: |
@@ -34,7 +34,7 @@ jobs:
         uses: alteryx/create-feedstock-meta-yaml@v3
         with:
           project: "featuretools"
-          pypi_version: ${{ github.event.inputs.pypi_version }}
+          pypi_version: ${{ github.event.inputs.version }}
           setup_cfg_filepath: "featuretools/setup.cfg"
           meta_yaml_filepath: "featuretools-feedstock/recipe/meta.yaml"
           add_to_test_requirements: "graphviz !=2.47.2"
@@ -47,10 +47,10 @@ jobs:
           git config --global user.email "machineOSS@alteryx.com"
           git config --global user.name "machineAYX Bot"
           git remote set-url origin https://${{ secrets.AUTO_APPROVE_TOKEN }}@github.com/alteryx/featuretools-feedstock
-          git checkout -b conda-autocreate-${{ github.event.inputs.pypi_version }}
+          git checkout -b ${{ github.event.inputs.version }}
           git add recipe/meta.yaml
           git commit -m "auto commit"
-          git push origin conda-autocreate-${{ github.event.inputs.pypi_version }}
+          git push origin ${{ github.event.inputs.version }}
       - name: Adding URL to job output
         run: |
-          echo "Conda Feedstock Pull Request: https://github.com/alteryx/featuretools-feedstock/pull/new/conda-autocreate-${{ github.event.inputs.pypi_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "Conda Feedstock Pull Request: https://github.com/alteryx/featuretools-feedstock/pull/new/${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
