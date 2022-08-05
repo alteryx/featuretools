@@ -252,4 +252,4 @@ def test_convert_timedelta_to_floats(td, expected_floats):
 )
 def test_calculate_trend(series, expected_trends):
     actual_trends = calculate_trend(series)
-    assert actual_trends == expected_trends
+    assert np.isclose(actual_trends, expected_trends)

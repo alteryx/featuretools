@@ -517,7 +517,7 @@ class NotEqualScalar(TransformPrimitive):
 
 
 class AddNumeric(TransformPrimitive):
-    """Element-wise addition of two lists.
+    """Performs element-wise addition of two lists.
 
     Description:
         Given a list of values X and a list of values
@@ -548,7 +548,7 @@ class AddNumeric(TransformPrimitive):
 
 
 class AddNumericScalar(TransformPrimitive):
-    """Add a scalar to each value in the list.
+    """Adds a scalar to each value in the list.
 
     Description:
         Given a list of numeric values and a scalar, add
@@ -580,7 +580,7 @@ class AddNumericScalar(TransformPrimitive):
 
 
 class SubtractNumeric(TransformPrimitive):
-    """Element-wise subtraction of two lists.
+    """Performs element-wise subtraction of two lists.
 
     Description:
         Given a list of values X and a list of values
@@ -618,7 +618,7 @@ class SubtractNumeric(TransformPrimitive):
 
 
 class SubtractNumericScalar(TransformPrimitive):
-    """Subtract a scalar from each element in the list.
+    """Subtracts a scalar from each element in the list.
 
     Description:
         Given a list of numeric values and a scalar, subtract
@@ -650,7 +650,7 @@ class SubtractNumericScalar(TransformPrimitive):
 
 
 class ScalarSubtractNumericFeature(TransformPrimitive):
-    """Subtract each value in the list from a given scalar.
+    """Subtracts each value in the list from a given scalar.
 
     Description:
         Given a list of numeric values and a scalar, subtract
@@ -683,7 +683,7 @@ class ScalarSubtractNumericFeature(TransformPrimitive):
 
 
 class MultiplyNumeric(TransformPrimitive):
-    """Element-wise multiplication of two lists.
+    """Performs element-wise multiplication of two lists.
 
     Description:
         Given a list of values X and a list of values
@@ -714,7 +714,7 @@ class MultiplyNumeric(TransformPrimitive):
 
 
 class MultiplyNumericScalar(TransformPrimitive):
-    """Multiply each element in the list by a scalar.
+    """Multiplies each element in the list by a scalar.
 
     Description:
         Given a list of numeric values and a scalar, multiply
@@ -746,7 +746,7 @@ class MultiplyNumericScalar(TransformPrimitive):
 
 
 class MultiplyBoolean(TransformPrimitive):
-    """Element-wise multiplication of two lists of boolean values.
+    """Performs element-wise multiplication of two lists of boolean values.
 
     Description:
         Given a list of boolean values X and a list of boolean
@@ -788,7 +788,7 @@ class MultiplyBoolean(TransformPrimitive):
 
 
 class MultiplyNumericBoolean(TransformPrimitive):
-    """Element-wise multiplication of a numeric list with a boolean list.
+    """Performs element-wise multiplication of a numeric list with a boolean list.
 
     Description:
         Given a list of numeric values X and a list of
@@ -852,7 +852,7 @@ class MultiplyNumericBoolean(TransformPrimitive):
 
 
 class DivideNumeric(TransformPrimitive):
-    """Element-wise division of two lists.
+    """Performs element-wise division of two lists.
 
     Description:
         Given a list of values X and a list of values
@@ -893,7 +893,7 @@ class DivideNumeric(TransformPrimitive):
 
 
 class DivideNumericScalar(TransformPrimitive):
-    """Divide each element in the list by a scalar.
+    """Divides each element in the list by a scalar.
 
     Description:
         Given a list of numeric values and a scalar, divide
@@ -927,7 +927,7 @@ class DivideNumericScalar(TransformPrimitive):
 
 
 class DivideByFeature(TransformPrimitive):
-    """Divide a scalar by each value in the list.
+    """Divides a scalar by each value in the list.
 
     Description:
         Given a list of numeric values and a scalar, divide
@@ -962,7 +962,7 @@ class DivideByFeature(TransformPrimitive):
 
 
 class ModuloNumeric(TransformPrimitive):
-    """Element-wise modulo of two lists.
+    """Performs element-wise modulo of two lists.
 
     Description:
         Given a list of values X and a list of values Y,
@@ -992,7 +992,7 @@ class ModuloNumeric(TransformPrimitive):
 
 
 class ModuloNumericScalar(TransformPrimitive):
-    """Return the modulo of each element in the list by a scalar.
+    """Computes the modulo of each element in the list by a given scalar.
 
     Description:
         Given a list of numeric values and a scalar, return
@@ -1027,7 +1027,7 @@ class ModuloNumericScalar(TransformPrimitive):
 
 
 class ModuloByFeature(TransformPrimitive):
-    """Return the modulo of a scalar by each element in the list.
+    """Computes the modulo of a scalar by each element in a list.
 
     Description:
         Given a list of numeric values and a scalar, return the
@@ -1062,7 +1062,7 @@ class ModuloByFeature(TransformPrimitive):
 
 
 class And(TransformPrimitive):
-    """Element-wise logical AND of two lists.
+    """Performs element-wise logical AND of two lists.
 
     Description:
         Given a list of booleans X and a list of booleans Y,
@@ -1104,7 +1104,7 @@ class And(TransformPrimitive):
 
 
 class Or(TransformPrimitive):
-    """Element-wise logical OR of two lists.
+    """Performs element-wise logical OR of two lists.
 
     Description:
         Given a list of booleans X and a list of booleans Y,

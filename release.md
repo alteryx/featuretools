@@ -82,6 +82,35 @@ After the release pull request has been merged into the `main` branch, it is tim
 
 ## Release on conda-forge
 
+In order to release on conda-forge, you can either wait for a bot to create a PR, or manually kickoff the creation with GitHub Actions
+
+### Option 1: Manually create the new PR with GitHub Actions
+1. Go to this GitHub Action: https://github.com/alteryx/featuretools/actions/workflows/create_feedstock_pr.yaml
+2. Input the released version with the v prefix (e.g. v0.13.3)
+3. Kickoff the GitHub action, and monitor the Job Summary.
+4. At the completion of the job, you should see summary output, with a URL. 
+    * You will need to visit this URL, and create a PR.
+    * You can also create the PR by clicking the branch name (ex - `conda-autocreate-v0.13.3`): 
+      - https://github.com/alteryx/featuretools-feedstock/branches
+5. Verify the `requirements['run']` (in __recipe/meta.yml__) match the `install_requires` in __featuretools/setup.cfg__.
+    * Verify the `test['requires']` (in __recipe/meta.yml__) match the test requirements in `[options.extras_require]` in __featuretools/setup.cfg__
+
+### Option 2: Waiting for bot to create new PR
+
 1. A bot should automatically create a new PR in [conda-forge/featuretools-feedstock](https://github.com/conda-forge/featuretools-feedstock/pulls) - note, the PR may take up to a few hours to be created
 2. Update requirements changes in `recipe/meta.yaml` (bot should have handled version and source links on its own)
 3. After tests pass, a maintainer will merge the PR in
+
+# Miscellaneous
+## Add new maintainers to featuretools-feedstock
+
+Per the instructions [here](https://conda-forge.org/docs/maintainer/updating_pkgs.html#updating-the-maintainer-list):
+1. Ask an existing maintainer to create an issue on the [repo](https://github.com/conda-forge/featuretools-feedstock).
+  a. Select *Bot commands* and put the following title (change `username`):
+
+  ```text
+  @conda-forge-admin, please add user @username
+  ```
+
+2. A PR will be auto-created on the repo, and will need to be merged by an existing maintainer.
+3. The new user will need to **check their email for an invite link to click**, which should be https://github.com/conda-forge

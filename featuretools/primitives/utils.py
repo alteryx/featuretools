@@ -177,7 +177,10 @@ def _get_descriptions(primitives):
     for prim in primitives:
         description = ""
         if prim.__doc__ is not None:
-            description = prim.__doc__.split("\n")[0]
+            # Break on the empty line between the docstring description and the remainder of the docstring
+            description = prim.__doc__.split("\n\n")[0]
+            # remove any excess whitespace from line breaks
+            description = " ".join(description.split())
         descriptions.append(description)
     return descriptions
 

@@ -472,7 +472,7 @@ def test_bad_groupby_feature(es):
             entityset=es,
             agg_primitives=["sum"],
             trans_primitives=[],
-            groupby_trans_primitives=["max"],
+            groupby_trans_primitives=["Max"],
         )
 
 
