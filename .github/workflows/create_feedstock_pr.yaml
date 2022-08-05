@@ -20,13 +20,12 @@ jobs:
       - name: Pull latest from upstream for user forked feedstock
         run: |
           gh auth status
-          gh repo fork conda-forge/featuretools-feedstock --clone
-          gh repo sync machineAYX/featuretools-feedstock --branch main --source conda-forge/featuretools-feedstock --force
+          gh repo sync alteryx/featuretools-feedstock --branch main --source conda-forge/featuretools-feedstock --force
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
       - uses: actions/checkout@v3
         with:
-          repository: machineAYX/featuretools-feedstock
+          repository: alteryx/featuretools-feedstock
           ref: main
           path: "./featuretools-feedstock"
           fetch-depth: '0'
@@ -47,11 +46,11 @@ jobs:
           git config --unset-all http.https://github.com/.extraheader
           git config --global user.email "machineOSS@alteryx.com"
           git config --global user.name "machineAYX Bot"
-          git remote set-url origin https://${{ secrets.AUTO_APPROVE_TOKEN }}@github.com/machineAYX/featuretools-feedstock
+          git remote set-url origin https://${{ secrets.AUTO_APPROVE_TOKEN }}@github.com/alteryx/featuretools-feedstock
           git checkout -b conda-autocreate-${{ github.event.inputs.pypi_version }}
           git add recipe/meta.yaml
           git commit -m "auto commit"
           git push origin conda-autocreate-${{ github.event.inputs.pypi_version }}
       - name: Adding URL to job output
         run: |
-          echo "Conda Feedstock Pull Request: https://github.com/machineAYX/featuretools-feedstock/pull/new/conda-autocreate-${{ github.event.inputs.pypi_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "Conda Feedstock Pull Request: https://github.com/alteryx/featuretools-feedstock/pull/new/conda-autocreate-${{ github.event.inputs.pypi_version }}" >> $GITHUB_STEP_SUMMARY
