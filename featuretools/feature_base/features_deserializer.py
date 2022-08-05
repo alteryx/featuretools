@@ -126,7 +126,6 @@ class FeaturesDeserializer(object):
         primitive_id = feature_dict["arguments"].get("primitive")
         if primitive_id is not None:
             primitive = self._deserialized_primitives[primitive_id]
-
         # Collect dependencies into a dictionary of name -> feature.
         dependencies = {
             dependency: self._deserialize_feature(dependency)
@@ -140,6 +139,7 @@ class FeaturesDeserializer(object):
 
         args = feature_dict["arguments"]
         feature = cls.from_dictionary(args, self.entityset, dependencies, primitive)
+        feature.primitive.series_library = feature_dict["series_library"]
 
         self._deserialized_features[feature_name] = feature
         return feature

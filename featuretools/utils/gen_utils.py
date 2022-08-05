@@ -145,7 +145,7 @@ def camel_and_title_to_snake(name):
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", name).lower()
 
 
-class Library(Enum):
+class Library(str, Enum):
     PANDAS = "pandas"
     DASK = "Dask"
     SPARK = "Spark"
