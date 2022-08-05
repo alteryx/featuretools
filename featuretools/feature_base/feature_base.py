@@ -1,6 +1,6 @@
 import functools
 import operator
-from typing import Any
+from typing import Any, Dict, List
 
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
@@ -19,8 +19,8 @@ from featuretools.utils.wrangle import _check_time_against_column, _check_timede
 _ES_REF = {}
 
 # custom caching containers
-_dependency_cache: dict[int, list[Any]] = {}
-_depth_cache: dict[int, Any] = {}
+_dependency_cache: Dict[int, List[Any]] = {}
+_depth_cache: Dict[int, Any] = {}
 
 
 class FeatureBase(object):
