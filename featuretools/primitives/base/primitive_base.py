@@ -44,6 +44,9 @@ class PrimitiveBase(object):
     description_template = None
     series_library = Library.PANDAS
 
+    def __init__(self):
+        pass
+
     def __call__(self, *args, **kwargs):
         series_args = [pd.Series(arg) for arg in args]
         try:
