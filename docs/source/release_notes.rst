@@ -14,7 +14,7 @@ Future Release
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
-    
+
 v1.12.1 Aug 4, 2022
 ===================
     * Fixes
