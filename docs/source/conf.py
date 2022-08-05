@@ -377,9 +377,9 @@ texinfo_documents = [
 nbsphinx_execute = "auto"
 
 extlinks = {
-    "issue": ("https://github.com/alteryx/featuretools/issues/%%s", "GH#"),
-    "pr": ("https://github.com/alteryx/featuretools/pull/%%s", "GH#"),
-    "user": ("https://github.com/%%s", "@"),
+    "issue": ("https://github.com/alteryx/featuretools/issues/%s", "GH#%s"),
+    "pr": ("https://github.com/alteryx/featuretools/pull/%s", "GH#%s"),
+    "user": ("https://github.com/%s", "@%s"),
 }
 
 # Napoleon settings
