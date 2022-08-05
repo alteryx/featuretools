@@ -504,7 +504,7 @@ def test_roll_series_with_gap_different_input_types_same_result_uniform(
     # Rolling series' with matching input types
     expected_rolling_numeric = roll_series_with_gap(
         rolling_series_pd,
-        window_size=int_window_length,
+        window_length=int_window_length,
         gap=int_gap,
         min_periods=min_periods,
     ).max()
@@ -519,7 +519,7 @@ def test_roll_series_with_gap_different_input_types_same_result_uniform(
 
     rolling_count_obj = roll_series_with_gap(
         rolling_series_pd,
-        window_size=offset_window_length,
+        window_length=offset_window_length,
         gap=offset_gap,
         min_periods=min_periods,
     )
@@ -531,7 +531,7 @@ def test_roll_series_with_gap_different_input_types_same_result_uniform(
     # Rolling series' with mismatched input types
     mismatched_numeric_gap = roll_series_with_gap(
         rolling_series_pd,
-        window_size=offset_window_length,
+        window_length=offset_window_length,
         gap=int_gap,
         min_periods=min_periods,
     ).max()
@@ -542,21 +542,26 @@ def test_roll_series_with_gap_different_input_types_same_result_uniform(
 def test_roll_series_with_gap_incorrect_types(rolling_series_pd):
     error = "Window length must be either an offset string or an integer."
     with pytest.raises(TypeError, match=error):
-        roll_series_with_gap(rolling_series_pd, window_size=4.2, gap=4, min_periods=1),
+        roll_series_with_gap(
+            rolling_series_pd,
+            window_length=4.2,
+            gap=4,
+            min_periods=1,
+        ),
 
     error = "Gap must be either an offset string or an integer."
     with pytest.raises(TypeError, match=error):
-        roll_series_with_gap(rolling_series_pd, window_size=4, gap=4.2, min_periods=1)
+        roll_series_with_gap(rolling_series_pd, window_length=4, gap=4.2, min_periods=1)
 
 
 def test_roll_series_with_gap_negative_inputs(rolling_series_pd):
     error = "Window length must be greater than zero."
     with pytest.raises(ValueError, match=error):
-        roll_series_with_gap(rolling_series_pd, window_size=-4, gap=4, min_periods=1)
+        roll_series_with_gap(rolling_series_pd, window_length=-4, gap=4, min_periods=1)
 
     error = "Gap must be greater than or equal to zero."
     with pytest.raises(ValueError, match=error):
-        roll_series_with_gap(rolling_series_pd, window_size=4, gap=-4, min_periods=1)
+        roll_series_with_gap(rolling_series_pd, window_length=4, gap=-4, min_periods=1)
 
 
 def test_roll_series_with_non_offset_string_inputs(rolling_series_pd):
@@ -564,7 +569,7 @@ def test_roll_series_with_non_offset_string_inputs(rolling_series_pd):
     with pytest.raises(ValueError, match=error):
         roll_series_with_gap(
             rolling_series_pd,
-            window_size="4D",
+            window_length="4D",
             gap="test",
             min_periods=1,
         )
@@ -573,7 +578,7 @@ def test_roll_series_with_non_offset_string_inputs(rolling_series_pd):
     with pytest.raises(ValueError, match=error):
         roll_series_with_gap(
             rolling_series_pd,
-            window_size="test",
+            window_length="test",
             gap="7D",
             min_periods=1,
         )
@@ -587,7 +592,7 @@ def test_roll_series_with_non_offset_string_inputs(rolling_series_pd):
     with pytest.raises(TypeError, match=error):
         roll_series_with_gap(
             rolling_series_pd,
-            window_size=7,
+            window_length=7,
             gap="2d",
             min_periods=1,
         ).max()

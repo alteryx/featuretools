@@ -8,7 +8,7 @@ from pandas.tseries.frequencies import to_offset
 
 def roll_series_with_gap(
     series: Series,
-    window_size: Union[int, str],
+    window_length: Union[int, str],
     gap: Union[int, str],
     min_periods: int,
 ) -> Rolling:
@@ -17,9 +17,8 @@ def roll_series_with_gap(
     that determines the amount of data in each window.
 
     Args:
-        series (Series): The series over which rolling windows will be created. The series must have a numeric column
-            and have a DatetimeIndex.
-        window_size (int, string): Specifies the amount of data included in each window.
+        series (Series): The series over which rolling windows will be created. The series must have numeric values and a DatetimeIndex.
+        window_length (int, string): Specifies the amount of data included in each window.
             If an integer is provided, it will correspond to a number of rows. For data with a uniform sampling frequency,
             for example of one day, the window_length will correspond to a period of time, in this case,
             7 days for a window_length of 7.
@@ -41,20 +40,20 @@ def roll_series_with_gap(
     Returns:
         pandas.core.window.rolling.Rolling: The Rolling object for the series passed in.
     """
-    _check_window_size(window_size)
-    _check_gap(window_size, gap)
+    _check_window_length(window_length)
+    _check_gap(window_length, gap)
 
     # Workaround for pandas' bug: https://github.com/pandas-dev/pandas/issues/43016
     # Can remove when upgraded to pandas 1.4.0
     if str(series.dtype) == "Int64":
         series = series.astype("float64")
 
-    functional_window_length = window_size
+    functional_window_length = window_length
     if isinstance(gap, str):
-        # Add the window_size and gap so that the rolling operation correctly takes gap into account.
+        # Add the window_length and gap so that the rolling operation correctly takes gap into account.
         # That way, we can later remove the gap rows in order to apply the primitive function
         # to the correct window
-        functional_window_length = to_offset(window_size) + to_offset(gap)
+        functional_window_length = to_offset(window_length) + to_offset(gap)
     elif gap > 0:
         # When gap is numeric, we can apply a shift to incorporate gap right now
         # since the gap will be the same number of rows for the whole dataset
@@ -123,29 +122,29 @@ def apply_roll_with_offset_gap(
     return reducer_fn(window)
 
 
-def _check_window_size(window_size: Union[int, str]) -> None:
+def _check_window_length(window_length: Union[int, str]) -> None:
     # Window length must either be a valid offset alias
-    if isinstance(window_size, str):
+    if isinstance(window_length, str):
         try:
-            to_offset(window_size)
+            to_offset(window_length)
         except ValueError:
             raise ValueError(
-                f"Cannot roll series. The specified window length, {window_size}, is not a valid offset alias.",
+                f"Cannot roll series. The specified window length, {window_length}, is not a valid offset alias.",
             )
     # Or an integer greater than zero
-    elif isinstance(window_size, int):
-        if window_size <= 0:
+    elif isinstance(window_length, int):
+        if window_length <= 0:
             raise ValueError("Window length must be greater than zero.")
     else:
         raise TypeError("Window length must be either an offset string or an integer.")
 
 
-def _check_gap(window_size: Union[int, str], gap: Union[int, str]) -> None:
+def _check_gap(window_length: Union[int, str], gap: Union[int, str]) -> None:
     # Gap must either be a valid offset string that also has an offset string window length
     if isinstance(gap, str):
-        if not isinstance(window_size, str):
+        if not isinstance(window_length, str):
             raise TypeError(
-                f"Cannot roll series with offset gap, {gap}, and numeric window length, {window_size}. "
+                f"Cannot roll series with offset gap, {gap}, and numeric window length, {window_length}. "
                 "If an offset alias is used for gap, the window length must also be defined as an offset alias. "
                 "Please either change gap to be numeric or change window length to be an offset alias.",
             )
@@ -166,7 +165,7 @@ def _check_gap(window_size: Union[int, str], gap: Union[int, str]) -> None:
 def apply_rolling_agg_to_series(
     series: Series,
     agg_func: Callable[[Series], float],
-    window_size: Union[int, str],
+    window_length: Union[int, str],
     gap: Union[int, str] = 0,
     min_periods: int = 1,
     ignore_window_nans: bool = False,
@@ -174,10 +173,9 @@ def apply_rolling_agg_to_series(
     """Applies a given aggregation function to a rolled series.
 
     Args:
-        series (Series): The series over which rolling windows will be created. The series must have a numeric column
-            and have a DatetimeIndex.
+        series (Series): The series over which rolling windows will be created. The series must have numeric values and a DatetimeIndex.
         agg_func (callable[Series -> float]): The aggregation function to apply to a rolled series.
-        window_size (int, string): Specifies the amount of data included in each window.
+        window_length (int, string): Specifies the amount of data included in each window.
             If an integer is provided, it will correspond to a number of rows. For data with a uniform sampling frequency,
             for example of one day, the window_length will correspond to a period of time, in this case,
             7 days for a window_length of 7.
@@ -222,11 +220,11 @@ def apply_rolling_agg_to_series(
         indicate a different number of days depending on the anchoring date.)
 
     Note:
-        When using an offset alias to define `gap`, an offset alias must also be used to define `window_size`.
-        This limitation does not exist when using an offset alias to define `window_size`. In fact,
+        When using an offset alias to define `gap`, an offset alias must also be used to define `window_length`.
+        This limitation does not exist when using an offset alias to define `window_length`. In fact,
         if the data has a uniform sampling frequency, it is preferable to use a numeric `gap` as it is more
         efficient."""
-    rolled_series = roll_series_with_gap(series, window_size, gap, min_periods)
+    rolled_series = roll_series_with_gap(series, window_length, gap, min_periods)
     if isinstance(gap, str):
         additional_args = (gap, agg_func, min_periods)
         return rolled_series.apply(
