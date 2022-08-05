@@ -1,3 +1,7 @@
+import functools
+import operator
+from typing import Any
+
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
 
@@ -13,6 +17,10 @@ from featuretools.primitives.base import (
 from featuretools.utils.wrangle import _check_time_against_column, _check_timedelta
 
 _ES_REF = {}
+
+# custom caching containers
+_dependency_cache: dict[int, list[Any]] = {}
+_depth_cache: dict[int, Any] = {}
 
 
 class FeatureBase(object):
@@ -141,35 +149,46 @@ class FeatureBase(object):
 
 
         """
-        deps = []
+        hash_key = self.hash() + hash(f"{deep}{ignored}")
+        if hash_key in _dependency_cache:
+            return _dependency_cache[hash_key]
 
-        for d in self.base_features[:]:
-            deps += [d]
+        ignored = ignored if ignored else set()
+        deps = [d for d in self.base_features if d.unique_name() not in ignored]
 
-        if hasattr(self, "where") and self.where:
-            deps += [self.where]
-
-        if ignored is None:
-            ignored = set([])
-        deps = [d for d in deps if d.unique_name() not in ignored]
+        if hasattr(self, "where") and self.where and self.where not in ignored:
+            deps.append(self.where)
 
         if deep:
-            for dep in deps[:]:  # copy so we don't modify list we iterate over
-                deep_deps = dep.get_dependencies(deep, ignored)
-                deps += deep_deps
+            deep_deps = [dep.get_dependencies(deep, ignored) for dep in deps]
+            flattened = functools.reduce(operator.iconcat, deep_deps, [])
+            deps.extend(flattened)
 
+        _dependency_cache[hash_key] = deps
         return deps
 
     def get_depth(self, stop_at=None):
         """Returns depth of feature"""
+        hash_key = self.hash() + hash(f"{stop_at}")
+        if hash_key in _depth_cache:
+            return _depth_cache[hash_key]
+
         max_depth = 0
         stop_at_set = set()
         if stop_at is not None:
-            stop_at_set = set([i.unique_name() for i in stop_at])
+            stop_at_set = {i.unique_name() for i in stop_at}
             if self.unique_name() in stop_at_set:
                 return 0
-        for dep in self.get_dependencies(deep=True, ignored=stop_at_set):
-            max_depth = max(dep.get_depth(stop_at=stop_at), max_depth)
+        try:
+            dep_max_depth = max(
+                dep.get_depth(stop_at=stop_at)
+                for dep in self.get_dependencies(deep=True, ignored=stop_at_set)
+            )
+            max_depth = max(dep_max_depth, max_depth)
+        except ValueError:
+            # raised if the result of get_dependencies is []
+            pass
+        _depth_cache[hash_key] = max_depth + 1
         return max_depth + 1
 
     def _check_input_types(self):
@@ -450,7 +469,7 @@ class FeatureBase(object):
         return self.NOT()
 
     def unique_name(self):
-        return "%s: %s" % (self.dataframe_name, self.get_name())
+        return f"{self.dataframe_name}: {self.get_name()}"
 
     def relationship_path_name(self):
         return self.relationship_path.name
