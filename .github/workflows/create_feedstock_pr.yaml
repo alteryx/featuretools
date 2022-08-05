@@ -1,8 +1,8 @@
 on:
   workflow_dispatch:
     inputs:
-      pypi_version:
-        description: 'released PyPI version to use (include v, example v1.11.1)'
+      version:
+        description: 'released PyPI version to use (ex - v1.11.1)'
         required: true
 
 name: Create Feedstock PR
