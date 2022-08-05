@@ -21,7 +21,6 @@ v1.12.1 Aug 4, 2022
     * Fixes
         * Update ``Trend`` and ``RollingTrend`` primitives to work with ``IntegerNullable`` inputs (:pr:`2204`)
         * ``camel_and_title_to_snake`` handles snake case strings with numbers (:pr:`2220`)
-    * Changes
         * Change ``_get_description`` to split on blank lines to avoid truncating primitive descriptions (:pr:`2219`)
     * Documentation Changes
         * Add instructions to add new users to featuretools feedstock (:pr:`2215`)
