@@ -3,7 +3,7 @@ import logging
 import operator
 import warnings
 from collections import defaultdict
-from typing import Any
+from typing import Any, List
 
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
@@ -901,7 +901,7 @@ class DeepFeatureSynthesis(object):
         if dataframe.ww.name not in all_features:
             return []
 
-        def expand_features(feature) -> list[Any]:
+        def expand_features(feature) -> List[Any]:
             """Internal method to return either the single feature
                 or the output features
 
@@ -909,7 +909,7 @@ class DeepFeatureSynthesis(object):
                 feature (Feature): Feature instance
 
             Returns:
-                list[Any]: list of features
+                List[Any]: list of features
             """
             outputs = feature.number_output_features
             if outputs > 1:
