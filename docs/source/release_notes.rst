@@ -6,11 +6,11 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Performance refactors for build_features (:pr:`2224`)
+        * Refactor build_features code path for performance (:pr:`2224`)
     * Fixes
     * Changes
-        * Added Dockerfile.arm for Mac M1 testing/debugging (:pr:`2224`)
-        * Added tests/profiling/dfs_profile.py (:pr:`2224`)
+        * Add Dockerfile.arm for Mac M1 testing/debugging (:pr:`2224`)
+        * Add tests/profiling/dfs_profile.py (:pr:`2224`)
     * Documentation Changes
     * Testing Changes
         * Update create feedstock PR forked repo to use (:pr:`2223`)
