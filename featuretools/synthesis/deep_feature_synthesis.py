@@ -893,6 +893,7 @@ class DeepFeatureSynthesis(object):
         dataframe,
         max_depth,
         column_schemas=None,
+        transform_stacking=False,
     ):
 
         if max_depth is not None and max_depth < 0:
@@ -935,6 +936,7 @@ class DeepFeatureSynthesis(object):
             feature
             for feature in selected_features
             if feature.get_depth(stop_at=seed_features) <= max_depth
+            and (not transform_stacking or check_transform_stacking(feature))
         ]
 
         def valid_input(column_schema) -> bool:
@@ -1003,6 +1005,7 @@ class DeepFeatureSynthesis(object):
                 dataframe=dataframe,
                 max_depth=max_depth,
                 column_schemas=list(input_type),
+                transform_stacking=transform_stacking,
             )
             if not features:
                 continue
@@ -1044,12 +1047,6 @@ class DeepFeatureSynthesis(object):
             if not _match_contains_numeric_foreign_key(match)
         ]
 
-        if transform_stacking:
-            matching_inputs = [
-                matching_input
-                for matching_input in matching_inputs
-                if check_transform_stacking(matching_input)
-            ]
         return matching_inputs
 
 
@@ -1058,16 +1055,15 @@ def _match_contains_numeric_foreign_key(match):
     return any(is_valid_input(f.column_schema, match_schema) for f in match)
 
 
-def check_transform_stacking(inputs):
+def check_transform_stacking(feature):
     # Avoid transform stacking when building from direct features
-    for f in inputs:
-        if isinstance(f.primitive, TransformPrimitive):
-            return False
-        if isinstance(f, DirectFeature) and isinstance(
-            f.base_features[0].primitive,
-            TransformPrimitive,
-        ):
-            return False
+    if isinstance(feature.primitive, TransformPrimitive):
+        return False
+    if isinstance(feature, DirectFeature) and isinstance(
+        feature.base_features[0].primitive,
+        TransformPrimitive,
+    ):
+        return False
     return True
 
 
