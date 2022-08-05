@@ -149,7 +149,7 @@ class FeatureBase(object):
 
 
         """
-        hash_key = self.hash() + hash(f"{deep}{ignored}")
+        hash_key = hash(f"{self.get_name()}{self.dataframe_name}{deep}{ignored}")
         if hash_key in _dependency_cache:
             return _dependency_cache[hash_key]
 
@@ -169,7 +169,7 @@ class FeatureBase(object):
 
     def get_depth(self, stop_at=None):
         """Returns depth of feature"""
-        hash_key = self.hash() + hash(f"{stop_at}")
+        hash_key = hash(f"{self.get_name()}{self.dataframe_name}{stop_at}")
         if hash_key in _depth_cache:
             return _depth_cache[hash_key]
 

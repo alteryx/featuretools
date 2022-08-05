@@ -129,8 +129,10 @@ def test_pickle_features_with_custom_primitive(pd_es, tmpdir):
 
 
 def test_serialized_renamed_features(es):
-    def serialize_name_unchanged(original):
-        new_name = "MyFeature"
+    def serialize_name_unchanged(original, idx: int):
+        # with the addition of caching for get_dependencies(), the new
+        # name needs to be unique for the tests to pass
+        new_name = f"MyFeature{idx}"
         original_names = original.get_feature_names()
         renamed = original.rename(new_name)
         new_names = (
@@ -191,8 +193,8 @@ def test_serialized_renamed_features(es):
         featureslice_original,
     ]
 
-    for feature_type in feature_type_list:
-        serialize_name_unchanged(feature_type)
+    for idx, feature_type in enumerate(feature_type_list):
+        serialize_name_unchanged(feature_type, idx)
 
 
 @pytest.fixture
