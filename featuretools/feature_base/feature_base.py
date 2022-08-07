@@ -269,7 +269,6 @@ class FeatureBase(object):
         raise NotImplementedError("Must define get_arguments on FeatureBase subclass")
 
     def to_dictionary(self):
-        print(f"Got here!")
         return {
             "type": type(self).__name__,
             "dependencies": [dep.unique_name() for dep in self.get_dependencies()],
