@@ -20,6 +20,7 @@ from featuretools.primitives import (
     TransformPrimitive,
 )
 from featuretools.tests.testing_utils import check_rename
+from featuretools.utils.gen_utils import Library
 
 
 def test_copy_features_does_not_copy_entityset(es):
@@ -204,10 +205,11 @@ def test_set_data_path(es):
 
 
 def test_to_dictionary_direct(es):
-    actual = Feature(
+    feat = Feature(
         IdentityFeature(es["sessions"].ww["customer_id"]),
         "log",
-    ).to_dictionary()
+    )
+    actual = feat.to_dictionary()
 
     expected = {
         "type": "DirectFeature",
@@ -222,13 +224,15 @@ def test_to_dictionary_direct(es):
                 "child_column_name": "session_id",
             },
         },
+        "series_library": feat.primitive.series_library,
     }
 
     assert expected == actual
 
 
 def test_to_dictionary_identity(es):
-    actual = Feature(es["sessions"].ww["customer_id"]).to_dictionary()
+    feat = Feature(es["sessions"].ww["customer_id"])
+    actual = feat.to_dictionary()
 
     expected = {
         "type": "IdentityFeature",
@@ -238,6 +242,7 @@ def test_to_dictionary_identity(es):
             "column_name": "customer_id",
             "dataframe_name": "sessions",
         },
+        "series_library": feat.primitive.series_library,
     }
 
     assert expected == actual
@@ -269,6 +274,7 @@ def test_to_dictionary_agg(es):
             "where": None,
             "use_previous": None,
         },
+        "series_library": primitive.series_library,
     }
 
     assert expected == actual
@@ -301,6 +307,7 @@ def test_to_dictionary_where(es):
             "where": "log: value = 2",
             "use_previous": None,
         },
+        "series_library": primitive.series_library,
     }
 
     assert expected == actual
@@ -318,8 +325,8 @@ def test_to_dictionary_trans(es):
             "base_features": ["customers: age"],
             "primitive": primitive,
         },
+        "series_library": primitive.series_library,
     }
-
     assert expected == trans_feature.to_dictionary()
 
 
@@ -341,6 +348,7 @@ def test_to_dictionary_groupby_trans(es):
             "primitive": primitive,
             "groupby": "log: product_id",
         },
+        "series_library": primitive.series_library,
     }
 
     assert expected == groupby_feature.to_dictionary()
@@ -361,6 +369,7 @@ def test_to_dictionary_multi_slice(es):
             "base_feature": "customers: N_MOST_COMMON(log.product_id, n=2)",
             "n": 0,
         },
+        "series_library": slice_feature.primitive.series_library,
     }
 
     assert expected == slice_feature.to_dictionary()
