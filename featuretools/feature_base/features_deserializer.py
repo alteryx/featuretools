@@ -14,7 +14,7 @@ from featuretools.feature_base.feature_base import (
     TransformFeature,
 )
 from featuretools.primitives.utils import PrimitivesDeserializer
-from featuretools.utils.gen_utils import check_schema_version
+from featuretools.utils.gen_utils import Library, check_schema_version
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_features
 from featuretools.utils.wrangle import _is_s3, _is_url
 
@@ -139,7 +139,10 @@ class FeaturesDeserializer(object):
 
         args = feature_dict["arguments"]
         feature = cls.from_dictionary(args, self.entityset, dependencies, primitive)
-        feature.primitive.series_library = feature_dict["series_library"]
+        if "series_library" in feature_dict:
+            feature.primitive.series_library = feature_dict["series_library"]
+        else:
+            feature.primitive.series_library = Library.PANDAS
 
         self._deserialized_features[feature_name] = feature
         return feature
