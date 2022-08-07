@@ -6,6 +6,7 @@ import warnings
 from enum import Enum
 from itertools import zip_longest
 
+from packaging.version import parse
 from tqdm import tqdm
 
 logger = logging.getLogger("featuretools.utils")
@@ -52,23 +53,16 @@ def check_schema_version(cls, cls_type):
 
             version_string = cls.features_dict["schema_version"]
 
-        current = SCHEMA_VERSION.split(".")
-        current = [int(val) for val in current]
-        saved = version_string.split(".")
-        saved = [int(val) for val in saved]
-
+        current = SCHEMA_VERSION
+        saved = version_string
         warning_text_upgrade = (
             "The schema version of the saved %s"
             "(%s) is greater than the latest supported (%s). "
             "You may need to upgrade featuretools. Attempting to load %s ..."
             % (cls_type, version_string, SCHEMA_VERSION, cls_type)
         )
-        for c_num, s_num in zip_longest(current, saved, fillvalue=0):
-            if c_num > s_num:
-                break
-            elif c_num < s_num:
-                warnings.warn(warning_text_upgrade)
-                break
+        if parse(current) < parse(saved):
+            warnings.warn(warning_text_upgrade)
 
         warning_text_outdated = (
             "The schema version of the saved %s"
@@ -76,8 +70,7 @@ def check_schema_version(cls, cls_type):
             "of featuretools. Attempting to load %s ..."
             % (cls_type, version_string, cls_type)
         )
-        # Check if saved has older major version.
-        if current[0] > saved[0]:
+        if parse(current) > parse(saved):
             logger.warning(warning_text_outdated)
 
 
