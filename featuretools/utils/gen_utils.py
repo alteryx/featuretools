@@ -4,7 +4,6 @@ import re
 import sys
 import warnings
 from enum import Enum
-from itertools import zip_longest
 
 from packaging.version import parse
 from tqdm import tqdm
