@@ -20,7 +20,6 @@ from featuretools.primitives import (
     TransformPrimitive,
 )
 from featuretools.tests.testing_utils import check_rename
-from featuretools.utils.gen_utils import Library
 
 
 def test_copy_features_does_not_copy_entityset(es):
