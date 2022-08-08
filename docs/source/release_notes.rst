@@ -9,12 +9,13 @@ Future Release
         * Add ``series_library`` attribute to ``PrimitiveBase`` (:pr:`2210`)
     * Fixes
     * Changes
+        * Extract duplicated logic for Rolling primitives into a general utility function (:pr:`2218`)
     * Documentation Changes
     * Testing Changes
         * Update create feedstock PR forked repo to use (:pr:`2223`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, user:`sbadithe`
+    :user:`gsheni`, :user:`ozzieD`, user:`sbadithe`
 
 v1.12.1 Aug 4, 2022
 ===================
