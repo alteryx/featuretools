@@ -9,6 +9,7 @@ Future Release
         * Add ``series_library`` attribute to ``PrimitiveBase`` (:pr:`2210`)
     * Fixes
     * Changes
+        * Refactor schema version checking to use `packaging` method (:pr:`2230`)
         * Extract duplicated logic for Rolling primitives into a general utility function (:pr:`2218`)
     * Documentation Changes
     * Testing Changes
