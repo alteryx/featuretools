@@ -137,3 +137,5 @@ ENV/
 .devcontainer
 
 *.stats
+Dockerfile.arm
+.dockerignore

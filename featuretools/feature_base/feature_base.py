@@ -1,6 +1,5 @@
 import functools
 import operator
-from typing import Any, Dict, List
 
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
@@ -8,6 +7,7 @@ from woodwork.logical_types import Boolean, BooleanNullable
 from featuretools import primitives
 from featuretools.entityset.relationship import Relationship, RelationshipPath
 from featuretools.entityset.timedelta import Timedelta
+from featuretools.feature_base.cache import CacheType, FeatureCache
 from featuretools.feature_base.utils import is_valid_input
 from featuretools.primitives.base import (
     AggregationPrimitive,
@@ -19,11 +19,11 @@ from featuretools.utils.wrangle import _check_time_against_column, _check_timede
 _ES_REF = {}
 
 # custom caching containers
-_dependency_cache: Dict[int, List[Any]] = {}
-_depth_cache: Dict[int, Any] = {}
 
 
 class FeatureBase(object):
+    cache = FeatureCache()
+
     def __init__(
         self,
         dataframe,
@@ -150,8 +150,8 @@ class FeatureBase(object):
 
         """
         hash_key = hash(f"{self.get_name()}{self.dataframe_name}{deep}{ignored}")
-        if hash_key in _dependency_cache:
-            return _dependency_cache[hash_key]
+        if cached_dependencies := self.cache.get(CacheType.DEPENDENCY, hash_key):
+            return cached_dependencies
 
         ignored = ignored if ignored else set()
         deps = [d for d in self.base_features if d.unique_name() not in ignored]
@@ -164,14 +164,14 @@ class FeatureBase(object):
             flattened = functools.reduce(operator.iconcat, deep_deps, [])
             deps.extend(flattened)
 
-        _dependency_cache[hash_key] = deps
+        self.cache.add(CacheType.DEPENDENCY, hash_key, deps)
         return deps
 
     def get_depth(self, stop_at=None):
         """Returns depth of feature"""
         hash_key = hash(f"{self.get_name()}{self.dataframe_name}{stop_at}")
-        if hash_key in _depth_cache:
-            return _depth_cache[hash_key]
+        if cached_depth := self.cache.get(CacheType.DEPTH, hash_key):
+            return cached_depth
 
         max_depth = 0
         stop_at_set = set()
@@ -188,7 +188,7 @@ class FeatureBase(object):
         except ValueError:
             # raised if the result of get_dependencies is []
             pass
-        _depth_cache[hash_key] = max_depth + 1
+        self.cache.add(CacheType.DEPTH, hash_key, max_depth + 1)
         return max_depth + 1
 
     def _check_input_types(self):

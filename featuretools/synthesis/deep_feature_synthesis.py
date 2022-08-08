@@ -14,6 +14,7 @@ from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import (
     AggregationFeature,
     DirectFeature,
+    FeatureBase,
     GroupByTransformFeature,
     IdentityFeature,
     TransformFeature,
@@ -154,6 +155,8 @@ class DeepFeatureSynthesis(object):
                 es_name,
             )
             raise KeyError(msg)
+
+        FeatureBase.cache.enabled = True
 
         # need to change max_depth to None because DFs terminates when  <0
         if max_depth == -1:
