@@ -141,8 +141,6 @@ class FeaturesDeserializer(object):
         feature = cls.from_dictionary(args, self.entityset, dependencies, primitive)
         if "series_library" in feature_dict:
             feature.primitive.series_library = feature_dict["series_library"]
-        else:
-            feature.primitive.series_library = Library.PANDAS
 
         self._deserialized_features[feature_name] = feature
         return feature
