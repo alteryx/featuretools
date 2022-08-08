@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Refactor schema version checking to use `packaging` method (:pr:`2230`)
         * Extract duplicated logic for Rolling primitives into a general utility function (:pr:`2218`)
     * Documentation Changes
     * Testing Changes
@@ -15,7 +16,7 @@ Future Release
         * Update development requirements and use latest for documentation (:pr:`2225`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`ozzieD`
+    :user:`gsheni`, :user:`ozzieD`, user:`sbadithe`
 
 v1.12.1 Aug 4, 2022
 ===================
