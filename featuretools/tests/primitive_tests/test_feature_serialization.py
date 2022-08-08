@@ -10,6 +10,7 @@ from featuretools import (
     AggregationFeature,
     DirectFeature,
     Feature,
+    FeatureBase,
     GroupByTransformFeature,
     IdentityFeature,
     TransformFeature,
@@ -67,6 +68,12 @@ S3_URL = "s3://featuretools-static/" + TEST_FILE
 URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
 TEST_CONFIG = "CheckConfigPassesOn"
 TEST_KEY = "test_access_key_features"
+
+
+@pytest.fixture(autouse=True)
+def reset_dfs_cache():
+    FeatureBase.cache.enabled = False
+    FeatureBase.cache.clear_all()
 
 
 def assert_features(original, deserialized):

@@ -11,6 +11,7 @@ from woodwork.logical_types import Datetime
 from featuretools import (
     AggregationFeature,
     Feature,
+    FeatureBase,
     IdentityFeature,
     Timedelta,
     calculate_feature_matrix,
@@ -39,6 +40,12 @@ from featuretools.synthesis.deep_feature_synthesis import (
 )
 from featuretools.tests.testing_utils import backward_path, feature_with_name, to_pandas
 from featuretools.utils.gen_utils import Library
+
+
+@pytest.fixture(autouse=True)
+def reset_dfs_cache():
+    FeatureBase.cache.enabled = False
+    FeatureBase.cache.clear_all()
 
 
 @pytest.fixture
