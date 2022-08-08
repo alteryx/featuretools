@@ -86,7 +86,7 @@ In order to release on conda-forge, you can either wait for a bot to create a pu
 
 ### Option 1: Manually create the new pull request with GitHub Actions
 1. Go to this GitHub Action: https://github.com/alteryx/featuretools/actions/workflows/create_feedstock_pr.yaml
-2. Click **Run workflow** and input the released version with the v prefix (e.g. `v0.13.3`)
+2. Click **Run workflow** and input the letter `v` followed by the release version (e.g. `v0.13.3`)
 3. Kickoff the GitHub Action, and monitor the Job Summary.
 4. At the completion of the job, you should see summary output, with a URL. 
     * You will need to visit this URL, and create a pull request.
