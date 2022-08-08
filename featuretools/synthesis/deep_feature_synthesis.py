@@ -156,6 +156,8 @@ class DeepFeatureSynthesis(object):
             )
             raise KeyError(msg)
 
+        # Multiple calls to dfs() should start with a fresh cache
+        FeatureBase.cache.clear_all()
         FeatureBase.cache.enabled = True
 
         # need to change max_depth to None because DFs terminates when  <0
