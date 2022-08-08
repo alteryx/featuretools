@@ -90,7 +90,7 @@ In order to release on conda-forge, you can either wait for a bot to create a pu
 3. Kickoff the GitHub Action, and monitor the Job Summary.
 4. At the completion of the job, you should see summary output, with a URL. 
     * Visit this URL and create a pull request.
-    * You can also create the pull request by clicking the branch name (e.g. - `v0.13.3`): 
+    * Alternatively, create the pull request by clicking the branch name (e.g. - `v0.13.3`): 
       - https://github.com/alteryx/featuretools-feedstock/branches
 5. Verify that the PR has the following: 
     * The `build['number']` is 0 (in __recipe/meta.yml__).
