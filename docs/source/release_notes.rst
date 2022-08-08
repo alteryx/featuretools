@@ -8,13 +8,14 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Extract duplicated logic for Rolling primitives into a general utility function (:pr:`2218`)
     * Documentation Changes
     * Testing Changes
         * Update create feedstock PR forked repo to use (:pr:`2223`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
-    
+    :user:`gsheni`, :user:`ozzieD`
+
 v1.12.1 Aug 4, 2022
 ===================
     * Fixes
