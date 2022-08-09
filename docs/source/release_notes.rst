@@ -17,7 +17,7 @@ Future Release
         * Update development requirements and use latest for documentation (:pr:`2225`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`ozzieD`, user:`sbadithe`
+    :user:`gsheni`, :user:`ozzieD`, :user:`sbadithe`
 
 v1.12.1 Aug 4, 2022
 ===================
