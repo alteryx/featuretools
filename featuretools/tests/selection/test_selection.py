@@ -333,7 +333,7 @@ def test_multi_output_selection():
             assert f_name in matrix_columns
 
 
-def test_remove_highly_correlatied_features_on_boolean_cols():
+def test_remove_highly_correlated_features_on_boolean_cols():
     correlated_df = pd.DataFrame(
         {
             "id": [0, 1, 2, 3],
