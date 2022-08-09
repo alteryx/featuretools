@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+env:
+  PYARROW_IGNORE_TIMEZONE: 1
+  JAVA_HOME: "/usr/lib/jvm/java-11-openjdk-amd64"
+
 name: Build Docs
 jobs:
   build_docs:
@@ -32,7 +36,6 @@ jobs:
           sudo apt install -y pandoc
           sudo apt install -y graphviz
           sudo apt install -y openjdk-11-jre-headless
-          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
           python -m pip install unpacked_sdist/
