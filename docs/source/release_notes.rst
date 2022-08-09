@@ -14,6 +14,7 @@ Future Release
     * Documentation Changes
     * Testing Changes
         * Update create feedstock PR forked repo to use (:pr:`2223`)
+        * Update development requirements and use latest for documentation (:pr:`2225`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`ozzieD`, user:`sbadithe`
