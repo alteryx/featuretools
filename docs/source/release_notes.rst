@@ -9,10 +9,10 @@ Future Release
         * Refactor build_features code path for performance (:pr:`2224`)
     * Fixes
     * Changes
-        * Add tests/profiling/dfs_profile.py (:pr:`2224`)
     * Documentation Changes
     * Testing Changes
         * Update create feedstock PR forked repo to use (:pr:`2223`)
+        * Add tests/profiling/dfs_profile.py (:pr:`2224`)
 
     Thanks to the following people for contributing to this release:
     :user:`cp2boston`, :user:`gsheni`

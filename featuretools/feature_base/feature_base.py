@@ -18,8 +18,6 @@ from featuretools.utils.wrangle import _check_time_against_column, _check_timede
 
 _ES_REF = {}
 
-# custom caching containers
-
 
 class FeatureBase(object):
     cache = FeatureCache()
@@ -153,7 +151,7 @@ class FeatureBase(object):
         if cached_dependencies := self.cache.get(CacheType.DEPENDENCY, hash_key):
             return cached_dependencies
 
-        ignored = ignored if ignored else set()
+        ignored = ignored or set()
         deps = [d for d in self.base_features if d.unique_name() not in ignored]
 
         if hasattr(self, "where") and self.where and self.where not in ignored:
