@@ -11,7 +11,6 @@ from woodwork.logical_types import Datetime
 from featuretools import (
     AggregationFeature,
     Feature,
-    FeatureBase,
     IdentityFeature,
     Timedelta,
     calculate_feature_matrix,
@@ -19,6 +18,7 @@ from featuretools import (
     primitives,
 )
 from featuretools.entityset.relationship import RelationshipPath
+from featuretools.feature_base.cache import feature_cache
 from featuretools.primitives import (
     Count,
     Max,
@@ -44,8 +44,8 @@ from featuretools.utils.gen_utils import Library
 
 @pytest.fixture(autouse=True)
 def reset_dfs_cache():
-    FeatureBase.cache.enabled = False
-    FeatureBase.cache.clear_all()
+    feature_cache.enabled = False
+    feature_cache.clear_all()
 
 
 @pytest.fixture
@@ -244,6 +244,15 @@ def test_base_of_and_stack_on_heuristic(es, test_primitive):
     test_primitive.stack_on = None
     child.primitive.base_of = None
     child.primitive.base_of_exclude = [test_primitive]
+    assert not check_stacking(test_primitive(), [child])
+
+    test_primitive.stack_on_exclude = [Count]
+    assert not check_stacking(test_primitive(), [child])
+
+    child.primitive.number_output_features = 2
+    test_primitive.stack_on_exclude = []
+    test_primitive.stack_on = []
+    child.primitive.base_of = []
     assert not check_stacking(test_primitive(), [child])
 
 

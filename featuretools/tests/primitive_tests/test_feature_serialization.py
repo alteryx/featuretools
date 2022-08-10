@@ -10,7 +10,6 @@ from featuretools import (
     AggregationFeature,
     DirectFeature,
     Feature,
-    FeatureBase,
     GroupByTransformFeature,
     IdentityFeature,
     TransformFeature,
@@ -22,6 +21,7 @@ from featuretools import (
 )
 from featuretools.entityset.serialize import SCHEMA_VERSION as ENTITYSET_SCHEMA_VERSION
 from featuretools.feature_base import FeatureOutputSlice
+from featuretools.feature_base.cache import feature_cache
 from featuretools.feature_base.features_deserializer import FeaturesDeserializer
 from featuretools.feature_base.features_serializer import (
     SCHEMA_VERSION,
@@ -72,8 +72,8 @@ TEST_KEY = "test_access_key_features"
 
 @pytest.fixture(autouse=True)
 def reset_dfs_cache():
-    FeatureBase.cache.enabled = False
-    FeatureBase.cache.clear_all()
+    feature_cache.enabled = False
+    feature_cache.clear_all()
 
 
 def assert_features(original, deserialized):

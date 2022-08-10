@@ -19,6 +19,7 @@ from featuretools.feature_base import (
     IdentityFeature,
     TransformFeature,
 )
+from featuretools.feature_base.cache import feature_cache
 from featuretools.feature_base.utils import is_valid_input
 from featuretools.primitives.base import (
     AggregationPrimitive,
@@ -157,8 +158,8 @@ class DeepFeatureSynthesis(object):
             raise KeyError(msg)
 
         # Multiple calls to dfs() should start with a fresh cache
-        FeatureBase.cache.clear_all()
-        FeatureBase.cache.enabled = True
+        feature_cache.clear_all()
+        feature_cache.enabled = True
 
         # need to change max_depth to None because DFs terminates when  <0
         if max_depth == -1:
@@ -700,11 +701,11 @@ class DeepFeatureSynthesis(object):
                 trans_prim,
                 current_options,
                 require_direct_input=require_direct_input,
-                transform_stacking=True,
+                feature_filter=check_transform_stacking,
             )
 
             for matching_input in matching_inputs:
-                if all([bf.number_output_features == 1 for bf in matching_input]):
+                if not any(bf.number_output_features != 1 for bf in matching_input):
                     new_f = TransformFeature(matching_input, primitive=trans_prim)
                     features_to_add.append(new_f)
 
@@ -723,7 +724,7 @@ class DeepFeatureSynthesis(object):
                 input_types,
                 groupby_prim,
                 current_options,
-                transform_stacking=True,
+                feature_filter=check_transform_stacking,
             )
 
             # get columns to use as groupbys, use IDs as default unless other groupbys specified
@@ -750,7 +751,7 @@ class DeepFeatureSynthesis(object):
             # groupby, and don't create features of inputs/groupbys which are
             # all direct features with the same relationship path
             for matching_input in matching_inputs:
-                if all([bf.number_output_features == 1 for bf in matching_input]):
+                if not any(bf.number_output_features != 1 for bf in matching_input):
                     for groupby in groupby_matches:
                         if require_direct_input and (
                             _all_direct_and_same_path(matching_input + (groupby,))
@@ -936,11 +937,12 @@ class DeepFeatureSynthesis(object):
         # assigning seed_features locally adds a slight performance benefit by not having to look
         # up the property for each round of the comprehension
         seed_features = self.seed_features
-        selected_features = [
-            feature
-            for feature in selected_features
-            if feature.get_depth(stop_at=seed_features) <= max_depth
-        ]
+        if max_depth is not None:
+            selected_features = [
+                feature
+                for feature in selected_features
+                if feature.get_depth(stop_at=seed_features) <= max_depth
+            ]
 
         def valid_input(column_schema) -> bool:
             """Helper method to validate the feature schema
@@ -995,7 +997,6 @@ class DeepFeatureSynthesis(object):
         primitive_options,
         require_direct_input=False,
         feature_filter=None,
-        transform_stacking=False,
     ):
 
         if not isinstance(input_types[0], list):
@@ -1049,12 +1050,6 @@ class DeepFeatureSynthesis(object):
             if not _match_contains_numeric_foreign_key(match)
         ]
 
-        if transform_stacking:
-            matching_inputs = [
-                matching_input
-                for matching_input in matching_inputs
-                if check_transform_stacking(matching_input)
-            ]
         return matching_inputs
 
 
@@ -1063,16 +1058,15 @@ def _match_contains_numeric_foreign_key(match):
     return any(is_valid_input(f.column_schema, match_schema) for f in match)
 
 
-def check_transform_stacking(inputs):
+def check_transform_stacking(feature):
     # Avoid transform stacking when building from direct features
-    for f in inputs:
-        if isinstance(f.primitive, TransformPrimitive):
-            return False
-        if isinstance(f, DirectFeature) and isinstance(
-            f.base_features[0].primitive,
-            TransformPrimitive,
-        ):
-            return False
+    if isinstance(feature.primitive, TransformPrimitive):
+        return False
+    if isinstance(feature, DirectFeature) and isinstance(
+        feature.base_features[0].primitive,
+        TransformPrimitive,
+    ):
+        return False
     return True
 
 

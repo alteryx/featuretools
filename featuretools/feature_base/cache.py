@@ -58,3 +58,6 @@ class FeatureCache:
     def clear_all(self):
         """Clears the cache collections"""
         self.cache.clear()
+
+
+feature_cache = FeatureCache()

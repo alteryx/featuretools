@@ -7,7 +7,7 @@ from woodwork.logical_types import Boolean, BooleanNullable
 from featuretools import primitives
 from featuretools.entityset.relationship import Relationship, RelationshipPath
 from featuretools.entityset.timedelta import Timedelta
-from featuretools.feature_base.cache import CacheType, FeatureCache
+from featuretools.feature_base.cache import CacheType, feature_cache
 from featuretools.feature_base.utils import is_valid_input
 from featuretools.primitives.base import (
     AggregationPrimitive,
@@ -20,8 +20,6 @@ _ES_REF = {}
 
 
 class FeatureBase(object):
-    cache = FeatureCache()
-
     def __init__(
         self,
         dataframe,
@@ -148,7 +146,7 @@ class FeatureBase(object):
 
         """
         hash_key = hash(f"{self.get_name()}{self.dataframe_name}{deep}{ignored}")
-        if cached_dependencies := self.cache.get(CacheType.DEPENDENCY, hash_key):
+        if cached_dependencies := feature_cache.get(CacheType.DEPENDENCY, hash_key):
             return cached_dependencies
 
         ignored = ignored or set()
@@ -162,13 +160,13 @@ class FeatureBase(object):
             flattened = functools.reduce(operator.iconcat, deep_deps, [])
             deps.extend(flattened)
 
-        self.cache.add(CacheType.DEPENDENCY, hash_key, deps)
+        feature_cache.add(CacheType.DEPENDENCY, hash_key, deps)
         return deps
 
     def get_depth(self, stop_at=None):
         """Returns depth of feature"""
         hash_key = hash(f"{self.get_name()}{self.dataframe_name}{stop_at}")
-        if cached_depth := self.cache.get(CacheType.DEPTH, hash_key):
+        if cached_depth := feature_cache.get(CacheType.DEPTH, hash_key):
             return cached_depth
 
         max_depth = 0
@@ -186,7 +184,7 @@ class FeatureBase(object):
         except ValueError:
             # raised if the result of get_dependencies is []
             pass
-        self.cache.add(CacheType.DEPTH, hash_key, max_depth + 1)
+        feature_cache.add(CacheType.DEPTH, hash_key, max_depth + 1)
         return max_depth + 1
 
     def _check_input_types(self):
