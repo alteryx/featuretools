@@ -14,7 +14,7 @@ Future Release
     * Documentation Changes
         * Add line breaks between sections of IsFederalHoliday primitive docstring (:pr:`2235`)
     * Testing Changes
-        * Update create feedstock PR forked repo to use (:pr:`2223`)
+        * Update create feedstock PR forked repo to use (:pr:`2223`, :pr:`2237`)
         * Update development requirements and use latest for documentation (:pr:`2225`)
 
     Thanks to the following people for contributing to this release:
