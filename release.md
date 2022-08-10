@@ -87,7 +87,7 @@ In order to release on conda-forge, you can either wait for a bot to create a pu
 ### Option 1: Use a GitHub Action workflow
 
 1. After the package has been uploaded on PyPI, the **Create Feedstock Pull Request** workflow should automatically kickoff a job. 
-    * If it does not, go here: https://github.com/alteryx/featuretools/actions/workflows/create_feedstock_pr.yaml
+    * If it does not, go [here](https://github.com/alteryx/featuretools/actions/workflows/create_feedstock_pr.yaml)
     * Click **Run workflow** and input the letter `v` followed by the release version (e.g. `v0.13.3`)
     * Kickoff the GitHub Action, and monitor the Job Summary.
 2. Once the job has been completed, you will see summary output, with a URL. 
