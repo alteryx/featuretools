@@ -14,7 +14,6 @@ from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import (
     AggregationFeature,
     DirectFeature,
-    FeatureBase,
     GroupByTransformFeature,
     IdentityFeature,
     TransformFeature,
