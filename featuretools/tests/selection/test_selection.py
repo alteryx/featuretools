@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
-from woodwork.logical_types import NaturalLanguage
+from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import Boolean, BooleanNullable, NaturalLanguage
 
 from featuretools import EntitySet, Feature, dfs
 from featuretools.selection import (
@@ -330,3 +331,42 @@ def test_multi_output_selection():
     for f in unsliced_features:
         for f_name in f.get_feature_names():
             assert f_name in matrix_columns
+
+
+def test_remove_highly_correlated_features_on_boolean_cols():
+    correlated_df = pd.DataFrame(
+        {
+            "id": [0, 1, 2, 3],
+            "diff_ints": [34, 11, 29, 91],
+            "corr_words": [4, 24, 7, 3],
+            "bools": [True, True, False, True],
+        },
+    )
+
+    es = EntitySet(
+        "data",
+        {"correlated": (correlated_df, "id", None, {"bools": Boolean})},
+    )
+
+    feature_matrix, features = dfs(
+        entityset=es,
+        target_dataframe_name="correlated",
+        trans_primitives=["equal"],
+        agg_primitives=[],
+        max_depth=1,
+        return_types=[
+            ColumnSchema(logical_type=BooleanNullable),
+            ColumnSchema(logical_type=Boolean),
+        ],
+    )
+    # Confirm both boolean logical types are included so that we know we're checking the correct types
+    assert {
+        ltype.type_string for ltype in feature_matrix.ww.logical_types.values()
+    } == {Boolean.type_string, BooleanNullable.type_string}
+
+    to_keep = remove_highly_correlated_features(
+        feature_matrix=feature_matrix,
+        features=features,
+        pct_corr_threshold=0.3,
+    )
+    assert len(to_keep[0].columns) < len(feature_matrix.columns)

@@ -15,9 +15,10 @@ Future Release
     * Testing Changes
         * Update create feedstock PR forked repo to use (:pr:`2223`)
         * Add tests/profiling/dfs_profile.py (:pr:`2224`)
+        * Update development requirements and use latest for documentation (:pr:`2225`)
 
     Thanks to the following people for contributing to this release:
-    :user:`cp2boston`, :user:`gsheni`, :user:`ozzieD`, :user:`sbadithe`
+    :user:`cp2boston`, :user:`gsheni`, :user:`ozzieD`, ::user:`sbadithe`, :user:`tamargrey`
 
 v1.12.1 Aug 4, 2022
 ===================

@@ -966,13 +966,16 @@ class Year(TransformPrimitive):
 
 class IsFederalHoliday(TransformPrimitive):
     """Determines if a given datetime is a federal holiday.
+
     Description:
         This primtive currently only works for the United States
         and Canada with dates between 1950 and 2100.
+
     Args:
         country (str): Country to use for determining Holidays.
             Default is 'US'. Should be one of the available countries here:
             https://github.com/dr-prodigy/python-holidays#available-countries
+
     Examples:
         >>> from datetime import datetime
         >>> is_federal_holiday = IsFederalHoliday(country="US")
