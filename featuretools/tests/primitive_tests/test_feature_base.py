@@ -223,7 +223,6 @@ def test_to_dictionary_direct(es):
                 "child_column_name": "session_id",
             },
         },
-        "series_library": feat.primitive.series_library,
     }
 
     assert expected == actual
@@ -241,7 +240,6 @@ def test_to_dictionary_identity(es):
             "column_name": "customer_id",
             "dataframe_name": "sessions",
         },
-        "series_library": feat.primitive.series_library,
     }
 
     assert expected == actual
@@ -273,7 +271,6 @@ def test_to_dictionary_agg(es):
             "where": None,
             "use_previous": None,
         },
-        "series_library": primitive.series_library,
     }
 
     assert expected == actual
@@ -306,7 +303,6 @@ def test_to_dictionary_where(es):
             "where": "log: value = 2",
             "use_previous": None,
         },
-        "series_library": primitive.series_library,
     }
 
     assert expected == actual
@@ -347,7 +343,6 @@ def test_to_dictionary_groupby_trans(es):
             "primitive": primitive,
             "groupby": "log: product_id",
         },
-        "series_library": primitive.series_library,
     }
 
     assert expected == groupby_feature.to_dictionary()
@@ -368,7 +363,6 @@ def test_to_dictionary_multi_slice(es):
             "base_feature": "customers: N_MOST_COMMON(log.product_id, n=2)",
             "n": 0,
         },
-        "series_library": slice_feature.primitive.series_library,
     }
 
     assert expected == slice_feature.to_dictionary()
