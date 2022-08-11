@@ -140,8 +140,8 @@ class FeaturesDeserializer(object):
 
         args = feature_dict["arguments"]
         feature = cls.from_dictionary(args, self.entityset, dependencies, primitive)
-        if "series_library" in feature_dict:
-            feature.primitive.series_library = feature_dict["series_library"]
+        if primitive and hasattr(primitive, "series_library"):
+            feature.primitive.series_library = primitive.series_library
 
         self._deserialized_features[feature_name] = feature
         return feature

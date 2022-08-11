@@ -273,7 +273,6 @@ class FeatureBase(object):
             "type": type(self).__name__,
             "dependencies": [dep.unique_name() for dep in self.get_dependencies()],
             "arguments": self.get_arguments(),
-            "series_library": self.primitive.series_library,
         }
 
     def _handle_binary_comparision(self, other, Primitive, PrimitiveScalar):

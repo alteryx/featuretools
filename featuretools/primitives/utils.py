@@ -349,6 +349,7 @@ def serialize_primitive(primitive):
         "type": cls.__name__,
         "module": cls.__module__,
         "arguments": args_dict,
+        "series_library": primitive.series_library,
     }
 
 
