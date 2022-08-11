@@ -841,6 +841,8 @@ class DeepFeatureSynthesis(object):
             wheres = list(self.where_clauses[child_dataframe.ww.name])
 
             for matching_input in matching_inputs:
+                if not check_stacking(agg_prim, matching_input):
+                    continue
                 new_f = AggregationFeature(
                     matching_input,
                     parent_dataframe_name=parent_dataframe.ww.name,
