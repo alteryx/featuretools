@@ -320,7 +320,6 @@ def test_to_dictionary_trans(es):
             "base_features": ["customers: age"],
             "primitive": primitive,
         },
-        "series_library": primitive.series_library,
     }
     assert expected == trans_feature.to_dictionary()
 
