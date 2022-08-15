@@ -109,7 +109,7 @@ class DateToHoliday(TransformPrimitive):
         return date_to_holiday
 
 
-class Day(TransformPrimitive):
+class DayOfMonth(TransformPrimitive):
     """Determines the day of the month from a datetime.
 
     Examples:
@@ -903,7 +903,7 @@ class Week(TransformPrimitive):
 
 
 class Weekday(TransformPrimitive):
-    """Determines the day of the week from a datetime.
+    """Determines the day of the week from a datetime (`DayOfWeek`).
 
     Description:
         Returns the day of the week from a datetime value. Weeks
