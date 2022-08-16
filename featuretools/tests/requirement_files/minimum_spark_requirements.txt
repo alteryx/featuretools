@@ -7,7 +7,7 @@ numpy==1.21.0
 packaging==20.0
 pandas==1.4.3
 psutil==5.6.6
-scipy==1.3.3
+scipy==1.4.0
 tqdm==4.32.0
 woodwork==0.17.2
 woodwork[spark]==0.17.2
