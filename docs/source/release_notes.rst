@@ -11,7 +11,7 @@ Future Release
     * Changes
         * Refactor schema version checking to use `packaging` method (:pr:`2230`)
         * Extract duplicated logic for Rolling primitives into a general utility function (:pr:`2218`)
-        * Set pandas version  to >=1.4.0 (:pr:`2246`)
+        * Set pandas version to >=1.4.0 (:pr:`2246`)
         * Remove workaround in `roll_series_with_gap` caused by pandas version < 1.4.0 (:pr:`2246`)
     * Documentation Changes
         * Add line breaks between sections of IsFederalHoliday primitive docstring (:pr:`2235`)
