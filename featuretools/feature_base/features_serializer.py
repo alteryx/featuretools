@@ -112,6 +112,9 @@ class FeaturesSerializer(object):
             for feature in self.feature_list:
                 self._serialize_feature(feature)
 
+            """
+            112 - 113 --> makes feature_dict
+            """
             primitive_number = 0
             primitive_id_to_key = {}
             for name, feature in self._features_dict.items():

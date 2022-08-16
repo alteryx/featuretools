@@ -73,7 +73,12 @@ def assert_features(original, deserialized):
     for feat_1, feat_2 in zip(original, deserialized):
         assert feat_1.unique_name() == feat_2.unique_name()
         assert feat_1.entityset == feat_2.entityset
-        assert feat_1.primitive.series_library == feat_2.primitive.series_library
+
+        # IdentityFeature and DirectFeature objects do not have primitives
+        if not (
+            isinstance(feat_1, IdentityFeature) or isinstance(feat_1, DirectFeature)
+        ):
+            assert feat_1.primitive.series_library == feat_2.primitive.series_library
 
 
 def pickle_features_test_helper(es_size, features_original, dir_path):

@@ -95,7 +95,7 @@ def test_multi_output_features(es):
         "feature_definitions": fdict,
     }
     expected["primitive_definitions"] = {
-        "0": serialize_primitive(threecommon),
+        "0": serialize_primitive(tc.primitive),
         "1": serialize_primitive(num_unique),
     }
 
@@ -130,7 +130,7 @@ def test_base_features_not_in_list(es):
     }
     expected["primitive_definitions"] = {
         "0": serialize_primitive(max_feature.primitive),
-        "1": serialize_primitive(mult_primitive),
+        "1": serialize_primitive(value_x2.primitive),
     }
     expected["feature_definitions"][max_feature.unique_name()]["arguments"][
         "primitive"
