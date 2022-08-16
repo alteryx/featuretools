@@ -96,7 +96,7 @@ def test_multi_output_features(es):
     }
     expected["primitive_definitions"] = {
         "0": serialize_primitive(tc.primitive),
-        "1": serialize_primitive(num_unique),
+        "1": serialize_primitive(features[2].primitive),
     }
 
     expected["feature_definitions"][flist[0]]["arguments"]["primitive"] = "0"
