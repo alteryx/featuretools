@@ -2,8 +2,8 @@ boto3==1.17.46
 click==7.0.0
 cloudpickle==1.5.0
 composeml==0.8.0
-dask[dataframe]==2021.10.0
-distributed==2021.10.0
+dask[dataframe]==2021.11.1
+distributed==2021.11.1
 graphviz==0.8.4
 holidays==0.13
 moto[all]==3.0.7
