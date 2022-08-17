@@ -204,11 +204,10 @@ def test_set_data_path(es):
 
 
 def test_to_dictionary_direct(es):
-    feat = Feature(
+    actual = Feature(
         IdentityFeature(es["sessions"].ww["customer_id"]),
         "log",
-    )
-    actual = feat.to_dictionary()
+    ).to_dictionary()
 
     expected = {
         "type": "DirectFeature",
@@ -229,8 +228,7 @@ def test_to_dictionary_direct(es):
 
 
 def test_to_dictionary_identity(es):
-    feat = Feature(es["sessions"].ww["customer_id"])
-    actual = feat.to_dictionary()
+    actual = Feature(es["sessions"].ww["customer_id"]).to_dictionary()
 
     expected = {
         "type": "IdentityFeature",
