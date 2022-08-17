@@ -1209,7 +1209,7 @@ def check_primitive(
     aggregation_primitive_dict,
     transform_primitive_dict,
 ):
-    if prim_type == "transform" or prim_type == "groupby transform":
+    if prim_type in ("transform", "groupby transform"):
         prim_dict = transform_primitive_dict
         supertype = TransformPrimitive
         arg_name = (
@@ -1218,7 +1218,7 @@ def check_primitive(
             else "groupby_trans_primitives"
         )
         s = "a transform"
-    if prim_type == "aggregation" or prim_type == "where":
+    if prim_type in ("aggregation", "where"):
         prim_dict = aggregation_primitive_dict
         supertype = AggregationPrimitive
         arg_name = (
