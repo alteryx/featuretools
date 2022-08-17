@@ -82,21 +82,23 @@ After the release pull request has been merged into the `main` branch, it is tim
 
 ## Release on conda-forge
 
-In order to release on conda-forge, you can either wait for a bot to create a pull request, or manually kickoff the creation with GitHub Actions
+In order to release on conda-forge, you can either wait for a bot to create a pull request, or use a GitHub Actions workflow
 
-### Option 1: Manually create the new pull request with GitHub Actions
-1. Go to this GitHub Action: https://github.com/alteryx/featuretools/actions/workflows/create_feedstock_pr.yaml
-2. Click **Run workflow** and input the letter `v` followed by the release version (e.g. `v0.13.3`)
-3. Kickoff the GitHub Action, and monitor the Job Summary.
-4. At the completion of the job, you should see summary output, with a URL. 
-    * Visit this URL and create a pull request.
+### Option 1: Use a GitHub Action workflow
+
+1. After the package has been uploaded on PyPI, the **Create Feedstock Pull Request** workflow should automatically kickoff a job. 
+    * If it does not, go [here](https://github.com/alteryx/featuretools/actions/workflows/create_feedstock_pr.yaml)
+    * Click **Run workflow** and input the letter `v` followed by the release version (e.g. `v0.13.3`)
+    * Kickoff the GitHub Action, and monitor the Job Summary.
+2. Once the job has been completed, you will see summary output, with a URL. 
+    * Visit that URL and create a pull request.
     * Alternatively, create the pull request by clicking the branch name (e.g. - `v0.13.3`): 
       - https://github.com/alteryx/featuretools-feedstock/branches
-5. Verify that the PR has the following: 
+3. Verify that the PR has the following: 
     * The `build['number']` is 0 (in __recipe/meta.yml__).
     * The `requirements['run']` (in __recipe/meta.yml__) match the `install_requires` in __featuretools/setup.cfg__.
     * The `test['requires']` (in __recipe/meta.yml__) match the test requirements in `[options.extras_require]` in __featuretools/setup.cfg__
-6. Satisfy the conditions in pull request description and **merge it if the CI passes**. 
+4. Satisfy the conditions in pull request description and **merge it if the CI passes**. 
 
 ### Option 2: Waiting for bot to create new PR
 

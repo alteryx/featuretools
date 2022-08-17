@@ -11,6 +11,8 @@ Future Release
     * Changes
         * Refactor schema version checking to use `packaging` method (:pr:`2230`)
         * Extract duplicated logic for Rolling primitives into a general utility function (:pr:`2218`)
+        * Set pandas version to >=1.4.0 (:pr:`2246`)
+        * Remove workaround in `roll_series_with_gap` caused by pandas version < 1.4.0 (:pr:`2246`)
     * Documentation Changes
     * Testing Changes
         * Update create feedstock PR forked repo to use (:pr:`2223`)
