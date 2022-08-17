@@ -15,8 +15,8 @@ Future Release
         * Remove workaround in `roll_series_with_gap` caused by pandas version < 1.4.0 (:pr:`2246`)
     * Documentation Changes
     * Testing Changes
-        * Update create feedstock PR forked repo to use (:pr:`2223`)
         * Add tests/profiling/dfs_profile.py (:pr:`2224`)
+        * Update create feedstock PR forked repo to use (:pr:`2223`, :pr:`2237`)
         * Update development requirements and use latest for documentation (:pr:`2225`)
 
     Thanks to the following people for contributing to this release:
