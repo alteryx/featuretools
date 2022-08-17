@@ -319,6 +319,7 @@ def test_to_dictionary_trans(es):
             "primitive": primitive,
         },
     }
+
     assert expected == trans_feature.to_dictionary()
 
 
