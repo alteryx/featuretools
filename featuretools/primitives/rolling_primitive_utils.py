@@ -43,11 +43,6 @@ def roll_series_with_gap(
     _check_window_length(window_length)
     _check_gap(window_length, gap)
 
-    # Workaround for pandas' bug: https://github.com/pandas-dev/pandas/issues/43016
-    # Can remove when upgraded to pandas 1.4.0
-    if str(series.dtype) == "Int64":
-        series = series.astype("float64")
-
     functional_window_length = window_length
     if isinstance(gap, str):
         # Add the window_length and gap so that the rolling operation correctly takes gap into account.
