@@ -374,7 +374,9 @@ class DeepFeatureSynthesis(object):
                 f
                 for f in new_features
                 if any(
-                    is_valid_input(f.column_schema, schema) for schema in return_types
+                    True
+                    for schema in return_types
+                    if is_valid_input(f.column_schema, schema)
                 )
             ]
         new_features = list(filter(filt, new_features))
@@ -704,7 +706,9 @@ class DeepFeatureSynthesis(object):
             )
 
             for matching_input in matching_inputs:
-                if not any(bf.number_output_features != 1 for bf in matching_input):
+                if not any(
+                    True for bf in matching_input if bf.number_output_features != 1
+                ):
                     new_f = TransformFeature(matching_input, primitive=trans_prim)
                     features_to_add.append(new_f)
 
@@ -728,9 +732,9 @@ class DeepFeatureSynthesis(object):
 
             # get columns to use as groupbys, use IDs as default unless other groupbys specified
             if any(
-                "include_groupby_columns" in option
-                and dataframe.ww.name in option["include_groupby_columns"]
+                True
                 for option in current_options
+                if dataframe.ww.name in option.get("include_groupby_columns", [])
             ):
                 column_schemas = "all"
             else:
@@ -750,13 +754,17 @@ class DeepFeatureSynthesis(object):
             # groupby, and don't create features of inputs/groupbys which are
             # all direct features with the same relationship path
             for matching_input in matching_inputs:
-                if not any(bf.number_output_features != 1 for bf in matching_input):
+                if not any(
+                    True for bf in matching_input if bf.number_output_features != 1
+                ):
                     for groupby in groupby_matches:
+                        input_features = matching_input + (groupby,)
                         if require_direct_input and (
-                            _all_direct_and_same_path(matching_input + (groupby,))
+                            _all_direct_and_same_path(input_features)
                             or not any(
-                                isinstance(feature, DirectFeature)
-                                for feature in (matching_input + (groupby,))
+                                True
+                                for feature in (input_features)
+                                if isinstance(feature, DirectFeature)
                             )
                         ):
                             continue
@@ -869,8 +877,9 @@ class DeepFeatureSynthesis(object):
 
                 # limits the aggregation feature by the given allowed feature types.
                 if not any(
-                    issubclass(type(agg_prim), type(primitive))
+                    True
                     for primitive in self.where_primitives
+                    if issubclass(type(agg_prim), type(primitive))
                 ):
                     continue
 
@@ -878,8 +887,9 @@ class DeepFeatureSynthesis(object):
                     # limits the where feats so they are different than base feats
                     base_names = [f.unique_name() for f in new_f.base_features]
                     if any(
-                        base_feat.unique_name() in base_names
+                        True
                         for base_feat in where.base_features
+                        if base_feat.unique_name() in base_names
                     ):
                         continue
 
@@ -954,7 +964,9 @@ class DeepFeatureSynthesis(object):
                 bool: True if valid
             """
             return any(
-                is_valid_input(column_schema, schema) for schema in column_schemas
+                True
+                for schema in column_schemas
+                if is_valid_input(column_schema, schema)
             )
 
         if column_schemas and column_schemas != "all":
@@ -1054,7 +1066,7 @@ class DeepFeatureSynthesis(object):
 
 def _match_contains_numeric_foreign_key(match):
     match_schema = ColumnSchema(semantic_tags={"foreign_key", "numeric"})
-    return any(is_valid_input(f.column_schema, match_schema) for f in match)
+    return any(True for f in match if is_valid_input(f.column_schema, match_schema))
 
 
 def check_transform_stacking(feature):
