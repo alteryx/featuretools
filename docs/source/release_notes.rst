@@ -8,6 +8,7 @@ Future Release
     * Enhancements
         * Refactor build_features code path for performance (:pr:`2224`)
     * Fixes
+        * Allow boolean columns to be included in remove_highly_correlated_features (:pr:`2231`)
     * Changes
         * Refactor schema version checking to use `packaging` method (:pr:`2230`)
         * Extract duplicated logic for Rolling primitives into a general utility function (:pr:`2218`)
@@ -20,7 +21,7 @@ Future Release
         * Update development requirements and use latest for documentation (:pr:`2225`)
 
     Thanks to the following people for contributing to this release:
-    :user:`cp2boston`, :user:`gsheni`, :user:`ozzieD`, ::user:`sbadithe`, :user:`tamargrey`
+    :user:`cp2boston`, :user:`gsheni`, :user:`ozzieD`, :user:`sbadithe`, :user:`tamargrey`
 
 v1.12.1 Aug 4, 2022
 ===================
