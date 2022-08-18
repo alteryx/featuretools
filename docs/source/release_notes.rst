@@ -3,8 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+..Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.13.0 Aug 18, 2022
+====================
     * Enhancements
     * Fixes
         * Allow boolean columns to be included in remove_highly_correlated_features (:pr:`2231`)
