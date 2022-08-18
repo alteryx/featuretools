@@ -3,14 +3,25 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.13.0 Aug 18, 2022
+====================
     * Fixes
         * Allow boolean columns to be included in remove_highly_correlated_features (:pr:`2231`)
     * Changes
         * Refactor schema version checking to use `packaging` method (:pr:`2230`)
         * Extract duplicated logic for Rolling primitives into a general utility function (:pr:`2218`)
+        * Set pandas version to >=1.4.0 (:pr:`2246`)
+        * Remove workaround in `roll_series_with_gap` caused by pandas version < 1.4.0 (:pr:`2246`)
     * Documentation Changes
         * Add line breaks between sections of IsFederalHoliday primitive docstring (:pr:`2235`)
     * Testing Changes
