@@ -3,10 +3,19 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
         * Refactor build_features code path for performance (:pr:`2224`)
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.13.0 Aug 18, 2022
+====================
     * Fixes
         * Allow boolean columns to be included in remove_highly_correlated_features (:pr:`2231`)
     * Changes
