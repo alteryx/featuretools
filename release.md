@@ -58,7 +58,7 @@ If you'd like to create a development release, which won't be deployed to pypi a
 
 #### Create Release PR
 
-A [release pr](https://github.com/alteryx/featuretools/pull/856) should have the version number as the title and the release notes for that release as the PR body text. The contributors list is not necessary. The special sphinx docs syntax (:pr:\`547\`) needs to be changed to github link syntax (#547).
+A [release pr](https://github.com/alteryx/featuretools/pull/856) should have **the version number as the title** and the release notes for that release as the PR body text. The contributors list is not necessary. The special sphinx docs syntax (:pr:\`547\`) needs to be changed to github link syntax (#547).
 
 Checklist before merging:
 
@@ -80,11 +80,11 @@ After the release pull request has been merged into the `main` branch, it is tim
 - This is not a pre-release
 - Publishing the release will automatically upload the package to PyPI
 
-## Release on conda-forge
+## 3. Release on conda-forge
 
 In order to release on conda-forge, you can either wait for a bot to create a pull request, or use a GitHub Actions workflow
 
-### Option 1: Use a GitHub Action workflow
+### Option a: Use a GitHub Action workflow
 
 1. After the package has been uploaded on PyPI, the **Create Feedstock Pull Request** workflow should automatically kickoff a job. 
     * If it does not, go [here](https://github.com/alteryx/featuretools/actions/workflows/create_feedstock_pr.yaml)
@@ -100,7 +100,7 @@ In order to release on conda-forge, you can either wait for a bot to create a pu
     * The `test['requires']` (in __recipe/meta.yml__) match the test requirements in `[options.extras_require]` in __featuretools/setup.cfg__
 4. Satisfy the conditions in pull request description and **merge it if the CI passes**. 
 
-### Option 2: Waiting for bot to create new PR
+### Option b: Waiting for bot to create new PR
 
 1. A bot should automatically create a new PR in [conda-forge/featuretools-feedstock](https://github.com/conda-forge/featuretools-feedstock/pulls) - note, the PR may take up to a few hours to be created
 2. Update requirements changes in `recipe/meta.yaml` (bot should have handled version and source links on its own)
