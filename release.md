@@ -62,6 +62,7 @@ A [release pr](https://github.com/alteryx/featuretools/pull/856) should have **t
 
 Checklist before merging:
 
+- The title of the PR is the version number
 - All tests are currently green on checkin and on `main`.
 - The ReadtheDocs build for the release PR branch has passed, and the resulting docs contain the expected release notes.
 - PR has been reviewed and approved.
