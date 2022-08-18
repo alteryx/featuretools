@@ -3,7 +3,7 @@
 Release Notes
 -------------
 
-..Future Release
+.. Future Release
   ==============
     * Enhancements
     * Fixes
