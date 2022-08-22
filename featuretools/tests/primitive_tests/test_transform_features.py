@@ -44,6 +44,7 @@ from featuretools.primitives import (
     Hour,
     IsIn,
     IsNull,
+    Lag,
     Latitude,
     LessThan,
     LessThanEqualTo,
@@ -60,7 +61,6 @@ from featuretools.primitives import (
     NotEqual,
     NotEqualScalar,
     NumCharacters,
-    NumericLag,
     NumWords,
     Percentile,
     ScalarSubtractNumericFeature,
@@ -1561,7 +1561,7 @@ def test_cfm_with_lag_and_non_nullable_column(pd_es):
     assert isinstance(pd_es["new_log"].ww.logical_types["value"], Integer)
 
     periods = 5
-    lag_primitive = NumericLag(periods=periods)
+    lag_primitive = Lag(periods=periods)
     cutoff_times = pd_es["new_log"][["id", "datetime"]]
     fm, _ = dfs(
         target_dataframe_name="new_log",
@@ -1570,26 +1570,15 @@ def test_cfm_with_lag_and_non_nullable_column(pd_es):
         trans_primitives=[lag_primitive],
         cutoff_time=cutoff_times,
     )
-
     # Non nullable
-    assert fm["NUMERIC_LAG(datetime, value, periods=5)"].head(periods).isnull().all()
-    assert fm["NUMERIC_LAG(datetime, value, periods=5)"].isnull().sum() == periods
+    assert fm["LAG(value, datetime, periods=5)"].head(periods).isnull().all()
+    assert fm["LAG(value, datetime, periods=5)"].isnull().sum() == periods
     # Nullable
-    assert "NUMERIC_LAG(datetime, value_2, periods=5)" in fm.columns
-    assert (
-        fm["NUMERIC_LAG(datetime, products.rating, periods=5)"]
-        .head(periods)
-        .isnull()
-        .all()
-    )
+    assert "LAG(value_2, datetime, periods=5)" in fm.columns
+    assert fm["LAG(products.rating, datetime, periods=5)"].head(periods).isnull().all()
 
-    assert "NUMERIC_LAG(datetime, products.rating, periods=5)" in fm.columns
-    assert (
-        fm["NUMERIC_LAG(datetime, products.rating, periods=5)"]
-        .head(periods)
-        .isnull()
-        .all()
-    )
+    assert "LAG(products.rating, datetime, periods=5)" in fm.columns
+    assert fm["LAG(products.rating, datetime, periods=5)"].head(periods).isnull().all()
 
 
 def test_comparisons_with_ordinal_valid_inputs(es):
