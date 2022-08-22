@@ -5,7 +5,7 @@ composeml==0.8.0
 dask[dataframe]==2022.2.0
 distributed==2022.2.0
 graphviz==0.8.4
-holidays==0.15
+holidays==0.13
 moto[all]==3.0.7
 numpy==1.21.0
 packaging==20.0
