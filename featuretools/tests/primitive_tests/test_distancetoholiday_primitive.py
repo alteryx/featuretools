@@ -36,7 +36,7 @@ def test_holiday_out_of_range():
             datetime(2020, 12, 31),
         ],
     )
-    answer = pd.Series([np.nan, 209, 148, np.nan])
+    answer = pd.Series([np.nan, -157, 148, np.nan])
     pd.testing.assert_series_equal(date_to_holiday(array), answer, check_names=False)
 
 

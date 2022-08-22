@@ -994,11 +994,8 @@ class IsFederalHoliday(TransformPrimitive):
 
     def get_function(self):
         def is_federal_holiday(x):
-            holidays_df = pd.DataFrame(
-                sorted(self.holidayUtil.federal_holidays.items()),
-                columns=["dates", "names"],
-            )
-            is_holiday = x.dt.normalize().isin(holidays_df.dates)
+            holidays_df = self.holidayUtil.to_df()
+            is_holiday = x.dt.normalize().isin(holidays_df.holiday_date)
             if x.isnull().values.any():
                 is_holiday = is_holiday.astype("object")
                 is_holiday[x.isnull()] = np.nan
