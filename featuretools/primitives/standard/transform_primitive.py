@@ -606,7 +606,7 @@ class Lag(TransformPrimitive):
 
         >>> lag_periods = Lag(periods=3)
         >>> lag_periods(["hello", "world", "test", "foo", "bar"], pd.Series(pd.date_range(start="2020-01-01", periods=5, freq='D'))).tolist()
-        [nan, nan, nan, "hello" "world"]
+        [nan, nan, nan, 'hello', 'world']
 
         You can specify the fill value to use
 
