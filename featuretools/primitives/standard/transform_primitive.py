@@ -604,13 +604,13 @@ class Lag(TransformPrimitive):
 
         You can specify the number of periods to shift the values
 
-        >>> lag_periods = NumericLag(periods=3)
+        >>> lag_periods = Lag(periods=3)
         >>> lag_periods(["hello", "world", "test", "foo", "bar"], pd.Series(pd.date_range(start="2020-01-01", periods=5, freq='D'))).tolist()
         [nan, nan, nan, "hello" "world"]
 
         You can specify the fill value to use
 
-        >>> lag_fill_value = NumericLag(fill_value=100)
+        >>> lag_fill_value = Lag(fill_value=100)
         >>> lag_fill_value([1, 2, 3, 4], pd.Series(pd.date_range(start="2020-01-01", periods=4, freq='D'))).tolist()
         [100, 1, 2, 3]
     """
