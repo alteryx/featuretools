@@ -7,13 +7,14 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fix changes resulting from python-holidays updates (:pr:`2251`)
     * Changes
         * Update release notes to make clear conda release portion (:pr:`2249`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`cp2boston`, :user:`gsheni`
 
 v1.13.0 Aug 18, 2022
 ====================

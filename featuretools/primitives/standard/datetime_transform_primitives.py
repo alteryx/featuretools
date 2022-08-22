@@ -1,3 +1,5 @@
+from typing import Optional, Tuple
+
 import holidays
 import numpy as np
 import pandas as pd
@@ -992,7 +994,11 @@ class IsFederalHoliday(TransformPrimitive):
     def __init__(self, country="US"):
         self.country = country
         try:
-            self.holidays = holidays.country_holidays(country=self.country)
+            country, subdivision = self.convert_to_subdivision(self.country)
+            self.holidays = holidays.country_holidays(
+                country=country,
+                subdiv=subdivision,
+            )
         except NotImplementedError:
             available_countries = (
                 "https://github.com/dr-prodigy/python-holidays#available-countries"
@@ -1015,3 +1021,24 @@ class IsFederalHoliday(TransformPrimitive):
             return is_holiday.values
 
         return is_federal_holiday
+
+    def convert_to_subdivision(self, country: str) -> Tuple[str, Optional[str]]:
+        """Convert country to country + subdivision
+
+           Created in response to library changes that changed countries to subdivisions
+
+        Args:
+            country (str): Original country name
+
+        Returns:
+            Tuple[str,Optional[str]]: country, subdivsion
+        """
+        return {
+            "ENGLAND": ("GB", country),
+            "NORTHERNIRELAND": ("GB", country),
+            "PORTUGALEXT": ("PT", "Ext"),
+            "PTE": ("PT", "Ext"),
+            "SCOTLAND": ("GB", country),
+            "UK": ("GB", country),
+            "WALES": ("GB", country),
+        }.get(country.upper(), (country, None))
