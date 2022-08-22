@@ -1,13 +1,9 @@
-import functools
-import operator
-
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
 
 from featuretools import primitives
 from featuretools.entityset.relationship import Relationship, RelationshipPath
 from featuretools.entityset.timedelta import Timedelta
-from featuretools.feature_base.cache import CacheType, feature_cache
 from featuretools.feature_base.utils import is_valid_input
 from featuretools.primitives.base import (
     AggregationPrimitive,
@@ -137,9 +133,13 @@ class FeatureBase(object):
 
     def get_dependencies(self, deep=False, ignored=None, copy=True):
         """Returns features that are used to calculate this feature
+
         ..note::
+
             If you only want the features that make up the input to the feature
             function use the base_features attribute instead.
+
+
         """
         deps = []
 
@@ -162,26 +162,14 @@ class FeatureBase(object):
 
     def get_depth(self, stop_at=None):
         """Returns depth of feature"""
-        hash_key = hash(f"{self.get_name()}{self.dataframe_name}{stop_at}")
-        if cached_depth := feature_cache.get(CacheType.DEPTH, hash_key):
-            return cached_depth
-
         max_depth = 0
         stop_at_set = set()
         if stop_at is not None:
-            stop_at_set = {i.unique_name() for i in stop_at}
+            stop_at_set = set([i.unique_name() for i in stop_at])
             if self.unique_name() in stop_at_set:
                 return 0
-        try:
-            dep_max_depth = max(
-                dep.get_depth(stop_at=stop_at)
-                for dep in self.get_dependencies(deep=True, ignored=stop_at_set)
-            )
-            max_depth = max(dep_max_depth, max_depth)
-        except ValueError:
-            # raised if the result of get_dependencies is []
-            pass
-        feature_cache.add(CacheType.DEPTH, hash_key, max_depth + 1)
+        for dep in self.get_dependencies(deep=True, ignored=stop_at_set):
+            max_depth = max(dep.get_depth(stop_at=stop_at), max_depth)
         return max_depth + 1
 
     def _check_input_types(self):
@@ -462,7 +450,7 @@ class FeatureBase(object):
         return self.NOT()
 
     def unique_name(self):
-        return f"{self.dataframe_name}: {self.get_name()}"
+        return "%s: %s" % (self.dataframe_name, self.get_name())
 
     def relationship_path_name(self):
         return self.relationship_path.name

@@ -18,7 +18,7 @@ from featuretools.feature_base import (
     IdentityFeature,
     TransformFeature,
 )
-from featuretools.feature_base.cache import feature_cache
+from featuretools.feature_base.cache import CacheType, feature_cache
 from featuretools.feature_base.utils import is_valid_input
 from featuretools.primitives.base import (
     AggregationPrimitive,
@@ -952,7 +952,7 @@ class DeepFeatureSynthesis(object):
             selected_features = [
                 feature
                 for feature in selected_features
-                if feature.get_depth(stop_at=seed_features) <= max_depth
+                if get_feature_depth(feature, stop_at=seed_features) <= max_depth
             ]
 
         def valid_input(column_schema) -> bool:
@@ -1267,3 +1267,17 @@ def _direct_of_dataframe(feature, parent_dataframe):
         isinstance(feature, DirectFeature)
         and feature.parent_dataframe_name == parent_dataframe.ww.name
     )
+
+
+def get_feature_depth(feature, stop_at=None):
+    """Helper method to allow caching of feature.get_depth()
+    Why here and not in FeatureBase?  Putting t in FeatureBase was causing
+    some weird pickle errors in spark tests in 3.9 and this keeps the caching
+    local to DFS.
+    """
+    hash_key = hash(f"{feature.get_name()}{feature.dataframe_name}{stop_at}")
+    if cached_depth := feature_cache.get(CacheType.DEPTH, hash_key):
+        return cached_depth
+    depth = feature.get_depth(stop_at=stop_at)
+    feature_cache.add(CacheType.DEPTH, hash_key, depth)
+    return depth
