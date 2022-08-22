@@ -1,6 +1,3 @@
-from typing import Optional, Tuple
-
-import holidays
 import numpy as np
 import pandas as pd
 from woodwork.column_schema import ColumnSchema
@@ -993,25 +990,12 @@ class IsFederalHoliday(TransformPrimitive):
 
     def __init__(self, country="US"):
         self.country = country
-        try:
-            country, subdivision = self.convert_to_subdivision(self.country)
-            self.holidays = holidays.country_holidays(
-                country=country,
-                subdiv=subdivision,
-            )
-        except NotImplementedError:
-            available_countries = (
-                "https://github.com/dr-prodigy/python-holidays#available-countries"
-            )
-            error = "must be one of the available countries:\n%s" % available_countries
-            raise ValueError(error)
-        years_list = [1950 + x for x in range(150)]
-        self.federal_holidays = getattr(holidays, country)(years=years_list)
+        self.holidayUtil = HolidayUtil(country)
 
     def get_function(self):
         def is_federal_holiday(x):
             holidays_df = pd.DataFrame(
-                sorted(self.federal_holidays.items()),
+                sorted(self.holidayUtil.federal_holidays.items()),
                 columns=["dates", "names"],
             )
             is_holiday = x.dt.normalize().isin(holidays_df.dates)
@@ -1021,24 +1005,3 @@ class IsFederalHoliday(TransformPrimitive):
             return is_holiday.values
 
         return is_federal_holiday
-
-    def convert_to_subdivision(self, country: str) -> Tuple[str, Optional[str]]:
-        """Convert country to country + subdivision
-
-           Created in response to library changes that changed countries to subdivisions
-
-        Args:
-            country (str): Original country name
-
-        Returns:
-            Tuple[str,Optional[str]]: country, subdivsion
-        """
-        return {
-            "ENGLAND": ("GB", country),
-            "NORTHERNIRELAND": ("GB", country),
-            "PORTUGALEXT": ("PT", "Ext"),
-            "PTE": ("PT", "Ext"),
-            "SCOTLAND": ("GB", country),
-            "UK": ("GB", country),
-            "WALES": ("GB", country),
-        }.get(country.upper(), (country, None))
