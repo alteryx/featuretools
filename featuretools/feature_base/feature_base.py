@@ -137,30 +137,27 @@ class FeatureBase(object):
 
     def get_dependencies(self, deep=False, ignored=None, copy=True):
         """Returns features that are used to calculate this feature
-
         ..note::
-
             If you only want the features that make up the input to the feature
             function use the base_features attribute instead.
-
-
         """
-        hash_key = hash(f"{self.get_name()}{self.dataframe_name}{deep}{ignored}")
-        if cached_dependencies := feature_cache.get(CacheType.DEPENDENCY, hash_key):
-            return cached_dependencies
+        deps = []
 
-        ignored = ignored or set()
-        deps = [d for d in self.base_features if d.unique_name() not in ignored]
+        for d in self.base_features[:]:
+            deps += [d]
 
-        if hasattr(self, "where") and self.where and self.where not in ignored:
-            deps.append(self.where)
+        if hasattr(self, "where") and self.where:
+            deps += [self.where]
+
+        if ignored is None:
+            ignored = set([])
+        deps = [d for d in deps if d.unique_name() not in ignored]
 
         if deep:
-            deep_deps = [dep.get_dependencies(deep, ignored) for dep in deps]
-            flattened = functools.reduce(operator.iconcat, deep_deps, [])
-            deps.extend(flattened)
+            for dep in deps[:]:  # copy so we don't modify list we iterate over
+                deep_deps = dep.get_dependencies(deep, ignored)
+                deps += deep_deps
 
-        feature_cache.add(CacheType.DEPENDENCY, hash_key, deps)
         return deps
 
     def get_depth(self, stop_at=None):
