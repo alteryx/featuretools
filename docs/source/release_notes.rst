@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Replace NumericLag with Lag primitive (:pr:`2252`)
     * Fixes
     * Changes
         * Update release notes to make clear conda release portion (:pr:`2249`)
