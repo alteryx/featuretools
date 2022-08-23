@@ -13,7 +13,6 @@ from featuretools.primitives import (
     Haversine,
     IsFreeEmailDomain,
     IsNull,
-    Lag,
     Last,
     Max,
     Mean,
@@ -23,6 +22,7 @@ from featuretools.primitives import (
     MultiplyBoolean,
     NMostCommon,
     NumCharacters,
+    NumericLag,
     NumUnique,
     NumWords,
     PercentTrue,
@@ -222,30 +222,20 @@ def test_errors_no_primitive_in_file(bad_primitives_files_dir):
 
 
 def test_check_input_types():
-    primitives = [Sum, Weekday, PercentTrue, Day, Std, Lag]
+    primitives = [Sum, Weekday, PercentTrue, Day, Std, NumericLag]
     log_in_type_checks = set()
     sem_tag_type_checks = set()
     unique_input_types = set()
     expected_log_in_check = {
-        "age_nullable",
-        "boolean_nullable",
         "boolean",
+        "boolean_nullable",
         "datetime",
-        "double",
-        "integer",
-        "integer_nullable",
     }
-    expected_sem_tag_type_check = {"category", "numeric", "time_index"}
+    expected_sem_tag_type_check = {"numeric", "time_index"}
     expected_unique_input_types = {
-        "<ColumnSchema (Logical Type = AgeNullable)>",
         "<ColumnSchema (Logical Type = Boolean)>",
         "<ColumnSchema (Logical Type = BooleanNullable)>",
-        "<ColumnSchema (Logical Type = Datetime) (Semantic Tags = ['time_index'])>",
         "<ColumnSchema (Logical Type = Datetime)>",
-        "<ColumnSchema (Logical Type = Double)>",
-        "<ColumnSchema (Logical Type = Integer)>",
-        "<ColumnSchema (Logical Type = IntegerNullable)>",
-        "<ColumnSchema (Semantic Tags = ['category'])>",
         "<ColumnSchema (Semantic Tags = ['numeric'])>",
         "<ColumnSchema (Semantic Tags = ['time_index'])>",
     }
@@ -271,21 +261,21 @@ def test_get_summary_primitives():
         PercentTrue,
         Day,
         Std,
-        Lag,
+        NumericLag,
         AddNumericScalar,
         IsFreeEmailDomain,
         NMostCommon,
     ]
     primitives_summary = _get_summary_primitives(primitives)
-    expected_unique_input_types = 12
+    expected_unique_input_types = 7
     expected_unique_output_types = 6
     expected_uses_multi_input = 2
     expected_uses_multi_output = 1
     expected_uses_external_data = 1
     expected_controllable = 3
-    expected_datetime_inputs = 3
-    expected_bool = 2
-    expected_bool_nullable = 2
+    expected_datetime_inputs = 2
+    expected_bool = 1
+    expected_bool_nullable = 1
     expected_time_index_tag = 1
 
     assert (

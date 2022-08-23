@@ -5,7 +5,14 @@ import numpy as np
 import pandas as pd
 import pytest
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean, Datetime, Double, IntegerNullable, Ordinal
+from woodwork.logical_types import (
+    Boolean,
+    Datetime,
+    Double,
+    Integer,
+    IntegerNullable,
+    Ordinal,
+)
 
 from featuretools import (
     AggregationFeature,
@@ -71,6 +78,7 @@ from featuretools.primitives import (
     TransformPrimitive,
     get_transform_primitives,
 )
+from featuretools.primitives.standard.transform_primitive import NumericLag
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
@@ -1541,7 +1549,50 @@ def test_time_since_primitive_matches_all_datetime_types(es):
         assert name in fm.columns
 
 
-def test_cfm_with_lag_and_nullable_column(pd_es):
+def test_cfm_with_numeric_lag_and_non_nullable_column(pd_es):
+    # fill nans so we can use non nullable numeric logical type in the EntitySet
+    new_log = pd_es["log"].copy()
+    new_log["value"] = new_log["value"].fillna(0)
+    new_log.ww.init(
+        logical_types={"value": "Integer", "product_id": "Categorical"},
+        index="id",
+        time_index="datetime",
+        name="new_log",
+    )
+    pd_es.add_dataframe(new_log)
+    rels = [
+        ("sessions", "id", "new_log", "session_id"),
+        ("products", "id", "new_log", "product_id"),
+    ]
+    pd_es = pd_es.add_relationships(rels)
+
+    assert isinstance(pd_es["new_log"].ww.logical_types["value"], Integer)
+
+    periods = 5
+    lag_primitive = NumericLag(periods=periods)
+    cutoff_times = pd_es["new_log"][["id", "datetime"]]
+    fm, _ = dfs(
+        target_dataframe_name="new_log",
+        entityset=pd_es,
+        agg_primitives=[],
+        trans_primitives=[lag_primitive],
+        cutoff_time=cutoff_times,
+    )
+    assert fm["NUMERIC_LAG(datetime, value, periods=5)"].head(periods).isnull().all()
+    assert fm["NUMERIC_LAG(datetime, value, periods=5)"].isnull().sum() == periods
+
+    assert "NUMERIC_LAG(datetime, value_2, periods=5)" in fm.columns
+
+    assert "NUMERIC_LAG(datetime, products.rating, periods=5)" in fm.columns
+    assert (
+        fm["NUMERIC_LAG(datetime, products.rating, periods=5)"]
+        .head(periods)
+        .isnull()
+        .all()
+    )
+
+
+def test_cfm_with_lag(pd_es):
     # fill nans so we can use non nullable numeric logical type in the EntitySet
     new_log = pd_es["log"].copy()
     new_log["value"] = new_log["value"].fillna(0)
