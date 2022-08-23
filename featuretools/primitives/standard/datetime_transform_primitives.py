@@ -1,4 +1,3 @@
-import holidays
 import numpy as np
 import pandas as pd
 from woodwork.column_schema import ColumnSchema
@@ -991,24 +990,12 @@ class IsFederalHoliday(TransformPrimitive):
 
     def __init__(self, country="US"):
         self.country = country
-        try:
-            self.holidays = holidays.country_holidays(country=self.country)
-        except NotImplementedError:
-            available_countries = (
-                "https://github.com/dr-prodigy/python-holidays#available-countries"
-            )
-            error = "must be one of the available countries:\n%s" % available_countries
-            raise ValueError(error)
-        years_list = [1950 + x for x in range(150)]
-        self.federal_holidays = getattr(holidays, country)(years=years_list)
+        self.holidayUtil = HolidayUtil(country)
 
     def get_function(self):
         def is_federal_holiday(x):
-            holidays_df = pd.DataFrame(
-                sorted(self.federal_holidays.items()),
-                columns=["dates", "names"],
-            )
-            is_holiday = x.dt.normalize().isin(holidays_df.dates)
+            holidays_df = self.holidayUtil.to_df()
+            is_holiday = x.dt.normalize().isin(holidays_df.holiday_date)
             if x.isnull().values.any():
                 is_holiday = is_holiday.astype("object")
                 is_holiday[x.isnull()] = np.nan
