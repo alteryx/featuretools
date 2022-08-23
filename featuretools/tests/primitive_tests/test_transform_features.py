@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean, Datetime, Double, Integer, Ordinal
+from woodwork.logical_types import Boolean, Datetime, Double, IntegerNullable, Ordinal
 
 from featuretools import (
     AggregationFeature,
@@ -1541,12 +1541,12 @@ def test_time_since_primitive_matches_all_datetime_types(es):
         assert name in fm.columns
 
 
-def test_cfm_with_lag_and_non_nullable_column(pd_es):
+def test_cfm_with_lag_and_nullable_column(pd_es):
     # fill nans so we can use non nullable numeric logical type in the EntitySet
     new_log = pd_es["log"].copy()
     new_log["value"] = new_log["value"].fillna(0)
     new_log.ww.init(
-        logical_types={"value": "Integer", "product_id": "Categorical"},
+        logical_types={"value": "IntegerNullable", "product_id": "Categorical"},
         index="id",
         time_index="datetime",
         name="new_log",
@@ -1558,7 +1558,7 @@ def test_cfm_with_lag_and_non_nullable_column(pd_es):
     ]
     pd_es = pd_es.add_relationships(rels)
 
-    assert isinstance(pd_es["new_log"].ww.logical_types["value"], Integer)
+    assert isinstance(pd_es["new_log"].ww.logical_types["value"], IntegerNullable)
 
     periods = 5
     lag_primitive = Lag(periods=periods)
@@ -1570,15 +1570,38 @@ def test_cfm_with_lag_and_non_nullable_column(pd_es):
         trans_primitives=[lag_primitive],
         cutoff_time=cutoff_times,
     )
-    # Non nullable
     assert fm["LAG(value, datetime, periods=5)"].head(periods).isnull().all()
     assert fm["LAG(value, datetime, periods=5)"].isnull().sum() == periods
-    # Nullable
+
     assert "LAG(value_2, datetime, periods=5)" in fm.columns
     assert fm["LAG(products.rating, datetime, periods=5)"].head(periods).isnull().all()
 
     assert "LAG(products.rating, datetime, periods=5)" in fm.columns
     assert fm["LAG(products.rating, datetime, periods=5)"].head(periods).isnull().all()
+
+    assert "LAG(products.department, datetime, periods=5)" in fm.columns
+    assert (
+        fm["LAG(products.department, datetime, periods=5)"].head(periods).isnull().all()
+    )
+
+    assert "LAG(products.rating, datetime, periods=5)" in fm.columns
+    assert fm["LAG(products.rating, datetime, periods=5)"].head(periods).isnull().all()
+
+    assert "LAG(sessions.device_name, datetime, periods=5)" in fm.columns
+    assert (
+        fm["LAG(sessions.device_name, datetime, periods=5)"]
+        .head(periods)
+        .isnull()
+        .all()
+    )
+
+    assert "LAG(sessions.device_type, datetime, periods=5)" in fm.columns
+    assert (
+        fm["LAG(sessions.device_type, datetime, periods=5)"]
+        .head(periods)
+        .isnull()
+        .all()
+    )
 
 
 def test_comparisons_with_ordinal_valid_inputs(es):

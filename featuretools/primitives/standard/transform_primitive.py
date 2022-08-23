@@ -3,6 +3,7 @@ import pandas as pd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import (
     URL,
+    AgeFractional,
     AgeNullable,
     Boolean,
     BooleanNullable,
@@ -10,10 +11,12 @@ from woodwork.logical_types import (
     Datetime,
     Double,
     EmailAddress,
-    Integer,
     IntegerNullable,
     NaturalLanguage,
+    Ordinal,
+    PostalCode,
     Timedelta,
+    Unknown,
 )
 
 from featuretools.primitives.base import TransformPrimitive
@@ -618,19 +621,11 @@ class Lag(TransformPrimitive):
     name = "lag"
     input_types = [
         [
-            ColumnSchema(logical_type=Double),
-            ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"}),
-        ],
-        [
             ColumnSchema(semantic_tags={"category"}),
             ColumnSchema(semantic_tags={"time_index"}),
         ],
         [
-            ColumnSchema(logical_type=Boolean),
-            ColumnSchema(semantic_tags={"time_index"}),
-        ],
-        [
-            ColumnSchema(logical_type=BooleanNullable),
+            ColumnSchema(logical_type=AgeFractional),
             ColumnSchema(semantic_tags={"time_index"}),
         ],
         [
@@ -638,11 +633,39 @@ class Lag(TransformPrimitive):
             ColumnSchema(semantic_tags={"time_index"}),
         ],
         [
+            ColumnSchema(logical_type=BooleanNullable),
+            ColumnSchema(semantic_tags={"time_index"}),
+        ],
+        [
+            ColumnSchema(logical_type=Double),
+            ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"}),
+        ],
+        [
+            ColumnSchema(logical_type=EmailAddress),
+            ColumnSchema(semantic_tags={"time_index"}),
+        ],
+        [
             ColumnSchema(logical_type=IntegerNullable),
             ColumnSchema(semantic_tags={"time_index"}),
         ],
         [
-            ColumnSchema(logical_type=Integer),
+            ColumnSchema(logical_type=NaturalLanguage),
+            ColumnSchema(semantic_tags={"time_index"}),
+        ],
+        [
+            ColumnSchema(logical_type=Ordinal),
+            ColumnSchema(semantic_tags={"time_index"}),
+        ],
+        [
+            ColumnSchema(logical_type=PostalCode),
+            ColumnSchema(semantic_tags={"time_index"}),
+        ],
+        [
+            ColumnSchema(logical_type=URL),
+            ColumnSchema(semantic_tags={"time_index"}),
+        ],
+        [
+            ColumnSchema(logical_type=Unknown),
             ColumnSchema(semantic_tags={"time_index"}),
         ],
     ]
