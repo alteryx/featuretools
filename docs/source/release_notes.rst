@@ -8,6 +8,7 @@ Future Release
     * Enhancements
         * Refactor build_features code path for performance (:pr:`2224`)
     * Fixes
+        * Fix compatibility issues with holidays 0.15 (:pr:`2254`)
     * Changes
         * Update release notes to make clear conda release portion (:pr:`2249`)
     * Documentation Changes
