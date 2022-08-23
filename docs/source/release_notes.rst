@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
-        * Fix changes resulting from python-holidays updates (:pr:`2254`)
+        * Fix compatibility issues with holidays 0.15 (:pr:`2254`)
     * Changes
         * Update release notes to make clear conda release portion (:pr:`2249`)
     * Documentation Changes
