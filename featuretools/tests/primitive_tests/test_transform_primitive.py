@@ -1,3 +1,4 @@
+import warnings
 from datetime import datetime
 
 import numpy as np
@@ -29,6 +30,7 @@ from featuretools.primitives import (
     Week,
     get_transform_primitives,
 )
+from featuretools.primitives.standard.transform_primitive import NumericLag
 
 
 def test_time_since():
@@ -745,6 +747,12 @@ def test_trans_primitives_can_init_without_params():
     trans_primitives = get_transform_primitives().values()
     for trans_primitive in trans_primitives:
         trans_primitive()
+
+
+def test_numeric_lag_future_warning():
+    warning_text = "NumericLag is deprecated and will be removed in a future version. Please use the 'Lag' primitive instead."
+    with pytest.warns(FutureWarning, match=warning_text):
+        NumericLag()
 
 
 def test_lag_regular():
