@@ -6,7 +6,7 @@ import tempfile
 
 from woodwork.serializers.serializer_base import typing_info_to_dict
 
-from featuretools.utils.gen_utils import import_or_none
+from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
 
@@ -30,6 +30,18 @@ def entityset_to_description(entityset, format=None):
         dataframe.ww.name: typing_info_to_dict(dataframe)
         for dataframe in entityset.dataframes
     }
+
+    series_library = Library.PANDAS
+    try:
+        type = dataframes[sorted(dataframes.keys())[0]]["loading_info"]["table_type"]
+        print(f"Type: {type(type)}")
+        if type == "dask":
+            series_library = Library.DASK
+        elif type == "spark":
+            series_library = Library.SPARK
+    except:
+        pass
+
     relationships = [
         relationship.to_dictionary() for relationship in entityset.relationships
     ]
@@ -39,6 +51,7 @@ def entityset_to_description(entityset, format=None):
         "dataframes": dataframes,
         "relationships": relationships,
         "format": format,
+        "series_library": series_library,
     }
     return data_description
 

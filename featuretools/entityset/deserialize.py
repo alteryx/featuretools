@@ -99,6 +99,7 @@ def empty_dataframe(description):
             cat_dtype = col["physical_type"]["cat_dtype"]
             cat_object = pd.CategoricalDtype(pd.Index(cat_values, dtype=cat_dtype))
             category_dtypes[col_name] = cat_object
+
     dataframe = pd.DataFrame(columns=columns).astype(category_dtypes)
 
     dataframe.ww.init(
