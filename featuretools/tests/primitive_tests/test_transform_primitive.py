@@ -21,6 +21,7 @@ from featuretools.primitives import (
     IsYearEnd,
     IsYearStart,
     Lag,
+    NumericLag,
     PartOfDay,
     Quarter,
     TimeSince,
@@ -30,7 +31,6 @@ from featuretools.primitives import (
     Week,
     get_transform_primitives,
 )
-from featuretools.primitives.standard.transform_primitive import NumericLag
 
 
 def test_time_since():
