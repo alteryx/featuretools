@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import pandas as pd
 from woodwork.column_schema import ColumnSchema
@@ -629,6 +631,10 @@ class NumericLag(TransformPrimitive):
     def __init__(self, periods=1, fill_value=None):
         self.periods = periods
         self.fill_value = fill_value
+        warnings.warn(
+            "NumericLag is deprecated and will be removed in a future version. Please use the 'Lag' primitive instead.",
+            FutureWarning,
+        )
 
     def get_function(self):
         def lag(time_index, numeric):
