@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Refactor build_features code path for performance (:pr:`2224`)
+        * Refactor build_features to speed up long running DFS calls by 50% (:pr:`2224`)
     * Fixes
         * Fix compatibility issues with holidays 0.15 (:pr:`2254`)
     * Changes
