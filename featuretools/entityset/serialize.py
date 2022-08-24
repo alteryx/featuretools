@@ -4,6 +4,7 @@ import os
 import tarfile
 import tempfile
 
+import dask.dataframe as dd
 from woodwork.serializers.serializer_base import typing_info_to_dict
 
 from featuretools.utils.gen_utils import Library, import_or_none
@@ -32,15 +33,12 @@ def entityset_to_description(entityset, format=None):
     }
 
     series_library = Library.PANDAS
-    try:
-        type = dataframes[sorted(dataframes.keys())[0]]["loading_info"]["table_type"]
-        print(f"Type: {type(type)}")
-        if type == "dask":
+    if len(entityset.dataframes) > 0:
+        dataframe = entityset.dataframes[0]
+        if isinstance(entityset.dataframes[0], dd.DataFrame):
             series_library = Library.DASK
-        elif type == "spark":
+        elif isinstance(entityset.dataframes[0], ps.DataFrame):
             series_library = Library.SPARK
-    except:
-        pass
 
     relationships = [
         relationship.to_dictionary() for relationship in entityset.relationships

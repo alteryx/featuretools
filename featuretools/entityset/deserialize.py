@@ -3,6 +3,7 @@ import os
 import tarfile
 import tempfile
 
+import dask.dataframe as dd
 import pandas as pd
 import woodwork.type_sys.type_system as ww_type_system
 from woodwork.deserialize import read_woodwork_table
@@ -30,6 +31,7 @@ def description_to_entityset(description, **kwargs):
     # If data description was not read from disk, path is None.
     path = description.get("path")
     entityset = EntitySet(description["id"])
+    series_library = description.get("series_library")
 
     for df in description["dataframes"].values():
         if path is not None:
@@ -42,6 +44,8 @@ def description_to_entityset(description, **kwargs):
             dataframe = read_woodwork_table(data_path, validate=False, **kwargs)
         else:
             dataframe = empty_dataframe(df)
+            if series_library == "dask":
+                dataframe = dd.from_pandas(dataframe)
 
         entityset.add_dataframe(dataframe)
 
