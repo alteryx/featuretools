@@ -49,7 +49,7 @@ jobs:
           git remote set-url origin https://${{ secrets.AUTO_APPROVE_TOKEN }}@github.com/alteryx/featuretools-feedstock
           git checkout -b ${{ github.event.inputs.version }}
           git add recipe/meta.yaml
-          git commit -m "auto commit"
+          git commit -m "${{ github.event.inputs.version }}"
           git push origin ${{ github.event.inputs.version }}
       - name: Adding URL to job output
         run: |

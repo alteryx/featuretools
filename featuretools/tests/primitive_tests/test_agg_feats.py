@@ -18,6 +18,7 @@ from featuretools import (
     primitives,
 )
 from featuretools.entityset.relationship import RelationshipPath
+from featuretools.feature_base.cache import feature_cache
 from featuretools.primitives import (
     Count,
     Max,
@@ -39,6 +40,12 @@ from featuretools.synthesis.deep_feature_synthesis import (
 )
 from featuretools.tests.testing_utils import backward_path, feature_with_name, to_pandas
 from featuretools.utils.gen_utils import Library
+
+
+@pytest.fixture(autouse=True)
+def reset_dfs_cache():
+    feature_cache.enabled = False
+    feature_cache.clear_all()
 
 
 @pytest.fixture
@@ -237,6 +244,15 @@ def test_base_of_and_stack_on_heuristic(es, test_primitive):
     test_primitive.stack_on = None
     child.primitive.base_of = None
     child.primitive.base_of_exclude = [test_primitive]
+    assert not check_stacking(test_primitive(), [child])
+
+    test_primitive.stack_on_exclude = [Count]
+    assert not check_stacking(test_primitive(), [child])
+
+    child.primitive.number_output_features = 2
+    test_primitive.stack_on_exclude = []
+    test_primitive.stack_on = []
+    child.primitive.base_of = []
     assert not check_stacking(test_primitive(), [child])
 
 

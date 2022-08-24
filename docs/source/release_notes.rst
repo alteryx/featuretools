@@ -6,7 +6,22 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Add ``series_library`` attribute to ``PrimitiveBase`` (:pr:`2210`)
+        * Add ``series_library`` attribute to ``PrimitiveBase`` 
+        * Refactor build_features to speed up long running DFS calls by 50% (:pr:`2224`)
+    * Fixes
+        * Fix compatibility issues with holidays 0.15 (:pr:`2254`)
+    * Changes
+        * Update release notes to make clear conda release portion (:pr:`2249`)
+    * Documentation Changes
+    * Testing Changes
+        * Add tests/profiling/dfs_profile.py (:pr:`2224`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`cp2boston`, :user:`gsheni`, :user:`sbadithe`
+
+
+v1.13.0 Aug 18, 2022
+====================
     * Fixes
         * Allow boolean columns to be included in remove_highly_correlated_features (:pr:`2231`)
     * Changes
@@ -21,7 +36,7 @@ Future Release
         * Update development requirements and use latest for documentation (:pr:`2225`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`ozzieD`, :user:`sbadithe`, :user:`tamargrey`, :user:`ozzieD`
+    :user:`gsheni`, :user:`ozzieD`, :user:`sbadithe`, :user:`tamargrey`
 
 v1.12.1 Aug 4, 2022
 ===================

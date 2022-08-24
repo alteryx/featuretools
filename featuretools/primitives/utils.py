@@ -1,7 +1,7 @@
 import importlib.util
 import os
 from inspect import getfullargspec, getsource, isclass
-from typing import Dict, List
+from typing import Dict, List, Optional, Tuple
 
 import holidays
 import numpy as np
@@ -419,7 +419,11 @@ def _haversine_calculate(lat_1s, lon_1s, lat_2s, lon_2s, unit):
 class HolidayUtil:
     def __init__(self, country="US"):
         try:
-            holidays.country_holidays(country=country)
+            country, subdivision = self.convert_to_subdivision(country)
+            self.holidays = holidays.country_holidays(
+                country=country,
+                subdiv=subdivision,
+            )
         except NotImplementedError:
             available_countries = (
                 "https://github.com/dr-prodigy/python-holidays#available-countries"
@@ -436,3 +440,24 @@ class HolidayUtil:
         )
         holidays_df.holiday_date = holidays_df.holiday_date.astype("datetime64")
         return holidays_df
+
+    def convert_to_subdivision(self, country: str) -> Tuple[str, Optional[str]]:
+        """Convert country to country + subdivision
+
+           Created in response to library changes that changed countries to subdivisions
+
+        Args:
+            country (str): Original country name
+
+        Returns:
+            Tuple[str,Optional[str]]: country, subdivsion
+        """
+        return {
+            "ENGLAND": ("GB", country),
+            "NORTHERNIRELAND": ("GB", country),
+            "PORTUGALEXT": ("PT", "Ext"),
+            "PTE": ("PT", "Ext"),
+            "SCOTLAND": ("GB", country),
+            "UK": ("GB", country),
+            "WALES": ("GB", country),
+        }.get(country.upper(), (country, None))
