@@ -68,6 +68,7 @@ from featuretools.primitives import (
     NotEqual,
     NotEqualScalar,
     NumCharacters,
+    NumericLag,
     NumWords,
     Percentile,
     ScalarSubtractNumericFeature,
@@ -78,7 +79,6 @@ from featuretools.primitives import (
     TransformPrimitive,
     get_transform_primitives,
 )
-from featuretools.primitives.standard.transform_primitive import NumericLag
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
