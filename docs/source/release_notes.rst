@@ -16,7 +16,7 @@ Future Release
         * Add tests/profiling/dfs_profile.py (:pr:`2224`)
 
     Thanks to the following people for contributing to this release:
-    :user:`cpark`, :user:`gsheni`
+    :user:`cp2boston`, :user:`gsheni`
 
 
 v1.13.0 Aug 18, 2022
