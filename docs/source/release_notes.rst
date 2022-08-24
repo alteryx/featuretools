@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Add ``series_library`` attribute to ``PrimitiveBase`` 
+        * Add ``series_library`` attribute (:pr:`2257`) 
         * Refactor build_features to speed up long running DFS calls by 50% (:pr:`2224`)
     * Fixes
         * Fix compatibility issues with holidays 0.15 (:pr:`2254`)
