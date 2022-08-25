@@ -36,13 +36,7 @@ def entityset_to_description(entityset, format=None):
         relationship.to_dictionary() for relationship in entityset.relationships
     ]
 
-    series_library = Library.PANDAS
-    if len(entityset.dataframes):
-        first_df = entityset.dataframes[0]
-        if isinstance(first_df, dd.DataFrame):
-            series_library = Library.DASK
-        elif isinstance(first_df, ps.DataFrame):
-            series_library = Library.SPARK
+    data_type = entityset.dataframe_type
 
     data_description = {
         "schema_version": SCHEMA_VERSION,
@@ -50,7 +44,7 @@ def entityset_to_description(entityset, format=None):
         "dataframes": dataframes,
         "relationships": relationships,
         "format": format,
-        "series_library": series_library,
+        "data_type": data_type,
     }
     return data_description
 

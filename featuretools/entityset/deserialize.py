@@ -44,7 +44,10 @@ def description_to_entityset(description, **kwargs):
                     kwargs["filename"] = df["name"] + ".parquet"
             dataframe = read_woodwork_table(data_path, validate=False, **kwargs)
         else:
-            dataframe = empty_dataframe(df, description["series_library"])
+            if data_type := description.get("data_type"):
+                dataframe = empty_dataframe(df, data_type)
+            else:
+                dataframe = empty_dataframe(df)
 
         entityset.add_dataframe(dataframe)
 
@@ -55,7 +58,7 @@ def description_to_entityset(description, **kwargs):
     return entityset
 
 
-def empty_dataframe(description, series_library=Library.PANDAS):
+def empty_dataframe(description, data_type=Library.PANDAS):
     """Deserialize empty dataframe from dataframe description.
 
     Args:
@@ -104,9 +107,9 @@ def empty_dataframe(description, series_library=Library.PANDAS):
             category_dtypes[col_name] = cat_object
     dataframe = pd.DataFrame(columns=columns).astype(category_dtypes)
 
-    if series_library == "Dask":
+    if data_type == "Dask":
         dataframe = dd.from_pandas(dataframe, npartitions=1)
-    elif series_library == "Spark":
+    elif data_type == "Spark":
         dataframe = ps.from_pandas(dataframe)
 
     dataframe.ww.init(
