@@ -349,7 +349,6 @@ def serialize_primitive(primitive):
         "type": cls.__name__,
         "module": cls.__module__,
         "arguments": args_dict,
-        "series_library": primitive.series_library,
     }
 
 
@@ -389,8 +388,6 @@ class PrimitivesDeserializer(object):
             )
         arguments = primitive_dict["arguments"]
         primitive_instance = cls(**arguments)
-        if "series_library" in primitive_dict:
-            primitive_instance.series_library = primitive_dict["series_library"]
 
         return primitive_instance
 
