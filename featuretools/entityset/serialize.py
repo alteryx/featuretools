@@ -4,9 +4,11 @@ import os
 import tarfile
 import tempfile
 
+import dask.DataFrame as dd
+import pandas as pd
 from woodwork.serializers.serializer_base import typing_info_to_dict
 
-from featuretools.utils.gen_utils import import_or_none
+from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
 
@@ -33,12 +35,23 @@ def entityset_to_description(entityset, format=None):
     relationships = [
         relationship.to_dictionary() for relationship in entityset.relationships
     ]
+
+    if len(entityset.dataframes):
+        first_df = entityset.dataframes[0]
+        if isinstance(first_df, pd.DataFrame):
+            series_library = Library.PANDAS
+        elif isinstance(first_df, dd.DataFrame):
+            series_library = Library.DASK
+        elif isinstance(first_df, ps.DataFrame):
+            series_library = Library.SPARK
+
     data_description = {
         "schema_version": SCHEMA_VERSION,
         "id": entityset.id,
         "dataframes": dataframes,
         "relationships": relationships,
         "format": format,
+        "series_library": series_library,
     }
     return data_description
 

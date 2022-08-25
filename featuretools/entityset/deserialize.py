@@ -3,14 +3,17 @@ import os
 import tarfile
 import tempfile
 
+import dask.DataFrame as dd
 import pandas as pd
 import woodwork.type_sys.type_system as ww_type_system
 from woodwork.deserialize import read_woodwork_table
 
 from featuretools.entityset.relationship import Relationship
-from featuretools.utils.gen_utils import check_schema_version
+from featuretools.utils.gen_utils import Library, check_schema_version, import_or_none
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
 from featuretools.utils.wrangle import _is_local_tar, _is_s3, _is_url
+
+ps = import_or_none("pyspark.pandas")
 
 
 def description_to_entityset(description, **kwargs):
@@ -42,6 +45,13 @@ def description_to_entityset(description, **kwargs):
             dataframe = read_woodwork_table(data_path, validate=False, **kwargs)
         else:
             dataframe = empty_dataframe(df)
+
+        if len(entityset.dataframes):
+            original_type_of_dataframe = description["series_library"]
+            if original_type_of_dataframe == "Dask":
+                dataframe = dd.from_pandas(dataframe)
+            elif original_type_of_dataframe == "Spark":
+                dataframe = ps.createDataFrame(dataframe)
 
         entityset.add_dataframe(dataframe)
 
