@@ -4,7 +4,7 @@ import os
 import tarfile
 import tempfile
 
-import dask.DataFrame as dd
+import dask.dataframe as dd
 import pandas as pd
 from woodwork.serializers.serializer_base import typing_info_to_dict
 
@@ -36,11 +36,10 @@ def entityset_to_description(entityset, format=None):
         relationship.to_dictionary() for relationship in entityset.relationships
     ]
 
+    series_library = Library.PANDAS
     if len(entityset.dataframes):
         first_df = entityset.dataframes[0]
-        if isinstance(first_df, pd.DataFrame):
-            series_library = Library.PANDAS
-        elif isinstance(first_df, dd.DataFrame):
+        if isinstance(first_df, dd.DataFrame):
             series_library = Library.DASK
         elif isinstance(first_df, ps.DataFrame):
             series_library = Library.SPARK

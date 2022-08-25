@@ -3,7 +3,7 @@ import os
 import tarfile
 import tempfile
 
-import dask.DataFrame as dd
+import dask.dataframe as dd
 import pandas as pd
 import woodwork.type_sys.type_system as ww_type_system
 from woodwork.deserialize import read_woodwork_table
@@ -44,14 +44,7 @@ def description_to_entityset(description, **kwargs):
                     kwargs["filename"] = df["name"] + ".parquet"
             dataframe = read_woodwork_table(data_path, validate=False, **kwargs)
         else:
-            dataframe = empty_dataframe(df)
-
-        if len(entityset.dataframes):
-            original_type_of_dataframe = description["series_library"]
-            if original_type_of_dataframe == "Dask":
-                dataframe = dd.from_pandas(dataframe)
-            elif original_type_of_dataframe == "Spark":
-                dataframe = ps.createDataFrame(dataframe)
+            dataframe = empty_dataframe(df, description["series_library"])
 
         entityset.add_dataframe(dataframe)
 
@@ -62,7 +55,7 @@ def description_to_entityset(description, **kwargs):
     return entityset
 
 
-def empty_dataframe(description):
+def empty_dataframe(description, series_library=Library.PANDAS):
     """Deserialize empty dataframe from dataframe description.
 
     Args:
@@ -110,6 +103,11 @@ def empty_dataframe(description):
             cat_object = pd.CategoricalDtype(pd.Index(cat_values, dtype=cat_dtype))
             category_dtypes[col_name] = cat_object
     dataframe = pd.DataFrame(columns=columns).astype(category_dtypes)
+
+    if series_library == "Dask":
+        dataframe = dd.from_pandas(dataframe, npartitions=1)
+    elif series_library == "Spark":
+        dataframe = ps.from_pandas(dataframe)
 
     dataframe.ww.init(
         name=description.get("name"),
