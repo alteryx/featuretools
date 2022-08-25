@@ -4,11 +4,9 @@ import os
 import tarfile
 import tempfile
 
-import dask.dataframe as dd
-import pandas as pd
 from woodwork.serializers.serializer_base import typing_info_to_dict
 
-from featuretools.utils.gen_utils import Library, import_or_none
+from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
 
