@@ -2006,3 +2006,18 @@ def test_builds_features_using_all_input_types(es):
     agg_features = dfs_obj.build_features()
     assert feature_with_name(agg_features, "NUM_TRUE(log.purchased)")
     assert feature_with_name(agg_features, "NUM_TRUE(log.purchased_nullable)")
+
+
+def test_make_groupby_features_with_depth_none(pd_es):
+    # If max_depth is set to -1, it sets it to None internally, so this
+    # test validates code paths that have a None max_depth
+    dfs_obj = DeepFeatureSynthesis(
+        target_dataframe_name="log",
+        entityset=pd_es,
+        agg_primitives=[],
+        trans_primitives=[],
+        groupby_trans_primitives=["cum_sum"],
+        max_depth=-1,
+    )
+    features = dfs_obj.build_features()
+    assert feature_with_name(features, "CUM_SUM(value) by session_id")

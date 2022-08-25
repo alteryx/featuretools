@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 
 from featuretools import calculate_feature_matrix, dfs, list_primitives
+from featuretools.feature_base.cache import feature_cache
 from featuretools.primitives import get_aggregation_primitives, get_transform_primitives
 from featuretools.utils.gen_utils import Library
 
@@ -15,6 +16,12 @@ UNSUPPORTED += [
     for p in get_aggregation_primitives().values()
     if Library.DASK not in p.compatibility
 ]
+
+
+@pytest.fixture(autouse=True)
+def reset_dfs_cache():
+    feature_cache.enabled = False
+    feature_cache.clear_all()
 
 
 def test_transform(pd_es, dask_es):

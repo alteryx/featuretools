@@ -5,6 +5,6 @@ def is_valid_input(candidate, template):
         type(template.logical_type),
     ):
         return False
-    if template.semantic_tags - candidate.semantic_tags != set():
+    if len(template.semantic_tags - candidate.semantic_tags):
         return False
     return True

@@ -21,6 +21,7 @@ from featuretools import (
 )
 from featuretools.entityset.serialize import SCHEMA_VERSION as ENTITYSET_SCHEMA_VERSION
 from featuretools.feature_base import FeatureOutputSlice
+from featuretools.feature_base.cache import feature_cache
 from featuretools.feature_base.features_deserializer import FeaturesDeserializer
 from featuretools.feature_base.features_serializer import (
     SCHEMA_VERSION,
@@ -67,6 +68,12 @@ S3_URL = "s3://featuretools-static/" + TEST_FILE
 URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
 TEST_CONFIG = "CheckConfigPassesOn"
 TEST_KEY = "test_access_key_features"
+
+
+@pytest.fixture(autouse=True)
+def reset_dfs_cache():
+    feature_cache.enabled = False
+    feature_cache.clear_all()
 
 
 def assert_features(original, deserialized):
