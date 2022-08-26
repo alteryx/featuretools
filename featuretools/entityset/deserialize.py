@@ -44,11 +44,13 @@ def description_to_entityset(description, **kwargs):
                     kwargs["filename"] = df["name"] + ".parquet"
             dataframe = read_woodwork_table(data_path, validate=False, **kwargs)
         else:
+            dataframe = empty_dataframe(df, description.get("data_type"))
+            """
             if data_type := description.get("data_type"):
                 dataframe = empty_dataframe(df, data_type)
             else:
                 dataframe = empty_dataframe(df)
-
+            """
         entityset.add_dataframe(dataframe)
 
     for relationship in description["relationships"]:
@@ -105,9 +107,8 @@ def empty_dataframe(description, data_type=Library.PANDAS):
             cat_dtype = col["physical_type"]["cat_dtype"]
             cat_object = pd.CategoricalDtype(pd.Index(cat_values, dtype=cat_dtype))
             category_dtypes[col_name] = cat_object
-    dataframe = pd.DataFrame(columns=columns).astype(category_dtypes)
-    df = dataframe
 
+    dataframe = pd.DataFrame(columns=columns).astype(category_dtypes)
     if data_type == "Dask":
         dataframe = dd.from_pandas(dataframe, npartitions=1)
     elif data_type == "Spark":
