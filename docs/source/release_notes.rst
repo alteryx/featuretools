@@ -12,11 +12,12 @@ Future Release
     * Changes
         * Update release notes to make clear conda release portion (:pr:`2249`)
     * Documentation Changes
+        * Fix to remove warning from Using Spark EntitySets Guide (:pr:`2258`)
     * Testing Changes
         * Add tests/profiling/dfs_profile.py (:pr:`2224`)
 
     Thanks to the following people for contributing to this release:
-    :user:`cp2boston`, :user:`gsheni`
+    :user:`cp2boston`, :user:`gsheni`, :user:`thehomebrewnerd`
 
 
 v1.13.0 Aug 18, 2022
