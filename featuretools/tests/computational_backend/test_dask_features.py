@@ -16,7 +16,8 @@ def test_tokenize_entityset(pd_es, int_es):
     assert tokenize(pd_es) != tokenize(productless)
 
     # not same if integer entityset
-    assert tokenize(pd_es) != tokenize(int_es)
+    if isinstance(int_es.dataframes[0], pd.DataFrame):
+        assert tokenize(pd_es) != tokenize(int_es)
 
     # add row to cohorts
     cohorts_df = dupe["cohorts"]

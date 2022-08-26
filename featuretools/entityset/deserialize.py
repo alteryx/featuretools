@@ -106,6 +106,7 @@ def empty_dataframe(description, data_type=Library.PANDAS):
             cat_object = pd.CategoricalDtype(pd.Index(cat_values, dtype=cat_dtype))
             category_dtypes[col_name] = cat_object
     dataframe = pd.DataFrame(columns=columns).astype(category_dtypes)
+    df = dataframe
 
     if data_type == "Dask":
         dataframe = dd.from_pandas(dataframe, npartitions=1)
@@ -124,6 +125,7 @@ def empty_dataframe(description, data_type=Library.PANDAS):
         column_descriptions=column_descriptions,
         validate=False,
     )
+
     return dataframe
 
 
