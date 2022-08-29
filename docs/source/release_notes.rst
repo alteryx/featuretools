@@ -11,6 +11,7 @@ Future Release
         * Fix compatibility issues with holidays 0.15 (:pr:`2254`)
     * Changes
         * Update release notes to make clear conda release portion (:pr:`2249`)
+        * Use pyproject.toml only (move away from setup.cfg) (:pr:`2260`)
     * Documentation Changes
         * Fix to remove warning from Using Spark EntitySets Guide (:pr:`2258`)
     * Testing Changes

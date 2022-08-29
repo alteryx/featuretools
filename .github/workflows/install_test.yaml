@@ -1,11 +1,12 @@
+name: Install Test
 on:
   pull_request:
     types: [opened, synchronize]
   push:
     branches:
       - main
-
-name: Install Test
+env:
+  ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
 jobs:
   install_ft_complete:
     name: ${{ matrix.os }} - ${{ matrix.python_version }} install featuretools complete
@@ -19,14 +20,13 @@ jobs:
             os: macos-latest
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Set up python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Build featuretools package
-        run: make package_featuretools
+        run: make package
       - name: Install complete version of featuretools from sdist
         run: |
           pip config --site set global.progress_bar off
@@ -34,8 +34,13 @@ jobs:
       - name: Test by importing packages
         run: |
           python -c "import alteryx_open_src_update_checker"
-        env:
-          ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
+          python -c "import nlp_primitives"
+          python -c "from featuretools.nlp_primitives import PolarityScore"
       - name: Check package conflicts
         run: |
           python -m pip check
+      - name: Verify extra_requires commands
+        run: |
+          python -m pip install "unpacked_sdist/[nlp]"
+          python -m pip install "unpacked_sdist/[spark]"
+          python -m pip install "unpacked_sdist/[updater]"
