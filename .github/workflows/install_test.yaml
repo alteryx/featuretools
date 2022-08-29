@@ -35,6 +35,7 @@ jobs:
         run: |
           python -c "import alteryx_open_src_update_checker"
           python -c "import nlp_primitives"
+          python -c "from featuretools.nlp_primitives import PolarityScore"
       - name: Check package conflicts
         run: |
           python -m pip check
