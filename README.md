@@ -56,7 +56,7 @@ python -m pip install "featuretools[complete]"
 **Update checker** - Receive automatic notifications of new Featuretools releases
 
 ```
-python -m pip install "featuretools[update_checker]"
+python -m pip install "featuretools[updater]"
 ```
 
 **NLP Primitives** - Use Natural Language Processing Primitives:

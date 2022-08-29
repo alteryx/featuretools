@@ -47,7 +47,7 @@ $ python -m pip install "featuretools[autonormalize]"
 ```
 ```{tab} Update Checker
 ```console
-$ python -m pip install "featuretools[update_checker]"
+$ python -m pip install "featuretools[updater]"
 ```
 ````
 ````{tab} Conda

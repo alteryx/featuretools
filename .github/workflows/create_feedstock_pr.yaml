@@ -35,7 +35,7 @@ jobs:
         with:
           project: "featuretools"
           pypi_version: ${{ github.event.inputs.version }}
-          setup_cfg_filepath: "featuretools/pyproject.toml"
+          project_metadata_filepath: "featuretools/pyproject.toml"
           meta_yaml_filepath: "featuretools-feedstock/recipe/meta.yaml"
           add_to_test_requirements: "graphviz !=2.47.2"
       - name: View updated meta yaml

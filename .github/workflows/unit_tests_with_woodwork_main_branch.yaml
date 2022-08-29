@@ -20,7 +20,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Build featuretools package
-        run: make package_featuretools
+        run: make package
       - name: Set up pip and graphviz
         run: |
           pip config --site set global.progress_bar off

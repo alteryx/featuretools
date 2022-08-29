@@ -20,7 +20,6 @@ jobs:
         uses: alteryx/minimum-dependency-generator@v3
         with:
           paths: 'pyproject.toml'
-          options: 'install_requires'
           extras_require: 'test'
           output_filepath: featuretools/tests/requirement_files/minimum_test_requirements.txt
       - name: Run min dep generator - core reqs
@@ -28,7 +27,7 @@ jobs:
         uses: alteryx/minimum-dependency-generator@v3
         with:
           paths: 'pyproject.toml'
-          options: 'install_requires'
+          options: 'dependencies'
           output_filepath: featuretools/tests/requirement_files/minimum_core_requirements.txt
       - name: Run min dep generator - spark
         id: min_dep_gen_spark
