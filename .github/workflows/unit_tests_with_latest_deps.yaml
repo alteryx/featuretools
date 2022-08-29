@@ -17,8 +17,7 @@ jobs:
         libraries: ["core", "spark - misc", "spark - computational", "spark - entityset_1", "spark - entityset_2", "spark - primitives"]
 
     steps:
-      - name: Set up python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
       - name: Checkout repository
