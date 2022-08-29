@@ -34,6 +34,7 @@ jobs:
       - name: Test by importing packages
         run: |
           python -c "import alteryx_open_src_update_checker"
+          python -c "import nlp_primitives"
       - name: Check package conflicts
         run: |
           python -m pip check
