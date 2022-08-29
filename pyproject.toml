@@ -105,6 +105,7 @@ docs = [
     "autonormalize >= 2.0.1",
     "featuretools[spark]",
     "featuretools[test]",
+    "featuretools_sql >= 0.0.1"
 ]
 dev = [
     "flake8 == 5.0.4",
