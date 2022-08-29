@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Build featuretools package
         run: make package_featuretools
       - name: Set up pip and graphviz
