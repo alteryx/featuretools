@@ -14,11 +14,12 @@ Future Release
         * Use pyproject.toml only (move away from setup.cfg) (:pr:`2260`)
     * Documentation Changes
         * Fix to remove warning from Using Spark EntitySets Guide (:pr:`2258`)
+        * Add documentation describing how to use `featuretools_sql` with `featuretools` (:pr:`2662`)
     * Testing Changes
         * Add tests/profiling/dfs_profile.py (:pr:`2224`)
 
     Thanks to the following people for contributing to this release:
-    :user:`cp2boston`, :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`cp2boston`, :user:`gsheni`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 
 v1.13.0 Aug 18, 2022
