@@ -13,7 +13,7 @@ from woodwork.logical_types import (
     Datetime,
     Double,
     EmailAddress,
-    IntegerNullable,
+    Integer,
     NaturalLanguage,
     Ordinal,
     PostalCode,
@@ -651,9 +651,6 @@ class Lag(TransformPrimitive):
         periods (int): The number of periods by which to shift the input.
             Default is 1. Periods correspond to rows.
 
-        fill_value (int, float, str, bool, optional): The value to use to fill in
-            the gaps left after shifting the input. Default is None.
-
     Examples:
         >>> lag = Lag()
         >>> lag([1, 2, 3, 4, 5], pd.Series(pd.date_range(start="2020-01-01", periods=5, freq='D'))).tolist()
@@ -664,12 +661,6 @@ class Lag(TransformPrimitive):
         >>> lag_periods = Lag(periods=3)
         >>> lag_periods(["hello", "world", "test", "foo", "bar"], pd.Series(pd.date_range(start="2020-01-01", periods=5, freq='D'))).tolist()
         [nan, nan, nan, 'hello', 'world']
-
-        You can specify the fill value to use
-
-        >>> lag_fill_value = Lag(fill_value=100)
-        >>> lag_fill_value([1, 2, 3, 4], pd.Series(pd.date_range(start="2020-01-01", periods=4, freq='D'))).tolist()
-        [100, 1, 2, 3]
     """
 
     name = "lag"
@@ -679,60 +670,27 @@ class Lag(TransformPrimitive):
             ColumnSchema(semantic_tags={"time_index"}),
         ],
         [
-            ColumnSchema(logical_type=AgeFractional),
+            ColumnSchema(semantic_tags={"numeric"}),
             ColumnSchema(semantic_tags={"time_index"}),
         ],
         [
-            ColumnSchema(logical_type=AgeNullable),
+            ColumnSchema(logical_type=Boolean),
             ColumnSchema(semantic_tags={"time_index"}),
         ],
         [
             ColumnSchema(logical_type=BooleanNullable),
             ColumnSchema(semantic_tags={"time_index"}),
         ],
-        [
-            ColumnSchema(logical_type=Double),
-            ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"}),
-        ],
-        [
-            ColumnSchema(logical_type=EmailAddress),
-            ColumnSchema(semantic_tags={"time_index"}),
-        ],
-        [
-            ColumnSchema(logical_type=IntegerNullable),
-            ColumnSchema(semantic_tags={"time_index"}),
-        ],
-        [
-            ColumnSchema(logical_type=NaturalLanguage),
-            ColumnSchema(semantic_tags={"time_index"}),
-        ],
-        [
-            ColumnSchema(logical_type=Ordinal),
-            ColumnSchema(semantic_tags={"time_index"}),
-        ],
-        [
-            ColumnSchema(logical_type=PostalCode),
-            ColumnSchema(semantic_tags={"time_index"}),
-        ],
-        [
-            ColumnSchema(logical_type=URL),
-            ColumnSchema(semantic_tags={"time_index"}),
-        ],
-        [
-            ColumnSchema(logical_type=Unknown),
-            ColumnSchema(semantic_tags={"time_index"}),
-        ],
     ]
     return_type = None
     uses_full_dataframe = True
 
-    def __init__(self, periods=1, fill_value=None):
+    def __init__(self, periods=1):
         self.periods = periods
-        self.fill_value = fill_value
 
     def get_function(self):
         def lag(input_col, time_index):
             x = pd.Series(input_col.values, index=time_index.values)
-            return x.shift(periods=self.periods, fill_value=self.fill_value).values
+            return x.shift(periods=self.periods, fill_value=None).values
 
         return lag

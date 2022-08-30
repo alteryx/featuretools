@@ -1597,7 +1597,7 @@ def test_cfm_with_lag(pd_es):
     new_log = pd_es["log"].copy()
     new_log["value"] = new_log["value"].fillna(0)
     new_log.ww.init(
-        logical_types={"value": "IntegerNullable", "product_id": "Categorical"},
+        logical_types={"value": "Integer", "product_id": "Categorical"},
         index="id",
         time_index="datetime",
         name="new_log",
@@ -1609,7 +1609,7 @@ def test_cfm_with_lag(pd_es):
     ]
     pd_es = pd_es.add_relationships(rels)
 
-    assert isinstance(pd_es["new_log"].ww.logical_types["value"], IntegerNullable)
+    assert isinstance(pd_es["new_log"].ww.logical_types["value"], Integer)
 
     periods = 5
     lag_primitive = Lag(periods=periods)

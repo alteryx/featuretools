@@ -15,7 +15,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`cp2boston`, :user:`gsheni`
+    :user:`cp2boston`, :user:`gsheni`, :user:`ozzieD`
 
 v1.13.0 Aug 18, 2022
 ====================

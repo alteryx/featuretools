@@ -227,19 +227,18 @@ def test_check_input_types():
     sem_tag_type_checks = set()
     unique_input_types = set()
     expected_log_in_check = {
-        "boolean",
         "boolean_nullable",
+        "boolean",
         "datetime",
     }
     expected_sem_tag_type_check = {"numeric", "time_index"}
     expected_unique_input_types = {
-        "<ColumnSchema (Logical Type = Boolean)>",
         "<ColumnSchema (Logical Type = BooleanNullable)>",
-        "<ColumnSchema (Logical Type = Datetime)>",
         "<ColumnSchema (Semantic Tags = ['numeric'])>",
+        "<ColumnSchema (Logical Type = Boolean)>",
+        "<ColumnSchema (Logical Type = Datetime)>",
         "<ColumnSchema (Semantic Tags = ['time_index'])>",
     }
-
     for prim in primitives:
         input_types_flattened = prim.flatten_nested_input_types(prim.input_types)
         _check_input_types(
