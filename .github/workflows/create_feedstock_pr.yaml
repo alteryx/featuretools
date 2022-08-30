@@ -31,11 +31,11 @@ jobs:
           fetch-depth: '0'
       - name: Run Create Feedstock meta YAML
         id: create-feedstock-meta
-        uses: alteryx/create-feedstock-meta-yaml@v3
+        uses: alteryx/create-feedstock-meta-yaml@v4
         with:
           project: "featuretools"
           pypi_version: ${{ github.event.inputs.version }}
-          setup_cfg_filepath: "featuretools/setup.cfg"
+          project_metadata_filepath: "featuretools/pyproject.toml"
           meta_yaml_filepath: "featuretools-feedstock/recipe/meta.yaml"
           add_to_test_requirements: "graphviz !=2.47.2"
       - name: View updated meta yaml

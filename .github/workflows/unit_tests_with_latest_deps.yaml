@@ -17,17 +17,16 @@ jobs:
         libraries: ["core", "spark - misc", "spark - computational", "spark - entityset_1", "spark - entityset_2", "spark - primitives"]
 
     steps:
-      - name: Set up python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Build featuretools package
-        run: make package_featuretools
+        run: make package
       - name: Set up pip and graphviz
         run: |
           pip config --site set global.progress_bar off
@@ -120,7 +119,7 @@ jobs:
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda create -n featuretools python=${{ matrix.python_version }}
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}

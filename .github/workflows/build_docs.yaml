@@ -19,17 +19,16 @@ jobs:
       matrix:
         python_version: ["3.8", "3.9", "3.10"]
     steps:
-      - name: Set up python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Build featuretools package
-        run: make package_featuretools
+        run: make package
       - name: Install featuretools with doc requirements
         run: |
           sudo apt update

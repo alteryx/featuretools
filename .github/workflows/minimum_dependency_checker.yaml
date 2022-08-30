@@ -5,37 +5,37 @@ on:
     branches:
       - main
     paths:
-      - 'setup.cfg'
+      - 'pyproject.toml'
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Run min dep generator - test reqs
         id: min_dep_gen_test
-        uses: alteryx/minimum-dependency-generator@v3.2
+        uses: alteryx/minimum-dependency-generator@v3
         with:
-          paths: 'setup.cfg'
-          options: 'install_requires'
+          paths: 'pyproject.toml'
+          options: 'dependencies'
           extras_require: 'test'
           output_filepath: featuretools/tests/requirement_files/minimum_test_requirements.txt
       - name: Run min dep generator - core reqs
         id: min_dep_gen_core
-        uses: alteryx/minimum-dependency-generator@v3.2
+        uses: alteryx/minimum-dependency-generator@v3
         with:
-          paths: 'setup.cfg'
-          options: 'install_requires'
+          paths: 'pyproject.toml'
+          options: 'dependencies'
           output_filepath: featuretools/tests/requirement_files/minimum_core_requirements.txt
       - name: Run min dep generator - spark
         id: min_dep_gen_spark
-        uses: alteryx/minimum-dependency-generator@v3.2
+        uses: alteryx/minimum-dependency-generator@v3
         with:
-          paths: 'setup.cfg'
-          options: 'install_requires'
+          paths: 'pyproject.toml'
+          options: 'dependencies'
           extras_require: 'spark'
           output_filepath: featuretools/tests/requirement_files/minimum_spark_requirements.txt
       - name: Create Pull Request
