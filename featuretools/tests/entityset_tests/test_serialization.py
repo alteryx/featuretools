@@ -95,6 +95,7 @@ def test_empty_dataframe(es):
 
 
 def test_to_csv(es, tmpdir):
+    print(f"Tmpdir: {tmpdir}")
     es.to_csv(str(tmpdir), encoding="utf-8", engine="python")
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
