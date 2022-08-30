@@ -49,6 +49,10 @@ $ python -m pip install "featuretools[autonormalize]"
 ```console
 $ python -m pip install "featuretools[updater]"
 ```
+```{tab} Featuretools_SQL
+```console
+$ python -m pip install "featuretools[sql]" 
+```
 ````
 ````{tab} Conda
 ```{tab} All Add-ons
@@ -71,6 +75,10 @@ $ conda install -c conda-forge pyspark
 ```console
 $ conda install -c conda-forge alteryx-open-src-update-checker
 ```
+```{tab} Featuretools_SQL
+```console
+$ conda install -c conda-forge featuretools_sql
+```
 ````
 
 - **NLP Primitives**: Use Natural Language Processing Primitives in Featuretools
@@ -78,6 +86,7 @@ $ conda install -c conda-forge alteryx-open-src-update-checker
 - **Spark**: Use Woodwork with Spark DataFrames
 - **AutoNormalize**: Automated creation of normalized `EntitySet` from denormalized data
 - **Update Checker**: Receive automatic notifications of new Featuretools releases
+- **Featuretools_SQL**: Automated creation of `EntitySet`'s from relational data stored in SQL databases
 
 ## Installing Graphviz
 
