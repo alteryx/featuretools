@@ -34,7 +34,7 @@ jobs:
         uses: alteryx/minimum-dependency-generator@v3
         with:
           paths: 'pyproject.toml'
-          options: 'install_requires'
+          options: 'dependencies'
           extras_require: 'spark'
           output_filepath: featuretools/tests/requirement_files/minimum_spark_requirements.txt
       - name: Create Pull Request
