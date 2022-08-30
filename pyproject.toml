@@ -88,6 +88,9 @@ nlp = [
 autonormalize = [
     "autonormalize >= 2.0.1",
 ]
+featuretools_sql = [
+    "featuretools[sql] >= 0.0.1",
+]
 
 docs = [
     "scikit-learn >=0.20.0, !=0.22",
@@ -103,6 +106,7 @@ docs = [
     "myst-parser == 0.18.0",
     "nlp_primitives >= 2.3.0",
     "autonormalize >= 2.0.1",
+    "featuretools_sql >= 0.0.1",
     "featuretools[spark]",
     "featuretools[test]",
 ]
@@ -121,6 +125,7 @@ complete = [
     "featuretools[nlp]",
     "featuretools[spark]",
     "featuretools[autonormalize]",
+    "featuretools[sql]",
 ]
 
 [project.scripts]
