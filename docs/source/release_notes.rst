@@ -7,15 +7,18 @@ Future Release
 ==============
     * Enhancements
         * Replace ``NumericLag`` with ``Lag`` primitive (:pr:`2252`)
+        * Refactor build_features to speed up long running DFS calls by 50% (:pr:`2224`)
     * Fixes
         * Fix compatibility issues with holidays 0.15 (:pr:`2254`)
     * Changes
         * Update release notes to make clear conda release portion (:pr:`2249`)
     * Documentation Changes
     * Testing Changes
+        * Add tests/profiling/dfs_profile.py (:pr:`2224`)
 
     Thanks to the following people for contributing to this release:
     :user:`cp2boston`, :user:`gsheni`, :user:`ozzieD`
+
 
 v1.13.0 Aug 18, 2022
 ====================

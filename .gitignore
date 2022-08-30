@@ -134,3 +134,8 @@ ENV/
 
 #IDE
 .vscode
+.devcontainer
+
+*.stats
+Dockerfile.arm
+.dockerignore
