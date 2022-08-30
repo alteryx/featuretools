@@ -11,7 +11,7 @@ Future Release
         * Fix compatibility issues with holidays 0.15 (:pr:`2254`)
     * Changes
         * Update release notes to make clear conda release portion (:pr:`2249`)
-        * Use pyproject.toml only (move away from setup.cfg) (:pr:`2260`)
+        * Use pyproject.toml only (move away from setup.cfg) (:pr:`2260`, :pr:`2263`, :pr:`2265`)
     * Documentation Changes
         * Fix to remove warning from Using Spark EntitySets Guide (:pr:`2258`)
         * Add documentation describing how to use `featuretools_sql` with `featuretools` (:pr:`2262`)
