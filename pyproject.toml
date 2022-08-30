@@ -103,7 +103,6 @@ docs = [
     "myst-parser == 0.18.0",
     "nlp_primitives >= 2.3.0",
     "autonormalize >= 2.0.1",
-    "featuretools_sql >= 0.0.1",
     "featuretools[spark]",
     "featuretools[test]",
 ]
