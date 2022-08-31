@@ -86,7 +86,7 @@ $ conda install -c conda-forge featuretools_sql
 - **Spark**: Use Woodwork with Spark DataFrames
 - **AutoNormalize**: Automated creation of normalized `EntitySet` from denormalized data
 - **Update Checker**: Receive automatic notifications of new Featuretools releases
-- **Featuretools_SQL**: Automated creation of `EntitySet`'s from relational data stored in SQL databases
+- **Featuretools_SQL**: Automated `EntitySet` creation from relational data stored in a SQL database
 
 ## Installing Graphviz
 
