@@ -1607,6 +1607,7 @@ def test_cfm_with_lag_and_non_nullable_columns(pd_es):
             "value_2": "IntegerNullable",
             "product_id": "Categorical",
             "value_double": "Double",
+            "purchased_with_nulls": "BooleanNullable",
         },
         index="id",
         time_index="datetime",
