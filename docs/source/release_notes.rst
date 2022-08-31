@@ -9,6 +9,7 @@ Future Release
         * Refactor build_features to speed up long running DFS calls by 50% (:pr:`2224`)
     * Fixes
         * Fix compatibility issues with holidays 0.15 (:pr:`2254`)
+        * Pin fsspec to avoid dask errors (:pr:`2271`)
     * Changes
         * Update release notes to make clear conda release portion (:pr:`2249`)
         * Use pyproject.toml only (move away from setup.cfg) (:pr:`2260`, :pr:`2263`, :pr:`2265`)
@@ -18,7 +19,7 @@ Future Release
         * Add tests/profiling/dfs_profile.py (:pr:`2224`)
 
     Thanks to the following people for contributing to this release:
-    :user:`cp2boston`, :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`cp2boston`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 
 v1.13.0 Aug 18, 2022
