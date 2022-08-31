@@ -29,7 +29,7 @@ def _load_primitives():
                 other_library = other_library
 
         - pyproject.toml:
-        
+
             [project.entry-points."featuretools_primitives"]
             other_library = "other_library"
 
