@@ -819,66 +819,45 @@ def test_lag_ends_with_nan():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_lag_with_strings():
+@pytest.mark.parametrize(
+    "input_array,expected_output",
+    [
+        (
+            pd.Series(["hello", "world", "foo", "bar"], dtype="string"),
+            pd.Series([np.nan, "hello", "world", "foo"], dtype="string"),
+        ),
+        (
+            pd.Series(["cow", "cow", "pig", "pig"], dtype="category"),
+            pd.Series([np.nan, "cow", "cow", "pig"], dtype="category"),
+        ),
+        (
+            pd.Series([True, False, True, False], dtype="bool"),
+            pd.Series([np.nan, True, False, True], dtype="object"),
+        ),
+        (
+            pd.Series([True, False, True, False], dtype="boolean"),
+            pd.Series([np.nan, True, False, True], dtype="boolean"),
+        ),
+        (
+            pd.Series([1.23, 2.45, 3.56, 4.98], dtype="float"),
+            pd.Series([np.nan, 1.23, 2.45, 3.56], dtype="float"),
+        ),
+        (
+            pd.Series([1, 2, 3, 4], dtype="Int64"),
+            pd.Series([np.nan, 1, 2, 3], dtype="Int64"),
+        ),
+        (
+            pd.Series([1, 2, 3, 4], dtype="int64"),
+            pd.Series([np.nan, 1, 2, 3], dtype="float64"),
+        ),
+    ],
+)
+def test_lag_with_different_dtypes(input_array, expected_output):
     primitive_instance = Lag()
     primitive_func = primitive_instance.get_function()
 
-    array = pd.Series(["hello", "world", "foo", "bar"], dtype="string")
     time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
 
-    answer = pd.Series(primitive_func(array, time_array))
+    answer = pd.Series(primitive_func(input_array, time_array))
 
-    correct_answer = pd.Series([np.nan, "hello", "world", "foo"], dtype="string")
-    pd.testing.assert_series_equal(answer, correct_answer)
-
-
-def test_lag_with_categories():
-    primitive_instance = Lag()
-    primitive_func = primitive_instance.get_function()
-
-    array = pd.Series(["cow", "cow", "pig", "pig"], dtype="category")
-    time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
-
-    answer = pd.Series(primitive_func(array, time_array))
-
-    correct_answer = pd.Series([np.nan, "cow", "cow", "pig"], dtype="category")
-    pd.testing.assert_series_equal(answer, correct_answer)
-
-
-def test_lag_with_bools():
-    primitive_instance = Lag()
-    primitive_func = primitive_instance.get_function()
-
-    array = pd.Series([True, False, True, False], dtype="bool")
-    time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
-
-    answer = pd.Series(primitive_func(array, time_array))
-
-    correct_answer = pd.Series([np.nan, True, False, True])
-    pd.testing.assert_series_equal(answer, correct_answer)
-
-
-def test_lag_with_floats():
-    primitive_instance = Lag()
-    primitive_func = primitive_instance.get_function()
-
-    array = pd.Series([1.23, 2.45, 3.56, 4.98], dtype="float")
-    time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
-
-    answer = pd.Series(primitive_func(array, time_array))
-
-    correct_answer = pd.Series([np.nan, 1.23, 2.45, 3.56])
-    pd.testing.assert_series_equal(answer, correct_answer)
-
-
-def test_lag_with_ints():
-    primitive_instance = Lag()
-    primitive_func = primitive_instance.get_function()
-
-    array = pd.Series([1, 2, 3, 4], dtype="int64")
-    time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
-
-    answer = pd.Series(primitive_func(array, time_array))
-
-    correct_answer = pd.Series([np.nan, 1, 2, 3])
-    pd.testing.assert_series_equal(answer, correct_answer)
+    pd.testing.assert_series_equal(answer, expected_output)
