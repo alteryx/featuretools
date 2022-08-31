@@ -1604,6 +1604,7 @@ def test_cfm_with_lag_and_non_nullable_columns(pd_es):
     new_log.ww.init(
         logical_types={
             "value": "Integer",
+            "value_2": "IntegerNullable",
             "product_id": "Categorical",
             "value_double": "Double",
         },
