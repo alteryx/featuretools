@@ -1592,12 +1592,19 @@ def test_cfm_with_numeric_lag_and_non_nullable_column(pd_es):
     )
 
 
-def test_cfm_with_lag(pd_es):
+def test_cfm_with_lag_and_non_nullable_columns(pd_es):
     # fill nans so we can use non nullable numeric logical type in the EntitySet
     new_log = pd_es["log"].copy()
     new_log["value"] = new_log["value"].fillna(0)
+    new_log["value_double"] = new_log["value"]
+    new_log["purchased_with_nulls"] = new_log["purchased"]
+    new_log["purchased_with_nulls"][0:4] = None
     new_log.ww.init(
-        logical_types={"value": "Integer", "product_id": "Categorical"},
+        logical_types={
+            "value": "Integer",
+            "product_id": "Categorical",
+            "value_double": "Double",
+        },
         index="id",
         time_index="datetime",
         name="new_log",
@@ -1621,34 +1628,30 @@ def test_cfm_with_lag(pd_es):
         trans_primitives=[lag_primitive],
         cutoff_time=cutoff_times,
     )
+    # Integer
     assert fm["LAG(value, datetime, periods=5)"].head(periods).isnull().all()
     assert fm["LAG(value, datetime, periods=5)"].isnull().sum() == periods
 
+    # IntegerNullable
     assert "LAG(value_2, datetime, periods=5)" in fm.columns
-    assert fm["LAG(products.rating, datetime, periods=5)"].head(periods).isnull().all()
+    assert fm["LAG(value_2, datetime, periods=5)"].head(periods).isnull().all()
 
-    assert "LAG(products.rating, datetime, periods=5)" in fm.columns
-    assert fm["LAG(products.rating, datetime, periods=5)"].head(periods).isnull().all()
+    # Categorical
+    assert "LAG(product_id, datetime, periods=5)" in fm.columns
+    assert fm["LAG(product_id, datetime, periods=5)"].head(periods).isnull().all()
 
-    assert "LAG(products.department, datetime, periods=5)" in fm.columns
+    # Double
+    assert "LAG(value_double, datetime, periods=5)" in fm.columns
+    assert fm["LAG(value_double, datetime, periods=5)"].head(periods).isnull().all()
+
+    # Boolean
+    assert "LAG(purchased, datetime, periods=5)" in fm.columns
+    assert fm["LAG(purchased, datetime, periods=5)"].head(periods).isnull().all()
+
+    # BooleanNullable
+    assert "LAG(purchased_with_nulls, datetime, periods=5)" in fm.columns
     assert (
-        fm["LAG(products.department, datetime, periods=5)"].head(periods).isnull().all()
-    )
-
-    assert "LAG(products.rating, datetime, periods=5)" in fm.columns
-    assert fm["LAG(products.rating, datetime, periods=5)"].head(periods).isnull().all()
-
-    assert "LAG(sessions.device_name, datetime, periods=5)" in fm.columns
-    assert (
-        fm["LAG(sessions.device_name, datetime, periods=5)"]
-        .head(periods)
-        .isnull()
-        .all()
-    )
-
-    assert "LAG(sessions.device_type, datetime, periods=5)" in fm.columns
-    assert (
-        fm["LAG(sessions.device_type, datetime, periods=5)"]
+        fm["LAG(purchased_with_nulls, datetime, periods=5)"]
         .head(periods)
         .isnull()
         .all()
