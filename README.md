@@ -71,7 +71,7 @@ python -m pip install "featuretools[nlp]"
 python -m pip install "featuretools[tsfresh]"
 ```
 
-**Featuretools_SQL** - Automatic EntitySet generation from relational data stored in SQL databases: 
+**SQL** - Automatic EntitySet generation from relational data stored in a SQL database: 
 
 ```
 python -m pip install "featuretools[sql]"
