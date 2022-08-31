@@ -75,10 +75,6 @@ $ conda install -c conda-forge pyspark
 ```console
 $ conda install -c conda-forge alteryx-open-src-update-checker
 ```
-```{tab} Featuretools_SQL
-```console
-$ conda install -c conda-forge featuretools_sql
-```
 ````
 
 - **NLP Primitives**: Use Natural Language Processing Primitives in Featuretools
