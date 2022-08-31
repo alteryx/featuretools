@@ -88,7 +88,7 @@ nlp = [
 autonormalize = [
     "autonormalize >= 2.0.1",
 ]
-featuretools_sql = [
+sql = [
     "featuretools_sql >= 0.0.1",
 ]
 
