@@ -833,6 +833,20 @@ def test_lag_with_strings():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
+def test_lag_with_categories():
+    primitive_instance = Lag()
+    primitive_func = primitive_instance.get_function()
+
+    array = pd.Series(["cow", "cow", "pig", "pig"])
+    array.astype("category")
+    time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
+
+    answer = pd.Series(primitive_func(array, time_array))
+
+    correct_answer = pd.Series([np.nan, "cow", "cow", "pig"])
+    pd.testing.assert_series_equal(answer, correct_answer)
+
+
 def test_lag_with_bools():
     primitive_instance = Lag()
     primitive_func = primitive_instance.get_function()
