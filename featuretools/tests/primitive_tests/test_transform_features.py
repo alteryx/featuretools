@@ -1631,22 +1631,42 @@ def test_cfm_with_lag_and_non_nullable_columns(pd_es):
     # Integer
     assert fm["LAG(value, datetime, periods=5)"].head(periods).isnull().all()
     assert fm["LAG(value, datetime, periods=5)"].isnull().sum() == periods
+    assert (
+        fm.ww.schema.logical_types["LAG(value, datetime, periods=5)"].type_string
+        == "integer_nullable"
+    )
 
     # IntegerNullable
     assert "LAG(value_2, datetime, periods=5)" in fm.columns
     assert fm["LAG(value_2, datetime, periods=5)"].head(periods).isnull().all()
+    assert (
+        fm.ww.schema.logical_types["LAG(value_2, datetime, periods=5)"].type_string
+        == "integer_nullable"
+    )
 
     # Categorical
     assert "LAG(product_id, datetime, periods=5)" in fm.columns
     assert fm["LAG(product_id, datetime, periods=5)"].head(periods).isnull().all()
+    assert (
+        fm.ww.schema.logical_types["LAG(product_id, datetime, periods=5)"].type_string
+        == "categorical"
+    )
 
     # Double
     assert "LAG(value_double, datetime, periods=5)" in fm.columns
     assert fm["LAG(value_double, datetime, periods=5)"].head(periods).isnull().all()
+    assert (
+        fm.ww.schema.logical_types["LAG(value_double, datetime, periods=5)"].type_string
+        == "double"
+    )
 
     # Boolean
     assert "LAG(purchased, datetime, periods=5)" in fm.columns
     assert fm["LAG(purchased, datetime, periods=5)"].head(periods).isnull().all()
+    assert (
+        fm.ww.schema.logical_types["LAG(purchased, datetime, periods=5)"].type_string
+        == "boolean_nullable"
+    )
 
     # BooleanNullable
     assert "LAG(purchased_with_nulls, datetime, periods=5)" in fm.columns
@@ -1655,6 +1675,12 @@ def test_cfm_with_lag_and_non_nullable_columns(pd_es):
         .head(periods)
         .isnull()
         .all()
+    )
+    assert (
+        fm.ww.schema.logical_types[
+            "LAG(purchased_with_nulls, datetime, periods=5)"
+        ].type_string
+        == "boolean_nullable"
     )
 
 

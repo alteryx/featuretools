@@ -5,20 +5,14 @@ import pandas as pd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import (
     URL,
-    AgeFractional,
-    AgeNullable,
     Boolean,
     BooleanNullable,
     Categorical,
     Datetime,
     Double,
     EmailAddress,
-    Integer,
     NaturalLanguage,
-    Ordinal,
-    PostalCode,
     Timedelta,
-    Unknown,
 )
 
 from featuretools.primitives.base import TransformPrimitive
