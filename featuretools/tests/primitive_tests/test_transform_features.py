@@ -7,6 +7,8 @@ import pytest
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import (
     Boolean,
+    BooleanNullable,
+    Categorical,
     Datetime,
     Double,
     Integer,
@@ -1631,41 +1633,41 @@ def test_cfm_with_lag_and_non_nullable_columns(pd_es):
     # Integer
     assert fm["LAG(value, datetime, periods=5)"].head(periods).isnull().all()
     assert fm["LAG(value, datetime, periods=5)"].isnull().sum() == periods
-    assert (
-        fm.ww.schema.logical_types["LAG(value, datetime, periods=5)"].type_string
-        == "integer_nullable"
+    assert isinstance(
+        fm.ww.schema.logical_types["LAG(value, datetime, periods=5)"],
+        IntegerNullable,
     )
 
     # IntegerNullable
     assert "LAG(value_2, datetime, periods=5)" in fm.columns
     assert fm["LAG(value_2, datetime, periods=5)"].head(periods).isnull().all()
-    assert (
-        fm.ww.schema.logical_types["LAG(value_2, datetime, periods=5)"].type_string
-        == "integer_nullable"
+    assert isinstance(
+        fm.ww.schema.logical_types["LAG(value_2, datetime, periods=5)"],
+        IntegerNullable,
     )
 
     # Categorical
     assert "LAG(product_id, datetime, periods=5)" in fm.columns
     assert fm["LAG(product_id, datetime, periods=5)"].head(periods).isnull().all()
-    assert (
-        fm.ww.schema.logical_types["LAG(product_id, datetime, periods=5)"].type_string
-        == "categorical"
+    assert isinstance(
+        fm.ww.schema.logical_types["LAG(product_id, datetime, periods=5)"],
+        Categorical,
     )
 
     # Double
     assert "LAG(value_double, datetime, periods=5)" in fm.columns
     assert fm["LAG(value_double, datetime, periods=5)"].head(periods).isnull().all()
-    assert (
-        fm.ww.schema.logical_types["LAG(value_double, datetime, periods=5)"].type_string
-        == "double"
+    assert isinstance(
+        fm.ww.schema.logical_types["LAG(value_double, datetime, periods=5)"],
+        Double,
     )
 
     # Boolean
     assert "LAG(purchased, datetime, periods=5)" in fm.columns
     assert fm["LAG(purchased, datetime, periods=5)"].head(periods).isnull().all()
-    assert (
-        fm.ww.schema.logical_types["LAG(purchased, datetime, periods=5)"].type_string
-        == "boolean_nullable"
+    assert isinstance(
+        fm.ww.schema.logical_types["LAG(purchased, datetime, periods=5)"],
+        BooleanNullable,
     )
 
     # BooleanNullable
@@ -1676,11 +1678,9 @@ def test_cfm_with_lag_and_non_nullable_columns(pd_es):
         .isnull()
         .all()
     )
-    assert (
-        fm.ww.schema.logical_types[
-            "LAG(purchased_with_nulls, datetime, periods=5)"
-        ].type_string
-        == "boolean_nullable"
+    assert isinstance(
+        fm.ww.schema.logical_types["LAG(purchased_with_nulls, datetime, periods=5)"],
+        BooleanNullable,
     )
 
 
