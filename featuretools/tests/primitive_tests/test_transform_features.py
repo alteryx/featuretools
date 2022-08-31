@@ -5,7 +5,16 @@ import numpy as np
 import pandas as pd
 import pytest
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean, Datetime, Double, Integer, Ordinal
+from woodwork.logical_types import (
+    Boolean,
+    BooleanNullable,
+    Categorical,
+    Datetime,
+    Double,
+    Integer,
+    IntegerNullable,
+    Ordinal,
+)
 
 from featuretools import (
     AggregationFeature,
@@ -44,6 +53,7 @@ from featuretools.primitives import (
     Hour,
     IsIn,
     IsNull,
+    Lag,
     Latitude,
     LessThan,
     LessThanEqualTo,
@@ -1541,7 +1551,7 @@ def test_time_since_primitive_matches_all_datetime_types(es):
         assert name in fm.columns
 
 
-def test_cfm_with_lag_and_non_nullable_column(pd_es):
+def test_cfm_with_numeric_lag_and_non_nullable_column(pd_es):
     # fill nans so we can use non nullable numeric logical type in the EntitySet
     new_log = pd_es["log"].copy()
     new_log["value"] = new_log["value"].fillna(0)
@@ -1570,18 +1580,10 @@ def test_cfm_with_lag_and_non_nullable_column(pd_es):
         trans_primitives=[lag_primitive],
         cutoff_time=cutoff_times,
     )
-
-    # Non nullable
     assert fm["NUMERIC_LAG(datetime, value, periods=5)"].head(periods).isnull().all()
     assert fm["NUMERIC_LAG(datetime, value, periods=5)"].isnull().sum() == periods
-    # Nullable
+
     assert "NUMERIC_LAG(datetime, value_2, periods=5)" in fm.columns
-    assert (
-        fm["NUMERIC_LAG(datetime, products.rating, periods=5)"]
-        .head(periods)
-        .isnull()
-        .all()
-    )
 
     assert "NUMERIC_LAG(datetime, products.rating, periods=5)" in fm.columns
     assert (
@@ -1589,6 +1591,98 @@ def test_cfm_with_lag_and_non_nullable_column(pd_es):
         .head(periods)
         .isnull()
         .all()
+    )
+
+
+def test_cfm_with_lag_and_non_nullable_columns(pd_es):
+    # fill nans so we can use non nullable numeric logical type in the EntitySet
+    new_log = pd_es["log"].copy()
+    new_log["value"] = new_log["value"].fillna(0)
+    new_log["value_double"] = new_log["value"]
+    new_log["purchased_with_nulls"] = new_log["purchased"]
+    new_log["purchased_with_nulls"][0:4] = None
+    new_log.ww.init(
+        logical_types={
+            "value": "Integer",
+            "value_2": "IntegerNullable",
+            "product_id": "Categorical",
+            "value_double": "Double",
+            "purchased_with_nulls": "BooleanNullable",
+        },
+        index="id",
+        time_index="datetime",
+        name="new_log",
+    )
+    pd_es.add_dataframe(new_log)
+    rels = [
+        ("sessions", "id", "new_log", "session_id"),
+        ("products", "id", "new_log", "product_id"),
+    ]
+    pd_es = pd_es.add_relationships(rels)
+
+    assert isinstance(pd_es["new_log"].ww.logical_types["value"], Integer)
+
+    periods = 5
+    lag_primitive = Lag(periods=periods)
+    cutoff_times = pd_es["new_log"][["id", "datetime"]]
+    fm, _ = dfs(
+        target_dataframe_name="new_log",
+        entityset=pd_es,
+        agg_primitives=[],
+        trans_primitives=[lag_primitive],
+        cutoff_time=cutoff_times,
+    )
+    # Integer
+    assert fm["LAG(value, datetime, periods=5)"].head(periods).isnull().all()
+    assert fm["LAG(value, datetime, periods=5)"].isnull().sum() == periods
+    assert isinstance(
+        fm.ww.schema.logical_types["LAG(value, datetime, periods=5)"],
+        IntegerNullable,
+    )
+
+    # IntegerNullable
+    assert "LAG(value_2, datetime, periods=5)" in fm.columns
+    assert fm["LAG(value_2, datetime, periods=5)"].head(periods).isnull().all()
+    assert isinstance(
+        fm.ww.schema.logical_types["LAG(value_2, datetime, periods=5)"],
+        IntegerNullable,
+    )
+
+    # Categorical
+    assert "LAG(product_id, datetime, periods=5)" in fm.columns
+    assert fm["LAG(product_id, datetime, periods=5)"].head(periods).isnull().all()
+    assert isinstance(
+        fm.ww.schema.logical_types["LAG(product_id, datetime, periods=5)"],
+        Categorical,
+    )
+
+    # Double
+    assert "LAG(value_double, datetime, periods=5)" in fm.columns
+    assert fm["LAG(value_double, datetime, periods=5)"].head(periods).isnull().all()
+    assert isinstance(
+        fm.ww.schema.logical_types["LAG(value_double, datetime, periods=5)"],
+        Double,
+    )
+
+    # Boolean
+    assert "LAG(purchased, datetime, periods=5)" in fm.columns
+    assert fm["LAG(purchased, datetime, periods=5)"].head(periods).isnull().all()
+    assert isinstance(
+        fm.ww.schema.logical_types["LAG(purchased, datetime, periods=5)"],
+        BooleanNullable,
+    )
+
+    # BooleanNullable
+    assert "LAG(purchased_with_nulls, datetime, periods=5)" in fm.columns
+    assert (
+        fm["LAG(purchased_with_nulls, datetime, periods=5)"]
+        .head(periods)
+        .isnull()
+        .all()
+    )
+    assert isinstance(
+        fm.ww.schema.logical_types["LAG(purchased_with_nulls, datetime, periods=5)"],
+        BooleanNullable,
     )
 
 
