@@ -29,9 +29,9 @@ def _load_primitives():
                 other_library = other_library
 
         - pyproject.toml:
-
-            [project.scripts]
-            featuretools_primitives = "other_library"
+        
+            [project.entry-points."featuretools_primitives"]
+            other_library = "other_library"
 
     where `other_library` is a top-level module containing all the primitives.
     """
