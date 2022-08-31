@@ -36,8 +36,7 @@ jobs:
           python -c "import alteryx_open_src_update_checker"
           python -c "import nlp_primitives"
           python -c "from featuretools.nlp_primitives import PolarityScore"
-          python -c "import featuretools_sql"
-          python -c "from featuretools.featuretools_sql import DBConnector"
+          python -c "from featuretools_sql import DBConnector"
       - name: Check package conflicts
         run: |
           python -m pip check
