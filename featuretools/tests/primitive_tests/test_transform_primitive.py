@@ -823,13 +823,12 @@ def test_lag_with_strings():
     primitive_instance = Lag()
     primitive_func = primitive_instance.get_function()
 
-    array = pd.Series(["hello", "world", "foo", "bar"])
-    array.astype("string")
+    array = pd.Series(["hello", "world", "foo", "bar"], dtype="string")
     time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
 
     answer = pd.Series(primitive_func(array, time_array))
 
-    correct_answer = pd.Series([np.nan, "hello", "world", "foo"])
+    correct_answer = pd.Series([np.nan, "hello", "world", "foo"], dtype="string")
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
@@ -837,13 +836,12 @@ def test_lag_with_categories():
     primitive_instance = Lag()
     primitive_func = primitive_instance.get_function()
 
-    array = pd.Series(["cow", "cow", "pig", "pig"])
-    array.astype("category")
+    array = pd.Series(["cow", "cow", "pig", "pig"], dtype="category")
     time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
 
     answer = pd.Series(primitive_func(array, time_array))
 
-    correct_answer = pd.Series([np.nan, "cow", "cow", "pig"])
+    correct_answer = pd.Series([np.nan, "cow", "cow", "pig"], dtype="category")
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
@@ -851,8 +849,7 @@ def test_lag_with_bools():
     primitive_instance = Lag()
     primitive_func = primitive_instance.get_function()
 
-    array = pd.Series([True, False, True, False])
-    array.astype("bool")
+    array = pd.Series([True, False, True, False], dtype="bool")
     time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
 
     answer = pd.Series(primitive_func(array, time_array))
@@ -865,8 +862,7 @@ def test_lag_with_floats():
     primitive_instance = Lag()
     primitive_func = primitive_instance.get_function()
 
-    array = pd.Series([1.23, 2.45, 3.56, 4.98])
-    array.astype("float")
+    array = pd.Series([1.23, 2.45, 3.56, 4.98], dtype="float")
     time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
 
     answer = pd.Series(primitive_func(array, time_array))
@@ -879,8 +875,7 @@ def test_lag_with_ints():
     primitive_instance = Lag()
     primitive_func = primitive_instance.get_function()
 
-    array = pd.Series([1, 2, 3, 4])
-    array.astype("int64")
+    array = pd.Series([1, 2, 3, 4], dtype="int64")
     time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
 
     answer = pd.Series(primitive_func(array, time_array))
