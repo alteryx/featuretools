@@ -83,9 +83,7 @@ def assert_features(original, deserialized):
 
         # IdentityFeature and DirectFeature objects do not have primitives, so
         # series library does not need to be compared
-        if not (
-            isinstance(feat_1, IdentityFeature) or isinstance(feat_1, DirectFeature)
-        ):
+        if not (isinstance(feat_1, (IdentityFeature, DirectFeature))):
             assert feat_1.primitive.series_library == feat_2.primitive.series_library
 
 
