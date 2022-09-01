@@ -14,7 +14,7 @@ Release Notes
 .. Thanks to the following people for contributing to this release:
 
 v1.14.0 Sep 1, 2022
-==============
+===================
     * Enhancements
         * Replace ``NumericLag`` with ``Lag`` primitive (:pr:`2252`)
         * Refactor build_features to speed up long running DFS calls by 50% (:pr:`2224`)
