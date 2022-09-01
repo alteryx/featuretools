@@ -37,4 +37,7 @@ jobs:
               trans_primitives=["month"],
               max_depth=1,
           )
+          from featuretools.primitives import IsFreeEmailDomain
+          is_free_email_domain = IsFreeEmailDomain()
+          is_free_email_domain(['name@gmail.com', 'name@featuretools.com']).tolist()
         shell: python
