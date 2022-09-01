@@ -3,8 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.14.0 Sep 1, 2022
+===================
     * Enhancements
         * Replace ``NumericLag`` with ``Lag`` primitive (:pr:`2252`)
         * Refactor build_features to speed up long running DFS calls by 50% (:pr:`2224`)
@@ -21,8 +31,7 @@ Future Release
         * Add workflow to test featuretools without test dependencies (:pr:`2274`)
 
     Thanks to the following people for contributing to this release:
-    :user:`cp2boston`, :user:`gsheni`, :user:`ozzieD`, :user:`thehomebrewnerd`
-
+    :user:`cp2boston`, :user:`gsheni`, :user:`ozzieD`, :user:`stefaniesmith`, :user:`thehomebrewnerd`
 
 v1.13.0 Aug 18, 2022
 ====================
