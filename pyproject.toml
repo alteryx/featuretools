@@ -142,8 +142,8 @@ namespaces = true
     "README.md",
 ]
 "featuretools" = 
-    "primitives/data/*.csv" = [
-    "primitives/data/*.txt" = [
+    "primitives/data/*.csv",
+    "primitives/data/*.txt",
 ]
 
 [tool.setuptools.exclude-package-data]
