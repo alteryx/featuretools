@@ -26,11 +26,11 @@ jobs:
         run: |
           make package
           python -m pip install unpacked_sdist/
-      - name: Run simple nlp_primitives usage
+      - name: Run simple featuretools usage
         run: |
           import featuretools as ft
           es = ft.demo.load_mock_customer(return_entityset=True)
-          _, _ = ft.dfs(
+          ft.dfs(
               entityset=es,
               target_dataframe_name="customers",
               agg_primitives=["count"],
