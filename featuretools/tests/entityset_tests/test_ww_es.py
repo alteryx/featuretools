@@ -660,7 +660,7 @@ def test_replace_dataframe_already_sorted(es):
 
 
 def test_replace_dataframe_invalid_schema(es):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail(
             "Invalid schema checks able to be caught by Woodwork only relevant for Pandas",
         )
@@ -673,7 +673,7 @@ def test_replace_dataframe_invalid_schema(es):
 
 
 def test_replace_dataframe_mismatched_index(es):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail(
             "Only pandas checks whether underlying index matches the Woodwork index",
         )

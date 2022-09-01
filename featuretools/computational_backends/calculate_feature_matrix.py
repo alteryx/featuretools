@@ -172,7 +172,7 @@ def calculate_feature_matrix(
         else:
             raise TypeError("No dataframes or valid EntitySet provided")
 
-    if entityset.dataframe_type == Library.DASK.value:
+    if entityset.dataframe_type == Library.DASK:
         if approximate:
             msg = "Using approximate is not supported with Dask dataframes"
             raise ValueError(msg)
