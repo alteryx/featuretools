@@ -141,7 +141,7 @@ namespaces = true
     "*.txt",
     "README.md",
 ]
-"featuretools" = 
+"featuretools" = [
     "primitives/data/*.csv",
     "primitives/data/*.txt",
 ]
