@@ -1,0 +1,43 @@
+name: Test without Test Dependencies
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  use_featuretools_without_test_dependencies:
+    name: Test featuretools without Test Dependencies
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Set up python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Build featuretools and install
+        run: |
+          make package
+          python -m pip install unpacked_sdist/
+      - name: Run simple featuretools usage
+        run: |
+          import featuretools as ft
+          es = ft.demo.load_mock_customer(return_entityset=True)
+          ft.dfs(
+              entityset=es,
+              target_dataframe_name="customers",
+              agg_primitives=["count"],
+              trans_primitives=["month"],
+              max_depth=1,
+          )
+          from featuretools.primitives import IsFreeEmailDomain
+          is_free_email_domain = IsFreeEmailDomain()
+          is_free_email_domain(['name@gmail.com', 'name@featuretools.com']).tolist()
+        shell: python
