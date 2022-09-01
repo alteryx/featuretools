@@ -18,6 +18,7 @@ Future Release
         * Fix to remove warning from Using Spark EntitySets Guide (:pr:`2258`)
     * Testing Changes
         * Add tests/profiling/dfs_profile.py (:pr:`2224`)
+        * Add workflow to test featuretools without test dependencies (:pr:`2274`)
 
     Thanks to the following people for contributing to this release:
     :user:`cp2boston`, :user:`gsheni`, :user:`ozzieD`, :user:`thehomebrewnerd`
