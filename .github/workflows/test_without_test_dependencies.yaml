@@ -28,7 +28,7 @@ jobs:
           python -m pip install unpacked_sdist/
       - name: Run simple nlp_primitives usage
         run: |
-          import featuretools
+          import featuretools as ft
           es = ft.demo.load_mock_customer(return_entityset=True)
           _, _ = ft.dfs(
               entityset=es,
