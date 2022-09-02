@@ -71,6 +71,11 @@ python -m pip install "featuretools[nlp]"
 python -m pip install "featuretools[tsfresh]"
 ```
 
+**SQL** - Automatic EntitySet generation from relational data stored in a SQL database: 
+
+```
+python -m pip install "featuretools[sql]"
+```
 ## Example
 Below is an example of using Deep Feature Synthesis (DFS) to perform automated feature engineering. In this example, we apply DFS to a multi-table dataset consisting of timestamped customer transactions.
 
