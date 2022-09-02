@@ -36,6 +36,7 @@ jobs:
           python -c "import alteryx_open_src_update_checker"
           python -c "import nlp_primitives"
           python -c "from featuretools.nlp_primitives import PolarityScore"
+          python -c "from featuretools_sql import DBConnector"
       - name: Check package conflicts
         run: |
           python -m pip check
@@ -44,3 +45,4 @@ jobs:
           python -m pip install "unpacked_sdist/[nlp]"
           python -m pip install "unpacked_sdist/[spark]"
           python -m pip install "unpacked_sdist/[updater]"
+          python -m pip install "unpacked_sdist/[sql]"

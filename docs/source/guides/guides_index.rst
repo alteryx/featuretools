@@ -16,3 +16,4 @@ Guides on more advanced Featuretools functionality
    feature_descriptions
    feature_selection
    time_series
+   sql_database_integration

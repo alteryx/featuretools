@@ -49,6 +49,10 @@ $ python -m pip install "featuretools[autonormalize]"
 ```console
 $ python -m pip install "featuretools[updater]"
 ```
+```{tab} SQL
+```console
+$ python -m pip install "featuretools[sql]" 
+```
 ````
 ````{tab} Conda
 ```{tab} All Add-ons
@@ -78,6 +82,7 @@ $ conda install -c conda-forge alteryx-open-src-update-checker
 - **Spark**: Use Woodwork with Spark DataFrames
 - **AutoNormalize**: Automated creation of normalized `EntitySet` from denormalized data
 - **Update Checker**: Receive automatic notifications of new Featuretools releases
+- **SQL**: Automated `EntitySet` creation from relational data stored in a SQL database
 
 ## Installing Graphviz
 
