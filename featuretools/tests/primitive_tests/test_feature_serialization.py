@@ -60,7 +60,7 @@ from featuretools.utils.gen_utils import Library
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}_2022_6_30.json".format(
+TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}_2022_09_02.json".format(
     SCHEMA_VERSION,
     ENTITYSET_SCHEMA_VERSION,
 )
