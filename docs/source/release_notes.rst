@@ -8,12 +8,18 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Change default gap for Rolling* primitives from 0 to 1 to prevent accidental leakage (:pr:`2282`)
     * Documentation Changes
         * Add documentation describing how to use `featuretools_sql` with `featuretools` (:pr:`2262`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`sbadithe`
+    :user:`sbadithe`, :user:`thehomebrewnerd`
+
+    .. warning::
+        This default behavior of the ``Rolling*`` primitives has changed in this release. If this primitive
+        was used without defining the ``gap`` value, the feature values returned with this release will be
+        different than feature values from prior releases.
 
 v1.14.0 Sep 1, 2022
 ===================
