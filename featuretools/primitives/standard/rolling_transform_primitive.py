@@ -33,7 +33,7 @@ class RollingMax(TransformPrimitive):
             window of usable data begins. If an integer is provided, it will correspond to a number of rows.
             If a string is provided, it must be one of pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time between a target instance and the beginning of its window.
-            Defaults to 0, which will include the target instance in the window.
+            Defaults to 1.
         min_periods (int, optional): Minimum number of observations required for performing calculations
             over the window. Can only be as large as window_length when window_length is an integer.
             When window_length is an offset alias string, this limitation does not exist, but care should be taken
@@ -58,20 +58,20 @@ class RollingMax(TransformPrimitive):
         >>> rolling_max = RollingMax(window_length=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_max(times, [4, 3, 2, 1, 0]).tolist()
-        [4.0, 4.0, 4.0, 3.0, 2.0]
+        [nan, 4.0, 4.0, 4.0, 3.0]
 
         We can also control the gap before the rolling calculation.
 
         >>> import pandas as pd
-        >>> rolling_max = RollingMax(window_length=3, gap=1)
+        >>> rolling_max = RollingMax(window_length=3, gap=0)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_max(times, [4, 3, 2, 1, 0]).tolist()
-        [nan, 4.0, 4.0, 4.0, 3.0]
+        [4.0, 4.0, 4.0, 3.0, 2.0]
 
         We can also control the minimum number of periods required for the rolling calculation.
 
         >>> import pandas as pd
-        >>> rolling_max = RollingMax(window_length=3, min_periods=3)
+        >>> rolling_max = RollingMax(window_length=3, min_periods=3, gap=0)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_max(times, [4, 3, 2, 1, 0]).tolist()
         [nan, nan, 4.0, 3.0, 2.0]
@@ -92,7 +92,7 @@ class RollingMax(TransformPrimitive):
     ]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
 
-    def __init__(self, window_length=3, gap=0, min_periods=1):
+    def __init__(self, window_length=3, gap=1, min_periods=1):
         self.window_length = window_length
         self.gap = gap
         self.min_periods = min_periods
@@ -135,7 +135,7 @@ class RollingMin(TransformPrimitive):
             window of usable data begins. If an integer is provided, it will correspond to a number of rows.
             If a string is provided, it must be one of pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time between a target instance and the beginning of its window.
-            Defaults to 0, which will include the target instance in the window.
+            Defaults to 1.
         min_periods (int, optional): Minimum number of observations required for performing calculations
             over the window. Can only be as large as window_length when window_length is an integer.
             When window_length is an offset alias string, this limitation does not exist, but care should be taken
@@ -160,20 +160,20 @@ class RollingMin(TransformPrimitive):
         >>> rolling_min = RollingMin(window_length=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_min(times, [4, 3, 2, 1, 0]).tolist()
-        [4.0, 3.0, 2.0, 1.0, 0.0]
+        [nan, 4.0, 3.0, 2.0, 1.0]
 
         We can also control the gap before the rolling calculation.
 
         >>> import pandas as pd
-        >>> rolling_min = RollingMin(window_length=3, gap=1)
+        >>> rolling_min = RollingMin(window_length=3, gap=0)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_min(times, [4, 3, 2, 1, 0]).tolist()
-        [nan, 4.0, 3.0, 2.0, 1.0]
+        [4.0, 3.0, 2.0, 1.0, 0.0]
 
         We can also control the minimum number of periods required for the rolling calculation.
 
         >>> import pandas as pd
-        >>> rolling_min = RollingMin(window_length=3, min_periods=3)
+        >>> rolling_min = RollingMin(window_length=3, min_periods=3, gap=0)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_min(times, [4, 3, 2, 1, 0]).tolist()
         [nan, nan, 2.0, 1.0, 0.0]
@@ -194,7 +194,7 @@ class RollingMin(TransformPrimitive):
     ]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
 
-    def __init__(self, window_length=3, gap=0, min_periods=1):
+    def __init__(self, window_length=3, gap=1, min_periods=1):
         self.window_length = window_length
         self.gap = gap
         self.min_periods = min_periods
@@ -238,7 +238,7 @@ class RollingMean(TransformPrimitive):
             window of usable data begins. If an integer is provided, it will correspond to a number of rows.
             If a string is provided, it must be one of pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time between a target instance and the beginning of its window.
-            Defaults to 0, which will include the target instance in the window.
+            Defaults to 1.
         min_periods (int, optional): Minimum number of observations required for performing calculations
             over the window. Can only be as large as window_length when window_length is an integer.
             When window_length is an offset alias string, this limitation does not exist, but care should be taken
@@ -263,20 +263,20 @@ class RollingMean(TransformPrimitive):
         >>> rolling_mean = RollingMean(window_length=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_mean(times, [4, 3, 2, 1, 0]).tolist()
-        [4.0, 3.5, 3.0, 2.0, 1.0]
+        [nan, 4.0, 3.5, 3.0, 2.0]
 
         We can also control the gap before the rolling calculation.
 
         >>> import pandas as pd
-        >>> rolling_mean = RollingMean(window_length=3, gap=1)
+        >>> rolling_mean = RollingMean(window_length=3, gap=0)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_mean(times, [4, 3, 2, 1, 0]).tolist()
-        [nan, 4.0, 3.5, 3.0, 2.0]
+        [4.0, 3.5, 3.0, 2.0, 1.0]
 
         We can also control the minimum number of periods required for the rolling calculation.
 
         >>> import pandas as pd
-        >>> rolling_mean = RollingMean(window_length=3, min_periods=3)
+        >>> rolling_mean = RollingMean(window_length=3, min_periods=3, gap=0)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_mean(times, [4, 3, 2, 1, 0]).tolist()
         [nan, nan, 3.0, 2.0, 1.0]
@@ -289,7 +289,7 @@ class RollingMean(TransformPrimitive):
     ]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
 
-    def __init__(self, window_length=3, gap=0, min_periods=0):
+    def __init__(self, window_length=3, gap=1, min_periods=0):
         self.window_length = window_length
         self.gap = gap
         self.min_periods = min_periods
@@ -332,7 +332,7 @@ class RollingSTD(TransformPrimitive):
             window of usable data begins. If an integer is provided, it will correspond to a number of rows.
             If a string is provided, it must be one of pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time between a target instance and the beginning of its window.
-            Defaults to 0, which will include the target instance in the window.
+            Defaults to 1.
         min_periods (int, optional): Minimum number of observations required for performing calculations
             over the window. Can only be as large as window_length when window_length is an integer.
             When window_length is an offset alias string, this limitation does not exist, but care should be taken
@@ -357,20 +357,20 @@ class RollingSTD(TransformPrimitive):
         >>> rolling_std = RollingSTD(window_length=4)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_std(times, [4, 3, 2, 1, 0]).tolist()
-        [nan, 0.7071067811865476, 1.0, 1.2909944487358056, 1.2909944487358056]
+        [nan, nan, 0.7071067811865476, 1.0, 1.2909944487358056]
 
         We can also control the gap before the rolling calculation.
 
         >>> import pandas as pd
-        >>> rolling_std = RollingSTD(window_length=4, gap=1)
+        >>> rolling_std = RollingSTD(window_length=4, gap=0)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_std(times, [4, 3, 2, 1, 0]).tolist()
-        [nan, nan, 0.7071067811865476, 1.0, 1.2909944487358056]
+        [nan, 0.7071067811865476, 1.0, 1.2909944487358056, 1.2909944487358056]
 
         We can also control the minimum number of periods required for the rolling calculation.
 
         >>> import pandas as pd
-        >>> rolling_std = RollingSTD(window_length=4, min_periods=4)
+        >>> rolling_std = RollingSTD(window_length=4, min_periods=4, gap=0)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_std(times, [4, 3, 2, 1, 0]).tolist()
         [nan, nan, nan, 1.2909944487358056, 1.2909944487358056]
@@ -390,7 +390,7 @@ class RollingSTD(TransformPrimitive):
     ]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
 
-    def __init__(self, window_length=3, gap=0, min_periods=1):
+    def __init__(self, window_length=3, gap=1, min_periods=1):
         self.window_length = window_length
         self.gap = gap
         self.min_periods = min_periods
@@ -434,7 +434,7 @@ class RollingTrend(TransformPrimitive):
             window of usable data begins. If an integer is provided, it will correspond to a number of rows.
             If a string is provided, it must be one of pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time between a target instance and the beginning of its window.
-            Defaults to 0, which will include the target instance in the window.
+            Defaults to 1.
         min_periods (int, optional): Minimum number of observations required for performing calculations
             over the window. Can only be as large as window_length when window_length is an integer.
             When window_length is an offset alias string, this limitation does not exist, but care should be taken
@@ -446,17 +446,17 @@ class RollingTrend(TransformPrimitive):
         >>> rolling_trend = RollingTrend()
         >>> times = pd.date_range(start="2019-01-01", freq="1D", periods=10)
         >>> rolling_trend(times, [1, 2, 4, 8, 16, 24, 48, 96, 192, 384]).tolist()
-        [nan, nan, 1.4999999999999998, 2.9999999999999996, 5.999999999999999, 7.999999999999999, 16.0, 36.0, 72.0, 144.0]
+        [nan, nan, nan, 1.4999999999999998, 2.9999999999999996, 5.999999999999999, 7.999999999999999, 16.0, 36.0, 72.0]
 
         We can also control the gap before the rolling calculation.
 
-        >>> rolling_trend = RollingTrend(gap=1)
+        >>> rolling_trend = RollingTrend(gap=0)
         >>> rolling_trend(times, [1, 2, 4, 8, 16, 24, 48, 96, 192, 384]).tolist()
-        [nan, nan, nan, 1.4999999999999998, 2.9999999999999996, 5.999999999999999, 7.999999999999999, 16.0, 36.0, 72.0]
+        [nan, nan, 1.4999999999999998, 2.9999999999999996, 5.999999999999999, 7.999999999999999, 16.0, 36.0, 72.0, 144.0]
 
         We can also control the minimum number of periods required for the rolling calculation.
 
-        >>> rolling_trend = RollingTrend(window_length=4, min_periods=4)
+        >>> rolling_trend = RollingTrend(window_length=4, min_periods=4, gap=0)
         >>> rolling_trend(times, [1, 2, 4, 8, 16, 24, 48, 96, 192, 384]).tolist()
         [nan, nan, nan, 2.299999999999999, 4.599999999999998, 6.799999999999996, 12.799999999999992, 26.399999999999984, 55.19999999999997, 110.39999999999993]
 
@@ -474,7 +474,7 @@ class RollingTrend(TransformPrimitive):
     ]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
 
-    def __init__(self, window_length=3, gap=0, min_periods=0):
+    def __init__(self, window_length=3, gap=1, min_periods=0):
         self.window_length = window_length
         self.gap = gap
         self.min_periods = min_periods
@@ -517,7 +517,7 @@ class RollingCount(TransformPrimitive):
             window of usable data begins. If an integer is provided, it will correspond to a number of rows.
             If a string is provided, it must be one of pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time between a target instance and the beginning of its window.
-            Defaults to 0, which will include the target instance in the window.
+            Defaults to 1.
         min_periods (int, optional): Minimum number of observations required for performing calculations
             over the window. Can only be as large as window_length when window_length is an integer.
             When window_length is an offset alias string, this limitation does not exist, but care should be taken
@@ -542,20 +542,20 @@ class RollingCount(TransformPrimitive):
         >>> rolling_count = RollingCount(window_length=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_count(times).tolist()
-        [1.0, 2.0, 3.0, 3.0, 3.0]
+        [nan, 1.0, 2.0, 3.0, 3.0]
 
         We can also control the gap before the rolling calculation.
 
         >>> import pandas as pd
-        >>> rolling_count = RollingCount(window_length=3, gap=1)
+        >>> rolling_count = RollingCount(window_length=3, gap=0)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_count(times).tolist()
-        [nan, 1.0, 2.0, 3.0, 3.0]
+        [1.0, 2.0, 3.0, 3.0, 3.0]
 
         We can also control the minimum number of periods required for the rolling calculation.
 
         >>> import pandas as pd
-        >>> rolling_count = RollingCount(window_length=3, min_periods=3)
+        >>> rolling_count = RollingCount(window_length=3, min_periods=3, gap=0)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> rolling_count(times).tolist()
         [nan, nan, 3.0, 3.0, 3.0]
@@ -573,7 +573,7 @@ class RollingCount(TransformPrimitive):
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
 
-    def __init__(self, window_length=3, gap=0, min_periods=0):
+    def __init__(self, window_length=3, gap=1, min_periods=0):
         self.window_length = window_length
         self.gap = gap
         self.min_periods = min_periods
