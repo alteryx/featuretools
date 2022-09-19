@@ -653,8 +653,8 @@ class Lag(TransformPrimitive):
         You can specify the number of periods to shift the values
 
         >>> lag_periods = Lag(periods=3)
-        >>> lag_periods(["hello", "world", "test", "foo", "bar"], pd.Series(pd.date_range(start="2020-01-01", periods=5, freq='D'))).tolist()
-        [nan, nan, nan, 'hello', 'world']
+        >>> lag_periods([True, False, False, True, True], pd.Series(pd.date_range(start="2020-01-01", periods=5, freq='D'))).tolist()
+        [nan, nan, nan, True, False]
     """
 
     name = "lag"
