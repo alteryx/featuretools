@@ -1,4 +1,3 @@
-from multiprocessing.sharedctypes import Value
 from unittest.mock import patch
 
 import composeml as cp
