@@ -142,6 +142,8 @@ license-files = [
 include = [
     "README.md",
     "featuretools*",
+    "featuretools/primitives/data/*.csv",
+    "featuretools/primitives/data/*.txt"
 ]
 exclude = [
     "docs"
