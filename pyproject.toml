@@ -143,7 +143,6 @@ namespaces = true
 
 [tool.setuptools.package-data]
 "*" = [
-    "*.txt",
     "README.md",
 ]
 "featuretools" = [
@@ -156,6 +155,8 @@ namespaces = true
     "* __pycache__",
     "*.py[co]",
     "docs/*"
+    "docs/*.py"
+    "docs/source/*.py"
 ]
 
 [tool.setuptools.dynamic]
