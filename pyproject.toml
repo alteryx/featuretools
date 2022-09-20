@@ -148,9 +148,6 @@ include = [
     "featuretools/primitives/data/*.txt",
     "featuretools*",
 ]
-exclude = [
-    "docs*",
-]
 
 [tool.setuptools.exclude-package-data]
 "*" = [
