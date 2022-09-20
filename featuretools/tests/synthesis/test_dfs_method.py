@@ -404,6 +404,7 @@ def test_handles_pandas_parser_error(datetime_es):
 
 
 def test_handles_pandas_overflow_error(datetime_es):
+    # pandas 1.5.0 raises ValueError, older versions raised OverflowError
     with pytest.raises((OverflowError, ValueError)):
         _, _ = dfs(
             entityset=datetime_es,
