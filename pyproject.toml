@@ -132,34 +132,29 @@ complete = [
 featuretools = "featuretools.__main__:cli"
 
 [tool.setuptools]
-include-package-data = true
+include-package-data = false
 license-files = [
     "LICENSE",
     "featuretools/primitives/data/free_email_provider_domains_license"
 ]
 
 [tool.setuptools.packages.find]
-namespaces = true
-
-[tool.setuptools.package-data]
-"*" = [
+include = [
     "README.md",
+    "featuretools*",
 ]
-"featuretools" = [
-    "primitives/data/*.csv",
-    "primitives/data/*.txt",
+exclude = [
+    "docs"
 ]
 
 [tool.setuptools.exclude-package-data]
 "*" = [
     "* __pycache__",
     "*.py[co]",
-    "docs/*.*",
 ]
 
 [tool.setuptools.dynamic]
 version = {attr = "featuretools.version.__version__"}
-
 
 [tool.pytest.ini_options]
 addopts = "--doctest-modules --ignore=featuretools/tests/entry_point_tests/add-ons"
