@@ -3,7 +3,11 @@ from inspect import signature
 
 import numpy as np
 import pandas as pd
-from importlib_resources import files
+
+try:
+    from importlib.resources import files
+except ImportError:
+    from importlib_resources import files
 
 from featuretools import config
 from featuretools.utils.description_utils import convert_to_nth
