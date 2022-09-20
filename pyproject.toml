@@ -1,10 +1,3 @@
-[build-system]
-requires = [
-    "setuptools >= 61.0.0",
-    "wheel"
-]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "featuretools"
 readme = "README.md"
@@ -131,14 +124,24 @@ complete = [
 [project.scripts]
 featuretools = "featuretools.__main__:cli"
 
+[build-system]
+requires = [
+    "setuptools >= 62.3.0",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"
+
 [tool.setuptools]
-include-package-data = false
+platforms = ["any"]
+zip-safe  = false
+include-package-data = true
 license-files = [
     "LICENSE",
     "featuretools/primitives/data/free_email_provider_domains_license"
 ]
 
 [tool.setuptools.packages.find]
+namespaces = false
 include = [
     "README.md",
     "featuretools/primitives/data/**",
@@ -147,7 +150,7 @@ include = [
     "featuretools*",
 ]
 exclude = [
-    "docs"
+    "docs*",
 ]
 
 [tool.setuptools.exclude-package-data]
