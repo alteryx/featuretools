@@ -3,6 +3,7 @@ from inspect import signature
 
 import numpy as np
 import pandas as pd
+from importlib_resources import files
 
 from featuretools import config
 from featuretools.utils.description_utils import convert_to_nth
@@ -69,7 +70,7 @@ class PrimitiveBase(object):
         raise NotImplementedError("Subclass must implement")
 
     def get_filepath(self, filename):
-        return os.path.join(config.get("primitive_data_folder"), filename)
+        return files("featuretools.primitives.data").joinpath(filename)
 
     def get_args_string(self):
         strings = []
