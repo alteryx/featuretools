@@ -21,7 +21,6 @@ featuretools/tests/integration_data/stores.gzip
 *.dirlock
 *.~lock*
 unpacked_sdist/
-featuretools-[0-9]*.[0-9]*.[0-9]*/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
