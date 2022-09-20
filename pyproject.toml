@@ -157,7 +157,9 @@ where = ["."]
 "*" = [
     "* __pycache__",
     "*.py[co]",
-    "docs/*"
+    "docs/*",
+    "docs/**",
+    "docs/*.py",
 ]
 
 [tool.setuptools.dynamic]
