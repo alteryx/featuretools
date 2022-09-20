@@ -140,14 +140,9 @@ license-files = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["."]
 namespaces = false
-include = [
-    "README.md",
-    "featuretools/primitives/data*",
-    "featuretools/primitives/data/*.csv",
-    "featuretools/primitives/data/*.txt",
-    "featuretools*",
+exclude = [
+    "docs*",
 ]
 
 [tool.setuptools.exclude-package-data]
