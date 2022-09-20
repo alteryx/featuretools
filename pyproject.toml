@@ -47,7 +47,7 @@ dependencies = [
     "psutil >= 5.6.6",
     "scipy >= 1.3.3",
     "tqdm >= 4.32.0",
-    "woodwork >= 0.16.2",
+    "woodwork[dask] >= 0.16.2",
 ]
 
 [project.urls]
@@ -75,6 +75,7 @@ test = [
 ]
 spark = [
     "woodwork[spark] >= 0.16.2",
+    "pyspark >= 3.2.0",
 ]
 updater = [
     "alteryx-open-src-update-checker >= 2.1.0"
