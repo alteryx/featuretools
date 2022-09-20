@@ -145,7 +145,6 @@ where = ["."]
 
 [tool.setuptools.package-data]
 "*" = [
-    "*.txt",
     "README.md",
 ]
 "featuretools" = [
@@ -157,10 +156,9 @@ where = ["."]
 "*" = [
     "* __pycache__",
     "*.py[co]",
-    "docs/*",
-    "docs/**",
-    "docs/*.py",
+    "/docs/*",
 ]
+"docs" = ['*', '*.py']
 
 [tool.setuptools.dynamic]
 version = {attr = "featuretools.version.__version__"}
