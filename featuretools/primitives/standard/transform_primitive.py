@@ -657,6 +657,10 @@ class Lag(TransformPrimitive):
         [nan, nan, nan, True, False]
     """
 
+    # Note: with pandas 1.5.0, using Lag with a string input will result in `None` values
+    # being introduced instead of `nan` values that were present in previous versions.
+    # All missing values will be replaced by `np.nan` (for Double) or `pd.NA` (all other types)
+    # once Woodwork is initialized on the feature matrix.
     name = "lag"
     input_types = [
         [
