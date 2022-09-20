@@ -141,8 +141,8 @@ license-files = [
 [tool.setuptools.packages.find]
 include = [
     "README.md",
+    "featuretools/primitives/data/**",
     "featuretools*",
-    "featuretools.primitives.data*",
 ]
 exclude = [
     "docs"
