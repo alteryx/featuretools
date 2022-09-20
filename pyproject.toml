@@ -153,6 +153,13 @@ where = ["."]
     "primitives/data/*.txt",
 ]
 
+[tool.setuptools.exclude-package-data]
+"*" = [
+    "* __pycache__",
+    "*.py[co]",
+    "docs/*"
+]
+
 [tool.setuptools.dynamic]
 version = {attr = "featuretools.version.__version__"}
 
