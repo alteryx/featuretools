@@ -141,15 +141,16 @@ license-files = [
 ]
 
 [tool.setuptools.packages.find]
-namespaces = false
-exclude = [
-    "docs*",
-]
+where = ["."]
 
-[tool.setuptools.exclude-package-data]
+[tool.setuptools.package-data]
 "*" = [
-    "* __pycache__",
-    "*.py[co]",
+    "*.txt",
+    "README.md",
+]
+"featuretools" = [
+    "primitives/data/*.csv",
+    "primitives/data/*.txt",
 ]
 
 [tool.setuptools.dynamic]
