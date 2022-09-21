@@ -103,9 +103,9 @@ def empty_dataframe(description, data_type=Library.PANDAS):
             category_dtypes[col_name] = cat_object
 
     dataframe = pd.DataFrame(columns=columns).astype(category_dtypes)
-    if data_type == "Dask":
+    if data_type == Library.DASK:
         dataframe = dd.from_pandas(dataframe, npartitions=1)
-    elif data_type == "Spark":
+    elif data_type == Library.SPARK:
         dataframe = ps.from_pandas(dataframe)
 
     dataframe.ww.init(
