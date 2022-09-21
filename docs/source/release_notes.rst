@@ -9,7 +9,7 @@ Future Release
     * Fixes
     * Changes
         * Change default gap for Rolling* primitives from 0 to 1 to prevent accidental leakage (:pr:`2282`)
-        * Temporarily limit pandas version to less than 1.5.0 (:pr:`2290`)
+        * Updates for pandas 1.5.0 compatibility (:pr:`2290`, :pr:`2291`)
         * Exclude documentation files from release workflow (:pr:`2295`)
     * Documentation Changes
         * Add documentation describing how to use `featuretools_sql` with `featuretools` (:pr:`2262`)
