@@ -56,32 +56,32 @@ jobs:
         name: Run unit tests (no code coverage)
         run: |
           cd unpacked_sdist
-          pytest featuretools/ -n=2
+          pytest featuretools/ -n auto
       - if: ${{ matrix.libraries == 'spark - misc' }}
         name: Run unit tests (misc)
         run: |
           cd unpacked_sdist
-          pytest featuretools/ -n=2 --ignore=featuretools/tests/computational_backend --ignore=featuretools/tests/entityset_tests --ignore=featuretools/tests/primitive_tests ${{ env.coverage_args }}
+          pytest featuretools/ -n auto --ignore=featuretools/tests/computational_backend --ignore=featuretools/tests/entityset_tests --ignore=featuretools/tests/primitive_tests ${{ env.coverage_args }}
       - if: ${{ matrix.libraries == 'spark - computational' }}
         name: Run unit tests (computational backend)
         run: |
           cd unpacked_sdist
-          pytest featuretools/tests/computational_backend/ -n=2 ${{ env.coverage_args }}
+          pytest featuretools/tests/computational_backend/ -n auto ${{ env.coverage_args }}
       - if: ${{ matrix.libraries == 'spark - entityset_1' }}
         name: Run unit tests (entityset batch 1)
         run: |
           cd unpacked_sdist
-          pytest featuretools/tests/entityset_tests -n=2 --ignore=featuretools/tests/entityset_tests/test_es.py --ignore=featuretools/tests/entityset_tests/test_ww_es.py ${{ env.coverage_args }}
+          pytest featuretools/tests/entityset_tests -n auto --ignore=featuretools/tests/entityset_tests/test_es.py --ignore=featuretools/tests/entityset_tests/test_ww_es.py ${{ env.coverage_args }}
       - if: ${{ matrix.libraries == 'spark - entityset_2' }}
         name: Run unit tests (entityset batch 2)
         run: |
           cd unpacked_sdist
-          pytest featuretools/tests/entityset_tests/test_es.py featuretools/tests/entityset_tests/test_ww_es.py -n=2 ${{ env.coverage_args }}
+          pytest featuretools/tests/entityset_tests/test_es.py featuretools/tests/entityset_tests/test_ww_es.py -n auto ${{ env.coverage_args }}
       - if: ${{ matrix.libraries == 'spark - primitives' }}
         name: Run unit tests (primitives)
         run: |
           cd unpacked_sdist
-          pytest featuretools/tests/primitive_tests ${{ env.coverage_args }}
+          pytest featuretools/tests/primitive_tests -n auto ${{ env.coverage_args }}
       - if: ${{ env.coverage_args }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
@@ -136,4 +136,4 @@ jobs:
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate featuretools
-          pytest featuretools\ -n 2
+          pytest featuretools\ -n auto

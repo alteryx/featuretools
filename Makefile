@@ -21,11 +21,11 @@ lint-fix:
 
 .PHONY: test
 test:
-	pytest featuretools/
+	pytest featuretools/ -n auto
 
 .PHONY: testcoverage
 testcoverage:
-	pytest featuretools/ --cov=featuretools
+	pytest featuretools/ --cov=featuretools -n auto
 
 .PHONY: installdeps
 installdeps: upgradepip
