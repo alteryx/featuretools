@@ -21,4 +21,4 @@ scipy==1.3.3
 smart-open==5.0.0
 tqdm==4.32.0
 urllib3==1.26.5
-woodwork==0.16.2
+woodwork[dask]==0.16.2
