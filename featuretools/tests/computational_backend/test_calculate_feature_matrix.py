@@ -2076,7 +2076,7 @@ def test_some_instances_not_in_data(pd_es):
 
     dfeat_answer[0] = 7  # approximate calculated before 14 appears
     dfeat_answer[2] = 7  # approximate calculated before 14 appears
-    prop_answer[3] = 0  # no_unapproximated_aggs code ignores cutoff time
+    prop_answer[3] = False  # no_unapproximated_aggs code ignores cutoff time
 
     assert all(fm.index.values == cutoff_time["instance_id"].values)
     for x, y in zip(fm.columns, [ifeat_answer, prop_answer, dfeat_answer]):

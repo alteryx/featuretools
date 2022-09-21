@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - name: Remove docs before release
+      run: rm -rf docs/
     - name: PyPI Upload
       uses: FeatureLabs/gh-action-pypi-upload@v2
       env:
