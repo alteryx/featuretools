@@ -75,7 +75,7 @@ test = [
 ]
 spark = [
     "woodwork[spark] >= 0.16.2",
-    "pyspark >= 3.2.0",
+    "pyspark >= 3.2.2",
 ]
 updater = [
     "alteryx-open-src-update-checker >= 2.1.0"
