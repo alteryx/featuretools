@@ -12,6 +12,7 @@ Future Release
         * Updates for pandas 1.5.0 compatibility (:pr:`2290`, :pr:`2291`)
         * Exclude documentation files from release workflow (:pr:`2295`)
         * Bump requirements for optional pyspark dependency (:pr:`2299`)
+        * Remove redundant types for query_by_values (:pr:`2301`)
     * Documentation Changes
         * Add documentation describing how to use `featuretools_sql` with `featuretools` (:pr:`2262`)
     * Testing Changes

@@ -1600,7 +1600,7 @@ class EntitySet(object):
 
         Args:
             dataframe_name (str): The id of the dataframe to query
-            instance_vals (pd.Dataframe, pd.Series, list[str] or str) :
+            instance_vals (pd.Series) :
                 Instance(s) to match.
             column_name (str) : Column to query on. If None, query on index.
             columns (list[str]) : Columns to return. Return all columns if None.
@@ -1618,8 +1618,6 @@ class EntitySet(object):
         dataframe = self[dataframe_name]
         if not column_name:
             column_name = dataframe.ww.index
-
-        instance_vals = _vals_to_series(instance_vals, column_name)
 
         training_window = _check_timedelta(training_window)
 
@@ -1848,35 +1846,6 @@ class EntitySet(object):
                 else:
                     dataframe[column] = dataframe[column].apply(replace)
         return dataframe
-
-
-def _vals_to_series(instance_vals, column_id):
-    """
-    instance_vals may be a pd.Dataframe, a pd.Series, a list, a single
-    value, or None. This function always returns a Series or None.
-    """
-    if instance_vals is None:
-        return None
-
-    # If this is a single value, make it a list
-    if not hasattr(instance_vals, "__iter__"):
-        instance_vals = [instance_vals]
-
-    # convert iterable to pd.Series
-    if isinstance(instance_vals, pd.DataFrame):
-        out_vals = instance_vals[column_id]
-    elif is_instance(instance_vals, (pd, dd, ps), "Series"):
-        out_vals = instance_vals.rename(column_id)
-    else:
-        out_vals = pd.Series(instance_vals)
-
-    # no duplicates or NaN values
-    out_vals = out_vals.drop_duplicates().dropna()
-
-    # want index to have no name for the merge in query_by_values
-    out_vals.index.name = None
-
-    return out_vals
 
 
 def _get_or_create_index(index, make_index, df):

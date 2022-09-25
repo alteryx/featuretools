@@ -336,14 +336,14 @@ def test_query_by_values_returns_rows_in_given_order():
         time_index="time",
         logical_types={"value": "Categorical"},
     )
-    query = es.query_by_values("test", ["b", "a"], column_name="value")
+    query = es.query_by_values("test", pd.Series(["b", "a"]), column_name="value")
     assert np.array_equal(query["id"], [1, 3, 4, 5])
 
 
 def test_query_by_values_secondary_time_index(es):
     end = np.datetime64(datetime(2011, 10, 1))
     all_instances = [0, 1, 2]
-    result = es.query_by_values("customers", all_instances, time_last=end)
+    result = es.query_by_values("customers", pd.Series(all_instances), time_last=end)
     result = to_pandas(result, index="id")
 
     for col in ["cancel_date", "cancel_reason"]:
@@ -352,26 +352,14 @@ def test_query_by_values_secondary_time_index(es):
 
 
 def test_query_by_id(es):
-    df = to_pandas(es.query_by_values("log", instance_vals=[0]))
+    df = to_pandas(es.query_by_values("log", instance_vals=pd.Series[0]))
     assert df["id"].values[0] == 0
-
-
-def test_query_by_single_value(es):
-    df = to_pandas(es.query_by_values("log", instance_vals=0))
-    assert df["id"].values[0] == 0
-
-
-def test_query_by_df(es):
-    instance_df = pd.DataFrame({"id": [1, 3], "vals": [0, 1]})
-    df = to_pandas(es.query_by_values("log", instance_vals=instance_df))
-
-    assert np.array_equal(df["id"], [1, 3])
 
 
 def test_query_by_id_with_time(es):
     df = es.query_by_values(
         dataframe_name="log",
-        instance_vals=[0, 1, 2, 3, 4],
+        instance_vals=pd.Series([0, 1, 2, 3, 4]),
         time_last=datetime(2011, 4, 9, 10, 30, 2 * 6),
     )
     df = to_pandas(df)
@@ -385,7 +373,7 @@ def test_query_by_id_with_time(es):
 def test_query_by_column_with_time(es):
     df = es.query_by_values(
         dataframe_name="log",
-        instance_vals=[0, 1, 2],
+        instance_vals=pd.Series([0, 1, 2]),
         column_name="session_id",
         time_last=datetime(2011, 4, 9, 10, 50, 0),
     )
@@ -407,7 +395,7 @@ def test_query_by_column_with_no_lti_and_training_window(es):
     with pytest.warns(UserWarning, match=match):
         df = es.query_by_values(
             dataframe_name="customers",
-            instance_vals=[0, 1, 2],
+            instance_vals=pd.Series([0, 1, 2]),
             column_name="cohort",
             time_last=datetime(2011, 4, 11),
             training_window="3d",
@@ -422,7 +410,7 @@ def test_query_by_column_with_lti_and_training_window(es):
     es.add_last_time_indexes()
     df = es.query_by_values(
         dataframe_name="customers",
-        instance_vals=[0, 1, 2],
+        instance_vals=pd.Series([0, 1, 2]),
         column_name="cohort",
         time_last=datetime(2011, 4, 11),
         training_window="3d",
@@ -436,7 +424,7 @@ def test_query_by_column_with_lti_and_training_window(es):
 def test_query_by_indexed_column(es):
     df = es.query_by_values(
         dataframe_name="log",
-        instance_vals=["taco clock"],
+        instance_vals=pd.Series(["taco clock"]),
         column_name="product_id",
     )
     # Account for different ordering between pandas and dask/spark
