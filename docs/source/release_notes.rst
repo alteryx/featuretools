@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-      * Add a ``series_library`` attribute to ``EntitySet`` dictionary (:pr:`2257`)
+        * Add ``series_library`` attribute to ``EntitySet`` dictionary (:pr:`2257`)
     * Fixes
     * Changes
         * Change default gap for Rolling* primitives from 0 to 1 to prevent accidental leakage (:pr:`2282`)
