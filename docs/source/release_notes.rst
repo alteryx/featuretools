@@ -3,10 +3,14 @@
 Release Notes
 -------------
 
+Breaking Changes
+++++++++++++++++
+* EntitySet schema has been updated to include ``series_library`` attribute
+
 Future Release
 ==============
     * Enhancements
-      * Add ``series_library`` attribute (:pr:`2257`) 
+      * Add ``series_library`` attribute to EntitySet dictionary (:pr:`2257`)
     * Fixes
     * Changes
         * Change default gap for Rolling* primitives from 0 to 1 to prevent accidental leakage (:pr:`2282`)
