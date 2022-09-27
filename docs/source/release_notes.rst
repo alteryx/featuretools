@@ -3,14 +3,10 @@
 Release Notes
 -------------
 
-Breaking Changes
-++++++++++++++++
-* EntitySet schema has been updated to include ``series_library`` attribute
-
 Future Release
 ==============
     * Enhancements
-      * Add ``series_library`` attribute to EntitySet dictionary (:pr:`2257`)
+      * Add a ``series_library`` attribute to ``EntitySet`` dictionary (:pr:`2257`)
     * Fixes
     * Changes
         * Change default gap for Rolling* primitives from 0 to 1 to prevent accidental leakage (:pr:`2282`)
@@ -27,10 +23,12 @@ Future Release
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
-    .. warning::
-        This default behavior of the ``Rolling*`` primitives has changed in this release. If this primitive
-        was used without defining the ``gap`` value, the feature values returned with this release will be
-        different than feature values from prior releases.
+Breaking Changes
+++++++++++++++++
+* The ``EntitySet`` schema has been updated to include a ``series_library`` attribute
+* The default behavior of the ``Rolling*`` primitives has changed in this release. If this primitive was used without
+  defining the ``gap`` value, the feature values returned with this release will be different than feature values from
+  prior releases.
 
 v1.14.0 Sep 1, 2022
 ===================
