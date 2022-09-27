@@ -13,7 +13,8 @@ Future Release
         * Exclude documentation files from release workflow (:pr:`2295`)
         * Bump requirements for optional pyspark dependency (:pr:`2299`)
     * Documentation Changes
-        * Add documentation describing how to use `featuretools_sql` with `featuretools` (:pr:`2262`)
+        * Add documentation describing how to use ``featuretools_sql`` with ``featuretools`` (:pr:`2262`)
+        * Add Postgres install steps to ``contributing.md`` (:pr:`2302`)
     * Testing Changes
         * Remove graphviz version restrictions in Windows CI tests (:pr:`2285`)
         * Run CI tests with ``pytest -n auto`` (:pr:`2298`)
