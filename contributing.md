@@ -32,24 +32,7 @@ Before starting major work, you should touch base with the maintainers of Featur
   cd featuretools
   git remote add upstream https://github.com/alteryx/featuretools
   ```
-* In order to install the requirements for the `featuretools_sql` add-on library which is needed for building the documentation,
-you need to have Postgres installed. If you do not already have it installed, you can install via the following commands:
-
-  **macOS** (use [Homebrew](https://brew.sh/)):
-    ```console
-    brew install postgresql@14
-    ```
-  **Ubuntu**:
-    ```console
-    sudo apt install -y postgresql postgresql-contrib postgresql-client
-    ```
-  **Amazon Linux**:
-    ```console
-    sudo amazon-linux-extras enable postgresql14
-    sudo yum install postgresql postgresql-server
-    ```
-
-* Once you have obtained a copy of the code, you should create a development environment that is separate from your existing Python environment so that you can make and test changes without compromising your own work environment. You can run the following steps to create a separate virtual environment, and install Featuretools in editable mode. 
+* Once you have obtained a copy of the code, you should create a development environment that is separate from your existing Python environment so that you can make and test changes without compromising your own work environment. You can run the following steps to create a separate virtual environment, and install Featuretools in editable mode.
   ```bash
   python -m venv venv
   source venv/bin/activate
