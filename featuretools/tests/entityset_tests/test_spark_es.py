@@ -210,4 +210,4 @@ def test_add_dataframe_with_make_index():
 
 @pytest.mark.skipif("not ps")
 def test_dataframe_type_spark(spark_es):
-    assert spark_es.dataframe_type == Library.SPARK.value
+    assert spark_es.dataframe_type == Library.SPARK

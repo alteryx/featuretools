@@ -280,9 +280,9 @@ def test_add_relationship_errors_child_v_index(es):
 def test_add_relationship_empty_child_convert_dtype(es):
     relationship = Relationship(es, "sessions", "id", "log", "session_id")
     empty_log_df = pd.DataFrame(columns=es["log"].columns)
-    if es.dataframe_type == Library.DASK.value:
+    if es.dataframe_type == Library.DASK:
         empty_log_df = dd.from_pandas(empty_log_df, npartitions=2)
-    elif es.dataframe_type == Library.SPARK.value:
+    elif es.dataframe_type == Library.SPARK:
         empty_log_df = ps.from_pandas(empty_log_df)
 
     es.add_dataframe(empty_log_df, "log")
@@ -375,7 +375,7 @@ def test_query_by_id_with_time(es):
         time_last=datetime(2011, 4, 9, 10, 30, 2 * 6),
     )
     df = to_pandas(df)
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         # Spark doesn't maintain order
         df = df.sort_values("id")
 
@@ -392,7 +392,7 @@ def test_query_by_column_with_time(es):
     df = to_pandas(df)
 
     true_values = [i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         # Spark doesn't maintain order
         df = df.sort_values("id")
 
@@ -495,7 +495,7 @@ def test_make_index_any_location(df):
         logical_types=logical_types,
         dataframe=df,
     )
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         assert es.dataframe_dict["test_dataframe"].columns[-1] == "id1"
     else:
         assert es.dataframe_dict["test_dataframe"].columns[0] == "id1"
@@ -507,9 +507,9 @@ def test_replace_dataframe_and_create_index(es):
     df = pd.DataFrame({"ints": [3, 4, 5], "category": ["a", "b", "a"]})
     final_df = df.copy()
     final_df["id"] = [0, 1, 2]
-    if es.dataframe_type == Library.DASK.value:
+    if es.dataframe_type == Library.DASK:
         df = dd.from_pandas(df, npartitions=2)
-    elif es.dataframe_type == Library.SPARK.value:
+    elif es.dataframe_type == Library.SPARK:
         df = ps.from_pandas(df)
 
     needs_idx_df = df.copy()
@@ -537,9 +537,9 @@ def test_replace_dataframe_and_create_index(es):
 
 def test_replace_dataframe_created_index_present(es):
     df = pd.DataFrame({"ints": [3, 4, 5], "category": ["a", "b", "a"]})
-    if es.dataframe_type == Library.DASK.value:
+    if es.dataframe_type == Library.DASK:
         df = dd.from_pandas(df, npartitions=2)
-    elif es.dataframe_type == Library.SPARK.value:
+    elif es.dataframe_type == Library.SPARK:
         df = ps.from_pandas(df)
 
     logical_types = {"ints": Integer, "category": Categorical}
@@ -553,7 +553,7 @@ def test_replace_dataframe_created_index_present(es):
 
     # DataFrame that already has the index column
     has_idx_df = es["test_df"].replace({0: 100})
-    if es.dataframe_type == Library.PANDAS.value:
+    if es.dataframe_type == Library.PANDAS:
         has_idx_df.set_index("id", drop=False, inplace=True)
 
     assert "id" in has_idx_df.columns
@@ -935,9 +935,9 @@ def test_dataframe_init(es):
             "number": [4, 5, 6],
         },
     )
-    if es.dataframe_type == Library.DASK.value:
+    if es.dataframe_type == Library.DASK:
         df = dd.from_pandas(df, npartitions=2)
-    elif es.dataframe_type == Library.SPARK.value:
+    elif es.dataframe_type == Library.SPARK:
         df = ps.from_pandas(df)
 
     logical_types = {"time": Datetime}
@@ -959,7 +959,7 @@ def test_dataframe_init(es):
         df_shape = (df.shape[0].compute(), df.shape[1])
     else:
         df_shape = df.shape
-    if es.dataframe_type == Library.DASK.value:
+    if es.dataframe_type == Library.DASK:
         es_df_shape = (
             es["test_dataframe"].shape[0].compute(),
             es["test_dataframe"].shape[1],
@@ -972,7 +972,7 @@ def test_dataframe_init(es):
     assert set([v for v in es["test_dataframe"].ww.columns]) == set(df.columns)
 
     assert es["test_dataframe"]["time"].dtype == df["time"].dtype
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         assert set(es["test_dataframe"]["id"].to_list()) == set(df["id"].to_list())
     else:
         assert set(es["test_dataframe"]["id"]) == set(df["id"])
@@ -1093,7 +1093,7 @@ def test_concat_inplace(es):
 def test_concat_with_lti(es):
     first_es = copy.deepcopy(es)
     for df in first_es.dataframes:
-        if first_es.dataframe_type == Library.SPARK.value:
+        if first_es.dataframe_type == Library.SPARK:
             # Spark cannot compute last time indexes on an empty Dataframe
             new_df = df.head(1)
         else:
@@ -1207,9 +1207,9 @@ def test_concat_sort_index_without_time_index(pd_es):
 
 def test_concat_with_make_index(es):
     df = pd.DataFrame({"id": [0, 1, 2], "category": ["a", "b", "a"]})
-    if es.dataframe_type == Library.DASK.value:
+    if es.dataframe_type == Library.DASK:
         df = dd.from_pandas(df, npartitions=2)
-    elif es.dataframe_type == Library.SPARK.value:
+    elif es.dataframe_type == Library.SPARK:
         df = ps.from_pandas(df)
     logical_types = {"id": Categorical, "category": Categorical}
     es.add_dataframe(
@@ -1241,7 +1241,7 @@ def test_concat_with_make_index(es):
 
     assert es.__eq__(es_1, deep=False)
     assert es.__eq__(es_2, deep=False)
-    if es.dataframe_type == Library.PANDAS.value:
+    if es.dataframe_type == Library.PANDAS:
         assert not es.__eq__(es_1, deep=True)
         assert not es.__eq__(es_2, deep=True)
 
@@ -2014,7 +2014,7 @@ def test_normalize_with_numeric_time_index(int_es):
 
 
 def test_normalize_with_invalid_time_index(es):
-    if es.dataframe_type == Library.DASK.value:
+    if es.dataframe_type == Library.DASK:
         pytest.skip(
             "Woodwork raises different error with Dask. Remove this skip once WW is updated.",
         )
@@ -2452,7 +2452,7 @@ def test_dataframe_type_empty_es():
 
 
 def test_dataframe_type_pandas_es(pd_es):
-    assert pd_es.dataframe_type == Library.PANDAS.value
+    assert pd_es.dataframe_type == Library.PANDAS
 
 
 def test_es__getstate__key_unique(es):

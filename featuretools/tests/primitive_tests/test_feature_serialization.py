@@ -487,7 +487,7 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
     assert new_scalar5_primitive.value == 5
 
     # Test primitive with multiple args - pandas only due to primitive compatibility
-    if es.dataframe_type == Library.PANDAS.value:
+    if es.dataframe_type == Library.PANDAS:
         distance_to_holiday = DistanceToHoliday(
             holiday="Victoria Day",
             country="Canada",

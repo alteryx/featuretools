@@ -35,7 +35,7 @@ def test_direct_from_identity(es):
     df = calculator.run(np.array([0, 5]))
     df = to_pandas(df, index="id", sort_index=True)
     v = df[d.get_name()].tolist()
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         expected = ["0", "1"]
     else:
         expected = [0, 1]
@@ -52,7 +52,7 @@ def test_direct_from_column(es):
     df = calculator.run(np.array([0, 5]))
     df = to_pandas(df, index="id", sort_index=True)
     v = df[d.get_name()].tolist()
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         expected = ["0", "1"]
     else:
         expected = [0, 1]
@@ -109,7 +109,7 @@ def test_direct_copy(games_es):
 
 def test_direct_of_multi_output_transform_feat(es):
     # TODO: Update to work with Dask and Spark
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Custom primitive is not compatible with Dask or Spark")
 
     class TestTime(TransformPrimitive):

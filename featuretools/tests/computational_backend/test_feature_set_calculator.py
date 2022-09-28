@@ -181,7 +181,7 @@ def test_make_agg_feat_using_prev_time(es):
 
 
 def test_make_agg_feat_using_prev_n_events(es):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Distrubuted entitysets do not support use_previous")
     agg_feat_1 = Feature(
         es["log"].ww["value"],
@@ -229,7 +229,7 @@ def test_make_agg_feat_using_prev_n_events(es):
 
 
 def test_make_agg_feat_multiple_dtypes(es):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail(
             "Currently no Dask or Spark compatible agg prims that use multiple dtypes",
         )
@@ -1030,7 +1030,7 @@ def test_with_features_built_from_es_metadata(es):
 
 # TODO: Fails with Dask and Spark (conflicting aggregation primitives)
 def test_handles_primitive_function_name_uniqueness(es):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail(
             "Fails with Dask and Spark due conflicting aggregation primitive names",
         )
@@ -1192,7 +1192,7 @@ def test_calls_progress_callback(es):
         groupby=Feature(es["customers"].ww["cohort"]),
     )
 
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         all_features = [identity, direct, agg, trans]
     else:
         all_features = [
