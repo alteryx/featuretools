@@ -42,6 +42,7 @@ class PrimitiveBase(object):
     # `nth_slice` keyword argument. Multi-output primitives can use a list to
     # differentiate between the base description and a slice description.
     description_template = None
+    series_library = Library.PANDAS
 
     def __init__(self):
         pass
