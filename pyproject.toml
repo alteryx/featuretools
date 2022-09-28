@@ -74,7 +74,7 @@ test = [
     "urllib3 >= 1.26.5",
 ]
 spark = [
-    "woodwork[spark] >= 0.16.2",
+    "woodwork[spark] >= 0.18.0",
     "pyspark >= 3.2.2",
 ]
 updater = [
