@@ -60,7 +60,7 @@ from featuretools.utils.gen_utils import Library
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}_2022_6_30.json".format(
+TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}_2022_09_02.json".format(
     SCHEMA_VERSION,
     ENTITYSET_SCHEMA_VERSION,
 )
@@ -80,6 +80,11 @@ def assert_features(original, deserialized):
     for feat_1, feat_2 in zip(original, deserialized):
         assert feat_1.unique_name() == feat_2.unique_name()
         assert feat_1.entityset == feat_2.entityset
+
+        # IdentityFeature and DirectFeature objects do not have primitives, so
+        # series library does not need to be compared
+        if not (isinstance(feat_1, (IdentityFeature, DirectFeature))):
+            assert feat_1.primitive.series_library == feat_2.primitive.series_library
 
 
 def pickle_features_test_helper(es_size, features_original, dir_path):

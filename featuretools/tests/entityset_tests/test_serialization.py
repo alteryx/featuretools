@@ -20,7 +20,7 @@ from featuretools.utils.gen_utils import Library
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_serialization_data_entityset_schema_{}_2022_4_26.tar".format(
+TEST_FILE = "test_serialization_data_entityset_schema_{}_2022_09_02.tar".format(
     SCHEMA_VERSION,
 )
 S3_URL = "s3://featuretools-static/" + TEST_FILE
@@ -484,6 +484,7 @@ def _check_schema_version(version, es, warning_text, caplog, warning_type=None):
         "id": es.id,
         "dataframes": dataframes,
         "relationships": relationships,
+        "data_type": es.dataframe_type,
     }
 
     if warning_type == "log" and warning_text:

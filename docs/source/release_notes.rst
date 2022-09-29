@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ``series_library`` attribute to ``EntitySet`` dictionary (:pr:`2257`)
     * Fixes
     * Changes
         * Change default gap for Rolling* primitives from 0 to 1 to prevent accidental leakage (:pr:`2282`)
@@ -13,6 +14,7 @@ Future Release
         * Exclude documentation files from release workflow (:pr:`2295`)
         * Bump requirements for optional pyspark dependency (:pr:`2299`)
         * Remove redundant types for query_by_values (:pr:`2301`)
+        * Bump ``scipy`` and ``woodwork[spark]`` dependencies (:pr:`2306`)
     * Documentation Changes
         * Add documentation describing how to use ``featuretools_sql`` with ``featuretools`` (:pr:`2262`)
         * Remove ``featuretools_sql`` as a docs requirement (:pr:`2302`)
@@ -21,12 +23,14 @@ Future Release
         * Run CI tests with ``pytest -n auto`` (:pr:`2298`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`Kryvonis`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
-    .. warning::
-        This default behavior of the ``Rolling*`` primitives has changed in this release. If this primitive
-        was used without defining the ``gap`` value, the feature values returned with this release will be
-        different than feature values from prior releases.
+Breaking Changes
+++++++++++++++++
+* The ``EntitySet`` schema has been updated to include a ``series_library`` attribute
+* The default behavior of the ``Rolling*`` primitives has changed in this release. If this primitive was used without
+  defining the ``gap`` value, the feature values returned with this release will be different than feature values from
+  prior releases.
 
 v1.14.0 Sep 1, 2022
 ===================
