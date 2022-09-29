@@ -78,7 +78,7 @@ def test_scatter_warning(caplog):
 
 # TODO: final assert fails w/ Dask
 def test_calc_feature_matrix(es):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Distributed dataframe result not ordered")
     times = list(
         [datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)]
@@ -210,7 +210,7 @@ def test_cfm_compose(es, lt):
 
 
 def test_cfm_compose_approximate(es, lt):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("dask does not support approximate")
 
     property_feature = Feature(es["log"].ww["value"]) > 10
@@ -359,7 +359,7 @@ def test_cfm_no_cutoff_time_index(pd_es):
 # TODO: fails with dask entitysets
 # TODO: fails with spark entitysets
 def test_cfm_duplicated_index_in_cutoff_time(es):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Distributed results not ordered, missing duplicates")
     times = [
         datetime(2011, 4, 1),
@@ -383,7 +383,7 @@ def test_cfm_duplicated_index_in_cutoff_time(es):
 
 # TODO: fails with Dask, Spark
 def test_saveprogress(es, tmpdir):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("saveprogress fails with distributed entitysets")
     times = list(
         [datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)]
@@ -1307,7 +1307,7 @@ def test_cutoff_time_naming(es):
 
 # TODO: order doesn't match, but output matches
 def test_cutoff_time_extra_columns(es):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Distributed result not ordered")
     agg_feat = Feature(
         es["customers"].ww["id"],
@@ -1368,7 +1368,7 @@ def test_cutoff_time_extra_columns_approximate(pd_es):
 
 
 def test_cutoff_time_extra_columns_same_name(es):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Distributed result not ordered")
     agg_feat = Feature(
         es["customers"].ww["id"],
@@ -1456,7 +1456,7 @@ def test_instances_after_cutoff_time_removed(es):
 
 # TODO: Dask and Spark do not keep instance_id after cutoff
 def test_instances_with_id_kept_after_cutoff(es):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Distributed result not ordered, missing extra instances")
     property_feature = Feature(
         es["log"].ww["id"],
@@ -1485,7 +1485,7 @@ def test_instances_with_id_kept_after_cutoff(es):
 # TODO: Fails with Dask
 # TODO: Fails with Spark
 def test_cfm_returns_original_time_indexes(es):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail(
             "Distributed result not ordered, indexes are lost due to not multiindexing",
         )
@@ -1825,7 +1825,7 @@ def test_parallel_cutoff_time_column_pass_through(pd_es, dask_cluster):
 
 
 def test_integer_time_index(int_es):
-    if int_es.dataframe_type != Library.PANDAS.value:
+    if int_es.dataframe_type != Library.PANDAS:
         pytest.xfail("Dask and Spark do not retain time column")
     times = list(range(8, 18)) + list(range(19, 26))
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
@@ -1846,7 +1846,7 @@ def test_integer_time_index(int_es):
 
 
 def test_integer_time_index_single_cutoff_value(int_es):
-    if int_es.dataframe_type != Library.PANDAS.value:
+    if int_es.dataframe_type != Library.PANDAS:
         pytest.xfail("Dask and Spark do not retain time column")
     labels = [False] * 3 + [True] * 2 + [False] * 4
     property_feature = IdentityFeature(int_es["log"].ww["value"]) > 10
@@ -1968,7 +1968,7 @@ def test_datetime_index_mixed_cutoff(es):
 # TODO: Dask version fails (feature matrix is empty)
 # TODO: Spark version fails (spark groupby agg doesn't support custom functions)
 def test_no_data_for_cutoff_time(mock_customer):
-    if mock_customer.dataframe_type != Library.PANDAS.value:
+    if mock_customer.dataframe_type != Library.PANDAS:
         pytest.xfail(
             "Dask fails because returned feature matrix is empty; Spark doesn't support custom agg functions",
         )
