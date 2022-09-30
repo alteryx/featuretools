@@ -333,7 +333,7 @@ class PercentTrue(AggregationPrimitive):
             return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
 
         def percent_true(s):
-            return s.fillna(0).mean()
+            return s.fillna(False).mean()
 
         return percent_true
 
