@@ -11,7 +11,7 @@ Future Release
     * Fixes
     * Changes
         * Change default gap for Rolling* primitives from 0 to 1 to prevent accidental leakage (:pr:`2282`)
-        * Updates for pandas 1.5.0 compatibility (:pr:`2290`, :pr:`2291`)
+        * Updates for pandas 1.5.0 compatibility (:pr:`2290`, :pr:`2291`, :pr:`2308`)
         * Exclude documentation files from release workflow (:pr:`2295`)
         * Bump requirements for optional pyspark dependency (:pr:`2299`)
         * Bump ``scipy`` and ``woodwork[spark]`` dependencies (:pr:`2306`)
