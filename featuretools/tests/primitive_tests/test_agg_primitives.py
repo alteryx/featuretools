@@ -2,7 +2,12 @@ import numpy as np
 import pandas as pd
 from pandas.core.dtypes.dtypes import CategoricalDtype
 
-from featuretools.primitives import NMostCommon, Trend, get_aggregation_primitives
+from featuretools.primitives import (
+    NMostCommon,
+    PercentTrue,
+    Trend,
+    get_aggregation_primitives,
+)
 
 
 def test_nmostcommon_categorical():
@@ -38,3 +43,9 @@ def test_trend_works_with_different_input_dtypes():
     for dtype in dtypes:
         actual = trend(numeric.astype(dtype), dates)
         assert np.isclose(actual, 1)
+
+
+def test_percent_true_boolean():
+    booleans = pd.Series([True, False, True, pd.NA], dtype="boolean")
+    pct_true = PercentTrue()
+    pct_true(booleans) == 0.5
