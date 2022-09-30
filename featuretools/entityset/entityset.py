@@ -1848,35 +1848,6 @@ class EntitySet(object):
         return dataframe
 
 
-def _vals_to_series(instance_vals, column_id):
-    """
-    instance_vals may be a pd.Dataframe, a pd.Series, a list, a single
-    value, or None. This function always returns a Series or None.
-    """
-    if instance_vals is None:
-        return None
-
-    # If this is a single value, make it a list
-    if not hasattr(instance_vals, "__iter__"):
-        instance_vals = [instance_vals]
-
-    # convert iterable to pd.Series
-    if isinstance(instance_vals, pd.DataFrame):
-        out_vals = instance_vals[column_id]
-    elif is_instance(instance_vals, (pd, dd, ps), "Series"):
-        out_vals = instance_vals.rename(column_id)
-    else:
-        out_vals = pd.Series(instance_vals)
-
-    # no duplicates or NaN values
-    out_vals = out_vals.drop_duplicates().dropna()
-
-    # want index to have no name for the merge in query_by_values
-    out_vals.index.name = None
-
-    return out_vals
-
-
 def _get_or_create_index(index, make_index, df):
     """Handles index creation logic base on user input"""
     index_was_created = False
