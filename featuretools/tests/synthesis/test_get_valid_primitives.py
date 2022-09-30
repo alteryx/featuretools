@@ -79,7 +79,7 @@ def test_primitive_compatibility(es):
         selected_primitives=[TimeSincePrevious],
     )
 
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         assert len(trans_prims) == 0
     else:
         assert len(trans_prims) == 1

@@ -415,7 +415,7 @@ def test_handles_pandas_overflow_error(datetime_es):
 
 
 def test_warns_with_unused_primitives(es):
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         pytest.skip("Spark throws extra warnings")
     trans_primitives = ["num_characters", "num_words", "add_numeric"]
     agg_primitives = [Max, "min"]
@@ -499,7 +499,7 @@ def test_does_not_warn_with_stacking_feature(pd_es):
 
 
 def test_warns_with_unused_where_primitives(es):
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         pytest.skip("Spark throws extra warnings")
     warning_text = (
         "Some specified primitives were not used during DFS:\n"

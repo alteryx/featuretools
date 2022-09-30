@@ -367,7 +367,7 @@ def test_makes_agg_features_of_trans_primitives(es):
 
 def test_makes_agg_features_with_where(es):
     # TODO: Update to work with Dask and Spark `es` fixture when issue #978 is closed
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Dask EntitySets do not support add_interesting_values")
     es.add_interesting_values()
 
@@ -660,7 +660,7 @@ def test_seed_features(es):
 
 def test_does_not_make_agg_of_direct_of_target_dataframe(es):
     # TODO: Update to work with Dask and Spark supported primitive
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Dask EntitySets do not support the Last primitive")
 
     count_sessions = Feature(
@@ -685,7 +685,7 @@ def test_does_not_make_agg_of_direct_of_target_dataframe(es):
 
 def test_dfs_builds_on_seed_features_more_than_max_depth(es):
     # TODO: Update to work with Dask and Spark supported primitive
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Dask EntitySets do not support the Last and Mode primitives")
 
     seed_feature_sessions = Feature(
@@ -747,7 +747,7 @@ def test_dfs_includes_seed_features_greater_than_max_depth(es):
 
 def test_allowed_paths(es):
     # TODO: Update to work with Dask and Spark supported primitive
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Dask EntitySets do not support the Last primitive")
 
     kwargs = dict(
@@ -853,7 +853,7 @@ def test_where_primitives(es):
 
 def test_stacking_where_primitives(es):
     # TODO: Update to work with Dask supported primitive
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Dask and Spark EntitySets do not support the Last primitive")
     es = copy.deepcopy(es)
     es.add_interesting_values(dataframe_name="sessions", values={"device_type": [0]})
@@ -943,7 +943,7 @@ def test_where_different_base_feats(es):
 
 def test_dfeats_where(es):
     # TODO: Update to work with Dask `es` fixture when issue #978 is closed
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Dask and Spark EntitySets do not support add_interesting_values")
     es.add_interesting_values()
 
@@ -1021,7 +1021,7 @@ def test_transform_consistency(transform_es):
 
 def test_transform_no_stack_agg(es):
     # TODO: Update to work with Dask and Spark supported primitives
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Dask EntitySets do not support the NMostCommon primitive")
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="customers",
@@ -1054,7 +1054,7 @@ def test_initialized_trans_prim(es):
 
 def test_initialized_agg_prim(es):
     # TODO: Update to work with Dask and Spark supported primitives
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Dask EntitySets do not support the NMostCommon primitive")
     ThreeMost = NMostCommon(n=3)
     dfs_obj = DeepFeatureSynthesis(
@@ -1070,7 +1070,7 @@ def test_initialized_agg_prim(es):
 
 def test_return_types(es):
     # TODO: Update to work with Dask and Spark supported primitive
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail(
             "Dask and Spark EntitySets do not support the NMostCommon primitive",
         )
@@ -1177,7 +1177,7 @@ def test_makes_direct_features_through_multiple_relationships(games_es):
 
 def test_stacks_multioutput_features(es):
     # TODO: Update to work with Dask and Spark supported primitive
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail(
             "Dask EntitySets do not support the NumUnique and NMostCommon primitives",
         )
@@ -1212,7 +1212,7 @@ def test_stacks_multioutput_features(es):
 
 def test_seed_multi_output_feature_stacking(es):
     # TODO: Update to work with Dask and Spark supported primitive
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail(
             "Dask EntitySets do not support the NMostCommon and NumUnique primitives",
         )
@@ -1615,7 +1615,7 @@ def test_primitive_options_groupbys(pd_es):
 
 
 def test_primitive_options_multiple_inputs(es):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail(
             "Dask and Spark EntitySets do not support various primitives used in this test",
         )
@@ -1967,7 +1967,7 @@ def test_does_not_build_features_on_last_time_index_col(es):
 
 
 def test_builds_features_using_all_input_types(es):
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         pytest.skip("NumTrue primitive not compatible with Spark")
     new_log_df = es["log"]
     new_log_df.ww["purchased_nullable"] = es["log"]["purchased"]

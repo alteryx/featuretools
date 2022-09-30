@@ -296,11 +296,11 @@ def test_init_and_name(es):
 
     agg_primitives = get_aggregation_primitives().values()
     # If Dask EntitySet use only Dask compatible primitives
-    if es.dataframe_type == Library.DASK.value:
+    if es.dataframe_type == Library.DASK:
         agg_primitives = [
             prim for prim in agg_primitives if Library.DASK in prim.compatibility
         ]
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         agg_primitives = [
             prim for prim in agg_primitives if Library.SPARK in prim.compatibility
         ]
@@ -565,7 +565,7 @@ def test_agg_same_method_name(es):
     that we test here.
     """
     # TODO: Update to work with Dask and Spark
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Need to update to work with Dask and Spark EntitySets")
 
     # test with normally defined functions
@@ -744,7 +744,7 @@ def test_custom_primitive_default_kwargs(es):
 
 
 def test_makes_numtrue(es):
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         pytest.xfail("Spark EntitySets do not support NumTrue primitive")
     dfs = DeepFeatureSynthesis(
         target_dataframe_name="sessions",
