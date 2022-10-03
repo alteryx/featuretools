@@ -71,7 +71,7 @@ jobs:
         run: pytest featuretools/tests/entityset_tests -n auto --ignore=featuretools/tests/entityset_tests/test_es.py --ignore=featuretools/tests/entityset_tests/test_ww_es.py
       - if: ${{ matrix.libraries == 'spark - entityset_2' }}
         name: Run unit tests (entityset batch 2)
-        run: pytest featuretools/tests/entityset_tests/test_es.py featuretools/tests/entityset_tests/test_ww_es.py -n auto
+        run: pytest featuretools/tests/entityset_tests/test_es.py featuretools/tests/entityset_tests/test_ww_es.py
       - if: ${{ matrix.libraries == 'spark - primitives' }}
         name: Run unit tests (primitives)
         run: pytest featuretools/tests/primitive_tests -n auto
