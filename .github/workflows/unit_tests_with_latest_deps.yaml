@@ -76,7 +76,7 @@ jobs:
         name: Run unit tests (entityset batch 2)
         run: |
           cd unpacked_sdist
-          pytest featuretools/tests/entityset_tests/test_es.py featuretools/tests/entityset_tests/test_ww_es.py -n auto ${{ env.coverage_args }}
+          pytest featuretools/tests/entityset_tests/test_es.py featuretools/tests/entityset_tests/test_ww_es.py ${{ env.coverage_args }}
       - if: ${{ matrix.libraries == 'spark - primitives' }}
         name: Run unit tests (primitives)
         run: |
