@@ -307,7 +307,7 @@ class DiffDatetime(Diff):
 
         You can specify the number of periods to shift the values
 
-        >>> diff_dt_periods = Diff(periods = 1)
+        >>> diff_dt_periods = DiffDatetime(periods = 1)
         >>> diff_dt_periods(dt_values).tolist()
         [NaT, NaT, Timedelta('121 days 00:00:00'), Timedelta('140 days 00:00:00'), Timedelta('74 days 00:00:00')]
     """
