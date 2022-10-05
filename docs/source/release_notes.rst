@@ -18,6 +18,7 @@ Future Release
     * Documentation Changes
         * Add documentation describing how to use ``featuretools_sql`` with ``featuretools`` (:pr:`2262`)
         * Remove ``featuretools_sql`` as a docs requirement (:pr:`2302`)
+        * Fix typo in ``DiffDatetime`` doctest (:pr:`2314`)
     * Testing Changes
         * Remove graphviz version restrictions in Windows CI tests (:pr:`2285`)
         * Run CI tests with ``pytest -n auto`` (:pr:`2298`, :pr:`2310`)
