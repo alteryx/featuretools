@@ -301,7 +301,7 @@ class DiffDatetime(Diff):
     Examples:
         >>> from datetime import datetime
         >>> dt_values = [datetime(2019, 3, 1), datetime(2019, 6, 30), datetime(2019, 11, 17), datetime(2020, 1, 30), datetime(2020, 3, 11)]
-        >>> diff_dt = Diff()
+        >>> diff_dt = DiffDatetime()
         >>> diff_dt(dt_values).tolist()
         [NaT, Timedelta('121 days 00:00:00'), Timedelta('140 days 00:00:00'), Timedelta('74 days 00:00:00'), Timedelta('41 days 00:00:00')]
 
