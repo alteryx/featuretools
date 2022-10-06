@@ -792,7 +792,7 @@ class EntitySet(object):
         """Create a new dataframe and relationship from unique values of an existing column.
 
         Args:
-            base_dataframe_name (str) : Datarame name from which to split.
+            base_dataframe_name (str) : Dataframe name from which to split.
 
             new_dataframe_name (str): Name of the new dataframe.
 
