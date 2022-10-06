@@ -9,7 +9,7 @@ Future Release
     * Fixes
     * Changes
     * Documentation Changes
-        * Fix typos in aggregation_primitive_base.py (:pr:``)
+        * Fix typos in aggregation_primitive_base.py (:pr:`2317`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
