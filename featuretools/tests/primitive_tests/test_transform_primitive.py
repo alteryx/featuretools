@@ -855,9 +855,60 @@ def test_lag_ends_with_nan():
 def test_lag_with_different_dtypes(input_array, expected_output):
     primitive_instance = Lag()
     primitive_func = primitive_instance.get_function()
-
     time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
-
     answer = pd.Series(primitive_func(input_array, time_array))
-
     pd.testing.assert_series_equal(answer, expected_output)
+
+
+def test_datetime_tz_primitive():
+    primitive_func = TestDateToTimeZone.get_function()
+    x = pd.Series(
+        [
+            datetime(2010, 1, 1, tzinfo=timezone("America/Los_Angeles")),
+            datetime(2010, 1, 10, tzinfo=timezone("Singapore")),
+            datetime(2020, 1, 1, tzinfo=timezone("UTC")),
+            datetime(2010, 1, 1, tzinfo=timezone("Europe/London")),
+        ],
+    )
+    answer = pd.Series(["America/Los_Angeles", "Singapore", "UTC", "Europe/London"])
+    pd.testing.assert_series_equal(primitive_func(x), answer)
+
+
+def test_datetime64():
+    primitive_func = TestDateToTimeZone.get_function()
+    x = pd.Series(
+        [
+            datetime(2010, 1, 1),
+            datetime(2010, 1, 10),
+            datetime(2020, 1, 1),
+        ],
+    ).astype("datetime64")
+    x = x.dt.tz_localize("America/Los_Angeles")
+    answer = pd.Series(["America/Los_Angeles"] * 3)
+    pd.testing.assert_series_equal(primitive_func(x), answer)
+
+
+def test_naive_dates():
+    primitive_func = TestDateToTimeZone.get_function()
+    x = pd.Series(
+        [
+            datetime(2010, 1, 1, tzinfo=timezone("America/Los_Angeles")),
+            datetime(2010, 1, 1),
+            datetime(2010, 1, 2),
+        ],
+    )
+    answer = pd.Series(["America/Los_Angeles", np.nan, np.nan])
+    pd.testing.assert_series_equal(primitive_func(x), answer)
+
+
+def test_nan():
+    primitive_func = TestDateToTimeZone.get_function()
+    x = pd.Series(
+        [
+            datetime(2010, 1, 1, tzinfo=timezone("America/Los_Angeles")),
+            pd.NaT,
+            np.nan,
+        ],
+    )
+    answer = pd.Series(["America/Los_Angeles", np.nan, np.nan])
+    pd.testing.assert_series_equal(primitive_func(x), answer)
