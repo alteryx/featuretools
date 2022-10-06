@@ -6,6 +6,7 @@ import pytest
 
 from featuretools.primitives import (
     Age,
+    DateToTimeZone,
     DayOfYear,
     DaysInMonth,
     EmailAddressToDomain,
@@ -861,7 +862,7 @@ def test_lag_with_different_dtypes(input_array, expected_output):
 
 
 def test_datetime_tz_primitive():
-    primitive_func = TestDateToTimeZone().get_function()
+    primitive_func = DateToTimeZone().get_function()
     x = pd.Series(
         [
             datetime(2010, 1, 1, tzinfo=timezone("America/Los_Angeles")),
@@ -875,7 +876,7 @@ def test_datetime_tz_primitive():
 
 
 def test_datetime64():
-    primitive_func = TestDateToTimeZone().get_function()
+    primitive_func = DateToTimeZone().get_function()
     x = pd.Series(
         [
             datetime(2010, 1, 1),
@@ -889,7 +890,7 @@ def test_datetime64():
 
 
 def test_naive_dates():
-    primitive_func = TestDateToTimeZone().get_function()
+    primitive_func = DateToTimeZone().get_function()
     x = pd.Series(
         [
             datetime(2010, 1, 1, tzinfo=timezone("America/Los_Angeles")),
@@ -902,7 +903,7 @@ def test_naive_dates():
 
 
 def test_nan():
-    primitive_func = TestDateToTimeZone().get_function()
+    primitive_func = DateToTimeZone().get_function()
     x = pd.Series(
         [
             datetime(2010, 1, 1, tzinfo=timezone("America/Los_Angeles")),
