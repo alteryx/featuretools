@@ -8,7 +8,7 @@ from featuretools.primitives import (
 )
 
 
-def test_regular_com():
+def test_regular_com_avg():
     primitive_instance = ExponentialWeightedAverage(com=0.5)
     primitive_func = primitive_instance.get_function()
     array = pd.Series([1, 2, 7, 5])
@@ -17,7 +17,7 @@ def test_regular_com():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_regular_span():
+def test_regular_span_avg():
     primitive_instance = ExponentialWeightedAverage(span=1.5)
     primitive_func = primitive_instance.get_function()
     array = pd.Series([1, 2, 7, 5])
@@ -26,7 +26,7 @@ def test_regular_span():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_regular_halflife():
+def test_regular_halflife_avg():
     primitive_instance = ExponentialWeightedAverage(halflife=2.7)
     primitive_func = primitive_instance.get_function()
     array = pd.Series([1, 2, 7, 5])
@@ -37,7 +37,7 @@ def test_regular_halflife():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_regular_alpha():
+def test_regular_alpha_avg():
     primitive_instance = ExponentialWeightedAverage(alpha=0.8)
     primitive_func = primitive_instance.get_function()
     array = pd.Series([1, 2, 7, 5])
@@ -46,7 +46,7 @@ def test_regular_alpha():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_na():
+def test_na_avg():
     primitive_instance = ExponentialWeightedAverage(com=0.5)
     primitive_func = primitive_instance.get_function()
     array = pd.Series([1, 2, 7, np.nan, 5])
@@ -57,7 +57,7 @@ def test_na():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_ignorena_true():
+def test_ignorena_true_avg():
     primitive_instance = ExponentialWeightedAverage(com=0.5, ignore_na=True)
     primitive_func = primitive_instance.get_function()
     array = pd.Series([1, 2, 7, np.nan, 5])
@@ -68,7 +68,7 @@ def test_ignorena_true():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_regular_com():
+def test_regular_com_std():
     primitive_instance = ExponentialWeightedSTD(com=0.5)
     primitive_func = primitive_instance.get_function()
     array = pd.Series([1, 2, 7, 5])
@@ -79,7 +79,7 @@ def test_regular_com():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_regular_span():
+def test_regular_span_std():
     primitive_instance = ExponentialWeightedSTD(span=1.5)
     primitive_func = primitive_instance.get_function()
     array = pd.Series([1, 2, 7, 5])
@@ -90,7 +90,7 @@ def test_regular_span():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_regular_halflife():
+def test_regular_halflife_std():
     primitive_instance = ExponentialWeightedSTD(halflife=2.7)
     primitive_func = primitive_instance.get_function()
     array = pd.Series([1, 2, 7, 5])
@@ -101,7 +101,7 @@ def test_regular_halflife():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_regular_alpha():
+def test_regular_alpha_std():
     primitive_instance = ExponentialWeightedSTD(alpha=0.8)
     primitive_func = primitive_instance.get_function()
     array = pd.Series([1, 2, 7, 5])
@@ -112,7 +112,7 @@ def test_regular_alpha():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_na():
+def test_na_std():
     primitive_instance = ExponentialWeightedSTD(com=0.5)
     primitive_func = primitive_instance.get_function()
     array = pd.Series([1, 2, 7, np.nan, 5])
@@ -129,7 +129,7 @@ def test_na():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_ignorena_true():
+def test_ignorena_true_std():
     primitive_instance = ExponentialWeightedSTD(com=0.5, ignore_na=True)
     primitive_func = primitive_instance.get_function()
     array = pd.Series([1, 2, 7, np.nan, 5])
@@ -146,7 +146,7 @@ def test_ignorena_true():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_regular_com():
+def test_regular_com_var():
     primitive_instance = ExponentialWeightedVariance(com=0.5)
     primitive_func = primitive_instance.get_function()
     array = pd.Series([1, 2, 7, 5])
@@ -157,7 +157,7 @@ def test_regular_com():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_regular_span():
+def test_regular_span_var():
     primitive_instance = ExponentialWeightedVariance(span=1.5)
     primitive_func = primitive_instance.get_function()
     array = pd.Series([1, 2, 7, 5])
@@ -166,7 +166,7 @@ def test_regular_span():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_regular_halflife():
+def test_regular_halflife_var():
     primitive_instance = ExponentialWeightedVariance(halflife=2.7)
     primitive_func = primitive_instance.get_function()
     array = pd.Series([1, 2, 7, 5])
@@ -177,7 +177,7 @@ def test_regular_halflife():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_regular_alpha():
+def test_regular_alpha_var():
     primitive_instance = ExponentialWeightedVariance(alpha=0.8)
     primitive_func = primitive_instance.get_function()
     array = pd.Series([1, 2, 7, 5])
@@ -186,7 +186,7 @@ def test_regular_alpha():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_na():
+def test_na_var():
     primitive_instance = ExponentialWeightedVariance(com=0.5)
     primitive_func = primitive_instance.get_function()
     array = pd.Series([1, 2, 7, np.nan, 5])
@@ -203,7 +203,7 @@ def test_na():
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_ignorena_true():
+def test_ignorena_true_var():
     primitive_instance = ExponentialWeightedVariance(com=0.5, ignore_na=True)
     primitive_func = primitive_instance.get_function()
     array = pd.Series([1, 2, 7, np.nan, 5])
