@@ -1004,7 +1004,7 @@ class IsFederalHoliday(TransformPrimitive):
         return is_federal_holiday
 
 
-class DatetimeToTimeZone(TransformPrimitive):
+class DateToTimeZone(TransformPrimitive):
     """Determines the timezone of a datetime.
 
     Description:
