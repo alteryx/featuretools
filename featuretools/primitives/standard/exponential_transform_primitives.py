@@ -45,6 +45,8 @@ class ExponentialWeightedAverage(TransformPrimitive):
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
 
     def __init__(self, com=None, span=None, halflife=None, alpha=None, ignore_na=False):
+        if all(x is None for x in [com, span, halflife, alpha]):
+            com = 0.5
         self.com = com
         self.span = span
         self.halflife = halflife
@@ -107,6 +109,8 @@ class ExponentialWeightedSTD(TransformPrimitive):
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
 
     def __init__(self, com=None, span=None, halflife=None, alpha=None, ignore_na=False):
+        if all(x is None for x in [com, span, halflife, alpha]):
+            com = 0.5
         self.com = com
         self.span = span
         self.halflife = halflife
@@ -168,6 +172,8 @@ class ExponentialWeightedVariance(TransformPrimitive):
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
 
     def __init__(self, com=None, span=None, halflife=None, alpha=None, ignore_na=False):
+        if all(x is None for x in [com, span, halflife, alpha]):
+            com = 0.5
         self.com = com
         self.span = span
         self.halflife = halflife
