@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ExponentialWeighted primitives and DateToTimeZone primitive (:pr:`2318`)
     * Fixes
     * Changes
     * Documentation Changes
@@ -13,7 +14,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`sbadithe`
+    :user:`gsheni`, :user:`sbadithe`
 
 v1.15.0 Oct 6, 2022
 ===================
