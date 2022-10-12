@@ -6,9 +6,22 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ExponentialWeighted primitives and DateToTimeZone primitive (:pr:`2318`)
+    * Fixes
+    * Changes
+    * Documentation Changes
+        * Fix typos in aggregation_primitive_base.py, features_deserializer.py (:pr:`2317`) (:pr:`2324`)
+        * Update SQL integration documentation to reflect Snowflake compatibility (:pr:`2313`)
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`sbadithe`
+
+v1.15.0 Oct 6, 2022
+===================
+    * Enhancements
         * Add ``series_library`` attribute to ``EntitySet`` dictionary (:pr:`2257`)
         * Leverage ``Library`` Enum inheriting from ``str`` (:pr:`2275`)
-    * Fixes
     * Changes
         * Change default gap for Rolling* primitives from 0 to 1 to prevent accidental leakage (:pr:`2282`)
         * Updates for pandas 1.5.0 compatibility (:pr:`2290`, :pr:`2291`, :pr:`2308`)
@@ -18,7 +31,8 @@ Future Release
     * Documentation Changes
         * Add documentation describing how to use ``featuretools_sql`` with ``featuretools`` (:pr:`2262`)
         * Remove ``featuretools_sql`` as a docs requirement (:pr:`2302`)
-        * Update SQL integration documentation to reflect Snowflake compatibility (:pr:`2313`)
+        * Fix typo in ``DiffDatetime`` doctest (:pr:`2314`)
+        * Fix typo in ``EntitySet`` documentation (:pr:`2315`)
     * Testing Changes
         * Remove graphviz version restrictions in Windows CI tests (:pr:`2285`)
         * Run CI tests with ``pytest -n auto`` (:pr:`2298`, :pr:`2310`)

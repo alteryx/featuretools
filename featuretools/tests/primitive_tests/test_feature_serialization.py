@@ -220,8 +220,13 @@ def s3_client():
 
 
 @pytest.fixture
-def s3_bucket(s3_client):
-    s3_client.create_bucket(Bucket=BUCKET_NAME, ACL="public-read-write")
+def s3_bucket(s3_client, region="us-east-2"):
+    location = {"LocationConstraint": region}
+    s3_client.create_bucket(
+        Bucket=BUCKET_NAME,
+        ACL="public-read-write",
+        CreateBucketConfiguration=location,
+    )
     s3_bucket = s3_client.Bucket(BUCKET_NAME)
     yield s3_bucket
 
