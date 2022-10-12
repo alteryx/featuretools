@@ -10,7 +10,7 @@ Future Release
     * Fixes
     * Changes
     * Documentation Changes
-        * Fix typos in aggregation_primitive_base.py (:pr:`2317`)
+        * Fix typos in aggregation_primitive_base.py, features_deserializer.py (:pr:`2317`) (:pr:`2324`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
