@@ -23,9 +23,8 @@ def load_features(features, profile_name=None):
     """Loads the features from a filepath, S3 path, URL, an open file, or a JSON formatted string.
 
     Args:
-        features (str or :class:`.FileObject`): The location of where features has
-        been saved which this must include the name of the file, or a JSON formatted
-        string, or a readable file handle where the features have been saved.
+        features (str or :class:`.FileObject`): The file location of saved features.
+        This must either be the name of the file, a JSON formatted string, or a readable file handle.
 
         profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
             Set to False to use an anonymous profile.
@@ -34,8 +33,8 @@ def load_features(features, profile_name=None):
         features (list[:class:`.FeatureBase`]): Feature definitions list.
 
     Note:
-        Features saved in one version of Featuretools or python are not guaranteed to work in another.
-        After upgrading Featuretools or python, features may need to be generated again.
+        Features saved in one version of Featuretools or Python are not guaranteed to work in another.
+        After upgrading Featuretools or Python, features may need to be generated again.
 
     Example:
         .. ipython:: python
