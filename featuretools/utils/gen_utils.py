@@ -142,3 +142,4 @@ class Library(str, Enum):
     PANDAS = "pandas"
     DASK = "Dask"
     SPARK = "Spark"
+    CUDF = "cudf"

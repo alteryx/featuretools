@@ -43,7 +43,7 @@ class Age(TransformPrimitive):
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "the age from {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def age(x, time=None):
             return (time - x).dt.days / 365
 
@@ -91,7 +91,7 @@ class DateToHoliday(TransformPrimitive):
         self.country = country
         self.holidayUtil = HolidayUtil(country)
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def date_to_holiday(x):
             holiday_df = self.holidayUtil.to_df()
             df = pd.DataFrame({"date": x})
@@ -127,10 +127,10 @@ class Day(TransformPrimitive):
         logical_type=Ordinal(order=list(range(1, 32))),
         semantic_tags={"category"},
     )
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK, Library.CUDF]
     description_template = "the day of the month of {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def day(vals):
             return vals.dt.day
 
@@ -255,7 +255,7 @@ class DistanceToHoliday(TransformPrimitive):
             error = "must be one of the available holidays:\n%s" % available_holidays
             raise ValueError(error)
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def distance_to_holiday(x):
             holiday_df = self.holidayUtil.to_df()
             holiday_df = holiday_df[holiday_df.names == self.holiday]
@@ -301,10 +301,10 @@ class Hour(TransformPrimitive):
         logical_type=Ordinal(order=list(range(24))),
         semantic_tags={"category"},
     )
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK, Library.CUDF]
     description_template = "the hour value of {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def hour(vals):
             return vals.dt.hour
 
@@ -491,10 +491,10 @@ class IsWeekend(TransformPrimitive):
     name = "is_weekend"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=BooleanNullable)
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK, Library.CUDF]
     description_template = "whether {} occurred on a weekend"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def is_weekend(vals):
             return vals.dt.weekday > 4
 
@@ -612,10 +612,10 @@ class Minute(TransformPrimitive):
         logical_type=Ordinal(order=list(range(60))),
         semantic_tags={"category"},
     )
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK, Library.CUDF]
     description_template = "the minutes value of {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def minute(vals):
             return vals.dt.minute
 
@@ -641,10 +641,10 @@ class Month(TransformPrimitive):
         logical_type=Ordinal(order=list(range(1, 13))),
         semantic_tags={"category"},
     )
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK, Library.CUDF]
     description_template = "the month of {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def month(vals):
             return vals.dt.month
 
@@ -762,10 +762,10 @@ class Second(TransformPrimitive):
         logical_type=Ordinal(order=list(range(60))),
         semantic_tags={"category"},
     )
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK, Library.CUDF]
     description_template = "the seconds value of {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def second(vals):
             return vals.dt.second
 
@@ -814,7 +814,7 @@ class TimeSince(TransformPrimitive):
     def __init__(self, unit="seconds"):
         self.unit = unit.lower()
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def pd_time_since(array, time):
             return convert_time_units((time - array).dt.total_seconds(), self.unit)
 
@@ -854,7 +854,7 @@ class TimeSincePrevious(TransformPrimitive):
     def __init__(self, unit="seconds"):
         self.unit = unit.lower()
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def pd_diff(values):
             return convert_time_units(
                 values.diff().apply(lambda x: x.total_seconds()),
@@ -888,10 +888,10 @@ class Week(TransformPrimitive):
         logical_type=Ordinal(order=list(range(1, 54))),
         semantic_tags={"category"},
     )
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK, Library.CUDF]
     description_template = "the week of the year of {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def week(vals):
             if hasattr(vals.dt, "isocalendar"):
                 return vals.dt.isocalendar().week
@@ -924,10 +924,10 @@ class Weekday(TransformPrimitive):
         logical_type=Ordinal(order=list(range(7))),
         semantic_tags={"category"},
     )
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK, Library.CUDF]
     description_template = "the day of the week of {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def weekday(vals):
             return vals.dt.weekday
 
@@ -953,10 +953,10 @@ class Year(TransformPrimitive):
         logical_type=Ordinal(order=list(range(1, 3000))),
         semantic_tags={"category"},
     )
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK, Library.CUDF]
     description_template = "the year of {}"
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def year(vals):
             return vals.dt.year
 
@@ -992,7 +992,7 @@ class IsFederalHoliday(TransformPrimitive):
         self.country = country
         self.holidayUtil = HolidayUtil(country)
 
-    def get_function(self):
+    def get_function(self, trans_type=Library.PANDAS):
         def is_federal_holiday(x):
             holidays_df = self.holidayUtil.to_df()
             is_holiday = x.dt.normalize().isin(holidays_df.holiday_date)

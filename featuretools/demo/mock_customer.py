@@ -4,6 +4,7 @@ from numpy.random import choice
 from woodwork.logical_types import Categorical, PostalCode
 
 import featuretools as ft
+from featuretools.utils.gen_utils import import_or_raise
 
 
 def load_mock_customer(
@@ -14,6 +15,7 @@ def load_mock_customer(
     random_seed=0,
     return_single_table=False,
     return_entityset=False,
+    df_type="pandas",
 ):
     """Return dataframes of mock customer data"""
 
@@ -66,6 +68,13 @@ def load_mock_customer(
     ].rename(columns={"transaction_time": "session_start"})
     sessions_df = sessions_df.merge(session_starts)
 
+    if df_type == "cudf":
+        cu = import_or_raise("cudf", "Cannot import cudf")
+        sessions_df = cu.from_pandas(sessions_df)
+        transactions_df = cu.from_pandas(transactions_df)
+        customers_df = cu.from_pandas(customers_df)
+        products_df = cu.from_pandas(products_df)
+
     if return_single_table:
         return (
             transactions_df.merge(sessions_df)
@@ -110,7 +119,7 @@ def load_mock_customer(
             ("customers", "customer_id", "sessions", "customer_id"),
         ]
         es = es.add_relationships(rels)
-        es.add_last_time_indexes()
+        # es.add_last_time_indexes()
         return es
 
     return {
