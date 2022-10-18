@@ -42,6 +42,7 @@ class PrimitiveBase(object):
     # `nth_slice` keyword argument. Multi-output primitives can use a list to
     # differentiate between the base description and a slice description.
     description_template = None
+    series_library = Library.PANDAS
 
     def __init__(self):
         pass
@@ -106,7 +107,10 @@ class PrimitiveBase(object):
         return values
 
     def get_description(
-        self, input_column_descriptions, slice_num=None, template_override=None
+        self,
+        input_column_descriptions,
+        slice_num=None,
+        template_override=None,
     ):
         template = template_override or self.description_template
         if template:
@@ -134,10 +138,22 @@ class PrimitiveBase(object):
         if slice_num is not None:
             nth_slice = convert_to_nth(slice_num + 1)
             description = "the {} output from applying {} to {}".format(
-                nth_slice, name, ", ".join(input_column_descriptions)
+                nth_slice,
+                name,
+                ", ".join(input_column_descriptions),
             )
         else:
             description = "the result of applying {} to {}".format(
-                name, ", ".join(input_column_descriptions)
+                name,
+                ", ".join(input_column_descriptions),
             )
         return description
+
+    @staticmethod
+    def flatten_nested_input_types(input_types):
+        """Flattens nested column schema inputs into a single list."""
+        if isinstance(input_types[0], list):
+            input_types = [
+                sub_input for input_obj in input_types for sub_input in input_obj
+            ]
+        return input_types

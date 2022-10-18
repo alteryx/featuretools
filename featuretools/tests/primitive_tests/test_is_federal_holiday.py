@@ -18,7 +18,7 @@ def test_regular():
             "2016-02-29",
             "2017-05-29",
             datetime(2019, 7, 4, 10, 0, 30),
-        ]
+        ],
     ).astype("datetime64")
     answer = pd.Series([True, False, True, True])
     given_answer = pd.Series(primitive_func(case))
@@ -34,7 +34,7 @@ def test_nat():
             "NaT",
             "2016-02-29",
             "NaT",
-        ]
+        ],
     ).astype("datetime64")
     answer = pd.Series([True, np.nan, False, np.nan])
     given_answer = pd.Series(primitive_func(case))
@@ -50,7 +50,7 @@ def test_valid_country():
             "2016-11-11",
             "2017-12-26",
             "2018-09-03",
-        ]
+        ],
     ).astype("datetime64")
     answer = pd.Series([True, False, True, True])
     given_answer = pd.Series(primitive_func(case))

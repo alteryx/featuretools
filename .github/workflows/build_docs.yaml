@@ -1,11 +1,14 @@
+name: Build Docs
 on:
   pull_request:
     types: [opened, synchronize]
   push:
     branches:
       - main
-
-name: Build Docs
+  workflow_dispatch:
+env:
+  PYARROW_IGNORE_TIMEZONE: 1
+  JAVA_HOME: "/usr/lib/jvm/java-11-openjdk-amd64"
 jobs:
   build_docs:
     name: ${{ matrix.python_version }} build docs
@@ -13,26 +16,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.7", "3.8", "3.9"]
+        python_version: ["3.8", "3.9", "3.10"]
     steps:
-      - name: Set up python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Build featuretools package
-        run: make package_featuretools
+        run: make package
       - name: Install featuretools with doc requirements
         run: |
           sudo apt update
           sudo apt install -y pandoc
           sudo apt install -y graphviz
           sudo apt install -y openjdk-11-jre-headless
-          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
           python -m pip install unpacked_sdist/

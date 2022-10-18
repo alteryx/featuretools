@@ -10,26 +10,27 @@ clean:
 lint:
 	isort --check-only featuretools
 	python docs/notebook_version_standardizer.py check-execution
-	black featuretools -t py310 --check
+	black featuretools docs/source -t py310 --check
 	flake8 featuretools
 
 .PHONY: lint-fix
 lint-fix:
-	black -t py310 featuretools
+	black featuretools docs/source -t py310
 	isort featuretools
 	python docs/notebook_version_standardizer.py standardize
 
 .PHONY: test
 test:
-	pytest featuretools/
+	pytest featuretools/ -n auto
 
 .PHONY: testcoverage
 testcoverage:
-	pytest featuretools/ --cov=featuretools
+	pytest featuretools/ --cov=featuretools -n auto
 
 .PHONY: installdeps
 installdeps: upgradepip
 	pip install -e ".[dev]"
+	pre-commit install
 
 .PHONY: checkdeps
 checkdeps:
@@ -44,8 +45,12 @@ upgradepip:
 upgradebuild:
 	python -m pip install --upgrade build
 
-.PHONY: package_featuretools
-package_featuretools: upgradepip upgradebuild
+.PHONY: upgradesetuptools
+upgradesetuptools:
+	python -m pip install --upgrade setuptools
+
+.PHONY: package
+package: upgradepip upgradebuild upgradesetuptools
 	python -m build
 	$(eval PACKAGE=$(shell python -c "from pep517.meta import load; metadata = load('.'); print(metadata.version)"))
 	tar -zxvf "dist/featuretools-${PACKAGE}.tar.gz"

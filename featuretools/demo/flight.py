@@ -18,7 +18,7 @@ def load_flight(
 ):
     """
     Download, clean, and filter flight data from 2017.
-    The original dataset can be found `here <https://www.transtats.bts.gov/DL_SelectFields.asp?DB_Short_Name=On-Time&Table_ID=236>`_.
+    The original dataset can be found `here <https://www.transtats.bts.gov/ot_delay/ot_delaycause1.asp>`_.
 
     Args:
 
@@ -62,13 +62,18 @@ def load_flight(
 
     print("Downloading data ...")
     url = "https://api.featurelabs.com/datasets/{}?library=featuretools&version={}".format(
-        filename, ft.__version__
+        filename,
+        ft.__version__,
     )
 
     chunksize = math.ceil(csv_length / 99)
     pd.options.display.max_columns = 200
     iter_csv = pd.read_csv(
-        url, compression="zip", iterator=True, nrows=nrows, chunksize=chunksize
+        url,
+        compression="zip",
+        iterator=True,
+        nrows=nrows,
+        chunksize=chunksize,
     )
     if verbose:
         iter_csv = tqdm(iter_csv, total=100)
@@ -170,21 +175,24 @@ def _clean_data(data):
             "origin_city_name": "origin_city",
             "dest_city_name": "dest_city",
             "cancelled": "canceled",
-        }
+        },
     )
 
     # Combine strings like 0130 (1:30 AM) with dates (2017-01-01)
     clean_data["scheduled_dep_time"] = clean_data["scheduled_dep_time"].apply(
-        lambda x: str(x)
+        lambda x: str(x),
     ) + clean_data["flight_date"].astype("str")
 
     # Parse combined string as a date
     clean_data.loc[:, "scheduled_dep_time"] = pd.to_datetime(
-        clean_data["scheduled_dep_time"], format="%H%M%Y-%m-%d", errors="coerce"
+        clean_data["scheduled_dep_time"],
+        format="%H%M%Y-%m-%d",
+        errors="coerce",
     )
 
     clean_data["scheduled_elapsed_time"] = pd.to_timedelta(
-        clean_data["scheduled_elapsed_time"], unit="m"
+        clean_data["scheduled_elapsed_time"],
+        unit="m",
     )
 
     clean_data = _reconstruct_times(clean_data)
@@ -199,7 +207,8 @@ def _clean_data(data):
 
     # Nulls for scheduled values are too problematic. Remove them.
     clean_data = clean_data.dropna(
-        axis="rows", subset=["scheduled_dep_time", "scheduled_arr_time"]
+        axis="rows",
+        subset=["scheduled_dep_time", "scheduled_arr_time"],
     )
 
     # Make a flight id. Define a flight as a combination of:
@@ -281,7 +290,8 @@ def _reconstruct_times(clean_data):
         - scheduled arrival is scheduled_dep + scheduled_elapsed
     """
     clean_data.loc[:, "dep_time"] = clean_data["scheduled_dep_time"] + pd.to_timedelta(
-        clean_data["dep_delay"], unit="m"
+        clean_data["dep_delay"],
+        unit="m",
     )
 
     clean_data.loc[:, "arr_time"] = clean_data["dep_time"] + pd.to_timedelta(

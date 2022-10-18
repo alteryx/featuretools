@@ -6,6 +6,7 @@ from featuretools.primitives import (
     Count,
     Hour,
     IsIn,
+    Not,
     TimeSincePrevious,
     TransformPrimitive,
 )
@@ -15,13 +16,18 @@ from featuretools.utils.gen_utils import Library
 
 def test_get_valid_primitives_selected_primitives(es):
     agg_prims, trans_prims = get_valid_primitives(
-        es, "log", selected_primitives=[Hour, Count]
+        es,
+        "log",
+        selected_primitives=[Hour, Count],
     )
     assert set(agg_prims) == set([Count])
     assert set(trans_prims) == set([Hour])
 
     agg_prims, trans_prims = get_valid_primitives(
-        es, "products", selected_primitives=[Hour], max_depth=1
+        es,
+        "products",
+        selected_primitives=[Hour],
+        max_depth=1,
     )
     assert set(agg_prims) == set()
     assert set(trans_prims) == set()
@@ -29,13 +35,18 @@ def test_get_valid_primitives_selected_primitives(es):
 
 def test_get_valid_primitives_selected_primitives_strings(es):
     agg_prims, trans_prims = get_valid_primitives(
-        es, "log", selected_primitives=["hour", "count"]
+        es,
+        "log",
+        selected_primitives=["hour", "count"],
     )
     assert set(agg_prims) == set([Count])
     assert set(trans_prims) == set([Hour])
 
     agg_prims, trans_prims = get_valid_primitives(
-        es, "products", selected_primitives=["hour"], max_depth=1
+        es,
+        "products",
+        selected_primitives=["hour"],
+        max_depth=1,
     )
     assert set(agg_prims) == set()
     assert set(trans_prims) == set()
@@ -44,7 +55,9 @@ def test_get_valid_primitives_selected_primitives_strings(es):
 def test_invalid_primitive(es):
     with pytest.raises(ValueError, match="'foobar' is not a recognized primitive name"):
         get_valid_primitives(
-            es, target_dataframe_name="log", selected_primitives=["foobar"]
+            es,
+            target_dataframe_name="log",
+            selected_primitives=["foobar"],
         )
 
     msg = (
@@ -53,16 +66,20 @@ def test_invalid_primitive(es):
     )
     with pytest.raises(ValueError, match=msg):
         get_valid_primitives(
-            es, target_dataframe_name="log", selected_primitives=[Library]
+            es,
+            target_dataframe_name="log",
+            selected_primitives=[Library],
         )
 
 
 def test_primitive_compatibility(es):
     _, trans_prims = get_valid_primitives(
-        es, "customers", selected_primitives=[TimeSincePrevious]
+        es,
+        "customers",
+        selected_primitives=[TimeSincePrevious],
     )
 
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         assert len(trans_prims) == 0
     else:
         assert len(trans_prims) == 1
@@ -91,10 +108,14 @@ def test_get_valid_primitives_custom_primitives(pd_es):
     assert AddThree not in trans_prims
 
     with pytest.raises(
-        ValueError, match="'add_three' is not a recognized primitive name"
+        ValueError,
+        match="'add_three' is not a recognized primitive name",
     ):
         agg_prims, trans_prims = get_valid_primitives(
-            pd_es, "log", 2, [ThreeMostCommonCat, "add_three"]
+            pd_es,
+            "log",
+            2,
+            [ThreeMostCommonCat, "add_three"],
         )
 
 
@@ -111,3 +132,32 @@ def test_get_valid_primitives_single_table(transform_es):
 
     assert set(agg_prims) == set()
     assert IsIn in trans_prims
+
+
+def test_get_valid_primitives_with_dfs_kwargs(es):
+    agg_prims, trans_prims = get_valid_primitives(
+        es,
+        "customers",
+        selected_primitives=[Hour, Count, Not],
+    )
+    assert set(agg_prims) == set([Count])
+    assert set(trans_prims) == set([Hour, Not])
+
+    # Can use other dfs parameters and they get applied
+    agg_prims, trans_prims = get_valid_primitives(
+        es,
+        "customers",
+        selected_primitives=[Hour, Count, Not],
+        ignore_columns={"customers": ["loves_ice_cream"]},
+    )
+    assert set(agg_prims) == set([Count])
+    assert set(trans_prims) == set([Hour])
+
+    agg_prims, trans_prims = get_valid_primitives(
+        es,
+        "products",
+        selected_primitives=[Hour, Count],
+        ignore_dataframes=["log"],
+    )
+    assert set(agg_prims) == set()
+    assert set(trans_prims) == set()

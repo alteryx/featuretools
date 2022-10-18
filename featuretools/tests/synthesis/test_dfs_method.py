@@ -35,10 +35,10 @@ def datetime_es():
                     "2012-2-29 06:00",
                     "2012-3-1 08:00",
                     "2014-4-1 10:00",
-                ]
+                ],
             ),
             "fraud": [True, False, False, False, True],
-        }
+        },
     )
 
     datetime_es = EntitySet(id="fraud_data")
@@ -50,7 +50,9 @@ def datetime_es():
     )
 
     datetime_es = datetime_es.add_dataframe(
-        dataframe_name="cards", dataframe=cards_df, index="id"
+        dataframe_name="cards",
+        dataframe=cards_df,
+        index="id",
     )
 
     datetime_es = datetime_es.add_relationship("cards", "id", "transactions", "card_id")
@@ -68,7 +70,7 @@ def test_dfs_empty_features():
             "away_team_id": [1, 0, 2, 1, 0],
             "home_team_score": [3, 0, 1, 0, 4],
             "away_team_score": [2, 1, 2, 0, 0],
-        }
+        },
     )
     dataframes = {
         "teams": (teams, "id", None, {"name": "natural_language"}),
@@ -77,11 +79,16 @@ def test_dfs_empty_features():
     relationships = [("teams", "id", "games", "home_team_id")]
     with patch.object(DeepFeatureSynthesis, "build_features", return_value=[]):
         features = dfs(
-            dataframes, relationships, target_dataframe_name="teams", features_only=True
+            dataframes,
+            relationships,
+            target_dataframe_name="teams",
+            features_only=True,
         )
         assert features == []
     with pytest.raises(AssertionError, match=error_text), patch.object(
-        DeepFeatureSynthesis, "build_features", return_value=[]
+        DeepFeatureSynthesis,
+        "build_features",
+        return_value=[],
     ):
         dfs(
             dataframes,
@@ -100,7 +107,7 @@ def test_passing_strings_to_logical_types_dfs():
             "away_team_id": [1, 0, 2, 1, 0],
             "home_team_score": [3, 0, 1, 0, 4],
             "away_team_score": [2, 1, 2, 0, 0],
-        }
+        },
     )
     dataframes = {
         "teams": (teams, "id", None, {"name": "natural_language"}),
@@ -109,7 +116,10 @@ def test_passing_strings_to_logical_types_dfs():
     relationships = [("teams", "id", "games", "home_team_id")]
 
     features = dfs(
-        dataframes, relationships, target_dataframe_name="teams", features_only=True
+        dataframes,
+        relationships,
+        target_dataframe_name="teams",
+        features_only=True,
     )
 
     name_logical_type = features[0].dataframe["name"].ww.logical_type
@@ -216,7 +226,7 @@ def test_ignores_instance_ids_if_cutoff_df(dataframes, relationships):
 def test_approximate_features(pd_dataframes, relationships):
     # TODO: Update to use Dask dataframes when issue #985 is closed
     cutoff_times_df = pd.DataFrame(
-        {"instance_id": [1, 3, 1, 5, 3, 6], "time": [11, 16, 16, 26, 17, 22]}
+        {"instance_id": [1, 3, 1, 5, 3, 6], "time": [11, 16, 16, 26, 17, 22]},
     )
     # force column to BooleanNullable
     pd_dataframes["transactions"] += ({"fraud": "BooleanNullable"},)
@@ -364,8 +374,48 @@ def test_accepts_pd_dateoffset_training_window(datetime_es):
     assert (feature_matrix.index == feature_matrix_2.index).all()
 
 
+def test_accepts_datetime_and_string_offset(datetime_es):
+    feature_matrix, _ = dfs(
+        entityset=datetime_es,
+        target_dataframe_name="transactions",
+        cutoff_time=pd.to_datetime("2012-3-31 04:00"),
+        training_window=pd.DateOffset(months=2),
+    )
+
+    feature_matrix_2, _ = dfs(
+        entityset=datetime_es,
+        target_dataframe_name="transactions",
+        cutoff_time="2012-3-31 04:00",
+        training_window=pd.offsets.BDay(44),
+    )
+
+    assert (feature_matrix.index == [2, 3, 4]).all()
+    assert (feature_matrix.index == feature_matrix_2.index).all()
+
+
+def test_handles_pandas_parser_error(datetime_es):
+    with pytest.raises(ValueError):
+        _, _ = dfs(
+            entityset=datetime_es,
+            target_dataframe_name="transactions",
+            cutoff_time="2--012-----3-----31 04:00",
+            training_window=pd.DateOffset(months=2),
+        )
+
+
+def test_handles_pandas_overflow_error(datetime_es):
+    # pandas 1.5.0 raises ValueError, older versions raised OverflowError
+    with pytest.raises((OverflowError, ValueError)):
+        _, _ = dfs(
+            entityset=datetime_es,
+            target_dataframe_name="transactions",
+            cutoff_time="200000000000000000000000000000000000000000000000000000000000000000-3-31 04:00",
+            training_window=pd.DateOffset(months=2),
+        )
+
+
 def test_warns_with_unused_primitives(es):
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         pytest.skip("Spark throws extra warnings")
     trans_primitives = ["num_characters", "num_words", "add_numeric"]
     agg_primitives = [Max, "min"]
@@ -440,7 +490,7 @@ def test_does_not_warn_with_stacking_feature(pd_es):
             agg_primitives=["percent_true"],
             trans_primitives=[GreaterThanScalar(5)],
             primitive_options={
-                "greater_than_scalar": {"include_dataframes": ["stores"]}
+                "greater_than_scalar": {"include_dataframes": ["stores"]},
             },
             features_only=True,
         )
@@ -449,7 +499,7 @@ def test_does_not_warn_with_stacking_feature(pd_es):
 
 
 def test_warns_with_unused_where_primitives(es):
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         pytest.skip("Spark throws extra warnings")
     warning_text = (
         "Some specified primitives were not used during DFS:\n"

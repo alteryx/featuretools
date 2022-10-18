@@ -1,3 +1,4 @@
+import dask.dataframe as dd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
 
@@ -10,8 +11,10 @@ from featuretools.primitives.base import (
     PrimitiveBase,
     TransformPrimitive,
 )
-from featuretools.primitives.utils import serialize_primitive
+from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.utils.wrangle import _check_time_against_column, _check_timedelta
+
+ps = import_or_none("pyspark.pandas")
 
 _ES_REF = {}
 
@@ -48,6 +51,13 @@ class FeatureBase(object):
         # initialize if not already initialized
         if not isinstance(primitive, PrimitiveBase):
             primitive = primitive()
+
+        # default library is PANDAS
+        if isinstance(dataframe, dd.DataFrame):
+            primitive.series_library = Library.DASK
+        elif is_instance(dataframe, ps, "DataFrame"):
+            primitive.series_library = Library.SPARK
+
         self.primitive = primitive
 
         self.relationship_path = relationship_path
@@ -70,13 +80,12 @@ class FeatureBase(object):
         return FeatureOutputSlice(self, key)
 
     @classmethod
-    def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
-    ):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitive):
         raise NotImplementedError("Must define from_dictionary on FeatureBase subclass")
 
     def rename(self, name):
-        """Rename Feature, returns copy"""
+        """Rename Feature, returns copy. Will reset any custom feature column names
+        to their default value."""
         feature_copy = self.copy()
         feature_copy._name = name
         feature_copy._names = None
@@ -102,6 +111,33 @@ class FeatureBase(object):
                         for i in range(len(self._names))
                     ]
         return self._names
+
+    def set_feature_names(self, names):
+        """Set new values for the feature column names, overriding the default values.
+        Number of names provided much match the number of output columns defined for
+        the feature. Only works for features that have more than one output column. Use
+        ``Feature.rename`` to change the column name for single output features.
+
+        Args:
+            names (list[str]): List of names to use for the output feature columns. Provided
+                names must be unique.
+        """
+        if self.number_output_features == 1:
+            raise ValueError(
+                "The set_feature_names can only be used on features that have more than one output column.",
+            )
+
+        num_new_names = len(names)
+        if self.number_output_features != num_new_names:
+            raise ValueError(
+                "Number of names provided must match the number of output features:"
+                f" {num_new_names} name(s) provided, {self.number_output_features} expected.",
+            )
+
+        if len(set(names)) != num_new_names:
+            raise ValueError("Provided output feature names must be unique.")
+
+        self._names = names
 
     def get_function(self, **kwargs):
         return self.primitive.get_function(**kwargs)
@@ -248,43 +284,57 @@ class FeatureBase(object):
     def __eq__(self, other):
         """Compares to other by equality"""
         return self._handle_binary_comparision(
-            other, primitives.Equal, primitives.EqualScalar
+            other,
+            primitives.Equal,
+            primitives.EqualScalar,
         )
 
     def __ne__(self, other):
         """Compares to other by non-equality"""
         return self._handle_binary_comparision(
-            other, primitives.NotEqual, primitives.NotEqualScalar
+            other,
+            primitives.NotEqual,
+            primitives.NotEqualScalar,
         )
 
     def __gt__(self, other):
         """Compares if greater than other"""
         return self._handle_binary_comparision(
-            other, primitives.GreaterThan, primitives.GreaterThanScalar
+            other,
+            primitives.GreaterThan,
+            primitives.GreaterThanScalar,
         )
 
     def __ge__(self, other):
         """Compares if greater than or equal to other"""
         return self._handle_binary_comparision(
-            other, primitives.GreaterThanEqualTo, primitives.GreaterThanEqualToScalar
+            other,
+            primitives.GreaterThanEqualTo,
+            primitives.GreaterThanEqualToScalar,
         )
 
     def __lt__(self, other):
         """Compares if less than other"""
         return self._handle_binary_comparision(
-            other, primitives.LessThan, primitives.LessThanScalar
+            other,
+            primitives.LessThan,
+            primitives.LessThanScalar,
         )
 
     def __le__(self, other):
         """Compares if less than or equal to other"""
         return self._handle_binary_comparision(
-            other, primitives.LessThanEqualTo, primitives.LessThanEqualToScalar
+            other,
+            primitives.LessThanEqualTo,
+            primitives.LessThanEqualToScalar,
         )
 
     def __add__(self, other):
         """Add other"""
         return self._handle_binary_comparision(
-            other, primitives.AddNumeric, primitives.AddNumericScalar
+            other,
+            primitives.AddNumeric,
+            primitives.AddNumericScalar,
         )
 
     def __radd__(self, other):
@@ -293,7 +343,9 @@ class FeatureBase(object):
     def __sub__(self, other):
         """Subtract other"""
         return self._handle_binary_comparision(
-            other, primitives.SubtractNumeric, primitives.SubtractNumericScalar
+            other,
+            primitives.SubtractNumeric,
+            primitives.SubtractNumericScalar,
         )
 
     def __rsub__(self, other):
@@ -302,7 +354,9 @@ class FeatureBase(object):
     def __div__(self, other):
         """Divide by other"""
         return self._handle_binary_comparision(
-            other, primitives.DivideNumeric, primitives.DivideNumericScalar
+            other,
+            primitives.DivideNumeric,
+            primitives.DivideNumericScalar,
         )
 
     def __truediv__(self, other):
@@ -321,24 +375,29 @@ class FeatureBase(object):
                 [
                     isinstance(f.column_schema.logical_type, (Boolean, BooleanNullable))
                     for f in (self, other)
-                ]
+                ],
             ):
                 return Feature([self, other], primitive=primitives.MultiplyBoolean)
             if (
                 "numeric" in self.column_schema.semantic_tags
                 and isinstance(
-                    other.column_schema.logical_type, (Boolean, BooleanNullable)
+                    other.column_schema.logical_type,
+                    (Boolean, BooleanNullable),
                 )
                 or "numeric" in other.column_schema.semantic_tags
                 and isinstance(
-                    self.column_schema.logical_type, (Boolean, BooleanNullable)
+                    self.column_schema.logical_type,
+                    (Boolean, BooleanNullable),
                 )
             ):
                 return Feature(
-                    [self, other], primitive=primitives.MultiplyNumericBoolean
+                    [self, other],
+                    primitive=primitives.MultiplyNumericBoolean,
                 )
         return self._handle_binary_comparision(
-            other, primitives.MultiplyNumeric, primitives.MultiplyNumericScalar
+            other,
+            primitives.MultiplyNumeric,
+            primitives.MultiplyNumericScalar,
         )
 
     def __rmul__(self, other):
@@ -347,7 +406,9 @@ class FeatureBase(object):
     def __mod__(self, other):
         """Take modulus of other"""
         return self._handle_binary_comparision(
-            other, primitives.ModuloNumeric, primitives.ModuloNumericScalar
+            other,
+            primitives.ModuloNumeric,
+            primitives.ModuloNumericScalar,
         )
 
     def __rmod__(self, other):
@@ -388,7 +449,8 @@ class FeatureBase(object):
 
     def isin(self, list_of_output):
         return Feature(
-            [self], primitive=primitives.IsIn(list_of_outputs=list_of_output)
+            [self],
+            primitive=primitives.IsIn(list_of_outputs=list_of_output),
         )
 
     def is_null(self):
@@ -423,9 +485,7 @@ class IdentityFeature(FeatureBase):
         )
 
     @classmethod
-    def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
-    ):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitive):
         dataframe_name = arguments["dataframe_name"]
         column_name = arguments["column_name"]
         column = entityset[dataframe_name].ww[column_name]
@@ -443,7 +503,7 @@ class IdentityFeature(FeatureBase):
 
     def get_arguments(self):
         return {
-            "name": self._name,
+            "name": self.get_name(),
             "column_name": self.column_name,
             "dataframe_name": self.dataframe_name,
         }
@@ -461,12 +521,18 @@ class DirectFeature(FeatureBase):
     return_type = None
 
     def __init__(
-        self, base_feature, child_dataframe_name, relationship=None, name=None
+        self,
+        base_feature,
+        child_dataframe_name,
+        relationship=None,
+        name=None,
     ):
         base_feature = _validate_base_features(base_feature)[0]
         self.parent_dataframe_name = base_feature.dataframe_name
         relationship = self._handle_relationship(
-            base_feature.entityset, child_dataframe_name, relationship
+            base_feature.entityset,
+            child_dataframe_name,
+            relationship,
         )
         child_dataframe = base_feature.entityset[child_dataframe_name]
         super(DirectFeature, self).__init__(
@@ -490,7 +556,7 @@ class DirectFeature(FeatureBase):
             ), "Base feature must be defined on the relationship parent dataframe"
         else:
             child_relationships = entityset.get_forward_relationships(
-                child_dataframe.ww.name
+                child_dataframe.ww.name,
             )
             possible_relationships = (
                 r
@@ -502,7 +568,7 @@ class DirectFeature(FeatureBase):
             if not relationship:
                 raise RuntimeError(
                     'No relationship from "%s" to "%s" found.'
-                    % (child_dataframe.ww.name, self.parent_dataframe_name)
+                    % (child_dataframe.ww.name, self.parent_dataframe_name),
                 )
 
             # Check for another path.
@@ -516,12 +582,11 @@ class DirectFeature(FeatureBase):
         return relationship
 
     @classmethod
-    def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
-    ):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitive):
         base_feature = dependencies[arguments["base_feature"]]
         relationship = Relationship.from_dictionary(
-            arguments["relationship"], entityset
+            arguments["relationship"],
+            entityset,
         )
         child_dataframe_name = relationship.child_dataframe.ww.name
         return cls(
@@ -543,7 +608,9 @@ class DirectFeature(FeatureBase):
         """Return copy of feature"""
         _is_forward, relationship = self.relationship_path[0]
         return DirectFeature(
-            self.base_features[0], self.dataframe_name, relationship=relationship
+            self.base_features[0],
+            self.dataframe_name,
+            relationship=relationship,
         )
 
     @property
@@ -562,7 +629,7 @@ class DirectFeature(FeatureBase):
     def get_arguments(self):
         _is_forward, relationship = self.relationship_path[0]
         return {
-            "name": self._name,
+            "name": self.get_name(),
             "base_feature": self.base_features[0].unique_name(),
             "relationship": relationship.to_dictionary(),
         }
@@ -599,7 +666,9 @@ class AggregationFeature(FeatureBase):
         self.child_dataframe_name = base_features[0].dataframe_name
         entityset = base_features[0].entityset
         relationship_path, self._path_is_unique = self._handle_relationship_path(
-            entityset, parent_dataframe_name, relationship_path
+            entityset,
+            parent_dataframe_name,
+            relationship_path,
         )
 
         self.parent_dataframe_name = parent_dataframe_name
@@ -607,7 +676,7 @@ class AggregationFeature(FeatureBase):
         if where is not None:
             self.where = _validate_base_features(where)[0]
             msg = "Where feature must be defined on child dataframe {}".format(
-                self.child_dataframe_name
+                self.child_dataframe_name,
             )
             assert self.where.dataframe_name == self.child_dataframe_name, msg
 
@@ -634,7 +703,10 @@ class AggregationFeature(FeatureBase):
         )
 
     def _handle_relationship_path(
-        self, entityset, parent_dataframe_name, relationship_path
+        self,
+        entityset,
+        parent_dataframe_name,
+        relationship_path,
     ):
         parent_dataframe = entityset[parent_dataframe_name]
         child_dataframe = entityset[self.child_dataframe_name]
@@ -656,18 +728,20 @@ class AggregationFeature(FeatureBase):
             ), "Base feature must be defined on the dataframe at the end of relationship_path"
 
             path_is_unique = entityset.has_unique_forward_path(
-                child_dataframe.ww.name, parent_dataframe.ww.name
+                child_dataframe.ww.name,
+                parent_dataframe.ww.name,
             )
         else:
             paths = entityset.find_backward_paths(
-                parent_dataframe.ww.name, child_dataframe.ww.name
+                parent_dataframe.ww.name,
+                child_dataframe.ww.name,
             )
             first_path = next(paths, None)
 
             if not first_path:
                 raise RuntimeError(
                     'No backward path from "%s" to "%s" found.'
-                    % (parent_dataframe.ww.name, child_dataframe.ww.name)
+                    % (parent_dataframe.ww.name, child_dataframe.ww.name),
                 )
             # Check for another path.
             elif next(paths, None):
@@ -683,9 +757,7 @@ class AggregationFeature(FeatureBase):
         return relationship_path, path_is_unique
 
     @classmethod
-    def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
-    ):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitive):
         base_features = [dependencies[name] for name in arguments["base_features"]]
         relationship_path = [
             Relationship.from_dictionary(r, entityset)
@@ -694,19 +766,15 @@ class AggregationFeature(FeatureBase):
         parent_dataframe_name = relationship_path[0].parent_dataframe.ww.name
         relationship_path = RelationshipPath([(False, r) for r in relationship_path])
 
-        primitive = primitives_deserializer.deserialize_primitive(
-            arguments["primitive"]
-        )
-
         use_previous_data = arguments["use_previous"]
         use_previous = use_previous_data and Timedelta.from_dictionary(
-            use_previous_data
+            use_previous_data,
         )
 
         where_name = arguments["where"]
         where = where_name and dependencies[where_name]
 
-        return cls(
+        feat = cls(
             base_features=base_features,
             parent_dataframe_name=parent_dataframe_name,
             primitive=primitive,
@@ -715,6 +783,8 @@ class AggregationFeature(FeatureBase):
             where=where,
             name=arguments["name"],
         )
+        feat._names = arguments.get("feature_names")
+        return feat
 
     def copy(self):
         return AggregationFeature(
@@ -759,14 +829,17 @@ class AggregationFeature(FeatureBase):
         )
 
     def get_arguments(self):
-        return {
-            "name": self._name,
+        arg_dict = {
+            "name": self.get_name(),
             "base_features": [feat.unique_name() for feat in self.base_features],
             "relationship_path": [r.to_dictionary() for _, r in self.relationship_path],
-            "primitive": serialize_primitive(self.primitive),
+            "primitive": self.primitive,
             "where": self.where and self.where.unique_name(),
             "use_previous": self.use_previous and self.use_previous.get_arguments(),
         }
+        if self.number_output_features > 1:
+            arg_dict["feature_names"] = self.get_feature_names()
+        return arg_dict
 
     def relationship_path_name(self):
         if self._path_is_unique:
@@ -792,36 +865,38 @@ class TransformFeature(FeatureBase):
         )
 
     @classmethod
-    def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
-    ):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitive):
         base_features = [dependencies[name] for name in arguments["base_features"]]
-        primitive = primitives_deserializer.deserialize_primitive(
-            arguments["primitive"]
+        feat = cls(
+            base_features=base_features,
+            primitive=primitive,
+            name=arguments["name"],
         )
-        return cls(
-            base_features=base_features, primitive=primitive, name=arguments["name"]
-        )
+        feat._names = arguments.get("feature_names")
+        return feat
 
     def copy(self):
         return TransformFeature(self.base_features, self.primitive)
 
     def generate_name(self):
         return self.primitive.generate_name(
-            base_feature_names=[bf.get_name() for bf in self.base_features]
+            base_feature_names=[bf.get_name() for bf in self.base_features],
         )
 
     def generate_names(self):
         return self.primitive.generate_names(
-            base_feature_names=[bf.get_name() for bf in self.base_features]
+            base_feature_names=[bf.get_name() for bf in self.base_features],
         )
 
     def get_arguments(self):
-        return {
-            "name": self._name,
+        arg_dict = {
+            "name": self.get_name(),
             "base_features": [feat.unique_name() for feat in self.base_features],
-            "primitive": serialize_primitive(self.primitive),
+            "primitive": self.primitive,
         }
+        if self.number_output_features > 1:
+            arg_dict["feature_names"] = self.get_feature_names()
+        return arg_dict
 
 
 class GroupByTransformFeature(TransformFeature):
@@ -837,30 +912,31 @@ class GroupByTransformFeature(TransformFeature):
         base_features.append(groupby)
 
         super(GroupByTransformFeature, self).__init__(
-            base_features=base_features, primitive=primitive, name=name
+            base_features=base_features,
+            primitive=primitive,
+            name=name,
         )
 
     @classmethod
-    def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
-    ):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitive):
         base_features = [dependencies[name] for name in arguments["base_features"]]
-        primitive = primitives_deserializer.deserialize_primitive(
-            arguments["primitive"]
-        )
         groupby = dependencies[arguments["groupby"]]
-        return cls(
+        feat = cls(
             base_features=base_features,
             primitive=primitive,
             groupby=groupby,
             name=arguments["name"],
         )
+        feat._names = arguments.get("feature_names")
+        return feat
 
     def copy(self):
         # the groupby feature is appended to base_features in the __init__
         # so here we separate them again
         return GroupByTransformFeature(
-            self.base_features[:-1], self.primitive, self.groupby
+            self.base_features[:-1],
+            self.primitive,
+            self.groupby,
         )
 
     def generate_name(self):
@@ -883,12 +959,15 @@ class GroupByTransformFeature(TransformFeature):
             for feat in self.base_features
             if feat.unique_name() != self.groupby.unique_name()
         ]
-        return {
-            "name": self._name,
+        arg_dict = {
+            "name": self.get_name(),
             "base_features": feature_names,
-            "primitive": serialize_primitive(self.primitive),
+            "primitive": self.primitive,
             "groupby": self.groupby.unique_name(),
         }
+        if self.number_output_features > 1:
+            arg_dict["feature_names"] = self.get_feature_names()
+        return arg_dict
 
 
 class Feature(object):
@@ -913,7 +992,8 @@ class Feature(object):
             return DirectFeature(base, dataframe_name)
         elif primitive is not None and parent_dataframe_name is not None:
             assert isinstance(primitive, AggregationPrimitive) or issubclass(
-                primitive, AggregationPrimitive
+                primitive,
+                AggregationPrimitive,
             )
             return AggregationFeature(
                 base,
@@ -924,11 +1004,14 @@ class Feature(object):
             )
         elif primitive is not None:
             assert isinstance(primitive, TransformPrimitive) or issubclass(
-                primitive, TransformPrimitive
+                primitive,
+                TransformPrimitive,
             )
             if groupby is not None:
                 return GroupByTransformFeature(
-                    base, primitive=primitive, groupby=groupby
+                    base,
+                    primitive=primitive,
+                    groupby=groupby,
                 )
             return TransformFeature(base, primitive=primitive)
 
@@ -947,7 +1030,7 @@ class FeatureOutputSlice(FeatureBase):
         msg = "cannot access slice from single output feature"
         assert self.num_output_parent > 1, msg
         msg = "cannot access column that is not between 0 and " + str(
-            self.num_output_parent - 1
+            self.num_output_parent - 1,
         )
         assert n < self.num_output_parent, msg
 
@@ -975,15 +1058,13 @@ class FeatureOutputSlice(FeatureBase):
 
     def get_arguments(self):
         return {
-            "name": self._name,
+            "name": self.get_name(),
             "base_feature": self.base_feature.unique_name(),
             "n": self.n,
         }
 
     @classmethod
-    def from_dictionary(
-        cls, arguments, entityset, dependencies, primitives_deserializer
-    ):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitive):
         base_feature_name = arguments["base_feature"]
         base_feature = dependencies[base_feature_name]
         n = arguments["n"]

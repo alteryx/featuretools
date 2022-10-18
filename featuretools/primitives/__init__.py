@@ -1,10 +1,10 @@
 import inspect
 import logging
-
-import pkg_resources
 import traceback
 
-from .api import *  # noqa: F403
+import pkg_resources
+
+from featuretools.primitives.api import *  # noqa: F403
 
 
 def _load_primitives():
@@ -27,6 +27,11 @@ def _load_primitives():
             [options.entry_points]
             featuretools_primitives =
                 other_library = other_library
+
+        - pyproject.toml:
+
+            [project.entry-points."featuretools_primitives"]
+            other_library = "other_library"
 
     where `other_library` is a top-level module containing all the primitives.
     """

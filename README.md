@@ -23,7 +23,7 @@
     </a>
     <a href="https://stackoverflow.com/questions/tagged/featuretools" target="_blank">
         <img src="http://img.shields.io/badge/questions-on_stackoverflow-blue.svg" alt="StackOverflow" />
-    </a> 
+    </a>
     <a href="https://pepy.tech/project/featuretools" target="_blank">
         <img src="https://pepy.tech/badge/featuretools/month" alt="PyPI Downloads" />
     </a>
@@ -56,13 +56,13 @@ python -m pip install "featuretools[complete]"
 **Update checker** - Receive automatic notifications of new Featuretools releases
 
 ```
-python -m pip install "featuretools[update_checker]"
+python -m pip install "featuretools[updater]"
 ```
 
 **NLP Primitives** - Use Natural Language Processing Primitives:
 
 ```
-python -m pip install "featuretools[nlp_primitives]"
+python -m pip install "featuretools[nlp]"
 ```
 
 **TSFresh Primitives** - Use 60+ primitives from [tsfresh](https://tsfresh.readthedocs.io/en/latest/) within Featuretools
@@ -71,6 +71,11 @@ python -m pip install "featuretools[nlp_primitives]"
 python -m pip install "featuretools[tsfresh]"
 ```
 
+**SQL** - Automatic EntitySet generation from relational data stored in a SQL database: 
+
+```
+python -m pip install "featuretools[sql]"
+```
 ## Example
 Below is an example of using Deep Feature Synthesis (DFS) to perform automated feature engineering. In this example, we apply DFS to a multi-table dataset consisting of timestamped customer transactions.
 

@@ -127,11 +127,24 @@ Datetime Transform Primitives
     Second
     Minute
     Weekday
+    IsLeapYear
+    IsLunchTime
+    IsMonthEnd
+    IsMonthStart
+    IsQuarterEnd
+    IsQuarterStart
     IsWeekend
+    IsWorkingHours
+    IsYearEnd
+    IsYearStart
     Hour
     Day
+    DayOfYear
+    DaysInMonth
     Week
     Month
+    PartOfDay
+    Quarter
     Year
 
 Rolling Transform Primitives
@@ -144,6 +157,7 @@ Rolling Transform Primitives
     RollingMean
     RollingMin
     RollingSTD
+    RollingTrend
 
 NaturalLanguage Transform Primitives
 ************************************
@@ -173,6 +187,7 @@ Cumulative Transform Primitives
     :toctree: generated/
 
     Diff
+    DiffDatetime
     TimeSincePrevious
     CumCount
     CumSum
@@ -189,19 +204,35 @@ Natural Language Processing Primitives
 --------------------------------------
 Natural Language Processing primitives create features for textual data. For more information on how to use and install these primitives, see `here <https://github.com/FeatureLabs/nlp_primitives>`__.
 
+Primitives in standard install
+******************************
 .. autosummary::
     :toctree: generated/
 
+    CountString
     DiversityScore
     LSA
     MeanCharactersPerWord
+    MedianWordLength
+    NumUniqueSeparators
+    NumberOfCommonWords
     PartOfSpeechCount
     PolarityScore
     PunctuationCount
     StopwordCount
     TitleWordCount
-    UniversalSentenceEncoder
+    TotalWordLength
     UpperCaseCount
+    WhitespaceCount
+
+Primitives that require installing tensorflow
+*********************************************
+.. currentmodule:: nlp_primitives.tensorflow
+.. autosummary::
+    :toctree: generated/
+
+    Elmo
+    UniversalSentenceEncoder
 
 
 Feature methods
@@ -265,7 +296,7 @@ Feature Matrix utils
     :toctree: generated/
 
     replace_inf_values
-    
+
 
 Saving and Loading Features
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -358,3 +389,12 @@ Data Type Util Methods
 
     list_logical_types
     list_semantic_tags
+
+Primitive Util Methods
+----------------------
+.. currentmodule:: featuretools
+.. autosummary::
+    :toctree: generated/
+
+    list_primitives
+    summarize_primitives

@@ -20,8 +20,8 @@ from featuretools.utils.gen_utils import Library
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_serialization_data_entityset_schema_{}_2022_4_26.tar".format(
-    SCHEMA_VERSION
+TEST_FILE = "test_serialization_data_entityset_schema_{}_2022_09_02.tar".format(
+    SCHEMA_VERSION,
 )
 S3_URL = "s3://featuretools-static/" + TEST_FILE
 URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
@@ -73,7 +73,8 @@ def test_with_custom_ww_logical_type():
     description = serialize.entityset_to_description(es)
     _es = deserialize.description_to_entityset(description)
     assert isinstance(
-        _es["custom_type"].ww.logical_types["custom_logical_type"], CustomLogicalType
+        _es["custom_type"].ww.logical_types["custom_logical_type"],
+        CustomLogicalType,
     )
     assert es.__eq__(_es, deep=True)
 
@@ -113,13 +114,14 @@ def test_to_csv_interesting_values(pd_es, tmpdir):
 
 def test_to_csv_manual_interesting_values(es, tmpdir):
     es.add_interesting_values(
-        dataframe_name="log", values={"product_id": ["coke_zero"]}
+        dataframe_name="log",
+        values={"product_id": ["coke_zero"]},
     )
     es.to_csv(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
     assert new_es["log"].ww["product_id"].ww.metadata["interesting_values"] == [
-        "coke_zero"
+        "coke_zero",
     ]
 
 
@@ -155,13 +157,14 @@ def test_to_pickle_interesting_values(pd_es, tmpdir):
 # Dask/Spark do not support to_pickle
 def test_to_pickle_manual_interesting_values(pd_es, tmpdir):
     pd_es.add_interesting_values(
-        dataframe_name="log", values={"product_id": ["coke_zero"]}
+        dataframe_name="log",
+        values={"product_id": ["coke_zero"]},
     )
     pd_es.to_pickle(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert pd_es.__eq__(new_es, deep=True)
     assert new_es["log"].ww["product_id"].ww.metadata["interesting_values"] == [
-        "coke_zero"
+        "coke_zero",
     ]
 
 
@@ -177,13 +180,14 @@ def test_to_parquet(es, tmpdir):
 
 def test_to_parquet_manual_interesting_values(es, tmpdir):
     es.add_interesting_values(
-        dataframe_name="log", values={"product_id": ["coke_zero"]}
+        dataframe_name="log",
+        values={"product_id": ["coke_zero"]},
     )
     es.to_parquet(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
     assert new_es["log"].ww["product_id"].ww.metadata["interesting_values"] == [
-        "coke_zero"
+        "coke_zero",
     ]
 
 
@@ -223,8 +227,13 @@ def s3_client():
 
 
 @pytest.fixture
-def s3_bucket(s3_client):
-    s3_client.create_bucket(Bucket=BUCKET_NAME, ACL="public-read-write")
+def s3_bucket(s3_client, region="us-east-2"):
+    location = {"LocationConstraint": region}
+    s3_client.create_bucket(
+        Bucket=BUCKET_NAME,
+        ACL="public-read-write",
+        CreateBucketConfiguration=location,
+    )
     s3_bucket = s3_client.Bucket(BUCKET_NAME)
     yield s3_bucket
 
@@ -237,9 +246,9 @@ def make_public(s3_client, s3_bucket):
 # TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Spark
 @pytest.mark.parametrize("profile_name", [None, False])
 def test_serialize_s3_csv(es, s3_client, s3_bucket, profile_name):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail(
-            "tmp file disappears after deserialize step, cannot check equality with Dask"
+            "tmp file disappears after deserialize step, cannot check equality with Dask",
         )
     es.to_csv(TEST_S3_URL, encoding="utf-8", engine="python", profile_name=profile_name)
     make_public(s3_client, s3_bucket)
@@ -259,9 +268,9 @@ def test_serialize_s3_pickle(pd_es, s3_client, s3_bucket, profile_name):
 # TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Spark
 @pytest.mark.parametrize("profile_name", [None, False])
 def test_serialize_s3_parquet(es, s3_client, s3_bucket, profile_name):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail(
-            "tmp file disappears after deserialize step, cannot check equality with Dask or Spark"
+            "tmp file disappears after deserialize step, cannot check equality with Dask or Spark",
         )
     es.to_parquet(TEST_S3_URL, profile_name=profile_name)
     make_public(s3_client, s3_bucket)
@@ -308,9 +317,9 @@ def setup_test_profile(monkeypatch, tmpdir):
 
 
 def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail(
-            "tmp file disappears after deserialize step, cannot check equality with Dask"
+            "tmp file disappears after deserialize step, cannot check equality with Dask",
         )
     es.to_csv(TEST_S3_URL, encoding="utf-8", engine="python", profile_name="test")
     make_public(s3_client, s3_bucket)
@@ -329,7 +338,7 @@ def test_serialize_subdirs_not_removed(es, tmpdir):
     test_dir = write_path.mkdir("test_dir")
     with open(str(write_path.join("data_description.json")), "w") as f:
         json.dump("__SAMPLE_TEXT__", f)
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         compression = "none"
     else:
         compression = None
@@ -412,7 +421,7 @@ def test_operations_invalidate_metadata(es):
     assert new_es._data_description is not None
 
     # automatically adding interesting values not supported in Dask or Spark
-    if new_es.dataframe_type == Library.PANDAS.value:
+    if new_es.dataframe_type == Library.PANDAS:
         new_es.add_interesting_values()
         assert new_es._data_description is None
         assert new_es.metadata is not None
@@ -480,6 +489,7 @@ def _check_schema_version(version, es, warning_text, caplog, warning_type=None):
         "id": es.id,
         "dataframes": dataframes,
         "relationships": relationships,
+        "data_type": es.dataframe_type,
     }
 
     if warning_type == "log" and warning_text:

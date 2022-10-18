@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import holidays
 import numpy as np
 import pandas as pd
 import pytest
@@ -17,7 +18,7 @@ def test_distanceholiday():
             datetime(2012, 5, 31),
             datetime(2017, 7, 31),
             datetime(2020, 12, 31),
-        ]
+        ],
     )
 
     expected = [0, -151, 154, 1]
@@ -34,9 +35,10 @@ def test_holiday_out_of_range():
             datetime(2012, 5, 31),
             datetime(2017, 7, 31),
             datetime(2020, 12, 31),
-        ]
+        ],
     )
-    answer = pd.Series([np.nan, 209, 148, np.nan])
+    days_to_boxing_day = -157 if float(holidays.__version__) >= 0.15 else 209
+    answer = pd.Series([np.nan, days_to_boxing_day, 148, np.nan])
     pd.testing.assert_series_equal(date_to_holiday(array), answer, check_names=False)
 
 
@@ -60,7 +62,7 @@ def test_nat():
             "NaT",
             "2012-05-31",
             "NaT",
-        ]
+        ],
     ).astype("datetime64")
     answer = [0, np.nan, -151, np.nan]
     given_answer = date_to_holiday(case).astype("float")
@@ -75,7 +77,7 @@ def test_valid_country():
             "2012-05-31",
             "2017-07-31",
             "2020-12-31",
-        ]
+        ],
     ).astype("datetime64")
     answer = [143, -10, -70, 144]
     given_answer = distance_to_holiday(case).astype("float")
@@ -86,16 +88,19 @@ def test_with_timezone_aware_datetimes():
     df = pd.DataFrame(
         {
             "non_timezone_aware_with_time": pd.date_range(
-                "2018-07-03 09:00", periods=3
+                "2018-07-03 09:00",
+                periods=3,
             ),
             "non_timezone_aware_no_time": pd.date_range("2018-07-03", periods=3),
             "timezone_aware_with_time": pd.date_range(
-                "2018-07-03 09:00", periods=3
+                "2018-07-03 09:00",
+                periods=3,
             ).tz_localize(tz="US/Eastern"),
             "timezone_aware_no_time": pd.date_range(
-                "2018-07-03", periods=3
+                "2018-07-03",
+                periods=3,
             ).tz_localize(tz="US/Eastern"),
-        }
+        },
     )
 
     distance_to_holiday = DistanceToHoliday("Independence Day", country="US")

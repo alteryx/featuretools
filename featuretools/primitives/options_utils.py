@@ -37,7 +37,7 @@ def dict_to_list_column_check(option, es):
                     column for column in columns if column not in es[dataframe]
                 ]:
                     warnings.warn(
-                        "Column '%s' not in dataframe '%s'" % (invalid_col, dataframe)
+                        "Column '%s' not in dataframe '%s'" % (invalid_col, dataframe),
                     )
         return True
 
@@ -54,7 +54,11 @@ def list_dataframe_check(option, es):
 
 
 def generate_all_primitive_options(
-    all_primitives, primitive_options, ignore_dataframes, ignore_columns, es
+    all_primitives,
+    primitive_options,
+    ignore_dataframes,
+    ignore_columns,
+    es,
 ):
     dataframe_dict = {
         dataframe.ww.name: [col for col in dataframe.columns]
@@ -75,19 +79,20 @@ def generate_all_primitive_options(
             warnings.warn(msg)
         if primitive in primitive_options or primitive.name in primitive_options:
             options = primitive_options.get(
-                primitive, primitive_options.get(primitive.name)
+                primitive,
+                primitive_options.get(primitive.name),
             )
             # Reconcile global options with individually-specified options
             included_dataframes = set().union(
                 *[
                     option.get("include_dataframes", set()).union(
-                        option.get("include_columns", {}).keys()
+                        option.get("include_columns", {}).keys(),
                     )
                     for option in options
                 ]
             )
             global_ignore_dataframes = global_ignore_dataframes.difference(
-                included_dataframes
+                included_dataframes,
             )
             for option in options:
                 # don't globally ignore a column if it's included for a primitive
@@ -97,7 +102,7 @@ def generate_all_primitive_options(
                             dataframe
                         ].difference(include_cols)
                 option["ignore_dataframes"] = option["ignore_dataframes"].union(
-                    ignore_dataframes.difference(included_dataframes)
+                    ignore_dataframes.difference(included_dataframes),
                 )
             for dataframe, ignore_cols in ignore_columns.items():
                 # if already ignoring columns for this dataframe, add globals
@@ -118,7 +123,7 @@ def generate_all_primitive_options(
                 {
                     "ignore_dataframes": ignore_dataframes,
                     "ignore_columns": ignore_columns,
-                }
+                },
             ]
     return primitive_options, global_ignore_dataframes, global_ignore_columns
 
@@ -134,7 +139,7 @@ def _init_primitive_options(primitive_options, es):
             for primitive_key in primitive_keys:
                 if isinstance(primitive_key, str):
                     primitive = primitives.get_aggregation_primitives().get(
-                        primitive_key
+                        primitive_key,
                     ) or primitives.get_transform_primitives().get(primitive_key)
                     if not primitive:
                         msg = "Unknown primitive with name '{}'".format(primitive_key)
@@ -175,12 +180,12 @@ def _init_option_dict(key, option_dict, es):
         if option_key not in primitive_options:
             raise KeyError(
                 "Unrecognized primitive option '%s' for %s"
-                % (option_key, ",".join(key))
+                % (option_key, ",".join(key)),
             )
         if not primitive_options[option_key](option, es):
             raise TypeError(
                 "Incorrect type formatting for '%s' for %s"
-                % (option_key, ",".join(key))
+                % (option_key, ",".join(key)),
             )
         if isinstance(option, list):
             initialized_option_dict[option_key] = set(option)
@@ -198,7 +203,7 @@ def _init_option_dict(key, option_dict, es):
 
 def column_filter(f, options, groupby=False):
     if groupby and not f.column_schema.semantic_tags.intersection(
-        {"category", "foreign_key"}
+        {"category", "foreign_key"},
     ):
         return False
     include_cols = "include_groupby_columns" if groupby else "include_columns"
@@ -267,7 +272,9 @@ def ignore_dataframe_for_primitive(options, dataframe, groupby=False):
 
 def filter_groupby_matches_by_options(groupby_matches, options):
     return filter_matches_by_options(
-        [(groupby_match,) for groupby_match in groupby_matches], options, groupby=True
+        [(groupby_match,) for groupby_match in groupby_matches],
+        options,
+        groupby=True,
     )
 
 
@@ -277,7 +284,10 @@ def filter_matches_by_options(matches, options, groupby=False, commutative=False
 
         def is_valid_match(match):
             if all(
-                [column_filter(m, option, groupby) for m, option in zip(match, options)]
+                [
+                    column_filter(m, option, groupby)
+                    for m, option in zip(match, options)
+                ],
             ):
                 return True
             else:
@@ -300,7 +310,8 @@ def filter_matches_by_options(matches, options, groupby=False, commutative=False
                 if is_valid_match(order):
                     valid_matches.add(order)
                     break
+
     return sorted(
-        list(valid_matches),
+        valid_matches,
         key=lambda features: ([feature.unique_name() for feature in features]),
     )

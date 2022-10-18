@@ -1,6 +1,8 @@
 import logging
 import os
+import typing
 import warnings
+from datetime import datetime
 from functools import wraps
 
 import dask.dataframe as dd
@@ -22,12 +24,13 @@ def bin_cutoff_times(cutoff_time, bin_size):
     binned_cutoff_time = cutoff_time.ww.copy()
     if type(bin_size) == int:
         binned_cutoff_time["time"] = binned_cutoff_time["time"].apply(
-            lambda x: x / bin_size * bin_size
+            lambda x: x / bin_size * bin_size,
         )
     else:
         bin_size = _check_timedelta(bin_size)
         binned_cutoff_time["time"] = datetime_round(
-            binned_cutoff_time["time"], bin_size
+            binned_cutoff_time["time"],
+            bin_size,
         )
     return binned_cutoff_time
 
@@ -199,7 +202,7 @@ def create_client_and_cluster(n_jobs, dask_kwargs, entityset_size):
                 " size of the EntitySet. If errors occur that do"
                 " not occur with n_jobs equals 1, this may be the "
                 "cause.  See https://featuretools.alteryx.com/en/stable/guides/performance.html#parallel-feature-computation"
-                " for more information."
+                " for more information.",
             )
             warned_of_memory = True
 
@@ -215,7 +218,10 @@ def get_client_cluster():
     return Client, LocalCluster
 
 
-def _validate_cutoff_time(cutoff_time, target_dataframe):
+def _validate_cutoff_time(
+    cutoff_time: typing.Union[dd.DataFrame, pd.DataFrame, str, datetime],
+    target_dataframe,
+):
     """
     Verify that the cutoff time is a single value or a pandas dataframe with the proper columns
     containing no duplicate rows
@@ -235,11 +241,12 @@ def _validate_cutoff_time(cutoff_time, target_dataframe):
             if target_dataframe.ww.index not in cutoff_time.columns:
                 raise AttributeError(
                     "Cutoff time DataFrame must contain a column with either the same name"
-                    ' as the target dataframe index or a column named "instance_id"'
+                    ' as the target dataframe index or a column named "instance_id"',
                 )
             # rename to instance_id
             cutoff_time.rename(
-                columns={target_dataframe.ww.index: "instance_id"}, inplace=True
+                columns={target_dataframe.ww.index: "instance_id"},
+                inplace=True,
             )
 
         if "time" not in cutoff_time.columns:
@@ -249,11 +256,12 @@ def _validate_cutoff_time(cutoff_time, target_dataframe):
             ):
                 raise AttributeError(
                     "Cutoff time DataFrame must contain a column with either the same name"
-                    ' as the target dataframe time_index or a column named "time"'
+                    ' as the target dataframe time_index or a column named "time"',
                 )
             # rename to time
             cutoff_time.rename(
-                columns={target_dataframe.ww.time_index: "time"}, inplace=True
+                columns={target_dataframe.ww.time_index: "time"},
+                inplace=True,
             )
 
         # Make sure user supplies only one valid name for instance id and time columns
@@ -264,7 +272,7 @@ def _validate_cutoff_time(cutoff_time, target_dataframe):
         ):
             raise AttributeError(
                 'Cutoff time DataFrame cannot contain both a column named "instance_id" and a column'
-                " with the same name as the target dataframe index"
+                " with the same name as the target dataframe index",
             )
         if (
             "time" in cutoff_time.columns
@@ -273,12 +281,19 @@ def _validate_cutoff_time(cutoff_time, target_dataframe):
         ):
             raise AttributeError(
                 'Cutoff time DataFrame cannot contain both a column named "time" and a column'
-                " with the same name as the target dataframe time index"
+                " with the same name as the target dataframe time index",
             )
 
         assert (
             cutoff_time[["instance_id", "time"]].duplicated().sum() == 0
         ), "Duplicated rows in cutoff time dataframe."
+    if isinstance(cutoff_time, str):
+        try:
+            cutoff_time = pd.to_datetime(cutoff_time)
+        except ValueError as e:
+            raise ValueError(f"While parsing cutoff_time: {str(e)}")
+        except OverflowError as e:
+            raise OverflowError(f"While parsing cutoff_time: {str(e)}")
     else:
         if isinstance(cutoff_time, list):
             raise TypeError("cutoff_time must be a single value or DataFrame")
@@ -303,12 +318,12 @@ def _check_cutoff_time_type(cutoff_time, es_time_type):
 
     if es_time_type == "numeric" and not is_numeric:
         raise TypeError(
-            "cutoff_time times must be numeric: try casting " "via pd.to_numeric()"
+            "cutoff_time times must be numeric: try casting " "via pd.to_numeric()",
         )
     if es_time_type == Datetime and not is_datetime:
         raise TypeError(
             "cutoff_time times must be datetime type: try casting "
-            "via pd.to_datetime()"
+            "via pd.to_datetime()",
         )
 
 
@@ -329,13 +344,17 @@ def replace_inf_values(feature_matrix, replacement_value=np.nan, columns=None):
         feature_matrix = feature_matrix.replace([np.inf, -np.inf], replacement_value)
     else:
         feature_matrix[columns] = feature_matrix[columns].replace(
-            [np.inf, -np.inf], replacement_value
+            [np.inf, -np.inf],
+            replacement_value,
         )
     return feature_matrix
 
 
 def get_ww_types_from_features(
-    features, entityset, pass_columns=None, cutoff_time=None
+    features,
+    entityset,
+    pass_columns=None,
+    cutoff_time=None,
 ):
     """Given a list of features and entityset (and optionally a list of pass
     through columns and the cutoff time dataframe), returns the logical types,
@@ -358,10 +377,10 @@ def get_ww_types_from_features(
 
             if logical_types[name] is None and "numeric" in semantic_tags[name]:
                 logical_types[name] = Double
-        if all([f.primitive is None for f in feature.get_dependencies(deep=True)]):
-            origins[name] = "base"
-        else:
-            origins[name] = "engineered"
+            if all([f.primitive is None for f in feature.get_dependencies(deep=True)]):
+                origins[name] = "base"
+            else:
+                origins[name] = "engineered"
 
     if pass_columns:
         cutoff_schema = cutoff_time.ww.schema
@@ -370,7 +389,7 @@ def get_ww_types_from_features(
             semantic_tags[column] = cutoff_schema.semantic_tags[column]
             origins[column] = "base"
 
-    if entityset.dataframe_type in (Library.DASK.value, Library.SPARK.value):
+    if entityset.dataframe_type in (Library.DASK, Library.SPARK):
         target_dataframe_name = features[0].dataframe_name
         table_schema = entityset[target_dataframe_name].ww.schema
         index_col = table_schema.index

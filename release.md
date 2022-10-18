@@ -58,10 +58,11 @@ If you'd like to create a development release, which won't be deployed to pypi a
 
 #### Create Release PR
 
-A [release pr](https://github.com/alteryx/featuretools/pull/856) should have the version number as the title and the release notes for that release as the PR body text. The contributors list is not necessary. The special sphinx docs syntax (:pr:\`547\`) needs to be changed to github link syntax (#547).
+A [release pr](https://github.com/alteryx/featuretools/pull/856) should have **the version number as the title** and the release notes for that release as the PR body text. The contributors list is not necessary. The special sphinx docs syntax (:pr:\`547\`) needs to be changed to github link syntax (#547).
 
 Checklist before merging:
 
+- The title of the PR is the version number.
 - All tests are currently green on checkin and on `main`.
 - The ReadtheDocs build for the release PR branch has passed, and the resulting docs contain the expected release notes.
 - PR has been reviewed and approved.
@@ -80,8 +81,44 @@ After the release pull request has been merged into the `main` branch, it is tim
 - This is not a pre-release
 - Publishing the release will automatically upload the package to PyPI
 
-## Release on conda-forge
+## 3. Release on conda-forge
+
+In order to release on conda-forge, you can either wait for a bot to create a pull request, or use a GitHub Actions workflow
+
+### Option a: Use a GitHub Action workflow
+
+1. After the package has been uploaded on PyPI, the **Create Feedstock Pull Request** workflow should automatically kickoff a job. 
+    * If it does not, go [here](https://github.com/alteryx/featuretools/actions/workflows/create_feedstock_pr.yaml)
+    * Click **Run workflow** and input the letter `v` followed by the release version (e.g. `v0.13.3`)
+    * Kickoff the GitHub Action, and monitor the Job Summary.
+2. Once the job has been completed, you will see summary output, with a URL. 
+    * Visit that URL and create a pull request.
+    * Alternatively, create the pull request by clicking the branch name (e.g. - `v0.13.3`): 
+      - https://github.com/alteryx/featuretools-feedstock/branches
+3. Verify that the PR has the following: 
+    * The `build['number']` is 0 (in __recipe/meta.yml__).
+    * The `requirements['run']` (in __recipe/meta.yml__) matches the `[project]['dependencies']` in __featuretools/pyproject.toml__.
+    * The `test['requires']` (in __recipe/meta.yml__) matches the `[project.optional-dependencies]['test']` in __featuretools/pyproject.toml__
+    > There will be 2 entries for graphviz: `graphviz` and `python-graphviz`. 
+    > Make sure `python-graphviz` (in __recipe/meta.yml__) matches `graphviz` in `[project.optional-dependencies]['test']` in __featuretools/pyproject.toml__.
+4. Satisfy the conditions in pull request description and **merge it if the CI passes**. 
+
+### Option b: Waiting for bot to create new PR
 
 1. A bot should automatically create a new PR in [conda-forge/featuretools-feedstock](https://github.com/conda-forge/featuretools-feedstock/pulls) - note, the PR may take up to a few hours to be created
 2. Update requirements changes in `recipe/meta.yaml` (bot should have handled version and source links on its own)
 3. After tests pass, a maintainer will merge the PR in
+
+# Miscellaneous
+## Add new maintainers to featuretools-feedstock
+
+Per the instructions [here](https://conda-forge.org/docs/maintainer/updating_pkgs.html#updating-the-maintainer-list):
+1. Ask an existing maintainer to create an issue on the [repo](https://github.com/conda-forge/featuretools-feedstock).
+  a. Select *Bot commands* and put the following title (change `username`):
+
+  ```text
+  @conda-forge-admin, please add user @username
+  ```
+
+2. A PR will be auto-created on the repo, and will need to be merged by an existing maintainer.
+3. The new user will need to **check their email for an invite link to click**, which should be https://github.com/conda-forge

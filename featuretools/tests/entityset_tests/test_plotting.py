@@ -6,13 +6,13 @@ import pandas as pd
 import pytest
 from dask import dataframe as dd
 
-import featuretools as ft
+from featuretools import EntitySet
 from featuretools.utils.gen_utils import Library
 
 
 @pytest.fixture
 def pd_simple():
-    es = ft.EntitySet("test")
+    es = EntitySet("test")
     df = pd.DataFrame({"foo": [1]})
     es.add_dataframe(df, dataframe_name="test")
     return es
@@ -20,7 +20,7 @@ def pd_simple():
 
 @pytest.fixture
 def dd_simple():
-    es = ft.EntitySet("test")
+    es = EntitySet("test")
     df = pd.DataFrame({"foo": [1]})
     df = dd.from_pandas(df, npartitions=2)
     es.add_dataframe(df, dataframe_name="test")
@@ -30,7 +30,7 @@ def dd_simple():
 @pytest.fixture
 def spark_simple():
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    es = ft.EntitySet("test")
+    es = EntitySet("test")
     df = ps.DataFrame({"foo": [1]})
     es.add_dataframe(df, dataframe_name="test")
     return es
@@ -78,7 +78,7 @@ def test_multiple_rows(es):
     plot_ = es.plot()
     result = re.findall(r"\((\d+\srows?)\)", plot_.source)
     expected = ["{} rows".format(str(i.shape[0])) for i in es.dataframes]
-    if es.dataframe_type == Library.DASK.value:
+    if es.dataframe_type == Library.DASK:
         # Dask does not list number of rows in plot
         assert result == []
     else:
@@ -89,7 +89,7 @@ def test_single_row(simple_es):
     plot_ = simple_es.plot()
     result = re.findall(r"\((\d+\srows?)\)", plot_.source)
     expected = ["1 row"]
-    if simple_es.dataframe_type == Library.DASK.value:
+    if simple_es.dataframe_type == Library.DASK:
         # Dask does not list number of rows in plot
         assert result == []
     else:

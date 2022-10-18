@@ -1,6 +1,9 @@
+import functools
 import logging
+import operator
 import warnings
 from collections import defaultdict
+from typing import Any, List
 
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
@@ -15,6 +18,7 @@ from featuretools.feature_base import (
     IdentityFeature,
     TransformFeature,
 )
+from featuretools.feature_base.cache import CacheType, feature_cache
 from featuretools.feature_base.utils import is_valid_input
 from featuretools.primitives.base import (
     AggregationPrimitive,
@@ -152,6 +156,10 @@ class DeepFeatureSynthesis(object):
             )
             raise KeyError(msg)
 
+        # Multiple calls to dfs() should start with a fresh cache
+        feature_cache.clear_all()
+        feature_cache.enabled = True
+
         # need to change max_depth to None because DFs terminates when  <0
         if max_depth == -1:
             max_depth = None
@@ -160,7 +168,7 @@ class DeepFeatureSynthesis(object):
         if len(entityset.dataframe_dict) == 1 and (max_depth is None or max_depth > 1):
             warnings.warn(
                 "Only one dataframe in entityset, changing max_depth to "
-                "1 since deeper features cannot be created"
+                "1 since deeper features cannot be created",
             )
             max_depth = 1
 
@@ -225,7 +233,7 @@ class DeepFeatureSynthesis(object):
                     transform_primitive_dict,
                 )
                 for p in agg_primitives
-            ]
+            ],
         )
 
         if trans_primitives is None:
@@ -237,10 +245,13 @@ class DeepFeatureSynthesis(object):
         self.trans_primitives = sorted(
             [
                 check_primitive(
-                    p, "transform", aggregation_primitive_dict, transform_primitive_dict
+                    p,
+                    "transform",
+                    aggregation_primitive_dict,
+                    transform_primitive_dict,
                 )
                 for p in trans_primitives
-            ]
+            ],
         )
 
         if where_primitives is None:
@@ -248,10 +259,13 @@ class DeepFeatureSynthesis(object):
         self.where_primitives = sorted(
             [
                 check_primitive(
-                    p, "where", aggregation_primitive_dict, transform_primitive_dict
+                    p,
+                    "where",
+                    aggregation_primitive_dict,
+                    transform_primitive_dict,
                 )
                 for p in where_primitives
-            ]
+            ],
         )
 
         if groupby_trans_primitives is None:
@@ -265,7 +279,7 @@ class DeepFeatureSynthesis(object):
                     transform_primitive_dict,
                 )
                 for p in groupby_trans_primitives
-            ]
+            ],
         )
 
         if primitive_options is None:
@@ -360,7 +374,9 @@ class DeepFeatureSynthesis(object):
                 f
                 for f in new_features
                 if any(
-                    is_valid_input(f.column_schema, schema) for schema in return_types
+                    True
+                    for schema in return_types
+                    if is_valid_input(f.column_schema, schema)
                 )
             ]
         new_features = list(filter(filt, new_features))
@@ -453,7 +469,8 @@ class DeepFeatureSynthesis(object):
         """
 
         backward_dataframes = self.es.get_backward_dataframes(
-            dataframe.ww.name, deep=True
+            dataframe.ww.name,
+            deep=True,
         )
         for b_dataframe_id, sub_relationship_path in backward_dataframes:
             if b_dataframe_id in self.ignore_dataframes:
@@ -537,7 +554,10 @@ class DeepFeatureSynthesis(object):
         """
 
         self._build_transform_features(
-            all_features, dataframe, max_depth=max_depth, require_direct_input=True
+            all_features,
+            dataframe,
+            max_depth=max_depth,
+            require_direct_input=True,
         )
 
         # now that all  features are added, build where clauses
@@ -570,7 +590,7 @@ class DeepFeatureSynthesis(object):
         ):
             logger.warning(
                 "Attempting to add feature %s which is already "
-                "present. This is likely a bug." % new_feature
+                "present. This is likely a bug." % new_feature,
             )
             return
 
@@ -613,15 +633,16 @@ class DeepFeatureSynthesis(object):
             if isinstance(f, IdentityFeature):
                 return True
             if isinstance(f, DirectFeature) and getattr(
-                f.base_features[0], "column_name", None
+                f.base_features[0],
+                "column_name",
+                None,
             ):
                 return True
             return False
 
-        features = [
+        for feat in [
             f for f in all_features[dataframe.ww.name].values() if is_valid_feature(f)
-        ]
-        for feat in features:
+        ]:
             # Get interesting_values from the EntitySet that was passed, which
             # is assumed to be the most recent version of the EntitySet.
             # Features can contain a stale EntitySet reference without
@@ -639,7 +660,11 @@ class DeepFeatureSynthesis(object):
                     self.where_clauses[dataframe.ww.name].add(feat == val)
 
     def _build_transform_features(
-        self, all_features, dataframe, max_depth=0, require_direct_input=False
+        self,
+        all_features,
+        dataframe,
+        max_depth=0,
+        require_direct_input=False,
     ):
         """Creates trans_features for all the columns in a dataframe
 
@@ -661,7 +686,8 @@ class DeepFeatureSynthesis(object):
 
         for trans_prim in self.trans_primitives:
             current_options = self.primitive_options.get(
-                trans_prim, self.primitive_options.get(trans_prim.name)
+                trans_prim,
+                self.primitive_options.get(trans_prim.name),
             )
             if ignore_dataframe_for_primitive(current_options, dataframe):
                 continue
@@ -676,18 +702,20 @@ class DeepFeatureSynthesis(object):
                 trans_prim,
                 current_options,
                 require_direct_input=require_direct_input,
+                feature_filter=check_transform_stacking,
             )
 
             for matching_input in matching_inputs:
-                if all(
-                    bf.number_output_features == 1 for bf in matching_input
-                ) and check_transform_stacking(matching_input):
+                if not any(
+                    True for bf in matching_input if bf.number_output_features != 1
+                ):
                     new_f = TransformFeature(matching_input, primitive=trans_prim)
                     features_to_add.append(new_f)
 
         for groupby_prim in self.groupby_trans_primitives:
             current_options = self.primitive_options.get(
-                groupby_prim, self.primitive_options.get(groupby_prim.name)
+                groupby_prim,
+                self.primitive_options.get(groupby_prim.name),
             )
             if ignore_dataframe_for_primitive(current_options, dataframe, groupby=True):
                 continue
@@ -699,15 +727,14 @@ class DeepFeatureSynthesis(object):
                 input_types,
                 groupby_prim,
                 current_options,
+                feature_filter=check_transform_stacking,
             )
 
             # get columns to use as groupbys, use IDs as default unless other groupbys specified
             if any(
-                [
-                    "include_groupby_columns" in option
-                    and dataframe.ww.name in option["include_groupby_columns"]
-                    for option in current_options
-                ]
+                True
+                for option in current_options
+                if dataframe.ww.name in option.get("include_groupby_columns", [])
             ):
                 column_schemas = "all"
             else:
@@ -719,24 +746,25 @@ class DeepFeatureSynthesis(object):
                 column_schemas=column_schemas,
             )
             groupby_matches = filter_groupby_matches_by_options(
-                groupby_matches, current_options
+                groupby_matches,
+                current_options,
             )
 
             # If require_direct_input, require a DirectFeature in input or as a
             # groupby, and don't create features of inputs/groupbys which are
             # all direct features with the same relationship path
             for matching_input in matching_inputs:
-                if all(
-                    bf.number_output_features == 1 for bf in matching_input
-                ) and check_transform_stacking(matching_input):
+                if not any(
+                    True for bf in matching_input if bf.number_output_features != 1
+                ):
                     for groupby in groupby_matches:
+                        input_features = matching_input + (groupby,)
                         if require_direct_input and (
-                            _all_direct_and_same_path(matching_input + (groupby,))
+                            _all_direct_and_same_path(input_features)
                             or not any(
-                                [
-                                    isinstance(feature, DirectFeature)
-                                    for feature in (matching_input + (groupby,))
-                                ]
+                                True
+                                for feature in (input_features)
+                                if isinstance(feature, DirectFeature)
                             )
                         ):
                             continue
@@ -790,7 +818,8 @@ class DeepFeatureSynthesis(object):
             new_max_depth = max_depth - 1
         for agg_prim in self.agg_primitives:
             current_options = self.primitive_options.get(
-                agg_prim, self.primitive_options.get(agg_prim.name)
+                agg_prim,
+                self.primitive_options.get(agg_prim.name),
             )
 
             if ignore_dataframe_for_primitive(current_options, child_dataframe):
@@ -814,7 +843,8 @@ class DeepFeatureSynthesis(object):
             )
 
             matching_inputs = filter_matches_by_options(
-                matching_inputs, current_options
+                matching_inputs,
+                current_options,
             )
             wheres = list(self.where_clauses[child_dataframe.ww.name])
 
@@ -849,10 +879,9 @@ class DeepFeatureSynthesis(object):
 
                 # limits the aggregation feature by the given allowed feature types.
                 if not any(
-                    [
-                        issubclass(type(agg_prim), type(primitive))
-                        for primitive in self.where_primitives
-                    ]
+                    True
+                    for primitive in self.where_primitives
+                    if issubclass(type(agg_prim), type(primitive))
                 ):
                     continue
 
@@ -860,10 +889,9 @@ class DeepFeatureSynthesis(object):
                     # limits the where feats so they are different than base feats
                     base_names = [f.unique_name() for f in new_f.base_features]
                     if any(
-                        [
-                            base_feat.unique_name() in base_names
-                            for base_feat in where.base_features
-                        ]
+                        True
+                        for base_feat in where.base_features
+                        if base_feat.unique_name() in base_names
                     ):
                         continue
 
@@ -877,36 +905,78 @@ class DeepFeatureSynthesis(object):
                     self._handle_new_feature(new_f, all_features)
 
     def _features_by_type(
-        self, all_features, dataframe, max_depth, column_schemas=None
+        self,
+        all_features,
+        dataframe,
+        max_depth,
+        column_schemas=None,
     ):
 
-        selected_features = []
-
         if max_depth is not None and max_depth < 0:
-            return selected_features
+            return []
 
         if dataframe.ww.name not in all_features:
-            return selected_features
+            return []
 
-        dataframe_features = all_features[dataframe.ww.name].copy()
-        for fname, feature in all_features[dataframe.ww.name].items():
+        def expand_features(feature) -> List[Any]:
+            """Internal method to return either the single feature
+                or the output features
+
+            Args:
+                feature (Feature): Feature instance
+
+            Returns:
+                List[Any]: list of features
+            """
             outputs = feature.number_output_features
             if outputs > 1:
-                del dataframe_features[fname]
-                for i in range(outputs):
-                    new_feat = feature[i]
-                    dataframe_features[new_feat.unique_name()] = new_feat
+                return [feature[i] for i in range(outputs)]
+            return [feature]
 
-        for feat in dataframe_features:
-            f = dataframe_features[feat]
-            if column_schemas == "all" or any(
-                is_valid_input(f.column_schema, schema) for schema in column_schemas
-            ):
-                if (
-                    max_depth is None
-                    or f.get_depth(stop_at=self.seed_features) <= max_depth
-                ):
-                    selected_features.append(f)
+        # Build the complete list of features prior to processing
+        selected_features = [
+            expand_features(feature)
+            for feature in all_features[dataframe.ww.name].values()
+        ]
+        selected_features = functools.reduce(operator.iconcat, selected_features, [])
+
+        column_schemas = column_schemas if column_schemas else set()
+
+        if max_depth is None and column_schemas == "all":
+            return selected_features
+
+        # assigning seed_features locally adds a slight performance benefit by not having to look
+        # up the property for each round of the comprehension
+        seed_features = self.seed_features
+        if max_depth is not None:
+            selected_features = [
+                feature
+                for feature in selected_features
+                if get_feature_depth(feature, stop_at=seed_features) <= max_depth
+            ]
+
+        def valid_input(column_schema) -> bool:
+            """Helper method to validate the feature schema
+               to the allowed column_schemas
+
+            Args:
+                column_schema (ColumnSchema): feature column schema
+
+            Returns:
+                bool: True if valid
+            """
+            return any(
+                True
+                for schema in column_schemas
+                if is_valid_input(column_schema, schema)
+            )
+
+        if column_schemas and column_schemas != "all":
+            selected_features = [
+                feature
+                for feature in selected_features
+                if valid_input(feature.column_schema)
+            ]
 
         return selected_features
 
@@ -953,6 +1023,9 @@ class DeepFeatureSynthesis(object):
                 max_depth=max_depth,
                 column_schemas=list(input_type),
             )
+            if not features:
+                continue
+
             if feature_filter:
                 features = [f for f in features if feature_filter(f)]
 
@@ -965,6 +1038,10 @@ class DeepFeatureSynthesis(object):
 
             matching_inputs.extend(matches)
 
+        # everything following depends on populated matching_inputs
+        if not matching_inputs:
+            return matching_inputs
+
         if require_direct_input:
             # Don't create trans features of inputs which are all direct
             # features with the same relationship_path.
@@ -974,7 +1051,9 @@ class DeepFeatureSynthesis(object):
                 if not _all_direct_and_same_path(inputs)
             }
         matching_inputs = filter_matches_by_options(
-            matching_inputs, primitive_options, commutative=primitive.commutative
+            matching_inputs,
+            primitive_options,
+            commutative=primitive.commutative,
         )
 
         # Don't build features on numeric foreign key columns
@@ -989,73 +1068,84 @@ class DeepFeatureSynthesis(object):
 
 def _match_contains_numeric_foreign_key(match):
     match_schema = ColumnSchema(semantic_tags={"foreign_key", "numeric"})
-    return any(is_valid_input(f.column_schema, match_schema) for f in match)
+    return any(True for f in match if is_valid_input(f.column_schema, match_schema))
 
 
-def check_transform_stacking(inputs):
+def check_transform_stacking(feature):
     # Avoid transform stacking when building from direct features
-    for f in inputs:
-        if isinstance(f.primitive, TransformPrimitive):
-            return False
-        if isinstance(f, DirectFeature) and isinstance(
-            f.base_features[0].primitive, TransformPrimitive
-        ):
-            return False
+    if isinstance(feature.primitive, TransformPrimitive):
+        return False
+    if isinstance(feature, DirectFeature) and isinstance(
+        feature.base_features[0].primitive,
+        TransformPrimitive,
+    ):
+        return False
     return True
 
 
 def check_stacking(primitive, inputs):
     """checks if features in inputs can be used with supplied primitive
     using the stacking rules"""
-    if primitive.stack_on_self is False:
-        for f in inputs:
-            if isinstance(f.primitive, primitive.__class__):
-                return False
 
-    if primitive.stack_on_exclude is not None:
-        for f in inputs:
-            if isinstance(f.primitive, tuple(primitive.stack_on_exclude)):
-                return False
+    primitive_class = primitive.__class__
+    tup_primitive_stack_on = (
+        tuple(primitive.stack_on) if primitive.stack_on is not None else None
+    )
+    tup_primitive_stack_on_exclude = (
+        tuple(primitive.stack_on_exclude)
+        if primitive.stack_on_exclude is not None
+        else tuple()
+    )
+    primitive_stack_on_self: bool = primitive.stack_on_self
 
-    # R TODO: handle this
-    for f in inputs:
-        if f.number_output_features > 1:
+    for feature in inputs:
+        f_primitive = feature.primitive
+        if not primitive_stack_on_self and isinstance(f_primitive, primitive_class):
             return False
 
-    for f in inputs:
-        if f.primitive.base_of_exclude is not None:
-            if isinstance(primitive, tuple(f.primitive.base_of_exclude)):
-                return False
+        if isinstance(f_primitive, tup_primitive_stack_on_exclude):
+            return False
 
-    for f in inputs:
-        if primitive.stack_on_self is True:
-            if isinstance(f.primitive, primitive.__class__):
-                continue
-        if primitive.stack_on is not None:
-            if isinstance(f.primitive, tuple(primitive.stack_on)):
-                continue
-        else:
+        # R TODO: handle this
+        if feature.number_output_features > 1:
+            return False
+
+        if f_primitive.base_of_exclude is not None and isinstance(
+            primitive,
+            tuple(f_primitive.base_of_exclude),
+        ):
+            return False
+
+        if primitive_stack_on_self and isinstance(f_primitive, primitive_class):
             continue
-        if f.primitive.base_of is not None:
-            if primitive.__class__ in f.primitive.base_of:
-                continue
-        else:
+
+        if tup_primitive_stack_on is None or isinstance(
+            f_primitive,
+            tup_primitive_stack_on,
+        ):
             continue
+
+        if f_primitive.base_of is None:
+            continue
+        if primitive_class in f_primitive.base_of:
+            continue
+
         return False
 
     return True
 
 
 def match_by_schema(features, column_schema):
-    matches = []
-    for f in features:
-        if is_valid_input(f.column_schema, column_schema):
-            matches += [f]
+    matches = [f for f in features if is_valid_input(f.column_schema, column_schema)]
     return matches
 
 
 def match(
-    input_types, features, replace=False, commutative=False, require_direct_input=False
+    input_types,
+    features,
+    replace=False,
+    commutative=False,
+    require_direct_input=False,
 ):
     to_match = input_types[0]
 
@@ -1068,7 +1158,7 @@ def match(
             if (not require_direct_input or isinstance(m, DirectFeature))
         ]
 
-    matching_inputs = set([])
+    matching_inputs = set()
 
     for m in matches:
         copy = features[:]
@@ -1078,7 +1168,8 @@ def match(
 
         # If we need a DirectFeature and this is not a DirectFeature then one of the rest must be.
         still_require_direct_input = require_direct_input and not isinstance(
-            m, DirectFeature
+            m,
+            DirectFeature,
         )
         rest = match(
             input_types[1:],
@@ -1115,9 +1206,12 @@ def handle_primitive(primitive):
 
 
 def check_primitive(
-    primitive, prim_type, aggregation_primitive_dict, transform_primitive_dict
+    primitive,
+    prim_type,
+    aggregation_primitive_dict,
+    transform_primitive_dict,
 ):
-    if prim_type == "transform" or prim_type == "groupby transform":
+    if prim_type in ("transform", "groupby transform"):
         prim_dict = transform_primitive_dict
         supertype = TransformPrimitive
         arg_name = (
@@ -1126,7 +1220,7 @@ def check_primitive(
             else "groupby_trans_primitives"
         )
         s = "a transform"
-    if prim_type == "aggregation" or prim_type == "where":
+    if prim_type in ("aggregation", "where"):
         prim_dict = aggregation_primitive_dict
         supertype = AggregationPrimitive
         arg_name = (
@@ -1140,14 +1234,14 @@ def check_primitive(
             raise ValueError(
                 "Unknown {} primitive {}. "
                 "Call ft.primitives.list_primitives() to get"
-                " a list of available primitives".format(prim_type, primitive)
+                " a list of available primitives".format(prim_type, prim_string),
             )
         primitive = prim_dict[prim_string]
     primitive = handle_primitive(primitive)
     if not isinstance(primitive, supertype):
         raise ValueError(
             "Primitive {} in {} is not {} "
-            "primitive".format(type(primitive), arg_name, s)
+            "primitive".format(type(primitive), arg_name, s),
         )
     return primitive
 
@@ -1173,3 +1267,17 @@ def _direct_of_dataframe(feature, parent_dataframe):
         isinstance(feature, DirectFeature)
         and feature.parent_dataframe_name == parent_dataframe.ww.name
     )
+
+
+def get_feature_depth(feature, stop_at=None):
+    """Helper method to allow caching of feature.get_depth()
+    Why here and not in FeatureBase?  Putting t in FeatureBase was causing
+    some weird pickle errors in spark tests in 3.9 and this keeps the caching
+    local to DFS.
+    """
+    hash_key = hash(f"{feature.get_name()}{feature.dataframe_name}{stop_at}")
+    if cached_depth := feature_cache.get(CacheType.DEPTH, hash_key):
+        return cached_depth
+    depth = feature.get_depth(stop_at=stop_at)
+    feature_cache.add(CacheType.DEPTH, hash_key, depth)
+    return depth

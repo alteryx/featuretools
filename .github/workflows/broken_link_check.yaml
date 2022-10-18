@@ -15,6 +15,6 @@ jobs:
         uses: ruzickap/action-my-broken-link-checker@v2
         with:
           url: https://featuretools.alteryx.com/en/latest/
-          cmd_params: '--max-connections=10 --color=always --ignore-fragments --buffer-size=8192 --exclude="(twitter|github|cloudflare|evalml\\.alteryx\\.com\\/en\\/(stable|main|v.+).*)"'
+          cmd_params: '--max-connections=10 --color=always --ignore-fragments --buffer-size=8192 --skip-tls-verification --exclude="(twitter|github|cloudflare|featuretools\\.alteryx\\.com\\/en\\/(stable|main|v.+).*)"'
       - name: Add to job output
         run: echo "${{steps.link-report.outputs.result}}" >> $GITHUB_STEP_SUMMARY

@@ -346,7 +346,7 @@ class LessThanEqualToScalar(TransformPrimitive):
     def __init__(self, value=0):
         self.value = value
         self.description_template = "whether {{}} is less than or equal to {}".format(
-            self.value
+            self.value,
         )
 
     def get_function(self):
@@ -388,16 +388,17 @@ class Equal(TransformPrimitive):
     def get_function(self):
         def equal(x_vals, y_vals):
             if isinstance(x_vals.dtype, pd.CategoricalDtype) and isinstance(
-                y_vals.dtype, pd.CategoricalDtype
+                y_vals.dtype,
+                pd.CategoricalDtype,
             ):
                 categories = set(x_vals.cat.categories).union(
-                    set(y_vals.cat.categories)
+                    set(y_vals.cat.categories),
                 )
                 x_vals = x_vals.cat.add_categories(
-                    categories.difference(set(x_vals.cat.categories))
+                    categories.difference(set(x_vals.cat.categories)),
                 )
                 y_vals = y_vals.cat.add_categories(
-                    categories.difference(set(y_vals.cat.categories))
+                    categories.difference(set(y_vals.cat.categories)),
                 )
             return x_vals.eq(y_vals)
 
@@ -463,16 +464,17 @@ class NotEqual(TransformPrimitive):
     def get_function(self):
         def not_equal(x_vals, y_vals):
             if isinstance(x_vals.dtype, pd.CategoricalDtype) and isinstance(
-                y_vals.dtype, pd.CategoricalDtype
+                y_vals.dtype,
+                pd.CategoricalDtype,
             ):
                 categories = set(x_vals.cat.categories).union(
-                    set(y_vals.cat.categories)
+                    set(y_vals.cat.categories),
                 )
                 x_vals = x_vals.cat.add_categories(
-                    categories.difference(set(x_vals.cat.categories))
+                    categories.difference(set(x_vals.cat.categories)),
                 )
                 y_vals = y_vals.cat.add_categories(
-                    categories.difference(set(y_vals.cat.categories))
+                    categories.difference(set(y_vals.cat.categories)),
                 )
             return x_vals.ne(y_vals)
 
@@ -515,7 +517,7 @@ class NotEqualScalar(TransformPrimitive):
 
 
 class AddNumeric(TransformPrimitive):
-    """Element-wise addition of two lists.
+    """Performs element-wise addition of two lists.
 
     Description:
         Given a list of values X and a list of values
@@ -546,7 +548,7 @@ class AddNumeric(TransformPrimitive):
 
 
 class AddNumericScalar(TransformPrimitive):
-    """Add a scalar to each value in the list.
+    """Adds a scalar to each value in the list.
 
     Description:
         Given a list of numeric values and a scalar, add
@@ -578,7 +580,7 @@ class AddNumericScalar(TransformPrimitive):
 
 
 class SubtractNumeric(TransformPrimitive):
-    """Element-wise subtraction of two lists.
+    """Performs element-wise subtraction of two lists.
 
     Description:
         Given a list of values X and a list of values
@@ -616,7 +618,7 @@ class SubtractNumeric(TransformPrimitive):
 
 
 class SubtractNumericScalar(TransformPrimitive):
-    """Subtract a scalar from each element in the list.
+    """Subtracts a scalar from each element in the list.
 
     Description:
         Given a list of numeric values and a scalar, subtract
@@ -648,7 +650,7 @@ class SubtractNumericScalar(TransformPrimitive):
 
 
 class ScalarSubtractNumericFeature(TransformPrimitive):
-    """Subtract each value in the list from a given scalar.
+    """Subtracts each value in the list from a given scalar.
 
     Description:
         Given a list of numeric values and a scalar, subtract
@@ -681,7 +683,7 @@ class ScalarSubtractNumericFeature(TransformPrimitive):
 
 
 class MultiplyNumeric(TransformPrimitive):
-    """Element-wise multiplication of two lists.
+    """Performs element-wise multiplication of two lists.
 
     Description:
         Given a list of values X and a list of values
@@ -712,7 +714,7 @@ class MultiplyNumeric(TransformPrimitive):
 
 
 class MultiplyNumericScalar(TransformPrimitive):
-    """Multiply each element in the list by a scalar.
+    """Multiplies each element in the list by a scalar.
 
     Description:
         Given a list of numeric values and a scalar, multiply
@@ -744,7 +746,7 @@ class MultiplyNumericScalar(TransformPrimitive):
 
 
 class MultiplyBoolean(TransformPrimitive):
-    """Element-wise multiplication of two lists of boolean values.
+    """Performs element-wise multiplication of two lists of boolean values.
 
     Description:
         Given a list of boolean values X and a list of boolean
@@ -786,7 +788,7 @@ class MultiplyBoolean(TransformPrimitive):
 
 
 class MultiplyNumericBoolean(TransformPrimitive):
-    """Element-wise multiplication of a numeric list with a boolean list.
+    """Performs element-wise multiplication of a numeric list with a boolean list.
 
     Description:
         Given a list of numeric values X and a list of
@@ -850,7 +852,7 @@ class MultiplyNumericBoolean(TransformPrimitive):
 
 
 class DivideNumeric(TransformPrimitive):
-    """Element-wise division of two lists.
+    """Performs element-wise division of two lists.
 
     Description:
         Given a list of values X and a list of values
@@ -881,14 +883,17 @@ class DivideNumeric(TransformPrimitive):
         self.commutative = commutative
 
     def get_function(self):
-        return np.divide
+        def divide_numeric(val1, val2):
+            return val1 / val2
+
+        return divide_numeric
 
     def generate_name(self, base_feature_names):
         return "%s / %s" % (base_feature_names[0], base_feature_names[1])
 
 
 class DivideNumericScalar(TransformPrimitive):
-    """Divide each element in the list by a scalar.
+    """Divides each element in the list by a scalar.
 
     Description:
         Given a list of numeric values and a scalar, divide
@@ -908,7 +913,7 @@ class DivideNumericScalar(TransformPrimitive):
     def __init__(self, value=1):
         self.value = value
         self.description_template = "the result of {{}} divided by {}".format(
-            self.value
+            self.value,
         )
 
     def get_function(self):
@@ -922,7 +927,7 @@ class DivideNumericScalar(TransformPrimitive):
 
 
 class DivideByFeature(TransformPrimitive):
-    """Divide a scalar by each value in the list.
+    """Divides a scalar by each value in the list.
 
     Description:
         Given a list of numeric values and a scalar, divide
@@ -943,7 +948,7 @@ class DivideByFeature(TransformPrimitive):
     def __init__(self, value=1):
         self.value = value
         self.description_template = "the result of {} divided by {{}}".format(
-            self.value
+            self.value,
         )
 
     def get_function(self):
@@ -957,7 +962,7 @@ class DivideByFeature(TransformPrimitive):
 
 
 class ModuloNumeric(TransformPrimitive):
-    """Element-wise modulo of two lists.
+    """Performs element-wise modulo of two lists.
 
     Description:
         Given a list of values X and a list of values Y,
@@ -987,7 +992,7 @@ class ModuloNumeric(TransformPrimitive):
 
 
 class ModuloNumericScalar(TransformPrimitive):
-    """Return the modulo of each element in the list by a scalar.
+    """Computes the modulo of each element in the list by a given scalar.
 
     Description:
         Given a list of numeric values and a scalar, return
@@ -1008,7 +1013,7 @@ class ModuloNumericScalar(TransformPrimitive):
     def __init__(self, value=1):
         self.value = value
         self.description_template = "the remainder after dividing {{}} by {}".format(
-            self.value
+            self.value,
         )
 
     def get_function(self):
@@ -1022,7 +1027,7 @@ class ModuloNumericScalar(TransformPrimitive):
 
 
 class ModuloByFeature(TransformPrimitive):
-    """Return the modulo of a scalar by each element in the list.
+    """Computes the modulo of a scalar by each element in a list.
 
     Description:
         Given a list of numeric values and a scalar, return the
@@ -1043,7 +1048,7 @@ class ModuloByFeature(TransformPrimitive):
     def __init__(self, value=1):
         self.value = value
         self.description_template = "the remainder after dividing {} by {{}}".format(
-            self.value
+            self.value,
         )
 
     def get_function(self):
@@ -1057,7 +1062,7 @@ class ModuloByFeature(TransformPrimitive):
 
 
 class And(TransformPrimitive):
-    """Element-wise logical AND of two lists.
+    """Performs element-wise logical AND of two lists.
 
     Description:
         Given a list of booleans X and a list of booleans Y,
@@ -1099,7 +1104,7 @@ class And(TransformPrimitive):
 
 
 class Or(TransformPrimitive):
-    """Element-wise logical OR of two lists.
+    """Performs element-wise logical OR of two lists.
 
     Description:
         Given a list of booleans X and a list of booleans Y,

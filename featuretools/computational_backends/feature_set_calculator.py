@@ -147,7 +147,8 @@ class FeatureSetCalculator(object):
             ]
             if missing_ids:
                 default_df = self.generate_default_df(
-                    instance_ids=missing_ids, extra_columns=df.columns
+                    instance_ids=missing_ids,
+                    extra_columns=df.columns,
                 )
 
                 df = default_df.append(df, sort=True)
@@ -267,13 +268,16 @@ class FeatureSetCalculator(object):
                     df,
                     new_ancestor_relationship_columns,
                 ) = self._add_ancestor_relationship_columns(
-                    df, parent_df, ancestor_relationship_columns, parent_relationship
+                    df,
+                    parent_df,
+                    ancestor_relationship_columns,
+                    parent_relationship,
                 )
 
             # Add the column linking this dataframe to its parent, so that
             # descendants get linked to the parent.
             new_ancestor_relationship_columns.append(
-                parent_relationship._child_column_name
+                parent_relationship._child_column_name,
             )
 
         # call to update timer
@@ -345,7 +349,10 @@ class FeatureSetCalculator(object):
         # full_dataframe_features.
         if need_full_dataframe:
             df = self._calculate_features(
-                df, full_dataframe_trie, full_dataframe_features, progress_callback
+                df,
+                full_dataframe_trie,
+                full_dataframe_features,
+                progress_callback,
             )
 
             # Store full dataframe
@@ -357,7 +364,10 @@ class FeatureSetCalculator(object):
 
         # Calculate all features that don't require the full dataframe.
         df = self._calculate_features(
-            df, df_trie, not_full_dataframe_features, progress_callback
+            df,
+            df_trie,
+            not_full_dataframe_features,
+            progress_callback,
         )
 
         # Step 5: Store the dataframe for this dataframe at the root of df_trie, so
@@ -378,7 +388,11 @@ class FeatureSetCalculator(object):
         return df
 
     def _add_ancestor_relationship_columns(
-        self, child_df, parent_df, ancestor_relationship_columns, relationship
+        self,
+        child_df,
+        parent_df,
+        ancestor_relationship_columns,
+        relationship,
     ):
         """
         Merge ancestor_relationship_columns from parent_df into child_df, adding a prefix to
@@ -404,7 +418,8 @@ class FeatureSetCalculator(object):
         # original parent's id.
         col_map = {relationship._parent_column_name: relationship._child_column_name}
         for child_column, parent_column in zip(
-            new_relationship_columns, ancestor_relationship_columns
+            new_relationship_columns,
+            ancestor_relationship_columns,
         ):
             col_map[parent_column] = child_column
 
@@ -427,7 +442,9 @@ class FeatureSetCalculator(object):
         # TODO: Review for dask dataframes
         if isinstance(df, pd.DataFrame):
             df.set_index(
-                relationship.child_dataframe.ww.index, drop=False, inplace=True
+                relationship.child_dataframe.ww.index,
+                drop=False,
+                inplace=True,
             )
 
         return df, new_relationship_columns
@@ -442,7 +459,9 @@ class FeatureSetCalculator(object):
 
         default_matrix = [default_row] * len(instance_ids)
         default_df = pd.DataFrame(
-            default_matrix, columns=default_cols, index=instance_ids
+            default_matrix,
+            columns=default_cols,
+            index=instance_ids,
         )
         index_name = self.entityset[self.feature_set.target_df_name].ww.index
         default_df.index.name = index_name
@@ -477,7 +496,11 @@ class FeatureSetCalculator(object):
         return df
 
     def _calculate_transform_features(
-        self, features, frame, _df_trie, progress_callback
+        self,
+        features,
+        frame,
+        _df_trie,
+        progress_callback,
     ):
         frame_empty = frame.empty if isinstance(frame, pd.DataFrame) else False
         feature_values = []
@@ -584,7 +607,11 @@ class FeatureSetCalculator(object):
         return frame
 
     def _calculate_direct_features(
-        self, features, child_df, df_trie, progress_callback
+        self,
+        features,
+        child_df,
+        df_trie,
+        progress_callback,
     ):
         path = features[0].relationship_path
         assert len(path) == 1, "Error calculating DirectFeatures, len(path) != 1"
@@ -618,18 +645,26 @@ class FeatureSetCalculator(object):
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
         if is_instance(merge_df, (dd, ps, cudf), "DataFrame"):
             new_df = child_df.merge(
-                merge_df, left_on=merge_col, right_on=merge_col, how="left"
+                merge_df,
+                left_on=merge_col,
+                right_on=merge_col,
+                how="left",
             )
         else:
             if index_as_feature is not None:
                 merge_df.set_index(
-                    index_as_feature.get_name(), inplace=True, drop=False
+                    index_as_feature.get_name(),
+                    inplace=True,
+                    drop=False,
                 )
             else:
                 merge_df.set_index(merge_col, inplace=True)
 
             new_df = child_df.merge(
-                merge_df, left_on=merge_col, right_index=True, how="left"
+                merge_df,
+                left_on=merge_col,
+                right_index=True,
+                how="left",
             )
 
         progress_callback(len(features) / float(self.num_features))
@@ -696,7 +731,9 @@ class FeatureSetCalculator(object):
                         return df.iloc[-n:]
 
                     base_frame = base_frame.groupby(
-                        groupby_col, observed=True, sort=False
+                        groupby_col,
+                        observed=True,
+                        sort=False,
                     ).apply(last_n)
 
             to_agg = {}
@@ -758,7 +795,9 @@ class FeatureSetCalculator(object):
                 # the column (in actuality grouping by both index and group would
                 # work)
                 to_merge = base_frame.groupby(
-                    base_frame[groupby_col], observed=True, sort=False
+                    base_frame[groupby_col],
+                    observed=True,
+                    sort=False,
                 ).apply(wrap)
                 frame = pd.merge(
                     left=frame,
@@ -785,7 +824,9 @@ class FeatureSetCalculator(object):
                     to_merge = base_frame.nans_to_nulls().groupby(groupby_col, sort=False).agg(to_agg)
                 else:
                     to_merge = base_frame.groupby(
-                        base_frame[groupby_col], observed=True, sort=False
+                        base_frame[groupby_col],
+                        observed=True,
+                        sort=False,
                     ).agg(to_agg)
                 # rename columns to the correct feature names
                 to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns]
@@ -798,13 +839,16 @@ class FeatureSetCalculator(object):
                 # cases.  More investigation needed.
                 if pdtypes.is_categorical_dtype(frame.index):
                     categories = pdtypes.CategoricalDtype(
-                        categories=frame.index.categories
+                        categories=frame.index.categories,
                     )
                     to_merge.index = to_merge.index.astype(object).astype(categories)
 
                 if is_instance(frame, (dd, ps, cudf), "DataFrame"):
                     frame = frame.merge(
-                        to_merge, left_on=parent_merge_col, right_index=True, how="left"
+                        to_merge,
+                        left_on=parent_merge_col,
+                        right_index=True,
+                        how="left",
                     )
                 else:
                     frame = pd.merge(

@@ -13,7 +13,7 @@ from featuretools.utils.wrangle import _is_s3, _is_url
 ps = import_or_none("pyspark.pandas")
 
 FORMATS = ["csv", "pickle", "parquet"]
-SCHEMA_VERSION = "8.0.0"
+SCHEMA_VERSION = "9.0.0"
 
 
 def entityset_to_description(entityset, format=None):
@@ -33,12 +33,16 @@ def entityset_to_description(entityset, format=None):
     relationships = [
         relationship.to_dictionary() for relationship in entityset.relationships
     ]
+
+    data_type = entityset.dataframe_type
+
     data_description = {
         "schema_version": SCHEMA_VERSION,
         "id": entityset.id,
         "dataframes": dataframes,
         "relationships": relationships,
         "format": format,
+        "data_type": data_type,
     }
     return data_description
 
@@ -61,7 +65,10 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
 
             transport_params = get_transport_params(profile_name)
             use_smartopen_es(
-                file_path, path, read=False, transport_params=transport_params
+                file_path,
+                path,
+                read=False,
+                transport_params=transport_params,
             )
     elif _is_url(path):
         raise ValueError("Writing to URLs is not supported")

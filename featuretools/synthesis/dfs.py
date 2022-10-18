@@ -62,16 +62,16 @@ def dfs(
 
         target_dataframe_name (str): Name of dataframe on which to make predictions.
 
-        cutoff_time (pd.DataFrame or Datetime): Specifies times at which to calculate
+        cutoff_time (pd.DataFrame or Datetime or str): Specifies times at which to calculate
             the features for each instance. The resulting feature matrix will use data
-            up to and including the cutoff_time. Can either be a DataFrame or a single
-            value. If a DataFrame is passed the instance ids for which to calculate features
-            must be in a column with the same name as the target dataframe index or a column
-            named `instance_id`. The cutoff time values in the DataFrame must be in a column with
-            the same name as the target dataframe time index or a column named `time`. If the
-            DataFrame has more than two columns, any additional columns will be added to the
-            resulting feature matrix. If a single value is passed, this value will be used for
-            all instances.
+            up to and including the cutoff_time. Can either be a DataFrame, a single
+            value, or a string that can be parsed into a datetime. If a DataFrame is passed
+            the instance ids for which to calculate features must be in a column with the
+            same name as the target dataframe index or a column named `instance_id`.
+            The cutoff time values in the DataFrame must be in a column with the same name as
+            the target dataframe time index or a column named `time`. If the DataFrame has more
+            than two columns, any additional columns will be added to the resulting feature
+            matrix. If a single value is passed, this value will be used for all instances.
 
         instance_ids (list): List of instances on which to calculate features. Only
             used if cutoff_time is a single datetime.

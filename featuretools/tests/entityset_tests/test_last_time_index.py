@@ -39,7 +39,7 @@ def true_values_lti():
             datetime(2011, 4, 9, 10, 30, 18),
             datetime(2011, 4, 9, 10, 30, 24),
             datetime(2011, 4, 10, 11, 10, 3),
-        ]
+        ],
     )
     return true_values_lti
 
@@ -54,7 +54,7 @@ def true_sessions_lti():
             datetime(2011, 4, 10, 10, 40, 1),
             datetime(2011, 4, 10, 10, 41, 6),
             datetime(2011, 4, 10, 11, 10, 3),
-        ]
+        ],
     )
     return sessions_lti
 
@@ -82,7 +82,7 @@ def wishlist_df():
                 "brown bag",
                 "coke zero",
             ],
-        }
+        },
     )
     return wishlist_df
 
@@ -93,9 +93,9 @@ def extra_session_df(es):
     row = pd.DataFrame(row_values, index=pd.Index([6], name="id"))
     df = to_pandas(es["sessions"])
     df = df.append(row, sort=True).sort_index()
-    if es.dataframe_type == Library.DASK.value:
+    if es.dataframe_type == Library.DASK:
         df = dd.from_pandas(df, npartitions=3)
-    elif es.dataframe_type == Library.SPARK.value:
+    elif es.dataframe_type == Library.SPARK:
         # Spark can't handle object dtypes
         df = df.astype("string")
         df = ps.from_pandas(df)
@@ -131,9 +131,9 @@ class TestLastTimeIndex(object):
     # TODO: possible issue with either normalize_dataframe or add_last_time_indexes
     def test_parent(self, values_es, true_values_lti):
         # test dataframe with time index and all instances in child dataframe
-        if values_es.dataframe_type != Library.PANDAS.value:
+        if values_es.dataframe_type != Library.PANDAS:
             pytest.xfail(
-                "possible issue with either normalize_dataframe or add_last_time_indexes"
+                "possible issue with either normalize_dataframe or add_last_time_indexes",
             )
         values_es.add_last_time_indexes()
         values = values_es["values"]
@@ -146,7 +146,7 @@ class TestLastTimeIndex(object):
     # TODO: fails with Dask, tests needs to be reworked
     def test_parent_some_missing(self, values_es, true_values_lti):
         # test dataframe with time index and not all instances have children
-        if values_es.dataframe_type != Library.PANDAS.value:
+        if values_es.dataframe_type != Library.PANDAS:
             pytest.xfail("fails with Dask, tests needs to be reworked")
         values = values_es["values"]
 
@@ -186,7 +186,10 @@ class TestLastTimeIndex(object):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_parent_no_time_index_missing(
-        self, es, extra_session_df, true_sessions_lti
+        self,
+        es,
+        extra_session_df,
+        true_sessions_lti,
     ):
         # test dataframe without time index and not all instance have children
 
@@ -204,10 +207,10 @@ class TestLastTimeIndex(object):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_multiple_children(self, es, wishlist_df, true_sessions_lti):
-        if es.dataframe_type == Library.SPARK.value:
+        if es.dataframe_type == Library.SPARK:
             pytest.xfail("Cannot make index on a Spark DataFrame")
         # test all instances in both children
-        if es.dataframe_type == Library.DASK.value:
+        if es.dataframe_type == Library.DASK:
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
         logical_types = {
             "session_id": Integer,
@@ -236,13 +239,13 @@ class TestLastTimeIndex(object):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_multiple_children_right_missing(self, es, wishlist_df, true_sessions_lti):
-        if es.dataframe_type == Library.SPARK.value:
+        if es.dataframe_type == Library.SPARK:
             pytest.xfail("Cannot make index on a Spark DataFrame")
         # test all instances in left child
 
         # drop wishlist instance related to id 3 so it's only in log
         wishlist_df.drop(4, inplace=True)
-        if es.dataframe_type == Library.DASK.value:
+        if es.dataframe_type == Library.DASK:
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
         logical_types = {
             "session_id": Integer,
@@ -271,9 +274,13 @@ class TestLastTimeIndex(object):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_multiple_children_left_missing(
-        self, es, extra_session_df, wishlist_df, true_sessions_lti
+        self,
+        es,
+        extra_session_df,
+        wishlist_df,
+        true_sessions_lti,
     ):
-        if es.dataframe_type == Library.SPARK.value:
+        if es.dataframe_type == Library.SPARK:
             pytest.xfail("Cannot make index on a Spark DataFrame")
 
         # add row to sessions so not all session instances are in log
@@ -287,7 +294,7 @@ class TestLastTimeIndex(object):
         }
         row = pd.DataFrame(row_values, index=pd.RangeIndex(start=7, stop=8))
         df = wishlist_df.append(row)
-        if es.dataframe_type == Library.DASK.value:
+        if es.dataframe_type == Library.DASK:
             df = dd.from_pandas(df, npartitions=2)
         logical_types = {
             "session_id": Integer,
@@ -320,9 +327,13 @@ class TestLastTimeIndex(object):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_multiple_children_all_combined(
-        self, es, extra_session_df, wishlist_df, true_sessions_lti
+        self,
+        es,
+        extra_session_df,
+        wishlist_df,
+        true_sessions_lti,
     ):
-        if es.dataframe_type == Library.SPARK.value:
+        if es.dataframe_type == Library.SPARK:
             pytest.xfail("Cannot make index on a Spark DataFrame")
 
         # add row to sessions so not all session instances are in log
@@ -339,7 +350,7 @@ class TestLastTimeIndex(object):
 
         # drop instance 4 so wishlist_log does not have session id 3 instance
         df.drop(4, inplace=True)
-        if es.dataframe_type == Library.DASK.value:
+        if es.dataframe_type == Library.DASK:
             df = dd.from_pandas(df, npartitions=2)
         logical_types = {
             "session_id": Integer,
@@ -371,14 +382,18 @@ class TestLastTimeIndex(object):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_multiple_children_both_missing(
-        self, es, extra_session_df, wishlist_df, true_sessions_lti
+        self,
+        es,
+        extra_session_df,
+        wishlist_df,
+        true_sessions_lti,
     ):
-        if es.dataframe_type == Library.SPARK.value:
+        if es.dataframe_type == Library.SPARK:
             pytest.xfail("Cannot make index on a Spark DataFrame")
         # test all instances in neither child
         sessions = es["sessions"]
 
-        if es.dataframe_type == Library.DASK.value:
+        if es.dataframe_type == Library.DASK:
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
 
         logical_types = {
@@ -426,9 +441,9 @@ class TestLastTimeIndex(object):
             .sort_index(level=[1, 0], kind="mergesort")
             .reset_index("datetime", drop=False)
         )
-        if es.dataframe_type == Library.DASK.value:
+        if es.dataframe_type == Library.DASK:
             df = dd.from_pandas(df, npartitions=2)
-        if es.dataframe_type == Library.SPARK.value:
+        if es.dataframe_type == Library.SPARK:
             df = ps.from_pandas(df)
         es.replace_dataframe(dataframe_name="log", df=df)
         es.add_last_time_indexes()
@@ -439,7 +454,7 @@ class TestLastTimeIndex(object):
                 datetime(2011, 4, 9, 10, 40, 1),
                 datetime(2011, 4, 10, 10, 41, 6),
                 datetime(2011, 4, 10, 11, 10, 3),
-            ]
+            ],
         )
 
         lti_name = customers.ww.metadata.get("last_time_index")

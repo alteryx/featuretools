@@ -26,7 +26,9 @@ def test_add_dataframe(pd_es):
         semantic_tags=get_df_tags(pd_es["log"]),
     )
     pd.testing.assert_frame_equal(
-        pd_es["log"], dask_es["log_dask"].compute(), check_like=True
+        pd_es["log"],
+        dask_es["log_dask"].compute(),
+        check_like=True,
     )
 
 
@@ -66,15 +68,19 @@ def test_create_entityset_with_mixed_dataframe_types(pd_es, dask_es):
 
     # Test error is raised when trying to add Dask dataframe to entityset with existing pandas dataframes
     with pytest.raises(
-        ValueError, match=err_msg.format(type(dask_df), type(pd_es.dataframes[0]))
+        ValueError,
+        match=err_msg.format(type(dask_df), type(pd_es.dataframes[0])),
     ):
         pd_es.add_dataframe(
-            dataframe_name="new_dataframe", dataframe=dask_df, index="id"
+            dataframe_name="new_dataframe",
+            dataframe=dask_df,
+            index="id",
         )
 
     # Test error is raised when trying to add pandas dataframe to entityset with existing dask dataframes
     with pytest.raises(
-        ValueError, match=err_msg.format(type(df), type(dask_es.dataframes[0]))
+        ValueError,
+        match=err_msg.format(type(df), type(dask_es.dataframes[0])),
     ):
         dask_es.add_dataframe(dataframe_name="new_dataframe", dataframe=df, index="id")
 
@@ -94,7 +100,7 @@ def test_add_last_time_indexes():
                 pd.to_datetime("2017-08-25"),
             ],
             "strings": ["I am a string", "23", "abcdef ghijk", ""],
-        }
+        },
     )
     sessions_dask = dd.from_pandas(sessions, npartitions=2)
     sessions_logical_types = {
@@ -117,7 +123,7 @@ def test_add_last_time_indexes():
                 pd.to_datetime("2019-01-01 12:49"),
                 pd.to_datetime("2017-08-25 04:53"),
             ],
-        }
+        },
     )
     transactions_dask = dd.from_pandas(transactions, npartitions=2)
 
@@ -129,7 +135,10 @@ def test_add_last_time_indexes():
     }
 
     pd_es.add_dataframe(
-        dataframe_name="sessions", dataframe=sessions, index="id", time_index="time"
+        dataframe_name="sessions",
+        dataframe=sessions,
+        index="id",
+        time_index="time",
     )
     dask_es.add_dataframe(
         dataframe_name="sessions",
@@ -194,4 +203,4 @@ def test_add_dataframe_with_make_index():
 
 
 def test_dataframe_type_dask(dask_es):
-    assert dask_es.dataframe_type == Library.DASK.value
+    assert dask_es.dataframe_type == Library.DASK

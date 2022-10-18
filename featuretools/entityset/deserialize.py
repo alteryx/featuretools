@@ -3,14 +3,17 @@ import os
 import tarfile
 import tempfile
 
+import dask.dataframe as dd
 import pandas as pd
 import woodwork.type_sys.type_system as ww_type_system
 from woodwork.deserialize import read_woodwork_table
 
 from featuretools.entityset.relationship import Relationship
-from featuretools.utils.gen_utils import check_schema_version
+from featuretools.utils.gen_utils import Library, check_schema_version, import_or_none
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
 from featuretools.utils.wrangle import _is_local_tar, _is_s3, _is_url
+
+ps = import_or_none("pyspark.pandas")
 
 
 def description_to_entityset(description, **kwargs):
@@ -41,8 +44,7 @@ def description_to_entityset(description, **kwargs):
                     kwargs["filename"] = df["name"] + ".parquet"
             dataframe = read_woodwork_table(data_path, validate=False, **kwargs)
         else:
-            dataframe = empty_dataframe(df)
-
+            dataframe = empty_dataframe(df, description["data_type"])
         entityset.add_dataframe(dataframe)
 
     for relationship in description["relationships"]:
@@ -52,7 +54,7 @@ def description_to_entityset(description, **kwargs):
     return entityset
 
 
-def empty_dataframe(description):
+def empty_dataframe(description, data_type=Library.PANDAS):
     """Deserialize empty dataframe from dataframe description.
 
     Args:
@@ -76,7 +78,8 @@ def empty_dataframe(description):
 
         ltype_metadata = col["logical_type"]
         ltype = ww_type_system.str_to_logical_type(
-            ltype_metadata["type"], params=ltype_metadata["parameters"]
+            ltype_metadata["type"],
+            params=ltype_metadata["parameters"],
         )
 
         tags = col["semantic_tags"]
@@ -98,7 +101,12 @@ def empty_dataframe(description):
             cat_dtype = col["physical_type"]["cat_dtype"]
             cat_object = pd.CategoricalDtype(pd.Index(cat_values, dtype=cat_dtype))
             category_dtypes[col_name] = cat_object
+
     dataframe = pd.DataFrame(columns=columns).astype(category_dtypes)
+    if data_type == Library.DASK:
+        dataframe = dd.from_pandas(dataframe, npartitions=1)
+    elif data_type == Library.SPARK:
+        dataframe = ps.from_pandas(dataframe)
 
     dataframe.ww.init(
         name=description.get("name"),
@@ -112,6 +120,7 @@ def empty_dataframe(description):
         column_descriptions=column_descriptions,
         validate=False,
     )
+
     return dataframe
 
 

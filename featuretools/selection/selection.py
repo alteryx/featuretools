@@ -1,3 +1,4 @@
+import pandas as pd
 from woodwork.logical_types import Boolean, BooleanNullable
 
 
@@ -45,7 +46,7 @@ def remove_highly_null_features(feature_matrix, features=None, pct_null_threshol
     """
     if pct_null_threshold < 0 or pct_null_threshold > 1:
         raise ValueError(
-            "pct_null_threshold must be a float between 0 and 1, inclusive."
+            "pct_null_threshold must be a float between 0 and 1, inclusive.",
         )
 
     percent_null_by_col = (feature_matrix.isnull().mean()).to_dict()
@@ -67,7 +68,9 @@ def remove_highly_null_features(feature_matrix, features=None, pct_null_threshol
 
 
 def remove_single_value_features(
-    feature_matrix, features=None, count_nan_as_value=False
+    feature_matrix,
+    features=None,
+    count_nan_as_value=False,
 ):
     """Removes columns in feature matrix where all the values are the same.
 
@@ -85,7 +88,7 @@ def remove_single_value_features(
             If no feature list is provided as input, the feature list will not be returned.
     """
     unique_counts_by_col = feature_matrix.nunique(
-        dropna=not count_nan_as_value
+        dropna=not count_nan_as_value,
     ).to_dict()
 
     keep = [
@@ -140,7 +143,7 @@ def remove_highly_correlated_features(
 
     if pct_corr_threshold < 0 or pct_corr_threshold > 1:
         raise ValueError(
-            "pct_corr_threshold must be a float between 0 and 1, inclusive."
+            "pct_corr_threshold must be a float between 0 and 1, inclusive.",
         )
 
     if features_to_check is None:
@@ -167,9 +170,17 @@ def remove_highly_correlated_features(
         more_complex_name = columns_to_check[i]
         more_complex_col = fm_to_check[more_complex_name]
 
+        # Convert boolean column to be float64
+        if pd.api.types.is_bool_dtype(more_complex_col):
+            more_complex_col = more_complex_col.astype("float64")
+
         for j in range(i - 1, -1, -1):
             less_complex_name = columns_to_check[j]
             less_complex_col = fm_to_check[less_complex_name]
+
+            # Convert boolean column to be float64
+            if pd.api.types.is_bool_dtype(less_complex_col):
+                less_complex_col = less_complex_col.astype("float64")
 
             if abs(more_complex_col.corr(less_complex_col)) >= pct_corr_threshold:
                 dropped.add(more_complex_name)

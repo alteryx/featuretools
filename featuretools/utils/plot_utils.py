@@ -20,7 +20,7 @@ def check_graphviz():
             + "  Windows (conda): conda install -c conda-forge python-graphviz\n"
             + "  Windows (pip): pip install graphviz\n"
             + "  Windows (EXE required if graphviz was installed via pip): https://graphviz.org/download/#windows"
-            + "  For more details visit: https://featuretools.alteryx.com/en/stable/install.html#installing-graphviz"
+            + "  For more details visit: https://featuretools.alteryx.com/en/stable/install.html#installing-graphviz",
         )
     return graphviz
 
@@ -34,7 +34,7 @@ def get_graphviz_format(graphviz, to_file):
         if len(split_path) < 2:
             raise ValueError(
                 "Please use a file extension like '.pdf'"
-                + " so that the format can be inferred"
+                + " so that the format can be inferred",
             )
 
         format_ = split_path[-1]
@@ -42,7 +42,7 @@ def get_graphviz_format(graphviz, to_file):
         if format_ not in valid_formats:
             raise ValueError(
                 "Unknown format. Make sure your format is"
-                + " amongst the following: %s" % valid_formats
+                + " amongst the following: %s" % valid_formats,
             )
     else:
         format_ = None

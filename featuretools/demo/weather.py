@@ -16,7 +16,8 @@ def load_weather(nrows=None, return_single_table=False):
     filename = "daily-min-temperatures.csv"
     print("Downloading data ...")
     url = "https://api.featurelabs.com/datasets/{}?library=featuretools&version={}".format(
-        filename, ft.__version__
+        filename,
+        ft.__version__,
     )
     data = pd.read_csv(url, index_col=None, nrows=nrows)
     if return_single_table:

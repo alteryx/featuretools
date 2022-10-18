@@ -25,7 +25,9 @@ def test_add_dataframe_from_spark_df(pd_es):
         semantic_tags=get_df_tags(pd_es["log"]),
     )
     pd.testing.assert_frame_equal(
-        cleaned_df, spark_es["log_spark"].to_pandas(), check_like=True
+        cleaned_df,
+        spark_es["log_spark"].to_pandas(),
+        check_like=True,
     )
 
 
@@ -35,7 +37,7 @@ def test_add_dataframe_with_non_numeric_index(pd_es, spark_es):
         {
             "id": pd.Series(["A_1", "A_2", "C", "D"], dtype="string"),
             "values": [1, 12, -34, 27],
-        }
+        },
     )
     spark_df = ps.from_pandas(df)
 
@@ -71,15 +73,19 @@ def test_create_entityset_with_mixed_dataframe_types(pd_es, spark_es):
 
     # Test error is raised when trying to add Spark dataframe to entitset with existing pandas dataframes
     with pytest.raises(
-        ValueError, match=err_msg.format(type(spark_df), type(pd_es.dataframes[0]))
+        ValueError,
+        match=err_msg.format(type(spark_df), type(pd_es.dataframes[0])),
     ):
         pd_es.add_dataframe(
-            dataframe_name="new_dataframe", dataframe=spark_df, index="id"
+            dataframe_name="new_dataframe",
+            dataframe=spark_df,
+            index="id",
         )
 
     # Test error is raised when trying to add pandas dataframe to entitset with existing ps dataframes
     with pytest.raises(
-        ValueError, match=err_msg.format(type(df), type(spark_es.dataframes[0]))
+        ValueError,
+        match=err_msg.format(type(df), type(spark_es.dataframes[0])),
     ):
         spark_es.add_dataframe(dataframe_name="new_dataframe", dataframe=df, index="id")
 
@@ -100,7 +106,7 @@ def test_add_last_time_indexes():
                 pd.to_datetime("2017-08-25"),
             ],
             "strings": ["I am a string", "23", "abcdef ghijk", ""],
-        }
+        },
     )
     sessions_spark = ps.from_pandas(sessions)
     sessions_logical_types = {
@@ -123,7 +129,7 @@ def test_add_last_time_indexes():
                 pd.to_datetime("2019-01-01 12:49"),
                 pd.to_datetime("2017-08-25 04:53"),
             ],
-        }
+        },
     )
     transactions_spark = ps.from_pandas(transactions)
     transactions_logical_types = {
@@ -134,7 +140,10 @@ def test_add_last_time_indexes():
     }
 
     pd_es.add_dataframe(
-        dataframe_name="sessions", dataframe=sessions, index="id", time_index="time"
+        dataframe_name="sessions",
+        dataframe=sessions,
+        index="id",
+        time_index="time",
     )
     spark_es.add_dataframe(
         dataframe_name="sessions",
@@ -201,4 +210,4 @@ def test_add_dataframe_with_make_index():
 
 @pytest.mark.skipif("not ps")
 def test_dataframe_type_spark(spark_es):
-    assert spark_es.dataframe_type == Library.SPARK.value
+    assert spark_es.dataframe_type == Library.SPARK
