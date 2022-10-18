@@ -223,7 +223,11 @@ def calculate_feature_matrix(
             instance_ids = instance_ids.to_pandas()
 
         # convert list or range object into series
-        if not isinstance(instance_ids, pd.Series) and not is_instance(instance_ids, cudf, "Series"):
+        if not isinstance(instance_ids, pd.Series) and not is_instance(
+            instance_ids,
+            cudf,
+            "Series",
+        ):
             instance_ids = pd.Series(instance_ids)
 
         cutoff_time = (cutoff_time, instance_ids)
@@ -549,13 +553,15 @@ def calculate_chunk(
                 if approximate:
                     cols = [c for c in _feature_matrix.columns if c not in pass_columns]
                     indexer = group[["instance_id", target_time] + pass_columns]
-                    if is_instance(_feature_matrix, cudf, 'DataFrame'):
-                        if is_instance(indexer, pd, 'DataFrame'):
+                    if is_instance(_feature_matrix, cudf, "DataFrame"):
+                        if is_instance(indexer, pd, "DataFrame"):
                             indexer = cudf.from_pandas(indexer)
-                        _feature_matrix = _feature_matrix[cols].merge(indexer,
-                                                                      right_on=['instance_id'],
-                                                                      left_on=[id_name],
-                                                                      how='right')
+                        _feature_matrix = _feature_matrix[cols].merge(
+                            indexer,
+                            right_on=["instance_id"],
+                            left_on=[id_name],
+                            how="right",
+                        )
                     _feature_matrix = _feature_matrix[cols].merge(
                         indexer,
                         right_on=["instance_id"],
@@ -622,11 +628,16 @@ def calculate_chunk(
                     elif is_instance(_feature_matrix, cudf, "DataFrame") and (
                         len(pass_columns) > 0
                     ):
-                        _feature_matrix['time'] = time_last
+                        _feature_matrix["time"] = time_last
                         for col in pass_columns:
-                            pass_df = cudf.from_pandas(pass_through[[id_name, 'time', col]])
-                            _feature_matrix = _feature_matrix.merge(pass_df, how="outer")
-                        _feature_matrix = _feature_matrix.drop(columns=['time'])
+                            pass_df = cudf.from_pandas(
+                                pass_through[[id_name, "time", col]],
+                            )
+                            _feature_matrix = _feature_matrix.merge(
+                                pass_df,
+                                how="outer",
+                            )
+                        _feature_matrix = _feature_matrix.drop(columns=["time"])
                 feature_matrix.append(_feature_matrix)
 
     ww_init_kwargs = get_ww_types_from_features(
@@ -920,7 +931,11 @@ def _add_approx_dataframe_index_col(es, target_dataframe_name, cutoffs, path):
         new_col_name = "%s.%s" % (last_child_col, relationship._child_column_name)
         to_rename = {relationship._child_column_name: new_col_name}
         child_df = child_df.rename(columns=to_rename)
-        if is_instance(child_df, cudf, 'DataFrame') and is_instance(cutoffs, pd, 'DataFrame'):
+        if is_instance(child_df, cudf, "DataFrame") and is_instance(
+            cutoffs,
+            pd,
+            "DataFrame",
+        ):
             cutoffs = cudf.from_pandas(cutoffs)
         cutoffs = cutoffs.merge(
             child_df,
@@ -932,7 +947,7 @@ def _add_approx_dataframe_index_col(es, target_dataframe_name, cutoffs, path):
         last_child_col = new_col_name
         last_parent_col = relationship._parent_column_name
 
-    if is_instance(cutoffs, cudf, 'DataFrame'):
+    if is_instance(cutoffs, cudf, "DataFrame"):
         cutoffs = cutoffs.to_pandas()
     return cutoffs, new_col_name
 

@@ -23,6 +23,7 @@ def test_load_retail_diff():
     es_second = load_retail(nrows=nrows_second)
     assert es_second["order_products"].shape[0] == nrows_second
 
+
 @pytest.mark.parametrize("df_type", [("pandas"), ("cudf")])
 def test_mock_customer(df_type):
     n_customers = 4
@@ -43,7 +44,7 @@ def test_mock_customer(df_type):
     expected_names = ["transactions", "products", "sessions", "customers"]
     assert set(expected_names) == set(df_names)
     print(es["customers"])
-    print(es['products'])
+    print(es["products"])
     # assert len(es["customers"]) == 4
     assert len(es["products"]) == 3
     assert len(es["sessions"]) == 30

@@ -275,7 +275,6 @@ class Diff(TransformPrimitive):
     uses_full_dataframe = True
     description_template = "the difference from the previous value of {}"
 
-
     def __init__(self, periods=0):
         self.periods = periods
 

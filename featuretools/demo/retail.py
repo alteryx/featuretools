@@ -4,7 +4,12 @@ from woodwork.logical_types import NaturalLanguage
 import featuretools as ft
 
 
-def load_retail(id="demo_retail_data", nrows=None, return_single_table=False, df_type="pandas"):
+def load_retail(
+    id="demo_retail_data",
+    nrows=None,
+    return_single_table=False,
+    df_type="pandas",
+):
     """Returns the retail entityset example.
     The original dataset can be found `here <https://archive.ics.uci.edu/ml/datasets/online+retail>`_.
 

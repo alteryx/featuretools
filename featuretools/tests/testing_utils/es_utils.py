@@ -33,7 +33,7 @@ def to_pandas(df, index=None, sort_index=False, int_index=False):
         pd_df = pd_df.set_index(index)
     if sort_index:
         pd_df = pd_df.sort_index()
-    
+
     if int_index and isinstance(df, dd.DataFrame):
         pd_df.index = pd.Int64Index(pd_df.index)
 

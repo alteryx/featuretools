@@ -188,8 +188,9 @@ def test_cfm_warns_dask_cutoff_time(es):
     #     from cudf import DataFrame, from_pandas
     #     cutoff_time = DataFrame({"time": times, es["log"].ww.index: instances})
     # else:
-    from pandas import DataFrame
     from dask.dataframe import from_pandas
+    from pandas import DataFrame
+
     cutoff_time = DataFrame({"time": times, es["log"].ww.index: instances})
     cutoff_time = from_pandas(cutoff_time, npartitions=4)
 

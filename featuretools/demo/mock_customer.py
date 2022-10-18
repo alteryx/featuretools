@@ -6,6 +6,7 @@ from woodwork.logical_types import Categorical, PostalCode
 import featuretools as ft
 from featuretools.utils.gen_utils import import_or_raise
 
+
 def load_mock_customer(
     n_customers=5,
     n_products=5,
@@ -14,7 +15,7 @@ def load_mock_customer(
     random_seed=0,
     return_single_table=False,
     return_entityset=False,
-    df_type="pandas"
+    df_type="pandas",
 ):
     """Return dataframes of mock customer data"""
 

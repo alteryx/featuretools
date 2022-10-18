@@ -1174,9 +1174,9 @@ class EntitySet(object):
                         lti = lti.apply(lambda x: None)
                     elif is_instance(dataframe, ps, "DataFrame"):
                         lti = ps.Series(pd.Series(index=lti.to_list(), name=lti.name))
-                    elif is_instance(dataframe, cudf, 'DataFrame'):
+                    elif is_instance(dataframe, cudf, "DataFrame"):
                         # TODO: check if to_list is needed
-                        if is_instance(lti, cudf, 'Series'):
+                        if is_instance(lti, cudf, "Series"):
                             lti = cudf.Series(index=lti, name=lti.name)
                     else:
                         # Cannot have a category dtype with nans when calculating last time index
@@ -1218,7 +1218,11 @@ class EntitySet(object):
                         ps,
                         "Series",
                     )
-                    lti_is_cudf = is_instance(es_lti_dict[child_df.ww.name], cudf, 'Series')
+                    lti_is_cudf = is_instance(
+                        es_lti_dict[child_df.ww.name],
+                        cudf,
+                        "Series",
+                    )
 
                     if lti_is_dask or lti_is_spark or lti_is_cudf:
                         to_join = child_df[link_col]
@@ -1277,7 +1281,10 @@ class EntitySet(object):
                         lti_df.set_index(dataframe.ww.index, inplace=True)
                         lti_df = lti_df.reindex(es_lti_dict[dataframe.ww.name].index)
                         lti_df["last_time_old"] = es_lti_dict[dataframe.ww.name]
-                    if not (lti_is_dask or lti_is_spark or lti_is_cudf) and lti_df.empty:
+                    if (
+                        not (lti_is_dask or lti_is_spark or lti_is_cudf)
+                        and lti_df.empty
+                    ):
                         # Pandas errors out if it tries to do fillna and then max on an empty dataframe
                         lti_df = pd.Series()
                     else:
@@ -1289,8 +1296,10 @@ class EntitySet(object):
                             # TODO: Figure out a workaround for fillna and replace
                             lti_df = lti_df.max(axis=1)
                         elif lti_is_cudf:
-                            lti_df['last_time'] = cudf.to_datetime(lti_df['last_time'])
-                            lti_df['last_time_old'] = cudf.to_datetime(lti_df['last_time_old'])
+                            lti_df["last_time"] = cudf.to_datetime(lti_df["last_time"])
+                            lti_df["last_time_old"] = cudf.to_datetime(
+                                lti_df["last_time_old"],
+                            )
                             # we have the entity.index column from join
                             # getting rid of it for results
                             if dataframe.ww.index in lti_df.columns:
@@ -1373,7 +1382,8 @@ class EntitySet(object):
                 elif is_instance(df, cudf, "DataFrame"):
                     new_df = df.merge(lti, left_on=df.ww.index, right_index=True)
                     new_df.ww.init(
-                        schema=df.ww.schema, logical_types={LTI_COLUMN_NAME: lti_ltype}
+                        schema=df.ww.schema,
+                        logical_types={LTI_COLUMN_NAME: lti_ltype},
                     )
 
                     dfs_to_update[df.ww.name] = new_df
@@ -1872,13 +1882,13 @@ class EntitySet(object):
         for column, logical_type in dataframe.ww.logical_types.items():
             if isinstance(logical_type, LatLong):
                 series = dataframe[column]
-                if (ps and isinstance(series, ps.Series)):
+                if ps and isinstance(series, ps.Series):
                     if len(series):
                         dataframe[column] = dataframe[column].apply(
                             replace,
                             args=(True,),
                         )
-                elif (cudf and isinstance(series, cudf.Series)):
+                elif cudf and isinstance(series, cudf.Series):
                     pass
                 elif isinstance(dataframe, dd.DataFrame):
                     dataframe[column] = dataframe[column].apply(
