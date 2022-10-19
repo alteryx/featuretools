@@ -214,11 +214,14 @@ class TestCountString(PrimitiveT):
         valid_dfs(es, aggregation, transform, self.primitive.name.upper())
 
     def test_with_featuretools_nan(self, es):
-        comments = es["log"]["comments"]
+        log_df = es["log"]
+        comments = log_df["comments"]
         comments[1] = pd.NA
         comments[2] = np.nan
         comments[3] = None
-        es["log"].ww["comments"] = comments
+        log_df["comments"] = comments
+        es.replace_dataframe(dataframe_name="log", df=log_df)
+
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive(
             "the",
