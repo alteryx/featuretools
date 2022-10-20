@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Add ExponentialWeighted primitives and DateToTimeZone primitive (:pr:`2318`)
+        * Add 14 natural language primitives from ``nlp_primitives`` library (:pr:`2328`)
     * Fixes
     * Changes
     * Documentation Changes
@@ -15,7 +16,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`sbadithe`
+    :user:`gsheni`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v1.15.0 Oct 6, 2022
 ===================
