@@ -10,6 +10,7 @@ Future Release
         * Add 14 natural language primitives from ``nlp_primitives`` library (:pr:`2328`)
     * Fixes
     * Changes
+        * Restructure primitives directory to use individual primitives files (:pr:`2331`)
     * Documentation Changes
         * Fix typos in aggregation_primitive_base.py, features_deserializer.py (:pr:`2317`) (:pr:`2324`)
         * Update SQL integration documentation to reflect Snowflake compatibility (:pr:`2313`)
