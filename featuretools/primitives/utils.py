@@ -1,7 +1,6 @@
 import importlib.util
 import os
 from inspect import getfullargspec, getsource, isclass
-from re import search
 from typing import Dict, List, Optional, Tuple
 
 import holidays
