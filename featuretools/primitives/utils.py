@@ -396,14 +396,10 @@ class PrimitivesDeserializer(object):
             cls_key = (cls.__name__, cls.__module__)
             self.class_cache[cls_key] = cls
 
-            if cls_key == search_key:
-                return cls
-
-            # Include for backward compatibility of deserializing old features
-            if cls.__name__ == search_key[0] and search_key[1] in [
-                "featuretools.primitives.standard.aggregation_primitives",
-                "featuretools.primitives.standard.transform_primitive",
-            ]:
+            if (
+                cls.__name__ == search_key[0]
+                and search_key[1].split(".")[0] == cls.__module__.split(".")[0]
+            ):
                 return cls
 
 
