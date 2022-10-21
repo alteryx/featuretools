@@ -87,7 +87,7 @@ Below is an example of using Deep Feature Synthesis (DFS) to perform automated f
 
 <img src="https://github.com/alteryx/featuretools/blob/main/docs/source/_static/images/entity_set.png?raw=true" width="350">
 
-Featuretools can automatically create a single table of features for any "target dataframe"
+Featuretools can automatically create a single table of features for any "target dataframe".
 ```python
 >> feature_matrix, features_defs = ft.dfs(entityset=es, target_dataframe_name="customers")
 >> feature_matrix.head(5)
