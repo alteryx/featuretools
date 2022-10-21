@@ -1128,7 +1128,7 @@ def test_checks_primitives_correct_type(es):
 
     error_text = (
         "Primitive <class \\'featuretools\\.primitives\\.standard\\."
-        "aggregation_primitives\\.Sum\\'> in trans_primitives "
+        "aggregation_primitives\\.sum\\.Sum\\'> in trans_primitives "
         "is not a transform primitive"
     )
     with pytest.raises(ValueError, match=error_text):

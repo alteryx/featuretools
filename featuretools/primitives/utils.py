@@ -1,6 +1,7 @@
 import importlib.util
 import os
 from inspect import getfullargspec, getsource, isclass
+from re import search
 from typing import Dict, List, Optional, Tuple
 
 import holidays
@@ -397,6 +398,13 @@ class PrimitivesDeserializer(object):
             self.class_cache[cls_key] = cls
 
             if cls_key == search_key:
+                return cls
+
+            # Include for backward compatibility of deserializing old features
+            if cls.__name__ == search_key[0] and search_key[1] in [
+                "featuretools.primitives.standard.aggregation_primitives",
+                "featuretools.primitives.standard.transform_primitive",
+            ]:
                 return cls
 
 

@@ -19,5 +19,5 @@ def test_entry_point():
 
     existing_primitive = 'While loading primitives via "existing" entry point, '
     existing_primitive += 'ignored primitive "Sum" from "featuretools_primitives.existing_primitive" because a primitive '
-    existing_primitive += 'with that name already exists in "featuretools.primitives.standard.aggregation_primitives"'
+    existing_primitive += 'with that name already exists in "featuretools.primitives.standard.aggregation_primitives.sum"'
     assert existing_primitive in featuretools_log
