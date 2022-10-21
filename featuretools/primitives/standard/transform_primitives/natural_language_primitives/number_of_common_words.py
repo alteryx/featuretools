@@ -5,7 +5,7 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import IntegerNullable, NaturalLanguage
 
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.primitives.standard.natural_language_primitives.constants import (
+from featuretools.primitives.standard.transform_primitives.natural_language_primitives.constants import (
     common_words_1000,
 )
 

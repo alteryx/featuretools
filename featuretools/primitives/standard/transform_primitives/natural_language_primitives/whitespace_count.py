@@ -1,4 +1,4 @@
-from featuretools.primitives.standard.natural_language_primitives.count_string import (
+from featuretools.primitives.standard.transform_primitives.natural_language_primitives.count_string import (
     CountString,
 )
 
