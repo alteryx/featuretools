@@ -337,6 +337,7 @@ def test_deserialize_features_s3(pd_es, url, profile_name):
         agg_primitives=agg_primitives,
         trans_primitives=trans_primitives,
     )
+
     features_deserialized = load_features(url, profile_name=profile_name)
     assert_features(features_original, features_deserialized)
 

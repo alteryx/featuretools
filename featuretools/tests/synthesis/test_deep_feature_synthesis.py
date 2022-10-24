@@ -1115,8 +1115,8 @@ def test_return_types(es):
 def test_checks_primitives_correct_type(es):
     error_text = (
         "Primitive <class \\'featuretools\\.primitives\\.standard\\."
-        "datetime_transform_primitives\\.Hour\\'> in agg_primitives is not an "
-        "aggregation primitive"
+        "transform_primitives\\.datetime_transform_primitives\\.hour\\.Hour\\'> in "
+        "agg_primitives is not an aggregation primitive"
     )
     with pytest.raises(ValueError, match=error_text):
         DeepFeatureSynthesis(
