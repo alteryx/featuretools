@@ -2,16 +2,23 @@
 
 Release Notes
 -------------
-
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
-        * Add ExponentialWeighted primitives and DateToTimeZone primitive (:pr:`2318`)
-        * Add 14 natural language primitives from ``nlp_primitives`` library (:pr:`2328`)
     * Fixes
     * Changes
     * Documentation Changes
-        * Fix typos in aggregation_primitive_base.py, features_deserializer.py (:pr:`2317`) (:pr:`2324`)
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.16.0 Oct 24, 2022
+====================
+    * Enhancements
+        * Add ExponentialWeighted primitives and DateToTimeZone primitive (:pr:`2318`)
+        * Add 14 natural language primitives from ``nlp_primitives`` library (:pr:`2328`)
+    * Documentation Changes
+        * Fix typos in ``aggregation_primitive_base.py`` and ``features_deserializer.py`` (:pr:`2317`) (:pr:`2324`)
         * Update SQL integration documentation to reflect Snowflake compatibility (:pr:`2313`)
     * Testing Changes
         * Add Windows install test (:pr:`2330`)
