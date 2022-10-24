@@ -53,7 +53,7 @@ $ python -m pip install "featuretools[updater]"
 ```console
 $ python -m pip install "featuretools[sql]"
 ```
-```{tab} scikit-learn transformer
+```{tab} scikit-learn Transformer
 ```console
 $ python -m pip install "featuretools[sklearn]"
 ```

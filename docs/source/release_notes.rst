@@ -2,15 +2,18 @@
 
 Release Notes
 -------------
-.. Future Release
-  ==============
+
+Future Release
+==============
     * Enhancements
+        * Add featuretools-sklearn-transformer as an extra installation option (:pr:`2335`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`rwedge`
 
 v1.16.0 Oct 24, 2022
 ====================

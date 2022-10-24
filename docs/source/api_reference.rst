@@ -32,7 +32,7 @@ Wrappers
 ~~~~~~~~
 .. currentmodule:: featuretools
 
-Scikit-learn (BETA)
+scikit-learn (BETA)
 -------------------
 .. autosummary::
     :toctree: generated/
