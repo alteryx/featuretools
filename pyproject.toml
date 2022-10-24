@@ -92,9 +92,10 @@ autonormalize = [
 sql = [
     "featuretools_sql >= 0.0.1",
 ]
-
+sklearn = [
+    "featuretools-sklearn-transformer >= 1.0.0",
+]
 docs = [
-    "scikit-learn >=0.20.0, !=0.22",
     "ipython == 8.4.0",
     "jupyter == 1.0.0",
     "matplotlib == 3.5.2",
@@ -107,25 +108,17 @@ docs = [
     "myst-parser == 0.18.0",
     "nlp_primitives >= 2.3.0",
     "autonormalize >= 2.0.1",
-    "featuretools[spark]",
-    "featuretools[test]",
+    "featuretools[sklearn, spark, test]",
 ]
 dev = [
     "flake8 == 5.0.4",
     "isort == 5.10.1",
     "black[jupyter] == 22.6.0",
     "pre-commit == 2.20.0",
-    "featuretools[docs]",
-    "featuretools[spark]",
-    "featuretools[test]",
+    "featuretools[docs, spark, test]",
 ]
 complete = [
-    "featuretools[tsfresh]",
-    "featuretools[updater]",
-    "featuretools[nlp]",
-    "featuretools[spark]",
-    "featuretools[autonormalize]",
-    "featuretools[sql]",
+    "featuretools[autonormalize, nlp, sklearn, spark, sql, tsfresh, updater]",
 ]
 
 [project.scripts]
