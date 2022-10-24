@@ -1,3 +1,9 @@
+from featuretools.primitives.standard.transform_primitives.time_series_primitives.lag import (
+    Lag,
+)
+from featuretools.primitives.standard.transform_primitives.time_series_primitives.numeric_lag import (
+    NumericLag,
+)
 from featuretools.primitives.standard.transform_primitives.time_series_primitives.rolling_count import (
     RollingCount,
 )

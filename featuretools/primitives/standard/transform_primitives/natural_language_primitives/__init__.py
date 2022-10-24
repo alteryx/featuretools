@@ -8,8 +8,14 @@ from featuretools.primitives.standard.transform_primitives.natural_language_prim
 from featuretools.primitives.standard.transform_primitives.natural_language_primitives.median_word_length import (
     MedianWordLength,
 )
+from featuretools.primitives.standard.transform_primitives.natural_language_primitives.num_characters import (
+    NumCharacters,
+)
 from featuretools.primitives.standard.transform_primitives.natural_language_primitives.num_unique_separators import (
     NumUniqueSeparators,
+)
+from featuretools.primitives.standard.transform_primitives.natural_language_primitives.num_words import (
+    NumWords,
 )
 from featuretools.primitives.standard.transform_primitives.natural_language_primitives.number_of_common_words import (
     NumberOfCommonWords,

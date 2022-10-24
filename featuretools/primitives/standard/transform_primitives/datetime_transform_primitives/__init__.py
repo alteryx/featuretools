@@ -16,6 +16,9 @@ from featuretools.primitives.standard.transform_primitives.datetime_transform_pr
 from featuretools.primitives.standard.transform_primitives.datetime_transform_primitives.days_in_month import (
     DaysInMonth,
 )
+from featuretools.primitives.standard.transform_primitives.datetime_transform_primitives.diff_datetime import (
+    DiffDatetime,
+)
 from featuretools.primitives.standard.transform_primitives.datetime_transform_primitives.distance_to_holiday import (
     DistanceToHoliday,
 )
