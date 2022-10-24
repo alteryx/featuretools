@@ -28,6 +28,17 @@ Deep Feature Synthesis
     dfs
     get_valid_primitives
 
+Wrappers
+~~~~~~~~
+.. currentmodule:: featuretools
+
+Scikit-learn (BETA)
+-------------------
+.. autosummary::
+    :toctree: generated/
+
+    wrappers.DFSTransformer
+
 Timedelta
 ~~~~~~~~~
 .. currentmodule:: featuretools
