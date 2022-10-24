@@ -9,7 +9,6 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Add Windows install test (:pr:`2330`)
 
 .. Thanks to the following people for contributing to this release:
 
@@ -21,6 +20,8 @@ v1.16.0 Oct 24, 2022
     * Documentation Changes
         * Fix typos in ``aggregation_primitive_base.py`` and ``features_deserializer.py`` (:pr:`2317`) (:pr:`2324`)
         * Update SQL integration documentation to reflect Snowflake compatibility (:pr:`2313`)
+    * Testing Changes
+        * Add Windows install test (:pr:`2330`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`sbadithe`, :user:`thehomebrewnerd`
