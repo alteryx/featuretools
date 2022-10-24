@@ -9,6 +9,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Add Windows install test (:pr:`2330`)
 
 .. Thanks to the following people for contributing to this release:
 
