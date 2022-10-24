@@ -12,7 +12,7 @@ from featuretools.primitives import (
     RollingSTD,
     RollingTrend,
 )
-from featuretools.primitives.rolling_primitive_utils import (
+from featuretools.primitives.standard.transform_primitives.time_series_primitives.rolling_primitive_utils import (
     _get_rolled_series_without_gap,
     apply_roll_with_offset_gap,
     roll_series_with_gap,

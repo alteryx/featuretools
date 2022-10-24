@@ -5,3 +5,4 @@ from featuretools.primitives.standard.transform_primitives.datetime_transform_pr
 from featuretools.primitives.standard.transform_primitives.exponential_transform_primitives import *
 from featuretools.primitives.standard.transform_primitives.latlong_transform_primitives import *
 from featuretools.primitives.standard.transform_primitives.natural_language_primitives import *
+from featuretools.primitives.standard.transform_primitives.time_series_primitives import *
