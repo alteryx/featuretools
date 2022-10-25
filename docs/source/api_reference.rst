@@ -216,7 +216,7 @@ Email and URL Transform Primitives
     IsFreeEmailDomain
     URLToDomain
     URLToProtocol
-    URLtoTLD
+    URLToTLD
 
 
 Exponential Transform Primitives
