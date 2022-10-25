@@ -374,7 +374,7 @@ class PrimitivesDeserializer(object):
         serialize_primitive).
         """
         class_name = primitive_dict["type"]
-        module_name = primitive_dict["module"]
+        module_name = primitive_dict["module"].split(".")[0]
         class_cache_key = (class_name, module_name)
 
         if class_cache_key in self.class_cache:
@@ -393,13 +393,10 @@ class PrimitivesDeserializer(object):
 
     def _find_class_in_descendants(self, search_key):
         for cls in self.primitive_classes:
-            cls_key = (cls.__name__, cls.__module__)
+            cls_key = (cls.__name__, cls.__module__.split(".")[0])
             self.class_cache[cls_key] = cls
 
-            if (
-                cls.__name__ == search_key[0]
-                and search_key[1].split(".")[0] == cls.__module__.split(".")[0]
-            ):
+            if cls_key == search_key:
                 return cls
 
 
