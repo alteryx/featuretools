@@ -39,7 +39,7 @@ class CountAboveMean(AggregationPrimitive):
                 return np.nan
             return len(x[x > mean])
 
-        return count_around_mean
+        return count_above_mean
 
 
 class CountBelowMean(AggregationPrimitive):
