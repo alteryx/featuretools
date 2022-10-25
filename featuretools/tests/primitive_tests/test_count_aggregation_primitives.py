@@ -559,10 +559,8 @@ class TestCountOutsideRange:
     def test_inf(self):
         x = pd.Series(np.linspace(-3, 3, 10))
         num_NINF = 20
-        # x = x.append(pd.Series([np.NINF] * num_NINF))
         x = pd.concat([x, pd.Series([np.NINF] * num_NINF)])
         num_inf = 10
-        # x = x.append(pd.Series([np.inf] * num_inf))
         x = pd.concat([x, pd.Series([np.inf] * num_inf)])
 
         primitive_instance = self.primitive(-3, 3)
