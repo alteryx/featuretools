@@ -84,6 +84,14 @@ Aggregation Primitives
     Any
     AvgTimeBetween
     Count
+    CountAboveMean
+    CountBelowMean
+    CountGreaterThan
+    CountInsideNthSTD
+    CountInsideRange
+    CountLessThan
+    CountOutsideNthSTD
+    CountOutsideRange
     Entropy
     First
     Last
@@ -102,7 +110,6 @@ Aggregation Primitives
     TimeSinceFirst
     TimeSinceLast
     Trend
-
 
 Transform Primitives
 --------------------
@@ -295,7 +302,7 @@ Time Series Transform Primitives
 
 Natural Language Processing Primitives
 --------------------------------------
-Natural Language Processing primitives create features for textual data. For more information on how to use and install these primitives, see `here <https://github.com/FeatureLabs/nlp_primitives>`__.
+Natural Language Processing primitives create features for textual data. For more information on how to use and install these primitives, see `here <https://github.com/alteryx/nlp_primitives>`__.
 
 Primitives in standard install
 ******************************
@@ -306,7 +313,6 @@ Primitives in standard install
     LSA
     PartOfSpeechCount
     PolarityScore
-    PunctuationCount
     StopwordCount
 
 Primitives that require installing tensorflow

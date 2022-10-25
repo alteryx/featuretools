@@ -75,6 +75,10 @@ $ conda install -c conda-forge featuretools-tsfresh-primitives
 ```console
 $ conda install -c conda-forge pyspark
 ```
+```{tab} SQL
+```console
+$ conda install -c conda-forge featuretools_sql
+```
 ```{tab} Update Checker
 ```console
 $ conda install -c conda-forge alteryx-open-src-update-checker
