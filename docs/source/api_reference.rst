@@ -80,26 +80,28 @@ Aggregation Primitives
 .. autosummary::
     :toctree: generated/
 
-    Count
-    Mean
-    Sum
-    Min
-    Max
-    Std
-    Median
-    Mode
-    AvgTimeBetween
-    TimeSinceLast
-    TimeSinceFirst
-    NumUnique
-    PercentTrue
     All
     Any
+    AvgTimeBetween
+    Count
+    Entropy
     First
     Last
+    Max
+    Mean
+    Median
+    Min
+    Mode
+    NMostCommon
+    NumTrue
+    NumUnique
+    PercentTrue
     Skew
+    Std
+    Sum
+    TimeSinceFirst
+    TimeSinceLast
     Trend
-    Entropy
 
 
 Transform Primitives
@@ -122,22 +124,41 @@ General Transform Primitives
     :toctree: generated/
 
     Absolute
-    SquareRoot
-    NaturalLogarithm
-    Sine
     Cosine
-    Tangent
+    IsNull
+    NaturalLogarithm
+    Negate
     Percentile
-    TimeSince
+    Sine
+    SquareRoot
+    Tangent
+
+
+Email and URL Transform Primitives
+**********************************
+.. autosummary::
+    :toctree: generated/
+
+    EmailAddressToDomain
+    IsFreeEmailDomain
+    URLToDomain
+    URLToProtocol
+    URLtoTLD
 
 Datetime Transform Primitives
 *****************************
 .. autosummary::
     :toctree: generated/
 
-    Second
-    Minute
-    Weekday
+    Age
+    DateToHoliday
+    DateToTimezone
+    Day
+    DayOfYear
+    DaysInMonth
+    DistanceToHoliday
+    Hour
+    IsFederalHoliday
     IsLeapYear
     IsLunchTime
     IsMonthEnd
@@ -148,21 +169,30 @@ Datetime Transform Primitives
     IsWorkingHours
     IsYearEnd
     IsYearStart
-    Hour
-    Day
-    DayOfYear
-    DaysInMonth
-    Week
+    Minute
     Month
     PartOfDay
     Quarter
+    Second
+    Week
+    Weekday
     Year
 
-Rolling Transform Primitives
-*******************************
+Exponential Transform Primitives
+********************************
 .. autosummary::
     :toctree: generated/
 
+    ExponentialWeightedAverage
+    ExponentialWeightedSTD
+    ExponentialWeightedVariance
+
+Time Series Transform Primitives
+********************************
+.. autosummary::
+    :toctree: generated/
+
+    Lag
     RollingCount
     RollingMax
     RollingMean
@@ -175,8 +205,22 @@ NaturalLanguage Transform Primitives
 .. autosummary::
    :toctree: generated/
 
+   CountString
+   MeanCharactersPerWord
+   MedianWordLength
    NumCharacters
+   NumUniqueSeparators
    NumWords
+   NumberOfCommonWords
+   NumberOfHashtags
+   NumberOfMentions
+   NumberOfUniqueWords
+   NumberOfWordsInQuotes
+   PunctuationCount
+   TitleWordCount
+   TotalWordLength
+   UpperCaseCount
+   WhitespaceCount
 
 Location Transform Primitives
 *****************************
@@ -220,21 +264,12 @@ Primitives in standard install
 .. autosummary::
     :toctree: generated/
 
-    CountString
     DiversityScore
     LSA
-    MeanCharactersPerWord
-    MedianWordLength
-    NumUniqueSeparators
-    NumberOfCommonWords
     PartOfSpeechCount
     PolarityScore
     PunctuationCount
     StopwordCount
-    TitleWordCount
-    TotalWordLength
-    UpperCaseCount
-    WhitespaceCount
 
 Primitives that require installing tensorflow
 *********************************************
