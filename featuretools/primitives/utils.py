@@ -374,8 +374,8 @@ class PrimitivesDeserializer(object):
         serialize_primitive).
         """
         class_name = primitive_dict["type"]
-        module_name = primitive_dict["module"].split(".")[0]
-        class_cache_key = (class_name, module_name)
+        module_name = primitive_dict["module"]
+        class_cache_key = (class_name, module_name.split(".")[0])
 
         if class_cache_key in self.class_cache:
             cls = self.class_cache[class_cache_key]
