@@ -231,21 +231,11 @@ Primitives in standard install
 .. autosummary::
     :toctree: generated/
 
-    CountString
     DiversityScore
     LSA
-    MeanCharactersPerWord
-    MedianWordLength
-    NumUniqueSeparators
-    NumberOfCommonWords
     PartOfSpeechCount
     PolarityScore
-    PunctuationCount
     StopwordCount
-    TitleWordCount
-    TotalWordLength
-    UpperCaseCount
-    WhitespaceCount
 
 Primitives that require installing tensorflow
 *********************************************
