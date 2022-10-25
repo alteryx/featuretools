@@ -147,7 +147,7 @@ class CountInsideRange(AggregationPrimitive):
     Args:
         lower (float): Lower boundary of range (inclusive). Default is 0.
         upper (float): Upper boundary of range (inclusive). Default is 1.
-        skipna (bool): If this is False any value in x is NaNs then
+        skipna (bool): If this is False any value in x is NaN then
             the result will be NaN. If True, `nan` values are skipped.
             Default is True.
 
