@@ -10,10 +10,11 @@ Future Release
     * Fixes
     * Changes
     * Documentation Changes
+        * Add Featuretools-SQL to Install page on documentation (:pr:`2337`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`
+    :user:`gsheni`, :user:`rwedge`
 
 v1.16.0 Oct 24, 2022
 ====================
