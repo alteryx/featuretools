@@ -31,7 +31,7 @@ jobs:
         run: |
           pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
-          sudo apt update && sudo apt install -y graphviz
+          sudo apt update && sudo apt install --yes --fix-missing graphviz 
       - if: ${{ !startsWith(matrix.libraries, 'spark') }}
         name: Install featuretools with test requirements
         run: |
