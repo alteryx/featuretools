@@ -172,8 +172,22 @@ NaturalLanguage Transform Primitives
 .. autosummary::
    :toctree: generated/
 
-   NumCharacters
-   NumWords
+    CountString
+    MeanCharactersPerWord
+    MedianWordLength
+    NumberOfCommonWords
+    NumberOfHashtags
+    NumberOfMentions
+    NumberOfUniqueWords
+    NumberOfWordsInQuotes
+    NumCharacters
+    NumUniqueSeparators
+    NumWords
+    PunctuationCount
+    TitleWordCount
+    TotalWordLength
+    UpperCaseCount
+    WhitespaceCount
 
 Location Transform Primitives
 *****************************
