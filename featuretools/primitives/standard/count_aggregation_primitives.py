@@ -76,7 +76,7 @@ class CountBelowMean(AggregationPrimitive):
                 return np.nan
             return len(x[x < mean])
 
-        return count_around_mean
+        return count_below_mean
 
 
 class CountGreaterThan(AggregationPrimitive):
