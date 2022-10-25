@@ -5,6 +5,30 @@ from featuretools.primitives.standard.aggregation_primitives.avg_time_between im
     AvgTimeBetween,
 )
 from featuretools.primitives.standard.aggregation_primitives.count import Count
+from featuretools.primitives.standard.aggregation_primitives.count_above_mean import (
+    CountAboveMean,
+)
+from featuretools.primitives.standard.aggregation_primitives.count_below_mean import (
+    CountBelowMean,
+)
+from featuretools.primitives.standard.aggregation_primitives.count_greater_than import (
+    CountGreaterThan,
+)
+from featuretools.primitives.standard.aggregation_primitives.count_inside_nth_std import (
+    CountInsideNthSTD,
+)
+from featuretools.primitives.standard.aggregation_primitives.count_inside_range import (
+    CountInsideRange,
+)
+from featuretools.primitives.standard.aggregation_primitives.count_less_than import (
+    CountLessThan,
+)
+from featuretools.primitives.standard.aggregation_primitives.count_outside_nth_std import (
+    CountOutsideNthSTD,
+)
+from featuretools.primitives.standard.aggregation_primitives.count_outside_range import (
+    CountOutsideRange,
+)
 from featuretools.primitives.standard.aggregation_primitives.entropy import Entropy
 from featuretools.primitives.standard.aggregation_primitives.first import First
 from featuretools.primitives.standard.aggregation_primitives.last import Last
