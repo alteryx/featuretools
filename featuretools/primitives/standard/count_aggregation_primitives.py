@@ -33,7 +33,7 @@ class CountAboveMean(AggregationPrimitive):
         self.skipna = skipna
 
     def get_function(self):
-        def count_around_mean(x):
+        def count_above_mean(x):
             mean = x.mean(skipna=self.skipna)
             if np.isnan(mean):
                 return np.nan
