@@ -101,7 +101,6 @@ Aggregation Primitives
     Trend
     Entropy
 
-
 Transform Primitives
 --------------------
 Combine features
@@ -113,8 +112,6 @@ Combine features
     And
     Or
     Not
-
-
 
 General Transform Primitives
 ****************************
@@ -175,8 +172,22 @@ NaturalLanguage Transform Primitives
 .. autosummary::
    :toctree: generated/
 
-   NumCharacters
-   NumWords
+    CountString
+    MeanCharactersPerWord
+    MedianWordLength
+    NumberOfCommonWords
+    NumberOfHashtags
+    NumberOfMentions
+    NumberOfUniqueWords
+    NumberOfWordsInQuotes
+    NumCharacters
+    NumUniqueSeparators
+    NumWords
+    PunctuationCount
+    TitleWordCount
+    TotalWordLength
+    UpperCaseCount
+    WhitespaceCount
 
 Location Transform Primitives
 *****************************
@@ -213,28 +224,18 @@ Cumulative Transform Primitives
 
 Natural Language Processing Primitives
 --------------------------------------
-Natural Language Processing primitives create features for textual data. For more information on how to use and install these primitives, see `here <https://github.com/FeatureLabs/nlp_primitives>`__.
+Natural Language Processing primitives create features for textual data. For more information on how to use and install these primitives, see `here <https://github.com/alteryx/nlp_primitives>`__.
 
 Primitives in standard install
 ******************************
 .. autosummary::
     :toctree: generated/
 
-    CountString
     DiversityScore
     LSA
-    MeanCharactersPerWord
-    MedianWordLength
-    NumUniqueSeparators
-    NumberOfCommonWords
     PartOfSpeechCount
     PolarityScore
-    PunctuationCount
     StopwordCount
-    TitleWordCount
-    TotalWordLength
-    UpperCaseCount
-    WhitespaceCount
 
 Primitives that require installing tensorflow
 *********************************************
