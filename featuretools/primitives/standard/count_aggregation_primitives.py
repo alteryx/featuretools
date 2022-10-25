@@ -17,7 +17,7 @@ class CountAboveMean(AggregationPrimitive):
         >>> count_above_mean([1, 2, 3, 4, 5])
         2
 
-        The way `NaN`s are treated can be controlled.
+        The way NaNs are treated can be controlled.
 
         >>> count_above_mean_skipna = CountAboveMean(skipna=False)
         >>> count_above_mean_skipna([1, 2, 3, 4, 5, None])
@@ -54,7 +54,7 @@ class CountBelowMean(AggregationPrimitive):
         >>> count_below_mean([1, 2, 3, 4, 10])
         3
 
-        The way `NaN`s are treated can be controlled.
+        The way NaNs are treated can be controlled.
 
         >>> count_below_mean_skipna = CountBelowMean(skipna=False)
         >>> count_below_mean_skipna([1, 2, 3, 4, 5, None])
@@ -147,8 +147,8 @@ class CountInsideRange(AggregationPrimitive):
     Args:
         lower (float): Lower boundary of range (inclusive). Default is 0.
         upper (float): Upper boundary of range (inclusive). Default is 1.
-        skipna (bool): If this is False any value in x is `nan` then
-            the result will be `nan`. If True, `nan` values are skipped.
+        skipna (bool): If this is False any value in x is NaNs then
+            the result will be NaN. If True, `nan` values are skipped.
             Default is True.
 
     Examples:
@@ -156,7 +156,7 @@ class CountInsideRange(AggregationPrimitive):
         >>> count_inside_range([1, 2, 3, 4, 5])
         2
 
-        The way `NaN`s are treated can be controlled.
+        The way NaNs are treated can be controlled.
 
         >>> count_inside_range_skipna = CountInsideRange(skipna=False)
         >>> count_inside_range_skipna([1, 2, 3, 4, 5, None])
@@ -260,7 +260,7 @@ class CountOutsideRange(AggregationPrimitive):
         >>> count_outside_range([1, 2, 3, 4, 5])
         3
 
-        The way `NaN`s are treated can be controlled.
+        The way NaNs are treated can be controlled.
 
         >>> count_outside_range_skipna = CountOutsideRange(skipna=False)
         >>> count_outside_range_skipna([1, 2, 3, 4, 5, None])
