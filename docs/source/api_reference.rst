@@ -180,7 +180,7 @@ Datetime Transform Primitives
 
     Age
     DateToHoliday
-    DateToTimezone
+    DateToTimeZone
     Day
     DayOfYear
     DaysInMonth
