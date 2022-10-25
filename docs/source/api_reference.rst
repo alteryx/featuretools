@@ -140,7 +140,7 @@ Binary Transform Primitives
     MultiplyNumericScalar
     NotEqual
     NotEqualScalar
-    ScalarSubtractNumeric
+    ScalarSubtractNumericFeature
     SubtractNumeric
     SubtractNumericScalar
 
