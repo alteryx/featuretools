@@ -106,6 +106,38 @@ Aggregation Primitives
 
 Transform Primitives
 --------------------
+Binary Transform Primitives
+***************************
+.. autosummary::
+    :toctree: generated/
+
+    AddNumeric
+    AddNumericScalar
+    DivideByFeature
+    DivideNumericScalar
+    Equal
+    EqualScalar
+    GreaterThan
+    GreaterThanEqualTo
+    GreaterThanEqualToScalar
+    GreaterThanScalar
+    LessThan
+    LessThanEqualTo
+    LessThanEqualToScalar
+    LessThanScalar
+    ModuloByFeature
+    ModuloNumeric
+    ModuloNumericScalar
+    MultiplyBoolean
+    MultiplyNumericBoolean
+    MultiplyNumericScalar
+    NotEqual
+    NotEqualScalar
+    ScalarSubtractNumeric
+    SubtractNumeric
+    SubtractNumericScalar
+
+
 Combine features
 ****************
 .. autosummary::
@@ -117,33 +149,22 @@ Combine features
     Not
 
 
+.. _api_ref.cumulative_features:
 
-General Transform Primitives
-****************************
+Cumulative Transform Primitives
+*******************************
 .. autosummary::
     :toctree: generated/
 
-    Absolute
-    Cosine
-    IsNull
-    NaturalLogarithm
-    Negate
-    Percentile
-    Sine
-    SquareRoot
-    Tangent
+    Diff
+    DiffDatetime
+    TimeSincePrevious
+    CumCount
+    CumSum
+    CumMean
+    CumMin
+    CumMax
 
-
-Email and URL Transform Primitives
-**********************************
-.. autosummary::
-    :toctree: generated/
-
-    EmailAddressToDomain
-    IsFreeEmailDomain
-    URLToDomain
-    URLToProtocol
-    URLtoTLD
 
 Datetime Transform Primitives
 *****************************
@@ -178,6 +199,19 @@ Datetime Transform Primitives
     Weekday
     Year
 
+
+Email and URL Transform Primitives
+**********************************
+.. autosummary::
+    :toctree: generated/
+
+    EmailAddressToDomain
+    IsFreeEmailDomain
+    URLToDomain
+    URLToProtocol
+    URLtoTLD
+
+
 Exponential Transform Primitives
 ********************************
 .. autosummary::
@@ -187,18 +221,35 @@ Exponential Transform Primitives
     ExponentialWeightedSTD
     ExponentialWeightedVariance
 
-Time Series Transform Primitives
-********************************
+
+General Transform Primitives
+****************************
 .. autosummary::
     :toctree: generated/
 
-    Lag
-    RollingCount
-    RollingMax
-    RollingMean
-    RollingMin
-    RollingSTD
-    RollingTrend
+    Absolute
+    Cosine
+    IsNull
+    NaturalLogarithm
+    Negate
+    Percentile
+    Sine
+    SquareRoot
+    Tangent
+
+
+Location Transform Primitives
+*****************************
+.. autosummary::
+   :toctree: generated/
+
+   CityblockDistance
+   GeoMidpoint
+   Haversine
+   IsInGeoBox
+   Latitude
+   Longitude
+
 
 NaturalLanguage Transform Primitives
 ************************************
@@ -222,33 +273,20 @@ NaturalLanguage Transform Primitives
    UpperCaseCount
    WhitespaceCount
 
-Location Transform Primitives
-*****************************
-.. autosummary::
-   :toctree: generated/
 
-   CityblockDistance
-   GeoMidpoint
-   Haversine
-   IsInGeoBox
-   Latitude
-   Longitude
-
-.. _api_ref.cumulative_features:
-
-Cumulative Transform Primitives
-*******************************
+Time Series Transform Primitives
+********************************
 .. autosummary::
     :toctree: generated/
 
-    Diff
-    DiffDatetime
-    TimeSincePrevious
-    CumCount
-    CumSum
-    CumMean
-    CumMin
-    CumMax
+    Lag
+    RollingCount
+    RollingMax
+    RollingMean
+    RollingMin
+    RollingSTD
+    RollingTrend
+
 
 .. currentmodule:: nlp_primitives
 
