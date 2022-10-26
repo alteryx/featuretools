@@ -80,6 +80,9 @@ Aggregation Primitives
 .. autosummary::
     :toctree: generated/
 
+    All
+    Any
+    AvgTimeBetween
     Count
     CountAboveMean
     CountBelowMean
@@ -89,28 +92,59 @@ Aggregation Primitives
     CountLessThan
     CountOutsideNthSTD
     CountOutsideRange
-    Mean
-    Sum
-    Min
-    Max
-    Std
-    Median
-    Mode
-    AvgTimeBetween
-    TimeSinceLast
-    TimeSinceFirst
-    NumUnique
-    PercentTrue
-    All
-    Any
+    Entropy
     First
     Last
+    Max
+    Mean
+    Median
+    Min
+    Mode
+    NMostCommon
+    NumTrue
+    NumUnique
+    PercentTrue
     Skew
+    Std
+    Sum
+    TimeSinceFirst
+    TimeSinceLast
     Trend
-    Entropy
 
 Transform Primitives
 --------------------
+Binary Transform Primitives
+***************************
+.. autosummary::
+    :toctree: generated/
+
+    AddNumeric
+    AddNumericScalar
+    DivideByFeature
+    DivideNumericScalar
+    Equal
+    EqualScalar
+    GreaterThan
+    GreaterThanEqualTo
+    GreaterThanEqualToScalar
+    GreaterThanScalar
+    LessThan
+    LessThanEqualTo
+    LessThanEqualToScalar
+    LessThanScalar
+    ModuloByFeature
+    ModuloNumeric
+    ModuloNumericScalar
+    MultiplyBoolean
+    MultiplyNumericBoolean
+    MultiplyNumericScalar
+    NotEqual
+    NotEqualScalar
+    ScalarSubtractNumericFeature
+    SubtractNumeric
+    SubtractNumericScalar
+
+
 Combine features
 ****************
 .. autosummary::
@@ -121,93 +155,6 @@ Combine features
     Or
     Not
 
-General Transform Primitives
-****************************
-.. autosummary::
-    :toctree: generated/
-
-    Absolute
-    SquareRoot
-    NaturalLogarithm
-    Sine
-    Cosine
-    Tangent
-    Percentile
-    TimeSince
-
-Datetime Transform Primitives
-*****************************
-.. autosummary::
-    :toctree: generated/
-
-    Second
-    Minute
-    Weekday
-    IsLeapYear
-    IsLunchTime
-    IsMonthEnd
-    IsMonthStart
-    IsQuarterEnd
-    IsQuarterStart
-    IsWeekend
-    IsWorkingHours
-    IsYearEnd
-    IsYearStart
-    Hour
-    Day
-    DayOfYear
-    DaysInMonth
-    Week
-    Month
-    PartOfDay
-    Quarter
-    Year
-
-Rolling Transform Primitives
-*******************************
-.. autosummary::
-    :toctree: generated/
-
-    RollingCount
-    RollingMax
-    RollingMean
-    RollingMin
-    RollingSTD
-    RollingTrend
-
-NaturalLanguage Transform Primitives
-************************************
-.. autosummary::
-   :toctree: generated/
-
-    CountString
-    MeanCharactersPerWord
-    MedianWordLength
-    NumberOfCommonWords
-    NumberOfHashtags
-    NumberOfMentions
-    NumberOfUniqueWords
-    NumberOfWordsInQuotes
-    NumCharacters
-    NumUniqueSeparators
-    NumWords
-    PunctuationCount
-    TitleWordCount
-    TotalWordLength
-    UpperCaseCount
-    WhitespaceCount
-
-Location Transform Primitives
-*****************************
-.. autosummary::
-   :toctree: generated/
-
-   CityblockDistance
-   GeoMidpoint
-   Haversine
-   IsInGeoBox
-   Latitude
-   Longitude
 
 .. _api_ref.cumulative_features:
 
@@ -224,6 +171,129 @@ Cumulative Transform Primitives
     CumMean
     CumMin
     CumMax
+
+
+Datetime Transform Primitives
+*****************************
+.. autosummary::
+    :toctree: generated/
+
+    Age
+    DateToHoliday
+    DateToTimeZone
+    Day
+    DayOfYear
+    DaysInMonth
+    DistanceToHoliday
+    Hour
+    IsFederalHoliday
+    IsLeapYear
+    IsLunchTime
+    IsMonthEnd
+    IsMonthStart
+    IsQuarterEnd
+    IsQuarterStart
+    IsWeekend
+    IsWorkingHours
+    IsYearEnd
+    IsYearStart
+    Minute
+    Month
+    PartOfDay
+    Quarter
+    Second
+    Week
+    Weekday
+    Year
+
+
+Email and URL Transform Primitives
+**********************************
+.. autosummary::
+    :toctree: generated/
+
+    EmailAddressToDomain
+    IsFreeEmailDomain
+    URLToDomain
+    URLToProtocol
+    URLToTLD
+
+
+Exponential Transform Primitives
+********************************
+.. autosummary::
+    :toctree: generated/
+
+    ExponentialWeightedAverage
+    ExponentialWeightedSTD
+    ExponentialWeightedVariance
+
+
+General Transform Primitives
+****************************
+.. autosummary::
+    :toctree: generated/
+
+    Absolute
+    Cosine
+    IsNull
+    NaturalLogarithm
+    Negate
+    Percentile
+    Sine
+    SquareRoot
+    Tangent
+
+
+Location Transform Primitives
+*****************************
+.. autosummary::
+   :toctree: generated/
+
+   CityblockDistance
+   GeoMidpoint
+   Haversine
+   IsInGeoBox
+   Latitude
+   Longitude
+
+
+NaturalLanguage Transform Primitives
+************************************
+.. autosummary::
+   :toctree: generated/
+
+   CountString
+   MeanCharactersPerWord
+   MedianWordLength
+   NumCharacters
+   NumUniqueSeparators
+   NumWords
+   NumberOfCommonWords
+   NumberOfHashtags
+   NumberOfMentions
+   NumberOfUniqueWords
+   NumberOfWordsInQuotes
+   PunctuationCount
+   TitleWordCount
+   TotalWordLength
+   UpperCaseCount
+   WhitespaceCount
+
+
+Time Series Transform Primitives
+********************************
+.. autosummary::
+    :toctree: generated/
+
+    Lag
+    RollingCount
+    RollingMax
+    RollingMean
+    RollingMin
+    RollingSTD
+    RollingTrend
+
 
 .. currentmodule:: nlp_primitives
 

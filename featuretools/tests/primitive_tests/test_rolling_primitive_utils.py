@@ -12,7 +12,7 @@ from featuretools.primitives import (
     RollingSTD,
     RollingTrend,
 )
-from featuretools.primitives.rolling_primitive_utils import (
+from featuretools.primitives.standard.transform.time_series.utils import (
     _get_rolled_series_without_gap,
     apply_roll_with_offset_gap,
     roll_series_with_gap,
@@ -602,7 +602,9 @@ def test_roll_series_with_non_offset_string_inputs(rolling_series_pd):
     "primitive",
     [RollingCount, RollingMax, RollingMin, RollingMean, RollingSTD, RollingTrend],
 )
-@patch("featuretools.primitives.rolling_primitive_utils.apply_roll_with_offset_gap")
+@patch(
+    "featuretools.primitives.standard.transform.time_series.utils.apply_roll_with_offset_gap",
+)
 def test_no_call_to_apply_roll_with_offset_gap_with_numeric(
     mock_apply_roll,
     primitive,

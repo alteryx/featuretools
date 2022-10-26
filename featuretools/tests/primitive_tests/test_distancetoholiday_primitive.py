@@ -5,9 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from featuretools.primitives.standard.datetime_transform_primitives import (
-    DistanceToHoliday,
-)
+from featuretools.primitives import DistanceToHoliday
 
 
 def test_distanceholiday():
