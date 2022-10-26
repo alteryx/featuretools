@@ -1,7 +1,7 @@
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, Timedelta
 
-from featuretools.primitives.standard.transform.diff import Diff
+from featuretools.primitives.standard.transform.numeric.diff import Diff
 
 
 class DiffDatetime(Diff):
