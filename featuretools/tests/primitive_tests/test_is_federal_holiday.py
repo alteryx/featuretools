@@ -4,9 +4,7 @@ import numpy as np
 import pandas as pd
 from pytest import raises
 
-from featuretools.primitives.standard.datetime_transform_primitives import (
-    IsFederalHoliday,
-)
+from featuretools.primitives import IsFederalHoliday
 
 
 def test_regular():

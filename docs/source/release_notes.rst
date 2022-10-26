@@ -10,6 +10,7 @@ Future Release
         * Add CountAboveMean, CountBelowMean, CountGreaterThan, CountInsideNthSTD, CountInsideRange, CountLessThan, CountOutsideNthSTD, CountOutsideRange (:pr:`2336`)
     * Fixes
     * Changes
+        * Restructure primitives directory to use individual primitives files (:pr:`2331`)
     * Documentation Changes
         * Add Featuretools-SQL to Install page on documentation (:pr:`2337`)
     * Testing Changes
