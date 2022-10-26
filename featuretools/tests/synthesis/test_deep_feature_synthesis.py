@@ -1115,7 +1115,7 @@ def test_return_types(es):
 def test_checks_primitives_correct_type(es):
     error_text = (
         "Primitive <class \\'featuretools\\.primitives\\.standard\\."
-        "transform_primitives\\.datetime_transform_primitives\\.hour\\.Hour\\'> in "
+        "transform\\.datetime\\.hour\\.Hour\\'> in "
         "agg_primitives is not an aggregation primitive"
     )
     with pytest.raises(ValueError, match=error_text):
@@ -1128,7 +1128,7 @@ def test_checks_primitives_correct_type(es):
 
     error_text = (
         "Primitive <class \\'featuretools\\.primitives\\.standard\\."
-        "aggregation_primitives\\.sum_primitive\\.Sum\\'> in trans_primitives "
+        "aggregation\\.sum_primitive\\.Sum\\'> in trans_primitives "
         "is not a transform primitive"
     )
     with pytest.raises(ValueError, match=error_text):
