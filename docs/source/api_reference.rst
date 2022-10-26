@@ -81,6 +81,14 @@ Aggregation Primitives
     :toctree: generated/
 
     Count
+    CountAboveMean
+    CountBelowMean
+    CountGreaterThan
+    CountInsideNthSTD
+    CountInsideRange
+    CountLessThan
+    CountOutsideNthSTD
+    CountOutsideRange
     Mean
     Sum
     Min
