@@ -4,7 +4,9 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Double, LatLong
 
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.primitives.utils import _haversine_calculate
+from featuretools.primitives.standard.transform_primitives.latlong_transform_primitives.utils import (
+    _haversine_calculate,
+)
 
 
 class CityblockDistance(TransformPrimitive):

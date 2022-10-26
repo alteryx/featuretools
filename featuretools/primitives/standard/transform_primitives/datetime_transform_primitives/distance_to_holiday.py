@@ -3,7 +3,9 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime
 
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.primitives.utils import HolidayUtil
+from featuretools.primitives.standard.transform_primitives.datetime_transform_primitives.utils import (
+    HolidayUtil,
+)
 
 
 class DistanceToHoliday(TransformPrimitive):

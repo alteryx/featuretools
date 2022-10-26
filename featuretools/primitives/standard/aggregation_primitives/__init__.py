@@ -1,6 +1,5 @@
-# flake8: noqa
-from featuretools.primitives.standard.aggregation_primitives.all import All
-from featuretools.primitives.standard.aggregation_primitives.any import Any
+from featuretools.primitives.standard.aggregation_primitives.all_primitive import All
+from featuretools.primitives.standard.aggregation_primitives.any_primitive import Any
 from featuretools.primitives.standard.aggregation_primitives.avg_time_between import (
     AvgTimeBetween,
 )
@@ -32,10 +31,10 @@ from featuretools.primitives.standard.aggregation_primitives.count_outside_range
 from featuretools.primitives.standard.aggregation_primitives.entropy import Entropy
 from featuretools.primitives.standard.aggregation_primitives.first import First
 from featuretools.primitives.standard.aggregation_primitives.last import Last
-from featuretools.primitives.standard.aggregation_primitives.max import Max
+from featuretools.primitives.standard.aggregation_primitives.max_primitive import Max
 from featuretools.primitives.standard.aggregation_primitives.mean import Mean
 from featuretools.primitives.standard.aggregation_primitives.median import Median
-from featuretools.primitives.standard.aggregation_primitives.min import Min
+from featuretools.primitives.standard.aggregation_primitives.min_primitive import Min
 from featuretools.primitives.standard.aggregation_primitives.mode import Mode
 from featuretools.primitives.standard.aggregation_primitives.n_most_common import (
     NMostCommon,
@@ -47,7 +46,7 @@ from featuretools.primitives.standard.aggregation_primitives.percent_true import
 )
 from featuretools.primitives.standard.aggregation_primitives.skew import Skew
 from featuretools.primitives.standard.aggregation_primitives.std import Std
-from featuretools.primitives.standard.aggregation_primitives.sum import Sum
+from featuretools.primitives.standard.aggregation_primitives.sum_primitive import Sum
 from featuretools.primitives.standard.aggregation_primitives.time_since_first import (
     TimeSinceFirst,
 )

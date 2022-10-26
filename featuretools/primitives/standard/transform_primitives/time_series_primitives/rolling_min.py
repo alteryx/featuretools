@@ -3,7 +3,7 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, Double
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
-from featuretools.primitives.standard.transform_primitives.time_series_primitives.rolling_primitive_utils import (
+from featuretools.primitives.standard.transform_primitives.time_series_primitives.utils import (
     apply_rolling_agg_to_series,
 )
 
