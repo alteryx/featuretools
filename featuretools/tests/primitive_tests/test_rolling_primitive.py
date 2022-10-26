@@ -10,7 +10,9 @@ from featuretools.primitives import (
     RollingSTD,
     RollingTrend,
 )
-from featuretools.primitives.rolling_primitive_utils import apply_rolling_agg_to_series
+from featuretools.primitives.standard.transform.time_series.utils import (
+    apply_rolling_agg_to_series,
+)
 from featuretools.tests.primitive_tests.utils import get_number_from_offset
 
 
