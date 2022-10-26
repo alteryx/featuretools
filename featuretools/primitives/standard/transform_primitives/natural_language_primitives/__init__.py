@@ -1,4 +1,3 @@
-# flake8: noqa
 from featuretools.primitives.standard.transform_primitives.natural_language_primitives.count_string import (
     CountString,
 )
