@@ -12,10 +12,10 @@ def load_retail(id="demo_retail_data", nrows=None, return_single_table=False):
     changed the column names, converted the ``customer_id``
     to a unique fake ``customer_name``, dropped duplicates,
     added columns for ``total`` and ``cancelled`` and
-    converted amounts from GBP to USD. You can download the modified CSV `in gz compressed (7 MB)
-    <"https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv.gz">`_
+    converted amounts from GBP to USD. You can download the modified CSV in gz `compressed (7 MB)
+    <https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv.gz>`_
     or `uncompressed (43 MB)
-    <"https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv">`_ formats.
+    <https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv>`_ formats.
 
     Args:
         id (str):  Id to assign to EntitySet.

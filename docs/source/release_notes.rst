@@ -13,10 +13,11 @@ Future Release
         * Restructure primitives directory to use individual primitives files (:pr:`2331`)
     * Documentation Changes
         * Add Featuretools-SQL to Install page on documentation (:pr:`2337`)
+        * Fixes broken link in Featuretools documentation (:pr:`2339`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`
+    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v1.16.0 Oct 24, 2022
 ====================
