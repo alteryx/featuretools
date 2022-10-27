@@ -12,6 +12,7 @@ from featuretools.primitives.standard.transform.time_series.utils import (
 
 class RollingOutlierCount(TransformPrimitive):
     """Determines how many values are outliers over a given window.
+
     Description:
         Given a list of numbers and a corresponding list of
         datetimes, return a rolling count of outliers within the numeric values,
@@ -50,6 +51,7 @@ class RollingOutlierCount(TransformPrimitive):
         This limitation does not exist when using an offset alias to define `window_length`. In fact,
         if the data has a uniform sampling frequency, it is preferable to use a numeric `gap` as it is more
         efficient.
+
     Examples:
         >>> import pandas as pd
         >>> rolling_outlier_count = RollingOutlierCount(window_length=4)
