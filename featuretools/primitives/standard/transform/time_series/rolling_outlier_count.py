@@ -20,6 +20,7 @@ class RollingOutlierCount(TransformPrimitive):
         over the specified window (by `window_length` and `gap`). Values are deemed
         outliers using the IQR method, computed over the whole series.
         Input datetimes should be monotonic.
+
     Args:
         window_length (int, string, optional): Specifies the amount of data included in each window.
             If an integer is provided, will correspond to a number of rows. For data with a uniform sampling frequency,
