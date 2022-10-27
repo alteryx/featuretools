@@ -739,6 +739,6 @@ def rolling_series_pd():
 @pytest.fixture
 def rolling_outlier_series_pd():
     return pd.Series(
-        [0] * 5 + [10] + [0] * 5 + [10] + [0] * 3,
-        index=pd.date_range(start="2020-01-01", periods=15),
+        [0] * 4 + [10] + [0] * 4 + [10] + [0] * 5,
+        index=pd.date_range(start="2020-01-01", end="2020-01-15", periods=15),
     )

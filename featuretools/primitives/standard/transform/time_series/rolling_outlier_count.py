@@ -91,7 +91,6 @@ class RollingOutlierCount(TransformPrimitive):
     def get_outliers_count(self, numeric_series):
         # We know the column is numeric, so use the Double logical type in case Woodwork's
         # type inference could not infer a numeric type
-        print(f"Numeric_series: {numeric_series}")
         if not len(numeric_series.dropna()):
             return np.nan
         ww_series = init_series(numeric_series, logical_type="Double")

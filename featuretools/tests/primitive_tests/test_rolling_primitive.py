@@ -432,61 +432,23 @@ def test_rolling_trend_non_uniform():
         ("5d", "0d"),
     ],
 )
+@pytest.mark.parametrize(
+    "min_periods",
+    [1, 0, 2, 5],
+)
 def test_rolling_outlier_count(
     min_periods,
     window_length,
     gap,
     rolling_outlier_series_pd,
 ):
-    gap_num = get_number_from_offset(gap)
-    window_length_num = get_number_from_offset(window_length)
 
     primitive_instance = RollingOutlierCount(
         window_length=window_length,
         gap=gap,
         min_periods=min_periods,
     )
-    # Since we're using a uniform series we can check correctness using numeric parameters
-    expected_series = pd.Series(
-        [
-            [
-                np.nan,
-                np.nan,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                1.0,
-                1.0,
-                1.0,
-                1.0,
-                1.0,
-                1.0,
-                1.0,
-                1.0,
-                1.0,
-            ],
-            [0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0],
-            [
-                np.nan,
-                np.nan,
-                np.nan,
-                np.nan,
-                np.nan,
-                np.nan,
-                np.nan,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                1.0,
-                1.0,
-                1.0,
-                1.0,
-            ],
-            [0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0],
-        ],
-    )
+
     primitive_func = primitive_instance.get_function()
 
     actual_vals = pd.Series(
@@ -496,8 +458,12 @@ def test_rolling_outlier_count(
         ),
     )
 
-    # Since min_periods of 0 is the same as min_periods of 1
-    num_nans_from_min_periods = min_periods or 1
+    expected_vals = apply_rolling_agg_to_series(
+        rolling_outlier_series_pd,
+        primitive_instance.get_outliers_count,
+        window_length=window_length,
+        gap=gap,
+        min_periods=min_periods,
+    )
 
-    assert actual_vals.isna().sum() == gap_num + num_nans_from_min_periods - 1
-    pd.testing.assert_series_equal(pd.Series(expected_series), actual_vals)
+    pd.testing.assert_series_equal(actual_vals, pd.Series(data=expected_vals))
