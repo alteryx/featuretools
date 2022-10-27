@@ -7,6 +7,7 @@ from featuretools.primitives import (
     RollingMax,
     RollingMean,
     RollingMin,
+    RollingOutlierCount,
     RollingSTD,
     RollingTrend,
 )
@@ -431,7 +432,6 @@ def test_rolling_trend_non_uniform():
         ("5d", "0d"),
     ],
 )
-@pytest.mark.parametrize("min_periods", [1, 0, 2, 5])
 def test_rolling_outlier_count(
     min_periods,
     window_length,
@@ -441,22 +441,51 @@ def test_rolling_outlier_count(
     gap_num = get_number_from_offset(gap)
     window_length_num = get_number_from_offset(window_length)
 
-    # Since we're using a uniform series we can check correctness using numeric parameters
-    expected_vals = (
-        apply_rolling_agg_to_series(
-            series=rolling_outlier_series_pd,
-            window_length=window_length_num,
-            min_periods=min_periods,
-            gap=gap_num,
-        )
-        .mean()
-        .values
-    )
-
-    primitive_instance = RollingMean(
+    primitive_instance = RollingOutlierCount(
         window_length=window_length,
         gap=gap,
         min_periods=min_periods,
+    )
+    # Since we're using a uniform series we can check correctness using numeric parameters
+    expected_series = pd.Series(
+        [
+            [
+                np.nan,
+                np.nan,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+            ],
+            [0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0],
+            [
+                np.nan,
+                np.nan,
+                np.nan,
+                np.nan,
+                np.nan,
+                np.nan,
+                np.nan,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+            ],
+            [0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0],
+        ],
     )
     primitive_func = primitive_instance.get_function()
 
@@ -471,4 +500,4 @@ def test_rolling_outlier_count(
     num_nans_from_min_periods = min_periods or 1
 
     assert actual_vals.isna().sum() == gap_num + num_nans_from_min_periods - 1
-    pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
+    pd.testing.assert_series_equal(pd.Series(expected_series), actual_vals)

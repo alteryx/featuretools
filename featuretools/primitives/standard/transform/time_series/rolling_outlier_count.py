@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from woodwork import init_series
 from woodwork.column_schema import ColumnSchema
@@ -15,21 +16,22 @@ class RollingOutlierCount(TransformPrimitive):
         Given a list of numbers and a corresponding list of
         datetimes, return a rolling count of outliers within the numeric values,
         starting at the row `gap` rows away from the current row and looking backward
-        over the specified window (by `window_length` and `gap`).
+        over the specified window (by `window_length` and `gap`). Values are deemed
+        outliers using the IQR method, computed over the whole series.
         Input datetimes should be monotonic.
     Args:
         window_length (int, string, optional): Specifies the amount of data included in each window.
             If an integer is provided, will correspond to a number of rows. For data with a uniform sampling frequency,
             for example of one day, the window_length will correspond to a period of time, in this case,
             7 days for a window_length of 7.
-            If a string is provided, it must be one of pandas' offset alias strings ('1D', '1H', etc),
+            If a string is provided, it must be one of Pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time that each window should span.
-            The list of available offset aliases, can be found at
+            The list of available offset aliases can be found at
             https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases.
             Defaults to 3.
         gap (int, string, optional): Specifies a gap backwards from each instance before the
             window of usable data begins. If an integer is provided, will correspond to a number of rows.
-            If a string is provided, it must be one of pandas' offset alias strings ('1D', '1H', etc),
+            If a string is provided, it must be one of Pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time between a target instance and the beginning of its window.
             Defaults to 0, which will include the target instance in the window.
         min_periods (int, optional): Minimum number of observations required for performing calculations
@@ -89,6 +91,9 @@ class RollingOutlierCount(TransformPrimitive):
     def get_outliers_count(self, numeric_series):
         # We know the column is numeric, so use the Double logical type in case Woodwork's
         # type inference could not infer a numeric type
+        print(f"Numeric_series: {numeric_series}")
+        if not len(numeric_series.dropna()):
+            return np.nan
         ww_series = init_series(numeric_series, logical_type="Double")
         box_plot_info = ww_series.ww.box_plot_dict()
         return len(box_plot_info["high_values"]) + len(box_plot_info["low_values"])
@@ -96,13 +101,13 @@ class RollingOutlierCount(TransformPrimitive):
     def get_function(self):
         def rolling_outlier_count(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = apply_rolling_agg_to_series(
+            return apply_rolling_agg_to_series(
                 series=x,
                 agg_func=self.get_outliers_count,
                 window_length=self.window_length,
+                gap=self.gap,
                 min_periods=self.min_periods,
                 ignore_window_nans=False,
             )
-            return rolled_series.apply(self.get_outliers_count).values
 
         return rolling_outlier_count
