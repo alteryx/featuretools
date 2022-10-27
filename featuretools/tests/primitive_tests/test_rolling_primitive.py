@@ -459,8 +459,8 @@ def test_rolling_outlier_count(
     )
 
     expected_vals = apply_rolling_agg_to_series(
-        rolling_outlier_series_pd,
-        primitive_instance.get_outliers_count,
+        series=rolling_outlier_series_pd,
+        agg_func=primitive_instance.get_outliers_count,
         window_length=window_length,
         gap=gap,
         min_periods=min_periods,
