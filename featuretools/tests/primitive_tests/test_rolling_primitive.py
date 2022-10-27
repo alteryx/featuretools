@@ -444,10 +444,10 @@ def test_rolling_outlier_count(
     # Since we're using a uniform series we can check correctness using numeric parameters
     expected_vals = (
         apply_rolling_agg_to_series(
-            rolling_outlier_series_pd,
-            window_length_num,
-            gap=gap_num,
+            series=rolling_outlier_series_pd,
+            window_length=window_length_num,
             min_periods=min_periods,
+            gap=gap_num,
         )
         .mean()
         .values
