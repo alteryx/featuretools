@@ -3,6 +3,9 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, Double
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
+from featuretools.primitives.standard.transform.time_series.utils import (
+    apply_rolling_agg_to_series,
+)
 
 
 class RollingOutlierCount(TransformPrimitive):
@@ -96,11 +99,12 @@ class RollingOutlierCount(TransformPrimitive):
     def get_function(self):
         def rolling_outlier_count(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime.values)
-            rolled_series = _roll_series_with_gap(
-                x,
-                self.window_length,
-                gap=self.gap,
+            rolled_series = apply_rolling_agg_to_series(
+                series=x,
+                agg_func=self.get_outliers_count,
+                window_length=self.window_length,
                 min_periods=self.min_periods,
+                ignore_window_nans=False,
             )
             return rolled_series.apply(self.get_outliers_count).values
 
