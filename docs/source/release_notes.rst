@@ -8,6 +8,7 @@ Future Release
     * Enhancements
         * Add featuretools-sklearn-transformer as an extra installation option (:pr:`2335`)
         * Add CountAboveMean, CountBelowMean, CountGreaterThan, CountInsideNthSTD, CountInsideRange, CountLessThan, CountOutsideNthSTD, CountOutsideRange (:pr:`2336`)
+        * Add RollingOutlierCount primitive (:pr:`2129`)
     * Fixes
     * Changes
         * Restructure primitives directory to use individual primitives files (:pr:`2331`)
@@ -17,7 +18,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 v1.16.0 Oct 24, 2022
 ====================
