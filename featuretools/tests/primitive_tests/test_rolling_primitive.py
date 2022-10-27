@@ -420,3 +420,11 @@ def test_rolling_trend_non_uniform():
         primitive_instance(no_freq_series.index, pd.Series(no_freq_series.values)),
     )
     pd.testing.assert_series_equal(rolled_series, expected_series)
+
+
+@pytest.fixture
+def rolling_outlier_series_pd():
+    return pd.Series(
+        [1] * 10 + [25, 25] + [1] * 10 + [50] + [1] * 10 + [50] + [1] * 10 + [50],
+        index=pd.date_range(start="2020-01-01", periods=45),
+    )
