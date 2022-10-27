@@ -40,12 +40,14 @@ class RollingOutlierCount(TransformPrimitive):
             When window_length is an offset alias string, this limitation does not exist, but care should be taken
             to not choose a min_periods that will always be larger than the number of observations in a window.
             Defaults to 1.
+
     Note:
         Only offset aliases with fixed frequencies can be used when defining gap and window_length.
         This means that aliases such as `M` or `W` cannot be used, as they can indicate different
         numbers of days. ('M', because different months are different numbers of days;
         'W' because week will indicate a certain day of the week, like W-Wed, so that will
         indicate a different number of days depending on the anchoring date.)
+
     Note:
         When using an offset alias to define `gap`, an offset alias must also be used to define `window_length`.
         This limitation does not exist when using an offset alias to define `window_length`. In fact,
