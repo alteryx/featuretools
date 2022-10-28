@@ -26,12 +26,12 @@ from featuretools.tests.primitive_tests.utils import get_number_from_offset
     ],
 )
 @pytest.mark.parametrize("min_periods", [1, 0, 2, 5])
-def test_rolling_max(min_periods, window_length, gap, rolling_series_pd):
+def test_rolling_max(min_periods, window_length, gap, window_series_pd):
     gap_num = get_number_from_offset(gap)
     window_length_num = get_number_from_offset(window_length)
     # Since we're using a uniform series we can check correctness using numeric parameters
     expected_vals = apply_rolling_agg_to_series(
-        rolling_series_pd,
+        window_series_pd,
         lambda x: x.max(),
         window_length_num,
         gap=gap_num,
@@ -46,7 +46,7 @@ def test_rolling_max(min_periods, window_length, gap, rolling_series_pd):
     primitive_func = primitive_instance.get_function()
 
     actual_vals = pd.Series(
-        primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)),
+        primitive_func(window_series_pd.index, pd.Series(window_series_pd.values)),
     )
 
     # Since min_periods of 0 is the same as min_periods of 1
@@ -66,13 +66,13 @@ def test_rolling_max(min_periods, window_length, gap, rolling_series_pd):
     ],
 )
 @pytest.mark.parametrize("min_periods", [1, 0, 2, 5])
-def test_rolling_min(min_periods, window_length, gap, rolling_series_pd):
+def test_rolling_min(min_periods, window_length, gap, window_series_pd):
     gap_num = get_number_from_offset(gap)
     window_length_num = get_number_from_offset(window_length)
 
     # Since we're using a uniform series we can check correctness using numeric parameters
     expected_vals = apply_rolling_agg_to_series(
-        rolling_series_pd,
+        window_series_pd,
         lambda x: x.min(),
         window_length_num,
         gap=gap_num,
@@ -87,7 +87,7 @@ def test_rolling_min(min_periods, window_length, gap, rolling_series_pd):
     primitive_func = primitive_instance.get_function()
 
     actual_vals = pd.Series(
-        primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)),
+        primitive_func(window_series_pd.index, pd.Series(window_series_pd.values)),
     )
 
     # Since min_periods of 0 is the same as min_periods of 1
@@ -107,13 +107,13 @@ def test_rolling_min(min_periods, window_length, gap, rolling_series_pd):
     ],
 )
 @pytest.mark.parametrize("min_periods", [1, 0, 2, 5])
-def test_rolling_mean(min_periods, window_length, gap, rolling_series_pd):
+def test_rolling_mean(min_periods, window_length, gap, window_series_pd):
     gap_num = get_number_from_offset(gap)
     window_length_num = get_number_from_offset(window_length)
 
     # Since we're using a uniform series we can check correctness using numeric parameters
     expected_vals = apply_rolling_agg_to_series(
-        rolling_series_pd,
+        window_series_pd,
         np.mean,
         window_length_num,
         gap=gap_num,
@@ -128,7 +128,7 @@ def test_rolling_mean(min_periods, window_length, gap, rolling_series_pd):
     primitive_func = primitive_instance.get_function()
 
     actual_vals = pd.Series(
-        primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)),
+        primitive_func(window_series_pd.index, pd.Series(window_series_pd.values)),
     )
 
     # Since min_periods of 0 is the same as min_periods of 1
@@ -148,13 +148,13 @@ def test_rolling_mean(min_periods, window_length, gap, rolling_series_pd):
     ],
 )
 @pytest.mark.parametrize("min_periods", [1, 0, 2, 5])
-def test_rolling_std(min_periods, window_length, gap, rolling_series_pd):
+def test_rolling_std(min_periods, window_length, gap, window_series_pd):
     gap_num = get_number_from_offset(gap)
     window_length_num = get_number_from_offset(window_length)
 
     # Since we're using a uniform series we can check correctness using numeric parameters
     expected_vals = apply_rolling_agg_to_series(
-        rolling_series_pd,
+        window_series_pd,
         lambda x: x.std(),
         window_length_num,
         gap=gap_num,
@@ -169,7 +169,7 @@ def test_rolling_std(min_periods, window_length, gap, rolling_series_pd):
     primitive_func = primitive_instance.get_function()
 
     actual_vals = pd.Series(
-        primitive_func(rolling_series_pd.index, pd.Series(rolling_series_pd.values)),
+        primitive_func(window_series_pd.index, pd.Series(window_series_pd.values)),
     )
 
     # Since min_periods of 0 is the same as min_periods of 1
@@ -193,12 +193,12 @@ def test_rolling_std(min_periods, window_length, gap, rolling_series_pd):
         ("6d", "7d"),
     ],
 )
-def test_rolling_count(window_length, gap, rolling_series_pd):
+def test_rolling_count(window_length, gap, window_series_pd):
     gap_num = get_number_from_offset(gap)
     window_length_num = get_number_from_offset(window_length)
 
     expected_vals = apply_rolling_agg_to_series(
-        rolling_series_pd,
+        window_series_pd,
         lambda x: x.count(),
         window_length_num,
         gap=gap_num,
@@ -211,7 +211,7 @@ def test_rolling_count(window_length, gap, rolling_series_pd):
     )
     primitive_func = primitive_instance.get_function()
 
-    actual_vals = pd.Series(primitive_func(rolling_series_pd.index))
+    actual_vals = pd.Series(primitive_func(window_series_pd.index))
 
     num_nans = gap_num + window_length_num - 1
     assert actual_vals.isna().sum() == num_nans
@@ -233,7 +233,7 @@ def test_rolling_count_primitive_min_periods_nans(
     gap,
     min_periods,
     expected_num_nams,
-    rolling_series_pd,
+    window_series_pd,
 ):
     primitive_instance = RollingCount(
         window_length=window_length,
@@ -241,7 +241,7 @@ def test_rolling_count_primitive_min_periods_nans(
         min_periods=min_periods,
     )
     primitive_func = primitive_instance.get_function()
-    vals = pd.Series(primitive_func(rolling_series_pd.index))
+    vals = pd.Series(primitive_func(window_series_pd.index))
 
     assert vals.isna().sum() == expected_num_nams
 
@@ -256,7 +256,7 @@ def test_rolling_count_with_no_gap(
     gap,
     min_periods,
     expected_num_nams,
-    rolling_series_pd,
+    window_series_pd,
 ):
     primitive_instance = RollingCount(
         window_length=window_length,
@@ -264,7 +264,7 @@ def test_rolling_count_with_no_gap(
         min_periods=min_periods,
     )
     primitive_func = primitive_instance.get_function()
-    vals = pd.Series(primitive_func(rolling_series_pd.index))
+    vals = pd.Series(primitive_func(window_series_pd.index))
 
     assert vals.isna().sum() == expected_num_nams
 
@@ -311,18 +311,18 @@ def test_rolling_count_with_no_gap(
         ),
     ],
 )
-def test_rolling_trend(window_length, gap, expected_vals, rolling_series_pd):
+def test_rolling_trend(window_length, gap, expected_vals, window_series_pd):
     primitive_instance = RollingTrend(window_length=window_length, gap=gap)
 
-    actual_vals = primitive_instance(rolling_series_pd.index, rolling_series_pd.values)
+    actual_vals = primitive_instance(window_series_pd.index, window_series_pd.values)
 
     pd.testing.assert_series_equal(pd.Series(expected_vals), pd.Series(actual_vals))
 
 
-def test_rolling_trend_window_length_less_than_three(rolling_series_pd):
+def test_rolling_trend_window_length_less_than_three(window_series_pd):
     primitive_instance = RollingTrend(window_length=2)
 
-    vals = primitive_instance(rolling_series_pd.index, rolling_series_pd.values)
+    vals = primitive_instance(window_series_pd.index, window_series_pd.values)
 
     for v in vals:
         assert np.isnan(v)
