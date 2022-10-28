@@ -288,7 +288,10 @@ Time Series Transform Primitives
 
     ExpandingCount
     ExpandingMax
+    ExpandingMean
     ExpandingMin
+    ExpandingSTD
+    ExpandingTrend
     Lag
     RollingCount
     RollingMax
