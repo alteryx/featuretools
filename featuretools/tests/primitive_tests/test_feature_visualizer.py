@@ -32,8 +32,8 @@ def test_returns_digraph_object(simple_feat):
     assert isinstance(graph, graphviz.Digraph)
 
 
-def test_saving_png_file(simple_feat, tmpdir):
-    output_path = str(tmpdir.join("test1.png"))
+def test_saving_png_file(simple_feat, tmp_path):
+    output_path = str(tmp_path.joinpath("test1.png"))
     graph_feature(simple_feat, to_file=output_path)
     assert os.path.isfile(output_path)
 
@@ -73,8 +73,8 @@ def test_transform(es, trans_feat):
         assert match in row
 
 
-def test_html_symbols(es, tmpdir):
-    output_path_template = str(tmpdir.join("test{}.png"))
+def test_html_symbols(es, tmp_path):
+    output_path_template = str(tmp_path.joinpath("test{}.png"))
     value = IdentityFeature(es["log"].ww["value"])
     gt = value > 5
     lt = value < 5
@@ -423,7 +423,7 @@ def test_description_auto_caption(trans_feat):
     assert default_label in default_graph
 
 
-def test_description_auto_caption_metadata(trans_feat, tmpdir):
+def test_description_auto_caption_metadata(trans_feat, tmp_path):
     feature_descriptions = {"customers: cancel_date": "the date the customer cancelled"}
     primitive_templates = {"year": "the year that {} occurred"}
     metadata_graph = graph_feature(
@@ -440,7 +440,7 @@ def test_description_auto_caption_metadata(trans_feat, tmpdir):
         "feature_descriptions": feature_descriptions,
         "primitive_templates": primitive_templates,
     }
-    metadata_path = os.path.join(tmpdir, "description_metadata.json")
+    metadata_path = os.path.join(tmp_path, "description_metadata.json")
     with open(metadata_path, "w") as f:
         json.dump(metadata, f)
     json_metadata_graph = graph_feature(

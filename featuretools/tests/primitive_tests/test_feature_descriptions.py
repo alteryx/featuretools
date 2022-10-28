@@ -264,7 +264,7 @@ def test_column_description(es):
     )
 
 
-def test_metadata(es, tmpdir):
+def test_metadata(es, tmp_path):
     identity_feature_descriptions = {
         "sessions: device_name": "the name of the device used for each session",
         "customers: id": "the customer's id",
@@ -319,7 +319,7 @@ def test_metadata(es, tmpdir):
         },
         "primitive_templates": primitive_templates,
     }
-    metadata_path = os.path.join(tmpdir, "description_metadata.json")
+    metadata_path = os.path.join(tmp_path, "description_metadata.json")
     with open(metadata_path, "w") as f:
         json.dump(metadata, f)
     assert describe_feature(agg_feat, metadata_file=metadata_path) == agg_description

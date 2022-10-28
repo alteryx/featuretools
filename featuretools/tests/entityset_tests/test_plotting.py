@@ -47,8 +47,8 @@ def test_returns_digraph_object(es):
     assert isinstance(graph, graphviz.Digraph)
 
 
-def test_saving_png_file(es, tmpdir):
-    output_path = str(tmpdir.join("test1.png"))
+def test_saving_png_file(es, tmp_path):
+    output_path = str(tmp_path.joinpath("test1.png"))
 
     es.plot(to_file=output_path)
 
