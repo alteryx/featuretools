@@ -8,6 +8,7 @@ Future Release
     * Enhancements
         * Add featuretools-sklearn-transformer as an extra installation option (:pr:`2335`)
         * Add CountAboveMean, CountBelowMean, CountGreaterThan, CountInsideNthSTD, CountInsideRange, CountLessThan, CountOutsideNthSTD, CountOutsideRange (:pr:`2336`)
+        * Add ExpandingCount primitive (:pr:`2343`)
     * Fixes
     * Changes
         * Restructure primitives directory to use individual primitives files (:pr:`2331`)
