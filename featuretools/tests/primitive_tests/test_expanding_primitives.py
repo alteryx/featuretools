@@ -28,3 +28,12 @@ def test_expanding_min():
     primitive_instance = ExpandingMin().get_function()
     expected = pd.Series([i for i in range(10, 0)]).astype("float64")
     pd.testing.assert_series_equal(primitive_instance(series), expected)
+
+
+def test_expanding_max():
+    times = pd.date_range(start="2022-01-01", end="2023-01-01", periods=10)
+    values = [i for i in range(10)]
+    series = pd.Series(data=values, index=times)
+    primitive_instance = ExpandingMin().get_function()
+    expected = pd.Series([i for i in range(10)]).astype("float64")
+    pd.testing.assert_series_equal(primitive_instance(series), expected)
