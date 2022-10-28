@@ -5,11 +5,11 @@ from woodwork.logical_types import Datetime, Double
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
 
 
-class ExpandingCount(TransformPrimitive):
-    """Computes the expanding count of events over a given window.
+class ExpandingMin(TransformPrimitive):
+    """Computes the expanding minimum of events over a given window.
 
     Description:
-        Given a list of datetimes, return an expanding count starting
+        Given a list of datetimes, return an expanding minimum starting
         at the row `gap` rows away from the current row and looking backward over the specified
         time window (by `window_length` and `gap`).
 
@@ -44,48 +44,39 @@ class ExpandingCount(TransformPrimitive):
 
     Examples:
         >>> import pandas as pd
-        >>> expanding_count = ExpandingCount()
+        >>> expanding_min = ExpandingMin()
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
-        >>> expanding_count(times).tolist()
-        [0.0, 1.0, 2.0, 3.0, 4.0]
-
-        #note to self: notice that count only counts non-NaN observations
+        >>> expanding_min(times, [5, 4, 3, 2, 1]).tolist()
+        [nan, 5.0, 4.0, 3.0, 2.0]
 
         We can also control the gap before the expanding calculation.
 
         >>> import pandas as pd
-        >>> expanding_count = ExpandingCount(gap=0)
+        >>> expanding_min = ExpandingMin(gap=0)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
-        >>> expanding_count(times).tolist()
-        [1.0, 2.0, 3.0, 4.0, 5.0]
+        >>> expanding_min(times, [5, 4, 3, 2, 1]).tolist()
+        [5.0, 4.0, 3.0, 2.0, 1.0]
 
         We can also control the minimum number of periods required for the rolling calculation.
 
         >>> import pandas as pd
-        >>> expanding_count = ExpandingCount(min_periods=3)
+        >>> expanding_min = ExpandingMin(min_periods=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
-        >>> expanding_count(times).tolist()
-        [nan, nan, 3.0, 4.0, 5.0]
-
-        We can also set the gap using offset alias strings.
-        >>> import pandas as pd
-        >>> expanding_count = ExpandingCount(gap='1min')
-        >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
-        >>> expanding_count(times).tolist()
-        [nan, 1.0, 2.0, 3.0, 4.0]
+        >>> expanding_min(times, [5, 4, 3, 2, 1]).tolist()
+        [nan, nan, 4.0, 3.0, 2.0, 1.0]
     """
 
-    name = "expanding_count"
+    name = "expanding_min"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
 
-    def __init__(self, gap=1, min_periods=0):
+    def __init__(self, gap=1, min_periods=1):
         self.gap = gap
         self.min_periods = min_periods
 
     def get_function(self):
-        def expanding_count(datetime):
-            x = pd.Series(1, index=datetime)
+        def expanding_min(datetime, numeric):
+            x = pd.Series(numeric.values, index=datetime)
             if isinstance(self.gap, int):
                 x = x.shift(self.gap)
             else:
@@ -93,6 +84,6 @@ class ExpandingCount(TransformPrimitive):
                     "We currently do not support string offsets for the gap parameter in "
                     "Expanding primitives",
                 )
-            return x.expanding(min_periods=self.min_periods).count().values
+            return x.expanding(min_periods=self.min_periods).min().values
 
-        return expanding_count
+        return expanding_min

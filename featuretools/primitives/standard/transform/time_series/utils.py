@@ -189,8 +189,9 @@ def apply_rolling_agg_to_series(
             to not choose a min_periods that will always be larger than the number of observations in a window.
             Defaults to 1.
         ignore_window_nans (bool, optional): Whether or not NaNs in the rolling window should be included in the rolling calculation.
-            NaNs by default get counted towards min_periods. When set to true,
+            NaNs by default get counted towards min_periods. When set to True,
             all partial values calculated by `agg_func` in the rolling window get replaced with NaN.
+            Defaults to False.
 
     Returns:
         numpy.ndarray: The array of rolling calculated values.
