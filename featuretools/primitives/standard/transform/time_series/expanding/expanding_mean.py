@@ -47,7 +47,7 @@ class ExpandingMean(TransformPrimitive):
         >>> expanding_mean = ExpandingMean()
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> expanding_mean(times, [5, 4, 3, 2, 1]).tolist()
-        [nan, 5.0, 4.5, 4.0, 2.0]
+        [nan, 5.0, 4.5, 4.0, 3.5]
 
         We can also control the gap before the expanding calculation.
 
@@ -55,7 +55,7 @@ class ExpandingMean(TransformPrimitive):
         >>> expanding_mean = ExpandingMean(gap=0)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> expanding_mean(times, [5, 4, 3, 2, 1]).tolist()
-        [5.0, 4.0, 3.0, 2.0, 1.0]
+        [5.0, 4.5, 4.0, 3.5, 3.0]
 
         We can also control the minimum number of periods required for the rolling calculation.
 
@@ -63,7 +63,7 @@ class ExpandingMean(TransformPrimitive):
         >>> expanding_mean = ExpandingMean(min_periods=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> expanding_mean(times, [5, 4, 3, 2, 1]).tolist()
-        [nan, nan, 4.0, 3.0, 2.0, 1.0]
+        [nan, nan, 4.0, 3.5, 3.0]
     """
 
     name = "expanding_mean"
