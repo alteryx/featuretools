@@ -3,6 +3,7 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, Double
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
+from featuretools.utils import calculate_trend
 
 
 class ExpandingTrend(TransformPrimitive):
@@ -84,6 +85,6 @@ class ExpandingTrend(TransformPrimitive):
                     "We currently do not support string offsets for the gap parameter in "
                     "Expanding primitives",
                 )
-            return x.expanding(min_periods=self.min_periods).trend().values
+            return x.expanding(min_periods=self.min_periods).aggregate(calculate_trend)
 
         return expanding_trend
