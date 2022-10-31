@@ -467,4 +467,10 @@ def test_rolling_outlier_count(
         min_periods=min_periods,
     )
 
+    # Since min_periods of 0 is the same as min_periods of 1
+    num_nans_from_min_periods = min_periods or 1
+    assert (
+        actual_vals.isna().sum()
+        == get_number_from_offset(gap) + num_nans_from_min_periods - 1
+    )
     pd.testing.assert_series_equal(actual_vals, pd.Series(data=expected_vals))
