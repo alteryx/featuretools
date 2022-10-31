@@ -14,7 +14,7 @@ Release Notes
 
 .. Thanks to the following people for contributing to this release:
 
-v1.19.0 Oct 31, 2022
+v1.17.0 Oct 31, 2022
 ====================
     * Enhancements
         * Add featuretools-sklearn-transformer as an extra installation option (:pr:`2335`)
