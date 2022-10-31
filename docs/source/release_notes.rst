@@ -4,15 +4,17 @@ Release Notes
 -------------
 
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Replace use of pytest's tmpdir fixture with tmp_path (:pr:`2344`)
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`rwedge`
 
 v1.17.0 Oct 31, 2022
 ====================
