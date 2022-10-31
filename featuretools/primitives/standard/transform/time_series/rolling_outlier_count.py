@@ -23,8 +23,8 @@ class RollingOutlierCount(TransformPrimitive):
 
     Args:
         window_length (int, string, optional): Specifies the amount of data included in each window.
-            If an integer is provided, will correspond to a number of rows. For data with a uniform sampling frequency,
-            for example of one day, the window_length will correspond to a period of time, in this case,
+            If an integer is provided, it will correspond to a number of rows. For data with a uniform sampling
+            frequency, for example of one day, the window_length will correspond to a period of time, in this case,
             7 days for a window_length of 7.
             If a string is provided, it must be one of Pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time that each window should span.
@@ -32,7 +32,7 @@ class RollingOutlierCount(TransformPrimitive):
             https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases.
             Defaults to 3.
         gap (int, string, optional): Specifies a gap backwards from each instance before the
-            window of usable data begins. If an integer is provided, will correspond to a number of rows.
+            window of usable data begins. If an integer is provided, it will correspond to a number of rows.
             If a string is provided, it must be one of Pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time between a target instance and the beginning of its window.
             Defaults to 0, which will include the target instance in the window.
