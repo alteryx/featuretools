@@ -1,3 +1,4 @@
+import contextlib
 import copy
 import os
 
@@ -763,11 +764,9 @@ def setup_test_profile(monkeypatch, tmp_path):
     monkeypatch.delenv("AWS_SECRET_ACCESS_KEY", raising=False)
     monkeypatch.setenv("AWS_PROFILE", "test")
 
-    try:
+    with contextlib.suppress(OSError):
         os.remove(test_path)
-        os.remove(test_path_config)
-    except OSError:
-        pass
+        os.remove(test_path_config)  # pragma: no cover
 
     create_test_credentials(test_path)
     create_test_config(test_path_config)
