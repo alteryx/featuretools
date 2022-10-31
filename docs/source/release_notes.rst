@@ -20,7 +20,6 @@ v1.17.0 Oct 31, 2022
     * Enhancements
         * Add featuretools-sklearn-transformer as an extra installation option (:pr:`2335`)
         * Add CountAboveMean, CountBelowMean, CountGreaterThan, CountInsideNthSTD, CountInsideRange, CountLessThan, CountOutsideNthSTD, CountOutsideRange (:pr:`2336`)
-    * Fixes
     * Changes
         * Restructure primitives directory to use individual primitives files (:pr:`2331`)
         * Restrict 2022.10.1 for dask and distributed (:pr:`2347`)
@@ -29,7 +28,7 @@ v1.17.0 Oct 31, 2022
         * Fixes broken link in Featuretools documentation (:pr:`2339`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v1.16.0 Oct 24, 2022
 ====================
