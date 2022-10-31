@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 from featuretools.primitives.standard.transform.time_series.expanding import (
