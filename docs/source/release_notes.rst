@@ -11,6 +11,7 @@ Future Release
     * Fixes
     * Changes
         * Restructure primitives directory to use individual primitives files (:pr:`2331`)
+        * Restrict 2022.10.1 for dask and distributed (:pr:`2347`)
     * Documentation Changes
         * Add Featuretools-SQL to Install page on documentation (:pr:`2337`)
         * Fixes broken link in Featuretools documentation (:pr:`2339`)
