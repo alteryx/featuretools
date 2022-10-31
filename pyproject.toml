@@ -38,8 +38,8 @@ requires-python = ">=3.8,<4"
 dependencies = [
     "click >= 7.0.0",
     "cloudpickle >= 1.5.0",
-    "dask[dataframe] >= 2022.2.0, <2022.10.1",
-    "distributed >= 2022.2.0, <2022.10.1",
+    "dask[dataframe] >= 2022.2.0, !=2022.10.1",
+    "distributed >= 2022.2.0, !=2022.10.1",
     "holidays >= 0.13",
     "numpy >= 1.21.0",
     "packaging >= 20.0",
