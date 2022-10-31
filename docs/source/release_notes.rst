@@ -13,7 +13,7 @@ Future Release
     * Testing Changes
 
 Thanks to the following people for contributing to this release:
-:user:`sbadithe`
+:user:`sbadithe`, :user:`tamargrey`
 
 v1.17.0 Oct 31, 2022
 ====================
