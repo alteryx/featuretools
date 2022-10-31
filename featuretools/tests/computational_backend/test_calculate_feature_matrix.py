@@ -382,7 +382,7 @@ def test_cfm_duplicated_index_in_cutoff_time(es):
 
 
 # TODO: fails with Dask, Spark
-def test_saveprogress(es, tmpdir):
+def test_saveprogress(es, tmp_path):
     if es.dataframe_type != Library.PANDAS:
         pytest.xfail("saveprogress fails with distributed entitysets")
     times = list(
@@ -395,7 +395,7 @@ def test_saveprogress(es, tmpdir):
     )
     cutoff_time = pd.DataFrame({"time": times, "instance_id": range(17)})
     property_feature = Feature(es["log"].ww["value"]) > 10
-    save_progress = str(tmpdir)
+    save_progress = str(tmp_path)
     fm_save = calculate_feature_matrix(
         [property_feature],
         es,
