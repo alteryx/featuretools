@@ -336,6 +336,7 @@ def test_rolling_trend_window_length_less_than_three(rolling_series_pd):
         RollingMax,
         RollingMin,
         RollingMean,
+        RollingOutlierCount,
     ],
 )
 def test_rolling_primitives_non_uniform(primitive):
