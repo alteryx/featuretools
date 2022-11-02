@@ -101,7 +101,7 @@ class RollingOutlierCount(TransformPrimitive):
         # type inference could not infer a numeric type
         if not len(numeric_series.dropna()):
             return np.nan
-        if hasattr(numeric_series, "ww"):
+        if numeric_series.ww.schema is None:
             numeric_series = init_series(numeric_series, logical_type="Double")
         box_plot_info = numeric_series.ww.box_plot_dict()
         return len(box_plot_info["high_values"]) + len(box_plot_info["low_values"])
