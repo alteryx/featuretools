@@ -74,7 +74,7 @@ class RollingOutlierCount(TransformPrimitive):
         >>> rolling_outlier_count = RollingOutlierCount(window_length=4, min_periods=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=6)
         >>> rolling_outlier_count(times,  [0, 0, 0, 0, 10, 0]).tolist()
-        [nan, nan, 0.0, 0.0, 1.0, 1.0]
+        [nan, nan, nan, 0.0, 0.0, 1.0]
 
         We can also set the window_length and gap using offset alias strings.
         >>> import pandas as pd
