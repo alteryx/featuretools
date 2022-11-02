@@ -7,6 +7,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add RollingOutlierCount primitive (:pr:`2129`)
     * Fixes
     * Changes
     * Documentation Changes
@@ -14,7 +15,7 @@ Future Release
         * Replace use of pytest's tmpdir fixture with tmp_path (:pr:`2344`)
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`
+    :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`
 
 v1.17.0 Oct 31, 2022
 ====================

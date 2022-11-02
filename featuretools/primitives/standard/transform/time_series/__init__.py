@@ -14,6 +14,9 @@ from featuretools.primitives.standard.transform.time_series.rolling_mean import 
 from featuretools.primitives.standard.transform.time_series.rolling_min import (
     RollingMin,
 )
+from featuretools.primitives.standard.transform.time_series.rolling_outlier_count import (
+    RollingOutlierCount,
+)
 from featuretools.primitives.standard.transform.time_series.rolling_std import (
     RollingSTD,
 )
