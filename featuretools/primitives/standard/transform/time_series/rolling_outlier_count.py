@@ -35,7 +35,7 @@ class RollingOutlierCount(TransformPrimitive):
             window of usable data begins. If an integer is provided, it will correspond to a number of rows.
             If a string is provided, it must be one of Pandas' offset alias strings ('1D', '1H', etc),
             and it will indicate a length of time between a target instance and the beginning of its window.
-            Defaults to 1, which will include the target instance in the window.
+            Defaults to 1, which excludes the target instance from the window.
         min_periods (int, optional): Minimum number of observations required for performing calculations
             over the window. Can only be as large as window_length when window_length is an integer.
             When window_length is an offset alias string, this limitation does not exist, but care should be taken
