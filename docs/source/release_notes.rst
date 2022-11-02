@@ -10,11 +10,12 @@ Future Release
     * Fixes
     * Changes
     * Documentation Changes
+        * Build docs in parallel with Sphinx (:pr:`2351`)
     * Testing Changes
         * Replace use of pytest's tmpdir fixture with tmp_path (:pr:`2344`)
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`
+    :user:`gsheni`, :user:`rwedge`
 
 v1.17.0 Oct 31, 2022
 ====================
