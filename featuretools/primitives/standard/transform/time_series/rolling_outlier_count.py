@@ -60,14 +60,14 @@ class RollingOutlierCount(TransformPrimitive):
         >>> rolling_outlier_count = RollingOutlierCount(window_length=4)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=6)
         >>> rolling_outlier_count(times, [0, 0, 0, 0, 10, 0]).tolist()
-        [0.0, 0.0, 0.0, 0.0, 1.0, 1.0]
+        [nan, 0.0, 0.0, 0.0, 0.0, 1.0]
 
         We can also control the gap before the rolling calculation.
         >>> import pandas as pd
-        >>> rolling_outlier_count = RollingOutlierCount(window_length=4, gap=1)
+        >>> rolling_outlier_count = RollingOutlierCount(window_length=4, gap=0)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=6)
         >>> rolling_outlier_count(times, [0, 0, 0, 0, 10, 0]).tolist()
-        [nan, 0.0, 0.0, 0.0, 0.0, 1.0]
+        [0.0, 0.0, 0.0, 0.0, 1.0, 1.0]
 
         We can also control the minimum number of periods required for the rolling calculation.
         >>> import pandas as pd
@@ -91,7 +91,7 @@ class RollingOutlierCount(TransformPrimitive):
     ]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
 
-    def __init__(self, window_length=3, gap=0, min_periods=0):
+    def __init__(self, window_length=3, gap=1, min_periods=0):
         self.window_length = window_length
         self.gap = gap
         self.min_periods = min_periods
