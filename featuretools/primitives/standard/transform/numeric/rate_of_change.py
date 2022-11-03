@@ -23,7 +23,6 @@ class RateOfChange(TransformPrimitive):
     ]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
     uses_full_dataframe = True
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the rate of change of of {}"
 
     def get_function(self):
