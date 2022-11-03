@@ -11,7 +11,9 @@ class RateOfChange(TransformPrimitive):
         >>> import pandas as pd
         >>> rate_of_change = RateOfChange()
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
-        >>> rate_of_change([0, 30, 180, -90, 0], times).tolist()
+        >>> results = rate_of_change([0, 30, 180, -90, 0], times).tolist()
+        >>> results = [round(x, 2) for x in results]
+        >>> results
         [nan, 0.5, 2.5, -4.5, 1.5]
     """
 
