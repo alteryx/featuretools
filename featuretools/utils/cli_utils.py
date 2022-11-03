@@ -17,7 +17,6 @@ deps = [
     "dask",
     "distributed",
     "psutil",
-    "Click",
     "pip",
     "setuptools",
 ]

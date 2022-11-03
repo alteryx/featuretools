@@ -47,7 +47,6 @@ def test_installed_packages():
         "dask",
         "distributed",
         "psutil",
-        "click",
     ]
     assert set(requirements).issubset(installed_set)
 
