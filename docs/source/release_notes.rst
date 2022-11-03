@@ -21,7 +21,7 @@ Future Release
 
 Breaking Changes
 ++++++++++++++++
-* The featuretools CLI has been completely removed. The associated CLI functions ``featuretools list-primitives`` and ``featuretools info`` have also been removed. 
+* The featuretools CLI has been completely removed. 
 
 v1.17.0 Oct 31, 2022
 ====================
