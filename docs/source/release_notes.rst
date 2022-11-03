@@ -9,6 +9,7 @@ Future Release
     * Enhancements
         * Add RollingOutlierCount primitive (:pr:`2129`)
     * Fixes
+        * Sets ``uses_full_dataframe`` for ``Rolling*`` and ``Exponential*`` primitives (:pr:`2354`)
     * Changes
         * Remove click and CLI functions (``list-primitives``, ``info``) (:pr:`2353`, :pr:`2358`)
     * Documentation Changes
@@ -17,7 +18,7 @@ Future Release
         * Replace use of pytest's tmpdir fixture with tmp_path (:pr:`2344`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`
+    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 Breaking Changes
 ++++++++++++++++
