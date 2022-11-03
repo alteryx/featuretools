@@ -18,15 +18,13 @@ def this_dir():
     return os.path.dirname(os.path.abspath(__file__))
 
 
-def test_show_info():
-    f = io.StringIO()
-    with redirect_stdout(f):
-        show_info()
-    output = f.getvalue()
-    assert "Featuretools version" in output
-    assert "Featuretools installation directory:" in output
-    assert __version__ in output
-    assert "SYSTEM INFO" in output
+def test_show_info(capsys):
+    show_info()
+    captured = capsys.readouterr()
+    assert "Featuretools version" in captured.out
+    assert "Featuretools installation directory:" in captured.out
+    assert __version__ in captured.out
+    assert "SYSTEM INFO" in captured.out
 
 
 def test_sys_info():
