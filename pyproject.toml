@@ -108,6 +108,7 @@ docs = [
     "myst-parser == 0.18.0",
     "nlp_primitives >= 2.3.0",
     "autonormalize >= 2.0.1",
+    "click >=7.0.0",
     "featuretools[sklearn, spark, test]",
 ]
 dev = [
@@ -120,9 +121,6 @@ dev = [
 complete = [
     "featuretools[autonormalize, nlp, sklearn, spark, sql, tsfresh, updater]",
 ]
-
-[project.scripts]
-featuretools = "featuretools.__main__:cli"
 
 [tool.setuptools]
 include-package-data = true
@@ -170,6 +168,7 @@ profile = "black"
 forced_separate = "featuretools"
 known_first_party = "featuretools"
 skip = "__init__.py"
+filter_files = true
 multi_line_output = 3
 
 [tool.black]
