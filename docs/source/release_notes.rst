@@ -10,6 +10,7 @@ Future Release
         * Add RollingOutlierCount primitive (:pr:`2129`)
     * Fixes
     * Changes
+        * Remove click and CLI functions (``list-primitives``, ``info``) (:pr:`2353`)
     * Documentation Changes
         * Build docs in parallel with Sphinx (:pr:`2351`)
     * Testing Changes
