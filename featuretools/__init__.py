@@ -8,7 +8,7 @@ from featuretools.primitives import list_primitives, summarize_primitives
 from featuretools.computational_backends.api import *
 from featuretools import tests
 from featuretools.utils.time_utils import *
-from featuretools.utils.cli_utils import show_info
+from featuretools.utils.utils_info import show_info
 import featuretools.demo
 from featuretools import feature_base
 from featuretools import selection

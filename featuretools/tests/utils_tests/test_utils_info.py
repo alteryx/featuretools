@@ -2,16 +2,27 @@ import os
 
 import pytest
 
+from featuretools import __version__
 from featuretools.utils import (
     get_featuretools_root,
     get_installed_packages,
     get_sys_info,
+    show_info,
 )
 
 
 @pytest.fixture
 def this_dir():
     return os.path.dirname(os.path.abspath(__file__))
+
+
+def test_show_info(capsys):
+    show_info()
+    captured = capsys.readouterr()
+    assert "Featuretools version" in captured.out
+    assert "Featuretools installation directory:" in captured.out
+    assert __version__ in captured.out
+    assert "SYSTEM INFO" in captured.out
 
 
 def test_sys_info():
@@ -47,7 +58,6 @@ def test_installed_packages():
         "dask",
         "distributed",
         "psutil",
-        "click",
     ]
     assert set(requirements).issubset(installed_set)
 
