@@ -87,6 +87,7 @@ class RollingCount(TransformPrimitive):
     name = "rolling_count"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
+    uses_full_dataframe = True
 
     def __init__(self, window_length=3, gap=1, min_periods=0):
         self.window_length = window_length
