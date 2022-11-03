@@ -9,7 +9,7 @@ Future Release
     * Enhancements
         * Add RollingOutlierCount primitive (:pr:`2129`)
     * Fixes
-        * Sets ``uses_full_dataframe`` for ``Rolling*`` primitives (:pr:`2345`)
+        * Sets ``uses_full_dataframe`` for ``Rolling*`` primitives (:pr:`2354`)
     * Changes
     * Documentation Changes
         * Build docs in parallel with Sphinx (:pr:`2351`)
