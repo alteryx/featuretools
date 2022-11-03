@@ -2,7 +2,6 @@ import locale
 import os
 import platform
 import struct
-import subprocess
 import sys
 
 import pkg_resources
