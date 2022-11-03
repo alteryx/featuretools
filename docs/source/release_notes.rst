@@ -12,7 +12,7 @@ Future Release
     * Fixes
         * Sets ``uses_full_dataframe`` for ``Rolling*`` and ``Exponential*`` primitives (:pr:`2354`)
     * Changes
-        * Remove click and CLI functions (``list-primitives``, ``info``) (:pr:`2353`)
+        * Remove click and CLI functions (``list-primitives``, ``info``) (:pr:`2353`, :pr:`2358`)
     * Documentation Changes
         * Build docs in parallel with Sphinx (:pr:`2351`)
     * Testing Changes
