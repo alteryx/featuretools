@@ -55,3 +55,9 @@ package: upgradepip upgradebuild upgradesetuptools
 	$(eval PACKAGE=$(shell python -c "from pep517.meta import load; metadata = load('.'); print(metadata.version)"))
 	tar -zxvf "dist/featuretools-${PACKAGE}.tar.gz"
 	mv "featuretools-${PACKAGE}" unpacked_sdist
+
+.PHONY: builddocs
+builddocs:
+	python -m pip install . --quiet --no-dependencies
+	make -C docs/ -e "SPHINXOPTS=-W -j auto" clean html
+	python -m pip install -e . --quiet --no-dependencies
