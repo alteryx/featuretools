@@ -49,8 +49,6 @@ class ExpandingCount(TransformPrimitive):
         >>> expanding_count(times).tolist()
         [0.0, 1.0, 2.0, 3.0, 4.0]
 
-        #note to self: notice that count only counts non-NaN observations
-
         We can also control the gap before the expanding calculation.
 
         >>> import pandas as pd
@@ -65,14 +63,7 @@ class ExpandingCount(TransformPrimitive):
         >>> expanding_count = ExpandingCount(min_periods=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> expanding_count(times).tolist()
-        [nan, nan, 3.0, 4.0, 5.0]
-
-        We can also set the gap using offset alias strings.
-        >>> import pandas as pd
-        >>> expanding_count = ExpandingCount(gap='1min')
-        >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
-        >>> expanding_count(times).tolist()
-        [nan, 1.0, 2.0, 3.0, 4.0]
+        [nan, nan, 2.0, 3.0, 4.0]
     """
 
     name = "expanding_count"

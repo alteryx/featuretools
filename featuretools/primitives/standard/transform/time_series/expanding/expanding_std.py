@@ -55,7 +55,7 @@ class ExpandingSTD(TransformPrimitive):
         >>> expanding_std = ExpandingSTD(gap=0)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> expanding_std(times, [5, 4, 3, 2, 1]).tolist()
-        [nan, 0.7071067811865476, 1.00, 1.2909944487358056, 1.58]
+        [nan, 0.7071067811865476, 1.0, 1.2909944487358056, 1.5811388300841898]
 
         We can also control the minimum number of periods required for the rolling calculation.
 
@@ -63,7 +63,7 @@ class ExpandingSTD(TransformPrimitive):
         >>> expanding_std = ExpandingSTD(min_periods=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> expanding_std(times, [5, 4, 3, 2, 1]).tolist()
-        [nan, 0.7071067811865476, 1.00, 1.2909944487358056, 1.58]
+        [nan, 0.7071067811865476, 1.0, 1.2909944487358056, 1.5811388300841898]
     """
 
     name = "expanding_std"
