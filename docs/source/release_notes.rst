@@ -9,7 +9,7 @@ Future Release
     * Enhancements
         * Add RollingOutlierCount primitive (:pr:`2129`)
     * Fixes
-        * Sets ``uses_full_dataframe`` for ``Rolling*`` primitives (:pr:`2354`)
+        * Sets ``uses_full_dataframe`` for ``Rolling*`` and ``Exponential*`` primitives (:pr:`2354`)
     * Changes
         * Remove click and CLI functions (``list-primitives``, ``info``) (:pr:`2353`)
     * Documentation Changes
