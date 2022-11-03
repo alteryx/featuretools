@@ -2,6 +2,7 @@ import pandas as pd
 
 from featuretools.primitives.standard.transform.time_series.expanding import (
     ExpandingCount,
+    ExpandingMax,
     ExpandingMean,
     ExpandingMin,
     ExpandingSTD,
@@ -20,39 +21,55 @@ def test_expanding_count():
     primitive_instance = ExpandingCount().get_function()
     actual = primitive_instance(times)
     expected = pd.Series([i for i in range(0, 50)]).astype("float64")
-    pd.testing.assert_series_equal(expected, pd.Series(actual))
+    pd.testing.assert_series_equal(pd.Series(actual), expected)
 
 
 def test_expanding_min(window_series_pd):
+    test = window_series_pd.shift(1)
     primitive_instance = ExpandingMin().get_function()
-    expected = window_series_pd.expanding().min()
-    actual = primitive_instance(window_series_pd, datetime=window_series_pd.index)
-    pd.testing.assert_series_equal(actual, expected)
+    expected = pd.Series(test.expanding(min_periods=1).min().values)
+    actual = primitive_instance(
+        numeric=window_series_pd,
+        datetime=window_series_pd.index,
+    )
+    pd.testing.assert_series_equal(pd.Series(actual), expected)
 
 
 def test_expanding_max(window_series_pd):
-    primitive_instance = ExpandingMin().get_function()
-    expected = window_series_pd.expanding().max()
-    actual = primitive_instance(window_series_pd, datetime=window_series_pd.index)
-    pd.testing.assert_series_equal(actual, expected)
+    test = window_series_pd.shift(1)
+    primitive_instance = ExpandingMax().get_function()
+    expected = pd.Series(test.expanding(min_periods=1).max().values)
+    actual = primitive_instance(
+        numeric=window_series_pd,
+        datetime=window_series_pd.index,
+    )
+    pd.testing.assert_series_equal(pd.Series(actual), expected)
 
 
 def test_expanding_std(window_series_pd):
+    test = window_series_pd.shift(1)
     primitive_instance = ExpandingSTD().get_function()
-    expected = window_series_pd.expanding().std()
-    actual = primitive_instance(window_series_pd, datetime=window_series_pd.index)
-    pd.testing.assert_series_equal(actual, expected)
+    expected = pd.Series(test.expanding(min_periods=1).std().values)
+    actual = primitive_instance(
+        numeric=window_series_pd,
+        datetime=window_series_pd.index,
+    )
+    pd.testing.assert_series_equal(pd.Series(actual), expected)
 
 
 def test_expanding_mean(window_series_pd):
+    test = window_series_pd.shift(1)
     primitive_instance = ExpandingMean().get_function()
-    expected = window_series_pd.expanding().mean()
-    actual = primitive_instance(window_series_pd, datetime=window_series_pd.index)
-    pd.testing.assert_series_equal(actual, expected)
+    expected = pd.Series(test.expanding(min_periods=1).mean().values)
+    actual = primitive_instance(
+        numeric=window_series_pd,
+        datetime=window_series_pd.index,
+    )
+    pd.testing.assert_series_equal(pd.Series(actual), expected)
 
 
-def test_expanding_trend(window_series_pd):
-    primitive_instance = ExpandingTrend().get_function()
-    expected = window_series_pd.expanding().trend()
-    actual = primitive_instance(window_series_pd, datetime=window_series_pd.index)
-    pd.testing.assert_series_equal(actual, expected)
+# def test_expanding_trend(window_series_pd):
+#     primitive_instance = ExpandingTrend().get_function()
+#     expected = window_series_pd.expanding().trend()
+#     actual = primitive_instance(numeric=window_series_pd, datetime=window_series_pd.index)
+#     pd.testing.assert_series_equal(pd.Series(actual), expected)
