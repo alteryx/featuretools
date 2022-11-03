@@ -291,6 +291,7 @@ Time Series Transform Primitives
     RollingMax
     RollingMean
     RollingMin
+    RollingOutlierCount
     RollingSTD
     RollingTrend
 
