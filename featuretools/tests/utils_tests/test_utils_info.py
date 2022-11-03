@@ -23,8 +23,9 @@ def test_show_info():
         show_info()
     output = f.getvalue()
     assert "Featuretools version" in output
-    assert "installation directory:" in output 
+    assert "Featuretools installation directory:" in output 
     assert __version__ in output
+    assert "SYSTEM INFO" in output
 
 def test_sys_info():
     sys_info = get_sys_info()
