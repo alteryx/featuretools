@@ -114,16 +114,16 @@ def pickle_features_test_helper(es_size, features_original, dir_path):
         assert_features(features_original, features_deserialized)
 
 
-def test_pickle_features(es, tmpdir):
+def test_pickle_features(es, tmp_path):
     features_original = dfs(
         target_dataframe_name="sessions",
         entityset=es,
         features_only=True,
     )
-    pickle_features_test_helper(asizeof(es), features_original, str(tmpdir))
+    pickle_features_test_helper(asizeof(es), features_original, str(tmp_path))
 
 
-def test_pickle_features_with_custom_primitive(pd_es, tmpdir):
+def test_pickle_features_with_custom_primitive(pd_es, tmp_path):
     class NewMax(AggregationPrimitive):
         name = "new_max"
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
@@ -137,7 +137,7 @@ def test_pickle_features_with_custom_primitive(pd_es, tmpdir):
     )
 
     assert any([isinstance(feat.primitive, NewMax) for feat in features_original])
-    pickle_features_test_helper(asizeof(pd_es), features_original, str(tmpdir))
+    pickle_features_test_helper(asizeof(pd_es), features_original, str(tmp_path))
 
 
 def test_serialized_renamed_features(es):
@@ -263,39 +263,6 @@ def test_serialize_features_mock_anon_s3(es, s3_client, s3_bucket):
     assert_features(features_original, features_deserialized)
 
 
-@pytest.fixture
-def setup_test_profile(monkeypatch, tmpdir):
-    cache = str(tmpdir.join(".cache").mkdir())
-    test_path = os.path.join(cache, "test_credentials")
-    test_path_config = os.path.join(cache, "test_config")
-    monkeypatch.setenv("AWS_SHARED_CREDENTIALS_FILE", test_path)
-    monkeypatch.setenv("AWS_CONFIG_FILE", test_path_config)
-    monkeypatch.delenv("AWS_ACCESS_KEY_ID", raising=False)
-    monkeypatch.delenv("AWS_SECRET_ACCESS_KEY", raising=False)
-    monkeypatch.setenv("AWS_PROFILE", "test")
-
-    try:
-        os.remove(test_path)
-        os.remove(test_path_config)
-    except EnvironmentError:
-        pass
-
-    f = open(test_path, "w+")
-    f.write("[test]\n")
-    f.write("aws_access_key_id=AKIAIOSFODNN7EXAMPLE\n")
-    f.write("aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\n")
-    f.close()
-    f = open(test_path_config, "w+")
-    f.write("[profile test]\n")
-    f.write("region=us-east-2\n")
-    f.write("output=text\n")
-    f.close()
-
-    yield
-    os.remove(test_path)
-    os.remove(test_path_config)
-
-
 @pytest.mark.parametrize("profile_name", ["test", False])
 def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile, profile_name):
     features_original = dfs(
@@ -353,7 +320,7 @@ def test_serialize_url(es):
         save_features(features_original, URL)
 
 
-def test_custom_feature_names_retained_during_serialization(pd_es, tmpdir):
+def test_custom_feature_names_retained_during_serialization(pd_es, tmp_path):
     class MultiCumulative(TransformPrimitive):
         name = "multi_cum_sum"
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
@@ -390,7 +357,7 @@ def test_custom_feature_names_retained_during_serialization(pd_es, tmpdir):
         groupby_trans_feat,
         stacked_feat,
     ]
-    file = os.path.join(tmpdir, "features.json")
+    file = os.path.join(tmp_path, "features.json")
     save_features(features, file)
     deserialized_features = load_features(file)
 

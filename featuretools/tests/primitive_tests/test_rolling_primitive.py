@@ -7,6 +7,7 @@ from featuretools.primitives import (
     RollingMax,
     RollingMean,
     RollingMin,
+    RollingOutlierCount,
     RollingSTD,
     RollingTrend,
 )
@@ -335,6 +336,7 @@ def test_rolling_trend_window_length_less_than_three(window_series_pd):
         RollingMax,
         RollingMin,
         RollingMean,
+        RollingOutlierCount,
     ],
 )
 def test_rolling_primitives_non_uniform(primitive):
@@ -420,3 +422,55 @@ def test_rolling_trend_non_uniform():
         primitive_instance(no_freq_series.index, pd.Series(no_freq_series.values)),
     )
     pd.testing.assert_series_equal(rolled_series, expected_series)
+
+
+@pytest.mark.parametrize(
+    "window_length, gap",
+    [
+        (5, 2),
+        (5, 0),
+        ("5d", "7d"),
+        ("5d", "0d"),
+    ],
+)
+@pytest.mark.parametrize(
+    "min_periods",
+    [1, 0, 2, 5],
+)
+def test_rolling_outlier_count(
+    min_periods,
+    window_length,
+    gap,
+    rolling_outlier_series_pd,
+):
+
+    primitive_instance = RollingOutlierCount(
+        window_length=window_length,
+        gap=gap,
+        min_periods=min_periods,
+    )
+
+    primitive_func = primitive_instance.get_function()
+
+    actual_vals = pd.Series(
+        primitive_func(
+            rolling_outlier_series_pd.index,
+            pd.Series(rolling_outlier_series_pd.values),
+        ),
+    )
+
+    expected_vals = apply_rolling_agg_to_series(
+        series=rolling_outlier_series_pd,
+        agg_func=primitive_instance.get_outliers_count,
+        window_length=window_length,
+        gap=gap,
+        min_periods=min_periods,
+    )
+
+    # Since min_periods of 0 is the same as min_periods of 1
+    num_nans_from_min_periods = min_periods or 1
+    assert (
+        actual_vals.isna().sum()
+        == get_number_from_offset(gap) + num_nans_from_min_periods - 1
+    )
+    pd.testing.assert_series_equal(actual_vals, pd.Series(data=expected_vals))
