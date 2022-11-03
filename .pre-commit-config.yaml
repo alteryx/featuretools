@@ -27,7 +27,7 @@ repos:
     rev: 5.10.1
     hooks:
       - id: isort
-        args: [--settings-path=, ./pyproject.toml]
+        args: [--settings-path=./pyproject.toml]
   - repo: https://github.com/python/black
     rev: 22.6.0
     hooks:
