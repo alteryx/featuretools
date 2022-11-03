@@ -63,7 +63,7 @@ class ExpandingMin(TransformPrimitive):
         >>> expanding_min = ExpandingMin(min_periods=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> expanding_min(times, [5, 4, 3, 2, 1]).tolist()
-        [nan, nan, 3.0, 2.0, 1.0]
+        [nan, nan, nan, 2.0, 1.0]
     """
 
     name = "expanding_min"

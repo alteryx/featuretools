@@ -63,7 +63,7 @@ class ExpandingSTD(TransformPrimitive):
         >>> expanding_std = ExpandingSTD(min_periods=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> expanding_std(times, [5, 4, 3, 2, 1]).tolist()
-        [nan, 0.7071067811865476, 1.0, 1.2909944487358056, 1.5811388300841898]
+        [nan, nan, nan, 1.0, 1.2909944487358056]
     """
 
     name = "expanding_std"
