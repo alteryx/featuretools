@@ -9,6 +9,7 @@ from featuretools.primitives.standard.transform.time_series.expanding import (
     ExpandingSTD,
     ExpandingTrend,
 )
+from featuretools.utils import calculate_trend
 
 
 @pytest.mark.parametrize(
@@ -98,8 +99,19 @@ def test_expanding_mean(window_series_pd, min_periods, gap):
     pd.testing.assert_series_equal(pd.Series(actual), pd.Series(expected))
 
 
-# def test_expanding_trend(window_series_pd):
-#     primitive_instance = ExpandingTrend().get_function()
-#     expected = window_series_pd.expanding().trend()
-#     actual = primitive_instance(numeric=window_series_pd, datetime=window_series_pd.index)
-#     pd.testing.assert_series_equal(pd.Series(actual), expected)
+@pytest.mark.parametrize(
+    "min_periods, gap",
+    [
+        (5, 2),
+        (5, 0),
+    ],
+)
+def test_expanding_trend(window_series_pd, min_periods, gap):
+    test = window_series_pd.shift(gap)
+    expected = test.expanding(min_periods=min_periods).aggregate(calculate_trend).values
+    primitive_instance = ExpandingTrend(min_periods=min_periods, gap=gap).get_function()
+    actual = primitive_instance(
+        numeric=window_series_pd,
+        datetime=window_series_pd.index,
+    )
+    pd.testing.assert_series_equal(pd.Series(actual), pd.Series(expected))

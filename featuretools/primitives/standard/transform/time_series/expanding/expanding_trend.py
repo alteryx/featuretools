@@ -85,6 +85,10 @@ class ExpandingTrend(TransformPrimitive):
                     "We currently do not support string offsets for the gap parameter in "
                     "Expanding primitives",
                 )
-            return x.expanding(min_periods=self.min_periods).aggregate(calculate_trend)
+            return (
+                x.expanding(min_periods=self.min_periods)
+                .aggregate(calculate_trend)
+                .values
+            )
 
         return expanding_trend
