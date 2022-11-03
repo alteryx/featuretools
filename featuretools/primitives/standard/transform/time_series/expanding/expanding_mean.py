@@ -63,7 +63,7 @@ class ExpandingMean(TransformPrimitive):
         >>> expanding_mean = ExpandingMean(min_periods=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> expanding_mean(times, [5, 4, 3, 2, 1]).tolist()
-        [nan, nan, 4.0, 3.5, 3.0]
+        [nan, nan, nan, 4.0, 3.5]
     """
 
     name = "expanding_mean"
