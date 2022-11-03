@@ -1,11 +1,15 @@
+from contextlib import redirect_stdout
+import io
 import os
 
 import pytest
 
+from featuretools import __version__
 from featuretools.utils import (
     get_featuretools_root,
     get_installed_packages,
     get_sys_info,
+    show_info
 )
 
 
@@ -13,6 +17,14 @@ from featuretools.utils import (
 def this_dir():
     return os.path.dirname(os.path.abspath(__file__))
 
+def test_show_info():
+    f = io.StringIO()
+    with redirect_stdout(f):
+        show_info()
+    output = f.getvalue()
+    assert "Featuretools version" in output
+    assert "installation directory:" in output 
+    assert __version__ in output
 
 def test_sys_info():
     sys_info = get_sys_info()
