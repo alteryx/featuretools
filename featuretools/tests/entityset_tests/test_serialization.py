@@ -79,11 +79,11 @@ def test_with_custom_ww_logical_type():
     assert es.__eq__(_es, deep=True)
 
 
-def test_serialize_invalid_formats(es, tmpdir):
+def test_serialize_invalid_formats(es, tmp_path):
     error_text = "must be one of the following formats: {}"
     error_text = error_text.format(", ".join(serialize.FORMATS))
     with pytest.raises(ValueError, match=error_text):
-        serialize.write_data_description(es, path=str(tmpdir), format="")
+        serialize.write_data_description(es, path=str(tmp_path), format="")
 
 
 def test_empty_dataframe(es):
@@ -94,9 +94,9 @@ def test_empty_dataframe(es):
         assert all(dataframe.columns == df.columns)
 
 
-def test_to_csv(es, tmpdir):
-    es.to_csv(str(tmpdir), encoding="utf-8", engine="python")
-    new_es = deserialize.read_entityset(str(tmpdir))
+def test_to_csv(es, tmp_path):
+    es.to_csv(str(tmp_path), encoding="utf-8", engine="python")
+    new_es = deserialize.read_entityset(str(tmp_path))
     assert es.__eq__(new_es, deep=True)
     df = to_pandas(es["log"], index="id")
     new_df = to_pandas(new_es["log"], index="id")
@@ -105,20 +105,20 @@ def test_to_csv(es, tmpdir):
 
 
 # Dask/Spark don't support auto setting of interesting values with es.add_interesting_values()
-def test_to_csv_interesting_values(pd_es, tmpdir):
+def test_to_csv_interesting_values(pd_es, tmp_path):
     pd_es.add_interesting_values()
-    pd_es.to_csv(str(tmpdir))
-    new_es = deserialize.read_entityset(str(tmpdir))
+    pd_es.to_csv(str(tmp_path))
+    new_es = deserialize.read_entityset(str(tmp_path))
     assert pd_es.__eq__(new_es, deep=True)
 
 
-def test_to_csv_manual_interesting_values(es, tmpdir):
+def test_to_csv_manual_interesting_values(es, tmp_path):
     es.add_interesting_values(
         dataframe_name="log",
         values={"product_id": ["coke_zero"]},
     )
-    es.to_csv(str(tmpdir))
-    new_es = deserialize.read_entityset(str(tmpdir))
+    es.to_csv(str(tmp_path))
+    new_es = deserialize.read_entityset(str(tmp_path))
     assert es.__eq__(new_es, deep=True)
     assert new_es["log"].ww["product_id"].ww.metadata["interesting_values"] == [
         "coke_zero",
@@ -126,51 +126,51 @@ def test_to_csv_manual_interesting_values(es, tmpdir):
 
 
 # Dask/Spark do not support to_pickle
-def test_to_pickle(pd_es, tmpdir):
-    pd_es.to_pickle(str(tmpdir))
-    new_es = deserialize.read_entityset(str(tmpdir))
+def test_to_pickle(pd_es, tmp_path):
+    pd_es.to_pickle(str(tmp_path))
+    new_es = deserialize.read_entityset(str(tmp_path))
     assert pd_es.__eq__(new_es, deep=True)
     assert type(pd_es["log"]["latlong"][0]) == tuple
     assert type(new_es["log"]["latlong"][0]) == tuple
 
 
-def test_to_pickle_errors_dask(dask_es, tmpdir):
+def test_to_pickle_errors_dask(dask_es, tmp_path):
     msg = "DataFrame type not compatible with pickle serialization. Please serialize to another format."
     with pytest.raises(ValueError, match=msg):
-        dask_es.to_pickle(str(tmpdir))
+        dask_es.to_pickle(str(tmp_path))
 
 
-def test_to_pickle_errors_spark(spark_es, tmpdir):
+def test_to_pickle_errors_spark(spark_es, tmp_path):
     msg = "DataFrame type not compatible with pickle serialization. Please serialize to another format."
     with pytest.raises(ValueError, match=msg):
-        spark_es.to_pickle(str(tmpdir))
+        spark_es.to_pickle(str(tmp_path))
 
 
 # Dask/Spark do not support to_pickle
-def test_to_pickle_interesting_values(pd_es, tmpdir):
+def test_to_pickle_interesting_values(pd_es, tmp_path):
     pd_es.add_interesting_values()
-    pd_es.to_pickle(str(tmpdir))
-    new_es = deserialize.read_entityset(str(tmpdir))
+    pd_es.to_pickle(str(tmp_path))
+    new_es = deserialize.read_entityset(str(tmp_path))
     assert pd_es.__eq__(new_es, deep=True)
 
 
 # Dask/Spark do not support to_pickle
-def test_to_pickle_manual_interesting_values(pd_es, tmpdir):
+def test_to_pickle_manual_interesting_values(pd_es, tmp_path):
     pd_es.add_interesting_values(
         dataframe_name="log",
         values={"product_id": ["coke_zero"]},
     )
-    pd_es.to_pickle(str(tmpdir))
-    new_es = deserialize.read_entityset(str(tmpdir))
+    pd_es.to_pickle(str(tmp_path))
+    new_es = deserialize.read_entityset(str(tmp_path))
     assert pd_es.__eq__(new_es, deep=True)
     assert new_es["log"].ww["product_id"].ww.metadata["interesting_values"] == [
         "coke_zero",
     ]
 
 
-def test_to_parquet(es, tmpdir):
-    es.to_parquet(str(tmpdir))
-    new_es = deserialize.read_entityset(str(tmpdir))
+def test_to_parquet(es, tmp_path):
+    es.to_parquet(str(tmp_path))
+    new_es = deserialize.read_entityset(str(tmp_path))
     assert es.__eq__(new_es, deep=True)
     df = to_pandas(es["log"])
     new_df = to_pandas(new_es["log"])
@@ -178,13 +178,13 @@ def test_to_parquet(es, tmpdir):
     assert type(new_df["latlong"][0]) in (tuple, list)
 
 
-def test_to_parquet_manual_interesting_values(es, tmpdir):
+def test_to_parquet_manual_interesting_values(es, tmp_path):
     es.add_interesting_values(
         dataframe_name="log",
         values={"product_id": ["coke_zero"]},
     )
-    es.to_parquet(str(tmpdir))
-    new_es = deserialize.read_entityset(str(tmpdir))
+    es.to_parquet(str(tmp_path))
+    new_es = deserialize.read_entityset(str(tmp_path))
     assert es.__eq__(new_es, deep=True)
     assert new_es["log"].ww["product_id"].ww.metadata["interesting_values"] == [
         "coke_zero",
@@ -192,24 +192,24 @@ def test_to_parquet_manual_interesting_values(es, tmpdir):
 
 
 # Dask/Spark don't support auto setting of interesting values with es.add_interesting_values()
-def test_to_parquet_interesting_values(pd_es, tmpdir):
+def test_to_parquet_interesting_values(pd_es, tmp_path):
     pd_es.add_interesting_values()
-    pd_es.to_parquet(str(tmpdir))
-    new_es = deserialize.read_entityset(str(tmpdir))
+    pd_es.to_parquet(str(tmp_path))
+    new_es = deserialize.read_entityset(str(tmp_path))
     assert pd_es.__eq__(new_es, deep=True)
 
 
-def test_to_parquet_with_lti(tmpdir, pd_mock_customer):
+def test_to_parquet_with_lti(tmp_path, pd_mock_customer):
     es = pd_mock_customer
-    es.to_parquet(str(tmpdir))
-    new_es = deserialize.read_entityset(str(tmpdir))
+    es.to_parquet(str(tmp_path))
+    new_es = deserialize.read_entityset(str(tmp_path))
     assert es.__eq__(new_es, deep=True)
 
 
-def test_to_pickle_id_none(tmpdir):
+def test_to_pickle_id_none(tmp_path):
     es = EntitySet()
-    es.to_pickle(str(tmpdir))
-    new_es = deserialize.read_entityset(str(tmpdir))
+    es.to_pickle(str(tmp_path))
+    new_es = deserialize.read_entityset(str(tmp_path))
     assert es.__eq__(new_es, deep=True)
 
 
@@ -278,44 +278,6 @@ def test_serialize_s3_parquet(es, s3_client, s3_bucket, profile_name):
     assert es.__eq__(new_es, deep=True)
 
 
-def create_test_credentials(test_path):
-    with open(test_path, "w+") as f:
-        f.write("[test]\n")
-        f.write("aws_access_key_id=AKIAIOSFODNN7EXAMPLE\n")
-        f.write("aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\n")
-
-
-def create_test_config(test_path_config):
-    with open(test_path_config, "w+") as f:
-        f.write("[profile test]\n")
-        f.write("region=us-east-2\n")
-        f.write("output=text\n")
-
-
-@pytest.fixture
-def setup_test_profile(monkeypatch, tmpdir):
-    cache = str(tmpdir.join(".cache").mkdir())
-    test_path = os.path.join(cache, "test_credentials")
-    test_path_config = os.path.join(cache, "test_config")
-    monkeypatch.setenv("AWS_SHARED_CREDENTIALS_FILE", test_path)
-    monkeypatch.setenv("AWS_CONFIG_FILE", test_path_config)
-    monkeypatch.delenv("AWS_ACCESS_KEY_ID", raising=False)
-    monkeypatch.delenv("AWS_SECRET_ACCESS_KEY", raising=False)
-    monkeypatch.setenv("AWS_PROFILE", "test")
-
-    try:
-        os.remove(test_path)
-        os.remove(test_path_config)
-    except OSError:
-        pass
-
-    create_test_credentials(test_path)
-    create_test_config(test_path_config)
-    yield
-    os.remove(test_path)
-    os.remove(test_path_config)
-
-
 def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
     if es.dataframe_type != Library.PANDAS:
         pytest.xfail(
@@ -333,10 +295,13 @@ def test_serialize_url_csv(es):
         es.to_csv(URL, encoding="utf-8", engine="python")
 
 
-def test_serialize_subdirs_not_removed(es, tmpdir):
-    write_path = tmpdir.mkdir("test")
-    test_dir = write_path.mkdir("test_dir")
-    with open(str(write_path.join("data_description.json")), "w") as f:
+def test_serialize_subdirs_not_removed(es, tmp_path):
+    write_path = tmp_path.joinpath("test")
+    write_path.mkdir()
+    test_dir = write_path.joinpath("test_dir")
+    test_dir.mkdir()
+    description_path = write_path.joinpath("data_description.json")
+    with open(description_path, "w") as f:
         json.dump("__SAMPLE_TEXT__", f)
     if es.dataframe_type == Library.SPARK:
         compression = "none"
@@ -351,13 +316,13 @@ def test_serialize_subdirs_not_removed(es, tmpdir):
         compression=compression,
     )
     assert os.path.exists(str(test_dir))
-    with open(str(write_path.join("data_description.json")), "r") as f:
+    with open(description_path, "r") as f:
         assert "__SAMPLE_TEXT__" not in json.load(f)
 
 
 def test_deserialize_local_tar(es):
-    with tempfile.TemporaryDirectory() as tmpdir:
-        temp_tar_filepath = os.path.join(tmpdir, TEST_FILE)
+    with tempfile.TemporaryDirectory() as tmp_path:
+        temp_tar_filepath = os.path.join(tmp_path, TEST_FILE)
         urlretrieve(URL, filename=temp_tar_filepath)
         new_es = deserialize.read_entityset(temp_tar_filepath)
         assert es.__eq__(new_es, deep=True)
