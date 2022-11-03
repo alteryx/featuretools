@@ -19,6 +19,10 @@ Future Release
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`
 
+Breaking Changes
+++++++++++++++++
+* The CLI functions ``featuretools list-primitives`` and ``featuretools info`` have been removed. 
+
 v1.17.0 Oct 31, 2022
 ====================
     * Enhancements

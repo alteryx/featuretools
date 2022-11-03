@@ -22,10 +22,6 @@ deps = [
 
 
 def show_info():
-    print_info()
-
-
-def print_info():
     print("Featuretools version: %s" % featuretools.__version__)
     print("Featuretools installation directory: %s" % get_featuretools_root())
     print_sys_info()
