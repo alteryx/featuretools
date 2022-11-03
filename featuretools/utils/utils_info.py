@@ -23,8 +23,7 @@ deps = [
 
 
 def show_info():
-    res = subprocess.run(["featuretools", "info"], stdout=subprocess.PIPE)
-    print(res.stdout.decode("utf-8"))
+    print_info()
 
 
 def print_info():
