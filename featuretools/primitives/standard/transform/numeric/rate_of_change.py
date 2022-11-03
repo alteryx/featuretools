@@ -1,4 +1,3 @@
-import numpy as np
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Double
 
@@ -13,8 +12,8 @@ class RateOfChange(TransformPrimitive):
         >>> import pandas as pd
         >>> rate_of_change = RateOfChange()
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
-        >>> rate_of_change(times, [0, 1, 3, -1, 0]).tolist()
-        [nan, 4.0, 3.0, 2.0, 1.0]
+        >>> rate_of_change([0, 30, 180, -90, 0], times).tolist()
+        [nan, 0.5, 2.5, -4.5, 1.5]
     """
 
     name = "rate_of_change"
@@ -29,6 +28,8 @@ class RateOfChange(TransformPrimitive):
 
     def get_function(self):
         def rate_of_change(values, time):
-            return 1
+            time_delta = time.diff().dt.total_seconds()
+            value_delta = values.diff()
+            return value_delta / time_delta
 
         return rate_of_change
