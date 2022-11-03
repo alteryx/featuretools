@@ -21,7 +21,7 @@ Future Release
 
 Breaking Changes
 ++++++++++++++++
-* The featuretools CLI has been completely removed. 
+* The featuretools CLI has been completely removed.
 
 v1.17.0 Oct 31, 2022
 ====================
