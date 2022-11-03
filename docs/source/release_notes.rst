@@ -9,14 +9,20 @@ Future Release
         * Add RollingOutlierCount primitive (:pr:`2129`)
         * Add ExpandingCount, ExpandingMin, ExpandingMean, ExpandingMax, ExpandingSTD, and ExpandingTrend primitives (:pr:`2343`) 
     * Fixes
+        * Sets ``uses_full_dataframe`` for ``Rolling*`` and ``Exponential*`` primitives (:pr:`2354`)
     * Changes
+        * Remove click and CLI functions (``list-primitives``, ``info``) (:pr:`2353`, :pr:`2358`)
     * Documentation Changes
         * Build docs in parallel with Sphinx (:pr:`2351`)
     * Testing Changes
         * Replace use of pytest's tmpdir fixture with tmp_path (:pr:`2344`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`
+    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`, :user:`thehomebrewnerd`
+
+Breaking Changes
+++++++++++++++++
+* The featuretools CLI has been completely removed.
 
 v1.17.0 Oct 31, 2022
 ====================

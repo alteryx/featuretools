@@ -2,7 +2,6 @@ import locale
 import os
 import platform
 import struct
-import subprocess
 import sys
 
 import pkg_resources
@@ -17,18 +16,12 @@ deps = [
     "dask",
     "distributed",
     "psutil",
-    "Click",
     "pip",
     "setuptools",
 ]
 
 
 def show_info():
-    res = subprocess.run(["featuretools", "info"], stdout=subprocess.PIPE)
-    print(res.stdout.decode("utf-8"))
-
-
-def print_info():
     print("Featuretools version: %s" % featuretools.__version__)
     print("Featuretools installation directory: %s" % get_featuretools_root())
     print_sys_info()
