@@ -24,7 +24,7 @@ class RateOfChange(TransformPrimitive):
     ]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
     uses_full_dataframe = True
-    description_template = "the rate of change of of {}"
+    description_template = "the rate of change of {} per second"
 
     def get_function(self):
         def rate_of_change(values, time):
