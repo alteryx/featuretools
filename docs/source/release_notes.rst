@@ -7,7 +7,8 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Add RollingOutlierCount primitive (:pr:`2129`)
+        * Add ``RollingOutlierCount`` primitive (:pr:`2129`)
+        * Add ``RateOfChange`` primitive (:pr:`2359`)
     * Fixes
         * Sets ``uses_full_dataframe`` for ``Rolling*`` and ``Exponential*`` primitives (:pr:`2354`)
     * Changes
