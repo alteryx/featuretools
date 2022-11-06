@@ -219,6 +219,19 @@ Email and URL Transform Primitives
     URLToTLD
 
 
+Expanding Transform Primitives
+******************************
+.. autosummary::
+    :toctree: generated/
+
+    ExpandingCount
+    ExpandingMax
+    ExpandingMean
+    ExpandingMin
+    ExpandingSTD
+    ExpandingTrend
+
+
 Exponential Transform Primitives
 ********************************
 .. autosummary::
@@ -280,19 +293,6 @@ NaturalLanguage Transform Primitives
    TotalWordLength
    UpperCaseCount
    WhitespaceCount
-
-
-Expanding Transform Primitives
-******************************
-.. autosummary::
-    :toctree: generated/
-
-    ExpandingCount
-    ExpandingMax
-    ExpandingMean
-    ExpandingMin
-    ExpandingSTD
-    ExpandingTrend
 
 
 Time Series Transform Primitives
