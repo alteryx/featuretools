@@ -48,7 +48,7 @@ class ExpandingTrend(TransformPrimitive):
         >>> expanding_trend = ExpandingTrend()
         >>> times = pd.date_range(start='2019-01-01', freq='1D', periods=5)
         >>> ans = expanding_trend(times, [5, 4, 3, 2, 1]).tolist()
-        >>> [round(x, 2) for x in ans if not pd.isna(x) else x]
+        >>> [round(x, 2) for x in ans]
         [nan, nan, nan, -1, -1]
 
         We can also control the gap before the expanding calculation.
