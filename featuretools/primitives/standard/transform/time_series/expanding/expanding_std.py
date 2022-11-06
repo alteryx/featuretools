@@ -66,7 +66,7 @@ class ExpandingSTD(TransformPrimitive):
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> ans = expanding_std(times, [5, 4, 3, 2, 1]).tolist()
         >>> [round(x, 2) for x in ans]
-        [nan, nan, nan, 1.00, 1.29]
+        [nan, nan, nan, 1.0, 1.29]
     """
 
     name = "expanding_std"
