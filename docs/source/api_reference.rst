@@ -282,8 +282,8 @@ NaturalLanguage Transform Primitives
    WhitespaceCount
 
 
-Time Series Transform Primitives
-********************************
+Expanding Transform Primitives
+******************************
 .. autosummary::
     :toctree: generated/
 
@@ -293,6 +293,13 @@ Time Series Transform Primitives
     ExpandingMin
     ExpandingSTD
     ExpandingTrend
+
+
+Time Series Transform Primitives
+********************************
+.. autosummary::
+    :toctree: generated/
+
     Lag
     RollingCount
     RollingMax
