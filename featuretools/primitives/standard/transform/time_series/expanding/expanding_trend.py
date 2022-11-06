@@ -69,8 +69,12 @@ class ExpandingTrend(TransformPrimitive):
     """
 
     name = "expanding_trend"
-    input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"})]
+    input_types = [
+        ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"}),
+        ColumnSchema(semantic_tags={"numeric"}),
+    ]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
+    uses_full_dataframe = True
 
     def __init__(self, gap=1, min_periods=1):
         self.gap = gap
