@@ -46,26 +46,26 @@ class ExpandingTrend(TransformPrimitive):
     Examples:
         >>> import pandas as pd
         >>> expanding_trend = ExpandingTrend()
-        >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
+        >>> times = pd.date_range(start='2019-01-01', freq='1D', periods=5)
         >>> ans = expanding_trend(times, [5, 4, 3, 2, 1]).tolist()
         >>> [round(x, 2) for x in ans if not pd.isna(x) else x]
-        [nan, nan, nan, -0.99, -0.99]
+        [nan, nan, nan, -1, -1]
 
         We can also control the gap before the expanding calculation.
 
         >>> import pandas as pd
         >>> expanding_trend = ExpandingTrend(gap=0)
-        >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
+        >>> times = pd.date_range(start='2019-01-01', freq='1D', periods=5)
         >>> expanding_trend(times, [5, 4, 3, 2, 1]).tolist()
-        [5.0, 4.0, 3.0, 2.0, 1.0]
+        [nan, nan, -1, -1, -1]
 
         We can also control the minimum number of periods required for the rolling calculation.
 
         >>> import pandas as pd
         >>> expanding_trend = ExpandingTrend(min_periods=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
-        >>> expanding_trend(times, [5, 4, 3, 2, 1]).tolist()
-        [nan, nan, 4.0, 3.0, 2.0, 1.0]
+        >>> expanding_trend(times, [50, 4, 13, 22, 10]).tolist()
+        [nan, nan, nan, -1, -1]
     """
 
     name = "expanding_trend"
