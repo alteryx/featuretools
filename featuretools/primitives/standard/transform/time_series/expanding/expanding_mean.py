@@ -67,7 +67,10 @@ class ExpandingMean(TransformPrimitive):
     """
 
     name = "expanding_mean"
-    input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"})]
+    input_types = [
+        ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"}),
+        ColumnSchema(semantic_tags={"numeric"}),
+    ]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
     uses_full_dataframe = True
 
