@@ -25,6 +25,7 @@ from featuretools.primitives import (
     NumericLag,
     PartOfDay,
     Quarter,
+    RateOfChange,
     TimeSince,
     URLToDomain,
     URLToProtocol,
@@ -862,7 +863,7 @@ def test_lag_with_different_dtypes(input_array, expected_output):
     pd.testing.assert_series_equal(answer, expected_output)
 
 
-def test_datetime_tz_primitive():
+def test_date_to_time_zone_primitive():
     primitive_func = DateToTimeZone().get_function()
     x = pd.Series(
         [
@@ -876,7 +877,7 @@ def test_datetime_tz_primitive():
     pd.testing.assert_series_equal(primitive_func(x), answer)
 
 
-def test_datetime64():
+def test_date_to_time_zone_datetime64():
     primitive_func = DateToTimeZone().get_function()
     x = pd.Series(
         [
@@ -890,7 +891,7 @@ def test_datetime64():
     pd.testing.assert_series_equal(primitive_func(x), answer)
 
 
-def test_naive_dates():
+def test_date_to_time_zone_naive_dates():
     primitive_func = DateToTimeZone().get_function()
     x = pd.Series(
         [
@@ -903,7 +904,7 @@ def test_naive_dates():
     pd.testing.assert_series_equal(primitive_func(x), answer)
 
 
-def test_nan():
+def test_date_to_time_zone_nan():
     primitive_func = DateToTimeZone().get_function()
     x = pd.Series(
         [
@@ -914,3 +915,38 @@ def test_nan():
     )
     answer = pd.Series(["America/Los_Angeles", np.nan, np.nan])
     pd.testing.assert_series_equal(primitive_func(x), answer)
+
+
+def test_rate_of_change_primitive_regular_interval():
+    rate_of_change = RateOfChange()
+    times = pd.date_range(start="2019-01-01", freq="2s", periods=5)
+    values = [0, 30, 180, -90, 0]
+    expected = pd.Series([np.nan, 15, 75, -135, 45])
+    actual = rate_of_change(values, times)
+    pd.testing.assert_series_equal(actual, expected)
+
+
+def test_rate_of_change_primitive_uneven_interval():
+    rate_of_change = RateOfChange()
+    times = pd.to_datetime(
+        [
+            "2019-01-01 00:00:00",
+            "2019-01-01 00:00:01",
+            "2019-01-01 00:00:03",
+            "2019-01-01 00:00:07",
+            "2019-01-01 00:00:08",
+        ],
+    )
+    values = [0, 30, 180, -90, 0]
+    expected = pd.Series([np.nan, 30, 75, -67.5, 90])
+    actual = rate_of_change(values, times)
+    pd.testing.assert_series_equal(actual, expected)
+
+
+def test_rate_of_change_primitive_with_nan():
+    rate_of_change = RateOfChange()
+    times = pd.date_range(start="2019-01-01", freq="2s", periods=5)
+    values = [0, 30, np.nan, -90, 0]
+    expected = pd.Series([np.nan, 15, np.nan, np.nan, 45])
+    actual = rate_of_change(values, times)
+    pd.testing.assert_series_equal(actual, expected)
