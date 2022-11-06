@@ -46,24 +46,27 @@ class ExpandingSTD(TransformPrimitive):
         >>> import pandas as pd
         >>> expanding_std = ExpandingSTD()
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
-        >>> expanding_std(times, [5, 4, 3, 2, 1]).tolist()
-        [nan, nan, 0.7071067811865476, 1.0, 1.2909944487358056]
+        >>> ans = expanding_std(times, [5, 4, 3, 2, 1]).tolist()
+        >>> [round(x, 2) for x in ans if not pd.isna() else x]
+        [nan, nan, 0.71, 1.00, 1.29]
 
         We can also control the gap before the expanding calculation.
 
         >>> import pandas as pd
         >>> expanding_std = ExpandingSTD(gap=0)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
-        >>> expanding_std(times, [5, 4, 3, 2, 1]).tolist()
-        [nan, 0.7071067811865476, 1.0, 1.2909944487358056, 1.5811388300841898]
+        >>> ans = expanding_std(times, [5, 4, 3, 2, 1]).tolist()
+        >>> [round(x, 2) for x in ans if not pd.isna() else x]
+        [nan, 0.71, 1.00, 1.29, 1.58]
 
         We can also control the minimum number of periods required for the rolling calculation.
 
         >>> import pandas as pd
         >>> expanding_std = ExpandingSTD(min_periods=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
-        >>> expanding_std(times, [5, 4, 3, 2, 1]).tolist()
-        [nan, nan, nan, 1.0, 1.2909944487358056]
+        >>> ans = expanding_std(times, [5, 4, 3, 2, 1]).tolist()
+        >>> [round(x, 2) for x in ans if not pd.isna() else x]
+        [nan, nan, nan, 1.0, 1.29]
     """
 
     name = "expanding_std"
