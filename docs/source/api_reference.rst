@@ -240,6 +240,7 @@ General Transform Primitives
     NaturalLogarithm
     Negate
     Percentile
+    RateOfChange
     Sine
     SquareRoot
     Tangent
