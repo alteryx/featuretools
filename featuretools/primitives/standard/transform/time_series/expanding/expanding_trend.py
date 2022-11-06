@@ -57,6 +57,7 @@ class ExpandingTrend(TransformPrimitive):
         >>> expanding_trend = ExpandingTrend(gap=0)
         >>> times = pd.date_range(start='2019-01-01', freq='1D', periods=5)
         >>> expanding_trend(times, [5, 4, 3, 2, 1]).tolist()
+        >>> [round(x, 2) for x in ans]
         [nan, nan, -1.0, -1.0, -1.0]
 
         We can also control the minimum number of periods required for the rolling calculation.
@@ -65,6 +66,7 @@ class ExpandingTrend(TransformPrimitive):
         >>> expanding_trend = ExpandingTrend(min_periods=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> expanding_trend(times, [50, 4, 13, 22, 10]).tolist()
+        >>> [round(x, 2) for x in ans]
         [nan, nan, nan, -1.0, -1.0]
     """
 
