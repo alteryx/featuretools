@@ -67,7 +67,7 @@ class ExpandingTrend(TransformPrimitive):
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> ans = expanding_trend(times, [50, 4, 13, 22, 10]).tolist()
         >>> [round(x, 2) for x in ans]
-        [nan, nan, nan, -1.0, -1.0]
+        [nan, nan, nan, -18.5, -7.5]
     """
 
     name = "expanding_trend"
