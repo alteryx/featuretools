@@ -240,9 +240,9 @@ def apply_rolling_agg_to_series(
 
 
 def _apply_gap_for_expanding_primitives(
-    x: pd.Series,
+    x: Series,
     gap: Union[int, string],
-) -> Optional[pd.Series]:
+) -> Optional[Series]:
     if isinstance(self.gap, int):
         return x.shift(self.gap)
     else:
