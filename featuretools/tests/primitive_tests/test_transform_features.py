@@ -381,41 +381,29 @@ def test_diff(pd_es):
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array(range(15)))
 
-    val1 = df[diff1.get_name()]
-    val2 = df[diff2.get_name()]
+    val1 = df[diff1.get_name()].tolist()
+    val2 = df[diff2.get_name()].tolist()
 
-    correct_vals1 = pd.Series(
-        [
-            pd.NA,
-            5,
-            5,
-            5,
-            5,
-            pd.NA,
-            1,
-            1,
-            1,
-            pd.NA,
-            pd.NA,
-            5,
-            pd.NA,
-            7,
-            7,
-        ],
-    )
-    correct_vals2 = pd.Series([pd.NA, 5, 5, 5, 5, -20, 1, 1, 1, -3, pd.NA, 5, -5, 7, 7])
-    pd.testing.assert_series_equal(
-        val1,
-        correct_vals1,
-        check_index=False,
-        check_names=False,
-    )
-    pd.testing.assert_series_equal(
-        val2,
-        correct_vals2,
-        check_index=False,
-        check_names=False,
-    )
+    correct_vals1 = [
+        np.nan,
+        5,
+        5,
+        5,
+        5,
+        np.nan,
+        1,
+        1,
+        1,
+        np.nan,
+        np.nan,
+        5,
+        np.nan,
+        7,
+        7,
+    ]
+    correct_vals2 = [np.nan, 5, 5, 5, 5, -20, 1, 1, 1, -3, np.nan, 5, -5, 7, 7]
+    np.testing.assert_equal(val1, correct_vals1)
+    np.testing.assert_equal(val2, correct_vals2)
 
 
 def test_diff_shift(pd_es):
@@ -426,17 +414,10 @@ def test_diff_shift(pd_es):
     feature_set = FeatureSet([diff_periods])
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array(range(15)))
-    val3 = df[diff_periods.get_name()]
+    val3 = df[diff_periods.get_name()].tolist()
 
-    correct_vals3 = pd.Series(
-        [pd.NA, pd.NA, 5, 5, 5, 5, -20, 1, 1, 1, pd.NA, pd.NA, 5, -5, 7],
-    )
-    pd.testing.assert_series_equal(
-        val3,
-        correct_vals3,
-        check_index=False,
-        check_names=False,
-    )
+    correct_vals3 = [np.nan, np.nan, 5, 5, 5, 5, -20, 1, 1, 1, np.nan, np.nan, 5, -5, 7]
+    np.testing.assert_equal(val3, correct_vals3)
 
 
 def test_diff_single_value(pd_es):

@@ -461,13 +461,14 @@ class FeatureSetCalculator(object):
             default_matrix,
             columns=default_cols,
             index=instance_ids,
+            dtype="object",
         )
         index_name = self.entityset[self.feature_set.target_df_name].ww.index
         default_df.index.name = index_name
         if extra_columns is not None:
             for c in extra_columns:
                 if c not in default_df.columns:
-                    default_df[c] = [pd.NA] * len(instance_ids)
+                    default_df[c] = [np.nan] * len(instance_ids)
         return default_df
 
     def _feature_type_handler(self, f):

@@ -1,6 +1,7 @@
 import os
 from inspect import signature
 
+import numpy as np
 import pandas as pd
 
 from featuretools import config
@@ -17,8 +18,8 @@ class PrimitiveBase(object):
     input_types = None
     #: (woodwork.ColumnSchema): ColumnSchema type of return
     return_type = None
-    #: Default value this feature returns if no data found. Defaults to pd.NA
-    default_value = pd.NA
+    #: Default value this feature returns if no data found. Defaults to np.nan
+    default_value = np.nan
     #: (bool): True if feature needs to know what the current calculation time
     # is (provided to computational backend as "time_last")
     uses_calc_time = False
