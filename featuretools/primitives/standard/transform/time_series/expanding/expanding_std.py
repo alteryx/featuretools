@@ -9,9 +9,10 @@ class ExpandingSTD(TransformPrimitive):
     """Computes the expanding standard deviation for events over a given window.
 
     Description:
-        Given a list of datetimes, return the expanding standard deviation starting
-        at the row `gap` rows away from the current row and looking backward over the specified
-        time window (by `window_length` and `gap`).
+        Given a list of datetimes, return the expanding standard deviation
+        starting at the row `gap` rows away from the current row. An expanding
+        primitive calculates the value of a primitive for a given time
+        with all the data available up to the corresponding point in time.
 
         Input datetimes should be monotonic.
 
