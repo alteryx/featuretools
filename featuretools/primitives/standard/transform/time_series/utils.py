@@ -1,4 +1,4 @@
-from typing import Callable, Union
+from typing import Callable, Optional, Union
 
 import numpy as np
 from pandas import Series
@@ -242,7 +242,7 @@ def apply_rolling_agg_to_series(
 def _apply_gap_for_expanding_primitives(
     x: pd.Series,
     gap: Union[int, string],
-) -> Option[pd.Series]:
+) -> Optional[pd.Series]:
     if isinstance(self.gap, int):
         return x.shift(self.gap)
     else:
