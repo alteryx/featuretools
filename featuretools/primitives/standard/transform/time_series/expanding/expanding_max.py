@@ -18,8 +18,7 @@ class ExpandingMax(TransformPrimitive):
 
     Args:
         gap (int, optional): Specifies a gap backwards from each instance before the
-            usable data begins. Corresponds to number of rows.
-            Defaults to 1.
+            usable data begins. Corresponds to number of rows. Defaults to 1.
         min_periods (int, optional): Minimum number of observations required for performing calculations
             over the window. Defaults to 1.
 
