@@ -243,8 +243,8 @@ def _apply_gap_for_expanding_primitives(
     x: Series,
     gap: Union[int, str],
 ) -> Optional[Series]:
-    if isinstance(self.gap, int):
-        return x.shift(self.gap)
+    if isinstance(gap, int):
+        return x.shift(gap)
     else:
         raise NotImplementedError(
             "We currently do not support string offsets for the gap parameter in "

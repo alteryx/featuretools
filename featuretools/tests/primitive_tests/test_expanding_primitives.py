@@ -127,9 +127,9 @@ def test_expanding_trend(window_series_pd, min_periods, gap):
         ExpandingTrend,
     ],
 )
-def test_expanding_primitives_throw_warning(window_series_pd, op):
+def test_expanding_primitives_throw_warning(window_series_pd, primitive):
     with pytest.raises(NotImplementedError):
-        primitive(gap="2H").get_function(
+        primitive(gap="2H").get_function()(
             numeric=window_series_pd,
             datetime=window_series_pd.index,
         )

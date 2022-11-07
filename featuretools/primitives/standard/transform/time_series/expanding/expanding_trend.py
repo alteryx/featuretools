@@ -2,10 +2,10 @@ import pandas as pd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, Double
 
-from featuretools.primitives.base.primitives.standard.transform.time_series.utils import (
+from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
+from featuretools.primitives.standard.transform.time_series.utils import (
     _apply_gap_for_expanding_primitives,
 )
-from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
 from featuretools.utils import calculate_trend
 
 
@@ -69,7 +69,7 @@ class ExpandingTrend(TransformPrimitive):
     def get_function(self):
         def expanding_trend(datetime, numeric):
             x = pd.Series(numeric.values, index=datetime)
-            x = _apply_gap_for_expanding_primitives(x, gap)
+            x = _apply_gap_for_expanding_primitives(x, self.gap)
             return (
                 x.expanding(min_periods=self.min_periods)
                 .aggregate(calculate_trend)
