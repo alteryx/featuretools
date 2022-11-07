@@ -241,7 +241,7 @@ def apply_rolling_agg_to_series(
 
 def _apply_gap_for_expanding_primitives(
     x: Series,
-    gap: Union[int, string],
+    gap: Union[int, str],
 ) -> Optional[Series]:
     if isinstance(self.gap, int):
         return x.shift(self.gap)
