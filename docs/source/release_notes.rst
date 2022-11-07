@@ -6,8 +6,8 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Add RollingOutlierCount primitive (:pr:`2129`)
-        * Add ExpandingCount, ExpandingMin, ExpandingMean, ExpandingMax, ExpandingSTD, and ExpandingTrend primitives (:pr:`2343`) 
+        * Add ``RollingOutlierCount`` primitive (:pr:`2129`)
+        * Add ``ExpandingCount``, ``ExpandingMin``, ``ExpandingMean``, ``ExpandingMax``, ``ExpandingSTD``, and ``ExpandingTrend`` primitives (:pr:`2343`) 
         * Add ``RateOfChange`` primitive (:pr:`2359`)
     * Fixes
         * Sets ``uses_full_dataframe`` for ``Rolling*`` and ``Exponential*`` primitives (:pr:`2354`)
