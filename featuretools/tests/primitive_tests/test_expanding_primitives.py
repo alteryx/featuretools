@@ -115,3 +115,21 @@ def test_expanding_trend(window_series_pd, min_periods, gap):
         datetime=window_series_pd.index,
     )
     pd.testing.assert_series_equal(pd.Series(actual), pd.Series(expected))
+
+
+@pytest.mark.parametrize(
+    "primitive",
+    [
+        ExpandingMax,
+        ExpandingMean,
+        ExpandingMin,
+        ExpandingSTD,
+        ExpandingTrend,
+    ],
+)
+def test_expanding_primitives_throw_warning(window_series_pd, op):
+    with pytest.raises(NotImplementedError):
+        primitive(gap="2H").get_function(
+            numeric=window_series_pd,
+            datetime=window_series_pd.index,
+        )

@@ -237,3 +237,16 @@ def apply_rolling_agg_to_series(
             num_nans = min_periods - 1 + gap
         applied_rolled_series.iloc[range(num_nans)] = np.nan
     return applied_rolled_series.values
+
+
+def _apply_gap_for_expanding_primitives(
+    x: pd.Series,
+    gap: Union[int, string],
+) -> Option[pd.Series]:
+    if isinstance(self.gap, int):
+        return x.shift(self.gap)
+    else:
+        raise NotImplementedError(
+            "We currently do not support string offsets for the gap parameter in "
+            "Expanding primitives",
+        )
