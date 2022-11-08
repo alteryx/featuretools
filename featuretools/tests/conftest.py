@@ -7,7 +7,8 @@ import dask.dataframe as dd
 import pandas as pd
 import pytest
 from distributed import LocalCluster
-from woodwork.logical_types import Boolean, Integer
+from woodwork import init_series
+from woodwork.logical_types import Boolean, Integer, PostalCode
 
 from featuretools import EntitySet, demo
 from featuretools.tests.testing_utils import make_ecommerce_entityset, to_pandas
@@ -744,6 +745,14 @@ def rolling_outlier_series_pd():
         [0] * 4 + [10] + [0] * 4 + [10] + [0] * 5,
         index=pd.date_range(start="2020-01-01", end="2020-01-15", periods=15),
     )
+
+
+@pytest.fixture
+def postal_code_series_pd():
+    ser = pd.Series(["90210", "60018", "10010", "92304-4201"])
+    ser = init_series(ser)
+    assert ser.ww.logical_type == PostalCode
+    return ser
 
 
 def create_test_credentials(test_path):
