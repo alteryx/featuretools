@@ -11,7 +11,7 @@ Future Release
         * Add ``RateOfChange`` primitive (:pr:`2359`)
     * Fixes
         * Sets ``uses_full_dataframe`` for ``Rolling*`` and ``Exponential*`` primitives (:pr:`2354`)
-        * Updates for compatibility with upcoming Woodwork release (:pr:`2363`)
+        * Updates for compatibility with upcoming Woodwork release 0.21.0 (:pr:`2363`)
     * Changes
         * Remove click and CLI functions (``list-primitives``, ``info``) (:pr:`2353`, :pr:`2358`)
     * Documentation Changes
