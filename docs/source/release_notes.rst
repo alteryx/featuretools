@@ -9,6 +9,7 @@ Future Release
     * Enhancements
         * Add ``RollingOutlierCount`` primitive (:pr:`2129`)
         * Add ``RateOfChange`` primitive (:pr:`2359`)
+        * Add ``OneDigitPostalCode`` and ``TwoDigitPostalCode`` primitives (:pr:`2365`)
     * Fixes
         * Sets ``uses_full_dataframe`` for ``Rolling*`` and ``Exponential*`` primitives (:pr:`2354`)
         * Updates for compatibility with upcoming Woodwork release 0.21.0 (:pr:`2363`)
