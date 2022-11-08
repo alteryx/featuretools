@@ -374,6 +374,7 @@ def make_logical_types(with_integer_time_index=False):
         "phone_number": PhoneNumber,
         "birthday": Datetime(datetime_format="%Y-%m-%d"),
         "cohort_name": Categorical,
+        "cohort": Integer,
     }
 
     session_logical_types = {
