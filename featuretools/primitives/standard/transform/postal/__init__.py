@@ -1,0 +1,2 @@
+from featuretools.primitives.standard.transform.postal import OneDigitPostalCode
+from featuretools.primitives.standard.transform.postal import TwoDigitPostalCode
