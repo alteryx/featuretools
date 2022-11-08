@@ -246,7 +246,6 @@ def _apply_gap_for_expanding_primitives(
     if isinstance(gap, int):
         return x.shift(gap)
     else:
-        raise NotImplementedError(
-            "We currently do not support string offsets for the gap parameter in "
-            "Expanding primitives",
+        raise TypeError(
+            "String offsets are not supported for the gap parameter in Expanding primitives",
         )
