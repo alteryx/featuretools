@@ -1,4 +1,3 @@
-import numpy as np
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Categorical, PostalCode
 
@@ -13,9 +12,8 @@ class OneDigitPostalCode(TransformPrimitive):
         For a list of postal codes, return the one digit prefix for a given postal code.
 
     Examples:
-        >>> one_digit_postal_code = OneDigitPostalCode()
-        >>> one_digit_postal_codes = OneDigitPostalCode([92432, 34514])
-        >>> np.round(distances_mi, 3).tolist()
+        >>> one_digit_postal_code = OneDigitPostalCode().get_function()
+        >>> one_digit_postal_code(['92432', '34514'])
         [9, 3]
     """
 

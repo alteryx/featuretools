@@ -1,4 +1,3 @@
-import numpy as np
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Categorical, PostalCode
 
@@ -14,8 +13,7 @@ class TwoDigitPostalCode(TransformPrimitive):
 
     Examples:
         >>> two_digit_postal_code = TwoDigitPostalCode()
-        >>> two_digit_postal_codes = TwoDigitPostalCode(['92432', '34514'])
-        >>> np.round(distances_mi, 3).tolist()
+        >>> two_digit_postal_code(['92432', '34514'])
         [92, 34]
     """
 
