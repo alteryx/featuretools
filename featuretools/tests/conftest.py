@@ -750,8 +750,7 @@ def rolling_outlier_series_pd():
 @pytest.fixture
 def postal_code_series_pd():
     ser = pd.Series(["90210", "60018", "10010", "92304-4201"])
-    ser = init_series(ser)
-    assert ser.ww.logical_type == PostalCode
+    ser = init_series(ser, logical_type="PostalCode")
     return ser
 
 

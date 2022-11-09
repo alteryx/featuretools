@@ -1,3 +1,4 @@
+import pandas as pd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Categorical, PostalCode
 
@@ -25,6 +26,6 @@ class OneDigitPostalCode(TransformPrimitive):
 
     def get_function(self):
         def one_digit_postal_code(postal_code):
-            return postal_code[0]
+            return pd.Series(pc[0] for pc in postal_code)
 
         return one_digit_postal_code
