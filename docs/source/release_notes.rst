@@ -12,6 +12,7 @@ Future Release
     * Fixes
         * Sets ``uses_full_dataframe`` for ``Rolling*`` and ``Exponential*`` primitives (:pr:`2354`)
         * Updates for compatibility with upcoming Woodwork release 0.21.0 (:pr:`2363`)
+        * Updates demo dataset location to use new links (:pr:`2366`)
     * Changes
         * Remove click and CLI functions (``list-primitives``, ``info``) (:pr:`2353`, :pr:`2358`)
     * Documentation Changes
