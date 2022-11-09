@@ -14,7 +14,7 @@ class OneDigitPostalCode(TransformPrimitive):
 
     Examples:
         >>> one_digit_postal_code = OneDigitPostalCode().get_function()
-        >>> one_digit_postal_code(['92432', '34514'])
+        >>> one_digit_postal_code(['92432', '34514']).tolist()
         [9, 3]
     """
 

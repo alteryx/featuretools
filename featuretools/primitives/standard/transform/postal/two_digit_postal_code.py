@@ -14,7 +14,7 @@ class TwoDigitPostalCode(TransformPrimitive):
 
     Examples:
         >>> two_digit_postal_code = TwoDigitPostalCode()
-        >>> two_digit_postal_code(['92432', '34514'])
+        >>> two_digit_postal_code(['92432', '34514']).tolist()
         [92, 34]
     """
 
