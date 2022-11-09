@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 from distributed import LocalCluster
 from woodwork import init_series
-from woodwork.logical_types import Boolean, Integer, PostalCode
+from woodwork.logical_types import Boolean, Integer
 
 from featuretools import EntitySet, demo
 from featuretools.tests.testing_utils import make_ecommerce_entityset, to_pandas
