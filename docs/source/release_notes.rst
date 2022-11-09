@@ -17,6 +17,7 @@ Future Release
         * Remove click and CLI functions (``list-primitives``, ``info``) (:pr:`2353`, :pr:`2358`)
     * Documentation Changes
         * Build docs in parallel with Sphinx (:pr:`2351`)
+        * Use non-editable install to allow local docs build (:pr:`2367`)
     * Testing Changes
         * Replace use of pytest's tmpdir fixture with tmp_path (:pr:`2344`)
 
