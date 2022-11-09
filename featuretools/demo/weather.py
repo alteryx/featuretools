@@ -15,7 +15,7 @@ def load_weather(nrows=None, return_single_table=False):
     """
     filename = "daily-min-temperatures.csv"
     print("Downloading data ...")
-    url = "https://api.featurelabs.com/datasets/{}?library=featuretools&version={}".format(
+    url = "https://oss.alteryx.com/datasets/{}?library=featuretools&version={}".format(
         filename,
         ft.__version__,
     )
