@@ -3,18 +3,41 @@
 Release Notes
 -------------
 
+
 Future Release
 ==============
     * Enhancements
+        * Add ``RollingOutlierCount`` primitive (:pr:`2129`)
+        * Add ``RateOfChange`` primitive (:pr:`2359`)
+    * Fixes
+        * Sets ``uses_full_dataframe`` for ``Rolling*`` and ``Exponential*`` primitives (:pr:`2354`)
+        * Updates for compatibility with upcoming Woodwork release 0.21.0 (:pr:`2363`)
+        * Updates demo dataset location to use new links (:pr:`2366`)
+    * Changes
+        * Remove click and CLI functions (``list-primitives``, ``info``) (:pr:`2353`, :pr:`2358`)
+    * Documentation Changes
+        * Build docs in parallel with Sphinx (:pr:`2351`)
+    * Testing Changes
+        * Replace use of pytest's tmpdir fixture with tmp_path (:pr:`2344`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`tamargrey`, :user:`thehomebrewnerd`
+
+Breaking Changes
+++++++++++++++++
+* The featuretools CLI has been completely removed.
+
+v1.17.0 Oct 31, 2022
+====================
+    * Enhancements
         * Add featuretools-sklearn-transformer as an extra installation option (:pr:`2335`)
         * Add CountAboveMean, CountBelowMean, CountGreaterThan, CountInsideNthSTD, CountInsideRange, CountLessThan, CountOutsideNthSTD, CountOutsideRange (:pr:`2336`)
-    * Fixes
     * Changes
         * Restructure primitives directory to use individual primitives files (:pr:`2331`)
+        * Restrict 2022.10.1 for dask and distributed (:pr:`2347`)
     * Documentation Changes
         * Add Featuretools-SQL to Install page on documentation (:pr:`2337`)
         * Fixes broken link in Featuretools documentation (:pr:`2339`)
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`

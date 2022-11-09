@@ -1,4 +1,6 @@
+import contextlib
 import copy
+import os
 
 import composeml as cp
 import dask.dataframe as dd
@@ -734,3 +736,48 @@ def rolling_series_pd():
         range(20),
         index=pd.date_range(start="2020-01-01", end="2020-01-20"),
     )
+
+
+@pytest.fixture
+def rolling_outlier_series_pd():
+    return pd.Series(
+        [0] * 4 + [10] + [0] * 4 + [10] + [0] * 5,
+        index=pd.date_range(start="2020-01-01", end="2020-01-15", periods=15),
+    )
+
+
+def create_test_credentials(test_path):
+    with open(test_path, "w+") as f:
+        f.write("[test]\n")
+        f.write("aws_access_key_id=AKIAIOSFODNN7EXAMPLE\n")
+        f.write("aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\n")
+
+
+def create_test_config(test_path_config):
+    with open(test_path_config, "w+") as f:
+        f.write("[profile test]\n")
+        f.write("region=us-east-2\n")
+        f.write("output=text\n")
+
+
+@pytest.fixture
+def setup_test_profile(monkeypatch, tmp_path):
+    cache = tmp_path.joinpath(".cache")
+    cache.mkdir()
+    test_path = str(cache.joinpath("test_credentials"))
+    test_path_config = str(cache.joinpath("test_config"))
+    monkeypatch.setenv("AWS_SHARED_CREDENTIALS_FILE", test_path)
+    monkeypatch.setenv("AWS_CONFIG_FILE", test_path_config)
+    monkeypatch.delenv("AWS_ACCESS_KEY_ID", raising=False)
+    monkeypatch.delenv("AWS_SECRET_ACCESS_KEY", raising=False)
+    monkeypatch.setenv("AWS_PROFILE", "test")
+
+    with contextlib.suppress(OSError):
+        os.remove(test_path)
+        os.remove(test_path_config)  # pragma: no cover
+
+    create_test_credentials(test_path)
+    create_test_config(test_path_config)
+    yield
+    os.remove(test_path)
+    os.remove(test_path_config)

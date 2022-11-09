@@ -44,6 +44,7 @@ from featuretools.primitives import (
     RollingMax,
     RollingMean,
     RollingMin,
+    RollingOutlierCount,
     RollingSTD,
     Sum,
     TimeSincePrevious,
@@ -482,6 +483,7 @@ def test_bad_groupby_feature(es):
         RollingMax,
         RollingMean,
         RollingMin,
+        RollingOutlierCount,
         RollingSTD,
     ],
 )

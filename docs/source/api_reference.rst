@@ -240,6 +240,7 @@ General Transform Primitives
     NaturalLogarithm
     Negate
     Percentile
+    RateOfChange
     Sine
     SquareRoot
     Tangent
@@ -291,6 +292,7 @@ Time Series Transform Primitives
     RollingMax
     RollingMean
     RollingMin
+    RollingOutlierCount
     RollingSTD
     RollingTrend
 

@@ -45,6 +45,7 @@ class ExponentialWeightedSTD(TransformPrimitive):
     name = "exponential_weighted_std"
     input_types = [ColumnSchema(semantic_tags={"numeric"})]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
+    uses_full_dataframe = True
 
     def __init__(self, com=None, span=None, halflife=None, alpha=None, ignore_na=False):
         if all(x is None for x in [com, span, halflife, alpha]):
