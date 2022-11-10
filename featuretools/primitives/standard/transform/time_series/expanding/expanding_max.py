@@ -1,6 +1,6 @@
 import pandas as pd
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Datetime, Double
+from woodwork.logical_types import Datetime
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
 from featuretools.primitives.standard.transform.time_series.utils import (
