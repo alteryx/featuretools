@@ -9,10 +9,10 @@ from featuretools.primitives.standard.transform.time_series.utils import (
 
 
 class ExpandingMax(TransformPrimitive):
-    """Computes the expanding minimum of events over a given window.
+    """Computes the expanding maximum of events over a given window.
 
     Description:
-        Given a list of datetimes, return an expanding minimum starting
+        Given a list of datetimes, returns an expanding maximum starting
         at the row `gap` rows away from the current row. An expanding
         primitive calculates the value of a primitive for a given time
         with all the data available up to the corresponding point in time.
@@ -55,7 +55,7 @@ class ExpandingMax(TransformPrimitive):
         ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"}),
         ColumnSchema(semantic_tags={"numeric"}),
     ]
-    return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
+    return_type = ColumnSchema(semantic_tags={"numeric"})
     uses_full_dataframe = True
 
     def __init__(self, gap=1, min_periods=1):

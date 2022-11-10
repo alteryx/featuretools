@@ -9,10 +9,10 @@ from featuretools.primitives.standard.transform.time_series.utils import (
 
 
 class ExpandingMean(TransformPrimitive):
-    """Computes the expanding minimum of events over a given window.
+    """Computes the expanding mean of events over a given window.
 
     Description:
-        Given a list of datetimes, return an expanding minimum starting
+        Given a list of datetimes, returns an expanding mean starting
         at the row `gap` rows away from the current row. An expanding
         primitive calculates the value of a primitive for a given time
         with all the data available up to the corresponding point in time.

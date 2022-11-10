@@ -13,7 +13,7 @@ class ExpandingTrend(TransformPrimitive):
     """Computes the expanding trend for events over a given window.
 
     Description:
-        Given a list of datetimes, return the expanding trend starting
+        Given a list of datetimes, returns the expanding trend starting
         at the row `gap` rows away from the current row. An expanding
         primitive calculates the value of a primitive for a given time
         with all the data available up to the corresponding point in time.

@@ -1,6 +1,6 @@
 import pandas as pd
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Datetime, Double
+from woodwork.logical_types import Datetime, IntegerNullable
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
 from featuretools.primitives.standard.transform.time_series.utils import (
@@ -12,7 +12,7 @@ class ExpandingCount(TransformPrimitive):
     """Computes the expanding count of events over a given window.
 
     Description:
-        Given a list of datetimes, return an expanding count starting
+        Given a list of datetimes, returns an expanding count starting
         at the row `gap` rows away from the current row. An expanding
         primitive calculates the value of a primitive for a given time
         with all the data available up to the corresponding point in time.
@@ -52,7 +52,7 @@ class ExpandingCount(TransformPrimitive):
 
     name = "expanding_count"
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"})]
-    return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
+    return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={"numeric"})
     uses_full_dataframe = True
 
     def __init__(self, gap=1, min_periods=0):
