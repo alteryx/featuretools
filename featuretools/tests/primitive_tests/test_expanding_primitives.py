@@ -170,7 +170,6 @@ def test_apply_gap_for_expanding_primitives_handles_date_range(
     window_date_range_pd,
     gap,
 ):
-    date_range = pd.date_range(start="2022-01-01", end="2022-01-10")
-    actual = _apply_gap_for_expanding_primitives(date_range, gap)
-    expected = pd.Series(date_range.to_series().shift(gap).values)
+    actual = _apply_gap_for_expanding_primitives(window_date_range_pd, gap)
+    expected = pd.Series(window_date_range_pd.to_series().shift(gap).values)
     pd.testing.assert_series_equal(actual, expected)
