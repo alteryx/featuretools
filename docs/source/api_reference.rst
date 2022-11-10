@@ -219,19 +219,6 @@ Email and URL Transform Primitives
     URLToTLD
 
 
-Expanding Transform Primitives
-******************************
-.. autosummary::
-    :toctree: generated/
-
-    ExpandingCount
-    ExpandingMax
-    ExpandingMean
-    ExpandingMin
-    ExpandingSTD
-    ExpandingTrend
-
-
 Exponential Transform Primitives
 ********************************
 .. autosummary::
@@ -300,6 +287,12 @@ Time Series Transform Primitives
 .. autosummary::
     :toctree: generated/
 
+    ExpandingCount
+    ExpandingMax
+    ExpandingMean
+    ExpandingMin
+    ExpandingSTD
+    ExpandingTrend
     Lag
     RollingCount
     RollingMax
