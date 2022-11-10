@@ -12,10 +12,12 @@ Future Release
     * Fixes
         * Sets ``uses_full_dataframe`` for ``Rolling*`` and ``Exponential*`` primitives (:pr:`2354`)
         * Updates for compatibility with upcoming Woodwork release 0.21.0 (:pr:`2363`)
+        * Updates demo dataset location to use new links (:pr:`2366`)
     * Changes
         * Remove click and CLI functions (``list-primitives``, ``info``) (:pr:`2353`, :pr:`2358`)
     * Documentation Changes
         * Build docs in parallel with Sphinx (:pr:`2351`)
+        * Use non-editable install to allow local docs build (:pr:`2367`)
     * Testing Changes
         * Replace use of pytest's tmpdir fixture with tmp_path (:pr:`2344`)
 
