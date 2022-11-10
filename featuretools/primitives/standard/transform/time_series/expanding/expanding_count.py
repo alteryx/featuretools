@@ -31,7 +31,7 @@ class ExpandingCount(TransformPrimitive):
         >>> expanding_count = ExpandingCount()
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> expanding_count(times).tolist()
-        [0.0, 1.0, 2.0, 3.0, 4.0]
+        [nan, 1.0, 2.0, 3.0, 4.0]
 
         We can also control the gap before the expanding calculation.
 
@@ -55,7 +55,7 @@ class ExpandingCount(TransformPrimitive):
     return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={"numeric"})
     uses_full_dataframe = True
 
-    def __init__(self, gap=1, min_periods=0):
+    def __init__(self, gap=1, min_periods=1):
         self.gap = gap
         self.min_periods = min_periods
 

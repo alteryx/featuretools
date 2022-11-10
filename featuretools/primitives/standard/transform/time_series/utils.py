@@ -1,6 +1,7 @@
 from typing import Callable, Optional, Union
 
 import numpy as np
+import pandas as pd
 from pandas import Series
 from pandas.core.window.rolling import Rolling
 from pandas.tseries.frequencies import to_offset
@@ -243,6 +244,8 @@ def _apply_gap_for_expanding_primitives(
     x: Series,
     gap: Union[int, str],
 ) -> Optional[Series]:
+    if isinstance(x, pd.Index):
+        x = x.to_series()
     if isinstance(gap, int):
         return x.shift(gap)
     else:
