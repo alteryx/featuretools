@@ -4,6 +4,7 @@ import os
 
 import composeml as cp
 import dask.dataframe as dd
+import numpy as np
 import pandas as pd
 import pytest
 from distributed import LocalCluster
@@ -759,10 +760,17 @@ def postal_code_series_int_pd():
     return init_series(ser, logical_type="PostalCode")
 
 
+@pytest.fixture
+def postal_code_series_null_pd():
+    ser = pd.Series([np.nan, 20000, 30000])
+    return init_series(ser, logical_type="PostalCode")
+
+
 @pytest.fixture(
     params=[
         "postal_code_series_string_pd",
         "postal_code_series_int_pd",
+        "postal_code_series_null_pd",
     ],
 )
 def postal_code_series_pd(request):

@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from featuretools.primitives.standard.transform.postal import (
@@ -7,14 +8,19 @@ from featuretools.primitives.standard.transform.postal import (
 
 
 def test_single_digit_postal_code(postal_code_series_pd):
+    print(postal_code_series_pd)
     prim = OneDigitPostalCode().get_function()
-    expected = pd.Series(code[0] for code in postal_code_series_pd)
     actual = prim(postal_code_series_pd)
-    pd.testing.assert_series_equal(expected, actual)
+    expected = [
+        str(code)[0] if not pd.isna(code) else code for code in postal_code_series_pd
+    ]
+    pd.testing.assert_series_equal(pd.Series(actual), pd.Series(expected))
 
 
 def test_two_digit_postal_code(postal_code_series_pd):
     prim = TwoDigitPostalCode().get_function()
-    expected = pd.Series(code[:2] for code in postal_code_series_pd)
     actual = prim(postal_code_series_pd)
-    pd.testing.assert_series_equal(expected, actual)
+    expected = [
+        str(code)[:2] if not pd.isna(code) else code for code in postal_code_series_pd
+    ]
+    pd.testing.assert_series_equal(pd.Series(actual), pd.Series(expected))

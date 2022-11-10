@@ -25,8 +25,10 @@ class OneDigitPostalCode(TransformPrimitive):
     description_template = "The one digit postal code prefix of {}"
 
     def get_function(self):
-        def one_digit_postal_code(postal_codes):
-            postal_codes.apply(str)
-            return pd.Series(pc[0] for pc in postal_codes)
+        def two_digit_postal_code(postal_codes):
+            def transform_postal_code(pc):
+                return str(pc)[0] if not pd.isna(pc) else pc
 
-        return one_digit_postal_code
+            return postal_codes.apply(transform_postal_code)
+
+        return two_digit_postal_code
