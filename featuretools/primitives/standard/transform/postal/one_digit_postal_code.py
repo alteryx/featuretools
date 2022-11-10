@@ -13,7 +13,7 @@ class OneDigitPostalCode(TransformPrimitive):
         For a list of postal codes, return the one digit prefix for a given postal code.
 
     Examples:
-        >>> one_digit_postal_code = OneDigitPostalCode().get_function()
+        >>> one_digit_postal_code = OneDigitPostalCode()
         >>> one_digit_postal_code(['92432', '34514']).tolist()
         ['9', '3']
     """
@@ -25,8 +25,8 @@ class OneDigitPostalCode(TransformPrimitive):
     description_template = "The one digit postal code prefix of {}"
 
     def get_function(self):
-        def one_digit_postal_code(postal_code):
-            postal_code.apply(str)
-            return pd.Series(pc[0] for pc in postal_code)
+        def one_digit_postal_code(postal_codes):
+            postal_codes.apply(str)
+            return pd.Series(pc[0] for pc in postal_codes)
 
         return one_digit_postal_code

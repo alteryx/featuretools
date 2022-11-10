@@ -25,8 +25,8 @@ class TwoDigitPostalCode(TransformPrimitive):
     description_template = "The two digit postal code prefix of {}"
 
     def get_function(self):
-        def two_digit_postal_code(postal_code):
-            postal_code.apply(str)
-            return pd.Series(pc[:1] for pc in postal_code)
+        def two_digit_postal_code(postal_codes):
+            postal_codes.apply(str)
+            return pd.Series(pc[:1] for pc in postal_codes)
 
         return two_digit_postal_code
