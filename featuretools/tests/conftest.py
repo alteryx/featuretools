@@ -739,6 +739,11 @@ def window_series_pd():
 
 
 @pytest.fixture
+def window_date_range_pd():
+    return pd.date_range(start="2022-11-1", end="2022-11-5", periods=30)
+
+
+@pytest.fixture
 def rolling_outlier_series_pd():
     return pd.Series(
         [0] * 4 + [10] + [0] * 4 + [10] + [0] * 5,

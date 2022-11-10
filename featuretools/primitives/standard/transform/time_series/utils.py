@@ -241,14 +241,13 @@ def apply_rolling_agg_to_series(
 
 
 def _apply_gap_for_expanding_primitives(
-    x: Series,
+    x: Union[Series, pd.Index],
     gap: Union[int, str],
 ) -> Optional[Series]:
-    if isinstance(x, pd.Index):
-        x = x.to_series()
-    if isinstance(gap, int):
-        return x.shift(gap)
-    else:
+    if not isinstance(gap, int):
         raise TypeError(
             "String offsets are not supported for the gap parameter in Expanding primitives",
         )
+    if isinstance(x, pd.Index):
+        return pd.Series(x.to_series().shift(gap).values)
+    return x.shift(gap)
