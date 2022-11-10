@@ -21,11 +21,12 @@ class OneDigitPostalCode(TransformPrimitive):
     name = "one_digit_postal_code"
     input_types = [ColumnSchema(logical_type=PostalCode)]
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
-    return_type = ColumnSchema(logical_type=Categorical, semantic_tags={"numeric"})
+    return_type = ColumnSchema(logical_type=Categorical, semantic_tags={"category"})
     description_template = "The one digit postal code prefix of {}"
 
     def get_function(self):
         def one_digit_postal_code(postal_code):
+            postal_code.apply(str)
             return pd.Series(pc[0] for pc in postal_code)
 
         return one_digit_postal_code

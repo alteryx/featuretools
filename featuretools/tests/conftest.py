@@ -748,10 +748,26 @@ def rolling_outlier_series_pd():
 
 
 @pytest.fixture
-def postal_code_series_pd():
+def postal_code_series_string_dtype_pd():
     ser = pd.Series(["90210", "60018", "10010", "92304-4201"])
     ser = init_series(ser, logical_type="PostalCode")
     return ser
+
+
+def postal_code_series_int_dtype_pd():
+    ser = pd.Series([10000, 20000, 30000])
+    ser = init_series(ser, logical_type="PostalCode")
+    return ser
+
+
+@pytest.fixture(
+    params=[
+        "postal_code_series_int_dtype_pd",
+        "postal_code_series_string_dtype_pd",
+    ],
+)
+def postal_code_series_pd(request):
+    return request.getfixturevalue(request.param)
 
 
 def create_test_credentials(test_path):

@@ -26,6 +26,7 @@ class TwoDigitPostalCode(TransformPrimitive):
 
     def get_function(self):
         def two_digit_postal_code(postal_code):
+            postal_code.apply(str)
             return pd.Series(pc[:1] for pc in postal_code)
 
         return two_digit_postal_code
