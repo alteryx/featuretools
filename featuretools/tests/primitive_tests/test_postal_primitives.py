@@ -15,6 +15,6 @@ def test_single_digit_postal_code(postal_code_series_pd):
 
 def test_two_digit_postal_code(postal_code_series_pd):
     prim = TwoDigitPostalCode().get_function()
-    expected = pd.Series(code[:1] for code in postal_code_series_pd)
+    expected = pd.Series(code[:2] for code in postal_code_series_pd)
     actual = prim(postal_code_series_pd)
     pd.testing.assert_series_equal(expected, actual)
