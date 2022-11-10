@@ -10,7 +10,7 @@ class OneDigitPostalCode(TransformPrimitive):
     """Returns the one digit prefix from a given postal code.
 
     Description:
-        For a list of postal codes, return the one digit prefix for a given postal code.
+        For a list of postal codes, returns the one digit prefix for a given postal code.
 
     Examples:
         >>> one_digit_postal_code = OneDigitPostalCode()
