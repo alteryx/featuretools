@@ -281,6 +281,13 @@ NaturalLanguage Transform Primitives
    UpperCaseCount
    WhitespaceCount
 
+Postal Primitives
+*****************
+.. autosummary::
+    :toctree: generated/
+
+    OneDigitPostalCode
+    TwoDigitPostalCode
 
 Time Series Transform Primitives
 ********************************

@@ -750,15 +750,13 @@ def rolling_outlier_series_pd():
 @pytest.fixture
 def postal_code_series_string_pd():
     ser = pd.Series(["90210", "60018", "10010", "92304-4201"])
-    ser = init_series(ser, logical_type="PostalCode")
-    return ser
+    return init_series(ser, logical_type="PostalCode")
 
 
 @pytest.fixture
 def postal_code_series_int_pd():
     ser = pd.Series([10000, 20000, 30000])
-    ser = init_series(ser, logical_type="PostalCode")
-    return ser
+    return init_series(ser, logical_type="PostalCode")
 
 
 @pytest.fixture(
