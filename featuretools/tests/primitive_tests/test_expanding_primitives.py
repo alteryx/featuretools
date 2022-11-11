@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -24,10 +25,12 @@ from featuretools.utils import calculate_trend
 )
 def test_expanding_count_series(window_series_pd, min_periods, gap):
     test = window_series_pd.shift(gap)
-    expected = test.expanding(min_periods=min_periods).count().values
+    expected = test.expanding(min_periods=min_periods).count()
+    num_nans = gap + min_periods - 1
+    expected[range(num_nans)] = np.nan
     primitive_instance = ExpandingCount(min_periods=min_periods, gap=gap).get_function()
     actual = primitive_instance(window_series_pd.index)
-    pd.testing.assert_series_equal(pd.Series(actual), pd.Series(expected))
+    pd.testing.assert_series_equal(pd.Series(actual), expected)
 
 
 @pytest.mark.parametrize(
@@ -38,11 +41,13 @@ def test_expanding_count_series(window_series_pd, min_periods, gap):
     ],
 )
 def test_expanding_count_date_range(window_date_range_pd, min_periods, gap):
-    test = pd.Series(window_date_range_pd.to_series().shift(gap).values)
-    expected = test.expanding(min_periods=min_periods).count().values
+    test = _apply_gap_for_expanding_primitives(gap=gap, x=window_date_range_pd)
+    expected = test.expanding(min_periods=min_periods).count()
+    num_nans = gap + min_periods - 1
+    expected[range(num_nans)] = np.nan
     primitive_instance = ExpandingCount(min_periods=min_periods, gap=gap).get_function()
     actual = primitive_instance(window_date_range_pd)
-    pd.testing.assert_series_equal(pd.Series(actual), pd.Series(expected))
+    pd.testing.assert_series_equal(pd.Series(actual), expected)
 
 
 @pytest.mark.parametrize(
@@ -170,6 +175,8 @@ def test_apply_gap_for_expanding_primitives_handles_date_range(
     window_date_range_pd,
     gap,
 ):
-    actual = _apply_gap_for_expanding_primitives(window_date_range_pd, gap)
+    actual = pd.Series(
+        _apply_gap_for_expanding_primitives(window_date_range_pd, gap).values,
+    )
     expected = pd.Series(window_date_range_pd.to_series().shift(gap).values)
     pd.testing.assert_series_equal(actual, expected)

@@ -1,4 +1,4 @@
-import pandas as pd
+import numpy as np
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, IntegerNullable
 
@@ -47,7 +47,7 @@ class ExpandingCount(TransformPrimitive):
         >>> expanding_count = ExpandingCount(min_periods=3)
         >>> times = pd.date_range(start='2019-01-01', freq='1min', periods=5)
         >>> expanding_count(times).tolist()
-        [nan, nan, 2.0, 3.0, 4.0]
+        [nan, nan, nan, 3.0, 4.0]
     """
 
     name = "expanding_count"
@@ -60,9 +60,16 @@ class ExpandingCount(TransformPrimitive):
         self.min_periods = min_periods
 
     def get_function(self):
-        def expanding_count(datetime):
-            x = pd.Series(1, index=datetime)
-            x = _apply_gap_for_expanding_primitives(x, self.gap)
-            return x.expanding(min_periods=self.min_periods).count().values
+        def expanding_count(datetime_series):
+            datetime_series = _apply_gap_for_expanding_primitives(
+                datetime_series,
+                self.gap,
+            )
+            count_series = datetime_series.expanding(
+                min_periods=self.min_periods,
+            ).count()
+            num_nans = self.gap + self.min_periods - 1
+            count_series[range(num_nans)] = np.nan
+            return count_series
 
         return expanding_count

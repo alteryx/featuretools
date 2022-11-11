@@ -240,6 +240,11 @@ def apply_rolling_agg_to_series(
     return applied_rolled_series.values
 
 
+# [0, 1, 2, 3, 4, 5]  min_periods=2, gap=1
+# [nan, 1, 2, 3, 4]  * apply gap *
+# [nan, nan, 2, 3, 3]
+
+
 def _apply_gap_for_expanding_primitives(
     x: Union[Series, pd.Index],
     gap: Union[int, str],
@@ -249,5 +254,5 @@ def _apply_gap_for_expanding_primitives(
             "String offsets are not supported for the gap parameter in Expanding primitives",
         )
     if isinstance(x, pd.Index):
-        return pd.Series(x.to_series().shift(gap).values)
+        return x.to_series().shift(gap)
     return x.shift(gap)
