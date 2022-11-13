@@ -106,7 +106,7 @@ customer_id                                                                     
 ```
 We now have a feature vector for each customer that can be used for machine learning. See the [documentation on Deep Feature Synthesis](https://featuretools.alteryx.com/en/stable/getting_started/afe.html) for more examples.
 
-Featuretools contains many [different types of built-in primitives](https://primitives.featurelabs.com/) for creating features. If the primitive you need is not included, Featuretools also allows you to [define your own custom primitives](https://featuretools.alteryx.com/en/stable/getting_started/primitives.html#defining-custom-primitives).
+Featuretools contains many different types of built-in primitives for creating features. If the primitive you need is not included, Featuretools also allows you to [define your own custom primitives](https://featuretools.alteryx.com/en/stable/getting_started/primitives.html#defining-custom-primitives).
 
 ## Demos
 **Predict Next Purchase**
