@@ -36,7 +36,7 @@ def test_holiday_out_of_range():
         ],
     )
     days_to_boxing_day = -157 if float(holidays.__version__) >= 0.15 else 209
-    answer = pd.Series([np.nan, days_to_boxing_day, 148, np.nan])
+    answer = pd.Series([-6, days_to_boxing_day, 148, -5])
     pd.testing.assert_series_equal(date_to_holiday(array), answer, check_names=False)
 
 
