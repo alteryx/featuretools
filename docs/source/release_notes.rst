@@ -6,13 +6,25 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Add ``RollingOutlierCount`` primitive (:pr:`2129`)
         * Add ``ExpandingCount``, ``ExpandingMin``, ``ExpandingMean``, ``ExpandingMax``, ``ExpandingSTD``, and ``ExpandingTrend`` primitives (:pr:`2343`) 
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+  
+    Thanks to the following people for contributing to this release:
+    :user:`sbadithe`
+
+v1.18.0 Nov 15, 2022
+====================
+    * Enhancements
+        * Add ``RollingOutlierCount`` primitive (:pr:`2129`)
         * Add ``RateOfChange`` primitive (:pr:`2359`)
     * Fixes
         * Sets ``uses_full_dataframe`` for ``Rolling*`` and ``Exponential*`` primitives (:pr:`2354`)
         * Updates for compatibility with upcoming Woodwork release 0.21.0 (:pr:`2363`)
         * Updates demo dataset location to use new links (:pr:`2366`)
+        * Fix ``test_holiday_out_of_range`` after ``holidays`` release 0.17 (:pr:`2373`)
     * Changes
         * Remove click and CLI functions (``list-primitives``, ``info``) (:pr:`2353`, :pr:`2358`)
     * Documentation Changes
