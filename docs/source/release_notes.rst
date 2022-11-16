@@ -3,9 +3,17 @@
 Release Notes
 -------------
 
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+.. Thanks to the following people for contributing to this release:
 
-Future Release
-==============
+v1.18.0 Nov 15, 2022
+====================
     * Enhancements
         * Add ``RollingOutlierCount`` primitive (:pr:`2129`)
         * Add ``RateOfChange`` primitive (:pr:`2359`)
