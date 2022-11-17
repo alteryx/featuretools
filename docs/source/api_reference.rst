@@ -280,8 +280,8 @@ NaturalLanguage Transform Primitives
    UpperCaseCount
    WhitespaceCount
 
-Postal Primitives
-*****************
+Postal Code Primitives
+**********************
 .. autosummary::
     :toctree: generated/
 
