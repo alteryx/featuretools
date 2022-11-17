@@ -7,7 +7,7 @@ from featuretools.primitives.standard.transform.postal import (
 )
 
 
-def test_single_digit_postal_code(postal_code_series_pd):
+def test_one_digit_postal_code(postal_code_series_pd):
     prim = OneDigitPostalCode().get_function()
     actual = prim(postal_code_series_pd)
     expected = [

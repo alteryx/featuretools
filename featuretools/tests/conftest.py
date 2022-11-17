@@ -756,13 +756,13 @@ def postal_code_series_string_pd():
 
 @pytest.fixture
 def postal_code_series_int_pd():
-    ser = pd.Series([10000, 20000, 30000])
+    ser = pd.Series([10000, 20000, 30000]).astype("category")
     return init_series(ser, logical_type="PostalCode")
 
 
 @pytest.fixture
 def postal_code_series_null_pd():
-    ser = pd.Series([np.nan, 20000, 30000])
+    ser = pd.Series([np.nan, 20000, 30000]).astype("category")
     return init_series(ser, logical_type="PostalCode")
 
 
