@@ -27,7 +27,7 @@ class OneDigitPostalCode(TransformPrimitive):
     def get_function(self):
         def one_digit_postal_code(postal_codes):
             def transform_postal_code(pc):
-                return str(pc)[0] if not pd.isna(pc) else pc
+                return str(pc)[0] if pd.notna(pc) else pc
 
             return postal_codes.apply(transform_postal_code)
 
