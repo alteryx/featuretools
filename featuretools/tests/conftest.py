@@ -777,6 +777,33 @@ def postal_code_series_pd(request):
     return request.getfixturevalue(request.param)
 
 
+@pytest.fixture(
+    params=[
+        "postal_code_series_string_pd",
+        "postal_code_series_int_pd",
+        "postal_code_series_null_pd",
+    ],
+)
+def postal_code_series_pyspark(request):
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
+    ans = ps.from_pandas(request.getfixturevalue(request.param))
+    print(f"{type(ans)}")
+    return ans
+
+
+@pytest.fixture(
+    params=[
+        "postal_code_series_string_pd",
+        "postal_code_series_int_pd",
+        "postal_code_series_null_pd",
+    ],
+)
+def postal_code_series_dask(request):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
+    ans = dd.from_pandas(request.getfixturevalue(request.param), npartitions=1)
+    return ans
+
+
 def create_test_credentials(test_path):
     with open(test_path, "w+") as f:
         f.write("[test]\n")

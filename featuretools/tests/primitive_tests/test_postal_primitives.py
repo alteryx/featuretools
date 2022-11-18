@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from woodwork.accessor_utils import _is_spark_series
 
 from featuretools.primitives.standard.transform.postal import (
     OneDigitPostalCode,
@@ -7,21 +8,69 @@ from featuretools.primitives.standard.transform.postal import (
 )
 
 
-def test_one_digit_postal_code(postal_code_series_pd):
+def one_digit_postal_code_test(postal_series):
     prim = OneDigitPostalCode().get_function()
-    actual = prim(postal_code_series_pd)
-    expected = [
-        str(code)[0] if not pd.isna(code) else np.nan for code in postal_code_series_pd
-    ]
-    actual = [i if not pd.isna(i) else np.nan for i in actual.values]
+    actual = prim(postal_series)
+    if not _is_spark_series(postal_series):
+        expected = [
+            str(code)[0] if not pd.isna(code) else np.nan for code in postal_series
+        ]
+        actual = [i if not pd.isna(i) else np.nan for i in actual]
+    else:
+        expected = [
+            str(code)[0] if not pd.isna(code) else np.nan
+            for code in postal_series.to_numpy()
+        ]
+        actual = [i if not pd.isna(i) else np.nan for i in actual.to_numpy()]
+    return actual, expected
+
+
+def two_digit_postal_code_test(postal_series):
+    prim = TwoDigitPostalCode().get_function()
+    actual = prim(postal_series)
+    if not _is_spark_series(postal_series):
+        expected = [
+            str(code)[:2] if not pd.isna(code) else np.nan for code in postal_series
+        ]
+        actual = [i if not pd.isna(i) else np.nan for i in actual.values]
+    else:
+        expected = [
+            str(code)[:2] if not pd.isna(code) else np.nan
+            for code in postal_series.to_numpy()
+        ]
+        actual = [i if not pd.isna(i) else np.nan for i in actual.to_numpy()]
+    return actual, expected
+
+
+def test_one_digit_postal_code(postal_code_series_pd):
+    actual, expected = one_digit_postal_code_test(postal_code_series_pd)
     np.testing.assert_array_equal(actual, expected)
 
 
 def test_two_digit_postal_code(postal_code_series_pd):
-    prim = TwoDigitPostalCode().get_function()
-    actual = prim(postal_code_series_pd)
-    expected = [
-        str(code)[:2] if not pd.isna(code) else np.nan for code in postal_code_series_pd
-    ]
-    actual = [i if not pd.isna(i) else np.nan for i in actual.values]
+    actual, expected = two_digit_postal_code_test(postal_code_series_pd)
+    np.testing.assert_array_equal(actual, expected)
+
+
+def test_one_digit_postal_code_dask(postal_code_series_dask):
+    actual, expected = one_digit_postal_code_test(
+        postal_code_series_dask.astype("category"),
+    )
+    np.testing.assert_array_equal(actual, expected)
+
+
+def test_two_digit_postal_code_dask(postal_code_series_dask):
+    actual, expected = two_digit_postal_code_test(
+        postal_code_series_dask.astype("category"),
+    )
+    np.testing.assert_array_equal(actual, expected)
+
+
+def test_one_digit_postal_code_pyspark(postal_code_series_pyspark):
+    actual, expected = one_digit_postal_code_test(postal_code_series_pyspark)
+    np.testing.assert_array_equal(actual, expected)
+
+
+def test_two_digit_postal_code_pyspark(postal_code_series_pyspark):
+    actual, expected = two_digit_postal_code_test(postal_code_series_pyspark)
     np.testing.assert_array_equal(actual, expected)
