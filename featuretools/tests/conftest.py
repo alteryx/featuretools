@@ -787,7 +787,6 @@ def postal_code_series_pd(request):
 def postal_code_series_pyspark(request):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     ans = ps.from_pandas(request.getfixturevalue(request.param))
-    print(f"{type(ans)}")
     return ans
 
 
@@ -799,7 +798,6 @@ def postal_code_series_pyspark(request):
     ],
 )
 def postal_code_series_dask(request):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     ans = dd.from_pandas(request.getfixturevalue(request.param), npartitions=1)
     return ans
 
