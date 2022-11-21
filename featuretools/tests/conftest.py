@@ -798,7 +798,10 @@ def postal_code_series_pyspark(request):
     ],
 )
 def postal_code_series_dask(request):
-    ans = dd.from_pandas(request.getfixturevalue(request.param), npartitions=1)
+    ans = dd.from_pandas(
+        request.getfixturevalue(request.param),
+        npartitions=1,
+    ).compute()
     return ans
 
 
