@@ -42,35 +42,13 @@ def two_digit_postal_code_test(postal_series):
     return actual, expected
 
 
-def test_one_digit_postal_code(postal_code_series_pd):
-    actual, expected = one_digit_postal_code_test(postal_code_series_pd)
-    np.testing.assert_array_equal(actual, expected)
+def test_one_digit_postal_code(postal_code_dataframes):
+    for col in postal_code_dataframes:
+        actual, expected = one_digit_postal_code_test(postal_code_dataframes[col])
+        np.testing.assert_array_equal(actual, expected)
 
 
-def test_two_digit_postal_code(postal_code_series_pd):
-    actual, expected = two_digit_postal_code_test(postal_code_series_pd)
-    np.testing.assert_array_equal(actual, expected)
-
-
-def test_one_digit_postal_code_dask(postal_code_series_dask):
-    actual, expected = one_digit_postal_code_test(
-        postal_code_series_dask.astype("category"),
-    )
-    np.testing.assert_array_equal(actual, expected)
-
-
-def test_two_digit_postal_code_dask(postal_code_series_dask):
-    actual, expected = two_digit_postal_code_test(
-        postal_code_series_dask.astype("category"),
-    )
-    np.testing.assert_array_equal(actual, expected)
-
-
-def test_one_digit_postal_code_pyspark(postal_code_series_pyspark):
-    actual, expected = one_digit_postal_code_test(postal_code_series_pyspark)
-    np.testing.assert_array_equal(actual, expected)
-
-
-def test_two_digit_postal_code_pyspark(postal_code_series_pyspark):
-    actual, expected = two_digit_postal_code_test(postal_code_series_pyspark)
-    np.testing.assert_array_equal(actual, expected)
+def test_two_digit_postal_code(postal_code_dataframes):
+    for col in postal_code_dataframes:
+        actual, expected = two_digit_postal_code_test(postal_code_dataframes[col])
+        np.testing.assert_array_equal(actual, expected)

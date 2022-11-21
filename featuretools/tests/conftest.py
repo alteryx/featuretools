@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from distributed import LocalCluster
-from woodwork import init_series
 from woodwork.logical_types import Boolean, Integer
 
 from featuretools import EntitySet, demo
@@ -749,60 +748,49 @@ def rolling_outlier_series_pd():
 
 
 @pytest.fixture
-def postal_code_series_string_pd():
-    ser = pd.Series(["90210", "60018", "10010", "92304-4201"])
-    return init_series(ser, logical_type="PostalCode")
+def postal_code_dataframe():
+    df = pd.DataFrame(
+        {
+            "string_dtype": pd.Series(["90210", "60018", "10010", "92304-4201"]),
+            "int_dtype": pd.Series([10000, 20000, 30000]).astype("category"),
+            "has_nulls": pd.Series([np.nan, 20000, 30000]).astype("category"),
+        },
+    )
+    df.ww.init(
+        logical_types={
+            "string_dtype": "PostalCode",
+            "int_dtype": "PostalCode",
+            "has_nulls": "PostalCode",
+        },
+    )
+    return df
 
 
 @pytest.fixture
-def postal_code_series_int_pd():
-    ser = pd.Series([10000, 20000, 30000]).astype("category")
-    return init_series(ser, logical_type="PostalCode")
-
-
-@pytest.fixture
-def postal_code_series_null_pd():
-    ser = pd.Series([np.nan, 20000, 30000]).astype("category")
-    return init_series(ser, logical_type="PostalCode")
-
-
-@pytest.fixture(
-    params=[
-        "postal_code_series_string_pd",
-        "postal_code_series_int_pd",
-        "postal_code_series_null_pd",
-    ],
-)
-def postal_code_series_pd(request):
-    return request.getfixturevalue(request.param)
-
-
-@pytest.fixture(
-    params=[
-        "postal_code_series_string_pd",
-        "postal_code_series_int_pd",
-        "postal_code_series_null_pd",
-    ],
-)
-def postal_code_series_pyspark(request):
+def postal_code_dataframe_pyspark(postal_code_dataframe):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    ans = ps.from_pandas(request.getfixturevalue(request.param))
+    ans = ps.from_pandas(postal_code_dataframe)
     return ans
 
 
-@pytest.fixture(
-    params=[
-        "postal_code_series_string_pd",
-        "postal_code_series_int_pd",
-        "postal_code_series_null_pd",
-    ],
-)
-def postal_code_series_dask(request):
+@pytest.fixture
+def postal_code_dataframe_dask(postal_code_dataframe):
     ans = dd.from_pandas(
-        request.getfixturevalue(request.param),
+        postal_code_dataframe,
         npartitions=1,
     ).compute()
     return ans
+
+
+@pytest.fixture(
+    params=[
+        "postal_code_dataframe",
+        "postal_code_dataframe_pyspark",
+        "postal_code_dataframe_dask",
+    ],
+)
+def postal_code_dataframes(request):
+    return request.getfixturevalue(request.param)
 
 
 def create_test_credentials(test_path):
