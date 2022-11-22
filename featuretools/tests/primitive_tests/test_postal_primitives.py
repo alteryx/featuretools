@@ -11,34 +11,34 @@ from featuretools.primitives.standard.transform.postal import (
 def one_digit_postal_code_test(postal_series):
     prim = OneDigitPostalCode().get_function()
     actual = prim(postal_series)
-    if not _is_spark_series(postal_series):
-        expected = [
-            str(code)[0] if pd.notna(code) else np.nan for code in postal_series
-        ]
-        actual = [i if pd.notna(i) else np.nan for i in actual]
-    else:
+    if _is_spark_series(postal_series):
         expected = [
             str(code)[0] if pd.notna(code) else np.nan
             for code in postal_series.to_numpy()
         ]
         actual = [i if pd.notna(i) else np.nan for i in actual.to_numpy()]
+    else:
+        expected = [
+            str(code)[0] if pd.notna(code) else np.nan for code in postal_series
+        ]
+        actual = [i if pd.notna(i) else np.nan for i in actual]
     return actual, expected
 
 
 def two_digit_postal_code_test(postal_series):
     prim = TwoDigitPostalCode().get_function()
     actual = prim(postal_series)
-    if not _is_spark_series(postal_series):
-        expected = [
-            str(code)[:2] if pd.notna(code) else np.nan for code in postal_series
-        ]
-        actual = [i if pd.notna(i) else np.nan for i in actual.values]
-    else:
+    if _is_spark_series(postal_series):
         expected = [
             str(code)[:2] if pd.notna(code) else np.nan
             for code in postal_series.to_numpy()
         ]
         actual = [i if pd.notna(i) else np.nan for i in actual.to_numpy()]
+    else:
+        expected = [
+            str(code)[:2] if pd.notna(code) else np.nan for code in postal_series
+        ]
+        actual = [i if pd.notna(i) else np.nan for i in actual.values]
     return actual, expected
 
 
