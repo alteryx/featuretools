@@ -748,7 +748,7 @@ def rolling_outlier_series_pd():
 
 
 @pytest.fixture
-def postal_code_dataframe():
+def postal_code_dataframe_pd():
     df = pd.DataFrame(
         {
             "string_dtype": pd.Series(["90210", "60018", "10010", "92304-4201"]),
@@ -789,7 +789,7 @@ def postal_code_dataframe_dask(postal_code_dataframe):
         "postal_code_dataframe_dask",
     ],
 )
-def postal_code_dataframes(request):
+def postal_code_dataframe(request):
     return request.getfixturevalue(request.param)
 
 

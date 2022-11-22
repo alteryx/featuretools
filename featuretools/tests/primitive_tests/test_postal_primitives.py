@@ -42,13 +42,13 @@ def two_digit_postal_code_test(postal_series):
     return actual, expected
 
 
-def test_one_digit_postal_code(postal_code_dataframes):
-    for col in postal_code_dataframes:
-        actual, expected = one_digit_postal_code_test(postal_code_dataframes[col])
+def test_one_digit_postal_code(postal_code_dataframe):
+    for col in postal_code_dataframe:
+        actual, expected = one_digit_postal_code_test(postal_code_dataframe[col])
         np.testing.assert_array_equal(actual, expected)
 
 
-def test_two_digit_postal_code(postal_code_dataframes):
-    for col in postal_code_dataframes:
-        actual, expected = two_digit_postal_code_test(postal_code_dataframes[col])
+def test_two_digit_postal_code(postal_code_dataframe):
+    for col in postal_code_dataframe:
+        actual, expected = two_digit_postal_code_test(postal_code_dataframe[col])
         np.testing.assert_array_equal(actual, expected)
