@@ -16,12 +16,12 @@ def one_digit_postal_code_test(postal_series):
             str(code)[0] if pd.notna(code) else np.nan
             for code in postal_series.to_numpy()
         ]
-        actual = [i if pd.notna(i) else np.nan for i in actual.to_numpy()]
+        actual = [val if pd.notna(val) else np.nan for val in actual.to_numpy()]
     else:
         expected = [
             str(code)[0] if pd.notna(code) else np.nan for code in postal_series
         ]
-        actual = [i if pd.notna(i) else np.nan for i in actual]
+        actual = [val if pd.notna(val) else np.nan for val in actual]
     return actual, expected
 
 
@@ -33,12 +33,12 @@ def two_digit_postal_code_test(postal_series):
             str(code)[:2] if pd.notna(code) else np.nan
             for code in postal_series.to_numpy()
         ]
-        actual = [i if pd.notna(i) else np.nan for i in actual.to_numpy()]
+        actual = [val if pd.notna(val) else np.nan for val in actual.to_numpy()]
     else:
         expected = [
             str(code)[:2] if pd.notna(code) else np.nan for code in postal_series
         ]
-        actual = [i if pd.notna(i) else np.nan for i in actual.values]
+        actual = [val if pd.notna(val) else np.nan for val in actual.values]
     return actual, expected
 
 

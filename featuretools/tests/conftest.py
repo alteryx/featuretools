@@ -767,24 +767,38 @@ def postal_code_dataframe_pd():
 
 
 @pytest.fixture
-def postal_code_dataframe_pyspark(postal_code_dataframe):
+def postal_code_dataframe_pyspark(postal_code_dataframe_pd):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    ans = ps.from_pandas(postal_code_dataframe)
-    return ans
+    df = ps.from_pandas(postal_code_dataframe_pd)
+    df.ww.init(
+        logical_types={
+            "string_dtype": "PostalCode",
+            "int_dtype": "PostalCode",
+            "has_nulls": "PostalCode",
+        },
+    )
+    return df
 
 
 @pytest.fixture
-def postal_code_dataframe_dask(postal_code_dataframe):
-    ans = dd.from_pandas(
-        postal_code_dataframe,
+def postal_code_dataframe_dask(postal_code_dataframe_pd):
+    df = dd.from_pandas(
+        postal_code_dataframe_pd,
         npartitions=1,
-    ).compute()
-    return ans
+    ).categorize()
+    df.ww.init(
+        logical_types={
+            "string_dtype": "PostalCode",
+            "int_dtype": "PostalCode",
+            "has_nulls": "PostalCode",
+        },
+    )
+    return df
 
 
 @pytest.fixture(
     params=[
-        "postal_code_dataframe",
+        "postal_code_dataframe_pd",
         "postal_code_dataframe_pyspark",
         "postal_code_dataframe_dask",
     ],
