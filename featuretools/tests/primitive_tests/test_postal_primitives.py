@@ -13,15 +13,15 @@ def one_digit_postal_code_test(postal_series):
     actual = prim(postal_series)
     if not _is_spark_series(postal_series):
         expected = [
-            str(code)[0] if not pd.isna(code) else np.nan for code in postal_series
+            str(code)[0] if pd.notna(code) else np.nan for code in postal_series
         ]
-        actual = [i if not pd.isna(i) else np.nan for i in actual]
+        actual = [i if pd.notna(i) else np.nan for i in actual]
     else:
         expected = [
-            str(code)[0] if not pd.isna(code) else np.nan
+            str(code)[0] if pd.notna(code) else np.nan
             for code in postal_series.to_numpy()
         ]
-        actual = [i if not pd.isna(i) else np.nan for i in actual.to_numpy()]
+        actual = [i if pd.notna(i) else np.nan for i in actual.to_numpy()]
     return actual, expected
 
 
@@ -30,15 +30,15 @@ def two_digit_postal_code_test(postal_series):
     actual = prim(postal_series)
     if not _is_spark_series(postal_series):
         expected = [
-            str(code)[:2] if not pd.isna(code) else np.nan for code in postal_series
+            str(code)[:2] if pd.notna(code) else np.nan for code in postal_series
         ]
-        actual = [i if not pd.isna(i) else np.nan for i in actual.values]
+        actual = [i if pd.notna(i) else np.nan for i in actual.values]
     else:
         expected = [
-            str(code)[:2] if not pd.isna(code) else np.nan
+            str(code)[:2] if pd.notna(code) else np.nan
             for code in postal_series.to_numpy()
         ]
-        actual = [i if not pd.isna(i) else np.nan for i in actual.to_numpy()]
+        actual = [i if pd.notna(i) else np.nan for i in actual.to_numpy()]
     return actual, expected
 
 
