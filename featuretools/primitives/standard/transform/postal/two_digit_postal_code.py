@@ -10,7 +10,7 @@ class TwoDigitPostalCode(TransformPrimitive):
     """Returns the two digit prefix from a given postal code.
 
     Description:
-        For a list of postal codes, returns the two digit prefix for a given postal code.
+        Given a list of postal codes, returns the two digit prefix for each postal code.
 
     Examples:
         >>> two_digit_postal_code = TwoDigitPostalCode()
