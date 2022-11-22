@@ -7,7 +7,7 @@ from featuretools.utils.gen_utils import Library
 
 
 class OneDigitPostalCode(TransformPrimitive):
-    """Returns the one digit prefix from a given postal code.
+    """Returns the one digit prefix of a given postal code.
 
     Description:
         Given a list of postal codes, returns the one digit prefix for each postal code.

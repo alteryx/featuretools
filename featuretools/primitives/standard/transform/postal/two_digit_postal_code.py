@@ -7,7 +7,7 @@ from featuretools.utils.gen_utils import Library
 
 
 class TwoDigitPostalCode(TransformPrimitive):
-    """Returns the two digit prefix from a given postal code.
+    """Returns the two digit prefix of a given postal code.
 
     Description:
         Given a list of postal codes, returns the two digit prefix for each postal code.
