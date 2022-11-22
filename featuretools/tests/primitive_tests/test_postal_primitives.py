@@ -9,8 +9,8 @@ from featuretools.primitives.standard.transform.postal import (
 
 def generate_actual_and_expected_for_postal_primitive(postal_series, prim):
     prim_ops = {
-        "one_digit_postal_code": lambda t: str(t)[0] if pd.notna(t) else t,
-        "two_digit_postal_code": lambda t: str(t)[:2] if pd.notna(t) else t,
+        "one_digit_postal_code": lambda t: str(t)[0] if pd.notna(t) else pd.NA,
+        "two_digit_postal_code": lambda t: str(t)[:2] if pd.notna(t) else pd.NA,
     }
     op = prim_ops[prim.name]
     actual = prim().get_function()(postal_series)
