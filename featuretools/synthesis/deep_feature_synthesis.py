@@ -705,10 +705,7 @@ class DeepFeatureSynthesis(object):
             )
 
             for matching_input in matching_inputs:
-                if (
-                    hasattr(trans_prim, "base_of_exclude")
-                    and trans_prim.base_of_exclude
-                ):
+                if trans_prim.base_of_exclude:
                     if matching_input[0].primitive == trans_prim.base_of_exclude:
                         continue
                 if not any(
