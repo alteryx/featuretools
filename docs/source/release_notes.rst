@@ -4,7 +4,7 @@ Release Notes
 -------------
 
 Future Release
-  ==============
+===============
     * Enhancements
     * Fixes
         * Fix ``base_of_exclude`` handling in DeepFeatureSynthesis for TransformPrimitives (:pr:`2380`)
