@@ -223,7 +223,6 @@ class DeepFeatureSynthesis(object):
                 for p in primitives.get_default_aggregation_primitives()
                 if df_library in p.compatibility
             ]
-        self.agg_primitives = []
         self.agg_primitives = sorted(
             [
                 check_primitive(
@@ -706,6 +705,12 @@ class DeepFeatureSynthesis(object):
             )
 
             for matching_input in matching_inputs:
+                if (
+                    hasattr(trans_prim, "base_of_exclude")
+                    and trans_prim.base_of_exclude
+                ):
+                    if matching_input[0].primitive == trans_prim.base_of_exclude:
+                        continue
                 if not any(
                     True for bf in matching_input if bf.number_output_features != 1
                 ):
