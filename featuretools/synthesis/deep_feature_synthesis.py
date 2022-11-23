@@ -706,8 +706,8 @@ class DeepFeatureSynthesis(object):
 
             for matching_input in matching_inputs:
                 if (
-                    trans_prim.base_of_exclude
-                    and matching_input[0].primitive == trans_prim.base_of_exclude
+                        matching_input[0].primitive.base_of_exclude
+                        and isinstance(trans_prim, tuple(matching_input[0].primitive.base_of_exclude))
                 ):
                     continue
                 if not any(

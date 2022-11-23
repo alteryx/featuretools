@@ -2026,18 +2026,18 @@ def test_make_groupby_features_with_depth_none(pd_es):
 
 
 def test_base_of_exclude_prevents_stacking(pd_es):
-    class absolute_no_mean(Absolute):
-        base_of_exclude = [Mean]
+    class NewMean(Mean):
+        base_of_exclude = [Absolute]
 
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="log",
         entityset=pd_es,
-        agg_primitives=["mean"],
-        trans_primitives=[absolute_no_mean],
+        agg_primitives=[NewMean],
+        trans_primitives=["absolute"],
         max_depth=-1,
     )
     features = dfs_obj.build_features()
     names = [str(feat) for feat in features]
-    r = re.compile(re.escape("MEAN(log.ABSOLUTE"))
+    r = re.compile(re.escape("ABSOLUTE(MEAN"))
     matches = list(filter(r.search, names))
     assert len(matches) == 0
