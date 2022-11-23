@@ -21,6 +21,7 @@ from featuretools.utils import calculate_trend
     [
         (5, 2),
         (5, 0),
+        (0, 0),
     ],
 )
 def test_expanding_count_series(window_series_pd, min_periods, gap):
@@ -38,6 +39,8 @@ def test_expanding_count_series(window_series_pd, min_periods, gap):
     [
         (5, 2),
         (5, 0),
+        (0, 0),
+        (0, 1),
     ],
 )
 def test_expanding_count_date_range(window_date_range_pd, min_periods, gap):
@@ -55,6 +58,8 @@ def test_expanding_count_date_range(window_date_range_pd, min_periods, gap):
     [
         (5, 2),
         (5, 0),
+        (0, 0),
+        (0, 1),
     ],
 )
 def test_expanding_min(window_series_pd, min_periods, gap):
@@ -73,6 +78,8 @@ def test_expanding_min(window_series_pd, min_periods, gap):
     [
         (5, 2),
         (5, 0),
+        (0, 0),
+        (0, 1),
     ],
 )
 def test_expanding_max(window_series_pd, min_periods, gap):
@@ -91,6 +98,8 @@ def test_expanding_max(window_series_pd, min_periods, gap):
     [
         (5, 2),
         (5, 0),
+        (0, 0),
+        (0, 1),
     ],
 )
 def test_expanding_std(window_series_pd, min_periods, gap):
@@ -109,6 +118,8 @@ def test_expanding_std(window_series_pd, min_periods, gap):
     [
         (5, 2),
         (5, 0),
+        (0, 0),
+        (0, 1),
     ],
 )
 def test_expanding_mean(window_series_pd, min_periods, gap):
@@ -127,6 +138,8 @@ def test_expanding_mean(window_series_pd, min_periods, gap):
     [
         (5, 2),
         (5, 0),
+        (0, 0),
+        (0, 1),
     ],
 )
 def test_expanding_trend(window_series_pd, min_periods, gap):
@@ -169,6 +182,7 @@ def test_apply_gap_for_expanding_primitives_throws_warning(window_series_pd):
         2,
         5,
         3,
+        0,
     ],
 )
 def test_apply_gap_for_expanding_primitives(window_series_pd, gap):
@@ -183,6 +197,7 @@ def test_apply_gap_for_expanding_primitives(window_series_pd, gap):
         2,
         5,
         3,
+        0,
     ],
 )
 def test_apply_gap_for_expanding_primitives_handles_date_range(
