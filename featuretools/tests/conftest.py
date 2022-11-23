@@ -756,13 +756,6 @@ def postal_code_dataframe_pd():
             "has_nulls": pd.Series([np.nan, 20000, 30000]).astype("category"),
         },
     )
-    df.ww.init(
-        logical_types={
-            "string_dtype": "PostalCode",
-            "int_dtype": "PostalCode",
-            "has_nulls": "PostalCode",
-        },
-    )
     return df
 
 
@@ -770,13 +763,6 @@ def postal_code_dataframe_pd():
 def postal_code_dataframe_pyspark(postal_code_dataframe_pd):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     df = ps.from_pandas(postal_code_dataframe_pd)
-    df.ww.init(
-        logical_types={
-            "string_dtype": "PostalCode",
-            "int_dtype": "PostalCode",
-            "has_nulls": "PostalCode",
-        },
-    )
     return df
 
 
@@ -786,13 +772,6 @@ def postal_code_dataframe_dask(postal_code_dataframe_pd):
         postal_code_dataframe_pd,
         npartitions=1,
     ).categorize()
-    df.ww.init(
-        logical_types={
-            "string_dtype": "PostalCode",
-            "int_dtype": "PostalCode",
-            "has_nulls": "PostalCode",
-        },
-    )
     return df
 
 
@@ -804,7 +783,15 @@ def postal_code_dataframe_dask(postal_code_dataframe_pd):
     ],
 )
 def postal_code_dataframe(request):
-    return request.getfixturevalue(request.param)
+    df = request.getfixturevalue(request.param)
+    df.ww.init(
+        logical_types={
+            "string_dtype": "PostalCode",
+            "int_dtype": "PostalCode",
+            "has_nulls": "PostalCode",
+        },
+    )
+    return df
 
 
 def create_test_credentials(test_path):
