@@ -705,7 +705,10 @@ class DeepFeatureSynthesis(object):
             )
 
             for matching_input in matching_inputs:
-                if trans_prim.base_of_exclude and matching_input[0].primitive == trans_prim.base_of_exclude:
+                if (
+                    trans_prim.base_of_exclude
+                    and matching_input[0].primitive == trans_prim.base_of_exclude
+                ):
                     continue
                 if not any(
                     True for bf in matching_input if bf.number_output_features != 1
