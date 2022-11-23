@@ -706,12 +706,12 @@ class DeepFeatureSynthesis(object):
 
             for matching_input in matching_inputs:
                 if matching_input[0].primitive.base_of_exclude and isinstance(
-                        trans_prim,
-                        tuple(matching_input[0].primitive.base_of_exclude),
+                    trans_prim,
+                    tuple(matching_input[0].primitive.base_of_exclude),
                 ):
                     continue
                 if not any(
-                        True for bf in matching_input if bf.number_output_features != 1
+                    True for bf in matching_input if bf.number_output_features != 1
                 ):
                     new_f = TransformFeature(matching_input, primitive=trans_prim)
                     features_to_add.append(new_f)
