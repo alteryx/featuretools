@@ -164,7 +164,10 @@ def test_expanding_trend(window_series_pd, min_periods, gap):
     ],
 )
 def test_expanding_primitives_throw_warning(window_series_pd, primitive):
-    with pytest.raises(TypeError):
+    error_msg = (
+        "String offsets are not supported for the gap parameter in Expanding primitives"
+    )
+    with pytest.raises(TypeError, match=error_msg):
         primitive(gap="2H").get_function()(
             numeric=window_series_pd,
             datetime=window_series_pd.index,
