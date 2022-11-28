@@ -4,6 +4,7 @@ import holidays
 import numpy as np
 import pandas as pd
 import pytest
+from packaging.version import parse
 
 from featuretools.primitives import DistanceToHoliday
 
@@ -35,9 +36,13 @@ def test_holiday_out_of_range():
             datetime(2020, 12, 31),
         ],
     )
-    days_to_boxing_day = -157 if float(holidays.__version__) >= 0.15 else 209
-    edge_case_first_day_of_year = -6 if float(holidays.__version__) >= 0.17 else np.nan
-    edge_case_last_day_of_year = -5 if float(holidays.__version__) >= 0.17 else np.nan
+    days_to_boxing_day = -157 if parse(holidays.__version__) >= parse("0.15.0") else 209
+    edge_case_first_day_of_year = (
+        -6 if parse(holidays.__version__) >= parse("0.17.0") else np.nan
+    )
+    edge_case_last_day_of_year = (
+        -5 if parse(holidays.__version__) >= parse("0.17.0") else np.nan
+    )
     answer = pd.Series(
         [
             edge_case_first_day_of_year,
