@@ -11,10 +11,10 @@ Future Release
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Fix version comparison in ``test_holiday_out_of_range`` (:pr:`2382`)
 
     Thanks to the following people for contributing to this release:
-    :user:`sbadithe`
-
+    :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v1.18.0 Nov 15, 2022
 ====================
