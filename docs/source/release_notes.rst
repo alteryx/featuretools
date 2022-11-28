@@ -3,14 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
-.. Thanks to the following people for contributing to this release:
+        * Fix version comparison in ``test_holiday_out_of_range`` (:pr:`2382`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
 
 v1.18.0 Nov 15, 2022
 ====================
