@@ -7,9 +7,11 @@ import dask.dataframe as dd
 import pandas as pd
 import pytest
 from distributed import LocalCluster
+from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, Integer
 
 from featuretools import EntitySet, demo
+from featuretools.primitives import AggregationPrimitive, TransformPrimitive
 from featuretools.tests.testing_utils import make_ecommerce_entityset, to_pandas
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.spark_utils import pd_to_spark_clean
@@ -781,3 +783,43 @@ def setup_test_profile(monkeypatch, tmp_path):
     yield
     os.remove(test_path)
     os.remove(test_path_config)
+
+@pytest.fixture
+def test_aggregation_primitive():
+    class TestAgg(AggregationPrimitive):
+        name = "test"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
+        stack_on = []
+
+        def get_function(self):
+            return None
+
+    return TestAgg
+
+
+@pytest.fixture
+def test_transform_primitive():
+    class TestAgg(TransformPrimitive):
+        name = "test"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
+        stack_on = []
+
+        def get_function(self):
+            return None
+
+    return TestAgg
+
+@pytest.fixture
+def test_groupby_transform_primitive():
+    class TestAgg(TransformPrimitive):
+        name = "test"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
+        stack_on = []
+
+        def get_function(self):
+            return None
+
+    return TestAgg

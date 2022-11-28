@@ -19,6 +19,7 @@ from featuretools.primitives import (
     Sum,
     TransformPrimitive,
 )
+from featuretools.synthesis.deep_feature_synthesis import check_stacking
 from featuretools.tests.testing_utils import check_rename
 
 
@@ -96,7 +97,7 @@ def test_squared(es):
     squared = feature * feature
     assert len(squared.base_features) == 2
     assert (
-        squared.base_features[0].unique_name() == squared.base_features[1].unique_name()
+            squared.base_features[0].unique_name() == squared.base_features[1].unique_name()
     )
 
 
@@ -107,8 +108,8 @@ def test_return_type_inference(es):
         primitive=Mode,
     )
     assert (
-        mode.column_schema
-        == IdentityFeature(es["log"].ww["priority_level"]).column_schema
+            mode.column_schema
+            == IdentityFeature(es["log"].ww["priority_level"]).column_schema
     )
 
 
@@ -120,8 +121,8 @@ def test_return_type_inference_direct_feature(es):
     )
     mode_session = Feature(mode, "sessions")
     assert (
-        mode_session.column_schema
-        == IdentityFeature(es["log"].ww["priority_level"]).column_schema
+            mode_session.column_schema
+            == IdentityFeature(es["log"].ww["priority_level"]).column_schema
     )
 
 
@@ -540,7 +541,6 @@ def test_renaming_resets_feature_output_names_to_default(es):
     assert feat.get_feature_names() == ["new_feature_name[0]", "new_feature_name[1]"]
 
 
-
 def test_base_of_and_stack_on_heuristic(es, test_aggregation_primitive):
     child = Feature(
         es["sessions"].ww["id"],
@@ -617,4 +617,3 @@ def test_stack_on_self(es, test_transform_primitive):
     test_transform_primitive.stack_on = None
     test_transform_primitive.stack_on_self = False
     assert not check_stacking(test_transform_primitive(), [child])
-
