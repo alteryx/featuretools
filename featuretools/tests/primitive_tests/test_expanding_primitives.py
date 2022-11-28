@@ -172,7 +172,9 @@ def test_expanding_primitives_throw_warning(window_series_pd, primitive):
 
 
 def test_apply_gap_for_expanding_primitives_throws_error(window_series_pd):
-    error_msg = "String offsets are not supported for the gap parameter in Expanding primitives"
+    error_msg = (
+        "String offsets are not supported for the gap parameter in Expanding primitives"
+    )
     with pytest.raises(TypeError, match=error_msg):
         _apply_gap_for_expanding_primitives(window_series_pd, gap="2H")
 
