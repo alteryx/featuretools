@@ -53,7 +53,11 @@ from featuretools.primitives import (
     Year,
 )
 from featuretools.synthesis import DeepFeatureSynthesis
-from featuretools.tests.testing_utils import feature_with_name, make_ecommerce_entityset, features_with_name_like
+from featuretools.tests.testing_utils import (
+    feature_with_name,
+    make_ecommerce_entityset,
+    features_with_name_like,
+)
 from featuretools.utils.gen_utils import Library
 
 

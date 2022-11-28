@@ -66,8 +66,8 @@ def check_rename(feat, new_name, new_names):
     assert feat.unique_name() != copy_feat.unique_name()
     assert feat.get_name() != copy_feat.get_name()
     assert (
-            feat.base_features[0].generate_name()
-            == copy_feat.base_features[0].generate_name()
+        feat.base_features[0].generate_name()
+        == copy_feat.base_features[0].generate_name()
     )
     assert feat.dataframe_name == copy_feat.dataframe_name
     assert feat.get_feature_names() != copy_feat.get_feature_names()
