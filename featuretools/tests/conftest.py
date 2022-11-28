@@ -731,11 +731,16 @@ def divide_by_zero_es_spark(divide_by_zero_es_pd):
 
 
 @pytest.fixture
-def rolling_series_pd():
+def window_series_pd():
     return pd.Series(
         range(20),
         index=pd.date_range(start="2020-01-01", end="2020-01-20"),
     )
+
+
+@pytest.fixture
+def window_date_range_pd():
+    return pd.date_range(start="2022-11-1", end="2022-11-5", periods=30)
 
 
 @pytest.fixture

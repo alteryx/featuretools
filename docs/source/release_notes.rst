@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ``ExpandingCount``, ``ExpandingMin``, ``ExpandingMean``, ``ExpandingMax``, ``ExpandingSTD``, and ``ExpandingTrend`` primitives (:pr:`2343`)
     * Fixes
     * Changes
     * Documentation Changes
@@ -13,7 +14,7 @@ Future Release
         * Fix version comparison in ``test_holiday_out_of_range`` (:pr:`2382`)
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v1.18.0 Nov 15, 2022
 ====================

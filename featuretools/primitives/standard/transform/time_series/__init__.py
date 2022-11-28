@@ -23,3 +23,11 @@ from featuretools.primitives.standard.transform.time_series.rolling_std import (
 from featuretools.primitives.standard.transform.time_series.rolling_trend import (
     RollingTrend,
 )
+from featuretools.primitives.standard.transform.time_series.expanding import (
+    ExpandingCount,
+    ExpandingMax,
+    ExpandingMean,
+    ExpandingMin,
+    ExpandingSTD,
+    ExpandingTrend,
+)
