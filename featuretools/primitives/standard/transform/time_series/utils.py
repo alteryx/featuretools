@@ -1,6 +1,7 @@
-from typing import Callable, Union
+from typing import Callable, Optional, Union
 
 import numpy as np
+import pandas as pd
 from pandas import Series
 from pandas.core.window.rolling import Rolling
 from pandas.tseries.frequencies import to_offset
@@ -189,8 +190,9 @@ def apply_rolling_agg_to_series(
             to not choose a min_periods that will always be larger than the number of observations in a window.
             Defaults to 1.
         ignore_window_nans (bool, optional): Whether or not NaNs in the rolling window should be included in the rolling calculation.
-            NaNs by default get counted towards min_periods. When set to true,
+            NaNs by default get counted towards min_periods. When set to True,
             all partial values calculated by `agg_func` in the rolling window get replaced with NaN.
+            Defaults to False.
 
     Returns:
         numpy.ndarray: The array of rolling calculated values.
@@ -236,3 +238,16 @@ def apply_rolling_agg_to_series(
             num_nans = min_periods - 1 + gap
         applied_rolled_series.iloc[range(num_nans)] = np.nan
     return applied_rolled_series.values
+
+
+def _apply_gap_for_expanding_primitives(
+    x: Union[Series, pd.Index],
+    gap: Union[int, str],
+) -> Optional[Series]:
+    if not isinstance(gap, int):
+        raise TypeError(
+            "String offsets are not supported for the gap parameter in Expanding primitives",
+        )
+    if isinstance(x, pd.Index):
+        return x.to_series().shift(gap)
+    return x.shift(gap)
