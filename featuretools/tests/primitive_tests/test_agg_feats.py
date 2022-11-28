@@ -49,7 +49,7 @@ def reset_dfs_cache():
 
 
 @pytest.fixture
-def test_primitive():
+def test_agg_primitive():
     class TestAgg(AggregationPrimitive):
         name = "test"
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
@@ -60,6 +60,8 @@ def test_primitive():
             return None
 
     return TestAgg
+
+TODO: add transform fixture
 
 
 def test_get_depth(es):
@@ -199,82 +201,82 @@ def test_mean_nan(es):
     assert include_nan_feat.get_name() == "MEAN(log.value, skipna=False)"
 
 
-def test_base_of_and_stack_on_heuristic(es, test_primitive):
+def test_base_of_and_stack_on_heuristic(es, test_aggregation_primitive):
     child = Feature(
         es["sessions"].ww["id"],
         parent_dataframe_name="customers",
         primitive=Count,
     )
-    test_primitive.stack_on = []
+    test_aggregation_primitive.stack_on = []
     child.primitive.base_of = []
-    assert not check_stacking(test_primitive(), [child])
+    assert not check_stacking(test_aggregation_primitive(), [child])
 
-    test_primitive.stack_on = []
+    test_aggregation_primitive.stack_on = []
     child.primitive.base_of = None
-    assert check_stacking(test_primitive(), [child])
+    assert check_stacking(test_aggregation_primitive(), [child])
 
-    test_primitive.stack_on = []
-    child.primitive.base_of = [test_primitive]
-    assert check_stacking(test_primitive(), [child])
+    test_aggregation_primitive.stack_on = []
+    child.primitive.base_of = [test_aggregation_primitive]
+    assert check_stacking(test_aggregation_primitive(), [child])
 
-    test_primitive.stack_on = None
+    test_aggregation_primitive.stack_on = None
     child.primitive.base_of = []
-    assert check_stacking(test_primitive(), [child])
+    assert check_stacking(test_aggregation_primitive(), [child])
 
-    test_primitive.stack_on = None
+    test_aggregation_primitive.stack_on = None
     child.primitive.base_of = None
-    assert check_stacking(test_primitive(), [child])
+    assert check_stacking(test_aggregation_primitive(), [child])
 
-    test_primitive.stack_on = None
-    child.primitive.base_of = [test_primitive]
-    assert check_stacking(test_primitive(), [child])
+    test_aggregation_primitive.stack_on = None
+    child.primitive.base_of = [test_aggregation_primitive]
+    assert check_stacking(test_aggregation_primitive(), [child])
 
-    test_primitive.stack_on = [type(child.primitive)]
+    test_aggregation_primitive.stack_on = [type(child.primitive)]
     child.primitive.base_of = []
-    assert check_stacking(test_primitive(), [child])
+    assert check_stacking(test_aggregation_primitive(), [child])
 
-    test_primitive.stack_on = [type(child.primitive)]
+    test_aggregation_primitive.stack_on = [type(child.primitive)]
     child.primitive.base_of = None
-    assert check_stacking(test_primitive(), [child])
+    assert check_stacking(test_aggregation_primitive(), [child])
 
-    test_primitive.stack_on = [type(child.primitive)]
-    child.primitive.base_of = [test_primitive]
-    assert check_stacking(test_primitive(), [child])
+    test_aggregation_primitive.stack_on = [type(child.primitive)]
+    child.primitive.base_of = [test_aggregation_primitive]
+    assert check_stacking(test_aggregation_primitive(), [child])
 
-    test_primitive.stack_on = None
+    test_aggregation_primitive.stack_on = None
     child.primitive.base_of = None
-    child.primitive.base_of_exclude = [test_primitive]
-    assert not check_stacking(test_primitive(), [child])
+    child.primitive.base_of_exclude = [test_aggregation_primitive]
+    assert not check_stacking(test_aggregation_primitive(), [child])
 
-    test_primitive.stack_on_exclude = [Count]
-    assert not check_stacking(test_primitive(), [child])
+    test_aggregation_primitive.stack_on_exclude = [Count]
+    assert not check_stacking(test_aggregation_primitive(), [child])
 
     child.primitive.number_output_features = 2
-    test_primitive.stack_on_exclude = []
-    test_primitive.stack_on = []
+    test_aggregation_primitive.stack_on_exclude = []
+    test_aggregation_primitive.stack_on = []
     child.primitive.base_of = []
-    assert not check_stacking(test_primitive(), [child])
+    assert not check_stacking(test_aggregation_primitive(), [child])
 
 
-def test_stack_on_self(es, test_primitive):
+def test_stack_on_self(es, test_aggregation_primitive):
     # test stacks on self
     child = Feature(
         es["log"].ww["value"],
         parent_dataframe_name="régions",
-        primitive=test_primitive,
+        primitive=test_aggregation_primitive,
     )
-    test_primitive.stack_on = []
+    test_aggregation_primitive.stack_on = []
     child.primitive.base_of = []
-    test_primitive.stack_on_self = False
+    test_aggregation_primitive.stack_on_self = False
     child.primitive.stack_on_self = False
-    assert not check_stacking(test_primitive(), [child])
+    assert not check_stacking(test_aggregation_primitive(), [child])
 
-    test_primitive.stack_on_self = True
-    assert check_stacking(test_primitive(), [child])
+    test_aggregation_primitive.stack_on_self = True
+    assert check_stacking(test_aggregation_primitive(), [child])
 
-    test_primitive.stack_on = None
-    test_primitive.stack_on_self = False
-    assert not check_stacking(test_primitive(), [child])
+    test_aggregation_primitive.stack_on = None
+    test_aggregation_primitive.stack_on_self = False
+    assert not check_stacking(test_aggregation_primitive(), [child])
 
 
 def test_init_and_name(es):

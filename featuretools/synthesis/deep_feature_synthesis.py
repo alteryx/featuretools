@@ -705,10 +705,7 @@ class DeepFeatureSynthesis(object):
             )
 
             for matching_input in matching_inputs:
-                if matching_input[0].primitive.base_of_exclude and isinstance(
-                    trans_prim,
-                    tuple(matching_input[0].primitive.base_of_exclude),
-                ):
+                if not check_stacking(trans_prim, matching_input):
                     continue
                 if not any(
                     True for bf in matching_input if bf.number_output_features != 1
@@ -758,6 +755,8 @@ class DeepFeatureSynthesis(object):
             # groupby, and don't create features of inputs/groupbys which are
             # all direct features with the same relationship path
             for matching_input in matching_inputs:
+                if not check_stacking(groupby_prim, matching_input):
+                    continue
                 if not any(
                     True for bf in matching_input if bf.number_output_features != 1
                 ):
@@ -1076,7 +1075,8 @@ def _match_contains_numeric_foreign_key(match):
 
 
 def check_transform_stacking(feature):
-    # Avoid transform stacking when building from direct features
+    """Verifies transform inputs are not transform features
+    or direct features of transform features"""
     if isinstance(feature.primitive, TransformPrimitive):
         return False
     if isinstance(feature, DirectFeature) and isinstance(
@@ -1110,7 +1110,6 @@ def check_stacking(primitive, inputs):
         if isinstance(f_primitive, tup_primitive_stack_on_exclude):
             return False
 
-        # R TODO: handle this
         if feature.number_output_features > 1:
             return False
 

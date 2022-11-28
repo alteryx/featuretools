@@ -33,6 +33,10 @@ class PrimitiveBase(object):
     # blacklist of primitives can have this primitive in input_types
     base_of_exclude = None
     # (bool) If True will only make one feature per unique set of base features
+    stack_on = None  # whitelist of primitives that can be in input_types
+    stack_on_exclude = None  # blacklist of primitives that can be in signature
+    stack_on_self = True  # determines if primitive can be in input_types for self
+
     commutative = False
     #: (list): Additional compatible libraries
     compatibility = [Library.PANDAS]

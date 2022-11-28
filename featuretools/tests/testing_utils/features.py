@@ -1,3 +1,5 @@
+import re
+
 from featuretools.entityset.relationship import RelationshipPath
 
 
@@ -7,6 +9,14 @@ def feature_with_name(features, name):
             return True
 
     return False
+
+
+def features_with_name_like(features, pattern):
+    """checks feature names for specified regex"""
+    names = [f.get_name() for f in features]
+    pattern = re.compile(re.escape(pattern))
+    matches = list(filter(pattern.search, names))
+    return len(matches)
 
 
 def backward_path(es, dataframe_ids):
@@ -56,8 +66,8 @@ def check_rename(feat, new_name, new_names):
     assert feat.unique_name() != copy_feat.unique_name()
     assert feat.get_name() != copy_feat.get_name()
     assert (
-        feat.base_features[0].generate_name()
-        == copy_feat.base_features[0].generate_name()
+            feat.base_features[0].generate_name()
+            == copy_feat.base_features[0].generate_name()
     )
     assert feat.dataframe_name == copy_feat.dataframe_name
     assert feat.get_feature_names() != copy_feat.get_feature_names()
