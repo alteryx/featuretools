@@ -286,6 +286,12 @@ Time Series Transform Primitives
 .. autosummary::
     :toctree: generated/
 
+    ExpandingCount
+    ExpandingMax
+    ExpandingMean
+    ExpandingMin
+    ExpandingSTD
+    ExpandingTrend
     Lag
     RollingCount
     RollingMax
