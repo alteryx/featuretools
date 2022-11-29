@@ -97,7 +97,7 @@ def test_squared(es):
     squared = feature * feature
     assert len(squared.base_features) == 2
     assert (
-            squared.base_features[0].unique_name() == squared.base_features[1].unique_name()
+        squared.base_features[0].unique_name() == squared.base_features[1].unique_name()
     )
 
 
@@ -108,8 +108,8 @@ def test_return_type_inference(es):
         primitive=Mode,
     )
     assert (
-            mode.column_schema
-            == IdentityFeature(es["log"].ww["priority_level"]).column_schema
+        mode.column_schema
+        == IdentityFeature(es["log"].ww["priority_level"]).column_schema
     )
 
 
@@ -121,8 +121,8 @@ def test_return_type_inference_direct_feature(es):
     )
     mode_session = Feature(mode, "sessions")
     assert (
-            mode_session.column_schema
-            == IdentityFeature(es["log"].ww["priority_level"]).column_schema
+        mode_session.column_schema
+        == IdentityFeature(es["log"].ww["priority_level"]).column_schema
     )
 
 
@@ -602,7 +602,6 @@ def test_stack_on_self(es, test_transform_primitive):
     # test stacks on self
     child = Feature(
         es["log"].ww["value"],
-        parent_dataframe_name="régions",
         primitive=test_transform_primitive,
     )
     test_transform_primitive.stack_on = []

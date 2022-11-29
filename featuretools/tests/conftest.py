@@ -784,6 +784,7 @@ def setup_test_profile(monkeypatch, tmp_path):
     os.remove(test_path)
     os.remove(test_path_config)
 
+
 @pytest.fixture
 def test_aggregation_primitive():
     class TestAgg(AggregationPrimitive):
@@ -800,7 +801,7 @@ def test_aggregation_primitive():
 
 @pytest.fixture
 def test_transform_primitive():
-    class TestAgg(TransformPrimitive):
+    class TestTransform(TransformPrimitive):
         name = "test"
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
         return_type = ColumnSchema(semantic_tags={"numeric"})
@@ -809,11 +810,12 @@ def test_transform_primitive():
         def get_function(self):
             return None
 
-    return TestAgg
+    return TestTransform
+
 
 @pytest.fixture
 def test_groupby_transform_primitive():
-    class TestAgg(TransformPrimitive):
+    class TestGroupbyTransform(TransformPrimitive):
         name = "test"
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
         return_type = ColumnSchema(semantic_tags={"numeric"})
@@ -822,4 +824,4 @@ def test_groupby_transform_primitive():
         def get_function(self):
             return None
 
-    return TestAgg
+    return test_groupby_transform_primitive

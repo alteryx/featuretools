@@ -33,10 +33,7 @@ from featuretools.primitives import (
     get_aggregation_primitives,
 )
 from featuretools.primitives.base import AggregationPrimitive
-from featuretools.synthesis.deep_feature_synthesis import (
-    DeepFeatureSynthesis,
-    match,
-)
+from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis, match
 from featuretools.tests.testing_utils import backward_path, feature_with_name, to_pandas
 from featuretools.utils.gen_utils import Library
 
@@ -45,7 +42,6 @@ from featuretools.utils.gen_utils import Library
 def reset_dfs_cache():
     feature_cache.enabled = False
     feature_cache.clear_all()
-
 
 
 def test_get_depth(es):
