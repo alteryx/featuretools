@@ -829,4 +829,4 @@ def test_groupby_transform_primitive():
         def get_function(self):
             return None
 
-    return test_groupby_transform_primitive
+    return TestGroupbyTransform

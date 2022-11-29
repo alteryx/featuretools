@@ -2077,5 +2077,5 @@ def test_check_stacking_when_building_agg_features(pd_es):
         max_depth=-1,
     )
     features = dfs_obj.build_features()
-    assert features_with_name_like(features, "MEAN(ABSOLUTE") > 0
-    assert features_with_name_like(features, "MEAN(NEW_ABSOLUTE") == 0
+    assert features_with_name_like(features, "MEAN(log.ABSOLUTE") > 0
+    assert features_with_name_like(features, "MEAN(log.NEW_ABSOLUTE") == 0
