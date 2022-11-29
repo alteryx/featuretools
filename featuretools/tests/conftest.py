@@ -4,6 +4,7 @@ import os
 
 import composeml as cp
 import dask.dataframe as dd
+import numpy as np
 import pandas as pd
 import pytest
 from distributed import LocalCluster
@@ -749,6 +750,53 @@ def rolling_outlier_series_pd():
         [0] * 4 + [10] + [0] * 4 + [10] + [0] * 5,
         index=pd.date_range(start="2020-01-01", end="2020-01-15", periods=15),
     )
+
+
+@pytest.fixture
+def postal_code_dataframe_pd():
+    df = pd.DataFrame(
+        {
+            "string_dtype": pd.Series(["90210", "60018", "10010", "92304-4201"]),
+            "int_dtype": pd.Series([10000, 20000, 30000]).astype("category"),
+            "has_nulls": pd.Series([np.nan, 20000, 30000]).astype("category"),
+        },
+    )
+    return df
+
+
+@pytest.fixture
+def postal_code_dataframe_pyspark(postal_code_dataframe_pd):
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
+    df = ps.from_pandas(postal_code_dataframe_pd)
+    return df
+
+
+@pytest.fixture
+def postal_code_dataframe_dask(postal_code_dataframe_pd):
+    df = dd.from_pandas(
+        postal_code_dataframe_pd,
+        npartitions=1,
+    ).categorize()
+    return df
+
+
+@pytest.fixture(
+    params=[
+        "postal_code_dataframe_pd",
+        "postal_code_dataframe_pyspark",
+        "postal_code_dataframe_dask",
+    ],
+)
+def postal_code_dataframe(request):
+    df = request.getfixturevalue(request.param)
+    df.ww.init(
+        logical_types={
+            "string_dtype": "PostalCode",
+            "int_dtype": "PostalCode",
+            "has_nulls": "PostalCode",
+        },
+    )
+    return df
 
 
 def create_test_credentials(test_path):
