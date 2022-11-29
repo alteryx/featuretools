@@ -57,11 +57,7 @@ clean:
 
 .PHONY: html
 html:
-	# Remove the following line when sphinx issue (https://github.com/sphinx-doc/sphinx/issues/10943) is closed
-	python -m pip install .. --quiet --no-dependencies
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html $(SPHINXOPTS)
-	# Remove the following line when sphinx issue (https://github.com/sphinx-doc/sphinx/issues/10943) is closed
-	python -m pip install -e .. --quiet --no-dependencies
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
