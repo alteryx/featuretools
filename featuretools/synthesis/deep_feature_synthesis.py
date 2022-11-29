@@ -1087,6 +1087,16 @@ def check_transform_stacking(feature):
     return True
 
 
+def _find_root_primitive(feature):
+    """
+    If a feature is a DirectFeature, finds the primitive of
+    the "original" base feature.
+    """
+    if isinstance(feature, DirectFeature):
+        return _find_root_primitive(feature.base_features[0])
+    return feature.primitive
+
+
 def check_stacking(primitive, inputs):
     """checks if features in inputs can be used with supplied primitive
     using the stacking rules"""
@@ -1103,7 +1113,10 @@ def check_stacking(primitive, inputs):
     primitive_stack_on_self: bool = primitive.stack_on_self
 
     for feature in inputs:
-        f_primitive = feature.primitive
+        # In the case that the feature is a DirectFeature, the feature's primitive will be a PrimitiveBase object.
+        # However, we want to check stacking rules with the primitive the DirectFeature is based on.
+        f_primitive = _find_root_primitive(feature)
+
         if not primitive_stack_on_self and isinstance(f_primitive, primitive_class):
             return False
 

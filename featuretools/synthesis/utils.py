@@ -59,4 +59,4 @@ def get_unused_primitives(specified, used):
         else primitive.name
         for primitive in specified
     }
-    return sorted(list(specified.difference(used)))
+    return sorted(specified.difference(used))

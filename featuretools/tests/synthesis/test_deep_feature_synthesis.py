@@ -2047,21 +2047,21 @@ def test_check_stacking_when_building_transform_features(pd_es):
 
 
 def test_check_stacking_when_building_groupby_features(pd_es):
-    class NewCumSum(CumSum):
-        name = "NEW_CUM_SUM"
-        base_of_exclude = [Mean]
+    class NewMean(Mean):
+        name = "NEW_MEAN"
+        base_of_exclude = [CumSum]
 
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="log",
         entityset=pd_es,
-        agg_primitives=["mean"],
-        groupby_trans_primitives=[NewCumSum, "cum_sum"],
-        max_depth=-1,
+        agg_primitives=[NewMean, "mean"],
+        groupby_trans_primitives=["cum_sum"],
+        max_depth=5,
     )
 
     features = dfs_obj.build_features()
-    assert features_with_name_like(features, "MEAN(log.CUM_SUM") > 0
-    assert features_with_name_like(features, "MEAN(log.NEW_CUM_SUM") == 0
+    assert features_with_name_like(features, "CUM_SUM(MEAN") > 0
+    assert features_with_name_like(features, "CUM_SUM(NEW_MEAN") == 0
 
 
 def test_check_stacking_when_building_agg_features(pd_es):
@@ -2074,7 +2074,7 @@ def test_check_stacking_when_building_agg_features(pd_es):
         entityset=pd_es,
         agg_primitives=["mean"],
         trans_primitives=[NewAbsolute, "absolute"],
-        max_depth=-1,
+        max_depth=5,
     )
     features = dfs_obj.build_features()
     assert features_with_name_like(features, "MEAN(log.ABSOLUTE") > 0
