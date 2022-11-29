@@ -816,17 +816,3 @@ def test_transform_primitive():
             return None
 
     return TestTransform
-
-
-@pytest.fixture
-def test_groupby_transform_primitive():
-    class TestGroupbyTransform(TransformPrimitive):
-        name = "test"
-        input_types = [ColumnSchema(semantic_tags={"numeric"})]
-        return_type = ColumnSchema(semantic_tags={"numeric"})
-        stack_on = []
-
-        def get_function(self):
-            return None
-
-    return TestGroupbyTransform
