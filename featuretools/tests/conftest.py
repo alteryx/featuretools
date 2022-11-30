@@ -846,9 +846,6 @@ def test_aggregation_primitive():
         return_type = ColumnSchema(semantic_tags={"numeric"})
         stack_on = []
 
-        def get_function(self):
-            return None
-
     return TestAgg
 
 
@@ -859,8 +856,5 @@ def test_transform_primitive():
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
         return_type = ColumnSchema(semantic_tags={"numeric"})
         stack_on = []
-
-        def get_function(self):
-            return None
 
     return TestTransform
