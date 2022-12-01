@@ -701,11 +701,11 @@ class DeepFeatureSynthesis(object):
                 trans_prim,
                 current_options,
                 require_direct_input=require_direct_input,
-                feature_filter=check_transform_stacking,
+                feature_filter=can_stack_transform_primitive_on_feature,
             )
 
             for matching_input in matching_inputs:
-                if not check_stacking(trans_prim, matching_input):
+                if not can_stack_primitive_on_input_features(trans_prim, matching_input):
                     continue
                 if not any(
                     True for bf in matching_input if bf.number_output_features != 1
@@ -728,7 +728,7 @@ class DeepFeatureSynthesis(object):
                 input_types,
                 groupby_prim,
                 current_options,
-                feature_filter=check_transform_stacking,
+                feature_filter=can_stack_transform_primitive_on_feature,
             )
 
             # get columns to use as groupbys, use IDs as default unless other groupbys specified
@@ -755,7 +755,7 @@ class DeepFeatureSynthesis(object):
             # groupby, and don't create features of inputs/groupbys which are
             # all direct features with the same relationship path
             for matching_input in matching_inputs:
-                if not check_stacking(groupby_prim, matching_input):
+                if not can_stack_primitive_on_input_features(groupby_prim, matching_input):
                     continue
                 if not any(
                     True for bf in matching_input if bf.number_output_features != 1
@@ -852,7 +852,7 @@ class DeepFeatureSynthesis(object):
             wheres = list(self.where_clauses[child_dataframe.ww.name])
 
             for matching_input in matching_inputs:
-                if not check_stacking(agg_prim, matching_input):
+                if not can_stack_primitive_on_input_features(agg_prim, matching_input):
                     continue
                 new_f = AggregationFeature(
                     matching_input,
@@ -1074,17 +1074,13 @@ def _match_contains_numeric_foreign_key(match):
     return any(True for f in match if is_valid_input(f.column_schema, match_schema))
 
 
-def check_transform_stacking(feature):
-    """Verifies transform inputs are not transform features
-    or direct features of transform features"""
-    if isinstance(feature.primitive, TransformPrimitive):
-        return False
-    if isinstance(feature, DirectFeature) and isinstance(
-        feature.base_features[0].primitive,
-        TransformPrimitive,
-    ):
-        return False
-    return True
+def can_stack_transform_primitive_on_feature(feature):
+    """
+    Verifies transform inputs are not transform features or direct features of transform features
+    Returns True if a transform primitive can stack on the feature, and False if it cannot.
+    """
+    primitive = _find_root_primitive(feature)
+    return not isinstance(primitive, TransformPrimitive)
 
 
 def _find_root_primitive(feature):
@@ -1097,10 +1093,12 @@ def _find_root_primitive(feature):
     return feature.primitive
 
 
-def check_stacking(primitive, inputs):
-    """checks if features in inputs can be used with supplied primitive
-    using the stacking rules"""
-
+def can_stack_primitive_on_input_features(primitive, inputs):
+    """
+    Checks if features in inputs can be used with supplied primitive
+    using the stacking rules.
+    Returns True if stacking is possible, and False if not.
+    """
     primitive_class = primitive.__class__
     tup_primitive_stack_on = (
         tuple(primitive.stack_on) if primitive.stack_on is not None else None
