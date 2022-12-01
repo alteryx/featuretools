@@ -705,7 +705,9 @@ class DeepFeatureSynthesis(object):
             )
 
             for matching_input in matching_inputs:
-                if not can_stack_primitive_on_input_features(trans_prim, matching_input):
+                if not can_stack_primitive_on_input_features(
+                    trans_prim, matching_input
+                ):
                     continue
                 if not any(
                     True for bf in matching_input if bf.number_output_features != 1
@@ -755,7 +757,9 @@ class DeepFeatureSynthesis(object):
             # groupby, and don't create features of inputs/groupbys which are
             # all direct features with the same relationship path
             for matching_input in matching_inputs:
-                if not can_stack_primitive_on_input_features(groupby_prim, matching_input):
+                if not can_stack_primitive_on_input_features(
+                    groupby_prim, matching_input
+                ):
                     continue
                 if not any(
                     True for bf in matching_input if bf.number_output_features != 1

@@ -19,7 +19,9 @@ from featuretools.primitives import (
     Sum,
     TransformPrimitive,
 )
-from featuretools.synthesis.deep_feature_synthesis import can_stack_primitive_on_input_features
+from featuretools.synthesis.deep_feature_synthesis import (
+    can_stack_primitive_on_input_features,
+)
 from featuretools.tests.testing_utils import check_rename
 
 
@@ -549,7 +551,9 @@ def test_base_of_and_stack_on_heuristic(es, test_aggregation_primitive):
     )
     test_aggregation_primitive.stack_on = []
     child.primitive.base_of = []
-    assert not can_stack_primitive_on_input_features(test_aggregation_primitive(), [child])
+    assert not can_stack_primitive_on_input_features(
+        test_aggregation_primitive(), [child]
+    )
 
     test_aggregation_primitive.stack_on = []
     child.primitive.base_of = None
@@ -586,16 +590,22 @@ def test_base_of_and_stack_on_heuristic(es, test_aggregation_primitive):
     test_aggregation_primitive.stack_on = None
     child.primitive.base_of = None
     child.primitive.base_of_exclude = [test_aggregation_primitive]
-    assert not can_stack_primitive_on_input_features(test_aggregation_primitive(), [child])
+    assert not can_stack_primitive_on_input_features(
+        test_aggregation_primitive(), [child]
+    )
 
     test_aggregation_primitive.stack_on_exclude = [Count]
-    assert not can_stack_primitive_on_input_features(test_aggregation_primitive(), [child])
+    assert not can_stack_primitive_on_input_features(
+        test_aggregation_primitive(), [child]
+    )
 
     child.primitive.number_output_features = 2
     test_aggregation_primitive.stack_on_exclude = []
     test_aggregation_primitive.stack_on = []
     child.primitive.base_of = []
-    assert not can_stack_primitive_on_input_features(test_aggregation_primitive(), [child])
+    assert not can_stack_primitive_on_input_features(
+        test_aggregation_primitive(), [child]
+    )
 
 
 def test_stack_on_self(es, test_transform_primitive):
@@ -608,11 +618,15 @@ def test_stack_on_self(es, test_transform_primitive):
     child.primitive.base_of = []
     test_transform_primitive.stack_on_self = False
     child.primitive.stack_on_self = False
-    assert not can_stack_primitive_on_input_features(test_transform_primitive(), [child])
+    assert not can_stack_primitive_on_input_features(
+        test_transform_primitive(), [child]
+    )
 
     test_transform_primitive.stack_on_self = True
     assert can_stack_primitive_on_input_features(test_transform_primitive(), [child])
 
     test_transform_primitive.stack_on = None
     test_transform_primitive.stack_on_self = False
-    assert not can_stack_primitive_on_input_features(test_transform_primitive(), [child])
+    assert not can_stack_primitive_on_input_features(
+        test_transform_primitive(), [child]
+    )
