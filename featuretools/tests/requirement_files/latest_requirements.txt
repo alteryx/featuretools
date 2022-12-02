@@ -1,6 +1,6 @@
 cloudpickle==2.2.0
-dask==2022.11.1
-distributed==2022.11.1
+dask==2022.12.0
+distributed==2022.12.0
 holidays==0.17.2
 numpy==1.23.5
 pandas==1.5.2
