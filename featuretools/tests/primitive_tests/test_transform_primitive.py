@@ -977,7 +977,7 @@ def test_box_cox(lmbda, expected_output):
     ],
 )
 def test_yeo_johnson(lmbda, expected_output):
-    box_cox = YeoJohnson(lmbda=lmbda)
+    yeo_johnson = YeoJohnson(lmbda=lmbda)
     numeric_values = pd.Series([0, 1, -10, 100, -1000, -10000])
-    actual = box_cox(numeric_values)
+    actual = yeo_johnson(numeric_values)
     assert list(map(round, actual)) == expected_output

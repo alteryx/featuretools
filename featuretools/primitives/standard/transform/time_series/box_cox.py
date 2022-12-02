@@ -1,6 +1,7 @@
 import pandas as pd
 from scipy import stats
 from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import Double
 
 from featuretools.primitives.base import TransformPrimitive
 
@@ -36,7 +37,7 @@ class BoxCox(TransformPrimitive):
     input_types = [
         ColumnSchema(semantic_tags={"numeric"}),
     ]
-    return_type = ColumnSchema(semantic_tags={"numeric"})
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
     uses_full_dataframe = True
 
     def __init__(self, lmbda=None):
