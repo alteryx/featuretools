@@ -55,8 +55,8 @@ from featuretools.primitives import (
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.tests.testing_utils import (
     feature_with_name,
-    number_of_features_with_name_like,
     make_ecommerce_entityset,
+    number_of_features_with_name_like,
 )
 from featuretools.utils.gen_utils import Library
 
