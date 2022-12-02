@@ -1,4 +1,3 @@
-import pandas as pd
 from scipy import stats
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Double
