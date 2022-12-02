@@ -1,4 +1,12 @@
 from featuretools.primitives.standard.transform.time_series.box_cox import BoxCox
+from featuretools.primitives.standard.transform.time_series.expanding import (
+    ExpandingCount,
+    ExpandingMax,
+    ExpandingMean,
+    ExpandingMin,
+    ExpandingSTD,
+    ExpandingTrend,
+)
 from featuretools.primitives.standard.transform.time_series.lag import Lag
 from featuretools.primitives.standard.transform.time_series.numeric_lag import (
     NumericLag,
@@ -24,11 +32,6 @@ from featuretools.primitives.standard.transform.time_series.rolling_std import (
 from featuretools.primitives.standard.transform.time_series.rolling_trend import (
     RollingTrend,
 )
-from featuretools.primitives.standard.transform.time_series.expanding import (
-    ExpandingCount,
-    ExpandingMax,
-    ExpandingMean,
-    ExpandingMin,
-    ExpandingSTD,
-    ExpandingTrend,
+from featuretools.primitives.standard.transform.time_series.yeo_johnson import (
+    YeoJohnson,
 )

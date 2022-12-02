@@ -5,34 +5,33 @@ from woodwork.column_schema import ColumnSchema
 from featuretools.primitives.base import TransformPrimitive
 
 
-class BoxCox(TransformPrimitive):
+class YeoJohnson(TransformPrimitive):
     """Applies a transformation to help your data resemble a normal distribution,
-        commonly known as the Box Cox transformation. The input data must be positive.
-        It cannot contain zeroes or negative numbers.
-        Commonly used with time series data, to reduce the variance.
+        commonly known as the Yeo-Johnson power transformation. Works with negative,
+        positive, and zero values. Often used with time series data, to reduce the variance.
 
     Args:
         lmbda (int, float, optional): The exponent to use for the transformation.
             Default is None.
 
     Examples:
-        >>> box_cox = BoxCox()
-        >>> transformed = box_cox([1, 10, 5, 4, 2])
+        >>> yeo_johnson = YeoJohnson()
+        >>> transformed = yeo_johnson([1, -10, 5, -4, 2])
         >>> transformed = [round(x, 2) for x in transformed.tolist()]
         >>> transformed
-        [0.0, 2.69, 1.79, 1.52, 0.73]
+        [1.12, -6.26, 7.1, -2.99, 2.43]
 
-        You can specify the lambda to use for the tranformation
+        You can specify the lambda to use for the transformation
 
-        >>> box_cox = BoxCox(lmbda=-1)
-        >>> transformed = box_cox([1, 10, 5, 4, 2])
-        >>> transformed = transformed.tolist()
+        >>> yeo_johnson = YeoJohnson(lmbda=-1)
+        >>> transformed = yeo_johnson([1, -10, 5, -4, 2])
+        >>> transformed = [round(x, 2) for x in transformed.tolist()]
         >>> transformed
-        [0.0, 0.9, 0.8, 0.75, 0.5]
+        [0.5, -443.33, 0.83, -41.33, 0.67]
 
     """
 
-    name = "box_cox"
+    name = "yeo_johnson"
     input_types = [
         ColumnSchema(semantic_tags={"numeric"}),
     ]
@@ -45,7 +44,7 @@ class BoxCox(TransformPrimitive):
     def get_function(self):
         def box_cox(numeric):
             if self.lmbda is not None:
-                return stats.boxcox(numeric, lmbda=self.lmbda)
-            return stats.boxcox(numeric)[0]
+                return stats.yeojohnson(numeric, lmbda=self.lmbda)
+            return stats.yeojohnson(numeric)[0]
 
         return box_cox

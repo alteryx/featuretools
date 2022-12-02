@@ -35,6 +35,7 @@ from featuretools.primitives import (
     AddNumeric,
     AddNumericScalar,
     Age,
+    BoxCox,
     Count,
     Day,
     Diff,
@@ -121,7 +122,7 @@ def test_init_and_name(es):
     for transform_prim in trans_primitives:
         # skip automated testing if a few special cases
         features_to_use = log_features
-        if transform_prim in [NotEqual, Equal]:
+        if transform_prim in [NotEqual, Equal, BoxCox]:
             continue
         if transform_prim in [Age]:
             features_to_use = customers_features

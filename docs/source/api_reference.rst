@@ -308,6 +308,7 @@ Time Series Transform Primitives
     RollingOutlierCount
     RollingSTD
     RollingTrend
+    YeoJohnson
 
 
 .. currentmodule:: nlp_primitives

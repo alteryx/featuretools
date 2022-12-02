@@ -8,7 +8,7 @@ Future Release
     * Enhancements
         * Add ``OneDigitPostalCode`` and ``TwoDigitPostalCode`` primitives (:pr:`2365`)
         * Add ``ExpandingCount``, ``ExpandingMin``, ``ExpandingMean``, ``ExpandingMax``, ``ExpandingSTD``, and ``ExpandingTrend`` primitives (:pr:`2343`)
-        * Add ``BoxCox`` primitive for time series problems (:pr:`2387`)
+        * Add ``BoxCox`` and ``YeoJohnson`` primitive for time series problems (:pr:`2387`)
     * Fixes
     * Changes
     * Documentation Changes

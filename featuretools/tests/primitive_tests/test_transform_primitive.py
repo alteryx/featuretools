@@ -32,6 +32,7 @@ from featuretools.primitives import (
     URLToProtocol,
     URLToTLD,
     Week,
+    YeoJohnson,
     get_transform_primitives,
 )
 
@@ -957,15 +958,26 @@ def test_rate_of_change_primitive_with_nan():
     pd.testing.assert_series_equal(actual, expected)
 
 
-def test_box_cox():
-    box_cox = BoxCox()
+@pytest.mark.parametrize(
+    "lmbda,expected_output",
+    [(None, [0, 2, 5, 7, 9]), (-1, [0, 1, 1, 1, 1])],
+)
+def test_box_cox(lmbda, expected_output):
+    box_cox = BoxCox(lmbda=lmbda)
     numeric_values = pd.Series([1, 10, 100, 1000, 10000])
     actual = box_cox(numeric_values)
-    assert list(map(round, actual)) == [0, 2, 5, 7, 9]
+    assert list(map(round, actual)) == expected_output
 
 
-def test_box_cox_lambda():
-    box_cox = BoxCox(lmbda=-1)
-    numeric_values = pd.Series([1, 10, 100, 1000, 10000])
+@pytest.mark.parametrize(
+    "lmbda,expected_output",
+    [
+        (None, [0, 1, -5, 427, -114, -475]),
+        (-1, [0, 0, -443, 1, -334334333, -333433343333]),
+    ],
+)
+def test_yeo_johnson(lmbda, expected_output):
+    box_cox = YeoJohnson(lmbda=lmbda)
+    numeric_values = pd.Series([0, 1, -10, 100, -1000, -10000])
     actual = box_cox(numeric_values)
-    assert list(map(round, actual)) == [0, 1, 1, 1, 1]
+    assert list(map(round, actual)) == expected_output
