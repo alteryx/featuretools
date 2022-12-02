@@ -293,6 +293,7 @@ Time Series Transform Primitives
 .. autosummary::
     :toctree: generated/
 
+    BoxCox
     ExpandingCount
     ExpandingMax
     ExpandingMean

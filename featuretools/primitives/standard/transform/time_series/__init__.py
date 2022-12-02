@@ -1,3 +1,4 @@
+from featuretools.primitives.standard.transform.time_series.box_cox import BoxCox
 from featuretools.primitives.standard.transform.time_series.lag import Lag
 from featuretools.primitives.standard.transform.time_series.numeric_lag import (
     NumericLag,

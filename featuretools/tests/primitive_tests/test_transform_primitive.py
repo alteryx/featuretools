@@ -7,6 +7,7 @@ from pytz import timezone
 
 from featuretools.primitives import (
     Age,
+    BoxCox,
     DateToTimeZone,
     DayOfYear,
     DaysInMonth,
@@ -272,7 +273,7 @@ def test_part_of_day():
             np.nan,
         ],
     )
-    pd.testing.assert_series_equal(expected, actual)
+    assert actual.equals(expected)
 
 
 def test_is_year_end():
@@ -627,10 +628,10 @@ def test_is_free_email_domain_empty_string():
 
 def test_is_free_email_domain_empty_series():
     is_free_email_domain = IsFreeEmailDomain()
-    array = pd.Series([])
-    answers = pd.Series(is_free_email_domain(array))
-    correct_answers = pd.Series([])
-    pd.testing.assert_series_equal(answers, correct_answers)
+    array = pd.Series([], dtype="string")
+    answers = is_free_email_domain(array)
+    correct_answers = pd.Series([], dtype="string")
+    pd.testing.assert_series_equal(answers, correct_answers, check_dtype=False)
 
 
 def test_is_free_email_domain_invalid_email():
@@ -711,10 +712,14 @@ def test_email_address_to_domain_empty_string():
 
 def test_email_address_to_domain_empty_series():
     email_address_to_domain = EmailAddressToDomain()
-    array = pd.Series([])
+    array = pd.Series([], dtype="category")
     answers = pd.Series(email_address_to_domain(array))
-    correct_answers = pd.Series([])
-    pd.testing.assert_series_equal(answers, correct_answers)
+    correct_answers = pd.Series([], dtype="category")
+    pd.testing.assert_series_equal(
+        answers,
+        correct_answers,
+        check_dtype=False,
+    )
 
 
 def test_email_address_to_domain_invalid_email():
@@ -885,7 +890,7 @@ def test_date_to_time_zone_datetime64():
             datetime(2010, 1, 10),
             datetime(2020, 1, 1),
         ],
-    ).astype("datetime64")
+    ).astype("datetime64[ns]")
     x = x.dt.tz_localize("America/Los_Angeles")
     answer = pd.Series(["America/Los_Angeles"] * 3)
     pd.testing.assert_series_equal(primitive_func(x), answer)
@@ -950,3 +955,17 @@ def test_rate_of_change_primitive_with_nan():
     expected = pd.Series([np.nan, 15, np.nan, np.nan, 45])
     actual = rate_of_change(values, times)
     pd.testing.assert_series_equal(actual, expected)
+
+
+def test_box_cox():
+    box_cox = BoxCox()
+    numeric_values = pd.Series([1, 10, 100, 1000, 10000])
+    actual = box_cox(numeric_values)
+    assert list(map(round, actual)) == [0, 2, 5, 7, 9]
+
+
+def test_box_cox_lambda():
+    box_cox = BoxCox(lmbda=-1)
+    numeric_values = pd.Series([1, 10, 100, 1000, 10000])
+    actual = box_cox(numeric_values)
+    assert list(map(round, actual)) == [0, 1, 1, 1, 1]
