@@ -55,7 +55,7 @@ from featuretools.primitives import (
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.tests.testing_utils import (
     feature_with_name,
-    features_with_name_like,
+    number_of_features_with_name_like,
     make_ecommerce_entityset,
 )
 from featuretools.utils.gen_utils import Library
@@ -2042,8 +2042,8 @@ def test_check_stacking_when_building_transform_features(pd_es):
         max_depth=-1,
     )
     features = dfs_obj.build_features()
-    assert features_with_name_like(features, "ABSOLUTE(MEAN") > 0
-    assert features_with_name_like(features, "ABSOLUTE(NEW_MEAN") == 0
+    assert number_of_features_with_name_like(features, "ABSOLUTE(MEAN") > 0
+    assert number_of_features_with_name_like(features, "ABSOLUTE(NEW_MEAN") == 0
 
 
 def test_check_stacking_when_building_groupby_features(pd_es):
@@ -2059,8 +2059,8 @@ def test_check_stacking_when_building_groupby_features(pd_es):
         max_depth=5,
     )
     features = dfs_obj.build_features()
-    assert features_with_name_like(features, "CUM_SUM(MEAN") > 0
-    assert features_with_name_like(features, "CUM_SUM(NEW_MEAN") == 0
+    assert number_of_features_with_name_like(features, "CUM_SUM(MEAN") > 0
+    assert number_of_features_with_name_like(features, "CUM_SUM(NEW_MEAN") == 0
 
 
 def test_check_stacking_when_building_agg_features(pd_es):
@@ -2076,5 +2076,5 @@ def test_check_stacking_when_building_agg_features(pd_es):
         max_depth=5,
     )
     features = dfs_obj.build_features()
-    assert features_with_name_like(features, "MEAN(log.ABSOLUTE") > 0
-    assert features_with_name_like(features, "MEAN(log.NEW_ABSOLUTE") == 0
+    assert number_of_features_with_name_like(features, "MEAN(log.ABSOLUTE") > 0
+    assert number_of_features_with_name_like(features, "MEAN(log.NEW_ABSOLUTE") == 0
