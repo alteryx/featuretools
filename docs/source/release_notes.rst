@@ -8,6 +8,7 @@ Future Release
     * Enhancements
         * Add ``OneDigitPostalCode`` and ``TwoDigitPostalCode`` primitives (:pr:`2365`)
         * Add ``ExpandingCount``, ``ExpandingMin``, ``ExpandingMean``, ``ExpandingMax``, ``ExpandingSTD``, and ``ExpandingTrend`` primitives (:pr:`2343`)
+        * Add ``BoxCox`` primitive for time series problems (:pr:`2387`)
     * Fixes
     * Changes
     * Documentation Changes
@@ -15,7 +16,7 @@ Future Release
         * Fix version comparison in ``test_holiday_out_of_range`` (:pr:`2382`)
 
     Thanks to the following people for contributing to this release:
-    :user:`sbadithe`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v1.18.0 Nov 15, 2022
 ====================
