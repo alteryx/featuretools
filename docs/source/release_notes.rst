@@ -9,6 +9,7 @@ Future Release
         * Add ``OneDigitPostalCode`` and ``TwoDigitPostalCode`` primitives (:pr:`2365`)
         * Add ``ExpandingCount``, ``ExpandingMin``, ``ExpandingMean``, ``ExpandingMax``, ``ExpandingSTD``, and ``ExpandingTrend`` primitives (:pr:`2343`)
     * Fixes
+        * Fix DeepFeatureSynthesis to consider the ``base_of_exclude`` family of attributes when creating transform features(:pr:`2380`)
     * Changes
     * Documentation Changes
     * Testing Changes

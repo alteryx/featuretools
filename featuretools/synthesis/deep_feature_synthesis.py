@@ -223,7 +223,6 @@ class DeepFeatureSynthesis(object):
                 for p in primitives.get_default_aggregation_primitives()
                 if df_library in p.compatibility
             ]
-        self.agg_primitives = []
         self.agg_primitives = sorted(
             [
                 check_primitive(
@@ -702,10 +701,12 @@ class DeepFeatureSynthesis(object):
                 trans_prim,
                 current_options,
                 require_direct_input=require_direct_input,
-                feature_filter=check_transform_stacking,
+                feature_filter=not_a_transform_input,
             )
 
             for matching_input in matching_inputs:
+                if not can_stack_primitive_on_inputs(trans_prim, matching_input):
+                    continue
                 if not any(
                     True for bf in matching_input if bf.number_output_features != 1
                 ):
@@ -727,7 +728,7 @@ class DeepFeatureSynthesis(object):
                 input_types,
                 groupby_prim,
                 current_options,
-                feature_filter=check_transform_stacking,
+                feature_filter=not_a_transform_input,
             )
 
             # get columns to use as groupbys, use IDs as default unless other groupbys specified
@@ -754,6 +755,8 @@ class DeepFeatureSynthesis(object):
             # groupby, and don't create features of inputs/groupbys which are
             # all direct features with the same relationship path
             for matching_input in matching_inputs:
+                if not can_stack_primitive_on_inputs(groupby_prim, matching_input):
+                    continue
                 if not any(
                     True for bf in matching_input if bf.number_output_features != 1
                 ):
@@ -849,7 +852,7 @@ class DeepFeatureSynthesis(object):
             wheres = list(self.where_clauses[child_dataframe.ww.name])
 
             for matching_input in matching_inputs:
-                if not check_stacking(agg_prim, matching_input):
+                if not can_stack_primitive_on_inputs(agg_prim, matching_input):
                     continue
                 new_f = AggregationFeature(
                     matching_input,
@@ -1071,22 +1074,31 @@ def _match_contains_numeric_foreign_key(match):
     return any(True for f in match if is_valid_input(f.column_schema, match_schema))
 
 
-def check_transform_stacking(feature):
-    # Avoid transform stacking when building from direct features
-    if isinstance(feature.primitive, TransformPrimitive):
-        return False
-    if isinstance(feature, DirectFeature) and isinstance(
-        feature.base_features[0].primitive,
-        TransformPrimitive,
-    ):
-        return False
-    return True
+def not_a_transform_input(feature):
+    """
+    Verifies transform inputs are not transform features or direct features of transform features
+    Returns True if a transform primitive can stack on the feature, and False if it cannot.
+    """
+    primitive = _find_root_primitive(feature)
+    return not isinstance(primitive, TransformPrimitive)
 
 
-def check_stacking(primitive, inputs):
-    """checks if features in inputs can be used with supplied primitive
-    using the stacking rules"""
+def _find_root_primitive(feature):
+    """
+    If a feature is a DirectFeature, finds the primitive of
+    the "original" base feature.
+    """
+    if isinstance(feature, DirectFeature):
+        return _find_root_primitive(feature.base_features[0])
+    return feature.primitive
 
+
+def can_stack_primitive_on_inputs(primitive, inputs):
+    """
+    Checks if features in inputs can be used with supplied primitive
+    using the stacking rules.
+    Returns True if stacking is possible, and False if not.
+    """
     primitive_class = primitive.__class__
     tup_primitive_stack_on = (
         tuple(primitive.stack_on) if primitive.stack_on is not None else None
@@ -1099,14 +1111,16 @@ def check_stacking(primitive, inputs):
     primitive_stack_on_self: bool = primitive.stack_on_self
 
     for feature in inputs:
-        f_primitive = feature.primitive
+        # In the case that the feature is a DirectFeature, the feature's primitive will be a PrimitiveBase object.
+        # However, we want to check stacking rules with the primitive the DirectFeature is based on.
+        f_primitive = _find_root_primitive(feature)
+
         if not primitive_stack_on_self and isinstance(f_primitive, primitive_class):
             return False
 
         if isinstance(f_primitive, tup_primitive_stack_on_exclude):
             return False
 
-        # R TODO: handle this
         if feature.number_output_features > 1:
             return False
 

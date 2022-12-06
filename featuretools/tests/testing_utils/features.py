@@ -1,3 +1,5 @@
+import re
+
 from featuretools.entityset.relationship import RelationshipPath
 
 
@@ -5,8 +7,14 @@ def feature_with_name(features, name):
     for f in features:
         if f.get_name() == name:
             return True
-
     return False
+
+
+def number_of_features_with_name_like(features, pattern):
+    """Returns number of features with names that match the provided regex pattern"""
+    pattern = re.compile(re.escape(pattern))
+    names = [f.get_name() for f in features]
+    return len([name for name in names if pattern.search(name)])
 
 
 def backward_path(es, dataframe_ids):
