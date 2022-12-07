@@ -114,9 +114,10 @@ class FeatureBase(object):
 
     def set_feature_names(self, names):
         """Set new values for the feature column names, overriding the default values.
-        Number of names provided much match the number of output columns defined for
-        the feature. Only works for features that have more than one output column. Use
-        ``Feature.rename`` to change the column name for single output features.
+        Number of names provided must match the number of output columns defined for
+        the feature, and all provided names should be unique. Only works for features 
+        that have more than one output column. Use ``Feature.rename`` to change the column 
+        name for single output features.
 
         Args:
             names (list[str]): List of names to use for the output feature columns. Provided
