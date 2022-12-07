@@ -12,6 +12,7 @@ Future Release
         * Fix DeepFeatureSynthesis to consider the ``base_of_exclude`` family of attributes when creating transform features(:pr:`2380`)
     * Changes
     * Documentation Changes
+        * Fix typo and update ``set_feature_names`` docstring (:pr:`2388`) 
     * Testing Changes
         * Fix version comparison in ``test_holiday_out_of_range`` (:pr:`2382`)
 
