@@ -53,7 +53,11 @@ from featuretools.primitives import (
     Year,
 )
 from featuretools.synthesis import DeepFeatureSynthesis
-from featuretools.tests.testing_utils import feature_with_name, make_ecommerce_entityset
+from featuretools.tests.testing_utils import (
+    feature_with_name,
+    make_ecommerce_entityset,
+    number_of_features_with_name_like,
+)
 from featuretools.utils.gen_utils import Library
 
 
@@ -2023,3 +2027,54 @@ def test_make_groupby_features_with_depth_none(pd_es):
     )
     features = dfs_obj.build_features()
     assert feature_with_name(features, "CUM_SUM(value) by session_id")
+
+
+def test_check_stacking_when_building_transform_features(pd_es):
+    class NewMean(Mean):
+        name = "NEW_MEAN"
+        base_of_exclude = [Absolute]
+
+    dfs_obj = DeepFeatureSynthesis(
+        target_dataframe_name="log",
+        entityset=pd_es,
+        agg_primitives=[NewMean, "mean"],
+        trans_primitives=["absolute"],
+        max_depth=-1,
+    )
+    features = dfs_obj.build_features()
+    assert number_of_features_with_name_like(features, "ABSOLUTE(MEAN") > 0
+    assert number_of_features_with_name_like(features, "ABSOLUTE(NEW_MEAN") == 0
+
+
+def test_check_stacking_when_building_groupby_features(pd_es):
+    class NewMean(Mean):
+        name = "NEW_MEAN"
+        base_of_exclude = [CumSum]
+
+    dfs_obj = DeepFeatureSynthesis(
+        target_dataframe_name="log",
+        entityset=pd_es,
+        agg_primitives=[NewMean, "mean"],
+        groupby_trans_primitives=["cum_sum"],
+        max_depth=5,
+    )
+    features = dfs_obj.build_features()
+    assert number_of_features_with_name_like(features, "CUM_SUM(MEAN") > 0
+    assert number_of_features_with_name_like(features, "CUM_SUM(NEW_MEAN") == 0
+
+
+def test_check_stacking_when_building_agg_features(pd_es):
+    class NewAbsolute(Absolute):
+        name = "NEW_ABSOLUTE"
+        base_of_exclude = [Mean]
+
+    dfs_obj = DeepFeatureSynthesis(
+        target_dataframe_name="log",
+        entityset=pd_es,
+        agg_primitives=["mean"],
+        trans_primitives=[NewAbsolute, "absolute"],
+        max_depth=5,
+    )
+    features = dfs_obj.build_features()
+    assert number_of_features_with_name_like(features, "MEAN(log.ABSOLUTE") > 0
+    assert number_of_features_with_name_like(features, "MEAN(log.NEW_ABSOLUTE") == 0

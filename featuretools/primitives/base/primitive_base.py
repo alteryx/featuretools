@@ -32,6 +32,12 @@ class PrimitiveBase(object):
     base_of = None
     # blacklist of primitives can have this primitive in input_types
     base_of_exclude = None
+    # whitelist of primitives that can be in input_types
+    stack_on = None
+    # blacklist of primitives that can be in signature
+    stack_on_exclude = None
+    # determines if primitive can be in input_types for self
+    stack_on_self = True
     # (bool) If True will only make one feature per unique set of base features
     commutative = False
     #: (list): Additional compatible libraries
