@@ -10,11 +10,8 @@ Future Release
         * Add ``ExpandingCount``, ``ExpandingMin``, ``ExpandingMean``, ``ExpandingMax``, ``ExpandingSTD``, and ``ExpandingTrend`` primitives (:pr:`2343`)
         * Add ``BoxCox`` and ``YeoJohnson`` primitives for time series problems (:pr:`2387`)
     * Fixes
-<<<<<<< Updated upstream
-        * Fix DeepFeatureSynthesis to consider the ``base_of_exclude`` family of attributes when creating transform features(:pr:`2380`)
-=======
+        * Fix DeepFeatureSynthesis to consider the ``base_of_exclude`` family of attributes when creating transform features (:pr:`2380`)
         * Fix pandas Series initializations to specify the dtype (:pr:`2387`)
->>>>>>> Stashed changes
     * Changes
     * Documentation Changes
     * Testing Changes
