@@ -13,7 +13,8 @@ class BoxCox(TransformPrimitive):
 
     Args:
         lmbda (int, float, optional): The exponent to use for the transformation.
-            Default is None.
+            Default is None, which means `scipy` will find the value of lmbda
+            that maximizes the log-likelihood functionn.
 
     Examples:
         >>> box_cox = BoxCox()

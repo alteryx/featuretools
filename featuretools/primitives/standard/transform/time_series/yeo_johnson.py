@@ -12,7 +12,8 @@ class YeoJohnson(TransformPrimitive):
 
     Args:
         lmbda (int, float, optional): The exponent to use for the transformation.
-            Default is None.
+            Default is None, which means `scipy` will find the lambda that
+            maximizes the log-likelihood function.
 
     Examples:
         >>> yeo_johnson = YeoJohnson()
@@ -42,9 +43,9 @@ class YeoJohnson(TransformPrimitive):
         self.lmbda = lmbda
 
     def get_function(self):
-        def box_cox(numeric):
+        def yeo_johnson(numeric):
             if self.lmbda is not None:
                 return stats.yeojohnson(numeric, lmbda=self.lmbda)
             return stats.yeojohnson(numeric)[0]
 
-        return box_cox
+        return yeo_johnson

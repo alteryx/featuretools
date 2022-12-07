@@ -8,14 +8,17 @@ Future Release
     * Enhancements
         * Add ``OneDigitPostalCode`` and ``TwoDigitPostalCode`` primitives (:pr:`2365`)
         * Add ``ExpandingCount``, ``ExpandingMin``, ``ExpandingMean``, ``ExpandingMax``, ``ExpandingSTD``, and ``ExpandingTrend`` primitives (:pr:`2343`)
-        * Add ``BoxCox`` and ``YeoJohnson`` primitive for time series problems (:pr:`2387`)
+        * Add ``BoxCox`` and ``YeoJohnson`` primitives for time series problems (:pr:`2387`)
     * Fixes
+<<<<<<< Updated upstream
         * Fix DeepFeatureSynthesis to consider the ``base_of_exclude`` family of attributes when creating transform features(:pr:`2380`)
+=======
+        * Fix pandas Series initializations to specify the dtype (:pr:`2387`)
+>>>>>>> Stashed changes
     * Changes
     * Documentation Changes
     * Testing Changes
         * Fix version comparison in ``test_holiday_out_of_range`` (:pr:`2382`)
-
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
@@ -49,7 +52,8 @@ v1.17.0 Oct 31, 2022
 ====================
     * Enhancements
         * Add featuretools-sklearn-transformer as an extra installation option (:pr:`2335`)
-        * Add CountAboveMean, CountBelowMean, CountGreaterThan, CountInsideNthSTD, CountInsideRange, CountLessThan, CountOutsideNthSTD, CountOutsideRange (:pr:`2336`)
+        * Add ``CountAboveMean``, ``CountBelowMean``, ``CountGreaterThan``, ``CountInsideNthSTD``, ``CountInsideRange``,
+              ``CountLessThan``, ``CountOutsideNthSTD``, ``CountOutsideRange`` (:pr:`2336`)
     * Changes
         * Restructure primitives directory to use individual primitives files (:pr:`2331`)
         * Restrict 2022.10.1 for dask and distributed (:pr:`2347`)
