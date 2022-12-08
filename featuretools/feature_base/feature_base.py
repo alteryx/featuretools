@@ -276,7 +276,7 @@ class FeatureBase(object):
             "arguments": self.get_arguments(),
         }
 
-    def _handle_binary_comparision(self, other, Primitive, PrimitiveScalar):
+    def _handle_binary_comparison(self, other, Primitive, PrimitiveScalar):
         if isinstance(other, FeatureBase):
             return Feature([self, other], primitive=Primitive)
 
@@ -284,7 +284,7 @@ class FeatureBase(object):
 
     def __eq__(self, other):
         """Compares to other by equality"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.Equal,
             primitives.EqualScalar,
@@ -292,7 +292,7 @@ class FeatureBase(object):
 
     def __ne__(self, other):
         """Compares to other by non-equality"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.NotEqual,
             primitives.NotEqualScalar,
@@ -300,7 +300,7 @@ class FeatureBase(object):
 
     def __gt__(self, other):
         """Compares if greater than other"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.GreaterThan,
             primitives.GreaterThanScalar,
@@ -308,7 +308,7 @@ class FeatureBase(object):
 
     def __ge__(self, other):
         """Compares if greater than or equal to other"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.GreaterThanEqualTo,
             primitives.GreaterThanEqualToScalar,
@@ -316,7 +316,7 @@ class FeatureBase(object):
 
     def __lt__(self, other):
         """Compares if less than other"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.LessThan,
             primitives.LessThanScalar,
@@ -324,7 +324,7 @@ class FeatureBase(object):
 
     def __le__(self, other):
         """Compares if less than or equal to other"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.LessThanEqualTo,
             primitives.LessThanEqualToScalar,
@@ -332,7 +332,7 @@ class FeatureBase(object):
 
     def __add__(self, other):
         """Add other"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.AddNumeric,
             primitives.AddNumericScalar,
@@ -343,7 +343,7 @@ class FeatureBase(object):
 
     def __sub__(self, other):
         """Subtract other"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.SubtractNumeric,
             primitives.SubtractNumericScalar,
@@ -354,7 +354,7 @@ class FeatureBase(object):
 
     def __div__(self, other):
         """Divide by other"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.DivideNumeric,
             primitives.DivideNumericScalar,
@@ -395,7 +395,7 @@ class FeatureBase(object):
                     [self, other],
                     primitive=primitives.MultiplyNumericBoolean,
                 )
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.MultiplyNumeric,
             primitives.MultiplyNumericScalar,
@@ -406,7 +406,7 @@ class FeatureBase(object):
 
     def __mod__(self, other):
         """Take modulus of other"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.ModuloNumeric,
             primitives.ModuloNumericScalar,
