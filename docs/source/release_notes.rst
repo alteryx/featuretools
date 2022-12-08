@@ -10,6 +10,7 @@ Future Release
         * Add ``ExpandingCount``, ``ExpandingMin``, ``ExpandingMean``, ``ExpandingMax``, ``ExpandingSTD``, and ``ExpandingTrend`` primitives (:pr:`2343`)
     * Fixes
         * Fix DeepFeatureSynthesis to consider the ``base_of_exclude`` family of attributes when creating transform features(:pr:`2380`)
+        * Fix bug with negative version numbers in ``test_version`` (:pr:`2389`)
     * Changes
     * Documentation Changes
     * Testing Changes
