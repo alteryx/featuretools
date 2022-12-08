@@ -17,13 +17,14 @@ class MultiplyNumericBoolean(TransformPrimitive):
         the corresponding value in Y is True.
 
     Examples:
+        >>> import pandas as pd
         >>> multiply_numeric_boolean = MultiplyNumericBoolean()
         >>> multiply_numeric_boolean([2, 1, 2], [True, True, False]).tolist()
         [2, 1, 0]
         >>> multiply_numeric_boolean([2, None, None], [True, True, False]).tolist()
         [2.0, nan, nan]
-        >>> multiply_numeric_boolean([2, 1, 2], [True, True, None]).tolist()
-        [2.0, 1.0, nan]
+        >>> multiply_numeric_boolean([2, 1, 2], pd.Series([True, True, pd.NA], dtype="boolean")).tolist()
+        [2, 1, <NA>]
     """
 
     name = "multiply_numeric_boolean"
@@ -46,22 +47,19 @@ class MultiplyNumericBoolean(TransformPrimitive):
         ],
     ]
     return_type = ColumnSchema(semantic_tags={"numeric"})
-    compatibility = [Library.PANDAS, Library.DASK]
+    compatibility = [Library.PANDAS]
     commutative = True
     description_template = "the product of {} and {}"
 
     def get_function(self):
         def multiply_numeric_boolean(ser1, ser2):
             if pdtypes.is_bool_dtype(ser1):
-                mask = ser1
+                bools = ser1
                 vals = ser2
             else:
-                mask = ser2
+                bools = ser2
                 vals = ser1
-            vals_not_null = vals.notnull()
-            # Only apply mask where the input is not null
-            mask = mask.where(vals_not_null)
-            result = vals.where(mask, mask.replace({False: 0}))
+            result = vals * bools.astype("Int64")
             # Replace all pd.NA with np.nan to avoid WW init error
             result = result.replace({pd.NA: np.nan})
             return result
