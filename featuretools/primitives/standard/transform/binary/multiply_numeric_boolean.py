@@ -1,5 +1,3 @@
-import numpy as np
-import pandas as pd
 import pandas.api.types as pdtypes
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
@@ -60,8 +58,6 @@ class MultiplyNumericBoolean(TransformPrimitive):
                 bools = ser2
                 vals = ser1
             result = vals * bools.astype("Int64")
-            # Replace all pd.NA with np.nan to avoid WW init error
-            result = result.replace({pd.NA: np.nan})
             return result
 
         return multiply_numeric_boolean
