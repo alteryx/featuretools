@@ -158,7 +158,7 @@ def test_later_schema_version(es, caplog):
     test_version(major + 1, minor, patch)
     test_version(major, minor + 1, patch)
     test_version(major, minor, patch + 1)
-    test_version(major, minor - 1, patch + 1, raises=False)
+    test_version(major, max(0, minor - 1), patch + 1, raises=False)
 
 
 def test_earlier_schema_version(es, caplog):
@@ -178,9 +178,9 @@ def test_earlier_schema_version(es, caplog):
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split(".")]
 
-    test_version(major - 1, minor, patch)
-    test_version(major, minor - 1, patch, raises=False)
-    test_version(major, minor, patch - 1, raises=False)
+    test_version(max(0, major - 1), minor, patch)
+    test_version(major, max(0, minor - 1), patch, raises=False)
+    test_version(major, minor, max(0, patch - 1), raises=False)
 
 
 def test_unknown_feature_type(es):
