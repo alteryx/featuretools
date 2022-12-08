@@ -1841,7 +1841,6 @@ def test_multiply_numeric_boolean_multiple_dtypes_with_nulls():
     vals = pd.Series([np.nan, 2, 3])
     bools = pd.Series([True, False, pd.NA], dtype="boolean")
     multiply_numeric_boolean = MultiplyNumericBoolean()
-    multiply_numeric_boolean = MultiplyNumericBoolean()
     numeric_dtypes = ["float64", "Int64"]
 
     for numeric_dtype in numeric_dtypes:
