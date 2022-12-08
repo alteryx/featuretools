@@ -1808,7 +1808,7 @@ def test_multiply_numeric_boolean():
 
     multiply_numeric_boolean = MultiplyNumericBoolean()
     for input in test_cases:
-        vals = pd.Series(input["val"])
+        vals = pd.Series(input["val"]).astype("Int64")
         mask = pd.Series(input["mask"])
         actual = multiply_numeric_boolean(vals, mask).tolist()[0]
         expected = input["expected"]
@@ -1816,6 +1816,37 @@ def test_multiply_numeric_boolean():
             assert pd.isnull(actual)
         else:
             assert actual == input["expected"]
+
+
+def test_multiply_numeric_boolean_multiple_dtypes_no_nulls():
+    # Test without null values
+    vals = pd.Series([1, 2, 3])
+    bools = pd.Series([True, False, True])
+    multiply_numeric_boolean = MultiplyNumericBoolean()
+    numeric_dtypes = ["float64", "int64", "Int64"]
+    boolean_dtypes = ["bool", "boolean"]
+
+    for numeric_dtype in numeric_dtypes:
+        for boolean_dtype in boolean_dtypes:
+            actual = multiply_numeric_boolean(
+                vals.astype(numeric_dtype),
+                bools.astype(boolean_dtype),
+            )
+            expected = pd.Series([1, 0, 3])
+            pd.testing.assert_series_equal(actual, expected, check_dtype=False)
+
+
+def test_multiply_numeric_boolean_multiple_dtypes_with_nulls():
+    # Test with null values
+    vals = pd.Series([np.nan, 2, 3])
+    bools = pd.Series([True, False, pd.NA], dtype="boolean")
+    multiply_numeric_boolean = MultiplyNumericBoolean()
+    numeric_dtypes = ["float64", "Int64"]
+
+    for numeric_dtype in numeric_dtypes:
+        actual = multiply_numeric_boolean(vals.astype(numeric_dtype), bools)
+        expected = pd.Series([np.nan, 0, np.nan])
+        pd.testing.assert_series_equal(actual, expected, check_dtype=False)
 
 
 def test_feature_multiplication(es):
