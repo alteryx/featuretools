@@ -14,9 +14,7 @@ logger = logging.getLogger("featuretools.utils")
 def make_tqdm_iterator(**kwargs):
     options = {"file": sys.stdout, "leave": True}
     options.update(kwargs)
-    iterator = tqdm(**options)
-    return iterator
-
+    return tqdm(**options)
 
 def get_relationship_column_id(path):
     _, r = path[0]
