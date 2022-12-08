@@ -1,17 +1,18 @@
 # flake8: noqa
-from featuretools.version import __version__
-from featuretools.config_init import config
-from featuretools.entityset.api import *
-from featuretools import primitives
-from featuretools.synthesis.api import *
-from featuretools.primitives import list_primitives, summarize_primitives
-from featuretools.computational_backends.api import *
-from featuretools import tests
-from featuretools.utils.time_utils import *
-from featuretools.utils.utils_info import show_info
+import logging
+import sys
+import traceback
+
+import pkg_resources
+
 import featuretools.demo
 from featuretools import feature_base
+from featuretools import primitives
 from featuretools import selection
+from featuretools import tests
+from featuretools.computational_backends.api import *
+from featuretools.config_init import config
+from featuretools.entityset.api import *
 from featuretools.feature_base import (
     AggregationFeature,
     DirectFeature,
@@ -25,13 +26,15 @@ from featuretools.feature_base import (
     save_features,
     load_features,
 )
-
-import logging
-import pkg_resources
-import sys
-import traceback
-import warnings
-from woodwork import list_logical_types, list_semantic_tags
+from featuretools.primitives import list_primitives, summarize_primitives
+from featuretools.synthesis.api import *
+from featuretools.utils.time_utils import *
+from featuretools.utils.utils_info import show_info
+from featuretools.version import (
+    __version__,
+    ENTITYSET_SCHEMA_VERSION,
+    FEATURES_SCHEMA_VERSION,
+)
 
 logger = logging.getLogger("featuretools")
 

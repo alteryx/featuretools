@@ -1,11 +1,8 @@
-import importlib
 import logging
 import re
 import sys
-import warnings
 from enum import Enum
 
-from packaging.version import parse
 from tqdm import tqdm
 
 logger = logging.getLogger("featuretools.utils")
@@ -39,68 +36,6 @@ def find_descendents(cls):
     for sub in cls.__subclasses__():
         for c in find_descendents(sub):
             yield c
-
-
-def check_schema_version(cls, cls_type):
-    if isinstance(cls_type, str):
-        if cls_type == "entityset":
-            from featuretools.entityset.serialize import SCHEMA_VERSION
-
-            version_string = cls.get("schema_version")
-        elif cls_type == "features":
-            from featuretools.feature_base.features_serializer import SCHEMA_VERSION
-
-            version_string = cls.features_dict["schema_version"]
-
-        current = SCHEMA_VERSION
-        saved = version_string
-
-        warning_text_upgrade = (
-            "The schema version of the saved %s"
-            "(%s) is greater than the latest supported (%s). "
-            "You may need to upgrade featuretools. Attempting to load %s ..."
-            % (cls_type, version_string, SCHEMA_VERSION, cls_type)
-        )
-        if parse(current) < parse(saved):
-            warnings.warn(warning_text_upgrade)
-
-        warning_text_outdated = (
-            "The schema version of the saved %s"
-            "(%s) is no longer supported by this version "
-            "of featuretools. Attempting to load %s ..."
-            % (cls_type, version_string, cls_type)
-        )
-        if parse(current) > parse(saved):
-            logger.warning(warning_text_outdated)
-
-
-def import_or_raise(library, error_msg):
-    """
-    Attempts to import the requested library.  If the import fails, raises an
-    ImportErorr with the supplied
-
-    Args:
-        library (str): the name of the library
-        error_msg (str): error message to return if the import fails
-    """
-    try:
-        return importlib.import_module(library)
-    except ImportError:
-        raise ImportError(error_msg)
-
-
-def import_or_none(library):
-    """
-    Attemps to import the requested library.
-
-    Args:
-        library (str): the name of the library
-    Returns: the library if it is installed, else None
-    """
-    try:
-        return importlib.import_module(library)
-    except ImportError:
-        return None
 
 
 def is_instance(obj, modules, classnames):

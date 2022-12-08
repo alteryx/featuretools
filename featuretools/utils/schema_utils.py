@@ -1,6 +1,8 @@
-import warnings
-from packaging.version import parse
 import logging
+import warnings
+
+from packaging.version import parse
+
 from featuretools.version import ENTITYSET_SCHEMA_VERSION, FEATURES_SCHEMA_VERSION
 
 logger = logging.getLogger("featuretools.utils")
@@ -20,19 +22,19 @@ def check_schema_version(cls, cls_type):
         saved = version_string
 
         warning_text_upgrade = (
-                "The schema version of the saved %s"
-                "(%s) is greater than the latest supported (%s). "
-                "You may need to upgrade featuretools. Attempting to load %s ..."
-                % (cls_type, version_string, current, cls_type)
+            "The schema version of the saved %s"
+            "(%s) is greater than the latest supported (%s). "
+            "You may need to upgrade featuretools. Attempting to load %s ..."
+            % (cls_type, version_string, current, cls_type)
         )
         if parse(current) < parse(saved):
             warnings.warn(warning_text_upgrade)
 
         warning_text_outdated = (
-                "The schema version of the saved %s"
-                "(%s) is no longer supported by this version "
-                "of featuretools. Attempting to load %s ..."
-                % (cls_type, version_string, cls_type)
+            "The schema version of the saved %s"
+            "(%s) is no longer supported by this version "
+            "of featuretools. Attempting to load %s ..."
+            % (cls_type, version_string, cls_type)
         )
         if parse(current).major > parse(saved).major:
             logger.warning(warning_text_outdated)

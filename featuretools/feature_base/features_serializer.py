@@ -5,8 +5,6 @@ from featuretools.utils.s3_utils import get_transport_params, use_smartopen_feat
 from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.version import __version__ as ft_version
 
-SCHEMA_VERSION = "9.0.0"
-
 
 def save_features(features, location=None, profile_name=None):
     """Saves the features list as JSON to a specified filepath/S3 path, writes to an open file, or
