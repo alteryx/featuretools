@@ -10,10 +10,11 @@ Future Release
         * Fix typo in ``_handle_binary_comparison`` function name and update ``set_feature_names`` docstring (:pr:`2388`) 
     * Changes
     * Documentation Changes
+        *  Remove unused sections from 1.19.0 notes (:pr:`2396`)
     * Testing Changes
 
    Thanks to the following people for contributing to this release:
-   :user:`sbadithe`
+   :user:`rwedge`, :user:`sbadithe`
 
 v1.19.0 Dec 9, 2022
 ===================
