@@ -3,8 +3,7 @@ import json
 from featuretools.primitives.utils import serialize_primitive
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_features
 from featuretools.utils.wrangle import _is_s3, _is_url
-from featuretools.version import __version__ as ft_version
-
+from featuretools.version import FEATURES_SCHEMA_VERSION, __version__ as ft_version
 
 def save_features(features, location=None, profile_name=None):
     """Saves the features list as JSON to a specified filepath/S3 path, writes to an open file, or
@@ -73,7 +72,7 @@ class FeaturesSerializer(object):
         feature_defs, primitive_defs = self._feature_definitions()
 
         return {
-            "schema_version": SCHEMA_VERSION,
+            "schema_version": FEATURES_SCHEMA_VERSION,
             "ft_version": ft_version,
             "entityset": es.to_dictionary(),
             "feature_list": names_list,

@@ -7,6 +7,7 @@ from enum import Enum
 
 from packaging.version import parse
 from tqdm import tqdm
+from featuretools.version import ENTITYSET_SCHEMA_VERSION, FEATURES_SCHEMA_VERSION
 
 logger = logging.getLogger("featuretools.utils")
 
@@ -38,26 +39,24 @@ def find_descendents(cls):
         for c in find_descendents(sub):
             yield c
 
-
 def check_schema_version(cls, cls_type):
     if isinstance(cls_type, str):
+        current = None
+        version_string = None
         if cls_type == "entityset":
-            from featuretools.entityset.serialize import SCHEMA_VERSION
-
+            current = ENTITYSET_SCHEMA_VERSION
             version_string = cls.get("schema_version")
         elif cls_type == "features":
-            from featuretools.feature_base.features_serializer import SCHEMA_VERSION
-
+            current = FEATURES_SCHEMA_VERSION
             version_string = cls.features_dict["schema_version"]
 
-        current = SCHEMA_VERSION
         saved = version_string
 
         warning_text_upgrade = (
                 "The schema version of the saved %s"
                 "(%s) is greater than the latest supported (%s). "
                 "You may need to upgrade featuretools. Attempting to load %s ..."
-                % (cls_type, version_string, SCHEMA_VERSION, cls_type)
+                % (cls_type, version_string, current, cls_type)
         )
         if parse(current) < parse(saved):
             warnings.warn(warning_text_upgrade)
@@ -68,9 +67,8 @@ def check_schema_version(cls, cls_type):
                 "of featuretools. Attempting to load %s ..."
                 % (cls_type, version_string, cls_type)
         )
-        if parse(current) > parse(saved):
+        if parse(current).major > parse(saved).major:
             logger.warning(warning_text_outdated)
-
 
 def import_or_raise(library, error_msg):
     """
