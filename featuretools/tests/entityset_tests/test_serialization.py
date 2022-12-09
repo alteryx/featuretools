@@ -471,5 +471,5 @@ def _check_schema_version(version, es, warning_text, caplog, warning_type=None):
         if warning_text:
             assert warning_text in caplog.text
         else:
-            assert len(caplog.text) == 0
+            assert not len(caplog.text)
         logger.propagate = False

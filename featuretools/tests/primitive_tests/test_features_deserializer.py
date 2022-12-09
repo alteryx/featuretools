@@ -345,15 +345,17 @@ def _check_schema_version(version, es, warning_text, caplog, warning_type=None):
         "primitive_definitions": {},
     }
 
-    if warning_type == "log" and warning_text:
+    if warning_type == "warn":
+        if warning_text:
+            with pytest.warns(UserWarning) as record:
+                FeaturesDeserializer(dictionary)
+            assert record[0].message.args[0] == warning_text
+    elif warning_type == "log":
         logger = logging.getLogger("featuretools")
         logger.propagate = True
         FeaturesDeserializer(dictionary)
-        assert warning_text in caplog.text
+        if warning_text:
+            assert warning_text in caplog.text
+        else:
+            assert not len(caplog.text)
         logger.propagate = False
-    elif warning_type == "warn" and warning_text:
-        with pytest.warns(UserWarning) as record:
-            FeaturesDeserializer(dictionary)
-        assert record[0].message.args[0] == warning_text
-    else:
-        FeaturesDeserializer(dictionary)
