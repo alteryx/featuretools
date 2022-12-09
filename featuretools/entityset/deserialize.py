@@ -9,7 +9,7 @@ import woodwork.type_sys.type_system as ww_type_system
 from woodwork.deserialize import read_woodwork_table
 
 from featuretools.entityset.relationship import Relationship
-from featuretools.utils.gen_utils import import_or_none, Library
+from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
 from featuretools.utils.schema_utils import check_schema_version
 from featuretools.utils.wrangle import _is_local_tar, _is_s3, _is_url
