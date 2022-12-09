@@ -10,6 +10,7 @@ Future Release
         * Add ``ExpandingCount``, ``ExpandingMin``, ``ExpandingMean``, ``ExpandingMax``, ``ExpandingSTD``, and ``ExpandingTrend`` primitives (:pr:`2343`)
     * Fixes
         * Fix DeepFeatureSynthesis to consider the ``base_of_exclude`` family of attributes when creating transform features(:pr:`2380`)
+        * Fix bug in ``MultiplyNumericBoolean`` primitive that can cause an error with certain input dtype combinations (:pr:`2393`)
     * Changes
     * Documentation Changes
         * Fix typo in ``_handle_binary_comparison`` function name and update ``set_feature_names`` docstring (:pr:`2388`) 
