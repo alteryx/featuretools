@@ -29,18 +29,18 @@ def check_schema_version(cls, cls_type):
 
         if parse(current) < parse(saved):
             warning_text_upgrade = (
-                    "The schema version of the saved %s"
-                    "(%s) is greater than the latest supported (%s). "
-                    "You may need to upgrade featuretools. Attempting to load %s ..."
-                    % (cls_type, saved, current, cls_type)
+                "The schema version of the saved %s"
+                "(%s) is greater than the latest supported (%s). "
+                "You may need to upgrade featuretools. Attempting to load %s ..."
+                % (cls_type, saved, current, cls_type)
             )
             warnings.warn(warning_text_upgrade)
 
         if parse(current).major > parse(saved).major:
             warning_text_outdated = (
-                    "The schema version of the saved %s"
-                    "(%s) is no longer supported by this version "
-                    "of featuretools. Attempting to load %s ..."
-                    % (cls_type, saved, cls_type)
+                "The schema version of the saved %s"
+                "(%s) is no longer supported by this version "
+                "of featuretools. Attempting to load %s ..."
+                % (cls_type, saved, cls_type)
             )
             logger.warning(warning_text_outdated)

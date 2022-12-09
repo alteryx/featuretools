@@ -41,6 +41,7 @@ def find_descendents(cls):
         for c in find_descendents(sub):
             yield c
 
+
 def import_or_raise(library, error_msg):
     """
     Attempts to import the requested library.  If the import fails, raises an
