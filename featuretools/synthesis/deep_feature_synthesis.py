@@ -188,24 +188,14 @@ class DeepFeatureSynthesis(object):
             if not isinstance(ignore_dataframes, list):
                 raise TypeError("ignore_dataframes must be a list")
             assert (
-                target_dataframe_name not in ignore_dataframes
+                    target_dataframe_name not in ignore_dataframes
             ), "Can't ignore target_dataframe!"
             self.ignore_dataframes = set(ignore_dataframes)
 
         self.ignore_columns = defaultdict(set)
         if ignore_columns is not None:
-            # check if ignore_columns is not {str: list}
-            if not all(isinstance(i, str) for i in ignore_columns.keys()) or not all(
-                isinstance(i, list) for i in ignore_columns.values()
-            ):
-                raise TypeError("ignore_columns should be dict[str -> list]")
-            # check if list values are all of type str
-            elif not all(
-                all(isinstance(v, str) for v in value)
-                for value in ignore_columns.values()
-            ):
-                raise TypeError("list values should be of type str")
             for df_name, cols in ignore_columns.items():
+                _validate_ignore_columns_entry(df_name, cols)
                 self.ignore_columns[df_name] = set(cols)
         self.target_dataframe_name = target_dataframe_name
         self.es = entityset
@@ -359,9 +349,9 @@ class DeepFeatureSynthesis(object):
         def filt(f):
             # remove identity features of the ID field of the target dataframe
             if (
-                isinstance(f, IdentityFeature)
-                and f.dataframe_name == self.target_dataframe_name
-                and f.column_name == self.es[self.target_dataframe_name].ww.index
+                    isinstance(f, IdentityFeature)
+                    and f.dataframe_name == self.target_dataframe_name
+                    and f.column_name == self.es[self.target_dataframe_name].ww.index
             ):
                 return False
 
@@ -477,8 +467,8 @@ class DeepFeatureSynthesis(object):
 
             new_path = relationship_path + sub_relationship_path
             if (
-                self.allowed_paths
-                and tuple(new_path.dataframes()) not in self.allowed_paths
+                    self.allowed_paths
+                    and tuple(new_path.dataframes()) not in self.allowed_paths
             ):
                 continue
 
@@ -659,11 +649,11 @@ class DeepFeatureSynthesis(object):
                     self.where_clauses[dataframe.ww.name].add(feat == val)
 
     def _build_transform_features(
-        self,
-        all_features,
-        dataframe,
-        max_depth=0,
-        require_direct_input=False,
+            self,
+            all_features,
+            dataframe,
+            max_depth=0,
+            require_direct_input=False,
     ):
         """Creates trans_features for all the columns in a dataframe
 
@@ -708,7 +698,7 @@ class DeepFeatureSynthesis(object):
                 if not can_stack_primitive_on_inputs(trans_prim, matching_input):
                     continue
                 if not any(
-                    True for bf in matching_input if bf.number_output_features != 1
+                        True for bf in matching_input if bf.number_output_features != 1
                 ):
                     new_f = TransformFeature(matching_input, primitive=trans_prim)
                     features_to_add.append(new_f)
@@ -831,8 +821,8 @@ class DeepFeatureSynthesis(object):
             def feature_filter(f):
                 # Remove direct features of parent dataframe and features in relationship path.
                 return (
-                    not _direct_of_dataframe(f, parent_dataframe)
-                ) and not self._feature_in_relationship_path(relationship_path, f)
+                           not _direct_of_dataframe(f, parent_dataframe)
+                       ) and not self._feature_in_relationship_path(relationship_path, f)
 
             input_types = agg_prim.input_types
             matching_inputs = self._get_matching_inputs(
@@ -1274,6 +1264,16 @@ def _features_have_same_path(input_features):
             return False
 
     return True
+
+
+def _validate_ignore_columns_entry(df_name: str, col: List[str]) -> None:
+    """
+    Assert that the ignore_columns dictionary maps strings to list of strings
+    """
+    if not isinstance(df_name, str) or not isinstance(df_name, list):
+        raise TypeError("ignore_columns should be dict[str -> list]")
+    elif not all(isinstance(c, str) for c in col):
+        raise TypeError("list in ignore_columns must only have string values")
 
 
 def _direct_of_dataframe(feature, parent_dataframe):
