@@ -2,13 +2,9 @@ import importlib
 import logging
 import re
 import sys
-import warnings
 from enum import Enum
 
-from packaging.version import parse
 from tqdm import tqdm
-
-from featuretools.version import ENTITYSET_SCHEMA_VERSION, FEATURES_SCHEMA_VERSION
 
 logger = logging.getLogger("featuretools.utils")
 
