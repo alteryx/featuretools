@@ -17,8 +17,7 @@ from featuretools.primitives import (
     NumUnique,
 )
 from featuretools.primitives.utils import serialize_primitive
-
-SCHEMA_VERSION = "9.0.0"
+from featuretools.version import FEATURES_SCHEMA_VERSION
 
 
 def test_single_feature(es):
@@ -27,7 +26,7 @@ def test_single_feature(es):
 
     expected = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [feature.unique_name()],
         "feature_definitions": {feature.unique_name(): feature.to_dictionary()},
@@ -45,7 +44,7 @@ def test_base_features_in_list(es):
 
     expected = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [max_feature.unique_name(), value.unique_name()],
         "feature_definitions": {
@@ -89,7 +88,7 @@ def test_multi_output_features(es):
 
     expected = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": flist,
         "feature_definitions": fdict,
@@ -119,7 +118,7 @@ def test_base_features_not_in_list(es):
 
     expected = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [max_feature.unique_name()],
         "feature_definitions": {
@@ -158,7 +157,7 @@ def test_where_feature_dependency(es):
 
     expected = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [max_feature.unique_name()],
         "feature_definitions": {
@@ -193,7 +192,7 @@ def test_feature_use_previous_pd_timedelta(es):
 
     expected = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [count_feature.unique_name(), value.unique_name()],
         "feature_definitions": {
@@ -227,7 +226,7 @@ def test_feature_use_previous_pd_dateoffset(es):
 
     expected = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [count_feature.unique_name(), value.unique_name()],
         "feature_definitions": {
@@ -258,7 +257,7 @@ def test_feature_use_previous_pd_dateoffset(es):
 
     expected = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [count_feature.unique_name(), value.unique_name()],
         "feature_definitions": {

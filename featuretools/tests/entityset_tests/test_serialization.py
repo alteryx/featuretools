@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import tempfile
+from unittest.mock import patch
 from urllib.request import urlretrieve
 
 import boto3
@@ -13,15 +14,15 @@ from woodwork.serializers.serializer_base import typing_info_to_dict
 from woodwork.type_sys.utils import list_logical_types
 
 from featuretools.entityset import EntitySet, deserialize, serialize
-from featuretools.entityset.serialize import SCHEMA_VERSION
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
+from featuretools.version import ENTITYSET_SCHEMA_VERSION
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
 TEST_FILE = "test_serialization_data_entityset_schema_{}_2022_09_02.tar".format(
-    SCHEMA_VERSION,
+    ENTITYSET_SCHEMA_VERSION,
 )
 S3_URL = "s3://featuretools-static/" + TEST_FILE
 URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
@@ -400,48 +401,49 @@ def test_reset_metadata(es):
     assert es._data_description is None
 
 
-def test_later_schema_version(es, caplog):
-    def test_version(major, minor, patch, raises=True):
-        version = ".".join([str(v) for v in [major, minor, patch]])
-        if raises:
+@patch("featuretools.utils.schema_utils.ENTITYSET_SCHEMA_VERSION", "1.1.1")
+@pytest.mark.parametrize(
+    "hardcoded_schema_version, warns",
+    [("2.1.1", True), ("1.2.1", True), ("1.1.2", True), ("1.0.2", False)],
+)
+def test_later_schema_version(es, caplog, hardcoded_schema_version, warns):
+    def test_version(version, warns):
+        if warns:
             warning_text = (
                 "The schema version of the saved entityset"
                 "(%s) is greater than the latest supported (%s). "
                 "You may need to upgrade featuretools. Attempting to load entityset ..."
-                % (version, SCHEMA_VERSION)
+                % (version, "1.1.1")
             )
         else:
             warning_text = None
 
         _check_schema_version(version, es, warning_text, caplog, "warn")
 
-    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split(".")]
-
-    test_version(major + 1, minor, patch)
-    test_version(major, minor + 1, patch)
-    test_version(major, minor, patch + 1)
-    test_version(major, minor - 1, patch + 1, raises=False)
+    test_version(hardcoded_schema_version, warns)
 
 
-def test_earlier_schema_version(es, caplog):
-    def test_version(major, minor, patch, raises=True):
-        version = ".".join([str(v) for v in [major, minor, patch]])
-        if raises:
+@patch("featuretools.utils.schema_utils.ENTITYSET_SCHEMA_VERSION", "1.1.1")
+@pytest.mark.parametrize(
+    "hardcoded_schema_version, warns",
+    [("0.1.1", True), ("1.0.1", False), ("1.1.0", False)],
+)
+def test_earlier_schema_version(
+    es, caplog, monkeypatch, hardcoded_schema_version, warns
+):
+    def test_version(version, warns):
+        if warns:
             warning_text = (
                 "The schema version of the saved entityset"
                 "(%s) is no longer supported by this version "
-                "of featuretools. Attempting to load entityset ..." % (version)
+                "of featuretools. Attempting to load entityset ..." % version
             )
         else:
             warning_text = None
 
         _check_schema_version(version, es, warning_text, caplog, "log")
 
-    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split(".")]
-
-    test_version(major - 1, minor, patch)
-    test_version(major, minor - 1, patch, raises=False)
-    test_version(major, minor, patch - 1, raises=False)
+    test_version(hardcoded_schema_version, warns)
 
 
 def _check_schema_version(version, es, warning_text, caplog, warning_type=None):
@@ -457,15 +459,16 @@ def _check_schema_version(version, es, warning_text, caplog, warning_type=None):
         "data_type": es.dataframe_type,
     }
 
-    if warning_type == "log" and warning_text:
-        logger = logging.getLogger("featuretools")
-        logger.propagate = True
-        deserialize.description_to_entityset(dictionary)
-        assert warning_text in caplog.text
-        logger.propagate = False
-    elif warning_type == "warn" and warning_text:
+    if warning_type == "warn" and warning_text:
         with pytest.warns(UserWarning) as record:
             deserialize.description_to_entityset(dictionary)
         assert record[0].message.args[0] == warning_text
-    else:
+    elif warning_type == "log":
+        logger = logging.getLogger("featuretools")
+        logger.propagate = True
         deserialize.description_to_entityset(dictionary)
+        if warning_text:
+            assert warning_text in caplog.text
+        else:
+            assert not len(caplog.text)
+        logger.propagate = False

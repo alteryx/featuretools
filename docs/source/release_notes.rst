@@ -6,14 +6,26 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+    * Fixes
+        * Fix typo in ``_handle_binary_comparison`` function name and update ``set_feature_names`` docstring (:pr:`2388`) 
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+   Thanks to the following people for contributing to this release:
+   :user:`sbadithe`
+
+v1.19.0 Dec 9, 2022
+===================
+    * Enhancements
         * Add ``OneDigitPostalCode`` and ``TwoDigitPostalCode`` primitives (:pr:`2365`)
         * Add ``ExpandingCount``, ``ExpandingMin``, ``ExpandingMean``, ``ExpandingMax``, ``ExpandingSTD``, and ``ExpandingTrend`` primitives (:pr:`2343`)
     * Fixes
         * Fix DeepFeatureSynthesis to consider the ``base_of_exclude`` family of attributes when creating transform features(:pr:`2380`)
+        * Fix bug with negative version numbers in ``test_version`` (:pr:`2389`)
         * Fix bug in ``MultiplyNumericBoolean`` primitive that can cause an error with certain input dtype combinations (:pr:`2393`)
     * Changes
     * Documentation Changes
-        * Fix typo in ``_handle_binary_comparison`` function name and update ``set_feature_names`` docstring (:pr:`2388`) 
     * Testing Changes
         * Fix version comparison in ``test_holiday_out_of_range`` (:pr:`2382`)
 

@@ -19,14 +19,10 @@ from featuretools import (
     primitives,
     save_features,
 )
-from featuretools.entityset.serialize import SCHEMA_VERSION as ENTITYSET_SCHEMA_VERSION
 from featuretools.feature_base import FeatureOutputSlice
 from featuretools.feature_base.cache import feature_cache
 from featuretools.feature_base.features_deserializer import FeaturesDeserializer
-from featuretools.feature_base.features_serializer import (
-    SCHEMA_VERSION,
-    FeaturesSerializer,
-)
+from featuretools.feature_base.features_serializer import FeaturesSerializer
 from featuretools.primitives import (
     Count,
     CumSum,
@@ -56,12 +52,13 @@ from featuretools.primitives import (
 from featuretools.primitives.base import AggregationPrimitive
 from featuretools.tests.testing_utils import check_names
 from featuretools.utils.gen_utils import Library
+from featuretools.version import ENTITYSET_SCHEMA_VERSION, FEATURES_SCHEMA_VERSION
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
 TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}_2022_09_02.json".format(
-    SCHEMA_VERSION,
+    FEATURES_SCHEMA_VERSION,
     ENTITYSET_SCHEMA_VERSION,
 )
 S3_URL = "s3://featuretools-static/" + TEST_FILE
