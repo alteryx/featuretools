@@ -9,32 +9,38 @@ logger = logging.getLogger("featuretools.utils")
 
 
 def check_schema_version(cls, cls_type):
+    """
+    If the saved schema version is newer than the current featuretools
+    schema version, this function will output a warning saying so.
+
+    If the saved schema version is a major release or more behind
+    the current featuretools schema version, this function will log
+    a message saying so.
+    """
     if isinstance(cls_type, str):
         current = None
-        version_string = None
+        saved = None
         if cls_type == "entityset":
             current = ENTITYSET_SCHEMA_VERSION
-            version_string = cls.get("schema_version")
+            saved = cls.get("schema_version")
         elif cls_type == "features":
             current = FEATURES_SCHEMA_VERSION
-            version_string = cls.features_dict["schema_version"]
+            saved = cls.features_dict["schema_version"]
 
-        saved = version_string
-
-        warning_text_upgrade = (
-            "The schema version of the saved %s"
-            "(%s) is greater than the latest supported (%s). "
-            "You may need to upgrade featuretools. Attempting to load %s ..."
-            % (cls_type, version_string, current, cls_type)
-        )
         if parse(current) < parse(saved):
+            warning_text_upgrade = (
+                    "The schema version of the saved %s"
+                    "(%s) is greater than the latest supported (%s). "
+                    "You may need to upgrade featuretools. Attempting to load %s ..."
+                    % (cls_type, saved, current, cls_type)
+            )
             warnings.warn(warning_text_upgrade)
 
-        warning_text_outdated = (
-            "The schema version of the saved %s"
-            "(%s) is no longer supported by this version "
-            "of featuretools. Attempting to load %s ..."
-            % (cls_type, version_string, cls_type)
-        )
         if parse(current).major > parse(saved).major:
+            warning_text_outdated = (
+                    "The schema version of the saved %s"
+                    "(%s) is no longer supported by this version "
+                    "of featuretools. Attempting to load %s ..."
+                    % (cls_type, saved, cls_type)
+            )
             logger.warning(warning_text_outdated)
