@@ -1268,7 +1268,8 @@ def _features_have_same_path(input_features):
 
 def _validate_ignore_columns_entry(df_name: str, col: List[str]) -> None:
     """
-    Assert that the ignore_columns dictionary maps strings to list of strings
+    Check that ignore_columns dictionary maps strings to list of strings,
+    raise TypeError if it does not.
     """
     if not isinstance(df_name, str) or not isinstance(col, list):
         raise TypeError("ignore_columns should be dict[str -> list]")
