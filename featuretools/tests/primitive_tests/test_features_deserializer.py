@@ -1,4 +1,5 @@
 import logging
+from unittest.mock import patch
 
 import pandas as pd
 import pytest
@@ -11,7 +12,6 @@ from featuretools import (
     __version__,
 )
 from featuretools.feature_base.features_deserializer import FeaturesDeserializer
-from featuretools.feature_base.features_serializer import SCHEMA_VERSION
 from featuretools.primitives import (
     Count,
     Max,
@@ -20,13 +20,14 @@ from featuretools.primitives import (
     NumUnique,
 )
 from featuretools.primitives.utils import serialize_primitive
+from featuretools.utils.schema_utils import FEATURES_SCHEMA_VERSION
 
 
 def test_single_feature(es):
     feature = IdentityFeature(es["log"].ww["value"])
     dictionary = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [feature.unique_name()],
         "feature_definitions": {feature.unique_name(): feature.to_dictionary()},
@@ -61,7 +62,7 @@ def test_multioutput_feature(es):
 
     dictionary = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": flist,
         "feature_definitions": fdict,
@@ -87,7 +88,7 @@ def test_base_features_in_list(es):
     max_feat = AggregationFeature(value, "sessions", max_primitive)
     dictionary = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [max_feat.unique_name(), value.unique_name()],
         "feature_definitions": {
@@ -113,7 +114,7 @@ def test_base_features_not_in_list(es):
     max_feat = AggregationFeature(value_x2, "sessions", max_primitive)
     dictionary = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [max_feat.unique_name()],
         "feature_definitions": {
@@ -138,55 +139,53 @@ def test_base_features_not_in_list(es):
     assert expected == deserializer.to_list()
 
 
-def test_later_schema_version(es, caplog):
-    def test_version(major, minor, patch, raises=True):
-        version = ".".join([str(v) for v in [major, minor, patch]])
-        if raises:
+@patch("featuretools.utils.schema_utils.FEATURES_SCHEMA_VERSION", "1.1.1")
+@pytest.mark.parametrize(
+    "hardcoded_schema_version, warns",
+    [("2.1.1", True), ("1.2.1", True), ("1.1.2", True), ("1.0.2", False)],
+)
+def test_later_schema_version(es, caplog, hardcoded_schema_version, warns):
+    def test_version(version, warns):
+        if warns:
             warning_text = (
                 "The schema version of the saved features"
                 "(%s) is greater than the latest supported (%s). "
                 "You may need to upgrade featuretools. Attempting to load features ..."
-                % (version, SCHEMA_VERSION)
+                % (version, "1.1.1")
             )
         else:
             warning_text = None
 
         _check_schema_version(version, es, warning_text, caplog, "warn")
 
-    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split(".")]
-
-    test_version(major + 1, minor, patch)
-    test_version(major, minor + 1, patch)
-    test_version(major, minor, patch + 1)
-    test_version(major, minor - 1, patch + 1, raises=False)
+    test_version(hardcoded_schema_version, warns)
 
 
-def test_earlier_schema_version(es, caplog):
-    def test_version(major, minor, patch, raises=True):
-        version = ".".join([str(v) for v in [major, minor, patch]])
-
-        if raises:
+@patch("featuretools.utils.schema_utils.FEATURES_SCHEMA_VERSION", "1.1.1")
+@pytest.mark.parametrize(
+    "hardcoded_schema_version, warns",
+    [("0.1.1", True), ("1.0.1", False), ("1.1.0", False)],
+)
+def test_earlier_schema_version(es, caplog, hardcoded_schema_version, warns):
+    def test_version(version, warns):
+        if warns:
             warning_text = (
                 "The schema version of the saved features"
                 "(%s) is no longer supported by this version "
-                "of featuretools. Attempting to load features ..." % (version)
+                "of featuretools. Attempting to load features ..." % version
             )
         else:
             warning_text = None
 
         _check_schema_version(version, es, warning_text, caplog, "log")
 
-    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split(".")]
-
-    test_version(major - 1, minor, patch)
-    test_version(major, minor - 1, patch, raises=False)
-    test_version(major, minor, patch - 1, raises=False)
+    test_version(hardcoded_schema_version, warns)
 
 
 def test_unknown_feature_type(es):
     dictionary = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": ["feature_1"],
         "feature_definitions": {
@@ -208,7 +207,7 @@ def test_unknown_primitive_type(es):
     primitive_dict["type"] = "FakePrimitive"
     dictionary = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [max_feat.unique_name(), value.unique_name()],
         "feature_definitions": {
@@ -232,7 +231,7 @@ def test_unknown_primitive_module(es):
     primitive_dict["module"] = "fake.module"
     dictionary = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [max_feat.unique_name(), value.unique_name()],
         "feature_definitions": {
@@ -261,7 +260,7 @@ def test_feature_use_previous_pd_timedelta(es):
     )
     dictionary = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [count_feature.unique_name(), value.unique_name()],
         "feature_definitions": {
@@ -291,7 +290,7 @@ def test_feature_use_previous_pd_dateoffset(es):
     )
     dictionary = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [count_feature.unique_name(), value.unique_name()],
         "feature_definitions": {
@@ -318,7 +317,7 @@ def test_feature_use_previous_pd_dateoffset(es):
     )
     dictionary = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [count_feature.unique_name(), value.unique_name()],
         "feature_definitions": {
@@ -346,15 +345,16 @@ def _check_schema_version(version, es, warning_text, caplog, warning_type=None):
         "primitive_definitions": {},
     }
 
-    if warning_type == "log" and warning_text:
-        logger = logging.getLogger("featuretools")
-        logger.propagate = True
-        FeaturesDeserializer(dictionary)
-        assert warning_text in caplog.text
-        logger.propagate = False
-    elif warning_type == "warn" and warning_text:
+    if warning_type == "warn" and warning_text:
         with pytest.warns(UserWarning) as record:
             FeaturesDeserializer(dictionary)
         assert record[0].message.args[0] == warning_text
-    else:
+    elif warning_type == "log":
+        logger = logging.getLogger("featuretools")
+        logger.propagate = True
         FeaturesDeserializer(dictionary)
+        if warning_text:
+            assert warning_text in caplog.text
+        else:
+            assert not len(caplog.text)
+        logger.propagate = False

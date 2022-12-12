@@ -4,12 +4,15 @@ import os
 
 import composeml as cp
 import dask.dataframe as dd
+import numpy as np
 import pandas as pd
 import pytest
 from distributed import LocalCluster
+from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, Integer
 
 from featuretools import EntitySet, demo
+from featuretools.primitives import AggregationPrimitive, TransformPrimitive
 from featuretools.tests.testing_utils import make_ecommerce_entityset, to_pandas
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.spark_utils import pd_to_spark_clean
@@ -731,11 +734,16 @@ def divide_by_zero_es_spark(divide_by_zero_es_pd):
 
 
 @pytest.fixture
-def rolling_series_pd():
+def window_series_pd():
     return pd.Series(
         range(20),
         index=pd.date_range(start="2020-01-01", end="2020-01-20"),
     )
+
+
+@pytest.fixture
+def window_date_range_pd():
+    return pd.date_range(start="2022-11-1", end="2022-11-5", periods=30)
 
 
 @pytest.fixture
@@ -744,6 +752,53 @@ def rolling_outlier_series_pd():
         [0] * 4 + [10] + [0] * 4 + [10] + [0] * 5,
         index=pd.date_range(start="2020-01-01", end="2020-01-15", periods=15),
     )
+
+
+@pytest.fixture
+def postal_code_dataframe_pd():
+    df = pd.DataFrame(
+        {
+            "string_dtype": pd.Series(["90210", "60018", "10010", "92304-4201"]),
+            "int_dtype": pd.Series([10000, 20000, 30000]).astype("category"),
+            "has_nulls": pd.Series([np.nan, 20000, 30000]).astype("category"),
+        },
+    )
+    return df
+
+
+@pytest.fixture
+def postal_code_dataframe_pyspark(postal_code_dataframe_pd):
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
+    df = ps.from_pandas(postal_code_dataframe_pd)
+    return df
+
+
+@pytest.fixture
+def postal_code_dataframe_dask(postal_code_dataframe_pd):
+    df = dd.from_pandas(
+        postal_code_dataframe_pd,
+        npartitions=1,
+    ).categorize()
+    return df
+
+
+@pytest.fixture(
+    params=[
+        "postal_code_dataframe_pd",
+        "postal_code_dataframe_pyspark",
+        "postal_code_dataframe_dask",
+    ],
+)
+def postal_code_dataframe(request):
+    df = request.getfixturevalue(request.param)
+    df.ww.init(
+        logical_types={
+            "string_dtype": "PostalCode",
+            "int_dtype": "PostalCode",
+            "has_nulls": "PostalCode",
+        },
+    )
+    return df
 
 
 def create_test_credentials(test_path):
@@ -781,3 +836,25 @@ def setup_test_profile(monkeypatch, tmp_path):
     yield
     os.remove(test_path)
     os.remove(test_path_config)
+
+
+@pytest.fixture
+def test_aggregation_primitive():
+    class TestAgg(AggregationPrimitive):
+        name = "test"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
+        stack_on = []
+
+    return TestAgg
+
+
+@pytest.fixture
+def test_transform_primitive():
+    class TestTransform(TransformPrimitive):
+        name = "test"
+        input_types = [ColumnSchema(semantic_tags={"numeric"})]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
+        stack_on = []
+
+    return TestTransform

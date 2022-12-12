@@ -2,12 +2,6 @@ from featuretools.primitives.base.primitive_base import PrimitiveBase
 
 
 class AggregationPrimitive(PrimitiveBase):
-    stack_on = None  # whitelist of primitives that can be in input_types
-    stack_on_exclude = None  # blacklist of primitives that can be in signature
-    base_of = None  # whitelist of primitives this primitive can be input for
-    base_of_exclude = None  # primitives this primitive can't be input for
-    stack_on_self = True  # determines if primitive can be in input_types for self
-
     def generate_name(
         self,
         base_feature_names,
