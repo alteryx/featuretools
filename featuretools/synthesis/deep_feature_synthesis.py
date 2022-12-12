@@ -3,7 +3,7 @@ import logging
 import operator
 import warnings
 from collections import defaultdict
-from typing import Any, List
+from typing import Any, DefaultDict, Dict, List
 
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
@@ -192,11 +192,7 @@ class DeepFeatureSynthesis(object):
             ), "Can't ignore target_dataframe!"
             self.ignore_dataframes = set(ignore_dataframes)
 
-        self.ignore_columns = defaultdict(set)
-        if ignore_columns is not None:
-            for df_name, cols in ignore_columns.items():
-                _validate_ignore_columns_entry(df_name, cols)
-                self.ignore_columns[df_name] = set(cols)
+        self.ignore_columns = _build_ignore_columns(ignore_columns)
         self.target_dataframe_name = target_dataframe_name
         self.es = entityset
 
@@ -1264,6 +1260,16 @@ def _features_have_same_path(input_features):
             return False
 
     return True
+
+
+def _build_ignore_columns(input_dict: Dict[str, List[str]]) -> DefaultDict[str, set]:
+    """Iterates over the input dictionary and builds the ignore_columns data structure"""
+    ignore_columns = defaultdict(set)
+    if input_dict is not None:
+        for df_name, cols in input_dict.items():
+            _validate_ignore_columns_entry(df_name, cols)
+            ignore_columns[df_name] = set(cols)
+    return ignore_columns
 
 
 def _validate_ignore_columns_entry(df_name: str, col: List[str]) -> None:
