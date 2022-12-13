@@ -1263,8 +1263,8 @@ def _features_have_same_path(input_features):
 
 
 def _build_ignore_columns(input_dict: Dict[str, List[str]]) -> DefaultDict[str, set]:
-    """Iterates over the input dictionary to build the ignore_columns dictionary.
-    Expects the input_dict's keys to be strings, and values to be lists of strings
+    """Iterates over the input dictionary to build the ignore_columns defaultdict.
+    Expects the input_dict's keys to be strings, and values to be lists of strings.
     Throws a TypeError if they are not.
     """
     ignore_columns = defaultdict(set)
