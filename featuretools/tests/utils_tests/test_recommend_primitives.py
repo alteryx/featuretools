@@ -88,7 +88,6 @@ def test_recommend_non_numeric_primitives(make_es):
     ecom_es_customers.add_dataframe(make_es["customers"])
     valid_primitives = [
         "day",
-        "lsa",
         "num_characters",
         "natural_logarithm",
         "sine",
@@ -101,7 +100,6 @@ def test_recommend_non_numeric_primitives(make_es):
     expected_recomendations = set(
         [
             "day",
-            "lsa",
             "num_characters",
         ],
     )
@@ -123,7 +121,6 @@ def test_get_recommended_primitives(make_es):
         "num_characters",
         "natural_logarithm",
         "punctuation_count",
-        "lsa",
         "mean_characters_per_word",
         "is_weekend",
         "whitespace_count",
