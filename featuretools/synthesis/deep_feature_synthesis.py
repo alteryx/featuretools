@@ -1260,21 +1260,17 @@ def check_primitive(
     return primitive
 
 
-def _all_direct_and_same_path(input_features):
-    return all(
-        isinstance(f, DirectFeature) for f in input_features
-    ) and _features_have_same_path(input_features)
-
-
-def _features_have_same_path(input_features):
+def _all_direct_and_same_path(input_features) -> bool:
+    """Given a list of features, returns True if they are all
+    DirectFeatures with the same relationship_path, and False if not
+    """
     path = input_features[0].relationship_path
-
-    for f in input_features[1:]:
+    for f in input_features:
+        if not isinstance(f, DirectFeature):
+            return False
         if f.relationship_path != path:
             return False
-
     return True
-
 
 def _direct_of_dataframe(feature, parent_dataframe):
     return (
