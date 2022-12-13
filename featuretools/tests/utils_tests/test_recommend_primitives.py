@@ -131,18 +131,15 @@ def test_get_recommended_primitives(make_es):
         "day_of_year",
         "week",
         "quarter",
-        "polarity_score",
         "email_address_to_domain",
         "number_of_common_words",
         "num_words",
         "num_unique_separators",
-        "mean_characters_per_sentence",
         "age",
         "year",
         "is_leap_year",
         "days_in_month",
         "is_free_email_domain",
-        "stopword_count",
         "number_of_unique_words",
     ]
     for prim in expected_recomendations:
