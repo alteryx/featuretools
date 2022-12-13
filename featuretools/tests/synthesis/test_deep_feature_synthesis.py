@@ -240,7 +240,7 @@ def test_ignore_columns_input_type(es):
 
 
 def test_ignore_columns_with_nonstring_values(es):
-    error_msg = "list values should be of type str"
+    error_msg = "list in ignore_columns must only have string values"
     wrong_input_list = {"log": ["a", "b", 3]}
     with pytest.raises(TypeError, match=error_msg):
         DeepFeatureSynthesis(
