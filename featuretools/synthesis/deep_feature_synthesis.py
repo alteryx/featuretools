@@ -1266,9 +1266,7 @@ def _all_direct_and_same_path(input_features) -> bool:
     """
     path = input_features[0].relationship_path
     for f in input_features:
-        if not isinstance(f, DirectFeature):
-            return False
-        if f.relationship_path != path:
+        if not isinstance(f, DirectFeature) or f.relationship_path != path:
             return False
     return True
 
