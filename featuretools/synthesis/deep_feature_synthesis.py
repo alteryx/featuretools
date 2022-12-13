@@ -8,7 +8,7 @@ from typing import Any, List
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
 
-from featuretools import primitives
+from featuretools import primitives, FeatureBase
 from featuretools.entityset.entityset import LTI_COLUMN_NAME
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import (
@@ -1260,7 +1260,7 @@ def check_primitive(
     return primitive
 
 
-def _all_direct_and_same_path(input_features) -> bool:
+def _all_direct_and_same_path(input_features: List[FeatureBase]) -> bool:
     """Given a list of features, returns True if they are all
     DirectFeatures with the same relationship_path, and False if not
     """
