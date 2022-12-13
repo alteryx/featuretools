@@ -1272,6 +1272,7 @@ def _all_direct_and_same_path(input_features) -> bool:
             return False
     return True
 
+
 def _direct_of_dataframe(feature, parent_dataframe):
     return (
         isinstance(feature, DirectFeature)
