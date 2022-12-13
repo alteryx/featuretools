@@ -6,15 +6,16 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add `get_recommended_primitives` function to featuretools (:pr:`2398`)
     * Fixes
-        * Fix typo in ``_handle_binary_comparison`` function name and update ``set_feature_names`` docstring (:pr:`2388`) 
+        * Fix typo in ``_handle_binary_comparison`` function name and update ``set_feature_names`` docstring (:pr:`2388`)
     * Changes
     * Documentation Changes
         *  Remove unused sections from 1.19.0 notes (:pr:`2396`)
     * Testing Changes
 
    Thanks to the following people for contributing to this release:
-   :user:`rwedge`, :user:`sbadithe`
+   :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`
 
 v1.19.0 Dec 9, 2022
 ===================

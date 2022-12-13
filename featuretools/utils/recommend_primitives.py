@@ -79,6 +79,7 @@ OTHER_PRIMITIVES_TO_EXCLUDE = [
     "is_whole_number",
     "not_equal",
     "multiply_numeric",
+    "multiply_numeric_boolean",
     "add_numeric",
     "less_than_equal_to",
     "divide_numeric",
@@ -110,7 +111,7 @@ TIME_SERIES_PRIMITIVES = [
 
 # TODO: Support multi-table
 def get_recommended_primitives(
-    es: EntitySet,
+    entityset: EntitySet,
     target_dataframe_name: str,
     is_time_series: bool,
     excluded_primitives: List[str] = DEFAULT_EXCLUDED_PRIMITIVES,
@@ -122,8 +123,8 @@ def get_recommended_primitives(
         and a list of any primitives in `excluded_primitives` to not be included in the final recommendation list.
 
     Args:
-        es (EntitySet): EntitySet that only contains one dataframe.
-        target_dataframe_name (str): Name of target dataframe to access in `es`.
+        entityset (EntitySet): EntitySet that only contains one dataframe.
+        target_dataframe_name (str): Name of target dataframe to access in `entityset`.
         is_time_series (bool): Whether or not time-series analysis will be performed. If set to `True`, `Lag` will always be recommended,
         as well as all Rolling primitives if numeric columns are present.
         excluded_primitives (List[str]): List of transform primitives to exclude from recommendations.
@@ -136,6 +137,9 @@ def get_recommended_primitives(
     if not is_time_series:
         excluded_primitives += TIME_SERIES_PRIMITIVES
 
+    if is_time_series:
+        recommended_primitives.add("lag")
+
     all_trans_primitives = get_transform_primitives()
     selected_trans_primitives = [
         p for name, p in all_trans_primitives.items() if name not in excluded_primitives
@@ -144,7 +148,7 @@ def get_recommended_primitives(
     valid_primitive_names = [
         prim.name
         for prim in get_valid_primitives(
-            es,
+            entityset,
             target_dataframe_name,
             1,
             selected_trans_primitives,
@@ -153,7 +157,7 @@ def get_recommended_primitives(
 
     recommended_primitives.update(
         _recommend_non_numeric_primitives(
-            es,
+            entityset,
             target_dataframe_name,
             valid_primitive_names,
         ),
@@ -166,7 +170,7 @@ def get_recommended_primitives(
         valid_primitive_names,
     )
 
-    numeric_tags_only_df = es[target_dataframe_name].ww.select("numeric")
+    numeric_tags_only_df = entityset[target_dataframe_name].ww.select("numeric")
 
     if valid_skew_primtives:
         recommended_primitives.update(
@@ -182,7 +186,7 @@ def get_recommended_primitives(
 
 
 def _recommend_non_numeric_primitives(
-    es: EntitySet,
+    entityset: EntitySet,
     target_dataframe_name: str,
     valid_primitives: List[str],
 ) -> set:
@@ -193,24 +197,23 @@ def _recommend_non_numeric_primitives(
         get a set of primitives which produce non-unique features.
 
     Args:
-        es (EntitySet): EntitySet that only contains one dataframe.
-        target_dataframe_name (str): Name of target dataframe to access in `es`.
+        entityset (EntitySet): EntitySet that only contains one dataframe.
+        target_dataframe_name (str): Name of target dataframe to access in `entityset`.
         valid_primitives (List[str]): List of primitives to calculate and check output features.
     """
 
     recommended_non_numeric_primitives = set()
     # Only want to run feature generation on non numeric primitives
-    es_without_numerics = EntitySet("ES without numerics")
-    es_without_numerics.add_dataframe(
-        es[target_dataframe_name].ww.select(exclude="numeric"),
-        "df",
+    numeric_columns_to_ignore = list(
+        entityset[target_dataframe_name].ww.select(include="numeric").columns,
     )
     features = dfs(
-        entityset=es_without_numerics,
-        target_dataframe_name="df",
+        entityset=entityset,
+        target_dataframe_name=target_dataframe_name,
         trans_primitives=valid_primitives,
         max_depth=1,
         features_only=True,
+        ignore_columns={target_dataframe_name: numeric_columns_to_ignore},
     )
 
     for f in features:
@@ -219,7 +222,7 @@ def _recommend_non_numeric_primitives(
             and f.primitive.name not in recommended_non_numeric_primitives
         ):
             f_names = f.get_feature_names()
-            matrix = calculate_feature_matrix([f], es)
+            matrix = calculate_feature_matrix([f], entityset)
             for f_name in f_names:
                 if len(matrix[f_name].unique()) > 1:
                     recommended_non_numeric_primitives.add(f.primitive.name)
