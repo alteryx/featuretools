@@ -1,6 +1,8 @@
-from typing import Any, DefaultDict, Dict, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, DefaultDict, Dict, List
+
 if TYPE_CHECKING:
     from featuretools import FeatureBase
+
 import functools
 import logging
 import operator
