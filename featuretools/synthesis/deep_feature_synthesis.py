@@ -3,6 +3,7 @@ import logging
 import operator
 import warnings
 from collections import defaultdict
+from typing import Any, DefaultDict, Dict, List
 
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
@@ -31,7 +32,6 @@ from featuretools.primitives.options_utils import (
     ignore_dataframe_for_primitive,
 )
 from featuretools.utils.gen_utils import Library, camel_and_title_to_snake
-from typing import Any, DefaultDict, Dict, List
 
 logger = logging.getLogger("featuretools")
 
