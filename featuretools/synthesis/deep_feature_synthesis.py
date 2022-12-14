@@ -1,8 +1,3 @@
-from typing import TYPE_CHECKING, Any, DefaultDict, Dict, List
-
-if TYPE_CHECKING:
-    from featuretools import FeatureBase
-
 import functools
 import logging
 import operator
@@ -36,6 +31,7 @@ from featuretools.primitives.options_utils import (
     ignore_dataframe_for_primitive,
 )
 from featuretools.utils.gen_utils import Library, camel_and_title_to_snake
+from typing import Any, DefaultDict, Dict, List
 
 logger = logging.getLogger("featuretools")
 
@@ -1250,7 +1246,7 @@ def check_primitive(
     return primitive
 
 
-def _all_direct_and_same_path(input_features: List["FeatureBase"]) -> bool:
+def _all_direct_and_same_path(input_features: List) -> bool:
     """Given a list of features, returns True if they are all
     DirectFeatures with the same relationship_path, and False if not
     """
