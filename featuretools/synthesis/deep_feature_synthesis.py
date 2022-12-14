@@ -748,15 +748,18 @@ class DeepFeatureSynthesis(object):
                 ):
                     for groupby in groupby_matches:
                         input_features = matching_input + (groupby,)
-                        if require_direct_input and (
-                            _all_direct_and_same_path(input_features)
-                            or not any(
-                                True
-                                for feature in (input_features)
-                                if isinstance(feature, DirectFeature)
-                            )
-                        ):
-                            continue
+                        if require_direct_input:
+                            path = input_features[0].relationship_path
+                            found_direct = False
+                            same_paths = True
+                            for feature in input_features:
+                                if isinstance(feature, DirectFeature):
+                                    found_direct = True
+                                    if feature.relationship_path != path:
+                                        same_paths = False
+                                        break
+                            if not found_direct or not same_paths:
+                                continue
                         new_f = GroupByTransformFeature(
                             list(matching_input),
                             groupby=groupby[0],
