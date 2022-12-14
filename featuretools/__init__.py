@@ -1,4 +1,11 @@
 # flake8: noqa
+import os
+
+# Silence "WARNING:root:'PYARROW_IGNORE_TIMEZONE' environment variable was not set"
+# on import
+if not os.getenv("PYARROW_IGNORE_TIMEZONE"):
+    os.environ["PYARROW_IGNORE_TIMEZONE"] = "1"
+
 from featuretools.version import __version__
 from featuretools.config_init import config
 from featuretools.entityset.api import *
@@ -30,8 +37,7 @@ import logging
 import pkg_resources
 import sys
 import traceback
-import warnings
-from woodwork import list_logical_types, list_semantic_tags
+
 
 logger = logging.getLogger("featuretools")
 
