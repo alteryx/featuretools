@@ -1,9 +1,11 @@
+from typing import Any, DefaultDict, Dict, List, TYPE_CHECKING
+if TYPE_CHECKING:
+    from featuretools import FeatureBase
 import functools
 import logging
 import operator
 import warnings
 from collections import defaultdict
-from typing import Any, DefaultDict, Dict, List
 
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
@@ -1246,7 +1248,7 @@ def check_primitive(
     return primitive
 
 
-def _all_direct_and_same_path(input_features: List) -> bool:
+def _all_direct_and_same_path(input_features: List["FeatureBase"]) -> bool:
     """Given a list of features, returns True if they are all
     DirectFeatures with the same relationship_path, and False if not
     """
