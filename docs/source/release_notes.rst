@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
         * Fix typo in ``_handle_binary_comparison`` function name and update ``set_feature_names`` docstring (:pr:`2388`) 
+        * Resolve PyArrow warning (:pr:`2404`)
     * Changes
         * Iterate only once over ``ignore_columns`` in ``DeepFeatureSynthesis`` init (:pr:`2397`)
     * Documentation Changes
