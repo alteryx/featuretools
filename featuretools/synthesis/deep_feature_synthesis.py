@@ -761,14 +761,12 @@ class DeepFeatureSynthesis(object):
                         #         and groupby is not a DirectFeature
                         # (2) --> All of the matching input and groupby are DirectFeatures
                         #         with the same relationship path
-                        groupby_is_not_direct = not isinstance(groupby, DirectFeature)
+                        groupby_is_direct = not isinstance(groupby, DirectFeature)
                         # Checks case (1)
-                        if not any_direct_in_matching_input and groupby_is_not_direct:
+                        if not any_direct_in_matching_input and not groupby_is_direct:
                             continue
                         elif all_direct_and_same_path_in_matching_input:
-                            if groupby_is_not_direct:
-                                continue
-                            else:
+                            if groupby_is_direct:
                                 # since matching_input all have the same path, we just
                                 # need to check that the first input in matching_input has
                                 # the same relationship path as groupby. If they do,
