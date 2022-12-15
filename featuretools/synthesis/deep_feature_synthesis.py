@@ -741,12 +741,15 @@ class DeepFeatureSynthesis(object):
             for matching_input in matching_inputs:
                 if not can_stack_primitive_on_inputs(groupby_prim, matching_input):
                     continue
-                any_direct_in_matching_input = any(
-                    isinstance(bf, DirectFeature) for bf in matching_input
-                )
-                all_direct_and_same_path_in_matching_input = _all_direct_and_same_path(
-                    matching_input
-                )
+                any_direct_in_matching_input = None
+                all_direct_and_same_path_in_matching_input = None
+                if require_direct_input:
+                    any_direct_in_matching_input = any(
+                        isinstance(bf, DirectFeature) for bf in matching_input
+                    )
+                    all_direct_and_same_path_in_matching_input = (
+                        _all_direct_and_same_path(matching_input)
+                    )
                 if any(True for bf in matching_input if bf.number_output_features != 1):
                     continue
                 for groupby in groupby_matches:
@@ -766,18 +769,17 @@ class DeepFeatureSynthesis(object):
                         if not any_direct_in_matching_input and not groupby_is_direct:
                             continue
                         elif all_direct_and_same_path_in_matching_input:
-                            if groupby_is_direct:
+                            # Checks case (2)
+                            if (
+                                groupby_is_direct
+                                and groupby.relationship_path
+                                == matching_input[0].relationship_path
+                            ):
                                 # since matching_input all have the same path, we just
                                 # need to check that the first input in matching_input has
                                 # the same relationship path as groupby. If they do,
                                 # we skip adding Features for this groupby as per the rules above
-
-                                # Checks case (2)
-                                if (
-                                    groupby.relationship_path
-                                    == matching_input[0].relationship_path
-                                ):
-                                    continue
+                                continue
                     new_f = GroupByTransformFeature(
                         list(matching_input),
                         groupby=groupby[0],
