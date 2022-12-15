@@ -741,8 +741,6 @@ class DeepFeatureSynthesis(object):
             for matching_input in matching_inputs:
                 if not can_stack_primitive_on_inputs(groupby_prim, matching_input):
                     continue
-                any_direct_in_matching_input = None
-                all_direct_and_same_path_in_matching_input = None
                 if require_direct_input:
                     if any_direct_in_matching_input := any(
                         isinstance(bf, DirectFeature) for bf in matching_input
@@ -766,8 +764,9 @@ class DeepFeatureSynthesis(object):
                         #         with the same relationship path
                         groupby_is_direct = isinstance(groupby[0], DirectFeature)
                         # Checks case (1)
-                        if not any_direct_in_matching_input and not groupby_is_direct:
-                            continue
+                        if not any_direct_in_matching_input:
+                            if not groupby_is_direct:
+                                continue
                         elif all_direct_and_same_path_in_matching_input:
                             # Checks case (2)
                             if (
@@ -775,10 +774,6 @@ class DeepFeatureSynthesis(object):
                                 and groupby[0].relationship_path
                                 == matching_input[0].relationship_path
                             ):
-                                # since matching_input all have the same path, we just
-                                # need to check that the first input in matching_input has
-                                # the same relationship path as groupby. If they do,
-                                # we skip adding Features for this groupby as per the rules above
                                 continue
                     new_f = GroupByTransformFeature(
                         list(matching_input),
