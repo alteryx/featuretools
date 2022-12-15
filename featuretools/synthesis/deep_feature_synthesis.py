@@ -744,12 +744,12 @@ class DeepFeatureSynthesis(object):
                 any_direct_in_matching_input = None
                 all_direct_and_same_path_in_matching_input = None
                 if require_direct_input:
-                    any_direct_in_matching_input = any(
+                    if any_direct_in_matching_input := any(
                         isinstance(bf, DirectFeature) for bf in matching_input
-                    )
-                    all_direct_and_same_path_in_matching_input = (
-                        _all_direct_and_same_path(matching_input)
-                    )
+                    ):
+                        all_direct_and_same_path_in_matching_input = (
+                            _all_direct_and_same_path(matching_input)
+                        )
                 if any(True for bf in matching_input if bf.number_output_features != 1):
                     continue
                 for groupby in groupby_matches:
