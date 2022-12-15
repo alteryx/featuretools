@@ -14,6 +14,7 @@ from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import (
     AggregationFeature,
     DirectFeature,
+    FeatureBase,
     GroupByTransformFeature,
     IdentityFeature,
     TransformFeature,
@@ -737,35 +738,54 @@ class DeepFeatureSynthesis(object):
                 current_options,
             )
 
-            # If require_direct_input, require a DirectFeature in input or as a
-            # groupby, and don't create features of inputs/groupbys which are
-            # all direct features with the same relationship path
             for matching_input in matching_inputs:
                 if not can_stack_primitive_on_inputs(groupby_prim, matching_input):
                     continue
-                if not any(
-                    True for bf in matching_input if bf.number_output_features != 1
-                ):
-                    for groupby in groupby_matches:
-                        input_features = matching_input + (groupby,)
-                        if require_direct_input:
-                            path = input_features[0].relationship_path
-                            found_direct = False
-                            same_paths = True
-                            for feature in input_features:
-                                if isinstance(feature, DirectFeature):
-                                    found_direct = True
-                                    if feature.relationship_path != path:
-                                        same_paths = False
-                                        break
-                            if not found_direct or not same_paths:
+                any_direct_in_matching_input = any(
+                    isinstance(bf, DirectFeature) for bf in matching_input
+                )
+                all_direct_and_same_path_in_matching_input = _all_direct_and_same_path(
+                    matching_input
+                )
+                if any(True for bf in matching_input if bf.number_output_features != 1):
+                    continue
+                for groupby in groupby_matches:
+                    if require_direct_input:
+                        # If require_direct_input, require a DirectFeature in input or as a
+                        # groupby, and don't create features of inputs/groupbys which are
+                        # all direct features with the same relationship path
+                        #
+                        # If we require_direct_input, we skip Feature generation
+                        # in the following two cases:
+                        # (1) --> There are no DirectFeatures in the matching input,
+                        #         and groupby is not a DirectFeature
+                        # (2) --> All of the matching input and groupby are DirectFeatures
+                        #         with the same relationship path
+                        groupby_is_not_direct = not isinstance(groupby, DirectFeature)
+                        # fulfills case (1)
+                        if not any_direct_in_matching_input and groupby_is_not_direct:
+                            continue
+                        elif all_direct_and_same_path_in_matching_input:
+                            if groupby_is_not_direct:
                                 continue
-                        new_f = GroupByTransformFeature(
-                            list(matching_input),
-                            groupby=groupby[0],
-                            primitive=groupby_prim,
-                        )
-                        features_to_add.append(new_f)
+                            else:
+                                # since matching_input all have the same path, we just
+                                # need to check that the first input in matching_input has
+                                # the same relationship path as groupby. If they do,
+                                # we skip adding Features for this groupby as per the rules above
+
+                                # fulfills case (2)
+                                if (
+                                    groupby.relationship_path
+                                    == matching_input[0].relationship_path
+                                ):
+                                    continue
+                    new_f = GroupByTransformFeature(
+                        list(matching_input),
+                        groupby=groupby[0],
+                        primitive=groupby_prim,
+                    )
+                    features_to_add.append(new_f)
         for new_f in features_to_add:
             self._handle_new_feature(all_features=all_features, new_feature=new_f)
 
@@ -1249,7 +1269,7 @@ def check_primitive(
     return primitive
 
 
-def _all_direct_and_same_path(input_features: List) -> bool:
+def _all_direct_and_same_path(input_features: List[FeatureBase]) -> bool:
     """Given a list of features, returns True if they are all
     DirectFeatures with the same relationship_path, and False if not
     """
