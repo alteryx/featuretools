@@ -3,7 +3,7 @@ import logging
 import operator
 import warnings
 from collections import defaultdict
-from typing import Any, List
+from typing import Any, DefaultDict, Dict, List
 
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
@@ -218,21 +218,7 @@ class DeepFeatureSynthesis(object):
             ), "Can't ignore target_dataframe!"
             self.ignore_dataframes = set(ignore_dataframes)
 
-        self.ignore_columns = defaultdict(set)
-        if ignore_columns is not None:
-            # check if ignore_columns is not {str: list}
-            if not all(isinstance(i, str) for i in ignore_columns.keys()) or not all(
-                isinstance(i, list) for i in ignore_columns.values()
-            ):
-                raise TypeError("ignore_columns should be dict[str -> list]")
-            # check if list values are all of type str
-            elif not all(
-                all(isinstance(v, str) for v in value)
-                for value in ignore_columns.values()
-            ):
-                raise TypeError("list values should be of type str")
-            for df_name, cols in ignore_columns.items():
-                self.ignore_columns[df_name] = set(cols)
+        self.ignore_columns = _build_ignore_columns(ignore_columns)
         self.target_dataframe_name = target_dataframe_name
         self.es = entityset
 
@@ -1278,6 +1264,22 @@ def _features_have_same_path(input_features):
             return False
 
     return True
+
+
+def _build_ignore_columns(input_dict: Dict[str, List[str]]) -> DefaultDict[str, set]:
+    """Iterates over the input dictionary to build the ignore_columns defaultdict.
+    Expects the input_dict's keys to be strings, and values to be lists of strings.
+    Throws a TypeError if they are not.
+    """
+    ignore_columns = defaultdict(set)
+    if input_dict is not None:
+        for df_name, cols in input_dict.items():
+            if not isinstance(df_name, str) or not isinstance(cols, list):
+                raise TypeError("ignore_columns should be dict[str -> list]")
+            elif not all(isinstance(c, str) for c in cols):
+                raise TypeError("list in ignore_columns must only have string values")
+            ignore_columns[df_name] = set(cols)
+    return ignore_columns
 
 
 def _direct_of_dataframe(feature, parent_dataframe):
