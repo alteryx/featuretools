@@ -741,6 +741,8 @@ class DeepFeatureSynthesis(object):
             for matching_input in matching_inputs:
                 if not can_stack_primitive_on_inputs(groupby_prim, matching_input):
                     continue
+                if any(True for bf in matching_input if bf.number_output_features != 1):
+                    continue
                 if require_direct_input:
                     if any_direct_in_matching_input := any(
                         isinstance(bf, DirectFeature) for bf in matching_input
@@ -748,8 +750,6 @@ class DeepFeatureSynthesis(object):
                         all_direct_and_same_path_in_matching_input = (
                             _all_direct_and_same_path(matching_input)
                         )
-                if any(True for bf in matching_input if bf.number_output_features != 1):
-                    continue
                 for groupby in groupby_matches:
                     if require_direct_input:
                         # If require_direct_input, require a DirectFeature in input or as a
