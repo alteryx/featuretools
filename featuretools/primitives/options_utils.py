@@ -25,32 +25,28 @@ def _get_primitive_options():
 def dict_to_list_column_check(option, es):
     if not (
         isinstance(option, dict)
-        and all([isinstance(option_val, list) for option_val in option.values()])
+        and all(isinstance(option_val, list) for option_val in option.values())
     ):
         return False
-    else:
-        for dataframe, columns in option.items():
-            if dataframe not in es:
-                warnings.warn("Dataframe '%s' not in entityset" % (dataframe))
-            else:
-                for invalid_col in [
-                    column for column in columns if column not in es[dataframe]
-                ]:
-                    warnings.warn(
-                        "Column '%s' not in dataframe '%s'" % (invalid_col, dataframe),
-                    )
-        return True
+    for dataframe, columns in option.items():
+        if dataframe not in es:
+            warnings.warn("Dataframe '%s' not in entityset" % (dataframe))
+        else:
+            for invalid_col in [
+                column for column in columns if column not in es[dataframe]
+            ]:
+                warnings.warn(
+                    "Column '%s' not in dataframe '%s'" % (invalid_col, dataframe),
+                )
+    return True
 
 
 def list_dataframe_check(option, es):
     if not isinstance(option, list):
         return False
-    else:
-        for invalid_dataframe in [
-            dataframe for dataframe in option if dataframe not in es
-        ]:
-            warnings.warn("Dataframe '%s' not in entityset" % (invalid_dataframe))
-        return True
+    for invalid_dataframe in [dataframe for dataframe in option if dataframe not in es]:
+        warnings.warn("Dataframe '%s' not in entityset" % (invalid_dataframe))
+    return True
 
 
 def generate_all_primitive_options(
@@ -132,15 +128,17 @@ def _init_primitive_options(primitive_options, es):
     # Flatten all tuple keys, convert value lists into sets, check for
     # conflicting keys
     flattened_options = {}
+    aggregation_primitives = primitives.get_aggregation_primitives()
+    transform_primitives = primitives.get_transform_primitives()
     for primitive_keys, options in primitive_options.items():
         if not isinstance(primitive_keys, tuple):
             primitive_keys = (primitive_keys,)
         if isinstance(options, list):
             for primitive_key in primitive_keys:
                 if isinstance(primitive_key, str):
-                    primitive = primitives.get_aggregation_primitives().get(
+                    primitive = aggregation_primitives.get(
                         primitive_key,
-                    ) or primitives.get_transform_primitives().get(primitive_key)
+                    ) or transform_primitives.get(primitive_key)
                     if not primitive:
                         msg = "Unknown primitive with name '{}'".format(primitive_key)
                         raise ValueError(msg)
@@ -267,7 +265,7 @@ def ignore_dataframe_for_primitive(options, dataframe, groupby=False):
         else:
             return False
 
-    return any([should_ignore_dataframe(option) for option in options])
+    return any(should_ignore_dataframe(option) for option in options)
 
 
 def filter_groupby_matches_by_options(groupby_matches, options):
@@ -283,23 +281,14 @@ def filter_matches_by_options(matches, options, groupby=False, commutative=False
     if len(options) > 1:
 
         def is_valid_match(match):
-            if all(
-                [
-                    column_filter(m, option, groupby)
-                    for m, option in zip(match, options)
-                ],
-            ):
-                return True
-            else:
-                return False
+            return all(
+                column_filter(m, option, groupby) for m, option in zip(match, options)
+            )
 
     else:
 
         def is_valid_match(match):
-            if all([column_filter(f, options[0], groupby) for f in match]):
-                return True
-            else:
-                return False
+            return all(column_filter(f, options[0], groupby) for f in match)
 
     valid_matches = set()
     for match in matches:
