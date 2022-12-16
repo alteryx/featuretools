@@ -11,12 +11,14 @@ Future Release
         * Only allow Datetime time index as input to ``RateOfChange`` primitive (:pr:`2408`)
     * Changes
         * Iterate only once over ``ignore_columns`` in ``DeepFeatureSynthesis`` init (:pr:`2397`)
+        * Initialize Woodwork with ``init_with_partial_schama`` instead of ``init`` in ``EntitySet.add_last_time_indexes`` (:pr:`2409`)
     * Documentation Changes
         *  Remove unused sections from 1.19.0 notes (:pr:`2396`)
     * Testing Changes
 
    Thanks to the following people for contributing to this release:
    :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
+
 
 v1.19.0 Dec 9, 2022
 ===================
