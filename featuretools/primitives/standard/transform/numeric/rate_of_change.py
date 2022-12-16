@@ -1,5 +1,5 @@
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Double
+from woodwork.logical_types import Datetime, Double
 
 from featuretools.primitives.base import TransformPrimitive
 
@@ -20,7 +20,7 @@ class RateOfChange(TransformPrimitive):
     name = "rate_of_change"
     input_types = [
         ColumnSchema(semantic_tags={"numeric"}),
-        ColumnSchema(semantic_tags={"time_index"}),
+        ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"}),
     ]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
     uses_full_dataframe = True
