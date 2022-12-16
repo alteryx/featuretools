@@ -7,7 +7,8 @@ Future Release
 ==============
     * Enhancements
     * Fixes
-        * Fix typo in ``_handle_binary_comparison`` function name and update ``set_feature_names`` docstring (:pr:`2388`) 
+        * Fix typo in ``_handle_binary_comparison`` function name and update ``set_feature_names`` docstring (:pr:`2388`)
+        * Only allow Datetime time index as input to ``RateOfChange`` primitive (:pr:`2408`)
     * Changes
         * Iterate only once over ``ignore_columns`` in ``DeepFeatureSynthesis`` init (:pr:`2397`)
     * Documentation Changes
@@ -15,7 +16,7 @@ Future Release
     * Testing Changes
 
    Thanks to the following people for contributing to this release:
-   :user:`rwedge`, :user:`sbadithe`
+   :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v1.19.0 Dec 9, 2022
 ===================
