@@ -54,8 +54,10 @@ class TestTimeSinceLastFalse:
 
     def test_nans(self):
         primitive_func = self.primitive().get_function()
-        times = self.times.copy().append(pd.Series([np.nan, pd.NaT]))
-        booleans = self.booleans.copy().append(pd.Series([np.nan]))
+        times = pd.concat([self.times.copy(), pd.Series([np.nan, pd.NaT])])
+        booleans = pd.concat(
+            [self.booleans.copy(), pd.Series([np.nan], dtype="boolean")],
+        )
         times = times.reset_index(drop=True)
         booleans = booleans.reset_index(drop=True)
         answer = self.cutoff_time - datetime(2011, 4, 9, 10, 31, 27)
@@ -67,6 +69,18 @@ class TestTimeSinceLastFalse:
             )
             == answer.total_seconds()
         )
+
+    def test_empty(self):
+        primitive_func = self.primitive().get_function()
+        times = pd.Series([], dtype="datetime64[ns]")
+        booleans = pd.Series([], dtype="boolean")
+        times = times.reset_index(drop=True)
+        answer = primitive_func(
+            times,
+            booleans,
+            time=self.cutoff_time,
+        )
+        assert pd.isna(answer)
 
 
 class TestTimeSinceLastMax:
@@ -101,8 +115,10 @@ class TestTimeSinceLastMax:
 
     def test_nans(self):
         primitive_func = self.primitive().get_function()
-        times = self.times.copy().append(pd.Series([np.nan, pd.NaT]))
-        numerics = self.numerics.copy().append(pd.Series([np.nan, np.nan]))
+        times = pd.concat([self.times.copy(), pd.Series([np.nan, pd.NaT])])
+        numerics = pd.concat(
+            [self.numerics.copy(), pd.Series([np.nan], dtype="float64")],
+        )
         times = times.reset_index(drop=True)
         numerics = numerics.reset_index(drop=True)
         assert (
@@ -147,8 +163,12 @@ class TestTimeSinceLastMin:
 
     def test_nans(self):
         primitive_func = self.primitive().get_function()
-        times = self.times.copy().append(pd.Series([np.nan, pd.NaT]))
-        numerics = self.numerics.copy().append(pd.Series([np.nan, np.nan]))
+        times = pd.concat(
+            [self.times.copy(), pd.Series([np.nan, pd.NaT], dtype="datetime64[ns]")],
+        )
+        numerics = pd.concat(
+            [self.numerics.copy(), pd.Series([np.nan, np.nan], dtype="float64")],
+        )
         times = times.reset_index(drop=True)
         numerics = numerics.reset_index(drop=True)
         assert (
@@ -191,8 +211,12 @@ class TestTimeSinceLastTrue:
 
     def test_nans(self):
         primitive_func = self.primitive().get_function()
-        times = self.times.copy().append(pd.Series([np.nan, pd.NaT]))
-        booleans = self.booleans.copy().append(pd.Series([np.nan]))
+        times = pd.concat(
+            [self.times.copy(), pd.Series([np.nan, pd.NaT], dtype="datetime64[ns]")],
+        )
+        booleans = pd.concat(
+            [self.booleans.copy(), pd.Series([np.nan], dtype="boolean")],
+        )
         times = times.reset_index(drop=True)
         booleans = booleans.reset_index(drop=True)
         assert (
@@ -209,3 +233,15 @@ class TestTimeSinceLastTrue:
         times = pd.Series([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)])
         booleans = pd.Series([False] * 5)
         assert isnan(primitive_func(times, booleans))
+
+    def test_empty(self):
+        primitive_func = self.primitive().get_function()
+        times = pd.Series([], dtype="datetime64[ns]")
+        booleans = pd.Series([], dtype="boolean")
+        times = times.reset_index(drop=True)
+        answer = primitive_func(
+            times,
+            booleans,
+            time=self.cutoff_time,
+        )
+        assert pd.isna(answer)
