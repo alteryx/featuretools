@@ -36,6 +36,7 @@ from featuretools.primitives.standard.aggregation.skew import Skew
 from featuretools.primitives.standard.aggregation.std import Std
 from featuretools.primitives.standard.aggregation.sum_primitive import Sum
 from featuretools.primitives.standard.aggregation.time_since_first import TimeSinceFirst
+from featuretools.primitives.standard.aggregation.time_since_last import TimeSinceLast
 from featuretools.primitives.standard.aggregation.time_since_last_true import (
     TimeSinceLastTrue,
 )
