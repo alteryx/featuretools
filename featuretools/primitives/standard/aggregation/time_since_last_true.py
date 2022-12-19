@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean, Datetime, Double
+from woodwork.logical_types import Boolean, BooleanNullable, Datetime, Double
 
 from featuretools.primitives.base import AggregationPrimitive
 
@@ -28,8 +28,14 @@ class TimeSinceLastTrue(AggregationPrimitive):
 
     name = "time_since_last_true"
     input_types = [
-        ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"}),
-        ColumnSchema(logical_type=Boolean),
+        [
+            ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"}),
+            ColumnSchema(logical_type=Boolean),
+        ],
+        [
+            ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"}),
+            ColumnSchema(logical_type=BooleanNullable),
+        ],
     ]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
     uses_calc_time = True
