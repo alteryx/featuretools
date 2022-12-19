@@ -26,6 +26,7 @@ class TestNumberOfWordsInQuotes(PrimitiveT):
                 '"user@email.com"',
                 '"https://alteryx.com"',
                 '"100,000"',
+                '""Word Word Word Word"" is the perfect conclusion to the ""Borderlands 3"" line, which focuses on the fans ""favorite character and gives the players the opportunity to close for a long time some very important questions about\'s character and the memorable scenery with which the players interact."',
             ],
         )
         expected = pd.Series([0, 5, 1, 0, 3, 6, 3, 1, 1, 1], dtype="Int64")
