@@ -13,6 +13,7 @@ Future Release
     * Changes
         * Iterate only once over ``ignore_columns`` in ``DeepFeatureSynthesis`` init (:pr:`2397`)
         * Initialize Woodwork with ``init_with_partial_schama`` instead of ``init`` in ``EntitySet.add_last_time_indexes`` (:pr:`2409`)
+        * Updates for compatibility with numpy 1.24.0 (:pr:`2414`)
     * Documentation Changes
         *  Remove unused sections from 1.19.0 notes (:pr:`2396`)
     * Testing Changes

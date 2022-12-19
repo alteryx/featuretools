@@ -40,7 +40,7 @@ dependencies = [
     "dask[dataframe] >= 2022.2.0, !=2022.10.1",
     "distributed >= 2022.2.0, !=2022.10.1",
     "holidays >= 0.13",
-    "numpy >= 1.21.0, <1.24.0",
+    "numpy >= 1.21.0",
     "packaging >= 20.0",
     "pandas >= 1.4.0",
     "psutil >= 5.6.6",
@@ -75,6 +75,7 @@ test = [
 spark = [
     "woodwork[spark] >= 0.18.0",
     "pyspark >= 3.2.2",
+    "numpy < 1.24.0",
 ]
 updater = [
     "alteryx-open-src-update-checker >= 2.1.0"
