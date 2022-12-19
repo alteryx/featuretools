@@ -52,7 +52,6 @@ class TimeSinceLastTrue(AggregationPrimitive):
             ).dropna()
             if df.empty:
                 return np.nan
-            df["bool"] = df["bool"].astype("bool")
             true_indices = df[df["bool"]]
             if true_indices.empty:
                 return np.nan
