@@ -108,6 +108,10 @@ Aggregation Primitives
     Sum
     TimeSinceFirst
     TimeSinceLast
+    TimeSinceLastFalse
+    TimeSinceLastMax
+    TimeSinceLastMin
+    TimeSinceLastTrue
     Trend
 
 Transform Primitives
