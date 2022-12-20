@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ``TimeSinceLastFalse``, ``TimeSinceLastMax``, ``TimeSinceLastMin``, and ``TimeSinceLastTrue`` primitives (:pr:`2418`)
     * Fixes
         * Fix typo in ``_handle_binary_comparison`` function name and update ``set_feature_names`` docstring (:pr:`2388`)
         * Only allow Datetime time index as input to ``RateOfChange`` primitive (:pr:`2408`)
@@ -18,7 +19,7 @@ Future Release
     * Testing Changes
 
    Thanks to the following people for contributing to this release:
-   :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
+   :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 
 v1.19.0 Dec 9, 2022
