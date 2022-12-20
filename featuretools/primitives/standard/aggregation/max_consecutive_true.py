@@ -14,9 +14,7 @@ class MaxConsecutiveTrue(AggregationPrimitive):
     """
 
     name = "max_consecutive_true"
-    input_types = [
-        [ColumnSchema(logical_type=Boolean)],
-    ]
+    input_types = [ColumnSchema(logical_type=Boolean)]
     return_type = ColumnSchema(logical_type=Integer, semantic_tags={"numeric"})
     stack_on_self = False
     default_value = 0

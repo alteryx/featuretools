@@ -1,5 +1,5 @@
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Integer
+from woodwork.logical_types import Double, Integer
 
 from featuretools.primitives.base import AggregationPrimitive
 
@@ -23,7 +23,10 @@ class MaxConsecutivePositives(AggregationPrimitive):
     """
 
     name = "max_consecutive_positives"
-    input_types = [ColumnSchema(semantic_tags={"numeric"})]
+    input_types = [
+        [ColumnSchema(logical_type=Integer)],
+        [ColumnSchema(logical_type=Double)],
+    ]
     return_type = ColumnSchema(logical_type=Integer, semantic_tags={"numeric"})
     stack_on_self = False
     default_value = 0
