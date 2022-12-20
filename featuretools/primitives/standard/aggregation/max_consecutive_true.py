@@ -1,5 +1,5 @@
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean, BooleanNullable, Integer
+from woodwork.logical_types import Boolean, Integer
 
 from featuretools.primitives.base import AggregationPrimitive
 
