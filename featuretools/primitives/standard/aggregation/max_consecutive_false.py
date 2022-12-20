@@ -23,7 +23,6 @@ class MaxConsecutiveFalse(AggregationPrimitive):
 
     def get_function(self):
         def max_consecutive_false(x):
-            g = x.ne(x.shift()).cumsum()
             # invert the input array to work properly with the computation
             x[x.notnull()] = ~(x[x.notnull()].astype(bool))
             # find the locations where the value changes from the previous value
