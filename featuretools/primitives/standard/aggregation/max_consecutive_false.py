@@ -7,9 +7,6 @@ from featuretools.primitives.base import AggregationPrimitive
 class MaxConsecutiveFalse(AggregationPrimitive):
     """Determines the maximum number of consecutive False values in the input
 
-    Args:
-        skipna (bool): Ignore any `NaN` values in the input. Default is True.
-
     Examples:
         >>> max_consecutive_false = MaxConsecutiveFalse()
         >>> max_consecutive_false([True, False, False, True, True, False])
@@ -24,14 +21,9 @@ class MaxConsecutiveFalse(AggregationPrimitive):
     stack_on_self = False
     default_value = 0
 
-    def __init__(self, skipna=True):
-        self.skipna = skipna
-
     def get_function(self):
         def max_consecutive_false(x):
             g = x.ne(x.shift()).cumsum()
-            if self.skipna:
-                x = x.dropna()
             # invert the input array to work properly with the computation
             x[x.notnull()] = ~(x[x.notnull()].astype(bool))
             # find the locations where the value changes from the previous value

@@ -7,9 +7,6 @@ from featuretools.primitives.base import AggregationPrimitive
 class MaxConsecutiveTrue(AggregationPrimitive):
     """Determines the maximum number of consecutive True values in the input
 
-    Args:
-        skipna (bool): Ignore any `NaN` values in the input. Default is True.
-
     Examples:
         >>> max_consecutive_true = MaxConsecutiveTrue()
         >>> max_consecutive_true([True, False, True, True, True, False])
@@ -24,13 +21,8 @@ class MaxConsecutiveTrue(AggregationPrimitive):
     stack_on_self = False
     default_value = 0
 
-    def __init__(self, skipna=True):
-        self.skipna = skipna
-
     def get_function(self):
         def max_consecutive_true(x):
-            if self.skipna:
-                x = x.dropna()
             # find the locations where the value changes from the previous value
             not_equal = x != x.shift()
             # use cumulative sum to determine where consecutive values occur. When the
