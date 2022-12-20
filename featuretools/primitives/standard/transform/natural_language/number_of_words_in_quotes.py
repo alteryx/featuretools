@@ -46,8 +46,8 @@ class NumberOfWordsInQuotes(TransformPrimitive):
                 f"{quote_type} is not a valid quote_type. Specify 'both', 'single', or 'double'",
             )
         self.quote_type = quote_type
-        IN_DOUBLE_QUOTES = r'((^|\W)"(.|\s)*?"(?!\w))'
-        IN_SINGLE_QUOTES = r"((^|\W)'(.|\s)*?'(?!\w))"
+        IN_DOUBLE_QUOTES = r'((^|\W)"(.)*?"(?!\w))'
+        IN_SINGLE_QUOTES = r"((^|\W)'(.)*?'(?!\w))"
         if quote_type == "double":
             self.regex = IN_DOUBLE_QUOTES
         elif quote_type == "single":
@@ -59,7 +59,7 @@ class NumberOfWordsInQuotes(TransformPrimitive):
         def count_words_in_quotes(text):
             if pd.isnull(text):
                 return pd.NA
-            matches = re.findall(self.regex, text)
+            matches = re.findall(self.regex, text, re.DOTALL)
             count = 0
             for match in matches:
                 matched_phrase = match[0]
