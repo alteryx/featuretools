@@ -42,6 +42,7 @@ class MedianWordLength(TransformPrimitive):
 
         def median_word_length(x):
             words = x.str.split(self.delimiters_regex)
+            print(f"Words: {words}")
             return words.apply(get_median)
 
         return median_word_length

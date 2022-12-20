@@ -3,16 +3,5 @@
 from string import punctuation
 import re
 
-DELIMITERS = set(punctuation) - {
-    '"',
-    ".",
-    "'",
-    ",",
-    "-",
-    ":",
-    "@",
-    "/",
-    "\\",
-}
-DELIMITERS = "".join(list(DELIMITERS))
-DELIMITERS = re.escape(f" {DELIMITERS}\n\t")
+DELIMITERS = re.escape(r"[-.!?]") + " \n\t"
+DELIMITERS = f"[{DELIMITERS}]"
