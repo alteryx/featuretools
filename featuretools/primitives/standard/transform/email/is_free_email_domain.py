@@ -54,7 +54,7 @@ class IsFreeEmailDomain(TransformPrimitive):
             # if there are any NaN domain values, change the series type to allow for
             # both bools and NaN values and set is_free to NaN for the NaN domains
             if emails_df["domain"].isnull().values.any():
-                emails_df["is_free"] = emails_df["is_free"].astype(np.object)
+                emails_df["is_free"] = emails_df["is_free"].astype("object")
                 emails_df.loc[emails_df["domain"].isnull(), "is_free"] = np.nan
             return emails_df.is_free.values
 
