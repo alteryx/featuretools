@@ -100,6 +100,8 @@ class TestMaxConsecutiveNegatives:
         assert np.isnan(primitive_func(array))
 
     def test_all_nan_skipna(self, dtype):
+        if dtype == "int64":
+            pytest.skip("nans not supported in int64")
         primitive_instance = MaxConsecutiveNegatives(skipna=True)
         primitive_func = primitive_instance.get_function()
         array = pd.Series([np.nan, np.nan, np.nan, np.nan], dtype=dtype)
