@@ -55,7 +55,7 @@ class TestMaxConsecutiveTrue:
 class TestMaxConsecutiveNegatives:
     def test_regular(self, dtype):
         if dtype == "int64":
-            pytest.skip("floats not supported in int64")
+            pytest.skip("array contains floating points which are not supported int64")
         primitive_instance = MaxConsecutiveNegatives()
         primitive_func = primitive_instance.get_function()
         array = pd.Series([1.3, -3.4, -1, -4, 10, -1.7, -4.9], dtype=dtype)
@@ -69,7 +69,7 @@ class TestMaxConsecutiveNegatives:
 
     def test_all_float(self, dtype):
         if dtype == "int64":
-            pytest.skip("floats not supported in int64")
+            pytest.skip("array contains floating points which are not supported int64")
         primitive_instance = MaxConsecutiveNegatives()
         primitive_func = primitive_instance.get_function()
         array = pd.Series([1.0, -1.0, -2.0, 0.0, 5.0], dtype=dtype)
@@ -112,7 +112,7 @@ class TestMaxConsecutiveNegatives:
 class TestMaxConsecutivePositives:
     def test_regular(self, dtype):
         if dtype == "int64":
-            pytest.skip("floats not supported in int64")
+            pytest.skip("array contains floating points which are not supported int64")
         primitive_instance = MaxConsecutivePositives()
         primitive_func = primitive_instance.get_function()
         array = pd.Series([1.3, -3.4, 1, 4, 10, -1.7, -4.9], dtype=dtype)
@@ -126,7 +126,7 @@ class TestMaxConsecutivePositives:
 
     def test_all_float(self, dtype):
         if dtype == "int64":
-            pytest.skip("floats not supported in int64")
+            pytest.skip("array contains floating points which are not supported int64")
         primitive_instance = MaxConsecutivePositives()
         primitive_func = primitive_instance.get_function()
         array = pd.Series([1.0, -1.0, 2.0, 4.0, 5.0], dtype=dtype)
@@ -169,7 +169,7 @@ class TestMaxConsecutivePositives:
 class TestMaxConsecutiveZeros:
     def test_regular(self, dtype):
         if dtype == "int64":
-            pytest.skip("floats not supported in int64")
+            pytest.skip("array contains floating points which are not supported int64")
         primitive_instance = MaxConsecutiveZeros()
         primitive_func = primitive_instance.get_function()
         array = pd.Series([1.3, -3.4, 0, 0, 0.0, 1.7, -4.9], dtype=dtype)
@@ -183,7 +183,7 @@ class TestMaxConsecutiveZeros:
 
     def test_all_float(self, dtype):
         if dtype == "int64":
-            pytest.skip("floats not supported in int64")
+            pytest.skip("array contains floating points which are not supported int64")
         primitive_instance = MaxConsecutiveZeros()
         primitive_func = primitive_instance.get_function()
         array = pd.Series([1.0, 0.0, 0.0, 0.0, -5.3], dtype=dtype)

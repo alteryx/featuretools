@@ -27,7 +27,6 @@ class MaxConsecutiveZeros(AggregationPrimitive):
         [ColumnSchema(logical_type=Integer)],
         [ColumnSchema(logical_type=Double)],
     ]
-    input_types = [ColumnSchema(semantic_tags={"numeric"})]
     return_type = ColumnSchema(logical_type=Integer, semantic_tags={"numeric"})
     stack_on_self = False
     default_value = 0
