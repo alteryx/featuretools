@@ -8,6 +8,9 @@ from featuretools.primitives.base import TransformPrimitive
 from featuretools.primitives.standard.transform.natural_language.constants import (
     common_words_1000,
 )
+from featuretools.primitives.standard.transform.natural_language.regular_expressions import (
+    DELIMITERS,
+)
 
 
 class NumberOfCommonWords(TransformPrimitive):
@@ -46,9 +49,11 @@ class NumberOfCommonWords(TransformPrimitive):
 
     def __init__(
         self,
-        word_set=set(common_words_1000),
-        delimiters_regex=r"[- \[\].,!\?;\n]",
+        word_set=None,
+        delimiters_regex=DELIMITERS,
     ):
+        if word_set is None:
+            word_set = set(common_words_1000)
         self.delimiters_regex = delimiters_regex
         self.word_set = word_set
 

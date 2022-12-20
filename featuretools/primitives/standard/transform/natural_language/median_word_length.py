@@ -3,6 +3,7 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Double, NaturalLanguage
 
 from featuretools.primitives.base import TransformPrimitive
+from featuretools.primitives.standard.transform.natural_language.regular_expressions import DELIMITERS
 
 
 class MedianWordLength(TransformPrimitive):
@@ -31,7 +32,7 @@ class MedianWordLength(TransformPrimitive):
 
     default_value = 0
 
-    def __init__(self, delimiters_regex=r"[- \[\].,!\?;\n]"):
+    def __init__(self, delimiters_regex=DELIMITERS):
         self.delimiters_regex = delimiters_regex
 
     def get_function(self):
