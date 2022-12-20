@@ -1,5 +1,5 @@
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean, Integer
+from woodwork.logical_types import Boolean, BooleanNullable, Integer
 
 from featuretools.primitives.base import AggregationPrimitive
 
@@ -14,16 +14,12 @@ class MaxConsecutiveTrue(AggregationPrimitive):
         >>> max_consecutive_true = MaxConsecutiveTrue()
         >>> max_consecutive_true([True, False, True, True, True, False])
         3
-
-        `NaN` values can be included with the `skipna` parameter
-
-        >>> max_consecutive_true_skipna = MaxConsecutiveTrue(skipna=False)
-        >>> max_consecutive_true_skipna([True, None, True, True, True, False])
-        3
     """
 
     name = "max_consecutive_true"
-    input_types = [ColumnSchema(logical_type=Boolean)]
+    input_types = [
+        [ColumnSchema(logical_type=Boolean)],
+    ]
     return_type = ColumnSchema(logical_type=Integer, semantic_tags={"numeric"})
     stack_on_self = False
     default_value = 0

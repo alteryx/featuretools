@@ -1,5 +1,5 @@
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean, Integer
+from woodwork.logical_types import Boolean, BooleanNullable, Integer
 
 from featuretools.primitives.base import AggregationPrimitive
 
@@ -14,16 +14,12 @@ class MaxConsecutiveFalse(AggregationPrimitive):
         >>> max_consecutive_false = MaxConsecutiveFalse()
         >>> max_consecutive_false([True, False, False, True, True, False])
         2
-
-        `NaN` values can be ignored with the `skipna` parameter
-
-        >>> max_consecutive_false_skipna = MaxConsecutiveFalse(skipna=False)
-        >>> max_consecutive_false_skipna([False, None, False, False, True, False])
-        2
     """
 
     name = "max_consecutive_false"
-    input_types = [ColumnSchema(logical_type=Boolean)]
+    input_types = [
+        [ColumnSchema(logical_type=Boolean)],
+    ]
     return_type = ColumnSchema(logical_type=Integer, semantic_tags={"numeric"})
     stack_on_self = False
     default_value = 0
@@ -33,6 +29,7 @@ class MaxConsecutiveFalse(AggregationPrimitive):
 
     def get_function(self):
         def max_consecutive_false(x):
+            g = x.ne(x.shift()).cumsum()
             if self.skipna:
                 x = x.dropna()
             # invert the input array to work properly with the computation
