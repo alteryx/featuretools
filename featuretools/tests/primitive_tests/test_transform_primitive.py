@@ -711,7 +711,7 @@ def test_email_address_to_domain_empty_string():
 
 def test_email_address_to_domain_empty_series():
     email_address_to_domain = EmailAddressToDomain()
-    array = pd.Series([], dtype="object")
+    array = pd.Series([], dtype="category")
     answers = pd.Series(email_address_to_domain(array))
     correct_answers = pd.Series([], dtype="category")
     pd.testing.assert_series_equal(answers, correct_answers)
