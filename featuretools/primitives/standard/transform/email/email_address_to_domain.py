@@ -28,7 +28,7 @@ class EmailAddressToDomain(TransformPrimitive):
         def email_address_to_domain(emails):
             # if the input is empty return an empty Series
             if len(emails) == 0:
-                return pd.Series([], dtype="object")
+                return pd.Series([], dtype="category")
 
             emails_df = pd.DataFrame({"email": emails})
 
