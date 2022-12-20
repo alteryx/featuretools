@@ -629,7 +629,7 @@ def test_is_free_email_domain_empty_series():
     is_free_email_domain = IsFreeEmailDomain()
     array = pd.Series([], dtype="category")
     answers = pd.Series(is_free_email_domain(array))
-    correct_answers = pd.Series([], dtype="object")
+    correct_answers = pd.Series([], dtype="category")
     pd.testing.assert_series_equal(answers, correct_answers)
 
 
