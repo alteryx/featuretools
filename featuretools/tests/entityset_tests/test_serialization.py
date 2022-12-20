@@ -429,7 +429,11 @@ def test_later_schema_version(es, caplog, hardcoded_schema_version, warns):
     [("0.1.1", True), ("1.0.1", False), ("1.1.0", False)],
 )
 def test_earlier_schema_version(
-    es, caplog, monkeypatch, hardcoded_schema_version, warns
+    es,
+    caplog,
+    monkeypatch,
+    hardcoded_schema_version,
+    warns,
 ):
     def test_version(version, warns):
         if warns:
