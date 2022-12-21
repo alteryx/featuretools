@@ -3,8 +3,9 @@ from woodwork.logical_types import Double, NaturalLanguage
 
 from featuretools.primitives.base import TransformPrimitive
 from featuretools.primitives.standard.transform.natural_language.regular_expressions import (
-    DELIMITERS,
+    PUNCTUATION_AND_WHITESPACE,
 )
+from string import punctuation
 
 
 class TotalWordLength(TransformPrimitive):
@@ -33,12 +34,11 @@ class TotalWordLength(TransformPrimitive):
 
     default_value = 0
 
-    def __init__(self, delimiters_regex=DELIMITERS):
-        self.delimiters_regex = delimiters_regex
+    def __init__(self, do_not_count=PUNCTUATION_AND_WHITESPACE):
+        self.do_not_count = do_not_count
 
     def get_function(self):
         def total_word_length(x):
-            delimiters = x.str.count(self.delimiters_regex)
-            return x.str.len() - delimiters
+            return x.str.len() - x.str.count(self.do_not_count)
 
         return total_word_length
