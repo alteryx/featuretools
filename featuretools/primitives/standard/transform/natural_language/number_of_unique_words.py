@@ -8,8 +8,9 @@ from woodwork.logical_types import IntegerNullable, NaturalLanguage
 
 from featuretools.primitives.base import TransformPrimitive
 from featuretools.primitives.standard.transform.natural_language.regular_expressions import (
-    DELIMITERS
+    DELIMITERS,
 )
+
 
 class NumberOfUniqueWords(TransformPrimitive):
     """Determines the number of unique words in a string.

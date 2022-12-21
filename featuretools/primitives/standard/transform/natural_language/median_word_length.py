@@ -3,7 +3,9 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Double, NaturalLanguage
 
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.primitives.standard.transform.natural_language.regular_expressions import DELIMITERS
+from featuretools.primitives.standard.transform.natural_language.regular_expressions import (
+    DELIMITERS,
+)
 
 
 class MedianWordLength(TransformPrimitive):
@@ -17,13 +19,13 @@ class MedianWordLength(TransformPrimitive):
 
     Args:
         delimiters_regex (str): Delimiters as a regex string for splitting text into words.
-            The default delimiters include "- [].,!?;\\n".
+            The default delimiters include [-.!?]\n\t
 
     Examples:
         >>> x = ['This is a test file', 'This is second line', 'third line $1,000', None]
         >>> median_word_length = MedianWordLength()
         >>> median_word_length(x).tolist()
-        [4.0, 4.0, 3.5, nan]
+        [4.0, 4.0, 5.0, nan]
     """
 
     name = "median_word_length"

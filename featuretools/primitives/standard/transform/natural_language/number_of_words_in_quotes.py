@@ -10,6 +10,7 @@ from featuretools.primitives.standard.transform.natural_language.regular_express
     DELIMITERS,
 )
 
+
 class NumberOfWordsInQuotes(TransformPrimitive):
     """Determines the number of words in quotes in a string.
 
@@ -63,7 +64,7 @@ class NumberOfWordsInQuotes(TransformPrimitive):
             count = 0
             for match in matches:
                 matched_phrase = match[0]
-                words = re.split(f"[{DELIMITERS}]", matched_phrase)
+                words = re.split(f"{DELIMITERS}", matched_phrase)
                 for word in words:
                     if len(word.strip(punctuation + " ")):
                         count += 1
