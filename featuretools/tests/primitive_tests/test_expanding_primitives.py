@@ -164,7 +164,8 @@ def test_expanding_trend(window_series_pd, min_periods, gap):
     ],
 )
 def test_expanding_primitives_throw_error_when_given_string_offset(
-    window_series_pd, primitive
+    window_series_pd,
+    primitive,
 ):
     error_msg = (
         "String offsets are not supported for the gap parameter in Expanding primitives"

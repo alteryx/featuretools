@@ -95,11 +95,18 @@ Aggregation Primitives
     First
     Last
     Max
+    MaxConsecutiveFalse
+    MaxConsecutiveNegatives
+    MaxConsecutivePositives
+    MaxConsecutiveTrue
+    MaxConsecutiveZeros
     Mean
     Median
     Min
     Mode
     NMostCommon
+    NumConsecutiveGreaterMean
+    NumConsecutiveLessMean
     NumTrue
     NumUnique
     PercentTrue
@@ -108,6 +115,10 @@ Aggregation Primitives
     Sum
     TimeSinceFirst
     TimeSinceLast
+    TimeSinceLastFalse
+    TimeSinceLastMax
+    TimeSinceLastMin
+    TimeSinceLastTrue
     Trend
 
 Transform Primitives
