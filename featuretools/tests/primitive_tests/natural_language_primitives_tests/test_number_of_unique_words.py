@@ -17,12 +17,11 @@ class TestNumberOfUniqueWords(PrimitiveT):
             [
                 "test test test test",
                 "test TEST test TEST",
-                "and;subsequent;lines...",
-                "$0.99 alteryx@alteryx.com",
+                "and subsequent lines...",
             ],
         )
 
-        expected = pd.Series([1, 2, 3, 2])
+        expected = pd.Series([1, 2, 3])
         actual = self.primitive().get_function()(x)
         pd.testing.assert_series_equal(actual, expected, check_names=False)
 

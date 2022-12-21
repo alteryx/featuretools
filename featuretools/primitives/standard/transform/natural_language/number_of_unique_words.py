@@ -1,4 +1,3 @@
-import re
 from string import punctuation
 from typing import Iterable
 
@@ -59,7 +58,7 @@ class NumberOfUniqueWords(TransformPrimitive):
         def num_unique_words(array):
             if self.case_insensitive:
                 array = array.str.lower()
-            array = array.str.split(f"[{DELIMITERS}]")
+            array = array.str.split(f"{DELIMITERS}")
             return array.apply(_unique_word_helper)
 
         return num_unique_words
