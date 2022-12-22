@@ -36,7 +36,7 @@ class IsFreeEmailDomain(TransformPrimitive):
         def is_free_email_domain(emails):
             # if the input is empty return an empty Series
             if len(emails) == 0:
-                return pd.Series([])
+                return pd.Series([], dtype="category")
 
             emails_df = pd.DataFrame({"email": emails})
 
