@@ -64,7 +64,9 @@ class NumberOfCommonWords(TransformPrimitive):
                 return pd.NA
             num_common_words = 0
             for w in words:
-                if w.lower().strip(punctuation) in self.word_set:  # assumes word_set is all lowercase
+                if (
+                    w.lower().strip(punctuation) in self.word_set
+                ):  # assumes word_set is all lowercase
                     num_common_words += 1
             return num_common_words
 

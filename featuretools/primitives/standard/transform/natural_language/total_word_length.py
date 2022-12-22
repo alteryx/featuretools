@@ -1,3 +1,5 @@
+from string import punctuation
+
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Double, NaturalLanguage
 
@@ -5,7 +7,6 @@ from featuretools.primitives.base import TransformPrimitive
 from featuretools.primitives.standard.transform.natural_language.regular_expressions import (
     PUNCTUATION_AND_WHITESPACE,
 )
-from string import punctuation
 
 
 class TotalWordLength(TransformPrimitive):
