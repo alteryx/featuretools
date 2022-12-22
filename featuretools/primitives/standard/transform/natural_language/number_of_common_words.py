@@ -47,7 +47,7 @@ class NumberOfCommonWords(TransformPrimitive):
 
     def __init__(
         self,
-        word_set=set(common_words_1000),
+        word_set=common_words_1000,
         delimiters_regex=DELIMITERS,
     ):
         self.delimiters_regex = delimiters_regex

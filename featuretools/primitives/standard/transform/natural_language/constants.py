@@ -5,7 +5,7 @@ DELIMITERS = f"[{DELIMITERS}]"
 
 PUNCTUATION_AND_WHITESPACE = f"[{punctuation}\n\t ]"
 
-common_words_1000 = [
+common_words_1000 = frozenset([
     "the",
     "of",
     "to",
@@ -1006,4 +1006,4 @@ common_words_1000 = [
     "teeth",
     "shell",
     "neck",
-]  # https://gist.github.com/deekayen/4148741
+])  # https://gist.github.com/deekayen/4148741
