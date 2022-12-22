@@ -1,9 +1,157 @@
 [build-system]
 requires = [
-    "setuptools >= 47",
+    "setuptools >= 61.0.0",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "featuretools"
+readme = "README.md"
+description = "a framework for automated feature engineering"
+dynamic = ["version"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Operating System :: MacOS",
+]
+authors = [
+    {name="Alteryx, Inc.", email="open_source_support@alteryx.com"}
+]
+maintainers = [
+    {name="Alteryx, Inc.", email="open_source_support@alteryx.com"}
+]
+keywords = ["feature engineering", "data science", "machine learning"]
+license = {text = "BSD 3-clause"}
+requires-python = ">=3.8,<4"
+dependencies = [
+    "cloudpickle >= 1.5.0",
+    "dask[dataframe] >= 2022.2.0, !=2022.10.1",
+    "distributed >= 2022.2.0, !=2022.10.1",
+    "holidays >= 0.13",
+    "numpy >= 1.21.0",
+    "packaging >= 20.0",
+    "pandas >= 1.4.0",
+    "psutil >= 5.6.6",
+    "scipy >= 1.4.0",
+    "tqdm >= 4.32.0",
+    "woodwork[dask] >= 0.18.0",
+]
+
+[project.urls]
+"Documentation" = "https://featuretools.alteryx.com"
+"Source Code"= "https://github.com/alteryx/featuretools/"
+"Changes" = "https://featuretools.alteryx.com/en/latest/release_notes.html"
+"Issue Tracker" = "https://github.com/alteryx/featuretools/issues"
+"Twitter" = "https://twitter.com/alteryxoss"
+"Chat" = "https://join.slack.com/t/alteryx-oss/shared_invite/zt-182tyvuxv-NzIn6eiCEf8TBziuKp0bNA"
+
+[project.optional-dependencies]
+test = [
+    "boto3 >= 1.17.46",
+    "composeml >= 0.8.0",
+    "graphviz >= 0.8.4",
+    "moto[all] >= 3.0.7",
+    "pip >= 21.3.1",
+    "pyarrow >= 3.0.0",
+    "pympler >= 0.8",
+    "pytest >= 7.1.2",
+    "pytest-cov >= 3.0.0",
+    "pytest-xdist >= 2.5.0",
+    "smart-open >= 5.0.0",
+    "urllib3 >= 1.26.5",
+]
+spark = [
+    "woodwork[spark] >= 0.18.0",
+    "pyspark >= 3.2.2",
+    "numpy < 1.24.0",
+]
+updater = [
+    "alteryx-open-src-update-checker >= 2.1.0"
+]
+tsfresh = [
+    "featuretools-tsfresh-primitives >= 1.0.0",
+]
+nlp = [
+    "nlp-primitives[complete] >= 2.0.0",
+]
+autonormalize = [
+    "autonormalize >= 2.0.1",
+]
+sql = [
+    "featuretools_sql >= 0.0.1",
+]
+sklearn = [
+    "featuretools-sklearn-transformer >= 1.0.0",
+]
+docs = [
+    "ipython == 8.4.0",
+    "jupyter == 1.0.0",
+    "matplotlib == 3.5.2",
+    "Sphinx == 5.1.1",
+    "nbsphinx == 0.8.9",
+    "nbconvert == 6.5.0",
+    "pydata-sphinx-theme == 0.9.0",
+    "sphinx-inline-tabs == 2022.1.2b11",
+    "sphinx-copybutton == 0.5.0",
+    "myst-parser == 0.18.0",
+    "nlp_primitives >= 2.3.0",
+    "autonormalize >= 2.0.1",
+    "click >=7.0.0",
+    "featuretools[sklearn, spark, test]",
+]
+dev = [
+    "flake8 == 5.0.4",
+    "isort == 5.10.1",
+    "black[jupyter] == 22.6.0",
+    "pre-commit == 2.20.0",
+    "featuretools[docs, spark, test]",
+]
+complete = [
+    "featuretools[autonormalize, nlp, sklearn, spark, sql, tsfresh, updater]",
+]
+
+[tool.setuptools]
+include-package-data = true
+license-files = [
+    "LICENSE",
+    "featuretools/primitives/data/free_email_provider_domains_license"
+]
+
+[tool.setuptools.packages.find]
+namespaces = true
+
+[tool.setuptools.package-data]
+"*" = [
+    "*.txt",
+    "README.md",
+]
+"featuretools" = [
+    "primitives/data/*.csv",
+    "primitives/data/*.txt",
+]
+
+[tool.setuptools.exclude-package-data]
+"*" = [
+    "* __pycache__",
+    "*.py[co]",
+    "docs/*"
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "featuretools.version.__version__"}
+
 
 [tool.pytest.ini_options]
 addopts = "--doctest-modules --ignore=featuretools/tests/entry_point_tests/add-ons"
@@ -20,6 +168,7 @@ profile = "black"
 forced_separate = "featuretools"
 known_first_party = "featuretools"
 skip = "__init__.py"
+filter_files = true
 multi_line_output = 3
 
 [tool.black]

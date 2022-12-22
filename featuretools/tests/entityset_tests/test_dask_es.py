@@ -203,4 +203,4 @@ def test_add_dataframe_with_make_index():
 
 
 def test_dataframe_type_dask(dask_es):
-    assert dask_es.dataframe_type == Library.DASK.value
+    assert dask_es.dataframe_type == Library.DASK

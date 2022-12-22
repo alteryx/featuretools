@@ -1,3 +1,4 @@
+import dask.dataframe as dd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
 
@@ -10,7 +11,10 @@ from featuretools.primitives.base import (
     PrimitiveBase,
     TransformPrimitive,
 )
+from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.utils.wrangle import _check_time_against_column, _check_timedelta
+
+ps = import_or_none("pyspark.pandas")
 
 _ES_REF = {}
 
@@ -47,6 +51,13 @@ class FeatureBase(object):
         # initialize if not already initialized
         if not isinstance(primitive, PrimitiveBase):
             primitive = primitive()
+
+        # default library is PANDAS
+        if isinstance(dataframe, dd.DataFrame):
+            primitive.series_library = Library.DASK
+        elif is_instance(dataframe, ps, "DataFrame"):
+            primitive.series_library = Library.SPARK
+
         self.primitive = primitive
 
         self.relationship_path = relationship_path
@@ -103,9 +114,10 @@ class FeatureBase(object):
 
     def set_feature_names(self, names):
         """Set new values for the feature column names, overriding the default values.
-        Number of names provided much match the number of output columns defined for
-        the feature. Only works for features that have more than one output column. Use
-        ``Feature.rename`` to change the column name for single output features.
+        Number of names provided must match the number of output columns defined for
+        the feature, and all provided names should be unique. Only works for features
+        that have more than one output column. Use ``Feature.rename`` to change the column
+        name for single output features.
 
         Args:
             names (list[str]): List of names to use for the output feature columns. Provided
@@ -264,7 +276,7 @@ class FeatureBase(object):
             "arguments": self.get_arguments(),
         }
 
-    def _handle_binary_comparision(self, other, Primitive, PrimitiveScalar):
+    def _handle_binary_comparison(self, other, Primitive, PrimitiveScalar):
         if isinstance(other, FeatureBase):
             return Feature([self, other], primitive=Primitive)
 
@@ -272,7 +284,7 @@ class FeatureBase(object):
 
     def __eq__(self, other):
         """Compares to other by equality"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.Equal,
             primitives.EqualScalar,
@@ -280,7 +292,7 @@ class FeatureBase(object):
 
     def __ne__(self, other):
         """Compares to other by non-equality"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.NotEqual,
             primitives.NotEqualScalar,
@@ -288,7 +300,7 @@ class FeatureBase(object):
 
     def __gt__(self, other):
         """Compares if greater than other"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.GreaterThan,
             primitives.GreaterThanScalar,
@@ -296,7 +308,7 @@ class FeatureBase(object):
 
     def __ge__(self, other):
         """Compares if greater than or equal to other"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.GreaterThanEqualTo,
             primitives.GreaterThanEqualToScalar,
@@ -304,7 +316,7 @@ class FeatureBase(object):
 
     def __lt__(self, other):
         """Compares if less than other"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.LessThan,
             primitives.LessThanScalar,
@@ -312,7 +324,7 @@ class FeatureBase(object):
 
     def __le__(self, other):
         """Compares if less than or equal to other"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.LessThanEqualTo,
             primitives.LessThanEqualToScalar,
@@ -320,7 +332,7 @@ class FeatureBase(object):
 
     def __add__(self, other):
         """Add other"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.AddNumeric,
             primitives.AddNumericScalar,
@@ -331,7 +343,7 @@ class FeatureBase(object):
 
     def __sub__(self, other):
         """Subtract other"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.SubtractNumeric,
             primitives.SubtractNumericScalar,
@@ -342,7 +354,7 @@ class FeatureBase(object):
 
     def __div__(self, other):
         """Divide by other"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.DivideNumeric,
             primitives.DivideNumericScalar,
@@ -383,7 +395,7 @@ class FeatureBase(object):
                     [self, other],
                     primitive=primitives.MultiplyNumericBoolean,
                 )
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.MultiplyNumeric,
             primitives.MultiplyNumericScalar,
@@ -394,7 +406,7 @@ class FeatureBase(object):
 
     def __mod__(self, other):
         """Take modulus of other"""
-        return self._handle_binary_comparision(
+        return self._handle_binary_comparison(
             other,
             primitives.ModuloNumeric,
             primitives.ModuloNumericScalar,

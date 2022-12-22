@@ -3,9 +3,11 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pytest
+from pytz import timezone
 
 from featuretools.primitives import (
     Age,
+    DateToTimeZone,
     DayOfYear,
     DaysInMonth,
     EmailAddressToDomain,
@@ -19,9 +21,11 @@ from featuretools.primitives import (
     IsWorkingHours,
     IsYearEnd,
     IsYearStart,
+    Lag,
     NumericLag,
     PartOfDay,
     Quarter,
+    RateOfChange,
     TimeSince,
     URLToDomain,
     URLToProtocol,
@@ -747,79 +751,202 @@ def test_trans_primitives_can_init_without_params():
         trans_primitive()
 
 
+def test_numeric_lag_future_warning():
+    warning_text = "NumericLag is deprecated and will be removed in a future version. Please use the 'Lag' primitive instead."
+    with pytest.warns(FutureWarning, match=warning_text):
+        NumericLag()
+
+
 def test_lag_regular():
-    primitive_instance = NumericLag()
+    primitive_instance = Lag()
     primitive_func = primitive_instance.get_function()
 
     array = pd.Series([1, 2, 3, 4])
     time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
 
-    answer = pd.Series(primitive_func(time_array, array))
+    answer = pd.Series(primitive_func(array, time_array))
 
     correct_answer = pd.Series([np.nan, 1, 2, 3])
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
 def test_lag_period():
-    primitive_instance = NumericLag(periods=3)
+    primitive_instance = Lag(periods=3)
     primitive_func = primitive_instance.get_function()
 
     array = pd.Series([1, 2, 3, 4])
     time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
 
-    answer = pd.Series(primitive_func(time_array, array))
+    answer = pd.Series(primitive_func(array, time_array))
 
     correct_answer = pd.Series([np.nan, np.nan, np.nan, 1])
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
 def test_lag_negative_period():
-    primitive_instance = NumericLag(periods=-2)
+    primitive_instance = Lag(periods=-2)
     primitive_func = primitive_instance.get_function()
 
     array = pd.Series([1, 2, 3, 4])
     time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
 
-    answer = pd.Series(primitive_func(time_array, array))
+    answer = pd.Series(primitive_func(array, time_array))
 
     correct_answer = pd.Series([3, 4, np.nan, np.nan])
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
-def test_lag_fill_value():
-    primitive_instance = NumericLag(fill_value=10)
-    primitive_func = primitive_instance.get_function()
-
-    array = pd.Series([1, 2, 3, 4])
-    time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
-
-    answer = pd.Series(primitive_func(time_array, array))
-
-    correct_answer = pd.Series([10, 1, 2, 3])
-    pd.testing.assert_series_equal(answer, correct_answer)
-
-
 def test_lag_starts_with_nan():
-    primitive_instance = NumericLag()
+    primitive_instance = Lag()
     primitive_func = primitive_instance.get_function()
 
     array = pd.Series([np.nan, 2, 3, 4])
     time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
 
-    answer = pd.Series(primitive_func(time_array, array))
+    answer = pd.Series(primitive_func(array, time_array))
 
     correct_answer = pd.Series([np.nan, np.nan, 2, 3])
     pd.testing.assert_series_equal(answer, correct_answer)
 
 
 def test_lag_ends_with_nan():
-    primitive_instance = NumericLag()
+    primitive_instance = Lag()
     primitive_func = primitive_instance.get_function()
 
     array = pd.Series([1, 2, 3, np.nan])
     time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
 
-    answer = pd.Series(primitive_func(time_array, array))
+    answer = pd.Series(primitive_func(array, time_array))
 
     correct_answer = pd.Series([np.nan, 1, 2, 3])
     pd.testing.assert_series_equal(answer, correct_answer)
+
+
+@pytest.mark.parametrize(
+    "input_array,expected_output",
+    [
+        (
+            pd.Series(["hello", "world", "foo", "bar"], dtype="string"),
+            pd.Series([np.nan, "hello", "world", "foo"], dtype="string"),
+        ),
+        (
+            pd.Series(["cow", "cow", "pig", "pig"], dtype="category"),
+            pd.Series([np.nan, "cow", "cow", "pig"], dtype="category"),
+        ),
+        (
+            pd.Series([True, False, True, False], dtype="bool"),
+            pd.Series([np.nan, True, False, True], dtype="object"),
+        ),
+        (
+            pd.Series([True, False, True, False], dtype="boolean"),
+            pd.Series([np.nan, True, False, True], dtype="boolean"),
+        ),
+        (
+            pd.Series([1.23, 2.45, 3.56, 4.98], dtype="float"),
+            pd.Series([np.nan, 1.23, 2.45, 3.56], dtype="float"),
+        ),
+        (
+            pd.Series([1, 2, 3, 4], dtype="Int64"),
+            pd.Series([np.nan, 1, 2, 3], dtype="Int64"),
+        ),
+        (
+            pd.Series([1, 2, 3, 4], dtype="int64"),
+            pd.Series([np.nan, 1, 2, 3], dtype="float64"),
+        ),
+    ],
+)
+def test_lag_with_different_dtypes(input_array, expected_output):
+    primitive_instance = Lag()
+    primitive_func = primitive_instance.get_function()
+    time_array = pd.Series(pd.date_range(start="2020-01-01", periods=4, freq="D"))
+    answer = pd.Series(primitive_func(input_array, time_array))
+    pd.testing.assert_series_equal(answer, expected_output)
+
+
+def test_date_to_time_zone_primitive():
+    primitive_func = DateToTimeZone().get_function()
+    x = pd.Series(
+        [
+            datetime(2010, 1, 1, tzinfo=timezone("America/Los_Angeles")),
+            datetime(2010, 1, 10, tzinfo=timezone("Singapore")),
+            datetime(2020, 1, 1, tzinfo=timezone("UTC")),
+            datetime(2010, 1, 1, tzinfo=timezone("Europe/London")),
+        ],
+    )
+    answer = pd.Series(["America/Los_Angeles", "Singapore", "UTC", "Europe/London"])
+    pd.testing.assert_series_equal(primitive_func(x), answer)
+
+
+def test_date_to_time_zone_datetime64():
+    primitive_func = DateToTimeZone().get_function()
+    x = pd.Series(
+        [
+            datetime(2010, 1, 1),
+            datetime(2010, 1, 10),
+            datetime(2020, 1, 1),
+        ],
+    ).astype("datetime64")
+    x = x.dt.tz_localize("America/Los_Angeles")
+    answer = pd.Series(["America/Los_Angeles"] * 3)
+    pd.testing.assert_series_equal(primitive_func(x), answer)
+
+
+def test_date_to_time_zone_naive_dates():
+    primitive_func = DateToTimeZone().get_function()
+    x = pd.Series(
+        [
+            datetime(2010, 1, 1, tzinfo=timezone("America/Los_Angeles")),
+            datetime(2010, 1, 1),
+            datetime(2010, 1, 2),
+        ],
+    )
+    answer = pd.Series(["America/Los_Angeles", np.nan, np.nan])
+    pd.testing.assert_series_equal(primitive_func(x), answer)
+
+
+def test_date_to_time_zone_nan():
+    primitive_func = DateToTimeZone().get_function()
+    x = pd.Series(
+        [
+            datetime(2010, 1, 1, tzinfo=timezone("America/Los_Angeles")),
+            pd.NaT,
+            np.nan,
+        ],
+    )
+    answer = pd.Series(["America/Los_Angeles", np.nan, np.nan])
+    pd.testing.assert_series_equal(primitive_func(x), answer)
+
+
+def test_rate_of_change_primitive_regular_interval():
+    rate_of_change = RateOfChange()
+    times = pd.date_range(start="2019-01-01", freq="2s", periods=5)
+    values = [0, 30, 180, -90, 0]
+    expected = pd.Series([np.nan, 15, 75, -135, 45])
+    actual = rate_of_change(values, times)
+    pd.testing.assert_series_equal(actual, expected)
+
+
+def test_rate_of_change_primitive_uneven_interval():
+    rate_of_change = RateOfChange()
+    times = pd.to_datetime(
+        [
+            "2019-01-01 00:00:00",
+            "2019-01-01 00:00:01",
+            "2019-01-01 00:00:03",
+            "2019-01-01 00:00:07",
+            "2019-01-01 00:00:08",
+        ],
+    )
+    values = [0, 30, 180, -90, 0]
+    expected = pd.Series([np.nan, 30, 75, -67.5, 90])
+    actual = rate_of_change(values, times)
+    pd.testing.assert_series_equal(actual, expected)
+
+
+def test_rate_of_change_primitive_with_nan():
+    rate_of_change = RateOfChange()
+    times = pd.date_range(start="2019-01-01", freq="2s", periods=5)
+    values = [0, 30, np.nan, -90, 0]
+    expected = pd.Series([np.nan, 15, np.nan, np.nan, 45])
+    actual = rate_of_change(values, times)
+    pd.testing.assert_series_equal(actual, expected)

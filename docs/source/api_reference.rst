@@ -28,6 +28,17 @@ Deep Feature Synthesis
     dfs
     get_valid_primitives
 
+Wrappers
+~~~~~~~~
+.. currentmodule:: featuretools
+
+scikit-learn (BETA)
+-------------------
+.. autosummary::
+    :toctree: generated/
+
+    wrappers.DFSTransformer
+
 Timedelta
 ~~~~~~~~~
 .. currentmodule:: featuretools
@@ -49,7 +60,6 @@ Time utils
 
 Feature Primitives
 ~~~~~~~~~~~~~~~~~~
-A list of all Featuretools primitives can be obtained by visiting `primitives.featurelabs.com <https://primitives.featurelabs.com/>`__.
 
 Primitive Types
 ---------------
@@ -69,30 +79,82 @@ Aggregation Primitives
 .. autosummary::
     :toctree: generated/
 
-    Count
-    Mean
-    Sum
-    Min
-    Max
-    Std
-    Median
-    Mode
-    AvgTimeBetween
-    TimeSinceLast
-    TimeSinceFirst
-    NumUnique
-    PercentTrue
     All
     Any
+    AvgTimeBetween
+    Count
+    CountAboveMean
+    CountBelowMean
+    CountGreaterThan
+    CountInsideNthSTD
+    CountInsideRange
+    CountLessThan
+    CountOutsideNthSTD
+    CountOutsideRange
+    Entropy
     First
     Last
+    Max
+    MaxConsecutiveFalse
+    MaxConsecutiveNegatives
+    MaxConsecutivePositives
+    MaxConsecutiveTrue
+    MaxConsecutiveZeros
+    Mean
+    Median
+    Min
+    Mode
+    NMostCommon
+    NumConsecutiveGreaterMean
+    NumConsecutiveLessMean
+    NumTrue
+    NumUnique
+    PercentTrue
     Skew
+    Std
+    Sum
+    TimeSinceFirst
+    TimeSinceLast
+    TimeSinceLastFalse
+    TimeSinceLastMax
+    TimeSinceLastMin
+    TimeSinceLastTrue
     Trend
-    Entropy
-
 
 Transform Primitives
 --------------------
+Binary Transform Primitives
+***************************
+.. autosummary::
+    :toctree: generated/
+
+    AddNumeric
+    AddNumericScalar
+    DivideByFeature
+    DivideNumericScalar
+    Equal
+    EqualScalar
+    GreaterThan
+    GreaterThanEqualTo
+    GreaterThanEqualToScalar
+    GreaterThanScalar
+    LessThan
+    LessThanEqualTo
+    LessThanEqualToScalar
+    LessThanScalar
+    ModuloByFeature
+    ModuloNumeric
+    ModuloNumericScalar
+    MultiplyBoolean
+    MultiplyNumericBoolean
+    MultiplyNumericScalar
+    NotEqual
+    NotEqualScalar
+    ScalarSubtractNumericFeature
+    SubtractNumeric
+    SubtractNumericScalar
+
+
 Combine features
 ****************
 .. autosummary::
@@ -103,81 +165,6 @@ Combine features
     Or
     Not
 
-
-
-General Transform Primitives
-****************************
-.. autosummary::
-    :toctree: generated/
-
-    Absolute
-    SquareRoot
-    NaturalLogarithm
-    Sine
-    Cosine
-    Tangent
-    Percentile
-    TimeSince
-
-Datetime Transform Primitives
-*****************************
-.. autosummary::
-    :toctree: generated/
-
-    Second
-    Minute
-    Weekday
-    IsLeapYear
-    IsLunchTime
-    IsMonthEnd
-    IsMonthStart
-    IsQuarterEnd
-    IsQuarterStart
-    IsWeekend
-    IsWorkingHours
-    IsYearEnd
-    IsYearStart
-    Hour
-    Day
-    DayOfYear
-    DaysInMonth
-    Week
-    Month
-    PartOfDay
-    Quarter
-    Year
-
-Rolling Transform Primitives
-*******************************
-.. autosummary::
-    :toctree: generated/
-
-    RollingCount
-    RollingMax
-    RollingMean
-    RollingMin
-    RollingSTD
-    RollingTrend
-
-NaturalLanguage Transform Primitives
-************************************
-.. autosummary::
-   :toctree: generated/
-
-   NumCharacters
-   NumWords
-
-Location Transform Primitives
-*****************************
-.. autosummary::
-   :toctree: generated/
-
-   CityblockDistance
-   GeoMidpoint
-   Haversine
-   IsInGeoBox
-   Latitude
-   Longitude
 
 .. _api_ref.cumulative_features:
 
@@ -195,6 +182,144 @@ Cumulative Transform Primitives
     CumMin
     CumMax
 
+
+Datetime Transform Primitives
+*****************************
+.. autosummary::
+    :toctree: generated/
+
+    Age
+    DateToHoliday
+    DateToTimeZone
+    Day
+    DayOfYear
+    DaysInMonth
+    DistanceToHoliday
+    Hour
+    IsFederalHoliday
+    IsLeapYear
+    IsLunchTime
+    IsMonthEnd
+    IsMonthStart
+    IsQuarterEnd
+    IsQuarterStart
+    IsWeekend
+    IsWorkingHours
+    IsYearEnd
+    IsYearStart
+    Minute
+    Month
+    PartOfDay
+    Quarter
+    Second
+    Week
+    Weekday
+    Year
+
+
+Email and URL Transform Primitives
+**********************************
+.. autosummary::
+    :toctree: generated/
+
+    EmailAddressToDomain
+    IsFreeEmailDomain
+    URLToDomain
+    URLToProtocol
+    URLToTLD
+
+
+Exponential Transform Primitives
+********************************
+.. autosummary::
+    :toctree: generated/
+
+    ExponentialWeightedAverage
+    ExponentialWeightedSTD
+    ExponentialWeightedVariance
+
+
+General Transform Primitives
+****************************
+.. autosummary::
+    :toctree: generated/
+
+    Absolute
+    Cosine
+    IsNull
+    NaturalLogarithm
+    Negate
+    Percentile
+    RateOfChange
+    Sine
+    SquareRoot
+    Tangent
+
+
+Location Transform Primitives
+*****************************
+.. autosummary::
+   :toctree: generated/
+
+   CityblockDistance
+   GeoMidpoint
+   Haversine
+   IsInGeoBox
+   Latitude
+   Longitude
+
+
+NaturalLanguage Transform Primitives
+************************************
+.. autosummary::
+   :toctree: generated/
+
+   CountString
+   MeanCharactersPerWord
+   MedianWordLength
+   NumCharacters
+   NumUniqueSeparators
+   NumWords
+   NumberOfCommonWords
+   NumberOfHashtags
+   NumberOfMentions
+   NumberOfUniqueWords
+   NumberOfWordsInQuotes
+   PunctuationCount
+   TitleWordCount
+   TotalWordLength
+   UpperCaseCount
+   WhitespaceCount
+
+Postal Code Primitives
+**********************
+.. autosummary::
+    :toctree: generated/
+
+    OneDigitPostalCode
+    TwoDigitPostalCode
+
+Time Series Transform Primitives
+********************************
+.. autosummary::
+    :toctree: generated/
+
+    ExpandingCount
+    ExpandingMax
+    ExpandingMean
+    ExpandingMin
+    ExpandingSTD
+    ExpandingTrend
+    Lag
+    RollingCount
+    RollingMax
+    RollingMean
+    RollingMin
+    RollingOutlierCount
+    RollingSTD
+    RollingTrend
+
+
 .. currentmodule:: nlp_primitives
 
 .. autosummary::
@@ -202,28 +327,18 @@ Cumulative Transform Primitives
 
 Natural Language Processing Primitives
 --------------------------------------
-Natural Language Processing primitives create features for textual data. For more information on how to use and install these primitives, see `here <https://github.com/FeatureLabs/nlp_primitives>`__.
+Natural Language Processing primitives create features for textual data. For more information on how to use and install these primitives, see `here <https://github.com/alteryx/nlp_primitives>`__.
 
 Primitives in standard install
 ******************************
 .. autosummary::
     :toctree: generated/
 
-    CountString
     DiversityScore
     LSA
-    MeanCharactersPerWord
-    MedianWordLength
-    NumUniqueSeparators
-    NumberOfCommonWords
     PartOfSpeechCount
     PolarityScore
-    PunctuationCount
     StopwordCount
-    TitleWordCount
-    TotalWordLength
-    UpperCaseCount
-    WhitespaceCount
 
 Primitives that require installing tensorflow
 *********************************************

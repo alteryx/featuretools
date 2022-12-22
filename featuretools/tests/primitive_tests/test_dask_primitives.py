@@ -2,7 +2,9 @@ import pandas as pd
 import pytest
 
 from featuretools import calculate_feature_matrix, dfs, list_primitives
+from featuretools.feature_base.cache import feature_cache
 from featuretools.primitives import get_aggregation_primitives, get_transform_primitives
+from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library
 
 UNSUPPORTED = [
@@ -15,6 +17,12 @@ UNSUPPORTED += [
     for p in get_aggregation_primitives().values()
     if Library.DASK not in p.compatibility
 ]
+
+
+@pytest.fixture(autouse=True)
+def reset_dfs_cache():
+    feature_cache.enabled = False
+    feature_cache.clear_all()
 
 
 def test_transform(pd_es, dask_es):
@@ -101,12 +109,14 @@ def test_aggregation(pd_es, dask_es):
             max_depth=2,
         )
 
-        # Categorical categories can be ordered differently, this makes sure they are the same
+        # Categorical categories can be ordered differently, this makes sure they
+        # are the same, including the index column
+        index_col = df.ww.index
+        fm = fm.reset_index()
         dask_fm = dask_fm.astype(fm.dtypes)
+        fm = fm.set_index(index_col)
 
-        dask_fm = dask_fm.compute()
-        if dask_fm[df.ww.index].dtype != fm.index.dtype:
-            dask_fm = dask_fm.astype({df.ww.index: fm.index.dtype})
-        # Use the same columns and make sure both indexes are sorted the same
-        dask_computed_fm = dask_fm.set_index(df.ww.index).loc[fm.index][fm.columns]
-        pd.testing.assert_frame_equal(fm, dask_computed_fm)
+        pd.testing.assert_frame_equal(
+            fm.sort_index(),
+            to_pandas(dask_fm, index=index_col, sort_index=True),
+        )

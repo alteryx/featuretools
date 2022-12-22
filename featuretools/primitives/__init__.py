@@ -1,10 +1,19 @@
+# flake8: noqa
 import inspect
 import logging
-
-import pkg_resources
 import traceback
 
-from featuretools.primitives.api import *  # noqa: F403
+import pkg_resources
+
+from featuretools.primitives.standard import *
+from featuretools.primitives.utils import (
+    get_aggregation_primitives,
+    get_default_aggregation_primitives,
+    get_default_transform_primitives,
+    get_transform_primitives,
+    list_primitives,
+    summarize_primitives,
+)
 
 
 def _load_primitives():
@@ -27,6 +36,11 @@ def _load_primitives():
             [options.entry_points]
             featuretools_primitives =
                 other_library = other_library
+
+        - pyproject.toml:
+
+            [project.entry-points."featuretools_primitives"]
+            other_library = "other_library"
 
     where `other_library` is a top-level module containing all the primitives.
     """

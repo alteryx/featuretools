@@ -190,11 +190,11 @@ class EntitySet(object):
 
         if self.dataframes:
             if isinstance(self.dataframes[0], pd.DataFrame):
-                df_type = Library.PANDAS.value
+                df_type = Library.PANDAS
             elif isinstance(self.dataframes[0], dd.DataFrame):
-                df_type = Library.DASK.value
+                df_type = Library.DASK
             elif is_instance(self.dataframes[0], ps, "DataFrame"):
-                df_type = Library.SPARK.value
+                df_type = Library.SPARK
 
         return df_type
 
@@ -271,7 +271,7 @@ class EntitySet(object):
             compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
             profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         """
-        if self.dataframe_type == Library.SPARK.value:
+        if self.dataframe_type == Library.SPARK:
             compression = str(compression)
         serialize.write_data_description(
             self,
@@ -792,7 +792,7 @@ class EntitySet(object):
         """Create a new dataframe and relationship from unique values of an existing column.
 
         Args:
-            base_dataframe_name (str) : Datarame name from which to split.
+            base_dataframe_name (str) : Dataframe name from which to split.
 
             new_dataframe_name (str): Name of the new dataframe.
 
@@ -1053,9 +1053,9 @@ class EntitySet(object):
             combined_es = copy.deepcopy(self)
 
         lib = pd
-        if self.dataframe_type == Library.SPARK.value:
+        if self.dataframe_type == Library.SPARK:
             lib = ps
-        elif self.dataframe_type == Library.DASK.value:
+        elif self.dataframe_type == Library.DASK:
             lib = dd
 
         has_last_time_index = []
@@ -1322,7 +1322,7 @@ class EntitySet(object):
                 # Add the new column to the DataFrame
                 if isinstance(df, dd.DataFrame):
                     new_df = df.merge(lti.reset_index(), on=df.ww.index)
-                    new_df.ww.init(
+                    new_df.ww.init_with_partial_schema(
                         schema=df.ww.schema,
                         logical_types={LTI_COLUMN_NAME: lti_ltype},
                     )
@@ -1333,7 +1333,7 @@ class EntitySet(object):
                     dfs_to_update[df.ww.name] = new_df
                 elif is_instance(df, ps, "DataFrame"):
                     new_df = df.merge(lti, left_on=df.ww.index, right_index=True)
-                    new_df.ww.init(
+                    new_df.ww.init_with_partial_schema(
                         schema=df.ww.schema,
                         logical_types={LTI_COLUMN_NAME: lti_ltype},
                     )

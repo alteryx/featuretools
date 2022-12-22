@@ -5,7 +5,16 @@ import numpy as np
 import pandas as pd
 import pytest
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean, Datetime, Double, Integer, Ordinal
+from woodwork.logical_types import (
+    Boolean,
+    BooleanNullable,
+    Categorical,
+    Datetime,
+    Double,
+    Integer,
+    IntegerNullable,
+    Ordinal,
+)
 
 from featuretools import (
     AggregationFeature,
@@ -44,6 +53,7 @@ from featuretools.primitives import (
     Hour,
     IsIn,
     IsNull,
+    Lag,
     Latitude,
     LessThan,
     LessThanEqualTo,
@@ -99,11 +109,11 @@ def test_init_and_name(es):
 
     trans_primitives = get_transform_primitives().values()
     # If Dask EntitySet use only Dask compatible primitives
-    if es.dataframe_type == Library.DASK.value:
+    if es.dataframe_type == Library.DASK:
         trans_primitives = [
             prim for prim in trans_primitives if Library.DASK in prim.compatibility
         ]
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         trans_primitives = [
             prim for prim in trans_primitives if Library.SPARK in prim.compatibility
         ]
@@ -266,7 +276,7 @@ def test_equal_categorical(simple_es):
     )
 
     df = calculate_feature_matrix(entityset=simple_es, features=[f1])
-    if simple_es.dataframe_type != Library.SPARK.value:
+    if simple_es.dataframe_type != Library.SPARK:
         # Spark does not support categorical dtype
         assert set(simple_es["values"]["value"].cat.categories) != set(
             simple_es["values"]["value2"].cat.categories,
@@ -317,7 +327,7 @@ def test_not_equal_categorical(simple_es):
 
     df = calculate_feature_matrix(entityset=simple_es, features=[f1])
 
-    if simple_es.dataframe_type != Library.SPARK.value:
+    if simple_es.dataframe_type != Library.SPARK:
         # Spark does not support categorical dtype
         assert set(simple_es["values"]["value"].cat.categories) != set(
             simple_es["values"]["value2"].cat.categories,
@@ -614,7 +624,7 @@ def test_compare_of_agg(es):
 
 
 def test_compare_all_nans(es):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         nan_feat = Feature(
             es["log"].ww["value"],
             parent_dataframe_name="sessions",
@@ -691,7 +701,7 @@ def test_arithmetic_of_identity(es):
         (DivideNumeric, [np.nan, 2.5, 2.5, 2.5]),
     ]
     # SubtractNumeric not supported for Spark EntitySets
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         to_test = to_test[:1] + to_test[2:]
 
     features = []
@@ -735,7 +745,7 @@ def test_arithmetic_of_direct(es):
         (MultiplyNumeric, [165, 132, 148.5, 148.5]),
         (DivideNumeric, [6.6, 8.25, 22.0 / 3, 22.0 / 3]),
     ]
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         to_test = to_test[:1] + to_test[2:]
 
     features = []
@@ -821,7 +831,7 @@ def test_boolean_multiply(boolean_mult_es):
 
 # TODO: rework test to be Dask and Spark compatible
 def test_arithmetic_of_transform(es):
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Test uses Diff which is not supported in Dask or Spark")
     diff1 = Feature([Feature(es["log"].ww["value"])], primitive=Diff)
     diff2 = Feature([Feature(es["log"].ww["value_2"])], primitive=Diff)
@@ -878,7 +888,7 @@ def test_arithmetic_of_agg(es):
         (DivideNumeric, [1, 0]),
     ]
     # Skip SubtractNumeric for Spark as it's unsupported
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         to_test = to_test[:1] + to_test[2:]
 
     features = []
@@ -1520,7 +1530,7 @@ def test_override_multi_feature_names(pd_es):
 
 
 def test_time_since_primitive_matches_all_datetime_types(es):
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         pytest.xfail("TimeSince transform primitive is incompatible with Spark")
     fm, fl = dfs(
         target_dataframe_name="customers",
@@ -1541,7 +1551,7 @@ def test_time_since_primitive_matches_all_datetime_types(es):
         assert name in fm.columns
 
 
-def test_cfm_with_lag_and_non_nullable_column(pd_es):
+def test_cfm_with_numeric_lag_and_non_nullable_column(pd_es):
     # fill nans so we can use non nullable numeric logical type in the EntitySet
     new_log = pd_es["log"].copy()
     new_log["value"] = new_log["value"].fillna(0)
@@ -1570,18 +1580,10 @@ def test_cfm_with_lag_and_non_nullable_column(pd_es):
         trans_primitives=[lag_primitive],
         cutoff_time=cutoff_times,
     )
-
-    # Non nullable
     assert fm["NUMERIC_LAG(datetime, value, periods=5)"].head(periods).isnull().all()
     assert fm["NUMERIC_LAG(datetime, value, periods=5)"].isnull().sum() == periods
-    # Nullable
+
     assert "NUMERIC_LAG(datetime, value_2, periods=5)" in fm.columns
-    assert (
-        fm["NUMERIC_LAG(datetime, products.rating, periods=5)"]
-        .head(periods)
-        .isnull()
-        .all()
-    )
 
     assert "NUMERIC_LAG(datetime, products.rating, periods=5)" in fm.columns
     assert (
@@ -1592,8 +1594,100 @@ def test_cfm_with_lag_and_non_nullable_column(pd_es):
     )
 
 
+def test_cfm_with_lag_and_non_nullable_columns(pd_es):
+    # fill nans so we can use non nullable numeric logical type in the EntitySet
+    new_log = pd_es["log"].copy()
+    new_log["value"] = new_log["value"].fillna(0)
+    new_log["value_double"] = new_log["value"]
+    new_log["purchased_with_nulls"] = new_log["purchased"]
+    new_log["purchased_with_nulls"][0:4] = None
+    new_log.ww.init(
+        logical_types={
+            "value": "Integer",
+            "value_2": "IntegerNullable",
+            "product_id": "Categorical",
+            "value_double": "Double",
+            "purchased_with_nulls": "BooleanNullable",
+        },
+        index="id",
+        time_index="datetime",
+        name="new_log",
+    )
+    pd_es.add_dataframe(new_log)
+    rels = [
+        ("sessions", "id", "new_log", "session_id"),
+        ("products", "id", "new_log", "product_id"),
+    ]
+    pd_es = pd_es.add_relationships(rels)
+
+    assert isinstance(pd_es["new_log"].ww.logical_types["value"], Integer)
+
+    periods = 5
+    lag_primitive = Lag(periods=periods)
+    cutoff_times = pd_es["new_log"][["id", "datetime"]]
+    fm, _ = dfs(
+        target_dataframe_name="new_log",
+        entityset=pd_es,
+        agg_primitives=[],
+        trans_primitives=[lag_primitive],
+        cutoff_time=cutoff_times,
+    )
+    # Integer
+    assert fm["LAG(value, datetime, periods=5)"].head(periods).isnull().all()
+    assert fm["LAG(value, datetime, periods=5)"].isnull().sum() == periods
+    assert isinstance(
+        fm.ww.schema.logical_types["LAG(value, datetime, periods=5)"],
+        IntegerNullable,
+    )
+
+    # IntegerNullable
+    assert "LAG(value_2, datetime, periods=5)" in fm.columns
+    assert fm["LAG(value_2, datetime, periods=5)"].head(periods).isnull().all()
+    assert isinstance(
+        fm.ww.schema.logical_types["LAG(value_2, datetime, periods=5)"],
+        IntegerNullable,
+    )
+
+    # Categorical
+    assert "LAG(product_id, datetime, periods=5)" in fm.columns
+    assert fm["LAG(product_id, datetime, periods=5)"].head(periods).isnull().all()
+    assert isinstance(
+        fm.ww.schema.logical_types["LAG(product_id, datetime, periods=5)"],
+        Categorical,
+    )
+
+    # Double
+    assert "LAG(value_double, datetime, periods=5)" in fm.columns
+    assert fm["LAG(value_double, datetime, periods=5)"].head(periods).isnull().all()
+    assert isinstance(
+        fm.ww.schema.logical_types["LAG(value_double, datetime, periods=5)"],
+        Double,
+    )
+
+    # Boolean
+    assert "LAG(purchased, datetime, periods=5)" in fm.columns
+    assert fm["LAG(purchased, datetime, periods=5)"].head(periods).isnull().all()
+    assert isinstance(
+        fm.ww.schema.logical_types["LAG(purchased, datetime, periods=5)"],
+        BooleanNullable,
+    )
+
+    # BooleanNullable
+    assert "LAG(purchased_with_nulls, datetime, periods=5)" in fm.columns
+    assert (
+        fm["LAG(purchased_with_nulls, datetime, periods=5)"]
+        .head(periods)
+        .isnull()
+        .all()
+    )
+    assert isinstance(
+        fm.ww.schema.logical_types["LAG(purchased_with_nulls, datetime, periods=5)"],
+        BooleanNullable,
+    )
+
+
 def test_comparisons_with_ordinal_valid_inputs(es):
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         pytest.xfail(
             "Categorical dtypes not used in Spark, and comparison works as expected without error.",
         )
@@ -1631,7 +1725,7 @@ def test_comparisons_with_ordinal_valid_inputs(es):
 
 
 def test_comparisons_with_ordinal_invalid_inputs(es):
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         pytest.xfail(
             "Categorical dtypes not used in Spark, and comparison works as expected without error.",
         )
@@ -1714,7 +1808,7 @@ def test_multiply_numeric_boolean():
 
     multiply_numeric_boolean = MultiplyNumericBoolean()
     for input in test_cases:
-        vals = pd.Series(input["val"])
+        vals = pd.Series(input["val"]).astype("Int64")
         mask = pd.Series(input["mask"])
         actual = multiply_numeric_boolean(vals, mask).tolist()[0]
         expected = input["expected"]
@@ -1722,6 +1816,37 @@ def test_multiply_numeric_boolean():
             assert pd.isnull(actual)
         else:
             assert actual == input["expected"]
+
+
+def test_multiply_numeric_boolean_multiple_dtypes_no_nulls():
+    # Test without null values
+    vals = pd.Series([1, 2, 3])
+    bools = pd.Series([True, False, True])
+    multiply_numeric_boolean = MultiplyNumericBoolean()
+    numeric_dtypes = ["float64", "int64", "Int64"]
+    boolean_dtypes = ["bool", "boolean"]
+
+    for numeric_dtype in numeric_dtypes:
+        for boolean_dtype in boolean_dtypes:
+            actual = multiply_numeric_boolean(
+                vals.astype(numeric_dtype),
+                bools.astype(boolean_dtype),
+            )
+            expected = pd.Series([1, 0, 3])
+            pd.testing.assert_series_equal(actual, expected, check_dtype=False)
+
+
+def test_multiply_numeric_boolean_multiple_dtypes_with_nulls():
+    # Test with null values
+    vals = pd.Series([np.nan, 2, 3])
+    bools = pd.Series([True, False, pd.NA], dtype="boolean")
+    multiply_numeric_boolean = MultiplyNumericBoolean()
+    numeric_dtypes = ["float64", "Int64"]
+
+    for numeric_dtype in numeric_dtypes:
+        actual = multiply_numeric_boolean(vals.astype(numeric_dtype), bools)
+        expected = pd.Series([np.nan, 0, np.nan])
+        pd.testing.assert_series_equal(actual, expected, check_dtype=False)
 
 
 def test_feature_multiplication(es):

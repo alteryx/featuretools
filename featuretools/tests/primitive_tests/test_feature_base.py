@@ -19,6 +19,7 @@ from featuretools.primitives import (
     Sum,
     TransformPrimitive,
 )
+from featuretools.synthesis.deep_feature_synthesis import can_stack_primitive_on_inputs
 from featuretools.tests.testing_utils import check_rename
 
 
@@ -538,3 +539,80 @@ def test_renaming_resets_feature_output_names_to_default(es):
 
     feat = feat.rename("new_feature_name")
     assert feat.get_feature_names() == ["new_feature_name[0]", "new_feature_name[1]"]
+
+
+def test_base_of_and_stack_on_heuristic(es, test_aggregation_primitive):
+    child = Feature(
+        es["sessions"].ww["id"],
+        parent_dataframe_name="customers",
+        primitive=Count,
+    )
+    test_aggregation_primitive.stack_on = []
+    child.primitive.base_of = []
+    assert not can_stack_primitive_on_inputs(test_aggregation_primitive(), [child])
+
+    test_aggregation_primitive.stack_on = []
+    child.primitive.base_of = None
+    assert can_stack_primitive_on_inputs(test_aggregation_primitive(), [child])
+
+    test_aggregation_primitive.stack_on = []
+    child.primitive.base_of = [test_aggregation_primitive]
+    assert can_stack_primitive_on_inputs(test_aggregation_primitive(), [child])
+
+    test_aggregation_primitive.stack_on = None
+    child.primitive.base_of = []
+    assert can_stack_primitive_on_inputs(test_aggregation_primitive(), [child])
+
+    test_aggregation_primitive.stack_on = None
+    child.primitive.base_of = None
+    assert can_stack_primitive_on_inputs(test_aggregation_primitive(), [child])
+
+    test_aggregation_primitive.stack_on = None
+    child.primitive.base_of = [test_aggregation_primitive]
+    assert can_stack_primitive_on_inputs(test_aggregation_primitive(), [child])
+
+    test_aggregation_primitive.stack_on = [type(child.primitive)]
+    child.primitive.base_of = []
+    assert can_stack_primitive_on_inputs(test_aggregation_primitive(), [child])
+
+    test_aggregation_primitive.stack_on = [type(child.primitive)]
+    child.primitive.base_of = None
+    assert can_stack_primitive_on_inputs(test_aggregation_primitive(), [child])
+
+    test_aggregation_primitive.stack_on = [type(child.primitive)]
+    child.primitive.base_of = [test_aggregation_primitive]
+    assert can_stack_primitive_on_inputs(test_aggregation_primitive(), [child])
+
+    test_aggregation_primitive.stack_on = None
+    child.primitive.base_of = None
+    child.primitive.base_of_exclude = [test_aggregation_primitive]
+    assert not can_stack_primitive_on_inputs(test_aggregation_primitive(), [child])
+
+    test_aggregation_primitive.stack_on_exclude = [Count]
+    assert not can_stack_primitive_on_inputs(test_aggregation_primitive(), [child])
+
+    child.primitive.number_output_features = 2
+    test_aggregation_primitive.stack_on_exclude = []
+    test_aggregation_primitive.stack_on = []
+    child.primitive.base_of = []
+    assert not can_stack_primitive_on_inputs(test_aggregation_primitive(), [child])
+
+
+def test_stack_on_self(es, test_transform_primitive):
+    # test stacks on self
+    child = Feature(
+        es["log"].ww["value"],
+        primitive=test_transform_primitive,
+    )
+    test_transform_primitive.stack_on = []
+    child.primitive.base_of = []
+    test_transform_primitive.stack_on_self = False
+    child.primitive.stack_on_self = False
+    assert not can_stack_primitive_on_inputs(test_transform_primitive(), [child])
+
+    test_transform_primitive.stack_on_self = True
+    assert can_stack_primitive_on_inputs(test_transform_primitive(), [child])
+
+    test_transform_primitive.stack_on = None
+    test_transform_primitive.stack_on_self = False
+    assert not can_stack_primitive_on_inputs(test_transform_primitive(), [child])

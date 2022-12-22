@@ -461,6 +461,7 @@ class FeatureSetCalculator(object):
             default_matrix,
             columns=default_cols,
             index=instance_ids,
+            dtype="object",
         )
         index_name = self.entityset[self.feature_set.target_df_name].ww.index
         default_df.index.name = index_name

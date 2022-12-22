@@ -47,8 +47,8 @@ def test_returns_digraph_object(es):
     assert isinstance(graph, graphviz.Digraph)
 
 
-def test_saving_png_file(es, tmpdir):
-    output_path = str(tmpdir.join("test1.png"))
+def test_saving_png_file(es, tmp_path):
+    output_path = str(tmp_path.joinpath("test1.png"))
 
     es.plot(to_file=output_path)
 
@@ -78,7 +78,7 @@ def test_multiple_rows(es):
     plot_ = es.plot()
     result = re.findall(r"\((\d+\srows?)\)", plot_.source)
     expected = ["{} rows".format(str(i.shape[0])) for i in es.dataframes]
-    if es.dataframe_type == Library.DASK.value:
+    if es.dataframe_type == Library.DASK:
         # Dask does not list number of rows in plot
         assert result == []
     else:
@@ -89,7 +89,7 @@ def test_single_row(simple_es):
     plot_ = simple_es.plot()
     result = re.findall(r"\((\d+\srows?)\)", plot_.source)
     expected = ["1 row"]
-    if simple_es.dataframe_type == Library.DASK.value:
+    if simple_es.dataframe_type == Library.DASK:
         # Dask does not list number of rows in plot
         assert result == []
     else:

@@ -1,12 +1,12 @@
 from datetime import datetime
 
+import holidays
 import numpy as np
 import pandas as pd
 import pytest
+from packaging.version import parse
 
-from featuretools.primitives.standard.datetime_transform_primitives import (
-    DistanceToHoliday,
-)
+from featuretools.primitives import DistanceToHoliday
 
 
 def test_distanceholiday():
@@ -36,7 +36,21 @@ def test_holiday_out_of_range():
             datetime(2020, 12, 31),
         ],
     )
-    answer = pd.Series([np.nan, 209, 148, np.nan])
+    days_to_boxing_day = -157 if parse(holidays.__version__) >= parse("0.15.0") else 209
+    edge_case_first_day_of_year = (
+        -6 if parse(holidays.__version__) >= parse("0.17.0") else np.nan
+    )
+    edge_case_last_day_of_year = (
+        -5 if parse(holidays.__version__) >= parse("0.17.0") else np.nan
+    )
+    answer = pd.Series(
+        [
+            edge_case_first_day_of_year,
+            days_to_boxing_day,
+            148,
+            edge_case_last_day_of_year,
+        ],
+    )
     pd.testing.assert_series_equal(date_to_holiday(array), answer, check_names=False)
 
 

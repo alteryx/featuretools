@@ -18,6 +18,7 @@ from featuretools import (
     primitives,
 )
 from featuretools.entityset.relationship import RelationshipPath
+from featuretools.feature_base.cache import feature_cache
 from featuretools.primitives import (
     Count,
     Max,
@@ -32,27 +33,15 @@ from featuretools.primitives import (
     get_aggregation_primitives,
 )
 from featuretools.primitives.base import AggregationPrimitive
-from featuretools.synthesis.deep_feature_synthesis import (
-    DeepFeatureSynthesis,
-    check_stacking,
-    match,
-)
+from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis, match
 from featuretools.tests.testing_utils import backward_path, feature_with_name, to_pandas
 from featuretools.utils.gen_utils import Library
 
 
-@pytest.fixture
-def test_primitive():
-    class TestAgg(AggregationPrimitive):
-        name = "test"
-        input_types = [ColumnSchema(semantic_tags={"numeric"})]
-        return_type = ColumnSchema(semantic_tags={"numeric"})
-        stack_on = []
-
-        def get_function(self, agg_type="pandas"):
-            return None
-
-    return TestAgg
+@pytest.fixture(autouse=True)
+def reset_dfs_cache():
+    feature_cache.enabled = False
+    feature_cache.clear_all()
 
 
 def test_get_depth(es):
@@ -192,75 +181,6 @@ def test_mean_nan(es):
     assert include_nan_feat.get_name() == "MEAN(log.value, skipna=False)"
 
 
-def test_base_of_and_stack_on_heuristic(es, test_primitive):
-    child = Feature(
-        es["sessions"].ww["id"],
-        parent_dataframe_name="customers",
-        primitive=Count,
-    )
-    test_primitive.stack_on = []
-    child.primitive.base_of = []
-    assert not check_stacking(test_primitive(), [child])
-
-    test_primitive.stack_on = []
-    child.primitive.base_of = None
-    assert check_stacking(test_primitive(), [child])
-
-    test_primitive.stack_on = []
-    child.primitive.base_of = [test_primitive]
-    assert check_stacking(test_primitive(), [child])
-
-    test_primitive.stack_on = None
-    child.primitive.base_of = []
-    assert check_stacking(test_primitive(), [child])
-
-    test_primitive.stack_on = None
-    child.primitive.base_of = None
-    assert check_stacking(test_primitive(), [child])
-
-    test_primitive.stack_on = None
-    child.primitive.base_of = [test_primitive]
-    assert check_stacking(test_primitive(), [child])
-
-    test_primitive.stack_on = [type(child.primitive)]
-    child.primitive.base_of = []
-    assert check_stacking(test_primitive(), [child])
-
-    test_primitive.stack_on = [type(child.primitive)]
-    child.primitive.base_of = None
-    assert check_stacking(test_primitive(), [child])
-
-    test_primitive.stack_on = [type(child.primitive)]
-    child.primitive.base_of = [test_primitive]
-    assert check_stacking(test_primitive(), [child])
-
-    test_primitive.stack_on = None
-    child.primitive.base_of = None
-    child.primitive.base_of_exclude = [test_primitive]
-    assert not check_stacking(test_primitive(), [child])
-
-
-def test_stack_on_self(es, test_primitive):
-    # test stacks on self
-    child = Feature(
-        es["log"].ww["value"],
-        parent_dataframe_name="régions",
-        primitive=test_primitive,
-    )
-    test_primitive.stack_on = []
-    child.primitive.base_of = []
-    test_primitive.stack_on_self = False
-    child.primitive.stack_on_self = False
-    assert not check_stacking(test_primitive(), [child])
-
-    test_primitive.stack_on_self = True
-    assert check_stacking(test_primitive(), [child])
-
-    test_primitive.stack_on = None
-    test_primitive.stack_on_self = False
-    assert not check_stacking(test_primitive(), [child])
-
-
 def test_init_and_name(es):
     log = es["log"]
 
@@ -280,11 +200,11 @@ def test_init_and_name(es):
 
     agg_primitives = get_aggregation_primitives().values()
     # If Dask EntitySet use only Dask compatible primitives
-    if es.dataframe_type == Library.DASK.value:
+    if es.dataframe_type == Library.DASK:
         agg_primitives = [
             prim for prim in agg_primitives if Library.DASK in prim.compatibility
         ]
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         agg_primitives = [
             prim for prim in agg_primitives if Library.SPARK in prim.compatibility
         ]
@@ -549,7 +469,7 @@ def test_agg_same_method_name(es):
     that we test here.
     """
     # TODO: Update to work with Dask and Spark
-    if es.dataframe_type != Library.PANDAS.value:
+    if es.dataframe_type != Library.PANDAS:
         pytest.xfail("Need to update to work with Dask and Spark EntitySets")
 
     # test with normally defined functions
@@ -728,7 +648,7 @@ def test_custom_primitive_default_kwargs(es):
 
 
 def test_makes_numtrue(es):
-    if es.dataframe_type == Library.SPARK.value:
+    if es.dataframe_type == Library.SPARK:
         pytest.xfail("Spark EntitySets do not support NumTrue primitive")
     dfs = DeepFeatureSynthesis(
         target_dataframe_name="sessions",

@@ -17,8 +17,7 @@ from featuretools.primitives import (
     NumUnique,
 )
 from featuretools.primitives.utils import serialize_primitive
-
-SCHEMA_VERSION = "9.0.0"
+from featuretools.version import FEATURES_SCHEMA_VERSION
 
 
 def test_single_feature(es):
@@ -27,7 +26,7 @@ def test_single_feature(es):
 
     expected = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [feature.unique_name()],
         "feature_definitions": {feature.unique_name(): feature.to_dictionary()},
@@ -45,7 +44,7 @@ def test_base_features_in_list(es):
 
     expected = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [max_feature.unique_name(), value.unique_name()],
         "feature_definitions": {
@@ -53,7 +52,9 @@ def test_base_features_in_list(es):
             value.unique_name(): value.to_dictionary(),
         },
     }
-    expected["primitive_definitions"] = {"0": serialize_primitive(Max())}
+    expected["primitive_definitions"] = {
+        "0": serialize_primitive(max_feature.primitive),
+    }
     expected["feature_definitions"][max_feature.unique_name()]["arguments"][
         "primitive"
     ] = "0"
@@ -87,14 +88,14 @@ def test_multi_output_features(es):
 
     expected = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": flist,
         "feature_definitions": fdict,
     }
     expected["primitive_definitions"] = {
-        "0": serialize_primitive(threecommon),
-        "1": serialize_primitive(num_unique),
+        "0": serialize_primitive(tc.primitive),
+        "1": serialize_primitive(features[2].primitive),
     }
 
     expected["feature_definitions"][flist[0]]["arguments"]["primitive"] = "0"
@@ -117,7 +118,7 @@ def test_base_features_not_in_list(es):
 
     expected = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [max_feature.unique_name()],
         "feature_definitions": {
@@ -127,8 +128,8 @@ def test_base_features_not_in_list(es):
         },
     }
     expected["primitive_definitions"] = {
-        "0": serialize_primitive(max_primitive),
-        "1": serialize_primitive(mult_primitive),
+        "0": serialize_primitive(max_feature.primitive),
+        "1": serialize_primitive(value_x2.primitive),
     }
     expected["feature_definitions"][max_feature.unique_name()]["arguments"][
         "primitive"
@@ -156,7 +157,7 @@ def test_where_feature_dependency(es):
 
     expected = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [max_feature.unique_name()],
         "feature_definitions": {
@@ -166,7 +167,7 @@ def test_where_feature_dependency(es):
         },
     }
     expected["primitive_definitions"] = {
-        "0": serialize_primitive(max_primitive),
+        "0": serialize_primitive(max_feature.primitive),
     }
     expected["feature_definitions"][max_feature.unique_name()]["arguments"][
         "primitive"
@@ -191,7 +192,7 @@ def test_feature_use_previous_pd_timedelta(es):
 
     expected = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [count_feature.unique_name(), value.unique_name()],
         "feature_definitions": {
@@ -199,7 +200,9 @@ def test_feature_use_previous_pd_timedelta(es):
             value.unique_name(): value.to_dictionary(),
         },
     }
-    expected["primitive_definitions"] = {"0": serialize_primitive(count_primitive)}
+    expected["primitive_definitions"] = {
+        "0": serialize_primitive(count_feature.primitive),
+    }
     expected["feature_definitions"][count_feature.unique_name()]["arguments"][
         "primitive"
     ] = "0"
@@ -223,7 +226,7 @@ def test_feature_use_previous_pd_dateoffset(es):
 
     expected = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [count_feature.unique_name(), value.unique_name()],
         "feature_definitions": {
@@ -231,7 +234,9 @@ def test_feature_use_previous_pd_dateoffset(es):
             value.unique_name(): value.to_dictionary(),
         },
     }
-    expected["primitive_definitions"] = {"0": serialize_primitive(count_primitive)}
+    expected["primitive_definitions"] = {
+        "0": serialize_primitive(count_feature.primitive),
+    }
     expected["feature_definitions"][count_feature.unique_name()]["arguments"][
         "primitive"
     ] = "0"
@@ -252,7 +257,7 @@ def test_feature_use_previous_pd_dateoffset(es):
 
     expected = {
         "ft_version": __version__,
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": FEATURES_SCHEMA_VERSION,
         "entityset": es.to_dictionary(),
         "feature_list": [count_feature.unique_name(), value.unique_name()],
         "feature_definitions": {
@@ -260,7 +265,9 @@ def test_feature_use_previous_pd_dateoffset(es):
             value.unique_name(): value.to_dictionary(),
         },
     }
-    expected["primitive_definitions"] = {"0": serialize_primitive(count_primitive)}
+    expected["primitive_definitions"] = {
+        "0": serialize_primitive(count_feature.primitive),
+    }
     expected["feature_definitions"][count_feature.unique_name()]["arguments"][
         "primitive"
     ] = "0"

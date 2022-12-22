@@ -56,13 +56,13 @@ python -m pip install "featuretools[complete]"
 **Update checker** - Receive automatic notifications of new Featuretools releases
 
 ```
-python -m pip install "featuretools[update_checker]"
+python -m pip install "featuretools[updater]"
 ```
 
 **NLP Primitives** - Use Natural Language Processing Primitives:
 
 ```
-python -m pip install "featuretools[nlp_primitives]"
+python -m pip install "featuretools[nlp]"
 ```
 
 **TSFresh Primitives** - Use 60+ primitives from [tsfresh](https://tsfresh.readthedocs.io/en/latest/) within Featuretools
@@ -71,6 +71,11 @@ python -m pip install "featuretools[nlp_primitives]"
 python -m pip install "featuretools[tsfresh]"
 ```
 
+**SQL** - Automatic EntitySet generation from relational data stored in a SQL database: 
+
+```
+python -m pip install "featuretools[sql]"
+```
 ## Example
 Below is an example of using Deep Feature Synthesis (DFS) to perform automated feature engineering. In this example, we apply DFS to a multi-table dataset consisting of timestamped customer transactions.
 
@@ -101,7 +106,7 @@ customer_id                                                                     
 ```
 We now have a feature vector for each customer that can be used for machine learning. See the [documentation on Deep Feature Synthesis](https://featuretools.alteryx.com/en/stable/getting_started/afe.html) for more examples.
 
-Featuretools contains many [different types of built-in primitives](https://primitives.featurelabs.com/) for creating features. If the primitive you need is not included, Featuretools also allows you to [define your own custom primitives](https://featuretools.alteryx.com/en/stable/getting_started/primitives.html#defining-custom-primitives).
+Featuretools contains many different types of built-in primitives for creating features. If the primitive you need is not included, Featuretools also allows you to [define your own custom primitives](https://featuretools.alteryx.com/en/stable/getting_started/primitives.html#defining-custom-primitives).
 
 ## Demos
 **Predict Next Purchase**

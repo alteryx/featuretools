@@ -2,9 +2,7 @@ import importlib
 import logging
 import re
 import sys
-import warnings
 from enum import Enum
-from itertools import zip_longest
 
 from tqdm import tqdm
 
@@ -14,8 +12,7 @@ logger = logging.getLogger("featuretools.utils")
 def make_tqdm_iterator(**kwargs):
     options = {"file": sys.stdout, "leave": True}
     options.update(kwargs)
-    iterator = tqdm(**options)
-    return iterator
+    return tqdm(**options)
 
 
 def get_relationship_column_id(path):
@@ -39,46 +36,6 @@ def find_descendents(cls):
     for sub in cls.__subclasses__():
         for c in find_descendents(sub):
             yield c
-
-
-def check_schema_version(cls, cls_type):
-    if isinstance(cls_type, str):
-        if cls_type == "entityset":
-            from featuretools.entityset.serialize import SCHEMA_VERSION
-
-            version_string = cls.get("schema_version")
-        elif cls_type == "features":
-            from featuretools.feature_base.features_serializer import SCHEMA_VERSION
-
-            version_string = cls.features_dict["schema_version"]
-
-        current = SCHEMA_VERSION.split(".")
-        current = [int(val) for val in current]
-        saved = version_string.split(".")
-        saved = [int(val) for val in saved]
-
-        warning_text_upgrade = (
-            "The schema version of the saved %s"
-            "(%s) is greater than the latest supported (%s). "
-            "You may need to upgrade featuretools. Attempting to load %s ..."
-            % (cls_type, version_string, SCHEMA_VERSION, cls_type)
-        )
-        for c_num, s_num in zip_longest(current, saved, fillvalue=0):
-            if c_num > s_num:
-                break
-            elif c_num < s_num:
-                warnings.warn(warning_text_upgrade)
-                break
-
-        warning_text_outdated = (
-            "The schema version of the saved %s"
-            "(%s) is no longer supported by this version "
-            "of featuretools. Attempting to load %s ..."
-            % (cls_type, version_string, cls_type)
-        )
-        # Check if saved has older major version.
-        if current[0] > saved[0]:
-            logger.warning(warning_text_outdated)
 
 
 def import_or_raise(library, error_msg):
@@ -140,12 +97,12 @@ def is_instance(obj, modules, classnames):
 
 
 def camel_and_title_to_snake(name):
-    name = re.sub(r"(\d+)", r"_\1", name).strip("_")
+    name = re.sub(r"([^_\d]+)(\d+)", r"\1_\2", name)
     name = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", name).lower()
 
 
-class Library(Enum):
+class Library(str, Enum):
     PANDAS = "pandas"
     DASK = "Dask"
     SPARK = "Spark"

@@ -77,17 +77,12 @@ def test_camel_and_title_to_snake():
     assert camel_and_title_to_snake("top3Words") == "top_3_words"
     assert camel_and_title_to_snake("Top100Words") == "top_100_words"
     assert camel_and_title_to_snake("top100Words") == "top_100_words"
-    assert camel_and_title_to_snake("Sum41") == "sum_41"
-    assert camel_and_title_to_snake("sum41") == "sum_41"
-    assert camel_and_title_to_snake("99LuftBallons") == "99_luft_ballons"
-    assert (
-        camel_and_title_to_snake("AlteryxMachineLearning") == "alteryx_machine_learning"
-    )
-    assert (
-        camel_and_title_to_snake("alteryxMachineLearning") == "alteryx_machine_learning"
-    )
-    assert (
-        camel_and_title_to_snake("alteryx_machine_learning")
-        == "alteryx_machine_learning"
-    )
+    assert camel_and_title_to_snake("Top41") == "top_41"
+    assert camel_and_title_to_snake("top41") == "top_41"
+    assert camel_and_title_to_snake("41TopWords") == "41_top_words"
+    assert camel_and_title_to_snake("TopThreeWords") == "top_three_words"
+    assert camel_and_title_to_snake("topThreeWords") == "top_three_words"
+    assert camel_and_title_to_snake("top_three_words") == "top_three_words"
+    assert camel_and_title_to_snake("over_65") == "over_65"
+    assert camel_and_title_to_snake("65_and_over") == "65_and_over"
     assert camel_and_title_to_snake("USDValue") == "usd_value"

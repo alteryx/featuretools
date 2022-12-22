@@ -19,13 +19,10 @@ from featuretools import (
     primitives,
     save_features,
 )
-from featuretools.entityset.serialize import SCHEMA_VERSION as ENTITYSET_SCHEMA_VERSION
 from featuretools.feature_base import FeatureOutputSlice
+from featuretools.feature_base.cache import feature_cache
 from featuretools.feature_base.features_deserializer import FeaturesDeserializer
-from featuretools.feature_base.features_serializer import (
-    SCHEMA_VERSION,
-    FeaturesSerializer,
-)
+from featuretools.feature_base.features_serializer import FeaturesSerializer
 from featuretools.primitives import (
     Count,
     CumSum,
@@ -55,12 +52,13 @@ from featuretools.primitives import (
 from featuretools.primitives.base import AggregationPrimitive
 from featuretools.tests.testing_utils import check_names
 from featuretools.utils.gen_utils import Library
+from featuretools.version import ENTITYSET_SCHEMA_VERSION, FEATURES_SCHEMA_VERSION
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}_2022_6_30.json".format(
-    SCHEMA_VERSION,
+TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}_2022_09_02.json".format(
+    FEATURES_SCHEMA_VERSION,
     ENTITYSET_SCHEMA_VERSION,
 )
 S3_URL = "s3://featuretools-static/" + TEST_FILE
@@ -69,10 +67,21 @@ TEST_CONFIG = "CheckConfigPassesOn"
 TEST_KEY = "test_access_key_features"
 
 
+@pytest.fixture(autouse=True)
+def reset_dfs_cache():
+    feature_cache.enabled = False
+    feature_cache.clear_all()
+
+
 def assert_features(original, deserialized):
     for feat_1, feat_2 in zip(original, deserialized):
         assert feat_1.unique_name() == feat_2.unique_name()
         assert feat_1.entityset == feat_2.entityset
+
+        # IdentityFeature and DirectFeature objects do not have primitives, so
+        # series library does not need to be compared
+        if not (isinstance(feat_1, (IdentityFeature, DirectFeature))):
+            assert feat_1.primitive.series_library == feat_2.primitive.series_library
 
 
 def pickle_features_test_helper(es_size, features_original, dir_path):
@@ -102,16 +111,16 @@ def pickle_features_test_helper(es_size, features_original, dir_path):
         assert_features(features_original, features_deserialized)
 
 
-def test_pickle_features(es, tmpdir):
+def test_pickle_features(es, tmp_path):
     features_original = dfs(
         target_dataframe_name="sessions",
         entityset=es,
         features_only=True,
     )
-    pickle_features_test_helper(asizeof(es), features_original, str(tmpdir))
+    pickle_features_test_helper(asizeof(es), features_original, str(tmp_path))
 
 
-def test_pickle_features_with_custom_primitive(pd_es, tmpdir):
+def test_pickle_features_with_custom_primitive(pd_es, tmp_path):
     class NewMax(AggregationPrimitive):
         name = "new_max"
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
@@ -125,7 +134,7 @@ def test_pickle_features_with_custom_primitive(pd_es, tmpdir):
     )
 
     assert any([isinstance(feat.primitive, NewMax) for feat in features_original])
-    pickle_features_test_helper(asizeof(pd_es), features_original, str(tmpdir))
+    pickle_features_test_helper(asizeof(pd_es), features_original, str(tmp_path))
 
 
 def test_serialized_renamed_features(es):
@@ -208,8 +217,13 @@ def s3_client():
 
 
 @pytest.fixture
-def s3_bucket(s3_client):
-    s3_client.create_bucket(Bucket=BUCKET_NAME, ACL="public-read-write")
+def s3_bucket(s3_client, region="us-east-2"):
+    location = {"LocationConstraint": region}
+    s3_client.create_bucket(
+        Bucket=BUCKET_NAME,
+        ACL="public-read-write",
+        CreateBucketConfiguration=location,
+    )
     s3_bucket = s3_client.Bucket(BUCKET_NAME)
     yield s3_bucket
 
@@ -244,39 +258,6 @@ def test_serialize_features_mock_anon_s3(es, s3_client, s3_bucket):
 
     features_deserialized = load_features(TEST_S3_URL, profile_name=False)
     assert_features(features_original, features_deserialized)
-
-
-@pytest.fixture
-def setup_test_profile(monkeypatch, tmpdir):
-    cache = str(tmpdir.join(".cache").mkdir())
-    test_path = os.path.join(cache, "test_credentials")
-    test_path_config = os.path.join(cache, "test_config")
-    monkeypatch.setenv("AWS_SHARED_CREDENTIALS_FILE", test_path)
-    monkeypatch.setenv("AWS_CONFIG_FILE", test_path_config)
-    monkeypatch.delenv("AWS_ACCESS_KEY_ID", raising=False)
-    monkeypatch.delenv("AWS_SECRET_ACCESS_KEY", raising=False)
-    monkeypatch.setenv("AWS_PROFILE", "test")
-
-    try:
-        os.remove(test_path)
-        os.remove(test_path_config)
-    except EnvironmentError:
-        pass
-
-    f = open(test_path, "w+")
-    f.write("[test]\n")
-    f.write("aws_access_key_id=AKIAIOSFODNN7EXAMPLE\n")
-    f.write("aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\n")
-    f.close()
-    f = open(test_path_config, "w+")
-    f.write("[profile test]\n")
-    f.write("region=us-east-2\n")
-    f.write("output=text\n")
-    f.close()
-
-    yield
-    os.remove(test_path)
-    os.remove(test_path_config)
 
 
 @pytest.mark.parametrize("profile_name", ["test", False])
@@ -320,6 +301,7 @@ def test_deserialize_features_s3(pd_es, url, profile_name):
         agg_primitives=agg_primitives,
         trans_primitives=trans_primitives,
     )
+
     features_deserialized = load_features(url, profile_name=profile_name)
     assert_features(features_original, features_deserialized)
 
@@ -335,7 +317,7 @@ def test_serialize_url(es):
         save_features(features_original, URL)
 
 
-def test_custom_feature_names_retained_during_serialization(pd_es, tmpdir):
+def test_custom_feature_names_retained_during_serialization(pd_es, tmp_path):
     class MultiCumulative(TransformPrimitive):
         name = "multi_cum_sum"
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
@@ -372,7 +354,7 @@ def test_custom_feature_names_retained_during_serialization(pd_es, tmpdir):
         groupby_trans_feat,
         stacked_feat,
     ]
-    file = os.path.join(tmpdir, "features.json")
+    file = os.path.join(tmp_path, "features.json")
     save_features(features, file)
     deserialized_features = load_features(file)
 
@@ -475,7 +457,7 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
     assert new_scalar5_primitive.value == 5
 
     # Test primitive with multiple args - pandas only due to primitive compatibility
-    if es.dataframe_type == Library.PANDAS.value:
+    if es.dataframe_type == Library.PANDAS:
         distance_to_holiday = DistanceToHoliday(
             holiday="Victoria Day",
             country="Canada",

@@ -8,7 +8,9 @@ jobs:
     name: PyPI Release
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+    - name: Remove docs before release
+      run: rm -rf docs/
     - name: PyPI Upload
       uses: FeatureLabs/gh-action-pypi-upload@v2
       env:
@@ -18,6 +20,6 @@ jobs:
         TEST_PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
     - name: Run workflow to create feedstock pull request
       run: |
-        gh workflow run create_feedstock_pr.yaml --repo "alteryx/featuretools" -f pypi_version=${{ github.event.release.tag_name }}
+        gh workflow run create_feedstock_pr.yaml --repo "alteryx/featuretools" -f version=${{ github.event.release.tag_name }}
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}

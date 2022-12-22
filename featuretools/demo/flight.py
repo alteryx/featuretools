@@ -61,7 +61,7 @@ def load_flight(
     filename, csv_length = get_flight_filename(demo=demo)
 
     print("Downloading data ...")
-    url = "https://api.featurelabs.com/datasets/{}?library=featuretools&version={}".format(
+    url = "https://oss.alteryx.com/datasets/{}?library=featuretools&version={}".format(
         filename,
         ft.__version__,
     )

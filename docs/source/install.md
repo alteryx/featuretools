@@ -31,7 +31,7 @@ $ python -m pip install "featuretools[complete]"
 ```
 ```{tab} NLP Primitives
 ```console
-$ python -m pip install "featuretools[nlp_primitives]"
+$ python -m pip install "featuretools[nlp]"
 ```
 ```{tab} Spark
 ```console
@@ -47,7 +47,15 @@ $ python -m pip install "featuretools[autonormalize]"
 ```
 ```{tab} Update Checker
 ```console
-$ python -m pip install "featuretools[update_checker]"
+$ python -m pip install "featuretools[updater]"
+```
+```{tab} SQL
+```console
+$ python -m pip install "featuretools[sql]"
+```
+```{tab} scikit-learn Transformer
+```console
+$ python -m pip install "featuretools[sklearn]"
 ```
 ````
 ````{tab} Conda
@@ -67,6 +75,10 @@ $ conda install -c conda-forge featuretools-tsfresh-primitives
 ```console
 $ conda install -c conda-forge pyspark
 ```
+```{tab} SQL
+```console
+$ conda install -c conda-forge featuretools_sql
+```
 ```{tab} Update Checker
 ```console
 $ conda install -c conda-forge alteryx-open-src-update-checker
@@ -78,6 +90,8 @@ $ conda install -c conda-forge alteryx-open-src-update-checker
 - **Spark**: Use Woodwork with Spark DataFrames
 - **AutoNormalize**: Automated creation of normalized `EntitySet` from denormalized data
 - **Update Checker**: Receive automatic notifications of new Featuretools releases
+- **SQL**: Automated `EntitySet` creation from relational data stored in a SQL database
+- **scikit-learn Transformer**: Featuretools' DFS as a scikit-learn transformer
 
 ## Installing Graphviz
 

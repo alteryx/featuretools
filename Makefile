@@ -21,11 +21,11 @@ lint-fix:
 
 .PHONY: test
 test:
-	pytest featuretools/
+	pytest featuretools/ -n auto
 
 .PHONY: testcoverage
 testcoverage:
-	pytest featuretools/ --cov=featuretools
+	pytest featuretools/ --cov=featuretools -n auto
 
 .PHONY: installdeps
 installdeps: upgradepip
@@ -34,7 +34,7 @@ installdeps: upgradepip
 
 .PHONY: checkdeps
 checkdeps:
-	$(eval allow_list='holidays|scipy|numpy|pandas|tqdm|cloudpickle|distributed|dask|psutil|click|pyspark|woodwork')
+	$(eval allow_list='holidays|scipy|numpy|pandas|tqdm|cloudpickle|distributed|dask|psutil|pyspark|woodwork')
 	pip freeze | grep -v "alteryx/featuretools.git" | grep -E $(allow_list) > $(OUTPUT_PATH)
 
 .PHONY: upgradepip
@@ -45,8 +45,12 @@ upgradepip:
 upgradebuild:
 	python -m pip install --upgrade build
 
-.PHONY: package_featuretools
-package_featuretools: upgradepip upgradebuild
+.PHONY: upgradesetuptools
+upgradesetuptools:
+	python -m pip install --upgrade setuptools
+
+.PHONY: package
+package: upgradepip upgradebuild upgradesetuptools
 	python -m build
 	$(eval PACKAGE=$(shell python -c "from pep517.meta import load; metadata = load('.'); print(metadata.version)"))
 	tar -zxvf "dist/featuretools-${PACKAGE}.tar.gz"

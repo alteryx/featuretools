@@ -1,4 +1,4 @@
-exclude: ^LICENSE/|\.(html|csv|svg|md)$
+exclude: ^LICENSE/|\.(html|csv|svg|md|txt|json)$
 default_stages: [commit]
 repos:
   - repo: https://github.com/kynan/nbstripout
@@ -27,8 +27,9 @@ repos:
     rev: 5.10.1
     hooks:
       - id: isort
+        args: [--settings-path=./pyproject.toml]
   - repo: https://github.com/python/black
-    rev: 22.3.0
+    rev: 22.6.0
     hooks:
       - id: black
         args: [--target-version=py310]

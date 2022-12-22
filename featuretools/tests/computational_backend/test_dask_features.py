@@ -4,7 +4,7 @@ from dask.base import tokenize
 from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
-def test_tokenize_entityset(pd_es, int_es):
+def test_tokenize_entityset(pd_es, pd_int_es):
     dupe = make_ecommerce_entityset()
 
     # check identitcal entitysets hash to same token
@@ -16,7 +16,7 @@ def test_tokenize_entityset(pd_es, int_es):
     assert tokenize(pd_es) != tokenize(productless)
 
     # not same if integer entityset
-    assert tokenize(pd_es) != tokenize(int_es)
+    assert tokenize(pd_es) != tokenize(pd_int_es)
 
     # add row to cohorts
     cohorts_df = dupe["cohorts"]

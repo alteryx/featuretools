@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from featuretools.primitives.standard.datetime_transform_primitives import DateToHoliday
+from featuretools.primitives import DateToHoliday
 
 
 def test_datetoholiday():
