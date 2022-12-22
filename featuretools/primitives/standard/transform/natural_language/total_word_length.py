@@ -25,7 +25,7 @@ class TotalWordLength(TransformPrimitive):
         >>> x = ['This is a test file', 'This is second line', 'third line $1,000', None]
         >>> total_word_length = TotalWordLength()
         >>> total_word_length(x).tolist()
-        [15.0, 16.0, 14.0, nan]
+        [15.0, 16.0, 13.0, nan]
     """
 
     name = "total_word_length"
