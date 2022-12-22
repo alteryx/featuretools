@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pandas.api.types as pdtypes
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import BooleanNullable, Datetime, Ordinal
@@ -42,7 +43,7 @@ class LessThanEqualToScalar(TransformPrimitive):
                 pdtypes.is_categorical_dtype(vals)
                 and self.value not in vals.cat.categories
             ):
-                return np.nan
+                return vals.where(pd.isnull, np.nan)
             return vals <= self.value
 
         return less_than_equal_to_scalar
