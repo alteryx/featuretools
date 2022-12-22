@@ -941,13 +941,14 @@ def update_feature_columns(feature_data, data):
 
     if isinstance(data, pd.DataFrame):
         return pd.concat([data, pd.DataFrame(new_cols, index=data.index)], axis=1)
-    elif isinstance(data, dd.DataFrame):
+    else:
         for name, col in new_cols.items():
             col.name = name
-            data = dd.concat([data, col], axis=1)
+            if isinstance(data, dd.DataFrame):
+                data = dd.concat([data, col], axis=1)
+            else:
+                data = ps.concat([data, col], axis=1)
         return data
-    else:
-        pass
 
 
 def strip_values_if_series(values):
