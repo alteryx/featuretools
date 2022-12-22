@@ -16,6 +16,7 @@ Future Release
         * Refactor ``_all_direct_and_same_path`` by deleting call to ``_features_have_same_path`` (:pr:`2400`)
         * Refactor ``_build_transform_features`` by iterating over ``input_features`` once (:pr:`2400`) 
         * Iterate only once over ``ignore_columns`` in ``DeepFeatureSynthesis`` init (:pr:`2397`)
+        * Resolve empty Pandas series warnings (:pr:`2403`)
         * Initialize Woodwork with ``init_with_partial_schama`` instead of ``init`` in ``EntitySet.add_last_time_indexes`` (:pr:`2409`)
         * Updates for compatibility with numpy 1.24.0 (:pr:`2414`)
     * Documentation Changes
