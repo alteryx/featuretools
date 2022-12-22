@@ -1,5 +1,3 @@
-from string import punctuation
-
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Double, NaturalLanguage
 
