@@ -18,7 +18,7 @@ class TotalWordLength(TransformPrimitive):
 
     Args:
         delimiters_regex (str): Delimiters as a regex string for splitting text into words.
-            The default delimiters include "- [].,!?;\\n".
+            Defaults to whitespace characters.
 
     Examples:
         >>> x = ['This is a test file', 'This is second line', 'third line $1,000', None]

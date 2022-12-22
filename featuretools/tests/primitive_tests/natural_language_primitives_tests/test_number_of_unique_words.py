@@ -25,8 +25,8 @@ class TestNumberOfUniqueWords(PrimitiveT):
         actual = self.primitive().get_function()(x)
         pd.testing.assert_series_equal(actual, expected, check_names=False)
 
-    def test_special_characters(self):
-        x = pd.Series(["50% 50 50%", "a test* test"])
+    def test_special_characters_and_whitespace(self):
+        x = pd.Series(["50% 50 50% \t\t\t\n\n", "a test* test"])
 
         expected = pd.Series([1, 2])
         actual = self.primitive().get_function()(x)

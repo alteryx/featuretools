@@ -25,7 +25,7 @@ class NumberOfCommonWords(TransformPrimitive):
         word_set (set, optional): The set of words to look for in the string. These
             words should all be lower case strings.
         delimiters_regex (str, optional): The regular expression used to determine
-            what separates words.
+            what separates words. Defaults to whitespace characters.
 
     Examples:
         >>> x = ['Hey! This is some natural language', 'bacon, cheesburger, AND, fries', 'I! Am. A; duck?']
