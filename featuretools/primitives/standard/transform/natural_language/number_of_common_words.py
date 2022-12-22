@@ -7,12 +7,8 @@ from woodwork.logical_types import IntegerNullable, NaturalLanguage
 
 from featuretools.primitives.base import TransformPrimitive
 from featuretools.primitives.standard.transform.natural_language.constants import (
-    common_words_1000,
+    common_words_1000, DELIMITERS
 )
-from featuretools.primitives.standard.transform.natural_language.regular_expressions import (
-    DELIMITERS,
-)
-
 
 class NumberOfCommonWords(TransformPrimitive):
     """Determines the number of common words in a string.
