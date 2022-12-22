@@ -75,7 +75,7 @@ def test_nat():
             "2012-05-31",
             "NaT",
         ],
-    ).astype("datetime64")
+    ).astype("datetime64[ns]")
     answer = [0, np.nan, -151, np.nan]
     given_answer = date_to_holiday(case).astype("float")
     np.testing.assert_array_equal(given_answer, answer)
@@ -90,7 +90,7 @@ def test_valid_country():
             "2017-07-31",
             "2020-12-31",
         ],
-    ).astype("datetime64")
+    ).astype("datetime64[ns]")
     answer = [143, -10, -70, 144]
     given_answer = distance_to_holiday(case).astype("float")
     np.testing.assert_array_equal(given_answer, answer)
