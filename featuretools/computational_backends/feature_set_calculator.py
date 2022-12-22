@@ -507,7 +507,9 @@ class FeatureSetCalculator(object):
         for f in features:
             # handle when no data
             if frame_empty:
-                feature_values.append((f, [[] for _ in range(f.number_output_features)]))
+                feature_values.append(
+                    (f, [[] for _ in range(f.number_output_features)]),
+                )
                 progress_callback(1 / float(self.num_features))
                 continue
 
@@ -543,7 +545,10 @@ class FeatureSetCalculator(object):
             for name in f.get_feature_names():
                 default_values[name] = f.default_value
 
-        frame = pd.concat([frame, pd.DataFrame(default_values, index=frame.index)], axis=1)
+        frame = pd.concat(
+            [frame, pd.DataFrame(default_values, index=frame.index)],
+            axis=1,
+        )
 
         # handle when no data
         if frame.shape[0] == 0:
@@ -936,8 +941,14 @@ def update_feature_columns(feature_data, data):
 
     if isinstance(data, pd.DataFrame):
         return pd.concat([data, pd.DataFrame(new_cols, index=data.index)], axis=1)
+    elif isinstance(data, dd.DataFrame):
+        for name, col in new_cols.items():
+            col.name = name
+            data = dd.concat([data, col], axis=1)
+        return data
     else:
         pass
+
 
 def strip_values_if_series(values):
     if isinstance(values, pd.Series):
