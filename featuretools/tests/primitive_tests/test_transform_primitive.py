@@ -627,9 +627,9 @@ def test_is_free_email_domain_empty_string():
 
 def test_is_free_email_domain_empty_series():
     is_free_email_domain = IsFreeEmailDomain()
-    array = pd.Series([])
+    array = pd.Series([], dtype="category")
     answers = pd.Series(is_free_email_domain(array))
-    correct_answers = pd.Series([])
+    correct_answers = pd.Series([], dtype="category")
     pd.testing.assert_series_equal(answers, correct_answers)
 
 
@@ -711,9 +711,9 @@ def test_email_address_to_domain_empty_string():
 
 def test_email_address_to_domain_empty_series():
     email_address_to_domain = EmailAddressToDomain()
-    array = pd.Series([])
+    array = pd.Series([], dtype="category")
     answers = pd.Series(email_address_to_domain(array))
-    correct_answers = pd.Series([])
+    correct_answers = pd.Series([], dtype="category")
     pd.testing.assert_series_equal(answers, correct_answers)
 
 

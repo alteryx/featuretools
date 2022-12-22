@@ -1262,7 +1262,7 @@ class EntitySet(object):
                         lti_df["last_time_old"] = es_lti_dict[dataframe.ww.name]
                     if not (lti_is_dask or lti_is_spark) and lti_df.empty:
                         # Pandas errors out if it tries to do fillna and then max on an empty dataframe
-                        lti_df = pd.Series()
+                        lti_df = pd.Series([], dtype="object")
                     else:
                         if lti_is_spark:
                             lti_df["last_time"] = ps.to_datetime(lti_df["last_time"])
