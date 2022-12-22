@@ -22,7 +22,7 @@ class TestNumberOfCommonWords(PrimitiveT):
             ],
         )
 
-        expected = pd.Series([2, 1, 1])
+        expected = pd.Series([2, 2, 1])
         actual = self.primitive(
             word_set=self.test_word_bank,
             delimiters_regex="[ ,;]",

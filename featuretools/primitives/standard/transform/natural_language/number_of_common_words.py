@@ -49,14 +49,11 @@ class NumberOfCommonWords(TransformPrimitive):
 
     def __init__(
         self,
-        word_set=None,
+        word_set=set(common_words_1000),
         delimiters_regex=DELIMITERS,
     ):
         self.delimiters_regex = delimiters_regex
-        if word_set:
-            self.word_set = word_set
-        else:
-            self.word_set = frozenset(common_words_1000)
+        self.word_set = word_set
 
     def get_function(self):
         def get_num_in_word_bank(words):
