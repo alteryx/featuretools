@@ -1,3 +1,4 @@
+from string import punctuation
 from typing import Iterable
 
 import pandas as pd
@@ -34,11 +35,10 @@ class NumberOfCommonWords(TransformPrimitive):
         >>> number_of_common_words(x).tolist()
         [2, 1, 3]
 
-        >>> # regex doesn't include a ! so 'Hey!' gets matched to the wordset instead of 'Hey'
         >>> x = ['Hey! This is. some. natural language']
         >>> number_of_common_words = NumberOfCommonWords(word_set={'hey', 'is', 'some'}, delimiters_regex="[ .]")
         >>> number_of_common_words(x).tolist()
-        [2]
+        [3]
     """
 
     name = "number_of_common_words"
@@ -56,7 +56,7 @@ class NumberOfCommonWords(TransformPrimitive):
         if word_set:
             self.word_set = word_set
         else:
-            self.word_set = set(common_words_1000)
+            self.word_set = frozenset(common_words_1000)
 
     def get_function(self):
         def get_num_in_word_bank(words):
@@ -64,7 +64,7 @@ class NumberOfCommonWords(TransformPrimitive):
                 return pd.NA
             num_common_words = 0
             for w in words:
-                if w.lower() in self.word_set:  # assumes word_set is all lowercase
+                if w.lower().strip(punctuation) in self.word_set:  # assumes word_set is all lowercase
                     num_common_words += 1
             return num_common_words
 
