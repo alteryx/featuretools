@@ -891,18 +891,23 @@ def ascii_lowercase_test_strings():
 def ascii_uppercase_test_strings():
     return generate_shuffled_test_strings(ascii_uppercase, 50, 500)
 
-@pytest.fixture
-def return_strings_that_have_triggered_errors_before():
-    return ["    ", '"This Borderlands game here"" is the perfect conclusion to the ""Borderlands 3"" line, which focuses on the fans ""favorite character and gives the players the opportunity to close for a long time some very important questions about\'s character and the memorable scenery with which the players interact.',]
 
 @pytest.fixture
-def combined_test_strings(return_strings_that_have_triggered_backtracking_before):
+def return_strings_that_have_triggered_errors_before():
+    return [
+        "    ",
+        '"This Borderlands game here"" is the perfect conclusion to the ""Borderlands 3"" line, which focuses on the fans ""favorite character and gives the players the opportunity to close for a long time some very important questions about\'s character and the memorable scenery with which the players interact.',
+    ]
+
+
+@pytest.fixture
+def combined_test_strings(return_strings_that_have_triggered_errors_before):
     combined_string = (
         generate_shuffled_test_strings(punctuation, 50, 50)
         + generate_shuffled_test_strings(whitespace, 50, 50)
         + generate_shuffled_test_strings(ascii_lowercase, 50, 50)
         + generate_shuffled_test_strings(ascii_uppercase, 50, 50)
-        + return_strings_that_have_triggered_backtracking_before
+        + return_strings_that_have_triggered_errors_before
     )
     shuffle(combined_string)
     combined_string = "".join(combined_string)
