@@ -1,6 +1,8 @@
 import contextlib
 import copy
 import os
+from random import shuffle
+from string import ascii_lowercase, ascii_uppercase, punctuation, whitespace
 
 import composeml as cp
 import dask.dataframe as dd
@@ -858,3 +860,61 @@ def test_transform_primitive():
         stack_on = []
 
     return TestTransform
+
+
+def generate_shuffled_test_strings(string_domain, num_strings, string_length):
+    test_corpus = []
+    for _ in range(num_strings):
+        test_string = [i for i in string_domain] * string_length
+        shuffle(test_string)
+        test_string = "".join(test_string)
+        test_corpus.append(test_string)
+    return test_corpus
+
+
+@pytest.fixture
+def punctuation_test_strings():
+    # generate random combinations of punctuation marks
+    return generate_shuffled_test_strings(punctuation, 50, 500)
+
+
+@pytest.fixture
+def whitespace_test_strings():
+    # generate random combinations of whitespace
+    return generate_shuffled_test_strings(whitespace, 50, 500)
+
+
+@pytest.fixture
+def ascii_lowercase_test_strings():
+    return generate_shuffled_test_strings(ascii_lowercase, 50, 500)
+
+
+@pytest.fixture
+def ascii_uppercase_test_strings():
+    return generate_shuffled_test_strings(ascii_uppercase, 50, 500)
+
+
+@pytest.fixture
+def combined_test_strings():
+    combined_string = (
+        generate_shuffled_test_strings(punctuation, 50, 50)
+        + generate_shuffled_test_strings(whitespace, 50, 50)
+        + generate_shuffled_test_strings(ascii_lowercase, 50, 50)
+        + generate_shuffled_test_strings(ascii_uppercase, 50, 50)
+    )
+    shuffle(combined_string)
+    combined_string = "".join(combined_string)
+    return combined_string
+
+
+@pytest.fixture(
+    params=[
+        "punctuation_test_strings",
+        "whitespace_test_strings",
+        "ascii_lowercase_test_strings",
+        "ascii_uppercase_test_strings",
+        "combined_test_strings",
+    ]
+)
+def shuffled_test_strings(request):
+    return request.getfixturevalue(request.param)
