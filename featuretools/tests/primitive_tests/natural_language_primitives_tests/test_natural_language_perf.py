@@ -1,4 +1,5 @@
 import signal
+from platform import system
 
 import pandas as pd
 import pytest
@@ -18,11 +19,11 @@ from featuretools.primitives import (
     UpperCaseCount,
     WhitespaceCount,
 )
-from platform import system
 
 TIMEOUT_THRESHOLD = 20
 
 if system == "Linux" or system == "Darwin":
+
     @pytest.mark.parametrize(
         "primitive",
         [
