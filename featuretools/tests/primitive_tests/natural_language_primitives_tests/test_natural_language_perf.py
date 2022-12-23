@@ -1,5 +1,4 @@
 import signal
-from time import sleep
 
 import pandas as pd
 import pytest
@@ -12,7 +11,10 @@ from featuretools.primitives import (
     NumberOfMentions,
     NumberOfUniqueWords,
     NumberOfWordsInQuotes,
+    NumUniqueSeparators,
     PunctuationCount,
+    TitleWordCount,
+    TotalWordLength,
     UpperCaseCount,
     WhitespaceCount,
 )
@@ -26,6 +28,9 @@ TIMEOUT_THRESHOLD = 20
         CountString,
         MeanCharactersPerWord,
         MedianWordLength,
+        NumUniqueSeparators,
+        TitleWordCount,
+        TotalWordLength,
         NumberOfHashtags,
         NumberOfMentions,
         NumberOfUniqueWords,
