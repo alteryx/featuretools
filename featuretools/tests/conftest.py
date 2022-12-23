@@ -874,13 +874,11 @@ def generate_shuffled_test_strings(string_domain, num_strings, string_length):
 
 @pytest.fixture
 def punctuation_test_strings():
-    # generate random combinations of punctuation marks
     return generate_shuffled_test_strings(punctuation, 50, 500)
 
 
 @pytest.fixture
 def whitespace_test_strings():
-    # generate random combinations of whitespace
     return generate_shuffled_test_strings(whitespace, 50, 500)
 
 

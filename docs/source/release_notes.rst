@@ -22,6 +22,7 @@ Future Release
     * Documentation Changes
         *  Remove unused sections from 1.19.0 notes (:pr:`2396`)
     * Testing Changes
+        * Add randomized testing for NaturalLanguage primitives (:pr:`2429`)
 
    Thanks to the following people for contributing to this release:
    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
