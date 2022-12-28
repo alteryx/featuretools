@@ -343,6 +343,8 @@ def serialize_primitive(primitive):
     """build a dictionary with the data necessary to construct the given primitive"""
     args_dict = {name: val for name, val in primitive.get_arguments()}
     cls = type(primitive)
+    if cls.__name__ == "NumberOfCommonWords":
+        args_dict["word_set"] = list(args_dict["word_set"])
     return {
         "type": cls.__name__,
         "module": cls.__module__,

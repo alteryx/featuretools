@@ -1,6 +1,7 @@
 import os
 
 import boto3
+import pandas as pd
 import pytest
 from pympler.asizeof import asizeof
 from smart_open import open
@@ -17,7 +18,7 @@ from featuretools import (
     feature_base,
     load_features,
     primitives,
-    save_features,
+    save_features, EntitySet,
 )
 from featuretools.feature_base import FeatureOutputSlice
 from featuretools.feature_base.cache import feature_cache
@@ -38,6 +39,7 @@ from featuretools.primitives import (
     MultiplyNumericScalar,
     Negate,
     NMostCommon,
+    NumberOfCommonWords,
     NumCharacters,
     NumUnique,
     NumWords,
@@ -515,3 +517,16 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
     new_is_in_primitive = new_is_in_features[0].primitive
     assert all([f.primitive is new_is_in_primitive for f in new_is_in_features])
     assert new_is_in_primitive.list_of_outputs == [5, True, "coke zero"]
+
+
+def test_common_word_set_is_serialized_for_number_of_common_words_feature(pd_es):
+    common_word_set = {"hello", "my"}
+    df = pd.DataFrame({"text": ["hello my name is hi"]})
+    es = EntitySet()
+    es.add_dataframe(dataframe_name="df", index="idx", dataframe=df, make_index=True)
+
+    num_common_words = NumberOfCommonWords(word_set=common_word_set)
+    fm, fd = dfs(entityset=es, target_dataframe_name="df", trans_primitives=[num_common_words])
+
+    feat = fd[-1]
+    save_features([feat])
