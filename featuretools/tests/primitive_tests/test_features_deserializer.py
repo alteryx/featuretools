@@ -9,7 +9,7 @@ from featuretools import (
     Feature,
     IdentityFeature,
     TransformFeature,
-    __version__,
+    __version__, EntitySet,
 )
 from featuretools.feature_base.features_deserializer import FeaturesDeserializer
 from featuretools.primitives import (
@@ -17,7 +17,7 @@ from featuretools.primitives import (
     Max,
     MultiplyNumericScalar,
     NMostCommon,
-    NumUnique,
+    NumUnique, NumberOfCommonWords,
 )
 from featuretools.primitives.utils import serialize_primitive
 from featuretools.utils.schema_utils import FEATURES_SCHEMA_VERSION
@@ -333,6 +333,21 @@ def test_feature_use_previous_pd_dateoffset(es):
 
     expected = [count_feature, value]
     assert expected == deserializer.to_list()
+
+def test_word_set_in_number_of_common_words_is_deserialized_back_into_a_set(es):
+    id_feat = IdentityFeature(es["log"].ww["comments"])
+    number_of_common_words = NumberOfCommonWords(word_set={"hello", "my"})
+    transform_feat = TransformFeature(id_feat, number_of_common_words)
+    dictionary = {"ft_version": __version__, "schema_version": FEATURES_SCHEMA_VERSION, "entityset": es.to_dictionary(),
+                  "feature_list": [id_feat.unique_name(), transform_feat.unique_name()], "feature_definitions": {
+            id_feat.unique_name(): id_feat.to_dictionary(),
+            transform_feat.unique_name(): transform_feat.to_dictionary(),
+        }, "primitive_definitions": {"0": serialize_primitive(number_of_common_words)}}
+    dictionary["feature_definitions"][transform_feat.unique_name()]["arguments"][
+        "primitive"
+    ] = "0"
+    deserializer = FeaturesDeserializer(dictionary)
+    assert isinstance(deserializer.features_dict['primitive_definitions']['0']['arguments']['word_set'], set)
 
 
 def _check_schema_version(version, es, warning_text, caplog, warning_type=None):
