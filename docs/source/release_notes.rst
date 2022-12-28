@@ -12,6 +12,7 @@ Future Release
         * Fix typo in ``_handle_binary_comparison`` function name and update ``set_feature_names`` docstring (:pr:`2388`)
         * Only allow Datetime time index as input to ``RateOfChange`` primitive (:pr:`2408`)
         * Prevent catastrophic backtracking in regex for ``NumberOfWordsInQuotes`` (:pr:`2413`)
+        * Fix serialization of ``NumberOfCommonWords`` feature with custom word_set (:pr:`2432`)
     * Changes
         * Refactor ``_all_direct_and_same_path`` by deleting call to ``_features_have_same_path`` (:pr:`2400`)
         * Refactor ``_build_transform_features`` by iterating over ``input_features`` once (:pr:`2400`) 
@@ -36,7 +37,6 @@ v1.19.0 Dec 9, 2022
         * Fix DeepFeatureSynthesis to consider the ``base_of_exclude`` family of attributes when creating transform features(:pr:`2380`)
         * Fix bug with negative version numbers in ``test_version`` (:pr:`2389`)
         * Fix bug in ``MultiplyNumericBoolean`` primitive that can cause an error with certain input dtype combinations (:pr:`2393`)
-        * Fix serialization of ``NumberOfCommonWords`` feature with custom word_set (:pr:`1907`)
     * Testing Changes
         * Fix version comparison in ``test_holiday_out_of_range`` (:pr:`2382`)
 
