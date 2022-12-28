@@ -10,6 +10,7 @@ from woodwork.column_schema import ColumnSchema
 from featuretools import (
     AggregationFeature,
     DirectFeature,
+    EntitySet,
     Feature,
     GroupByTransformFeature,
     IdentityFeature,
@@ -18,7 +19,7 @@ from featuretools import (
     feature_base,
     load_features,
     primitives,
-    save_features, EntitySet,
+    save_features,
 )
 from featuretools.feature_base import FeatureOutputSlice
 from featuretools.feature_base.cache import feature_cache
@@ -519,14 +520,18 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
     assert new_is_in_primitive.list_of_outputs == [5, True, "coke zero"]
 
 
-def test_common_word_set_is_serialized_for_number_of_common_words_feature(pd_es):
+def test_can_serialize_word_set_for_number_of_common_words_feature(pd_es):
+    # The word_set argument is passed in as a set, which is not JSON-serializable.
+    # This test checks internal logic that converts the set to a list so it can be serialized
     common_word_set = {"hello", "my"}
     df = pd.DataFrame({"text": ["hello my name is hi"]})
     es = EntitySet()
     es.add_dataframe(dataframe_name="df", index="idx", dataframe=df, make_index=True)
 
     num_common_words = NumberOfCommonWords(word_set=common_word_set)
-    fm, fd = dfs(entityset=es, target_dataframe_name="df", trans_primitives=[num_common_words])
+    fm, fd = dfs(
+        entityset=es, target_dataframe_name="df", trans_primitives=[num_common_words]
+    )
 
     feat = fd[-1]
     save_features([feat])

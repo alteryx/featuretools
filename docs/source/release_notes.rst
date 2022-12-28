@@ -36,6 +36,7 @@ v1.19.0 Dec 9, 2022
         * Fix DeepFeatureSynthesis to consider the ``base_of_exclude`` family of attributes when creating transform features(:pr:`2380`)
         * Fix bug with negative version numbers in ``test_version`` (:pr:`2389`)
         * Fix bug in ``MultiplyNumericBoolean`` primitive that can cause an error with certain input dtype combinations (:pr:`2393`)
+        * Fix serialization of ``NumberOfCommonWords`` feature with custom word_set (:pr:`1907`)
     * Testing Changes
         * Fix version comparison in ``test_holiday_out_of_range`` (:pr:`2382`)
 
