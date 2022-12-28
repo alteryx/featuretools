@@ -3,6 +3,12 @@
 Release Notes
 -------------
 
+Breaking Changes
+++++++++++++++++
+* The `delimiter_regex` parameter for ``TotalWordLength`` has been renamed to `do_not_count`.
+  Old features that had a non-default value for the parameter will no longer load.
+
+
 Future Release
 ==============
     * Enhancements
@@ -13,6 +19,7 @@ Future Release
         * Fix typo in ``_handle_binary_comparison`` function name and update ``set_feature_names`` docstring (:pr:`2388`)
         * Only allow Datetime time index as input to ``RateOfChange`` primitive (:pr:`2408`)
         * Prevent catastrophic backtracking in regex for ``NumberOfWordsInQuotes`` (:pr:`2413`)
+        * Improve edge case handling in NaturalLanguage primitives by standardizing delimiter regex (:pr:`2423`)
     * Changes
         * Refactor ``_all_direct_and_same_path`` by deleting call to ``_features_have_same_path`` (:pr:`2400`)
         * Refactor ``_build_transform_features`` by iterating over ``input_features`` once (:pr:`2400`) 
