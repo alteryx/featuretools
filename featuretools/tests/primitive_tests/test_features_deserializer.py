@@ -6,7 +6,6 @@ import pytest
 
 from featuretools import (
     AggregationFeature,
-    EntitySet,
     Feature,
     IdentityFeature,
     TransformFeature,
