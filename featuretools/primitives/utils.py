@@ -8,6 +8,7 @@ from woodwork import list_logical_types, list_semantic_tags
 from woodwork.column_schema import ColumnSchema
 
 import featuretools
+from featuretools.primitives import NumberOfCommonWords
 from featuretools.primitives.base import (
     AggregationPrimitive,
     PrimitiveBase,
@@ -343,7 +344,7 @@ def serialize_primitive(primitive):
     """build a dictionary with the data necessary to construct the given primitive"""
     args_dict = {name: val for name, val in primitive.get_arguments()}
     cls = type(primitive)
-    if cls.__name__ == "NumberOfCommonWords" and "word_set" in args_dict:
+    if cls == NumberOfCommonWords and "word_set" in args_dict:
         args_dict["word_set"] = list(args_dict["word_set"])
     return {
         "type": cls.__name__,
@@ -387,7 +388,7 @@ class PrimitivesDeserializer(object):
                 'Primitive "%s" in module "%s" not found' % (class_name, module_name),
             )
         arguments = primitive_dict["arguments"]
-        if cls.__name__ == "NumberOfCommonWords" and "word_set" in arguments:
+        if cls == NumberOfCommonWords and "word_set" in arguments:
             # We converted word_set from a set to a list to make it serializable,
             # we should convert it back now.
             arguments["word_set"] = set(arguments["word_set"])
