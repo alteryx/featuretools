@@ -3,6 +3,7 @@
 Release Notes
 -------------
 
+
 Future Release
 ==============
     * Enhancements
@@ -13,6 +14,7 @@ Future Release
         * Only allow Datetime time index as input to ``RateOfChange`` primitive (:pr:`2408`)
         * Prevent catastrophic backtracking in regex for ``NumberOfWordsInQuotes`` (:pr:`2413`)
         * Fix serialization of ``NumberOfCommonWords`` feature with custom word_set (:pr:`2432`)
+        * Improve edge case handling in NaturalLanguage primitives by standardizing delimiter regex (:pr:`2423`)
     * Changes
         * Refactor ``_all_direct_and_same_path`` by deleting call to ``_features_have_same_path`` (:pr:`2400`)
         * Refactor ``_build_transform_features`` by iterating over ``input_features`` once (:pr:`2400`) 
@@ -20,6 +22,7 @@ Future Release
         * Resolve empty Pandas series warnings (:pr:`2403`)
         * Initialize Woodwork with ``init_with_partial_schama`` instead of ``init`` in ``EntitySet.add_last_time_indexes`` (:pr:`2409`)
         * Updates for compatibility with numpy 1.24.0 (:pr:`2414`)
+        * The `delimiter_regex` parameter for ``TotalWordLength`` has been renamed to `do_not_count` (:pr:`2423`)
     * Documentation Changes
         *  Remove unused sections from 1.19.0 notes (:pr:`2396`)
     * Testing Changes
@@ -27,6 +30,11 @@ Future Release
    Thanks to the following people for contributing to this release:
    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
+
+Breaking Changes
+++++++++++++++++
+* The `delimiter_regex` parameter for ``TotalWordLength`` has been renamed to `do_not_count`.
+  Old saved features that had a non-default value for the parameter will no longer load.
 
 v1.19.0 Dec 9, 2022
 ===================
