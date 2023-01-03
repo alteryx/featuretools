@@ -2,6 +2,9 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Double, NaturalLanguage
 
 from featuretools.primitives.base import TransformPrimitive
+from featuretools.primitives.standard.transform.natural_language.constants import (
+    PUNCTUATION_AND_WHITESPACE,
+)
 
 
 class TotalWordLength(TransformPrimitive):
@@ -15,13 +18,13 @@ class TotalWordLength(TransformPrimitive):
 
     Args:
         delimiters_regex (str): Delimiters as a regex string for splitting text into words.
-            The default delimiters include "- [].,!?;\\n".
+            Defaults to whitespace characters.
 
     Examples:
         >>> x = ['This is a test file', 'This is second line', 'third line $1,000', None]
         >>> total_word_length = TotalWordLength()
         >>> total_word_length(x).tolist()
-        [15.0, 16.0, 14.0, nan]
+        [15.0, 16.0, 13.0, nan]
     """
 
     name = "total_word_length"
@@ -30,12 +33,11 @@ class TotalWordLength(TransformPrimitive):
 
     default_value = 0
 
-    def __init__(self, delimiters_regex=r"[- \[\].,!\?;\n]"):
-        self.delimiters_regex = delimiters_regex
+    def __init__(self, do_not_count=PUNCTUATION_AND_WHITESPACE):
+        self.do_not_count = do_not_count
 
     def get_function(self):
         def total_word_length(x):
-            delimiters = x.str.count(self.delimiters_regex)
-            return x.str.len() - delimiters
+            return x.str.len() - x.str.count(self.do_not_count)
 
         return total_word_length
