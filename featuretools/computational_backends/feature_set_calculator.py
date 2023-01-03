@@ -508,7 +508,7 @@ class FeatureSetCalculator(object):
             # handle when no data
             if frame_empty:
                 feature_values.append(
-                    (f, [[] for _ in range(f.number_output_features)]),
+                    (f, [f.default_value for _ in range(f.number_output_features)]),
                 )
                 progress_callback(1 / float(self.num_features))
                 continue
