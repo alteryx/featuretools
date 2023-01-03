@@ -1,4 +1,3 @@
-import re
 from string import punctuation
 from typing import Iterable
 
@@ -7,6 +6,9 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import IntegerNullable, NaturalLanguage
 
 from featuretools.primitives.base import TransformPrimitive
+from featuretools.primitives.standard.transform.natural_language.constants import (
+    DELIMITERS,
+)
 
 
 class NumberOfUniqueWords(TransformPrimitive):
@@ -56,10 +58,7 @@ class NumberOfUniqueWords(TransformPrimitive):
         def num_unique_words(array):
             if self.case_insensitive:
                 array = array.str.lower()
-            DELIMITERS = set(punctuation) - {".", "'", "-", "@"}
-            DELIMITERS = "".join(list(DELIMITERS))
-            DELIMITERS = re.escape(f" {DELIMITERS}\n\t")
-            array = array.str.split(f"[{DELIMITERS}]")
+            array = array.str.split(f"{DELIMITERS}")
             return array.apply(_unique_word_helper)
 
         return num_unique_words
