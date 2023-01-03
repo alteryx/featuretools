@@ -1,6 +1,7 @@
 import os
 
 import boto3
+import pandas as pd
 import pytest
 from pympler.asizeof import asizeof
 from smart_open import open
@@ -9,6 +10,7 @@ from woodwork.column_schema import ColumnSchema
 from featuretools import (
     AggregationFeature,
     DirectFeature,
+    EntitySet,
     Feature,
     GroupByTransformFeature,
     IdentityFeature,
@@ -38,6 +40,7 @@ from featuretools.primitives import (
     MultiplyNumericScalar,
     Negate,
     NMostCommon,
+    NumberOfCommonWords,
     NumCharacters,
     NumUnique,
     NumWords,
@@ -57,7 +60,7 @@ from featuretools.version import ENTITYSET_SCHEMA_VERSION, FEATURES_SCHEMA_VERSI
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}_2022_09_02.json".format(
+TEST_FILE = "test_feature_serialization_feature_schema_{}_entityset_schema_{}_2022_12_28.json".format(
     FEATURES_SCHEMA_VERSION,
     ENTITYSET_SCHEMA_VERSION,
 )
@@ -515,3 +518,20 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
     new_is_in_primitive = new_is_in_features[0].primitive
     assert all([f.primitive is new_is_in_primitive for f in new_is_in_features])
     assert new_is_in_primitive.list_of_outputs == [5, True, "coke zero"]
+
+
+def test_can_serialize_word_set_for_number_of_common_words_feature(pd_es):
+    # The word_set argument is passed in as a set, which is not JSON-serializable.
+    # This test checks internal logic that converts the set to a list so it can be serialized
+    common_word_set = {"hello", "my"}
+    df = pd.DataFrame({"text": ["hello my name is hi"]})
+    es = EntitySet()
+    es.add_dataframe(dataframe_name="df", index="idx", dataframe=df, make_index=True)
+
+    num_common_words = NumberOfCommonWords(word_set=common_word_set)
+    fm, fd = dfs(
+        entityset=es, target_dataframe_name="df", trans_primitives=[num_common_words]
+    )
+
+    feat = fd[-1]
+    save_features([feat])

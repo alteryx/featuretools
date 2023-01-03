@@ -1262,7 +1262,7 @@ class EntitySet(object):
                         lti_df["last_time_old"] = es_lti_dict[dataframe.ww.name]
                     if not (lti_is_dask or lti_is_spark) and lti_df.empty:
                         # Pandas errors out if it tries to do fillna and then max on an empty dataframe
-                        lti_df = pd.Series()
+                        lti_df = pd.Series([], dtype="object")
                     else:
                         if lti_is_spark:
                             lti_df["last_time"] = ps.to_datetime(lti_df["last_time"])
@@ -1322,7 +1322,7 @@ class EntitySet(object):
                 # Add the new column to the DataFrame
                 if isinstance(df, dd.DataFrame):
                     new_df = df.merge(lti.reset_index(), on=df.ww.index)
-                    new_df.ww.init(
+                    new_df.ww.init_with_partial_schema(
                         schema=df.ww.schema,
                         logical_types={LTI_COLUMN_NAME: lti_ltype},
                     )
@@ -1333,7 +1333,7 @@ class EntitySet(object):
                     dfs_to_update[df.ww.name] = new_df
                 elif is_instance(df, ps, "DataFrame"):
                     new_df = df.merge(lti, left_on=df.ww.index, right_index=True)
-                    new_df.ww.init(
+                    new_df.ww.init_with_partial_schema(
                         schema=df.ww.schema,
                         logical_types={LTI_COLUMN_NAME: lti_ltype},
                     )

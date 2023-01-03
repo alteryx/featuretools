@@ -6,6 +6,9 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import IntegerNullable, NaturalLanguage
 
 from featuretools.primitives.base import TransformPrimitive
+from featuretools.primitives.standard.transform.natural_language.constants import (
+    DELIMITERS,
+)
 
 
 class NumberOfWordsInQuotes(TransformPrimitive):
@@ -44,37 +47,24 @@ class NumberOfWordsInQuotes(TransformPrimitive):
                 f"{quote_type} is not a valid quote_type. Specify 'both', 'single', or 'double'",
             )
         self.quote_type = quote_type
-        IN_DOUBLE_QUOTES = r'((^|\W)"(.|\s)*?"(?!\w))'
-        IN_SINGLE_QUOTES = r"((^|\W)'(.|\s)*?'(?!\w))"
+        IN_DOUBLE_QUOTES = r'((^|\W)"(.)*?"(?!\w))'
+        IN_SINGLE_QUOTES = r"((^|\W)'(.)*?'(?!\w))"
         if quote_type == "double":
             self.regex = IN_DOUBLE_QUOTES
         elif quote_type == "single":
             self.regex = IN_SINGLE_QUOTES
         else:
             self.regex = f"({IN_SINGLE_QUOTES}|{IN_DOUBLE_QUOTES})"
-        self.DELIMITERS = set(punctuation) - {
-            '"',
-            ".",
-            "'",
-            ",",
-            "-",
-            ":",
-            "@",
-            "/",
-            "\\",
-        }
-        self.DELIMITERS = "".join(list(self.DELIMITERS))
-        self.DELIMITERS = re.escape(f" {self.DELIMITERS}\n\t")
 
     def get_function(self):
         def count_words_in_quotes(text):
             if pd.isnull(text):
                 return pd.NA
-            matches = re.findall(self.regex, text)
+            matches = re.findall(self.regex, text, re.DOTALL)
             count = 0
             for match in matches:
                 matched_phrase = match[0]
-                words = re.split(f"[{self.DELIMITERS}]", matched_phrase)
+                words = re.split(f"{DELIMITERS}", matched_phrase)
                 for word in words:
                     if len(word.strip(punctuation + " ")):
                         count += 1

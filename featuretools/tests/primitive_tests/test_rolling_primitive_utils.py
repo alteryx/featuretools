@@ -40,7 +40,7 @@ def test_get_rolled_series_without_gap_not_uniform(window_series_pd):
 
 
 def test_get_rolled_series_without_gap_empty_series(window_series_pd):
-    empty_series = pd.Series()
+    empty_series = pd.Series([], dtype="object")
     assert len(_get_rolled_series_without_gap(empty_series, "1D")) == 0
     assert len(_get_rolled_series_without_gap(empty_series, "0D")) == 0
 
