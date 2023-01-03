@@ -13,6 +13,7 @@ Future Release
         * Fix typo in ``_handle_binary_comparison`` function name and update ``set_feature_names`` docstring (:pr:`2388`)
         * Only allow Datetime time index as input to ``RateOfChange`` primitive (:pr:`2408`)
         * Prevent catastrophic backtracking in regex for ``NumberOfWordsInQuotes`` (:pr:`2413`)
+        * Fix serialization of ``NumberOfCommonWords`` feature with custom word_set (:pr:`2432`)
         * Improve edge case handling in NaturalLanguage primitives by standardizing delimiter regex (:pr:`2423`)
     * Changes
         * Refactor ``_all_direct_and_same_path`` by deleting call to ``_features_have_same_path`` (:pr:`2400`)
