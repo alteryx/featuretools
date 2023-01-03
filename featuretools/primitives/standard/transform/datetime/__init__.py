@@ -46,6 +46,7 @@ from featuretools.primitives.standard.transform.datetime.minute import Minute
 from featuretools.primitives.standard.transform.datetime.month import Month
 from featuretools.primitives.standard.transform.datetime.part_of_day import PartOfDay
 from featuretools.primitives.standard.transform.datetime.quarter import Quarter
+from featuretools.primitives.standard.transform.datetime.season import Season
 from featuretools.primitives.standard.transform.datetime.second import Second
 from featuretools.primitives.standard.transform.datetime.time_since import TimeSince
 from featuretools.primitives.standard.transform.datetime.time_since_previous import (

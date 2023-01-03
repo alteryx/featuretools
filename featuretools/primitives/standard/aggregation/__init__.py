@@ -71,3 +71,4 @@ from featuretools.primitives.standard.aggregation.time_since_last_false import (
     TimeSinceLastFalse,
 )
 from featuretools.primitives.standard.aggregation.trend import Trend
+from featuretools.primitives.standard.aggregation.variance import Variance

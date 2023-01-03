@@ -7,6 +7,9 @@ from featuretools.primitives.standard.transform.natural_language.mean_characters
 from featuretools.primitives.standard.transform.natural_language.median_word_length import (
     MedianWordLength,
 )
+from featuretools.primitives.standard.transform.natural_language.natural_language_to_year import (
+    NaturalLanguageToYear,
+)
 from featuretools.primitives.standard.transform.natural_language.num_characters import (
     NumCharacters,
 )
@@ -42,6 +45,9 @@ from featuretools.primitives.standard.transform.natural_language.total_word_leng
 )
 from featuretools.primitives.standard.transform.natural_language.upper_case_count import (
     UpperCaseCount,
+)
+from featuretools.primitives.standard.transform.natural_language.upper_case_word_count import (
+    UpperCaseWordCount,
 )
 from featuretools.primitives.standard.transform.natural_language.whitespace_count import (
     WhitespaceCount,
