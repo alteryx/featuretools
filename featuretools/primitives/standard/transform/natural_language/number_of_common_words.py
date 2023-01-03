@@ -1,3 +1,4 @@
+from string import punctuation
 from typing import Iterable
 
 import pandas as pd
@@ -6,6 +7,7 @@ from woodwork.logical_types import IntegerNullable, NaturalLanguage
 
 from featuretools.primitives.base import TransformPrimitive
 from featuretools.primitives.standard.transform.natural_language.constants import (
+    DELIMITERS,
     common_words_1000,
 )
 
@@ -23,7 +25,7 @@ class NumberOfCommonWords(TransformPrimitive):
         word_set (set, optional): The set of words to look for in the string. These
             words should all be lower case strings.
         delimiters_regex (str, optional): The regular expression used to determine
-            what separates words.
+            what separates words. Defaults to whitespace characters.
 
     Examples:
         >>> x = ['Hey! This is some natural language', 'bacon, cheesburger, AND, fries', 'I! Am. A; duck?']
@@ -31,11 +33,10 @@ class NumberOfCommonWords(TransformPrimitive):
         >>> number_of_common_words(x).tolist()
         [2, 1, 3]
 
-        >>> # regex doesn't include a ! so 'Hey!' gets matched to the wordset instead of 'Hey'
         >>> x = ['Hey! This is. some. natural language']
         >>> number_of_common_words = NumberOfCommonWords(word_set={'hey', 'is', 'some'}, delimiters_regex="[ .]")
         >>> number_of_common_words(x).tolist()
-        [2]
+        [3]
     """
 
     name = "number_of_common_words"
@@ -46,8 +47,8 @@ class NumberOfCommonWords(TransformPrimitive):
 
     def __init__(
         self,
-        word_set=set(common_words_1000),
-        delimiters_regex=r"[- \[\].,!\?;\n]",
+        word_set=common_words_1000,
+        delimiters_regex=DELIMITERS,
     ):
         self.delimiters_regex = delimiters_regex
         self.word_set = word_set
@@ -58,7 +59,9 @@ class NumberOfCommonWords(TransformPrimitive):
                 return pd.NA
             num_common_words = 0
             for w in words:
-                if w.lower() in self.word_set:  # assumes word_set is all lowercase
+                if (
+                    w.lower().strip(punctuation) in self.word_set
+                ):  # assumes word_set is all lowercase
                     num_common_words += 1
             return num_common_words
 

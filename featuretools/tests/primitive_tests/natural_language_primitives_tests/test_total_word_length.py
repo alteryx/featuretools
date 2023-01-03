@@ -29,7 +29,7 @@ class TestTotalWordLength(PrimitiveT):
             ],
         )
 
-        expected = pd.Series([15, 48])
+        expected = pd.Series([15, 47])
         actual = self.primitive().get_function()(x)
         pd.testing.assert_series_equal(actual, expected, check_names=False)
 
