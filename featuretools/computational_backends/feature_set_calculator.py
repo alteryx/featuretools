@@ -925,7 +925,7 @@ def agg_wrapper(feats, time_last):
     return wrap
 
 
-def update_feature_columns(feature_data, df):
+def update_feature_columns(feature_data, data):
     new_cols = {}
     for item in feature_data:
         names = item[0].get_feature_names()
@@ -935,22 +935,22 @@ def update_feature_columns(feature_data, df):
             new_cols[name] = value
 
     # Handle the case where a dict is being updated
-    if isinstance(df, dict):
-        df.update(new_cols)
-        return df
+    if isinstance(data, dict):
+        data.update(new_cols)
+        return data
 
     # Handle pandas input
-    if isinstance(df, pd.DataFrame):
-        return pd.concat([df, pd.DataFrame(new_cols, index=df.index)], axis=1)
+    if isinstance(data, pd.DataFrame):
+        return pd.concat([data, pd.DataFrame(new_cols, index=data.index)], axis=1)
 
     # Handle dask/spark input
     for name, col in new_cols.items():
         col.name = name
-        if isinstance(df, dd.DataFrame):
-            df = dd.concat([df, col], axis=1)
+        if isinstance(data, dd.DataFrame):
+            data = dd.concat([data, col], axis=1)
         else:
-            df = ps.concat([df, col], axis=1)
-    return df
+            data = ps.concat([data, col], axis=1)
+    return data
 
 
 def strip_values_if_series(values):
