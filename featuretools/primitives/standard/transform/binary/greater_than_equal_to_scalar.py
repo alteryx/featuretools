@@ -1,7 +1,5 @@
-import numpy as np
-import pandas.api.types as pdtypes
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import BooleanNullable, Datetime, Ordinal
+from woodwork.logical_types import BooleanNullable
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
 from featuretools.utils.gen_utils import Library
