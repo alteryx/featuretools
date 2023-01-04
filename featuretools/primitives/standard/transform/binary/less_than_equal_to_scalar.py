@@ -22,11 +22,7 @@ class LessThanEqualToScalar(TransformPrimitive):
     """
 
     name = "less_than_equal_to_scalar"
-    input_types = [
-        [ColumnSchema(semantic_tags={"numeric"})],
-        [ColumnSchema(logical_type=Datetime)],
-        [ColumnSchema(logical_type=Ordinal)],
-    ]
+    input_types = [ColumnSchema(semantic_tags={"numeric"})]
     return_type = ColumnSchema(logical_type=BooleanNullable)
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
 
@@ -38,11 +34,6 @@ class LessThanEqualToScalar(TransformPrimitive):
 
     def get_function(self):
         def less_than_equal_to_scalar(vals):
-            if (
-                pdtypes.is_categorical_dtype(vals)
-                and self.value not in vals.cat.categories
-            ):
-                return np.nan
             return vals <= self.value
 
         return less_than_equal_to_scalar
