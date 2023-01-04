@@ -507,10 +507,13 @@ class FeatureSetCalculator(object):
         for f in features:
             # handle when no data
             if frame_empty:
-                set_default_column(frame, f)
-
+                # Even though we are adding the default values here, when these new
+                # features are added to the dataframe in update_feature_columns, they
+                # are added as empty columns since the dataframe itself is empty.
+                feature_values.append(
+                    (f, [f.default_value for _ in range(f.number_output_features)]),
+                )
                 progress_callback(1 / float(self.num_features))
-
                 continue
 
             # collect only the columns we need for this transformation
@@ -539,8 +542,16 @@ class FeatureSetCalculator(object):
         return frame
 
     def _calculate_groupby_features(self, features, frame, _df_trie, progress_callback):
+        # set default values to handle the null group
+        default_values = {}
         for f in features:
-            set_default_column(frame, f)
+            for name in f.get_feature_names():
+                default_values[name] = f.default_value
+
+        frame = pd.concat(
+            [frame, pd.DataFrame(default_values, index=frame.index)],
+            axis=1,
+        )
 
         # handle when no data
         if frame.shape[0] == 0:
@@ -917,11 +928,6 @@ def agg_wrapper(feats, time_last):
     return wrap
 
 
-def set_default_column(frame, f):
-    for name in f.get_feature_names():
-        frame[name] = f.default_value
-
-
 def update_feature_columns(feature_data, data):
     new_cols = {}
     for item in feature_data:
@@ -936,7 +942,18 @@ def update_feature_columns(feature_data, data):
         data.update(new_cols)
         return data
 
-    return data.assign(**new_cols)
+    # Handle pandas input
+    if isinstance(data, pd.DataFrame):
+        return pd.concat([data, pd.DataFrame(new_cols, index=data.index)], axis=1)
+
+    # Handle dask/spark input
+    for name, col in new_cols.items():
+        col.name = name
+        if isinstance(data, dd.DataFrame):
+            data = dd.concat([data, col], axis=1)
+        else:
+            data = ps.concat([data, col], axis=1)
+    return data
 
 
 def strip_values_if_series(values):

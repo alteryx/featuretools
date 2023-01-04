@@ -885,7 +885,7 @@ def test_date_to_time_zone_datetime64():
             datetime(2010, 1, 10),
             datetime(2020, 1, 1),
         ],
-    ).astype("datetime64")
+    ).astype("datetime64[ns]")
     x = x.dt.tz_localize("America/Los_Angeles")
     answer = pd.Series(["America/Los_Angeles"] * 3)
     pd.testing.assert_series_equal(primitive_func(x), answer)

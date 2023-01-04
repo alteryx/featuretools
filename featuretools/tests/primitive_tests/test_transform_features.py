@@ -466,8 +466,8 @@ def test_diff_datetime(pd_es):
     feature_set = FeatureSet([diff])
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array(range(15)))
-    vals = pd.array(df[diff.get_name()].tolist())
-    expected_vals = pd.array(
+    vals = pd.Series(df[diff.get_name()].tolist())
+    expected_vals = pd.Series(
         [
             pd.NaT,
             pd.Timedelta(seconds=6),
@@ -486,7 +486,7 @@ def test_diff_datetime(pd_es):
             pd.Timedelta(seconds=3),
         ],
     )
-    pd.util.testing.assert_equal(vals, expected_vals)
+    pd.testing.assert_series_equal(vals, expected_vals)
 
 
 def test_diff_datetime_shift(pd_es):
@@ -497,8 +497,8 @@ def test_diff_datetime_shift(pd_es):
     feature_set = FeatureSet([diff])
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array(range(6)))
-    vals = pd.array(df[diff.get_name()].tolist())
-    expected_vals = pd.array(
+    vals = pd.Series(df[diff.get_name()].tolist())
+    expected_vals = pd.Series(
         [
             pd.NaT,
             pd.NaT,
@@ -508,7 +508,7 @@ def test_diff_datetime_shift(pd_es):
             pd.Timedelta(seconds=6),
         ],
     )
-    pd.util.testing.assert_equal(vals, expected_vals)
+    pd.testing.assert_series_equal(vals, expected_vals)
 
 
 def test_compare_of_identity(es):

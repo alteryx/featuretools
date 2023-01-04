@@ -13,6 +13,7 @@ Future Release
         * Fix typo in ``_handle_binary_comparison`` function name and update ``set_feature_names`` docstring (:pr:`2388`)
         * Only allow Datetime time index as input to ``RateOfChange`` primitive (:pr:`2408`)
         * Prevent catastrophic backtracking in regex for ``NumberOfWordsInQuotes`` (:pr:`2413`)
+        * Fix to eliminate fragmentation ``PerformanceWarning`` in ``feature_set_calculator.py`` (:pr:`2424`)
         * Fix serialization of ``NumberOfCommonWords`` feature with custom word_set (:pr:`2432`)
         * Improve edge case handling in NaturalLanguage primitives by standardizing delimiter regex (:pr:`2423`)
         * Remove support for ``Datetime`` and ``Ordinal`` inputs in several primitives to prevent creation of Features that cannot be calculated (:pr:`2434`)
