@@ -507,6 +507,9 @@ class FeatureSetCalculator(object):
         for f in features:
             # handle when no data
             if frame_empty:
+                # Even though we are adding the default values here, when these new
+                # features are added to the dataframe in update_feature_columns, they
+                # are added as empty columns since the dataframe itself is empty.
                 feature_values.append(
                     (f, [f.default_value for _ in range(f.number_output_features)]),
                 )
