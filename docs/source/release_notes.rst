@@ -3,9 +3,18 @@
 Release Notes
 -------------
 
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
 
-Future Release
-==============
+.. Thanks to the following people for contributing to this release:
+
+Jan 5, 2023
+===========
     * Enhancements
         * Add ``TimeSinceLastFalse``, ``TimeSinceLastMax``, ``TimeSinceLastMin``, and ``TimeSinceLastTrue`` primitives (:pr:`2418`)
         * Add ``MaxConsecutiveFalse``, ``MaxConsecutiveNegatives``, ``MaxConsecutivePositives``, ``MaxConsecutiveTrue``, ``MaxConsecutiveZeros``, ``NumConsecutiveGreaterMean``, ``NumConsecutiveLessMean`` (:pr:`2420`)
@@ -24,10 +33,9 @@ Future Release
         * Resolve empty Pandas series warnings (:pr:`2403`)
         * Initialize Woodwork with ``init_with_partial_schama`` instead of ``init`` in ``EntitySet.add_last_time_indexes`` (:pr:`2409`)
         * Updates for compatibility with numpy 1.24.0 (:pr:`2414`)
-        * The `delimiter_regex` parameter for ``TotalWordLength`` has been renamed to `do_not_count` (:pr:`2423`)
+        * The ``delimiter_regex`` parameter for ``TotalWordLength`` has been renamed to ``do_not_count`` (:pr:`2423`)
     * Documentation Changes
         *  Remove unused sections from 1.19.0 notes (:pr:`2396`)
-    * Testing Changes
 
    Thanks to the following people for contributing to this release:
    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
@@ -35,7 +43,7 @@ Future Release
 
 Breaking Changes
 ++++++++++++++++
-* The `delimiter_regex` parameter for ``TotalWordLength`` has been renamed to `do_not_count`.
+* The ``delimiter_regex`` parameter for ``TotalWordLength`` has been renamed to ``do_not_count``.
   Old saved features that had a non-default value for the parameter will no longer load.
 * Support for ``Datetime`` and ``Ordinal`` inputs has been removed from the ``LessThanScalar``,
   ``GreaterThanScalar``, ``LessThanEqualToScalar`` and ``GreaterThanEqualToScalar`` primitives.
