@@ -6,6 +6,9 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import IntegerNullable, NaturalLanguage
 
 from featuretools.primitives.base import TransformPrimitive
+from featuretools.primitives.standard.transform.natural_language.constants import (
+    DELIMITERS,
+)
 
 
 class NumberOfWordsInQuotes(TransformPrimitive):
@@ -52,19 +55,6 @@ class NumberOfWordsInQuotes(TransformPrimitive):
             self.regex = IN_SINGLE_QUOTES
         else:
             self.regex = f"({IN_SINGLE_QUOTES}|{IN_DOUBLE_QUOTES})"
-        self.DELIMITERS = set(punctuation) - {
-            '"',
-            ".",
-            "'",
-            ",",
-            "-",
-            ":",
-            "@",
-            "/",
-            "\\",
-        }
-        self.DELIMITERS = "".join(list(self.DELIMITERS))
-        self.DELIMITERS = re.escape(f" {self.DELIMITERS}\n\t")
 
     def get_function(self):
         def count_words_in_quotes(text):
@@ -74,7 +64,7 @@ class NumberOfWordsInQuotes(TransformPrimitive):
             count = 0
             for match in matches:
                 matched_phrase = match[0]
-                words = re.split(f"[{self.DELIMITERS}]", matched_phrase)
+                words = re.split(f"{DELIMITERS}", matched_phrase)
                 for word in words:
                     if len(word.strip(punctuation + " ")):
                         count += 1
