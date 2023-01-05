@@ -16,6 +16,7 @@ Future Release
         * Fix to eliminate fragmentation ``PerformanceWarning`` in ``feature_set_calculator.py`` (:pr:`2424`)
         * Fix serialization of ``NumberOfCommonWords`` feature with custom word_set (:pr:`2432`)
         * Improve edge case handling in NaturalLanguage primitives by standardizing delimiter regex (:pr:`2423`)
+        * Remove support for ``Datetime`` and ``Ordinal`` inputs in several primitives to prevent creation of Features that cannot be calculated (:pr:`2434`)
     * Changes
         * Refactor ``_all_direct_and_same_path`` by deleting call to ``_features_have_same_path`` (:pr:`2400`)
         * Refactor ``_build_transform_features`` by iterating over ``input_features`` once (:pr:`2400`)
@@ -36,6 +37,8 @@ Breaking Changes
 ++++++++++++++++
 * The `delimiter_regex` parameter for ``TotalWordLength`` has been renamed to `do_not_count`.
   Old saved features that had a non-default value for the parameter will no longer load.
+* Support for ``Datetime`` and ``Ordinal`` inputs has been removed from the ``LessThanScalar``,
+  ``GreaterThanScalar``, ``LessThanEqualToScalar`` and ``GreaterThanEqualToScalar`` primitives.
 
 v1.19.0 Dec 9, 2022
 ===================
