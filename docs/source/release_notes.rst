@@ -12,7 +12,8 @@ Future Release
     * Testing Changes
         * Add global NatLang test with problematic strings (:pr:`2429`)
 
-Thanks to the following people for contributing to this release:
+   Thanks to the following people for contributing to this release:
+   :user:`sbadithe`
 
 Jan 5, 2023
 ===========
