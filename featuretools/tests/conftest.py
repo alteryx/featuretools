@@ -1,8 +1,6 @@
 import contextlib
 import copy
 import os
-from random import shuffle
-from string import ascii_lowercase, ascii_uppercase, punctuation, whitespace
 
 import composeml as cp
 import dask.dataframe as dd
