@@ -11,9 +11,9 @@ Future Release
     * Documentation Changes
     * Testing Changes
         * Add global Natural Langauge test with problematic strings (:pr:`2429`)
-
-   Thanks to the following people for contributing to this release:
-   :user:`sbadithe`
+        * Fix test compatibility with composeml 0.10 (:pr:`2439`)
+    Thanks to the following people for contributing to this release:
+    :user:`rwedge`, :user:`sbadithe`
 
 Jan 5, 2023
 ===========
