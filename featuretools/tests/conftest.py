@@ -862,56 +862,12 @@ def test_transform_primitive():
     return TestTransform
 
 
-def generate_shuffled_test_strings(string_domain, num_strings, string_length):
-    test_corpus = []
-    for _ in range(num_strings):
-        test_string = [i for i in string_domain] * string_length
-        shuffle(test_string)
-        test_string = "".join(test_string)
-        test_corpus.append(test_string)
-    return test_corpus
-
-
-@pytest.fixture
-def punctuation_test_strings():
-    return generate_shuffled_test_strings(punctuation, 50, 500)
-
-
-@pytest.fixture
-def whitespace_test_strings():
-    return generate_shuffled_test_strings(whitespace, 50, 500)
-
-
-@pytest.fixture
-def ascii_lowercase_test_strings():
-    return generate_shuffled_test_strings(ascii_lowercase, 50, 500)
-
-
-@pytest.fixture
-def ascii_uppercase_test_strings():
-    return generate_shuffled_test_strings(ascii_uppercase, 50, 500)
-
-
 @pytest.fixture
 def return_strings_that_have_triggered_errors_before():
     return [
         "    ",
         '"This Borderlands game here"" is the perfect conclusion to the ""Borderlands 3"" line, which focuses on the fans ""favorite character and gives the players the opportunity to close for a long time some very important questions about\'s character and the memorable scenery with which the players interact.',
     ]
-
-
-@pytest.fixture
-def combined_test_strings(return_strings_that_have_triggered_errors_before):
-    combined_string = (
-        generate_shuffled_test_strings(punctuation, 50, 50)
-        + generate_shuffled_test_strings(whitespace, 50, 50)
-        + generate_shuffled_test_strings(ascii_lowercase, 50, 50)
-        + generate_shuffled_test_strings(ascii_uppercase, 50, 50)
-        + return_strings_that_have_triggered_errors_before
-    )
-    shuffle(combined_string)
-    combined_string = "".join(combined_string)
-    return combined_string
 
 
 @pytest.fixture(
