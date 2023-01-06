@@ -1,15 +1,16 @@
+import signal
 from platform import system
-from featuretools.primitives.utils import get_natural_language_primitives
 
 import pandas as pd
 import pytest
-import signal
+
+from featuretools.primitives.utils import get_natural_language_primitives
 
 natural_language_primitives = get_natural_language_primitives()
 TIMEOUT_THRESHOLD = 20
 
-print(f"System: {system}")
 if system == "linux" or system == "darwin":
+
     @pytest.mark.parametrize(
         "primitive",
         natural_language_primitives,
