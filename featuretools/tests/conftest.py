@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from distributed import LocalCluster
+from packaging.version import parse
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, Integer
 
@@ -519,12 +520,17 @@ def lt(es):
     def label_func(df):
         return df["value"].sum() > 10
 
-    lm = cp.LabelMaker(
-        target_dataframe_name="id",
-        time_index="datetime",
-        labeling_function=label_func,
-        window_size="1m",
-    )
+    kwargs = {
+        "time_index": "datetime",
+        "labeling_function": label_func,
+        "window_size": "1m",
+    }
+    if parse(cp.__version__) >= parse("0.10.0"):
+        kwargs["target_dataframe_index"] = "id"
+    else:
+        kwargs["target_dataframe_name"] = "id"  # pragma: no cover
+
+    lm = cp.LabelMaker(**kwargs)
 
     df = es["log"]
     df = to_pandas(df)
