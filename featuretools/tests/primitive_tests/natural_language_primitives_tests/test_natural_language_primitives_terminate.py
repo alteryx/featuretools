@@ -10,7 +10,7 @@ natural_language_primitives = get_natural_language_primitives()
 TIMEOUT_THRESHOLD = 20
 
 
-@pytest.mark.skipif(system == "linux" or system == "darwin")
+@pytest.mark.skipif(system() == "Linux" or system() == "Darwin",reason=String)
 @pytest.mark.parametrize(
     "primitive",
     natural_language_primitives,
