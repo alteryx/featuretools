@@ -39,7 +39,7 @@ def get_transform_primitives():
 # returns all natural language primitives, regardless of compatibility
 def get_natural_language_primitives():
     transform_primitives = get_transform_primitives()
-    return {name : primitive for name, primitive in transform_primitives if isinstance(primitive.input_types.logical_type, NaturalLanguage)}
+    return {name : primitive for name, primitive in transform_primitives.items() if isinstance(primitive.input_types.logical_type, NaturalLanguage)}
 
 def list_primitives():
     """Returns a DataFrame that lists and describes each built-in primitive."""
