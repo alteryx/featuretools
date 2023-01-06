@@ -19,54 +19,45 @@ from featuretools.utils.gen_utils import Library, find_descendents
 
 
 def _get_primitives(primitive_kind):
+    """Helper function that selects all primitives
+    that are instances of `primitive_kind`
+    """
     primitives = set()
     for attribute_string in dir(featuretools.primitives):
         attribute = getattr(featuretools.primitives, attribute_string)
         if isclass(attribute):
-            if issubclass(attribute, primitive_kind):
-                if attribute.name:
-                    primitives.add(attribute)
+            if issubclass(attribute, primitive_kind) and attribute.name:
+                primitives.add(attribute)
     return {prim.name.lower(): prim for prim in primitives}
 
 
-# returns all aggregation primitives, regardless of compatibility
 def get_aggregation_primitives():
-    aggregation_primitives = set([])
-    for attribute_string in dir(featuretools.primitives):
-        attribute = getattr(featuretools.primitives, attribute_string)
-        if isclass(attribute):
-            if issubclass(attribute, featuretools.primitives.AggregationPrimitive):
-                if attribute.name:
-                    aggregation_primitives.add(attribute)
-    return {prim.name.lower(): prim for prim in aggregation_primitives}
+    """Returns all aggregation primitives, regardless
+    of compatibility
+    """
+    return _get_primitives(featuretools.primitives.AggregationPrimitive)
 
 
-# returns all transform primitives, regardless of compatibility
 def get_transform_primitives():
-    transform_primitives = set([])
-    for attribute_string in dir(featuretools.primitives):
-        attribute = getattr(featuretools.primitives, attribute_string)
-        if isclass(attribute):
-            if issubclass(attribute, featuretools.primitives.TransformPrimitive):
-                if attribute.name:
-                    transform_primitives.add(attribute)
-    return {prim.name.lower(): prim for prim in transform_primitives}
+    """Returns all transform primitives, regardless
+    of compatibility
+    """
+    return _get_primitives(featuretools.primitives.TransformPrimitive)
 
 
-# returns all natural language primitives, regardless of compatibility
 def get_natural_language_primitives():
+    """Returns all Natural Language transform primitives,
+    regardless of compatibility
+    """
     transform_primitives = get_transform_primitives()
 
-    def _filter_for_natlang(primitive):
-        for lt in primitive.input_types:
-            if isinstance(lt, NaturalLanguage):
-                return True
-        return False
+    def _natural_language_in_input_type(primitive):
+        return any(isinstance(lt, NaturalLanguage) for lt in primitive.input_types)
 
     return {
         name: primitive
         for name, primitive in transform_primitives.items()
-        if _filter_for_natlang(primitive)
+        if _natural_language_in_input_type(primitive)
     }
 
 
