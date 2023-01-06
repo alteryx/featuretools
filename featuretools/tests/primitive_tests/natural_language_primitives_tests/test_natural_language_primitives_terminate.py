@@ -6,7 +6,6 @@ import pytest
 
 from featuretools.primitives.utils import get_natural_language_primitives
 
-natural_language_primitives = get_natural_language_primitives()
 TIMEOUT_THRESHOLD = 20
 
 
@@ -16,7 +15,7 @@ TIMEOUT_THRESHOLD = 20
 )
 @pytest.mark.parametrize(
     "primitive",
-    natural_language_primitives,
+    get_natural_language_primitives(),
 )
 def test_natlang_primitive_does_not_timeout(
     strings_that_have_triggered_errors_before, primitive
