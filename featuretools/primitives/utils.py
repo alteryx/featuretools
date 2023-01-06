@@ -6,6 +6,7 @@ from typing import Dict, List
 import pandas as pd
 from woodwork import list_logical_types, list_semantic_tags
 from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import NaturalLanguage
 
 import featuretools
 from featuretools.primitives import NumberOfCommonWords
@@ -17,29 +18,28 @@ from featuretools.primitives.base import (
 from featuretools.utils.gen_utils import Library, find_descendents
 
 
-# returns all aggregation primitives, regardless of compatibility
-def get_aggregation_primitives():
-    aggregation_primitives = set([])
+def _get_primitives(primitive_kind):
+    primitives = set()
     for attribute_string in dir(featuretools.primitives):
         attribute = getattr(featuretools.primitives, attribute_string)
         if isclass(attribute):
-            if issubclass(attribute, featuretools.primitives.AggregationPrimitive):
+            if issubclass(attribute, primitive_kind):
                 if attribute.name:
-                    aggregation_primitives.add(attribute)
-    return {prim.name.lower(): prim for prim in aggregation_primitives}
+                    primitives.add(attribute)
+    return {prim.name.lower(): prim for prim in primitives}
 
+# returns all aggregation primitives, regardless of compatibility
+def get_aggregation_primitives():
+    return _get_primitives(featuretools.primitives.AggregationPrimitive)
 
 # returns all transform primitives, regardless of compatibility
 def get_transform_primitives():
-    transform_primitives = set([])
-    for attribute_string in dir(featuretools.primitives):
-        attribute = getattr(featuretools.primitives, attribute_string)
-        if isclass(attribute):
-            if issubclass(attribute, featuretools.primitives.TransformPrimitive):
-                if attribute.name:
-                    transform_primitives.add(attribute)
-    return {prim.name.lower(): prim for prim in transform_primitives}
+    return _get_primitives(featuretools.primitives.TransformPrimitive)
 
+# returns all natural language primitives, regardless of compatibility
+def get_natural_language_primitives():
+    transform_primitives = get_transform_primitives()
+    return {name : primitive for name, primitive in transform_primitives if isinstance(primitive.input_types.logical_type, NaturalLanguage)}
 
 def list_primitives():
     """Returns a DataFrame that lists and describes each built-in primitive."""

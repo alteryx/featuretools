@@ -868,16 +868,3 @@ def strings_that_have_triggered_errors_before():
         "    ",
         '"This Borderlands game here"" is the perfect conclusion to the ""Borderlands 3"" line, which focuses on the fans ""favorite character and gives the players the opportunity to close for a long time some very important questions about\'s character and the memorable scenery with which the players interact.',
     ]
-
-
-@pytest.fixture(
-    params=[
-        "punctuation_test_strings",
-        "whitespace_test_strings",
-        "ascii_lowercase_test_strings",
-        "ascii_uppercase_test_strings",
-        "combined_test_strings",
-    ]
-)
-def shuffled_test_strings(request):
-    return request.getfixturevalue(request.param)
