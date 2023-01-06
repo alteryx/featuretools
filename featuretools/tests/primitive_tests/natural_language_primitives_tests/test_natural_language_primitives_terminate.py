@@ -42,14 +42,16 @@ if system == "Linux" or system == "Darwin":
             WhitespaceCount,
         ],
     )
-    def test_natlang_primitive_does_not_timeout(shuffled_test_strings, primitive):
+    def test_natlang_primitive_does_not_timeout(
+        strings_that_have_triggered_errors_before, primitive
+    ):
         def handle_SIGALRM(signum, frame):
             raise TimeoutError(
                 f"NaturalLanguage primitive took longer than {TIMEOUT_THRESHOLD}"
             )
 
         signal.signal(signal.SIGALRM, handle_SIGALRM)
-        for text in shuffled_test_strings:
+        for text in strings_that_have_triggered_errors_before:
             signal.alarm(TIMEOUT_THRESHOLD)
             try:
                 primitive().get_function()(pd.Series(text))

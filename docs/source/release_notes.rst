@@ -10,7 +10,7 @@ Future Release
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Add global NatLang test with problematic strings (:pr:`2429`)
+        * Add global Natural Langauge test with problematic strings (:pr:`2429`)
 
    Thanks to the following people for contributing to this release:
    :user:`sbadithe`
