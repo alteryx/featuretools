@@ -31,12 +31,26 @@ def _get_primitives(primitive_kind):
 
 # returns all aggregation primitives, regardless of compatibility
 def get_aggregation_primitives():
-    return _get_primitives(featuretools.primitives.AggregationPrimitive)
+    aggregation_primitives = set([])
+    for attribute_string in dir(featuretools.primitives):
+        attribute = getattr(featuretools.primitives, attribute_string)
+        if isclass(attribute):
+            if issubclass(attribute, featuretools.primitives.AggregationPrimitive):
+                if attribute.name:
+                    aggregation_primitives.add(attribute)
+    return {prim.name.lower(): prim for prim in aggregation_primitives}
 
 
 # returns all transform primitives, regardless of compatibility
 def get_transform_primitives():
-    return _get_primitives(featuretools.primitives.TransformPrimitive)
+    transform_primitives = set([])
+    for attribute_string in dir(featuretools.primitives):
+        attribute = getattr(featuretools.primitives, attribute_string)
+        if isclass(attribute):
+            if issubclass(attribute, featuretools.primitives.TransformPrimitive):
+                if attribute.name:
+                    transform_primitives.add(attribute)
+    return {prim.name.lower(): prim for prim in transform_primitives}
 
 
 # returns all natural language primitives, regardless of compatibility
