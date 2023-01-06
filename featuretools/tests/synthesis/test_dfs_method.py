@@ -168,7 +168,7 @@ def test_accepts_cutoff_time_compose(dataframes, relationships):
     if parse(cp.__version__) >= parse("0.10.0"):
         kwargs["target_dataframe_index"] = "card_id"
     else:
-        kwargs["target_dataframe_name"] = "card_id"
+        kwargs["target_dataframe_name"] = "card_id"  # pragma: no cover
 
     lm = cp.LabelMaker(**kwargs)
 

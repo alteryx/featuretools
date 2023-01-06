@@ -528,7 +528,7 @@ def lt(es):
     if parse(cp.__version__) >= parse("0.10.0"):
         kwargs["target_dataframe_index"] = "id"
     else:
-        kwargs["target_dataframe_name"] = "id"
+        kwargs["target_dataframe_name"] = "id"  # pragma: no cover
 
     lm = cp.LabelMaker(**kwargs)
 
