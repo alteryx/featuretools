@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from dask import dataframe as dd
+from packaging.version import parse
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import NaturalLanguage
 
@@ -159,12 +160,17 @@ def test_accepts_cutoff_time_compose(dataframes, relationships):
     def fraud_occured(df):
         return df["fraud"].any()
 
-    lm = cp.LabelMaker(
-        target_dataframe_name="card_id",
-        time_index="transaction_time",
-        labeling_function=fraud_occured,
-        window_size=1,
-    )
+    kwargs = {
+        "time_index": "transaction_time",
+        "labeling_function": fraud_occured,
+        "window_size": 1,
+    }
+    if parse(cp.__version__) >= parse("0.10.0"):
+        kwargs["target_dataframe_index"] = "card_id"
+    else:
+        kwargs["target_dataframe_name"] = "card_id"
+
+    lm = cp.LabelMaker(**kwargs)
 
     transactions_df = to_pandas(dataframes["transactions"][0])
 
