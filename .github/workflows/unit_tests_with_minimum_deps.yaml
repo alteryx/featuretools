@@ -11,6 +11,7 @@ jobs:
     name: Unit Tests - 3.8 Minimum Dependencies
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         libraries: ["core", "spark - misc", "spark - computational", "spark - entityset_1", "spark - entityset_2", "spark - primitives"]
     steps:
