@@ -98,7 +98,7 @@ jobs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "<!subteam^${{ secrets.LG_SLACK_NOTIFICATION_USER_GROUP }}>, ${{ matrix.test_type }} performance tests for latest commit on Featuretools are complete"
+                  "text": "${{ matrix.test_type }} performance tests for commit ${{ steps.get_hashes.outputs.current_hash }} on Featuretools are complete"
                 }
               },
               {
@@ -113,7 +113,7 @@ jobs:
                 "fields": [
                   {
                     "type": "mrkdwn",
-                    "text": "*Current Commit*: <${{ github.event.head_commit.url }}|${{ steps.get_hashes.outputs.current_hash }}>"
+                    "text": "*Current Commit*: <https://github.com/alteryx/featuretools/commit/${{ steps.get_hashes.outputs.current_hash }}>"
                   },
                   {
                     "type": "mrkdwn",
