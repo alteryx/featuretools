@@ -34,26 +34,24 @@ jobs:
           fetch-depth: 2
       - name: Get current commit hash
         id: get_current_hash
-        if: ${{ inputs.current_hash_input }} == ''
         run: |
-          current_hash=$(git rev-parse --short HEAD)
-          echo "Latest commit hash: $current_hash"
-          echo "::set-output name=current_hash::$current_hash"
-        if: ${{ inputs.current_hash_input }} != ''
-        run: |
-          current_hash=${{ inputs.current_hash_input }}
+          if [ ${{ inputs.current_hash_input }} == '' ]
+          then
+            current_hash=$(git rev-parse --short HEAD)
+          else
+            current_hash=${{ inputs.current_hash_input }}
+          fi
           echo "Latest commit hash: $current_hash"
           echo "::set-output name=current_hash::$current_hash"
       - name: Get previous commit hash
         id: get_previous_hash
-        if: ${{ inputs.previous_hash_input }} == ''
         run: |
-          previous_hash=$(git rev-parse --short HEAD~1)
-          echo "Previous commit hash: $previous_hash"
-          echo "::set-output name=previous_hash::$previous_hash"
-        if: ${{ inputs.current_hash_input }} != ''
-        run: |
-          previous_hash=${{ inputs.previous_hash_input }}
+          if [ ${{ inputs.previous_hash_input }} == '' ]
+          then
+            previous_hash=$(git rev-parse --short HEAD~1)
+          else
+            previous_hash=${{ inputs.previous_hash_input }}
+          fi
           echo "Previous commit hash: $previous_hash"
           echo "::set-output name=previous_hash::$previous_hash"
       - name: Set up Python 3.8
