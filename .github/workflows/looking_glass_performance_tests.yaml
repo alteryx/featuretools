@@ -34,7 +34,7 @@ jobs:
           echo "Previous commit hash: $previous_hash"
           echo "::set-output name=previous_hash::$previous_hash"
       - name: Set up Python 3.8
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: "3.8"
       - name: Checkout looking glass
