@@ -48,12 +48,12 @@ jobs:
       - name: Run performance test (current)
         id: current
         run: |
-          response=$( looking-glass run-featuretools-entitysets --username machineFL --scenarios-yaml entityset_scenarios_{{ matrix.test_type }}.yaml --featuretools-branch ${{ steps.get_hashes.outputs.current_hash }} --job-desc ${{ steps.get_hashes.outputs.current_hash }} )
+          response=$( looking-glass run-featuretools-entitysets --username machineFL --scenarios-yaml entityset_scenarios_${{ matrix.test_type }}.yaml --featuretools-branch ${{ steps.get_hashes.outputs.current_hash }} --job-desc ${{ steps.get_hashes.outputs.current_hash }} )
           echo "::set-output name=job_id::$(echo $response | sed 's/.*Job ID: \([^ ]*\).*/\1/')"
       - name: Run performance test (previous)
         id: previous
         run: |
-          response=$( looking-glass run-featuretools-entitysets --username machineFL --scenarios-yaml entityset_scenarios_{{ matrix.test_type }}.yaml --featuretools-branch ${{ steps.get_hashes.outputs.previous_hash }} --job-desc ${{ steps.get_hashes.outputs.previous_hash }} )
+          response=$( looking-glass run-featuretools-entitysets --username machineFL --scenarios-yaml entityset_scenarios_${{ matrix.test_type }}.yaml --featuretools-branch ${{ steps.get_hashes.outputs.previous_hash }} --job-desc ${{ steps.get_hashes.outputs.previous_hash }} )
           echo "::set-output name=job_id::$(echo $response | sed 's/.*Job ID: \([^ ]*\).*/\1/')"
       - name: Await results
         id: results
@@ -73,19 +73,19 @@ jobs:
         shell: bash
       - name: Generate reports
         run: |
-          filename_base=${{ steps.get_hashes.outputs.current_hash }}_v_${{ steps.get_hashes.outputs.previous_hash }}_{{ matrix.test_type }}
+          filename_base=${{ steps.get_hashes.outputs.current_hash }}_v_${{ steps.get_hashes.outputs.previous_hash }}_${{ matrix.test_type }}
           looking-glass run-local-report --previous-path ${{ steps.previous.outputs.job_id }} -n ${{ steps.current.outputs.job_id }} --output-name ${filename_base} --output-type html
       - name: Upload reports to S3
         id: s3_upload
         run: |
-          filename_base=${{ steps.get_hashes.outputs.current_hash }}_v_${{ steps.get_hashes.outputs.previous_hash }}_{{ matrix.test_type }}
+          filename_base=${{ steps.get_hashes.outputs.current_hash }}_v_${{ steps.get_hashes.outputs.previous_hash }}_${{ matrix.test_type }}
           url=s3://featuretools-performance-results/${filename_base}.html
           aws s3 cp ./${filename_base}.html $url
           echo "::set-output name=report_url::$url"
           echo "Featuretools Report: $url"
       - name: Notify on Slack
         run: |
-          filename_base=${{ steps.get_hashes.outputs.current_hash }}_v_${{ steps.get_hashes.outputs.previous_hash }}_{{ matrix.test_type }}
+          filename_base=${{ steps.get_hashes.outputs.current_hash }}_v_${{ steps.get_hashes.outputs.previous_hash }}_${{ matrix.test_type }}
           presigned_url=$( aws s3 presign ${{ steps.s3_upload.outputs.report_url }} --expires-in 604800 )
           response=$(
           curl -X POST https://slack.com/api/chat.postMessage -H 'Content-type: application/json;charset=UTF-8' -H 'Authorization: Bearer ${{ secrets.LG_SLACK_TOKEN }}' \
@@ -97,7 +97,7 @@ jobs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "<!subteam^${{ secrets.LG_SLACK_NOTIFICATION_USER_GROUP }}>, {{ matrix.test_type }} performance tests for latest commit on Featuretools are complete"
+                  "text": "<!subteam^${{ secrets.LG_SLACK_NOTIFICATION_USER_GROUP }}>, ${{ matrix.test_type }} performance tests for latest commit on Featuretools are complete"
                 }
               },
               {
