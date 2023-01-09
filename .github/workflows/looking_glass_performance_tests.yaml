@@ -5,15 +5,15 @@ on:
       - main
   workflow_dispatch:
   workflow_call:
-  inputs:
-    current_hash_input:
-      description: 'The new commit to evaluate'
-      required: false
-      type: string
-    previous_hash_input:
-      description: 'The new commit to evaluate'
-      required: false
-      type: string
+    inputs:
+      current_hash_input:
+        description: 'The new commit to evaluate'
+        required: false
+        type: string
+      previous_hash_input:
+        description: 'The new commit to evaluate'
+        required: false
+        type: string
 jobs:
   performance_tests:
     name: Looking Glass performance tests - py38 - ${{ matrix.test_type }}
