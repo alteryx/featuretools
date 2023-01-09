@@ -4,6 +4,16 @@ on:
     branches:
       - main
   workflow_dispatch:
+  workflow_call:
+  inputs:
+    current_hash_input:
+      description: 'The new commit to evaluate'
+      required: false
+      type: string
+    previous_hash_input:
+      description: 'The new commit to evaluate'
+      required: false
+      type: string
 jobs:
   performance_tests:
     name: Looking Glass performance tests - py38 - ${{ matrix.test_type }}
@@ -23,13 +33,28 @@ jobs:
         with:
           repository: 'alteryx/featuretools'
           fetch-depth: 2
-      - name: Get commit hashes
-        id: get_hashes
+      - name: Get current commit hash
+        id: get_current_hash
+        if: ${{ inputs.current_hash_input }} == ''
         run: |
           current_hash=$(git rev-parse --short HEAD)
           echo "Latest commit hash: $current_hash"
           echo "::set-output name=current_hash::$current_hash"
+        if: ${{ inputs.current_hash_input }} != ''
+        run: |
+          current_hash=${{ inputs.current_hash_input }}
+          echo "Latest commit hash: $current_hash"
+          echo "::set-output name=current_hash::$current_hash"
+      - name: Get previous commit hash
+        id: get_previous_hash
+        if: ${{ inputs.previous_hash_input }} == ''
+        run: |
           previous_hash=$(git rev-parse --short HEAD~1)
+          echo "Previous commit hash: $previous_hash"
+          echo "::set-output name=previous_hash::$previous_hash"
+        if: ${{ inputs.current_hash_input }} != ''
+        run: |
+          previous_hash=${{ inputs.previous_hash_input }}
           echo "Previous commit hash: $previous_hash"
           echo "::set-output name=previous_hash::$previous_hash"
       - name: Set up Python 3.8
@@ -49,12 +74,12 @@ jobs:
       - name: Run performance test (current)
         id: current
         run: |
-          response=$( looking-glass run-featuretools-entitysets --username featuretools-github-lg-user --scenarios-yaml entityset_scenarios_${{ matrix.test_type }}.yaml --featuretools-branch ${{ steps.get_hashes.outputs.current_hash }} --job-desc ${{ steps.get_hashes.outputs.current_hash }} )
+          response=$( looking-glass run-featuretools-entitysets --username featuretools-github-lg-user --scenarios-yaml entityset_scenarios_${{ matrix.test_type }}.yaml --featuretools-branch ${{ steps.get_current_hash.outputs.current_hash }} --job-desc ${{ steps.get_current_hash.outputs.current_hash }} )
           echo "::set-output name=job_id::$(echo $response | sed 's/.*Job ID: \([^ ]*\).*/\1/')"
       - name: Run performance test (previous)
         id: previous
         run: |
-          response=$( looking-glass run-featuretools-entitysets --username featuretools-github-lg-user --scenarios-yaml entityset_scenarios_${{ matrix.test_type }}.yaml --featuretools-branch ${{ steps.get_hashes.outputs.previous_hash }} --job-desc ${{ steps.get_hashes.outputs.previous_hash }} )
+          response=$( looking-glass run-featuretools-entitysets --username featuretools-github-lg-user --scenarios-yaml entityset_scenarios_${{ matrix.test_type }}.yaml --featuretools-branch ${{ steps.get_previous_hash.outputs.previous_hash }} --job-desc ${{ steps.get_previous_hash.outputs.previous_hash }} )
           echo "::set-output name=job_id::$(echo $response | sed 's/.*Job ID: \([^ ]*\).*/\1/')"
       - name: Await results
         id: results
@@ -74,19 +99,19 @@ jobs:
         shell: bash
       - name: Generate reports
         run: |
-          filename_base=${{ steps.get_hashes.outputs.current_hash }}_v_${{ steps.get_hashes.outputs.previous_hash }}_${{ matrix.test_type }}
+          filename_base=${{ steps.get_current_hash.outputs.current_hash }}_v_${{ steps.get_previous_hash.outputs.previous_hash }}_${{ matrix.test_type }}
           looking-glass run-local-report --previous-path ${{ steps.previous.outputs.job_id }} -n ${{ steps.current.outputs.job_id }} --output-name ${filename_base} --output-type html
       - name: Upload reports to S3
         id: s3_upload
         run: |
-          filename_base=${{ steps.get_hashes.outputs.current_hash }}_v_${{ steps.get_hashes.outputs.previous_hash }}_${{ matrix.test_type }}
+          filename_base=${{ steps.get_current_hash.outputs.current_hash }}_v_${{ steps.get_previous_hash.outputs.previous_hash }}_${{ matrix.test_type }}
           url=s3://featuretools-performance-results/${filename_base}.html
           aws s3 cp ./${filename_base}.html $url
           echo "::set-output name=report_url::$url"
           echo "Featuretools Report: $url"
       - name: Notify on Slack
         run: |
-          filename_base=${{ steps.get_hashes.outputs.current_hash }}_v_${{ steps.get_hashes.outputs.previous_hash }}_${{ matrix.test_type }}
+          filename_base=${{ steps.get_current_hash.outputs.current_hash }}_v_${{ steps.get_previous_hash.outputs.previous_hash }}_${{ matrix.test_type }}
           presigned_url=$( aws s3 presign ${{ steps.s3_upload.outputs.report_url }} --expires-in 604800 )
           response=$(
           curl -X POST https://slack.com/api/chat.postMessage -H 'Content-type: application/json;charset=UTF-8' -H 'Authorization: Bearer ${{ secrets.LG_SLACK_TOKEN }}' \
@@ -98,7 +123,7 @@ jobs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "${{ matrix.test_type }} performance tests for commit ${{ steps.get_hashes.outputs.current_hash }} on Featuretools are complete"
+                  "text": "${{ matrix.test_type }} performance tests for commit ${{ steps.get_current_hash.outputs.current_hash }} on Featuretools are complete"
                 }
               },
               {
@@ -113,11 +138,11 @@ jobs:
                 "fields": [
                   {
                     "type": "mrkdwn",
-                    "text": "*Current Commit*: <https://github.com/alteryx/featuretools/commit/${{ steps.get_hashes.outputs.current_hash }}>"
+                    "text": "*Current Commit*: <https://github.com/alteryx/featuretools/commit/${{ steps.get_current_hash.outputs.current_hash }}|${{ steps.get_current_hash.outputs.current_hash }}>"
                   },
                   {
                     "type": "mrkdwn",
-                    "text": "*Previous Commit*: <https://github.com/alteryx/featuretools/commit/${{ steps.get_hashes.outputs.previous_hash }}|${{ steps.get_hashes.outputs.previous_hash }}>"
+                    "text": "*Previous Commit*: <https://github.com/alteryx/featuretools/commit/${{ steps.get_previous_hash.outputs.previous_hash }}|${{ steps.get_previous_hash.outputs.previous_hash }}>"
                   },
                   {
                     "type": "mrkdwn",
