@@ -1,4 +1,4 @@
-name: Looking glass performance tests
+name: Looking Glass performance tests
 on:
   push:
     branches:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 jobs:
   performance_tests:
-    name: Looking glass performance tests - py38 - {{ matrix.test_type }}
+    name: Looking Glass performance tests - py38 - {{ matrix.test_type }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
