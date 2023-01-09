@@ -10,7 +10,7 @@ on:
         required: false
         type: string
       previous_hash_input:
-        description: 'The new commit to evaluate'
+        description: 'The previous commit to evaluate'
         required: false
         type: string
 jobs:
