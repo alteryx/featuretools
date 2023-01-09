@@ -45,7 +45,7 @@ def get_transform_primitives():
     return _get_primitives(featuretools.primitives.TransformPrimitive)
 
 
-def get_natural_language_primitives():
+def _get_natural_language_primitives():
     """Returns all Natural Language transform primitives,
     regardless of compatibility
     """
