@@ -38,7 +38,7 @@ jobs:
         with:
           python-version: "3.8"
       - name: Checkout looking glass
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: alteryx/looking-glass
           ref: master
