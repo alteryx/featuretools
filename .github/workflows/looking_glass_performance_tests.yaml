@@ -35,7 +35,7 @@ jobs:
       - name: Get current commit hash
         id: get_current_hash
         run: |
-          if [ ${{ inputs.current_hash_input }} == '' ]
+          if [ ${{ inputs.current_hash_input }} = '' ]
           then
             current_hash=$(git rev-parse --short HEAD)
           else
@@ -46,7 +46,7 @@ jobs:
       - name: Get previous commit hash
         id: get_previous_hash
         run: |
-          if [ ${{ inputs.previous_hash_input }} == '' ]
+          if [ ${{ inputs.previous_hash_input }} = '' ]
           then
             previous_hash=$(git rev-parse --short HEAD~1)
           else
