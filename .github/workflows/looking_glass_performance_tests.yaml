@@ -21,7 +21,7 @@ jobs:
       AWS_SESSION_TOKEN: ""
     steps:
       - name: Checkout Featuretools
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 2
       - name: Get commit hashes
