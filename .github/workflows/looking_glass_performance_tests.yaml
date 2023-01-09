@@ -6,11 +6,11 @@ on:
   workflow_dispatch:
     inputs:
       current_hash_input:
-        description: 'The new commit to evaluate'
+        description: 'The new commit to evaluate (optional)'
         required: false
         type: string
       previous_hash_input:
-        description: 'The previous commit to evaluate'
+        description: 'The previous commit to evaluate (optional)'
         required: false
         type: string
 jobs:
