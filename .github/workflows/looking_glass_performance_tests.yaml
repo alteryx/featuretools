@@ -8,12 +8,12 @@ on:
 
 jobs:
   performance_tests:
-    matrix:
-      test_type: ["pandas", "dask", "spark"]
     name: Run looking glass performance tests - py38 - {{ matrix.test_type }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
+      matrix:
+        test_type: ["pandas", "dask", "spark"]
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
