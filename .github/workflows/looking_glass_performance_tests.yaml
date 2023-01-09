@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 jobs:
   performance_tests:
-    name: Looking Glass performance tests - py38 - {{ matrix.test_type }}
+    name: Looking Glass performance tests - py38 - ${{ matrix.test_type }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
