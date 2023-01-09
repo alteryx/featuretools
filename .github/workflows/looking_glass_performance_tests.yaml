@@ -93,7 +93,7 @@ jobs:
           curl -X POST https://slack.com/api/chat.postMessage -H 'Content-type: application/json;charset=UTF-8' -H 'Authorization: Bearer ${{ secrets.LG_SLACK_TOKEN }}' \
           --data-binary @- << EOF
           {
-            "channel": "C04B8P81WLT",
+            "channel": "CSCENDGLQ",
             "blocks": [
               {
                 "type": "section",
@@ -143,4 +143,4 @@ jobs:
           )
           echo $response
           ts=$(echo $response | jq .ts)
-          curl -F "file=@${filename_base}.html" -F channels=C04B8P81WLT -F 'thread_ts=$ts' -H 'Authorization: Bearer ${{ secrets.LG_SLACK_TOKEN }}'  https://slack.com/api/files.upload
+          curl -F "file=@${filename_base}.html" -F channels=CSCENDGLQ -F 'thread_ts=$ts' -H 'Authorization: Bearer ${{ secrets.LG_SLACK_TOKEN }}'  https://slack.com/api/files.upload
