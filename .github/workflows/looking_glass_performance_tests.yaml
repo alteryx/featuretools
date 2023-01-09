@@ -39,7 +39,7 @@ jobs:
       - name: Checkout looking glass
         uses: actions/checkout@v3
         with:
-          repository: alteryx/looking-glass
+          repository: 'alteryx/looking-glass'
           ref: master
           token: ${{ secrets.LOOKING_GLASS_TOKEN }}
       - name: Installing Dependencies
