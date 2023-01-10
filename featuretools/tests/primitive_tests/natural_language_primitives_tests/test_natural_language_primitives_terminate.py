@@ -8,7 +8,7 @@ TIMEOUT_THRESHOLD = 20
 
 class TestNaturalLanguagePrimitivesTerminate:
 
-    primitives = sorted(_get_natural_language_primitives())
+    primitives = sorted(_get_natural_language_primitives().items())
 
     @pytest.mark.timeout(TIMEOUT_THRESHOLD)
     @pytest.mark.parametrize("primitive", [prim for _, prim in primitives])
