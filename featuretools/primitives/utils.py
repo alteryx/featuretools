@@ -55,7 +55,8 @@ def _get_natural_language_primitives():
         for input_type in primitive.input_types:
             if isinstance(input_type, list):
                 if any(
-                    isinstance(cs.logical_type, NaturalLanguage) for cs in input_type
+                    isinstance(column_schema.logical_type, NaturalLanguage)
+                    for column_schema in input_type
                 ):
                     return True
             else:
