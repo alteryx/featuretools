@@ -1,36 +1,57 @@
-name: Run looking glass performance tests
-
+name: Looking Glass performance tests
 on:
   push:
     branches:
       - main
   workflow_dispatch:
-
+    inputs:
+      current_hash_input:
+        description: 'The new commit to evaluate (optional)'
+        required: false
+        type: string
+      previous_hash_input:
+        description: 'The previous commit to evaluate (optional)'
+        required: false
+        type: string
 jobs:
   performance_tests:
-    matrix:
-      test_type: ["pandas", "dask", "spark"]
-    name: Run looking glass performance tests - py38 - {{ matrix.test_type }}
+    name: Looking Glass performance tests - py38 - ${{ matrix.test_type }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
+      matrix:
+        test_type: ["pandas", "dask", "spark"]
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.LG_AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.LG_AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: 'us-east-1'
       AWS_SESSION_TOKEN: ""
     steps:
       - name: Checkout Featuretools
         uses: actions/checkout@v3
         with:
+          repository: 'alteryx/featuretools'
           fetch-depth: 2
-      - name: Get commit hashes
-        id: get_hashes
+      - name: Get current commit hash
+        id: get_current_hash
         run: |
-          current_hash=$(git rev-parse --short HEAD)
+          if [ -z "${{ inputs.current_hash_input }}" ]
+          then
+            current_hash=$(git rev-parse --short HEAD)
+          else
+            current_hash=${{ inputs.current_hash_input }}
+          fi
           echo "Latest commit hash: $current_hash"
           echo "::set-output name=current_hash::$current_hash"
-          previous_hash=$(git rev-parse --short HEAD~1)
+      - name: Get previous commit hash
+        id: get_previous_hash
+        run: |
+          if [ -z "${{ inputs.previous_hash_input }}" ]
+          then
+            previous_hash=$(git rev-parse --short HEAD~1)
+          else
+            previous_hash=${{ inputs.previous_hash_input }}
+          fi
           echo "Previous commit hash: $previous_hash"
           echo "::set-output name=previous_hash::$previous_hash"
       - name: Set up Python 3.8
@@ -40,7 +61,7 @@ jobs:
       - name: Checkout looking glass
         uses: actions/checkout@v3
         with:
-          repository: alteryx/looking-glass
+          repository: 'alteryx/looking-glass'
           ref: master
           token: ${{ secrets.LOOKING_GLASS_TOKEN }}
       - name: Installing Dependencies
@@ -50,12 +71,12 @@ jobs:
       - name: Run performance test (current)
         id: current
         run: |
-          response=$( looking-glass run-featuretools-entitysets --username machineFL --scenarios-yaml entityset_scenarios_{{ matrix.test_type }}.yaml --featuretools-branch ${{ steps.get_hashes.outputs.current_hash }} --job-desc ${{ steps.get_hashes.outputs.current_hash }} )
+          response=$( looking-glass run-featuretools-entitysets --username featuretools-github-lg-user --scenarios-yaml entityset_scenarios_${{ matrix.test_type }}.yaml --featuretools-branch ${{ steps.get_current_hash.outputs.current_hash }} --job-desc ${{ steps.get_current_hash.outputs.current_hash }} )
           echo "::set-output name=job_id::$(echo $response | sed 's/.*Job ID: \([^ ]*\).*/\1/')"
       - name: Run performance test (previous)
         id: previous
         run: |
-          response=$( looking-glass run-featuretools-entitysets --username machineFL --scenarios-yaml entityset_scenarios_{{ matrix.test_type }}.yaml --featuretools-branch ${{ steps.get_hashes.outputs.previous_hash }} --job-desc ${{ steps.get_hashes.outputs.previous_hash }} )
+          response=$( looking-glass run-featuretools-entitysets --username featuretools-github-lg-user --scenarios-yaml entityset_scenarios_${{ matrix.test_type }}.yaml --featuretools-branch ${{ steps.get_previous_hash.outputs.previous_hash }} --job-desc ${{ steps.get_previous_hash.outputs.previous_hash }} )
           echo "::set-output name=job_id::$(echo $response | sed 's/.*Job ID: \([^ ]*\).*/\1/')"
       - name: Await results
         id: results
@@ -75,19 +96,19 @@ jobs:
         shell: bash
       - name: Generate reports
         run: |
-          filename_base=${{ steps.get_hashes.outputs.current_hash }}_v_${{ steps.get_hashes.outputs.previous_hash }}_{{ matrix.test_type }}
+          filename_base=${{ steps.get_current_hash.outputs.current_hash }}_v_${{ steps.get_previous_hash.outputs.previous_hash }}_${{ matrix.test_type }}
           looking-glass run-local-report --previous-path ${{ steps.previous.outputs.job_id }} -n ${{ steps.current.outputs.job_id }} --output-name ${filename_base} --output-type html
       - name: Upload reports to S3
         id: s3_upload
         run: |
-          filename_base=${{ steps.get_hashes.outputs.current_hash }}_v_${{ steps.get_hashes.outputs.previous_hash }}_{{ matrix.test_type }}
+          filename_base=${{ steps.get_current_hash.outputs.current_hash }}_v_${{ steps.get_previous_hash.outputs.previous_hash }}_${{ matrix.test_type }}
           url=s3://featuretools-performance-results/${filename_base}.html
           aws s3 cp ./${filename_base}.html $url
           echo "::set-output name=report_url::$url"
           echo "Featuretools Report: $url"
       - name: Notify on Slack
         run: |
-          filename_base=${{ steps.get_hashes.outputs.current_hash }}_v_${{ steps.get_hashes.outputs.previous_hash }}_{{ matrix.test_type }}
+          filename_base=${{ steps.get_current_hash.outputs.current_hash }}_v_${{ steps.get_previous_hash.outputs.previous_hash }}_${{ matrix.test_type }}
           presigned_url=$( aws s3 presign ${{ steps.s3_upload.outputs.report_url }} --expires-in 604800 )
           response=$(
           curl -X POST https://slack.com/api/chat.postMessage -H 'Content-type: application/json;charset=UTF-8' -H 'Authorization: Bearer ${{ secrets.LG_SLACK_TOKEN }}' \
@@ -99,7 +120,7 @@ jobs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "<!subteam^${{ secrets.LG_SLACK_NOTIFICATION_USER_GROUP }}>, {{ matrix.test_type }} performance tests for latest commit on Featuretools are complete"
+                  "text": "${{ matrix.test_type }} performance tests for commit ${{ steps.get_current_hash.outputs.current_hash }} on Featuretools are complete"
                 }
               },
               {
@@ -114,11 +135,11 @@ jobs:
                 "fields": [
                   {
                     "type": "mrkdwn",
-                    "text": "*Current Commit*: <${{ github.event.head_commit.url }}|${{ steps.get_hashes.outputs.current_hash }}>"
+                    "text": "*Current Commit*: <https://github.com/alteryx/featuretools/commit/${{ steps.get_current_hash.outputs.current_hash }}|${{ steps.get_current_hash.outputs.current_hash }}>"
                   },
                   {
                     "type": "mrkdwn",
-                    "text": "*Previous Commit*: <https://github.com/alteryx/featuretools/commit/${{ steps.get_hashes.outputs.previous_hash }}|${{ steps.get_hashes.outputs.previous_hash }}>"
+                    "text": "*Previous Commit*: <https://github.com/alteryx/featuretools/commit/${{ steps.get_previous_hash.outputs.previous_hash }}|${{ steps.get_previous_hash.outputs.previous_hash }}>"
                   },
                   {
                     "type": "mrkdwn",
