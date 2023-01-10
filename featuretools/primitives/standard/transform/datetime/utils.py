@@ -26,7 +26,7 @@ class HolidayUtil:
             sorted(self.federal_holidays.items()),
             columns=["holiday_date", "names"],
         )
-        holidays_df.holiday_date = holidays_df.holiday_date.astype("datetime64")
+        holidays_df.holiday_date = holidays_df.holiday_date.astype("datetime64[ns]")
         return holidays_df
 
     def convert_to_subdivision(self, country: str) -> Tuple[str, Optional[str]]:

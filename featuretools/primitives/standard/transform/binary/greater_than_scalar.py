@@ -1,7 +1,5 @@
-import numpy as np
-import pandas.api.types as pdtypes
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import BooleanNullable, Datetime, Ordinal
+from woodwork.logical_types import BooleanNullable
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
 from featuretools.utils.gen_utils import Library
@@ -22,11 +20,7 @@ class GreaterThanScalar(TransformPrimitive):
     """
 
     name = "greater_than_scalar"
-    input_types = [
-        [ColumnSchema(semantic_tags={"numeric"})],
-        [ColumnSchema(logical_type=Datetime)],
-        [ColumnSchema(logical_type=Ordinal)],
-    ]
+    input_types = [ColumnSchema(semantic_tags={"numeric"})]
     return_type = ColumnSchema(logical_type=BooleanNullable)
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
 
@@ -36,11 +30,6 @@ class GreaterThanScalar(TransformPrimitive):
 
     def get_function(self):
         def greater_than_scalar(vals):
-            if (
-                pdtypes.is_categorical_dtype(vals)
-                and self.value not in vals.cat.categories
-            ):
-                return np.nan
             return vals > self.value
 
         return greater_than_scalar
