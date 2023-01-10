@@ -8,8 +8,6 @@ from featuretools.primitives.utils import _get_natural_language_primitives
 TIMEOUT_THRESHOLD = 20
 
 primitives = _get_natural_language_primitives()
-print(primitives)
-
 
 @pytest.mark.timeout(TIMEOUT_THRESHOLD)
 @pytest.mark.skipif(
