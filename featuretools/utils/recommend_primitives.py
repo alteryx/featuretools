@@ -98,14 +98,22 @@ DEFAULT_EXCLUDED_PRIMITIVES = (
     + OTHER_PRIMITIVES_TO_EXCLUDE
 )
 
+# TODO: Make this list more dynamic
 TIME_SERIES_PRIMITIVES = [
+    "expanding_count",
+    "expanding_max",
+    "expanding_mean",
+    "expanding_min",
+    "expanding_std",
+    "expanding_trend",
+    "lag",
     "rolling_count",
+    "rolling_outlier_count",
     "rolling_max",
     "rolling_mean",
     "rolling_min",
     "rolling_std",
     "rolling_trend",
-    "lag",
 ]
 
 
