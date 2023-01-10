@@ -52,7 +52,16 @@ def _get_natural_language_primitives():
     transform_primitives = get_transform_primitives()
 
     def _natural_language_in_input_type(primitive):
-        return any(isinstance(lt, NaturalLanguage) for lt in primitive.input_types)
+        for input_type in primitive.input_types:
+            if isinstance(input_type, list):
+                if any(
+                    isinstance(cs.logical_type, NaturalLanguage) for cs in input_type
+                ):
+                    return True
+            else:
+                if isinstance(input_type.logical_type, NaturalLanguage):
+                    return True
+        return False
 
     return {
         name: primitive
