@@ -7,15 +7,15 @@ from featuretools.entityset import EntitySet
 from featuretools.primitives.utils import get_transform_primitives
 from featuretools.synthesis import dfs, get_valid_primitives
 
-ORDERED_PRIMITIVES = [
+ORDERED_PRIMITIVES = [  # primitives that require ordering
     "absolute_diff",
     "cum_sum",
     "cum_count",
     "cum_mean",
     "cum_max",
     "cum_min",
-    "cumulative_time_since_last_false",  # time_index
-    "cumulative_time_since_last_true",  # time_index
+    "cumulative_time_since_last_false",
+    "cumulative_time_since_last_true",
     "diff",
     "diff_datetime",
     "exponential_weighted_average",
@@ -26,22 +26,20 @@ ORDERED_PRIMITIVES = [
     "is_last_occurrence",
     "is_max_so_far",
     "is_min_so_far",
-    "lag",  # time_index
+    "lag",
     "less_than_previous",
     "percent_change",
     "same_as_previous",
-    "time_since_previous",  # time_index
+    "time_since_previous",
 ]
 
 
 DEPRECATED_PRIMITIVES = [
-    # // as of premium - primitives 0.14.0 and feature - tools 0.26.1
     "multiply_boolean",  # functionality duplicated by 'and' primitive
     "numeric_lag",  # deperecated and replaced with `lag`
 ]
 
 REQUIRED_INPUT_PRIMITIVES = [
-    # // as of premium - primitives 0.14.0 and feature - tools 0.26.1
     "count_string",
     "distance_to_holiday",
     "is_in_geobox",
@@ -66,11 +64,12 @@ REQUIRED_INPUT_PRIMITIVES = [
     "numeric_bin",
 ]
 
-OTHER_PRIMITIVES_TO_EXCLUDE = [
+OTHER_PRIMITIVES_TO_EXCLUDE = [  # Excluding all multi-input primitives and numeric primitives that don't handle skew
     "absolute",
     "negate",
     "not",
     "and",
+    "or",
     "is_zero",
     "is_null",
     "greater_than_equal_to",
@@ -229,11 +228,13 @@ def _recommend_non_numeric_primitives(
             f.primitive.name is not None
             and f.primitive.name not in recommended_non_numeric_primitives
         ):
-            f_names = f.get_feature_names()
-            matrix = calculate_feature_matrix([f], entityset)
-            for f_name in f_names:
-                if len(matrix[f_name].unique()) > 1:
-                    recommended_non_numeric_primitives.add(f.primitive.name)
+            try:
+                matrix = calculate_feature_matrix([f], entityset)
+                for f_name in f.get_feature_names():
+                    if len(matrix[f_name].unique()) > 1:
+                        recommended_non_numeric_primitives.add(f.primitive.name)
+            except Exception:  # If error in calculating feature matrix pass on the recommendation
+                pass
 
     return recommended_non_numeric_primitives
 
