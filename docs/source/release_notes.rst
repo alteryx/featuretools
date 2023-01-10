@@ -9,7 +9,7 @@ Future Release
     * Fixes
     * Changes
     * Documentation Changes
-        * Minor fix to release notes (:pr:``)
+        * Minor fix to release notes (:pr:`2444`)
     * Testing Changes
         * Fix test compatibility with composeml 0.10 (:pr:`2439`)
         * Minimum dependency unit test jobs do not abort if one job fails (:pr:`2437`)
