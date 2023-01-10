@@ -17,7 +17,7 @@ Future Release
         * Run Looking Glass performance tests on merge to main (:pr:`2440`, :pr:`2441`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user: `thehomebrewnerd`
+    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v1.20.0 Jan 5, 2023
 ===================
