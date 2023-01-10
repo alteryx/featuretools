@@ -11,7 +11,7 @@ Future Release
     * Documentation Changes
         * Minor fix to release notes (:pr:`2444`)
     * Testing Changes
-        * Add global Natural Langauge test with problematic strings (:pr:`2429`)
+        * Add test that checks for Natural Language primitives timing out against edge-case input (:pr:`2429`)
         * Fix test compatibility with composeml 0.10 (:pr:`2439`)
         * Minimum dependency unit test jobs do not abort if one job fails (:pr:`2437`)
         * Run Looking Glass performance tests on merge to main (:pr:`2440`, :pr:`2441`)
