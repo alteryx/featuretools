@@ -9,6 +9,7 @@ Future Release
     * Fixes
     * Changes
     * Documentation Changes
+        * Minor fix to release notes (:pr:``)
     * Testing Changes
         * Fix test compatibility with composeml 0.10 (:pr:`2439`)
         * Minimum dependency unit test jobs do not abort if one job fails (:pr:`2437`)
@@ -17,8 +18,8 @@ Future Release
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user: `thehomebrewnerd`
 
-Jan 5, 2023
-===========
+v1.20.0 Jan 5, 2023
+===================
     * Enhancements
         * Add ``TimeSinceLastFalse``, ``TimeSinceLastMax``, ``TimeSinceLastMin``, and ``TimeSinceLastTrue`` primitives (:pr:`2418`)
         * Add ``MaxConsecutiveFalse``, ``MaxConsecutiveNegatives``, ``MaxConsecutivePositives``, ``MaxConsecutiveTrue``, ``MaxConsecutiveZeros``, ``NumConsecutiveGreaterMean``, ``NumConsecutiveLessMean`` (:pr:`2420`)
