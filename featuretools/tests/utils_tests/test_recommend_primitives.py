@@ -177,3 +177,22 @@ def test_get_recommended_primtives_exclude(make_es):
 
     for ex_prim in extra_exclude:
         assert ex_prim not in actual_recomendations
+
+
+def test_get_recommended_primitives_empty_es_error():
+    error_msg = "No DataFrame in EntitySet found. Please add a DataFrame."
+    empty_es = EntitySet()
+    with pytest.raises(IndexError, match=error_msg):
+        get_recommended_primitives(
+            empty_es,
+            False,
+        )
+
+
+def test_get_recommended_primitives_multi_table_es_error(make_es):
+    error_msg = "Multi-table EntitySets are currently not supported. Please only use a single table EntitySet."
+    with pytest.raises(IndexError, match=error_msg):
+        get_recommended_primitives(
+            make_es,
+            False,
+        )

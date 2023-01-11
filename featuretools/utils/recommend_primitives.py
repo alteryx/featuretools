@@ -119,32 +119,40 @@ TIME_SERIES_PRIMITIVES = [
 # TODO: Support multi-table
 def get_recommended_primitives(
     entityset: EntitySet,
-    target_dataframe_name: str,
-    is_time_series: bool,
+    include_time_series_primitives: bool,
     excluded_primitives: List[str] = DEFAULT_EXCLUDED_PRIMITIVES,
 ) -> List[str]:
     """Get a list of recommended primitives given an entity set.
 
     Description:
-        Given a single table entity set with a `target_dataframe_name`, `is_time_series` specified
-        and a list of any primitives in `excluded_primitives` to not be included in the final recommendation list.
+        Given a single-table entity set, `include_time_series_primitives` specified
+        and a list of primitives in `excluded_primitives` to not be included in the final recommendation list.
 
     Args:
         entityset (EntitySet): EntitySet that only contains one dataframe.
-        target_dataframe_name (str): Name of target dataframe to access in `entityset`.
-        is_time_series (bool): Whether or not time-series analysis will be performed. If set to `True`, `Lag` will always be recommended,
-        as well as all Rolling primitives if numeric columns are present.
+        include_time_series_primitives (bool): Whether or not time-series primitives should be considered. If set to `True`, `Lag` will always be recommended,
+        as well as all Rolling and Expanding primitives if numeric columns are present.
         excluded_primitives (List[str]): List of transform primitives to exclude from recommendations.
 
     Note:
         This function currently only works for single table and will only recommend transform primitives.
     """
+    es_dataframe_list = list(entityset.dataframe_dict)
+
+    if len(es_dataframe_list) == 0:
+        raise IndexError("No DataFrame in EntitySet found. Please add a DataFrame.")
+    if len(es_dataframe_list) > 1:
+        raise IndexError(
+            "Multi-table EntitySets are currently not supported. Please only use a single table EntitySet.",
+        )
+
+    target_dataframe_name = es_dataframe_list[0]
+
     recommended_primitives = set()
 
-    if not is_time_series:
+    if not include_time_series_primitives:
         excluded_primitives += TIME_SERIES_PRIMITIVES
-
-    if is_time_series:
+    else:
         recommended_primitives.add("lag")
 
     all_trans_primitives = get_transform_primitives()
@@ -197,7 +205,7 @@ def _recommend_non_numeric_primitives(
     target_dataframe_name: str,
     valid_primitives: List[str],
 ) -> set:
-    """Get a set of recommended non-numeric primitives given an entity set.
+    """Get a set of non-numeric primitives for a given dataset and a list of primitives.
 
     Description:
         Given a single table entity set with a `target_dataframe_name` and an applicable list of `valid_primitives`,
@@ -212,7 +220,9 @@ def _recommend_non_numeric_primitives(
     recommended_non_numeric_primitives = set()
     # Only want to run feature generation on non numeric primitives
     numeric_columns_to_ignore = list(
-        entityset[target_dataframe_name].ww.select(include="numeric").columns,
+        entityset[target_dataframe_name]
+        .ww.select(include="numeric", return_schema=True)
+        .columns,
     )
     features = dfs(
         entityset=entityset,
