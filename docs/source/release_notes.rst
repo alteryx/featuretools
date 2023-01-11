@@ -12,12 +12,13 @@ Future Release
     * Documentation Changes
         * Minor fix to release notes (:pr:`2444`)
     * Testing Changes
+        * Add test that checks for Natural Language primitives timing out against edge-case input (:pr:`2429`)
         * Fix test compatibility with composeml 0.10 (:pr:`2439`)
         * Minimum dependency unit test jobs do not abort if one job fails (:pr:`2437`)
         * Run Looking Glass performance tests on merge to main (:pr:`2440`, :pr:`2441`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user: `thehomebrewnerd`
+    :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v1.20.0 Jan 5, 2023
 ===================
