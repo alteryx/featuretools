@@ -530,7 +530,9 @@ def test_can_serialize_word_set_for_number_of_common_words_feature(pd_es):
 
     num_common_words = NumberOfCommonWords(word_set=common_word_set)
     fm, fd = dfs(
-        entityset=es, target_dataframe_name="df", trans_primitives=[num_common_words]
+        entityset=es,
+        target_dataframe_name="df",
+        trans_primitives=[num_common_words],
     )
 
     feat = fd[-1]

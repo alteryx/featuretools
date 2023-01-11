@@ -9,6 +9,7 @@ Future Release
         * Add `get_recommended_primitives` function to featuretools (:pr:`2398`)
     * Fixes
     * Changes
+        * Update build_docs workflow to only run for Python 3.8 and Python 3.10 (:pr:`2447`)
     * Documentation Changes
         * Minor fix to release notes (:pr:`2444`)
     * Testing Changes
