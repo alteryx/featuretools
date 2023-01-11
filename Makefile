@@ -51,8 +51,8 @@ upgradesetuptools:
 
 .PHONY: package
 package: upgradepip upgradebuild upgradesetuptools
-	python -m build
 	python -m pip install --upgrade pep517
+	python -m build
 	$(eval PACKAGE=$(shell python -c "from pep517.meta import load; metadata = load('.'); print(metadata.version)"))
 	tar -zxvf "dist/featuretools-${PACKAGE}.tar.gz"
 	mv "featuretools-${PACKAGE}" unpacked_sdist
