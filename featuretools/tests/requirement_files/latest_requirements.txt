@@ -8,4 +8,4 @@ psutil==5.9.4
 pyspark==3.2.3
 scipy==1.10.0
 tqdm==4.64.1
-woodwork==0.21.1
+woodwork==0.21.2
