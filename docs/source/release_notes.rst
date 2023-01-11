@@ -31,7 +31,6 @@ v1.20.0 Jan 5, 2023
         * Fix to eliminate fragmentation ``PerformanceWarning`` in ``feature_set_calculator.py`` (:pr:`2424`)
         * Fix serialization of ``NumberOfCommonWords`` feature with custom word_set (:pr:`2432`)
         * Improve edge case handling in NaturalLanguage primitives by standardizing delimiter regex (:pr:`2423`)
-        * Fix typo in ``_handle_binary_comparison`` function name and update ``set_feature_names`` docstring (:pr:`2388`)
         * Remove support for ``Datetime`` and ``Ordinal`` inputs in several primitives to prevent creation of Features that cannot be calculated (:pr:`2434`)
     * Changes
         * Refactor ``_all_direct_and_same_path`` by deleting call to ``_features_have_same_path`` (:pr:`2400`)
