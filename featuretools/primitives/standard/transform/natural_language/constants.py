@@ -1005,5 +1005,5 @@ common_words_1000 = frozenset(
         "teeth",
         "shell",
         "neck",
-    ]
+    ],
 )  # https://gist.github.com/deekayen/4148741
