@@ -112,7 +112,6 @@ def test_get_recommended_primitives(make_es):
     prims_to_exclude = DEFAULT_EXCLUDED_PRIMITIVES + ["latlong_to_city"]
     actual_recomendations = get_recommended_primitives(
         ecom_es_customers,
-        "customers",
         False,
         prims_to_exclude,
     )
@@ -155,7 +154,6 @@ def test_get_recommended_primitives_time_series(make_es):
     prims_to_exclude = DEFAULT_EXCLUDED_PRIMITIVES + ["latlong_to_city"]
     actual_recomendations_ts = get_recommended_primitives(
         ecom_es_log,
-        "log",
         True,
         prims_to_exclude,
     )
@@ -170,7 +168,6 @@ def test_get_recommended_primtives_exclude(make_es):
     prims_to_exclude = DEFAULT_EXCLUDED_PRIMITIVES + ["latlong_to_city"] + extra_exclude
     actual_recomendations = get_recommended_primitives(
         ecom_es_customers,
-        "customers",
         False,
         prims_to_exclude,
     )

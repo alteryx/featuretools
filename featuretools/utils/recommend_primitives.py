@@ -7,31 +7,17 @@ from featuretools.entityset import EntitySet
 from featuretools.primitives.utils import get_transform_primitives
 from featuretools.synthesis import dfs, get_valid_primitives
 
-ORDERED_PRIMITIVES = [  # primitives that require ordering
-    "absolute_diff",
-    "cum_sum",
-    "cum_count",
-    "cum_mean",
-    "cum_max",
-    "cum_min",
-    "cumulative_time_since_last_false",
-    "cumulative_time_since_last_true",
-    "diff",
-    "diff_datetime",
-    "exponential_weighted_average",
-    "exponential_weighted_std",
-    "exponential_weighted_variance",
-    "greater_than_previous",
-    "is_first_occurrence",
-    "is_last_occurrence",
-    "is_max_so_far",
-    "is_min_so_far",
-    "lag",
-    "less_than_previous",
-    "percent_change",
-    "same_as_previous",
-    "time_since_previous",
-]
+ORDERED_PRIMITIVES = (
+    [  # non-numeric primitives that require specific ordering or a time index to be set
+        "cumulative_time_since_last_false",
+        "cumulative_time_since_last_true",
+        "diff",
+        "diff_datetime",
+        "is_first_occurrence",
+        "is_last_occurrence",
+        "time_since_previous",
+    ]
+)
 
 
 DEPRECATED_PRIMITIVES = [
@@ -39,55 +25,22 @@ DEPRECATED_PRIMITIVES = [
     "numeric_lag",  # deperecated and replaced with `lag`
 ]
 
-REQUIRED_INPUT_PRIMITIVES = [
+REQUIRED_INPUT_PRIMITIVES = [  # non-numeric primitives that require input
     "count_string",
     "distance_to_holiday",
     "is_in_geobox",
-    "score_percentile",
-    "subtract_numeric_scalar",
-    "scalar_subtract_numeric_feature",
     "not_equal_scalar",
-    "multiply_numeric_scalar",
-    "modulo_numeric_scalar",
-    "divide_numeric_scalar",
-    "add_numeric_scalar",
     "equal_scalar",
-    "greater_than_equal_to_scalar",
-    "less_than_equal_to_scalar",
-    "divide_by_feature",
-    "greater_than_scalar",
-    "less_than_scalar",
-    "modulo_by_feature",
     "time_since",
-    "savgol_filter",
     "isin",
-    "numeric_bin",
 ]
 
-OTHER_PRIMITIVES_TO_EXCLUDE = [  # Excluding all multi-input primitives and numeric primitives that don't handle skew
-    "absolute",
-    "negate",
+OTHER_PRIMITIVES_TO_EXCLUDE = [  # Excluding some primitives that can produce too many features or arent useful in extracting information
     "not",
     "and",
     "or",
-    "is_zero",
-    "is_null",
-    "greater_than_equal_to",
     "equal",
-    "greater_than",
-    "is_whole_number",
     "not_equal",
-    "multiply_numeric",
-    "multiply_numeric_boolean",
-    "add_numeric",
-    "less_than_equal_to",
-    "divide_numeric",
-    "less_than",
-    "subtract_numeric",
-    "modulo_numeric",
-    "cosine",
-    "tangent",
-    "sine",
 ]
 
 DEFAULT_EXCLUDED_PRIMITIVES = (
@@ -125,14 +78,23 @@ def get_recommended_primitives(
     """Get a list of recommended primitives given an entity set.
 
     Description:
-        Given a single-table entity set, `include_time_series_primitives` specified
-        and a list of primitives in `excluded_primitives` to not be included in the final recommendation list.
+        This function works by first getting a list of valid primitives withholding any primitives specified in `excluded_primitives` that could be applied to a single-table EntitySet.
+        Secondly, engineered features are created for non-numeric fields and are checked for non-uniqueness. If the feature is non-unique, it is added to the recommendation list.
+        Then, numeric fields are checked for skewness. Depending on how skew a column is `square_root` or `natural_logarithm` will be recommended.
+        Lastly if `include_time_series_primitives` is specified as `True`, `Lag` will always be recommended,
+        as well as all Rolling and Expanding primitives if numeric columns are present.
 
     Args:
         entityset (EntitySet): EntitySet that only contains one dataframe.
-        include_time_series_primitives (bool): Whether or not time-series primitives should be considered. If set to `True`, `Lag` will always be recommended,
-        as well as all Rolling and Expanding primitives if numeric columns are present.
+        include_time_series_primitives (bool): Whether or not time-series primitives should be considered.
         excluded_primitives (List[str]): List of transform primitives to exclude from recommendations.
+
+    Note:
+        The main objective of this function is to recommend primitives that could potentially provide important features to the modeling process.
+        Non-numeric primitives do a great job in mainly serving as a way to extract information from origin features that may essentially be meaningless by themselves (e.g., NaturalLaguange, Datetime, LatLong).
+        That is why they are the main focus of this function. Numeric transform primitives are very case-by-case dependent and therefore it is hard to mathmatically quantify which should be recommended.
+        Therefore, we decided to only look at transform primitives that address skewed numeric columns as this is a standard and quantifiable transformation step. The only exception to this rule being
+        for time series problems. Because there are so few primitives that are only applicable for time series, we recommend users try all of them.
 
     Note:
         This function currently only works for single table and will only recommend transform primitives.
@@ -180,8 +142,7 @@ def get_recommended_primitives(
     skew_numeric_primitives = set(["square_root", "natural_logarithm"])
     valid_skew_primtives = skew_numeric_primitives.intersection(valid_primitive_names)
 
-    time_series_primitives = set(TIME_SERIES_PRIMITIVES)
-    valid_time_series_primitives = time_series_primitives.intersection(
+    valid_time_series_primitives = set(TIME_SERIES_PRIMITIVES).intersection(
         valid_primitive_names,
     )
 
