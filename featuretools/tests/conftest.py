@@ -864,3 +864,11 @@ def test_transform_primitive():
         stack_on = []
 
     return TestTransform
+
+
+@pytest.fixture
+def strings_that_have_triggered_errors_before():
+    return [
+        "    ",
+        '"This Borderlands game here"" is the perfect conclusion to the ""Borderlands 3"" line, which focuses on the fans ""favorite character and gives the players the opportunity to close for a long time some very important questions about\'s character and the memorable scenery with which the players interact.',
+    ]
