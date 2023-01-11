@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.8", "3.9", "3.10"]
+        python_version: ["3.8", "3.10"]
     steps:
       - uses: actions/setup-python@v4
         with:
