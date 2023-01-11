@@ -513,3 +513,4 @@ Primitive Util Methods
 
     list_primitives
     summarize_primitives
+    get_recommended_primitives
