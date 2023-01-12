@@ -176,7 +176,7 @@ def _recommend_non_numeric_primitives(
         valid_primitives (List[str]): List of primitives to calculate and check output features.
     """
 
-    recommended_non_numeric_primitives = set()
+    recommended_non_numeric_primitives: set[str] = set()
     # Only want to run feature generation on non numeric primitives
     numeric_columns_to_ignore = list(
         entityset[target_dataframe_name]
@@ -225,7 +225,7 @@ def _recommend_skew_numeric_primitives(
     Note:
         We currently only have primitives to address right skewness.
     """
-    recommended_skew_primitives = set()
+    recommended_skew_primitives: set[str] = set()
     for col in numerics_only_df:
         # Shouldn't recommend log, sqrt if nans, zeros and negative numbers are present
         contains_nan = numerics_only_df[col].isnull().any()
