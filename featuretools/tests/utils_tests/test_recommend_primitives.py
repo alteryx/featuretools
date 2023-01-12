@@ -92,40 +92,40 @@ def test_recommend_non_numeric_primitives(make_es):
         "natural_logarithm",
         "sine",
     ]
-    actual_recomendations = _recommend_non_numeric_primitives(
+    actual_recommendations = _recommend_non_numeric_primitives(
         ecom_es_customers,
         "customers",
         valid_primitives,
     )
-    expected_recomendations = set(
+    expected_recommendations = set(
         [
             "day",
             "num_characters",
         ],
     )
-    assert expected_recomendations == actual_recomendations
+    assert expected_recommendations == actual_recommendations
 
 
 def test_get_recommended_primitives_time_series(make_es):
     ecom_es_log = EntitySet()
     ecom_es_log.add_dataframe(make_es["log"])
     ecom_es_log["log"].ww.set_time_index("datetime")
-    actual_recomendations_ts = get_recommended_primitives(
+    actual_recommendations_ts = get_recommended_primitives(
         ecom_es_log,
         True,
     )
     for ts_prim in TIME_SERIES_PRIMITIVES:
-        assert ts_prim in actual_recomendations_ts
+        assert ts_prim in actual_recommendations_ts
 
 
 def test_get_recommended_primitives(make_es):
     ecom_es_customers = EntitySet()
     ecom_es_customers.add_dataframe(make_es["customers"])
-    actual_recomendations = get_recommended_primitives(
+    actual_recommendations = get_recommended_primitives(
         ecom_es_customers,
         False,
     )
-    expected_recomendations = [
+    expected_recommendations = [
         "day",
         "num_characters",
         "natural_logarithm",
@@ -151,11 +151,11 @@ def test_get_recommended_primitives(make_es):
         "is_free_email_domain",
         "number_of_unique_words",
     ]
-    for prim in expected_recomendations:
-        assert prim in actual_recomendations
+    for prim in expected_recommendations:
+        assert prim in actual_recommendations
 
     for ts_prim in TIME_SERIES_PRIMITIVES:
-        assert ts_prim not in actual_recomendations
+        assert ts_prim not in actual_recommendations
 
 
 def test_get_recommended_primtives_exclude(make_es):
@@ -163,14 +163,14 @@ def test_get_recommended_primtives_exclude(make_es):
     ecom_es_customers.add_dataframe(make_es["customers"])
     extra_exclude = ["num_characters", "natural_logarithm"]
     prims_to_exclude = DEFAULT_EXCLUDED_PRIMITIVES + extra_exclude
-    actual_recomendations = get_recommended_primitives(
+    actual_recommendations = get_recommended_primitives(
         ecom_es_customers,
         False,
         prims_to_exclude,
     )
 
     for ex_prim in extra_exclude:
-        assert ex_prim not in actual_recomendations
+        assert ex_prim not in actual_recommendations
 
 
 def test_get_recommended_primitives_empty_es_error():
