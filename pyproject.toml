@@ -174,9 +174,6 @@ src = ["featuretools"]
 [tool.ruff.isort]
 known-first-party = ["featuretools"]
 
-[tool.black]
-target-version = ['py310']
-
 [tool.coverage.run]
 source = ["featuretools"]
 omit = [

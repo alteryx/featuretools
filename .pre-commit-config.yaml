@@ -27,7 +27,6 @@ repos:
     rev: 22.12.0
     hooks:
       - id: black
-        args: [--target-version=py310]
         additional_dependencies: [".[jupyter]"]
         types_or: [python, jupyter]
   - repo: https://github.com/charliermarsh/ruff-pre-commit

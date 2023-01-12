@@ -9,13 +9,13 @@ clean:
 .PHONY: lint
 lint:
 	python docs/notebook_version_standardizer.py check-execution
-	black featuretools/ docs/source/ -t py310 --check
+	black featuretools/ docs/source/ --check
 	ruff featuretools/
 
 .PHONY: lint-fix
 lint-fix:
 	python docs/notebook_version_standardizer.py standardize
-	black featuretools/ docs/source/ -t py310
+	black featuretools/ docs/source/
 	ruff featuretools/ --fix
 
 .PHONY: test
