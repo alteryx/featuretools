@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ruff for linting and replace isort/flake8 (:pr:`2448`)
     * Fixes
     * Changes
         * Update build_docs workflow to only run for Python 3.8 and Python 3.10 (:pr:`2447`)
