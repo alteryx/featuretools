@@ -23,13 +23,13 @@ repos:
     hooks:
       - id: add-trailing-comma
         name: Add trailing comma
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.10.1
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: 'v0.0.218'
     hooks:
-      - id: isort
-        args: [--settings-path=./pyproject.toml]
+      - id: ruff
+        args: ["--fix"]
   - repo: https://github.com/python/black
-    rev: 22.6.0
+    rev: 22.12.0
     hooks:
       - id: black
         args: [--target-version=py310]
