@@ -166,7 +166,7 @@ select = [
     # isort
     "I001"
 ]
-src = ["nlp_primitives"]
+src = ["featuretools"]
 
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["E402", "F401", "I001", "E501"]
