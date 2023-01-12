@@ -23,7 +23,7 @@ ORDERED_PRIMITIVES = (
 
 DEPRECATED_PRIMITIVES = [
     "multiply_boolean",  # functionality duplicated by 'and' primitive
-    "numeric_lag",  # deperecated and replaced with `lag`
+    "numeric_lag",  # deprecated and replaced with `lag`
 ]
 
 REQUIRED_INPUT_PRIMITIVES = [  # non-numeric primitives that require input
