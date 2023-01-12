@@ -1,7 +1,6 @@
 # flake8: noqa
 from featuretools.utils.entry_point import entry_point
 from featuretools.utils.gen_utils import make_tqdm_iterator
-from featuretools.utils.recommend_primitives import get_recommended_primitives
 from featuretools.utils.time_utils import (
     calculate_trend,
     convert_time_units,
