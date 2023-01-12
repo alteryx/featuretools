@@ -36,7 +36,7 @@ REQUIRED_INPUT_PRIMITIVES = [  # non-numeric primitives that require input
     "isin",
 ]
 
-OTHER_PRIMITIVES_TO_EXCLUDE = [  # Excluding some primitives that can produce too many features or arent useful in extracting information
+OTHER_PRIMITIVES_TO_EXCLUDE = [  # Excluding some primitives that can produce too many features or aren't useful in extracting information
     "not",
     "and",
     "or",
@@ -138,7 +138,7 @@ def get_recommended_primitives(
         ),
     )
     skew_numeric_primitives = set(["square_root", "natural_logarithm"])
-    valid_skew_primtives = skew_numeric_primitives.intersection(valid_primitive_names)
+    valid_skew_primitives = skew_numeric_primitives.intersection(valid_primitive_names)
 
     valid_time_series_primitives = set(TIME_SERIES_PRIMITIVES).intersection(
         valid_primitive_names,
@@ -146,11 +146,11 @@ def get_recommended_primitives(
 
     numeric_tags_only_df = entityset[target_dataframe_name].ww.select("numeric")
 
-    if valid_skew_primtives:
+    if valid_skew_primitives:
         recommended_primitives.update(
             _recommend_skew_numeric_primitives(
                 numeric_tags_only_df,
-                valid_skew_primtives,
+                valid_skew_primitives,
             ),
         )
 
@@ -210,7 +210,7 @@ def _recommend_non_numeric_primitives(
 
 def _recommend_skew_numeric_primitives(
     numerics_only_df: pd.DataFrame,
-    valid_skew_primtives: set,
+    valid_skew_primitives: set,
 ) -> set:
     """Get a set of recommended skew numeric primitives given an entity set.
 
@@ -233,10 +233,10 @@ def _recommend_skew_numeric_primitives(
         if all_above_zero and not contains_nan:
             skew = numerics_only_df[col].skew()
             # We currently don't have anything in featuretools to automatically handle left skewed data as well as skewed data with negative values
-            if skew > 0.5 and skew < 1 and "square_root" in valid_skew_primtives:
+            if skew > 0.5 and skew < 1 and "square_root" in valid_skew_primitives:
                 recommended_skew_primitives.add("square_root")
                 # TODO: Add Box Cox here when available
-            if skew > 1 and "natural_logarithm" in valid_skew_primtives:
+            if skew > 1 and "natural_logarithm" in valid_skew_primitives:
                 recommended_skew_primitives.add("natural_logarithm")
                 # TODO: Add log base 10 transform primitive when available
     return recommended_skew_primitives
