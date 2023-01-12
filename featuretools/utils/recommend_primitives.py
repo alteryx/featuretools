@@ -93,7 +93,7 @@ def get_recommended_primitives(
     Note:
         The main objective of this function is to recommend primitives that could potentially provide important features to the modeling process.
         Non-numeric primitives do a great job in mainly serving as a way to extract information from origin features that may essentially be meaningless by themselves (e.g., NaturalLaguange, Datetime, LatLong).
-        That is why they are the main focus of this function. Numeric transform primitives are very case-by-case dependent and therefore it is hard to mathmatically quantify which should be recommended.
+        That is why they are the main focus of this function. Numeric transform primitives are very case-by-case dependent and therefore it is hard to mathematically quantify which should be recommended.
         Therefore, we decided to only look at transform primitives that address skewed numeric columns as this is a standard and quantifiable transformation step. The only exception to this rule being
         for time series problems. Because there are so few primitives that are only applicable for time series, we recommend users try all of them.
 
