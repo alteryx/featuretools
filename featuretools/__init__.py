@@ -7,6 +7,7 @@ from featuretools.synthesis.api import *
 from featuretools.primitives import list_primitives, summarize_primitives
 from featuretools.computational_backends.api import *
 from featuretools import tests
+from featuretools.utils.recommend_primitives import get_recommended_primitives
 from featuretools.utils.time_utils import *
 from featuretools.utils.utils_info import show_info
 import featuretools.demo
