@@ -158,7 +158,7 @@ def test_get_recommended_primitives(make_es):
         assert ts_prim not in actual_recommendations
 
 
-def test_get_recommended_primtives_exclude(make_es):
+def test_get_recommended_primitives_exclude(make_es):
     ecom_es_customers = EntitySet()
     ecom_es_customers.add_dataframe(make_es["customers"])
     extra_exclude = ["num_characters", "natural_logarithm"]
