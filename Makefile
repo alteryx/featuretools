@@ -8,16 +8,15 @@ clean:
 
 .PHONY: lint
 lint:
-	isort --check-only featuretools
 	python docs/notebook_version_standardizer.py check-execution
-	black featuretools docs/source -t py310 --check
-	flake8 featuretools
+	black featuretools/ docs/source/ --check
+	ruff featuretools/
 
 .PHONY: lint-fix
 lint-fix:
-	black featuretools docs/source -t py310
-	isort featuretools
 	python docs/notebook_version_standardizer.py standardize
+	black featuretools/ docs/source/
+	ruff featuretools/ --fix
 
 .PHONY: test
 test:
