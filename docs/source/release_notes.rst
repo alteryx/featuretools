@@ -9,7 +9,6 @@ Future Release
     * Fixes
     * Changes
         * Update build_docs workflow to only run for Python 3.8 and Python 3.10 (:pr:`2447`)
-        * Add ruff for linting and replace isort/flake8 (:pr:`2448`)
     * Documentation Changes
         * Minor fix to release notes (:pr:`2444`)
     * Testing Changes
@@ -17,6 +16,7 @@ Future Release
         * Fix test compatibility with composeml 0.10 (:pr:`2439`)
         * Minimum dependency unit test jobs do not abort if one job fails (:pr:`2437`)
         * Run Looking Glass performance tests on merge to main (:pr:`2440`, :pr:`2441`)
+        * Add ruff for linting and replace isort/flake8 (:pr:`2448`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
