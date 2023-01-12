@@ -9,6 +9,7 @@ from featuretools.synthesis import dfs, get_valid_primitives
 
 ORDERED_PRIMITIVES = (
     [  # non-numeric primitives that require specific ordering or a time index to be set
+        "cum_count",
         "cumulative_time_since_last_false",
         "cumulative_time_since_last_true",
         "diff",
@@ -100,7 +101,6 @@ def get_recommended_primitives(
         This function currently only works for single table and will only recommend transform primitives.
     """
     es_dataframe_list = list(entityset.dataframe_dict)
-
     if len(es_dataframe_list) == 0:
         raise IndexError("No DataFrame in EntitySet found. Please add a DataFrame.")
     if len(es_dataframe_list) > 1:
@@ -114,8 +114,6 @@ def get_recommended_primitives(
 
     if not include_time_series_primitives:
         excluded_primitives += TIME_SERIES_PRIMITIVES
-    else:
-        recommended_primitives.add("lag")
 
     all_trans_primitives = get_transform_primitives()
     selected_trans_primitives = [
@@ -230,7 +228,7 @@ def _recommend_skew_numeric_primitives(
     recommended_skew_primitives = set()
     for col in numerics_only_df:
         # Shouldn't recommend log, sqrt if nans, zeros and negative numbers are present
-        contains_nan = numerics_only_df[col].isnull().values.any()
+        contains_nan = numerics_only_df[col].isnull().any()
         all_above_zero = (numerics_only_df[col] > 0).all()
         if all_above_zero and not contains_nan:
             skew = numerics_only_df[col].skew()

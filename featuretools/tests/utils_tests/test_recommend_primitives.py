@@ -106,14 +106,24 @@ def test_recommend_non_numeric_primitives(make_es):
     assert expected_recomendations == actual_recomendations
 
 
+def test_get_recommended_primitives_time_series(make_es):
+    ecom_es_log = EntitySet()
+    ecom_es_log.add_dataframe(make_es["log"])
+    ecom_es_log["log"].ww.set_time_index("datetime")
+    actual_recomendations_ts = get_recommended_primitives(
+        ecom_es_log,
+        True,
+    )
+    for ts_prim in TIME_SERIES_PRIMITIVES:
+        assert ts_prim in actual_recomendations_ts
+
+
 def test_get_recommended_primitives(make_es):
     ecom_es_customers = EntitySet()
     ecom_es_customers.add_dataframe(make_es["customers"])
-    prims_to_exclude = DEFAULT_EXCLUDED_PRIMITIVES + ["latlong_to_city"]
     actual_recomendations = get_recommended_primitives(
         ecom_es_customers,
         False,
-        prims_to_exclude,
     )
     expected_recomendations = [
         "day",
@@ -148,24 +158,11 @@ def test_get_recommended_primitives(make_es):
         assert ts_prim not in actual_recomendations
 
 
-def test_get_recommended_primitives_time_series(make_es):
-    ecom_es_log = EntitySet()
-    ecom_es_log.add_dataframe(make_es["log"])
-    prims_to_exclude = DEFAULT_EXCLUDED_PRIMITIVES + ["latlong_to_city"]
-    actual_recomendations_ts = get_recommended_primitives(
-        ecom_es_log,
-        True,
-        prims_to_exclude,
-    )
-    for ts_prim in TIME_SERIES_PRIMITIVES:
-        assert ts_prim in actual_recomendations_ts
-
-
 def test_get_recommended_primtives_exclude(make_es):
     ecom_es_customers = EntitySet()
     ecom_es_customers.add_dataframe(make_es["customers"])
     extra_exclude = ["num_characters", "natural_logarithm"]
-    prims_to_exclude = DEFAULT_EXCLUDED_PRIMITIVES + ["latlong_to_city"] + extra_exclude
+    prims_to_exclude = DEFAULT_EXCLUDED_PRIMITIVES + extra_exclude
     actual_recomendations = get_recommended_primitives(
         ecom_es_customers,
         False,
