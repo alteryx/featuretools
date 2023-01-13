@@ -47,7 +47,8 @@ def right_skew_moderate_and_heavy_df(moderate_right_skewed_df, heavy_right_skewe
     return pd.concat([moderate_right_skewed_df, heavy_right_skewed_df], axis=1)
 
 
-def test_recommend_skew_numeric_primitives(
+@pytest.fixture
+def es_with_skewed_dfs(
     moderate_right_skewed_df,
     heavy_right_skewed_df,
     left_skewed_df,
@@ -55,28 +56,66 @@ def test_recommend_skew_numeric_primitives(
     normal_df,
     right_skew_moderate_and_heavy_df,
 ):
-    valid_skew_primtives = set(["square_root", "natural_logarithm"])
+    es = EntitySet()
+    es.add_dataframe(moderate_right_skewed_df, "moderate_right_skewed_df", "dataframe")
+    es.add_dataframe(heavy_right_skewed_df, "heavy_right_skewed_df", "dataframe")
+    es.add_dataframe(left_skewed_df, "left_skewed_df", "dataframe")
+    es.add_dataframe(skewed_df_zeros, "skewed_df_zeros", "dataframe")
+    es.add_dataframe(normal_df, "normal_df", "dataframe")
+    es.add_dataframe(
+        right_skew_moderate_and_heavy_df,
+        "right_skew_moderate_and_heavy_df",
+        "dataframe",
+    )
+    return es
 
+
+def test_recommend_skew_numeric_primitives(es_with_skewed_dfs):
+    valid_skew_primtives = set(["square_root", "natural_logarithm"])
+    valid_prims = [
+        "cosine",
+        "square_root",
+        "natural_logarithm",
+        "sine",
+    ]
     assert _recommend_skew_numeric_primitives(
-        moderate_right_skewed_df,
-        valid_skew_primtives,
+        es_with_skewed_dfs,
+        "moderate_right_skewed_df",
+        valid_prims,
     ) == set(["square_root"])
     assert _recommend_skew_numeric_primitives(
-        heavy_right_skewed_df,
+        es_with_skewed_dfs,
+        "heavy_right_skewed_df",
         valid_skew_primtives,
     ) == set(["natural_logarithm"])
     assert (
-        _recommend_skew_numeric_primitives(left_skewed_df, valid_skew_primtives)
+        _recommend_skew_numeric_primitives(
+            es_with_skewed_dfs,
+            "left_skewed_df",
+            valid_skew_primtives,
+        )
         == set()
     )
-    assert (
-        _recommend_skew_numeric_primitives(skewed_df_zeros, valid_skew_primtives)
-        == set()
-    )
-    assert _recommend_skew_numeric_primitives(normal_df, valid_skew_primtives) == set()
     assert (
         _recommend_skew_numeric_primitives(
-            right_skew_moderate_and_heavy_df,
+            es_with_skewed_dfs,
+            "skewed_df_zeros",
+            valid_skew_primtives,
+        )
+        == set()
+    )
+    assert (
+        _recommend_skew_numeric_primitives(
+            es_with_skewed_dfs,
+            "normal_df",
+            valid_skew_primtives,
+        )
+        == set()
+    )
+    assert (
+        _recommend_skew_numeric_primitives(
+            es_with_skewed_dfs,
+            "right_skew_moderate_and_heavy_df",
             valid_skew_primtives,
         )
         == valid_skew_primtives
@@ -84,7 +123,7 @@ def test_recommend_skew_numeric_primitives(
 
 
 def test_recommend_non_numeric_primitives(make_es):
-    ecom_es_customers = EntitySet("ES without numerics")
+    ecom_es_customers = EntitySet()
     ecom_es_customers.add_dataframe(make_es["customers"])
     valid_primitives = [
         "day",

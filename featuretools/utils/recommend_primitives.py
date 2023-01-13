@@ -1,7 +1,5 @@
 from typing import List
 
-import pandas as pd
-
 from featuretools.computational_backends import calculate_feature_matrix
 from featuretools.entityset import EntitySet
 from featuretools.primitives.utils import get_transform_primitives
@@ -92,15 +90,15 @@ def get_recommended_primitives(
 
     Note:
         The main objective of this function is to recommend primitives that could potentially provide important features to the modeling process.
-        Non-numeric primitives do a great job in mainly serving as a way to extract information from origin features that may essentially be meaningless by themselves (e.g., NaturalLaguange, Datetime, LatLong).
+        Non-numeric primitives do a great job in mainly serving as a way to extract information from origin features that may essentially be meaningless by themselves (e.g., NaturalLanguage, Datetime, LatLong).
         That is why they are the main focus of this function. Numeric transform primitives are very case-by-case dependent and therefore it is hard to mathematically quantify which should be recommended.
-        Therefore, we decided to only look at transform primitives that address skewed numeric columns as this is a standard and quantifiable transformation step. The only exception to this rule being
-        for time series problems. Because there are so few primitives that are only applicable for time series, we recommend users try all of them.
+        Therefore, only transform primitives that address skewed numeric columns are included, as this is a standard and quantifiable transformation step. The only exception to this rule being
+        for time series problems. Because there are so few primitives that are only applicable for time series, all of them are included in the recommended primitives list.
 
     Note:
         This function currently only works for single table and will only recommend transform primitives.
     """
-    es_dataframe_list = list(entityset.dataframe_dict)
+    es_dataframe_list = entityset.dataframes
     if len(es_dataframe_list) == 0:
         raise IndexError("No DataFrame in EntitySet found. Please add a DataFrame.")
     if len(es_dataframe_list) > 1:
@@ -108,7 +106,7 @@ def get_recommended_primitives(
             "Multi-table EntitySets are currently not supported. Please only use a single table EntitySet.",
         )
 
-    target_dataframe_name = es_dataframe_list[0]
+    target_dataframe_name = es_dataframe_list[0].ww.name
 
     recommended_primitives = set()
 
@@ -137,25 +135,20 @@ def get_recommended_primitives(
             valid_primitive_names,
         ),
     )
-    skew_numeric_primitives = set(["square_root", "natural_logarithm"])
-    valid_skew_primitives = skew_numeric_primitives.intersection(valid_primitive_names)
 
-    valid_time_series_primitives = set(TIME_SERIES_PRIMITIVES).intersection(
-        valid_primitive_names,
+    recommended_primitives.update(
+        _recommend_skew_numeric_primitives(
+            entityset,
+            target_dataframe_name,
+            valid_primitive_names,
+        ),
     )
 
-    numeric_tags_only_df = entityset[target_dataframe_name].ww.select("numeric")
-
-    if valid_skew_primitives:
-        recommended_primitives.update(
-            _recommend_skew_numeric_primitives(
-                numeric_tags_only_df,
-                valid_skew_primitives,
-            ),
-        )
-
-    if valid_time_series_primitives:
-        recommended_primitives.update(valid_time_series_primitives)
+    recommended_primitives.update(
+        set(TIME_SERIES_PRIMITIVES).intersection(
+            valid_primitive_names,
+        ),
+    )
     return list(recommended_primitives)
 
 
@@ -209,8 +202,9 @@ def _recommend_non_numeric_primitives(
 
 
 def _recommend_skew_numeric_primitives(
-    numerics_only_df: pd.DataFrame,
-    valid_skew_primitives: set,
+    entityset: EntitySet,
+    target_dataframe_name: str,
+    valid_primitives: List[str],
 ) -> set:
     """Get a set of recommended skew numeric primitives given an entity set.
 
@@ -219,24 +213,30 @@ def _recommend_skew_numeric_primitives(
         get a set of primitives which could be applied to address right skewness.
 
     Args:
-        numerics_only_df (pd.DataFrame): Woodwork initialized dataframe of origin features with only `numeric` semantic tags
-        valid_skew_primitives (set): set of valid skew primitives (square_root or natural_logarithm) to potentially recommend.
+        entityset (EntitySet): EntitySet that only contains one dataframe.
+        target_dataframe_name (str): Name of target dataframe to access in `entityset`.
+        valid_primitives (List[str]): List of primitives to compare.
 
     Note:
         We currently only have primitives to address right skewness.
     """
     recommended_skew_primitives: set[str] = set()
-    for col in numerics_only_df:
-        # Shouldn't recommend log, sqrt if nans, zeros and negative numbers are present
-        contains_nan = numerics_only_df[col].isnull().any()
-        all_above_zero = (numerics_only_df[col] > 0).all()
-        if all_above_zero and not contains_nan:
-            skew = numerics_only_df[col].skew()
-            # We currently don't have anything in featuretools to automatically handle left skewed data as well as skewed data with negative values
-            if skew > 0.5 and skew < 1 and "square_root" in valid_skew_primitives:
-                recommended_skew_primitives.add("square_root")
-                # TODO: Add Box Cox here when available
-            if skew > 1 and "natural_logarithm" in valid_skew_primitives:
-                recommended_skew_primitives.add("natural_logarithm")
-                # TODO: Add log base 10 transform primitive when available
+    skew_numeric_primitives = set(["square_root", "natural_logarithm"])
+    valid_skew_primitives = skew_numeric_primitives.intersection(valid_primitives)
+    if valid_skew_primitives:
+        numerics_only_df = entityset[target_dataframe_name].ww.select("numeric")
+        recommended_skew_primitives: set[str] = set()
+        for col in numerics_only_df:
+            # Shouldn't recommend log, sqrt if nans, zeros and negative numbers are present
+            contains_nan = numerics_only_df[col].isnull().any()
+            all_above_zero = (numerics_only_df[col] > 0).all()
+            if all_above_zero and not contains_nan:
+                skew = numerics_only_df[col].skew()
+                # We currently don't have anything in featuretools to automatically handle left skewed data as well as skewed data with negative values
+                if skew > 0.5 and skew < 1 and "square_root" in valid_skew_primitives:
+                    recommended_skew_primitives.add("square_root")
+                    # TODO: Add Box Cox here when available
+                if skew > 1 and "natural_logarithm" in valid_skew_primitives:
+                    recommended_skew_primitives.add("natural_logarithm")
+                    # TODO: Add log base 10 transform primitive when available
     return recommended_skew_primitives
