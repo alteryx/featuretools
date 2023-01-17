@@ -1,7 +1,12 @@
+import logging
+
 import pandas as pd
 import pytest
+from woodwork.logical_types import NaturalLanguage
+from woodwork.table_schema import ColumnSchema
 
 from featuretools import EntitySet
+from featuretools.primitives import Day, TransformPrimitive
 from featuretools.utils.recommend_primitives import (
     DEFAULT_EXCLUDED_PRIMITIVES,
     TIME_SERIES_PRIMITIVES,
@@ -143,6 +148,39 @@ def test_recommend_non_numeric_primitives(make_es):
         ],
     )
     assert expected_recommendations == actual_recommendations
+
+
+def test_recommend_skew_numeric_primitives_exception(make_es, caplog):
+    class MockExceptionPrimitive(TransformPrimitive):
+        """Count the number of times the string value occurs."""
+
+        name = "mock_primitive_with_exception"
+        input_types = [ColumnSchema(logical_type=NaturalLanguage)]
+        return_type = ColumnSchema(semantic_tags={"numeric"})
+
+        def get_function(self):
+            def make_exception(column):
+                raise Exception("this primitive has an exception")
+
+            return make_exception
+
+    ecom_es_customers = EntitySet()
+    ecom_es_customers.add_dataframe(make_es["customers"])
+    valid_primitives = [MockExceptionPrimitive(), Day()]
+    logger = logging.getLogger("featuretools")
+    logger.propagate = True
+    actual_recommendations = _recommend_non_numeric_primitives(
+        ecom_es_customers,
+        "customers",
+        valid_primitives,
+    )
+    logger.propagate = False
+    expected_recommendations = set(["day"])
+    assert expected_recommendations == actual_recommendations
+    assert (
+        "Exception in mock_primitive_with_exception: this primitive has an exception"
+        in caplog.text
+    )
 
 
 def test_get_recommended_primitives_time_series(make_es):

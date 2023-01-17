@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from featuretools.computational_backends import calculate_feature_matrix
@@ -71,7 +72,7 @@ TIME_SERIES_PRIMITIVES = [
 # TODO: Support multi-table
 def get_recommended_primitives(
     entityset: EntitySet,
-    include_time_series_primitives: bool,
+    include_time_series_primitives: bool = False,
     excluded_primitives: List[str] = DEFAULT_EXCLUDED_PRIMITIVES,
 ) -> List[str]:
     """Get a list of recommended primitives given an entity set.
@@ -85,8 +86,8 @@ def get_recommended_primitives(
 
     Args:
         entityset (EntitySet): EntitySet that only contains one dataframe.
-        include_time_series_primitives (bool): Whether or not time-series primitives should be considered.
-        excluded_primitives (List[str]): List of transform primitives to exclude from recommendations.
+        include_time_series_primitives (bool): Whether or not time-series primitives should be considered. Defaults to False.
+        excluded_primitives (List[str]): List of transform primitives to exclude from recommendations. Defaults to DEFAULT_EXCLUDED_PRIMITIVES.
 
     Note:
         The main objective of this function is to recommend primitives that could potentially provide important features to the modeling process.
@@ -195,8 +196,9 @@ def _recommend_non_numeric_primitives(
                 for f_name in f.get_feature_names():
                     if len(matrix[f_name].unique()) > 1:
                         recommended_non_numeric_primitives.add(f.primitive.name)
-            except Exception:  # If error in calculating feature matrix pass on the recommendation
-                pass
+            except Exception as e:  # If error in calculating feature matrix pass on the recommendation
+                logger = logging.getLogger("featuretools")
+                logger.error(f"Exception in {f.primitive.name}: {str(e)}")
 
     return recommended_non_numeric_primitives
 
