@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add `get_recommended_primitives` function to featuretools (:pr:`2398`)
     * Fixes
     * Changes
         * Update build_docs workflow to only run for Python 3.8 and Python 3.10 (:pr:`2447`)
@@ -19,7 +20,7 @@ Future Release
         * Add ruff for linting and replace isort/flake8 (:pr:`2448`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v1.20.0 Jan 5, 2023
 ===================

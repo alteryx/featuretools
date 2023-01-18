@@ -511,5 +511,6 @@ Primitive Util Methods
 .. autosummary::
     :toctree: generated/
 
+    get_recommended_primitives
     list_primitives
     summarize_primitives
