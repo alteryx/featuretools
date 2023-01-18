@@ -3,11 +3,20 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.21.0 Jan 18, 2023
+====================
     * Enhancements
         * Add `get_recommended_primitives` function to featuretools (:pr:`2398`)
-    * Fixes
     * Changes
         * Update build_docs workflow to only run for Python 3.8 and Python 3.10 (:pr:`2447`)
     * Documentation Changes
