@@ -198,7 +198,9 @@ def _recommend_non_numeric_primitives(
                         recommended_non_numeric_primitives.add(f.primitive.name)
             except Exception as e:  # If error in calculating feature matrix pass on the recommendation
                 logger = logging.getLogger("featuretools")
-                logger.error(f"Exception in {f.primitive.name}: {str(e)}")
+                logger.error(
+                    f"Exception with feature {f.get_name()} with primitive {f.primitive.name}: {str(e)}",
+                )
 
     return recommended_non_numeric_primitives
 

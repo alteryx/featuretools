@@ -178,7 +178,7 @@ def test_recommend_skew_numeric_primitives_exception(make_es, caplog):
     expected_recommendations = set(["day"])
     assert expected_recommendations == actual_recommendations
     assert (
-        "Exception in mock_primitive_with_exception: this primitive has an exception"
+        "Exception with feature MOCK_PRIMITIVE_WITH_EXCEPTION(favorite_quote) with primitive mock_primitive_with_exception: this primitive has an exception"
         in caplog.text
     )
 
