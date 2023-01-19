@@ -3,16 +3,18 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
+        * Specify black and ruff config arguments in pre-commit-config  (:pr:`2456`)
     * Documentation Changes
     * Testing Changes
-
-.. Thanks to the following people for contributing to this release:
-
+    
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
+    
 v1.21.0 Jan 18, 2023
 ====================
     * Enhancements
