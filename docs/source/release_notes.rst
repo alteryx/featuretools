@@ -8,7 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
-        * Specify black and ruff config arguments in pre-commit-config  (:pr:`2456`)
+        * Specify black and ruff config arguments in pre-commit-config (:pr:`2456`)
     * Documentation Changes
     * Testing Changes
     
