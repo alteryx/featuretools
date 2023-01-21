@@ -7,10 +7,12 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fix bug with consecutive spaces in ``NumWords`` (:pr:`2459`)
     * Changes
         * Specify black and ruff config arguments in pre-commit-config (:pr:`2456`)
     * Documentation Changes
     * Testing Changes
+        * Add test suite for ``NumWords`` primitive (:pr:`2459`)
     
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
