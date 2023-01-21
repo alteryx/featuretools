@@ -1,9 +1,13 @@
+from string import punctuation
+from typing import Iterable
+
+import pandas as pd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import NaturalLanguage
 
 from featuretools.primitives.base import TransformPrimitive
 from featuretools.utils.gen_utils import Library
-
+from featuretools.primitives.standard.transform.natural_language.constants import DELIMITERS
 
 class NumWords(TransformPrimitive):
     """Determines the number of words in a string by counting the spaces.
@@ -25,6 +29,15 @@ class NumWords(TransformPrimitive):
 
     def get_function(self):
         def word_counter(array):
-            return array.fillna("").str.count(" ") + 1
+            def _get_number_of_words(elem: pd.Series):
+                """Returns the number of words or null given non-iterable input"""
+                if not isinstance(elem, Iterable):
+                    return pd.NA
+                return sum(1 for word in elem if len(word.strip(punctuation)))
+
+            return array\
+                .str\
+                .split(DELIMITERS)\
+                .apply(_get_number_of_words)
 
         return word_counter
