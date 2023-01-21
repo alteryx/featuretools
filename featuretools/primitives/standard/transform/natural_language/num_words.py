@@ -6,8 +6,11 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import NaturalLanguage
 
 from featuretools.primitives.base import TransformPrimitive
+from featuretools.primitives.standard.transform.natural_language.constants import (
+    DELIMITERS,
+)
 from featuretools.utils.gen_utils import Library
-from featuretools.primitives.standard.transform.natural_language.constants import DELIMITERS
+
 
 class NumWords(TransformPrimitive):
     """Determines the number of words in a string by counting the spaces.
@@ -35,9 +38,6 @@ class NumWords(TransformPrimitive):
                     return pd.NA
                 return sum(1 for word in elem if len(word.strip(punctuation)))
 
-            return array\
-                .str\
-                .split(DELIMITERS)\
-                .apply(_get_number_of_words)
+            return array.str.split(DELIMITERS).apply(_get_number_of_words)
 
         return word_counter

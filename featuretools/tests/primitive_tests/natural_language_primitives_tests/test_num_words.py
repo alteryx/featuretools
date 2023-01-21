@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
-import pytest
 
 from featuretools.primitives import NumWords
-from featuretools.primitives.standard.transform.natural_language.constants import DELIMITERS
+from featuretools.primitives.standard.transform.natural_language.constants import (
+    DELIMITERS,
+)
 from featuretools.tests.primitive_tests.utils import (
     PrimitiveT,
     find_applicable_primitives,
@@ -72,7 +73,9 @@ class TestNumberOfUniqueWords(PrimitiveT):
 
         actual = self.primitive().get_function()(x)
         expected = pd.Series([pd.NA, pd.NA, pd.NA, 5])
-        pd.testing.assert_series_equal(actual, expected, check_names=False, check_dtype=False)
+        pd.testing.assert_series_equal(
+            actual, expected, check_names=False, check_dtype=False
+        )
 
     def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
