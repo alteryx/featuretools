@@ -13,7 +13,7 @@ from featuretools.utils.gen_utils import Library
 
 
 class NumWords(TransformPrimitive):
-    """Determines the number of words in a string by counting the spaces.
+    """Determines the number of words in a string.
 
     Examples:
         >>> num_words = NumWords()
