@@ -2,9 +2,6 @@ import numpy as np
 import pandas as pd
 
 from featuretools.primitives import NumWords
-from featuretools.primitives.standard.transform.natural_language.constants import (
-    DELIMITERS,
-)
 from featuretools.tests.primitive_tests.utils import (
     PrimitiveT,
     find_applicable_primitives,
@@ -23,14 +20,12 @@ class TestNumberOfUniqueWords(PrimitiveT):
                 "and subsequent lines...",
             ],
         )
-
         expected = pd.Series([4, 6, 3])
         actual = self.primitive().get_function()(x)
         pd.testing.assert_series_equal(actual, expected, check_names=False)
 
     def test_special_characters_and_whitespace(self):
         x = pd.Series(["50% 50 50% \t\t\t\n\n", "a test* test"])
-        print(x.str.split(DELIMITERS))
         expected = pd.Series([3, 3])
         actual = self.primitive().get_function()(x)
         pd.testing.assert_series_equal(actual, expected, check_names=False)
@@ -41,7 +36,6 @@ class TestNumberOfUniqueWords(PrimitiveT):
                 "Ángel Angel Ángel ángel",
             ],
         )
-
         expected = pd.Series([4])
         actual = self.primitive().get_function()(x)
         pd.testing.assert_series_equal(actual, expected, check_names=False)
@@ -63,14 +57,12 @@ class TestNumberOfUniqueWords(PrimitiveT):
                 "This is                      \nthird line \nthird line",
             ],
         )
-
         expected = pd.Series([4, 6])
         actual = self.primitive().get_function()(x)
         pd.testing.assert_series_equal(actual, expected, check_names=False)
 
     def test_null(self):
         x = pd.Series([np.nan, pd.NA, None, "This is a test file."])
-
         actual = self.primitive().get_function()(x)
         expected = pd.Series([pd.NA, pd.NA, pd.NA, 5])
         pd.testing.assert_series_equal(
