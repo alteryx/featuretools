@@ -8,7 +8,7 @@ Before starting the release process, verify the following:
 - [All Github Actions Tests are green on main](https://github.com/alteryx/featuretools/actions?query=branch%3Amain).
 - EvalML Tests are green with Featuretools main
   - [![Unit Tests - EvalML with Featuretools main branch](https://github.com/alteryx/evalml/actions/workflows/unit_tests_with_featuretools_main_branch.yaml/badge.svg?branch=main)](https://github.com/alteryx/evalml/actions/workflows/unit_tests_with_featuretools_main_branch.yaml)
-- The latest Looking Glass performance tests runs should not show any significant performance regressions. If performance regressions have been identified, review the results with the development team to decide on the proper course of action before proceeding with the release.
+- Looking Glass performance tests runs should not show any significant performance regressions when comparing the last commit on `main` with the previous release of Featuretools. See Step 1 below for instructions on manually launching the performance tests runs.
 - The [ReadtheDocs build](https://readthedocs.com/projects/feature-labs-inc-featuretools/) for "latest" is marked as passed. To avoid mysterious errors, best practice is to empty your browser cache when reading new versions of the docs!
 - The [public documentation for the "latest" branch](https://featuretools.alteryx.com/en/latest/) looks correct, and the [release notes](https://featuretools.alteryx.com/en/latest/release_notes.html) includes the last change which was made on `main`.
 - Get agreement on the version number to use for the release.
@@ -21,7 +21,23 @@ In certain instances, it may be necessary to create a backport release. This is 
 
 If you'd like to create a development release, which won't be deployed to pypi and conda and marked as a generally-available production release, please add a "dev" prefix to the patch version, i.e. `X.X.devX`. Note this claims the patch number--if the previous release was `0.12.0`, a subsequent dev release would be `0.12.dev1`, and the following release would be `0.12.2`, _not_ `0.12.1`. Development releases deploy to [test.pypi.org](https://test.pypi.org/project/featuretools/) instead of to [pypi.org](https://pypi.org/project/featuretools).
 
-## 1. Create Featuretools release on Github
+## 1. Evaluate Performance Test Results
+
+Before releasing Featuretools, the person performing the release should launch a performance test run and evaluate the results to make sure no significant performance regressions will be introduced by the release. This can be done by launching a Looking Glass performance test run, which will then post results to Slack. 
+
+To manually launch a Looking Glass performance test run, follow these steps:
+1. Navigate to the [Looking Glass performance tests](https://github.com/alteryx/featuretools/actions/workflows/looking_glass_performance_tests.yaml) GitHub action
+2. Click on the Run workflow dropdown to set up the run
+3. Make sure that the "use workflow from" dropdown is set to `main` to use the workflow version in Featuretools `main`
+4. Enter the hash of the most recent commit to `main` in the "new commit to evaluate" field. For example: `cee9607`
+5. Enter the version tag of the last release of Featuretools in the "previous commit to evaluate" field. For example, if the last release of Featuretools was version 1.20.0, you would enter `v1.20.0` here.
+6. Click the "Run workflow" button to launch the jobs
+
+Once the job has been completed, the results summaries will be posted to Slack automatically. Review the results and make sure the performance has not degraded. If any significant performance issues are noted, discuss with the development team before proceeding.
+
+Note: The procedure above can also be used to launch performance tests runs at any time, even outside of the release process. When launching a test run, the commit fields can take any commit hash, GitHub branch or tag as input to specify the new and previous commits to compare.
+
+## 2. Create Featuretools release on Github
 
 #### Create Release Branch
 
@@ -71,7 +87,7 @@ Checklist before merging:
 
 After merging, verify again that ReadtheDocs "latest" is correct.
 
-## 2. Create Github Release
+## 3. Create Github Release
 
 After the release pull request has been merged into the `main` branch, it is time draft the github release. [Example release](https://github.com/alteryx/featuretools/releases/tag/v0.13.3)
 
@@ -82,7 +98,7 @@ After the release pull request has been merged into the `main` branch, it is tim
 - This is not a pre-release
 - Publishing the release will automatically upload the package to PyPI
 
-## 3. Release on conda-forge
+## 4. Release on conda-forge
 
 In order to release on conda-forge, you can either wait for a bot to create a pull request, or use a GitHub Actions workflow
 
