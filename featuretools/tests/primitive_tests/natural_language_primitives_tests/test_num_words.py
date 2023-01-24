@@ -9,7 +9,7 @@ from featuretools.tests.primitive_tests.utils import (
 )
 
 
-class TestNumberOfWords(PrimitiveT):
+class TestNumWords(PrimitiveT):
     primitive = NumWords
 
     def test_general(self):
