@@ -8,16 +8,15 @@ clean:
 
 .PHONY: lint
 lint:
-	isort --check-only featuretools
 	python docs/notebook_version_standardizer.py check-execution
-	black featuretools docs/source -t py310 --check
-	flake8 featuretools
+	black featuretools/ docs/source/ --check
+	ruff featuretools/
 
 .PHONY: lint-fix
 lint-fix:
-	black featuretools docs/source -t py310
-	isort featuretools
 	python docs/notebook_version_standardizer.py standardize
+	black featuretools/ docs/source/
+	ruff featuretools/ --fix
 
 .PHONY: test
 test:
@@ -52,6 +51,6 @@ upgradesetuptools:
 .PHONY: package
 package: upgradepip upgradebuild upgradesetuptools
 	python -m build
-	$(eval PACKAGE=$(shell python -c "from pep517.meta import load; metadata = load('.'); print(metadata.version)"))
+	$(eval PACKAGE=$(shell python -c 'import setuptools; setuptools.setup()' --version))
 	tar -zxvf "dist/featuretools-${PACKAGE}.tar.gz"
 	mv "featuretools-${PACKAGE}" unpacked_sdist

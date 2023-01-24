@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from distributed import LocalCluster
+from packaging.version import parse
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, Integer
 
@@ -519,12 +520,17 @@ def lt(es):
     def label_func(df):
         return df["value"].sum() > 10
 
-    lm = cp.LabelMaker(
-        target_dataframe_name="id",
-        time_index="datetime",
-        labeling_function=label_func,
-        window_size="1m",
-    )
+    kwargs = {
+        "time_index": "datetime",
+        "labeling_function": label_func,
+        "window_size": "1m",
+    }
+    if parse(cp.__version__) >= parse("0.10.0"):
+        kwargs["target_dataframe_index"] = "id"
+    else:
+        kwargs["target_dataframe_name"] = "id"  # pragma: no cover
+
+    lm = cp.LabelMaker(**kwargs)
 
     df = es["log"]
     df = to_pandas(df)
@@ -858,3 +864,11 @@ def test_transform_primitive():
         stack_on = []
 
     return TestTransform
+
+
+@pytest.fixture
+def strings_that_have_triggered_errors_before():
+    return [
+        "    ",
+        '"This Borderlands game here"" is the perfect conclusion to the ""Borderlands 3"" line, which focuses on the fans ""favorite character and gives the players the opportunity to close for a long time some very important questions about\'s character and the memorable scenery with which the players interact.',
+    ]

@@ -1,4 +1,7 @@
-exclude: ^LICENSE/|\.(html|csv|svg|md|txt|json)$
+exclude: |
+  (?x)
+  .html$|.csv$|.svg$|.md$|.txt$|.json$|.xml$|.pickle$|^.github/|
+  (LICENSE.*|README.*)
 default_stages: [commit]
 repos:
   - repo: https://github.com/kynan/nbstripout
@@ -23,15 +26,18 @@ repos:
     hooks:
       - id: add-trailing-comma
         name: Add trailing comma
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.10.1
-    hooks:
-      - id: isort
-        args: [--settings-path=./pyproject.toml]
   - repo: https://github.com/python/black
-    rev: 22.6.0
+    rev: 22.12.0
     hooks:
       - id: black
-        args: [--target-version=py310]
+        args:
+          - --config=./pyproject.toml
         additional_dependencies: [".[jupyter]"]
         types_or: [python, jupyter]
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: 'v0.0.218'
+    hooks:
+      - id: ruff
+        args: 
+          - --config=./pyproject.toml
+          - --fix

@@ -13,7 +13,6 @@ from woodwork.logical_types import (
     Double,
     Integer,
     IntegerNullable,
-    Ordinal,
 )
 
 from featuretools import (
@@ -467,8 +466,8 @@ def test_diff_datetime(pd_es):
     feature_set = FeatureSet([diff])
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array(range(15)))
-    vals = pd.array(df[diff.get_name()].tolist())
-    expected_vals = pd.array(
+    vals = pd.Series(df[diff.get_name()].tolist())
+    expected_vals = pd.Series(
         [
             pd.NaT,
             pd.Timedelta(seconds=6),
@@ -487,7 +486,7 @@ def test_diff_datetime(pd_es):
             pd.Timedelta(seconds=3),
         ],
     )
-    pd.util.testing.assert_equal(vals, expected_vals)
+    pd.testing.assert_series_equal(vals, expected_vals)
 
 
 def test_diff_datetime_shift(pd_es):
@@ -498,8 +497,8 @@ def test_diff_datetime_shift(pd_es):
     feature_set = FeatureSet([diff])
     calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
     df = calculator.run(np.array(range(6)))
-    vals = pd.array(df[diff.get_name()].tolist())
-    expected_vals = pd.array(
+    vals = pd.Series(df[diff.get_name()].tolist())
+    expected_vals = pd.Series(
         [
             pd.NaT,
             pd.NaT,
@@ -509,7 +508,7 @@ def test_diff_datetime_shift(pd_es):
             pd.Timedelta(seconds=6),
         ],
     )
-    pd.util.testing.assert_equal(vals, expected_vals)
+    pd.testing.assert_series_equal(vals, expected_vals)
 
 
 def test_compare_of_identity(es):
@@ -573,10 +572,6 @@ def test_compare_of_transform(es):
     to_test = [
         (EqualScalar, [False, True]),
         (NotEqualScalar, [True, False]),
-        (LessThanScalar, [True, False]),
-        (LessThanEqualToScalar, [True, True]),
-        (GreaterThanScalar, [False, False]),
-        (GreaterThanEqualToScalar, [False, True]),
     ]
 
     features = []
@@ -1684,84 +1679,6 @@ def test_cfm_with_lag_and_non_nullable_columns(pd_es):
         fm.ww.schema.logical_types["LAG(purchased_with_nulls, datetime, periods=5)"],
         BooleanNullable,
     )
-
-
-def test_comparisons_with_ordinal_valid_inputs(es):
-    if es.dataframe_type == Library.SPARK:
-        pytest.xfail(
-            "Categorical dtypes not used in Spark, and comparison works as expected without error.",
-        )
-    new_df = es["log"]
-    new_df.ww["ordinal_valid"] = new_df["priority_level"]
-
-    es.replace_dataframe("log", new_df)
-    es["log"].ww.set_types(
-        logical_types={
-            "ordinal_valid": Ordinal(order=[0, 1, 2]),
-        },
-    )
-    valid_features = [
-        Feature(es["log"].ww["priority_level"]) > 1,
-        Feature(es["log"].ww["priority_level"]) >= 1,
-        Feature(es["log"].ww["priority_level"]) < 1,
-        Feature(es["log"].ww["priority_level"]) <= 1,
-        Feature(es["log"].ww["priority_level"])
-        > Feature(es["log"].ww["ordinal_valid"]),
-        Feature(es["log"].ww["priority_level"])
-        >= Feature(es["log"].ww["ordinal_valid"]),
-        Feature(es["log"].ww["priority_level"])
-        < Feature(es["log"].ww["ordinal_valid"]),
-        Feature(es["log"].ww["priority_level"])
-        <= Feature(es["log"].ww["ordinal_valid"]),
-    ]
-    fm = calculate_feature_matrix(
-        entityset=es,
-        features=valid_features,
-    )
-    feature_cols = [f.get_name() for f in valid_features]
-    fm = to_pandas(fm)
-    for col in feature_cols:
-        assert fm[col].notnull().any()
-
-
-def test_comparisons_with_ordinal_invalid_inputs(es):
-    if es.dataframe_type == Library.SPARK:
-        pytest.xfail(
-            "Categorical dtypes not used in Spark, and comparison works as expected without error.",
-        )
-    new_df = es["log"]
-    new_df.ww["ordinal_invalid"] = new_df["priority_level"].astype(int) + 10
-
-    es.replace_dataframe("log", new_df)
-    es["log"].ww.set_types(
-        logical_types={
-            "ordinal_invalid": Ordinal(order=[10, 11, 12]),
-        },
-    )
-
-    invalid_features = [
-        Feature(es["log"].ww["priority_level"]) > 10,
-        Feature(es["log"].ww["priority_level"]) >= 10,
-        Feature(es["log"].ww["priority_level"]) < 10,
-        Feature(es["log"].ww["priority_level"]) <= 10,
-        Feature(es["log"].ww["priority_level"])
-        > Feature(es["log"].ww["ordinal_invalid"]),
-        Feature(es["log"].ww["priority_level"])
-        >= Feature(es["log"].ww["ordinal_invalid"]),
-        Feature(es["log"].ww["priority_level"])
-        < Feature(es["log"].ww["ordinal_invalid"]),
-        Feature(es["log"].ww["priority_level"])
-        <= Feature(es["log"].ww["ordinal_invalid"]),
-    ]
-    fm = calculate_feature_matrix(
-        entityset=es,
-        features=invalid_features,
-    )
-
-    feature_cols = [f.get_name() for f in invalid_features]
-    fm = to_pandas(fm)
-    for col in feature_cols:
-        assert fm[col].isnull().all()
 
 
 def test_comparisons_with_ordinal_valid_inputs_that_dont_work_but_should(pd_es):

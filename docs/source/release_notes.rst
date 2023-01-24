@@ -3,9 +3,38 @@
 Release Notes
 -------------
 
-
 Future Release
 ==============
+    * Enhancements
+    * Fixes
+    * Changes
+        * Specify black and ruff config arguments in pre-commit-config (:pr:`2456`)
+    * Documentation Changes
+    * Testing Changes
+    
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
+    
+v1.21.0 Jan 18, 2023
+====================
+    * Enhancements
+        * Add `get_recommended_primitives` function to featuretools (:pr:`2398`)
+    * Changes
+        * Update build_docs workflow to only run for Python 3.8 and Python 3.10 (:pr:`2447`)
+    * Documentation Changes
+        * Minor fix to release notes (:pr:`2444`)
+    * Testing Changes
+        * Add test that checks for Natural Language primitives timing out against edge-case input (:pr:`2429`)
+        * Fix test compatibility with composeml 0.10 (:pr:`2439`)
+        * Minimum dependency unit test jobs do not abort if one job fails (:pr:`2437`)
+        * Run Looking Glass performance tests on merge to main (:pr:`2440`, :pr:`2441`)
+        * Add ruff for linting and replace isort/flake8 (:pr:`2448`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`ozzieD`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
+
+v1.20.0 Jan 5, 2023
+===================
     * Enhancements
         * Add ``TimeSinceLastFalse``, ``TimeSinceLastMax``, ``TimeSinceLastMin``, and ``TimeSinceLastTrue`` primitives (:pr:`2418`)
         * Add ``MaxConsecutiveFalse``, ``MaxConsecutiveNegatives``, ``MaxConsecutivePositives``, ``MaxConsecutiveTrue``, ``MaxConsecutiveZeros``, ``NumConsecutiveGreaterMean``, ``NumConsecutiveLessMean`` (:pr:`2420`)
@@ -13,8 +42,10 @@ Future Release
         * Fix typo in ``_handle_binary_comparison`` function name and update ``set_feature_names`` docstring (:pr:`2388`)
         * Only allow Datetime time index as input to ``RateOfChange`` primitive (:pr:`2408`)
         * Prevent catastrophic backtracking in regex for ``NumberOfWordsInQuotes`` (:pr:`2413`)
+        * Fix to eliminate fragmentation ``PerformanceWarning`` in ``feature_set_calculator.py`` (:pr:`2424`)
         * Fix serialization of ``NumberOfCommonWords`` feature with custom word_set (:pr:`2432`)
         * Improve edge case handling in NaturalLanguage primitives by standardizing delimiter regex (:pr:`2423`)
+        * Remove support for ``Datetime`` and ``Ordinal`` inputs in several primitives to prevent creation of Features that cannot be calculated (:pr:`2434`)
     * Changes
         * Refactor ``_all_direct_and_same_path`` by deleting call to ``_features_have_same_path`` (:pr:`2400`)
         * Refactor ``_build_transform_features`` by iterating over ``input_features`` once (:pr:`2400`)
@@ -22,10 +53,9 @@ Future Release
         * Resolve empty Pandas series warnings (:pr:`2403`)
         * Initialize Woodwork with ``init_with_partial_schama`` instead of ``init`` in ``EntitySet.add_last_time_indexes`` (:pr:`2409`)
         * Updates for compatibility with numpy 1.24.0 (:pr:`2414`)
-        * The `delimiter_regex` parameter for ``TotalWordLength`` has been renamed to `do_not_count` (:pr:`2423`)
+        * The ``delimiter_regex`` parameter for ``TotalWordLength`` has been renamed to ``do_not_count`` (:pr:`2423`)
     * Documentation Changes
         *  Remove unused sections from 1.19.0 notes (:pr:`2396`)
-    * Testing Changes
 
    Thanks to the following people for contributing to this release:
    :user:`gsheni`, :user:`rwedge`, :user:`sbadithe`, :user:`thehomebrewnerd`
@@ -33,8 +63,10 @@ Future Release
 
 Breaking Changes
 ++++++++++++++++
-* The `delimiter_regex` parameter for ``TotalWordLength`` has been renamed to `do_not_count`.
+* The ``delimiter_regex`` parameter for ``TotalWordLength`` has been renamed to ``do_not_count``.
   Old saved features that had a non-default value for the parameter will no longer load.
+* Support for ``Datetime`` and ``Ordinal`` inputs has been removed from the ``LessThanScalar``,
+  ``GreaterThanScalar``, ``LessThanEqualToScalar`` and ``GreaterThanEqualToScalar`` primitives.
 
 v1.19.0 Dec 9, 2022
 ===================

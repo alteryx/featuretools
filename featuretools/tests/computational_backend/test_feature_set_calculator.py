@@ -275,8 +275,8 @@ def test_make_agg_feat_where_different_identity_feat(es):
                 es["log"].ww["id"],
                 parent_dataframe_name="sessions",
                 where=Feature(
-                    es["log"].ww["datetime"],
-                    primitive=where_cmp(datetime(2011, 4, 10, 10, 40, 1)),
+                    es["log"].ww["value"],
+                    primitive=where_cmp(10.0),
                 ),
                 primitive=Count,
             ),
@@ -294,35 +294,35 @@ def test_make_agg_feat_where_different_identity_feat(es):
         instances = df[name]
         v0, v1, v2, v3 = instances[0:4]
         if where_cmp == LessThanScalar:
-            assert v0 == 5
+            assert v0 == 2
             assert v1 == 4
             assert v2 == 1
-            assert v3 == 1
+            assert v3 == 2
         elif where_cmp == GreaterThanScalar:
-            assert v0 == 0
+            assert v0 == 2
             assert v1 == 0
             assert v2 == 0
             assert v3 == 0
         elif where_cmp == LessThanEqualToScalar:
-            assert v0 == 5
+            assert v0 == 3
             assert v1 == 4
             assert v2 == 1
             assert v3 == 2
         elif where_cmp == GreaterThanEqualToScalar:
-            assert v0 == 0
+            assert v0 == 3
             assert v1 == 0
             assert v2 == 0
-            assert v3 == 1
+            assert v3 == 0
         elif where_cmp == EqualScalar:
-            assert v0 == 0
+            assert v0 == 1
             assert v1 == 0
             assert v2 == 0
-            assert v3 == 1
+            assert v3 == 0
         elif where_cmp == NotEqualScalar:
-            assert v0 == 5
+            assert v0 == 4
             assert v1 == 4
             assert v2 == 1
-            assert v3 == 1
+            assert v3 == 2
 
 
 def test_make_agg_feat_of_grandchild_dataframe(es):
