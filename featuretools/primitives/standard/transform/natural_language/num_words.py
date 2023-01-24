@@ -1,3 +1,4 @@
+import re
 from string import punctuation
 from typing import Iterable
 
@@ -13,7 +14,8 @@ from featuretools.utils.gen_utils import Library
 
 
 class NumWords(TransformPrimitive):
-    """Determines the number of words in a string.
+    """Determines the number of words in a string. Words are sequences of characters
+    delimited by whitespace.
 
     Examples:
         >>> num_words = NumWords()
@@ -38,7 +40,7 @@ class NumWords(TransformPrimitive):
                 if not isinstance(elem, Iterable):
                     return pd.NA
                 return sum(
-                    1 for word in elem.split(DELIMITERS) if word.strip(punctuation)
+                    1 for word in re.split(DELIMITERS, elem) if word.strip(punctuation)
                 )
 
             return array.apply(_get_number_of_words)

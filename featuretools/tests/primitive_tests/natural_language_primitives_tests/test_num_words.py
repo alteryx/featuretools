@@ -9,7 +9,7 @@ from featuretools.tests.primitive_tests.utils import (
 )
 
 
-class TestNumberOfUniqueWords(PrimitiveT):
+class TestNumberOfWords(PrimitiveT):
     primitive = NumWords
 
     def test_general(self):
@@ -25,8 +25,8 @@ class TestNumberOfUniqueWords(PrimitiveT):
         pd.testing.assert_series_equal(actual, expected, check_names=False)
 
     def test_special_characters_and_whitespace(self):
-        x = pd.Series(["50% 50 50% \t\t\t\n\n", "a test* test"])
-        expected = pd.Series([3, 3])
+        x = pd.Series(["50% 50 50% \t\t\t\n\n", "$5,3040 a test* test"])
+        expected = pd.Series([3, 4])
         actual = self.primitive().get_function()(x)
         pd.testing.assert_series_equal(actual, expected, check_names=False)
 
