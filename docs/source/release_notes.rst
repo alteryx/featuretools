@@ -10,11 +10,12 @@ Future Release
     * Changes
         * Specify black and ruff config arguments in pre-commit-config (:pr:`2456`)
     * Documentation Changes
+        * Update ``release.md`` with instructions for launching Looking Glass performance test runs (:pr:`2461`)
     * Testing Changes
-    
+
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
-    
+    :user:`gsheni`, :user:`thehomebrewnerd`
+
 v1.21.0 Jan 18, 2023
 ====================
     * Enhancements
