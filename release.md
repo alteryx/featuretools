@@ -8,7 +8,7 @@ Before starting the release process, verify the following:
 - [All Github Actions Tests are green on main](https://github.com/alteryx/featuretools/actions?query=branch%3Amain).
 - EvalML Tests are green with Featuretools main
   - [![Unit Tests - EvalML with Featuretools main branch](https://github.com/alteryx/evalml/actions/workflows/unit_tests_with_featuretools_main_branch.yaml/badge.svg?branch=main)](https://github.com/alteryx/evalml/actions/workflows/unit_tests_with_featuretools_main_branch.yaml)
-- Looking Glass performance tests runs should not show any significant performance regressions when comparing the last commit on `main` with the previous release of Featuretools. See below for instructions on manually launching the performance tests runs. If performance regressions have been identified, review the results with the development team to decide on the proper course of action before proceeding with the release.
+- Looking Glass performance tests runs should not show any significant performance regressions when comparing the last commit on `main` with the previous release of Featuretools. See Step 1below for instructions on manually launching the performance tests runs.
 - The [ReadtheDocs build](https://readthedocs.com/projects/feature-labs-inc-featuretools/) for "latest" is marked as passed. To avoid mysterious errors, best practice is to empty your browser cache when reading new versions of the docs!
 - The [public documentation for the "latest" branch](https://featuretools.alteryx.com/en/latest/) looks correct, and the [release notes](https://featuretools.alteryx.com/en/latest/release_notes.html) includes the last change which was made on `main`.
 - Get agreement on the version number to use for the release.
