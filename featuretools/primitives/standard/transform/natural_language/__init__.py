@@ -7,9 +7,6 @@ from featuretools.primitives.standard.transform.natural_language.mean_characters
 from featuretools.primitives.standard.transform.natural_language.median_word_length import (
     MedianWordLength,
 )
-from featuretools.primitives.standard.transform.natural_language.natural_language_to_year import (
-    NaturalLanguageToYear,
-)
 from featuretools.primitives.standard.transform.natural_language.num_characters import (
     NumCharacters,
 )

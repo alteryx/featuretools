@@ -279,7 +279,6 @@ NaturalLanguage Transform Primitives
    CountString
    MeanCharactersPerWord
    MedianWordLength
-   NaturalLanguageToYear
    NumCharacters
    NumUniqueSeparators
    NumWords
