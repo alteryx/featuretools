@@ -33,11 +33,14 @@ class NumWords(TransformPrimitive):
     def get_function(self):
         def word_counter(array):
             def _get_number_of_words(elem: pd.Series):
-                """Returns the number of words or null given non-iterable input"""
+                """Returns the number of words in given element,
+                or null given non-iterable input"""
                 if not isinstance(elem, Iterable):
                     return pd.NA
-                return sum(1 for word in elem if len(word.strip(punctuation)))
+                return sum(
+                    1 for word in elem.split(DELIMITERS) if word.strip(punctuation)
+                )
 
-            return array.str.split(DELIMITERS).apply(_get_number_of_words)
+            return array.apply(_get_number_of_words)
 
         return word_counter

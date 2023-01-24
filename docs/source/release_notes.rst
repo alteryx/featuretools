@@ -15,7 +15,7 @@ Future Release
         * Add test suite for ``NumWords`` primitive (:pr:`2459`)
     
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`sbadithe`
     
 v1.21.0 Jan 18, 2023
 ====================
