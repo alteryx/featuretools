@@ -129,11 +129,11 @@ Per the instructions [here](https://conda-forge.org/docs/maintainer/updating_pkg
 Before releasing Featuretools, first confirm that no significant performance regressions have been introduced since the last release. This can be done by manually launching a Looking Glass performance test run, which will then post results to Slack, visible to repo maintainers. To manually launch a performance test run, follow these steps:
 1. Navigate to the [Looking Glass performance tests](https://github.com/alteryx/featuretools/actions/workflows/looking_glass_performance_tests.yaml) GitHub action
 2. Click on the Run workflow dropdown to set up the run
-3. Make sure that the use workflow from is set to `main` to use the workflow version in Featuretools `main`
-4. Enter the hash of the last commit to main in the new commit field. For example: `cee9607`
-5. Enter the version tag of the last release of Featuretools in the previous commit field. If the last release of Featuretools was version 1.20.0, you would enter `v1.20.0` here.
+3. Make sure that the "use workflow from" dropdown is set to `main` to use the workflow version in Featuretools `main`
+4. Enter the hash of the most recent commit to `main` in the "new commit to evaluate" field. For example: `cee9607`
+5. Enter the version tag of the last release of Featuretools in the "previous commit to evaluate" field. For example, if the last release of Featuretools was version 1.20.0, you would enter `v1.20.0` here.
 6. Click the "Run workflow" button to launch the jobs
 
-Once the job has been completed, the results summary will be posted to Slack.
+Once the job has been completed, the results summaries will be posted to Slack automatically.
 
 Note: This procedure can be used to manually launch performance tests runs at any time, even outside of the release process. When launching a test run, the commit fields can take any commit hash, GitHub branch or tag as input to specify the new and previous commits to compare.
