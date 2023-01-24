@@ -7,14 +7,16 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fix bug with consecutive spaces in ``NumWords`` (:pr:`2459`)
     * Changes
         * Specify black and ruff config arguments in pre-commit-config (:pr:`2456`)
     * Documentation Changes
         * Update ``release.md`` with instructions for launching Looking Glass performance test runs (:pr:`2461`)
     * Testing Changes
-
+        * Add test suite for ``NumWords`` primitive (:pr:`2459`)
+    
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v1.21.0 Jan 18, 2023
 ====================
