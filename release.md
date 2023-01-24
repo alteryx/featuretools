@@ -8,7 +8,7 @@ Before starting the release process, verify the following:
 - [All Github Actions Tests are green on main](https://github.com/alteryx/featuretools/actions?query=branch%3Amain).
 - EvalML Tests are green with Featuretools main
   - [![Unit Tests - EvalML with Featuretools main branch](https://github.com/alteryx/evalml/actions/workflows/unit_tests_with_featuretools_main_branch.yaml/badge.svg?branch=main)](https://github.com/alteryx/evalml/actions/workflows/unit_tests_with_featuretools_main_branch.yaml)
-- The latest Looking Glass performance tests runs should not show any significant performance regressions. If performance regressions have been identified, review the results with the development team to decide on the proper course of action before proceeding with the release.
+- Looking Glass performance tests runs should not show any significant performance regressions when comparing the last commit on `main` with the previous release of Featuretools. See below for instructions on manually launching the performance tests runs. If performance regressions have been identified, review the results with the development team to decide on the proper course of action before proceeding with the release.
 - The [ReadtheDocs build](https://readthedocs.com/projects/feature-labs-inc-featuretools/) for "latest" is marked as passed. To avoid mysterious errors, best practice is to empty your browser cache when reading new versions of the docs!
 - The [public documentation for the "latest" branch](https://featuretools.alteryx.com/en/latest/) looks correct, and the [release notes](https://featuretools.alteryx.com/en/latest/release_notes.html) includes the last change which was made on `main`.
 - Get agreement on the version number to use for the release.
@@ -123,3 +123,17 @@ Per the instructions [here](https://conda-forge.org/docs/maintainer/updating_pkg
 
 2. A PR will be auto-created on the repo, and will need to be merged by an existing maintainer.
 3. The new user will need to **check their email for an invite link to click**, which should be https://github.com/conda-forge
+
+## Manually launching Looking Glass performance runs
+
+Before releasing Featuretools, first confirm that no significant performance regressions have been introduced since the last release. This can be done by manually launching a Looking Glass performance test run, which will then post results to Slack, visible to repo maintainers. To manually launch a performance test run, follow these steps:
+1. Navigate to the [Looking Glass performance tests](https://github.com/alteryx/featuretools/actions/workflows/looking_glass_performance_tests.yaml) GitHub action
+2. Click on the Run workflow dropdown to set up the run
+3. Make sure that the use workflow from is set to `main` to use the workflow version in Featuretools `main`
+4. Enter the hash of the last commit to main in the new commit field. For example: `cee9607`
+5. Enter the version tag of the last release of Featuretools in the previous commit field. If the last release of Featuretools was version 1.20.0, you would enter `v1.20.0` here.
+6. Click the "Run workflow" button to launch the jobs
+
+Once the job has been completed, the results summary will be posted to Slack.
+
+Note: This procedure can be used to manually launch performance tests runs at any time, even outside of the release process. When launching a test run, the commit fields can take any commit hash, GitHub branch or tag as input to specify the new and previous commits to compare.
