@@ -14,7 +14,7 @@ class TestSameAsPrevious:
         correct_answer = pd.Series([False, False, True, False, False])
         pd.testing.assert_series_equal(answer, correct_answer)
 
-    def test_ints(self):
+    def test_int64(self):
         primitive_func = SameAsPrevious().get_function()
         array = pd.Series([1, 2, 2, 3, 2], dtype="Int64")
         answer = primitive_func(array)

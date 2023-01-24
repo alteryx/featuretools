@@ -6,15 +6,16 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ``AbsoluteDiff``, ``SameAsPrevious``, ``Variance``, ``Season``, ``NaturalLanguageToYear``, ``UpperCaseWordCount`` transform primitives (:pr:`2460`)
     * Fixes
     * Changes
         * Specify black and ruff config arguments in pre-commit-config (:pr:`2456`)
     * Documentation Changes
     * Testing Changes
-    
+
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
-    
+
 v1.21.0 Jan 18, 2023
 ====================
     * Enhancements
