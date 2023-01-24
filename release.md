@@ -21,7 +21,7 @@ In certain instances, it may be necessary to create a backport release. This is 
 
 If you'd like to create a development release, which won't be deployed to pypi and conda and marked as a generally-available production release, please add a "dev" prefix to the patch version, i.e. `X.X.devX`. Note this claims the patch number--if the previous release was `0.12.0`, a subsequent dev release would be `0.12.dev1`, and the following release would be `0.12.2`, _not_ `0.12.1`. Development releases deploy to [test.pypi.org](https://test.pypi.org/project/featuretools/) instead of to [pypi.org](https://pypi.org/project/featuretools).
 
-## 1. Evaluate Looking Glass Performance Test Results
+## 1. Evaluate Performance Test Results
 
 Before releasing Featuretools, the person performing the release should launch a performance test run and evaluate the results to make sure no significant performance regressions will be introduced by the release. This can be done by launching a Looking Glass performance test run, which will then post results to Slack. 
 
