@@ -1,6 +1,6 @@
 import re
 from string import punctuation
-from typing import Iterable
+from typing import Optional
 
 import pandas as pd
 from woodwork.column_schema import ColumnSchema
@@ -34,10 +34,10 @@ class NumWords(TransformPrimitive):
 
     def get_function(self):
         def word_counter(array):
-            def _get_number_of_words(elem: pd.Series):
+            def _get_number_of_words(elem: Optional[str]):
                 """Returns the number of words in given element,
-                or null given non-iterable input"""
-                if not isinstance(elem, Iterable):
+                or pd.NA given null input"""
+                if pd.isna(elem):
                     return pd.NA
                 return sum(
                     1 for word in re.split(DELIMITERS, elem) if word.strip(punctuation)
