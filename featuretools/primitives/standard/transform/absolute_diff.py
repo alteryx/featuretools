@@ -1,6 +1,6 @@
 from woodwork.column_schema import ColumnSchema
 
-from featuretools.primitives import TransformPrimitive
+from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
 
 
 class AbsoluteDiff(TransformPrimitive):
