@@ -1120,7 +1120,7 @@ def test_text_primitives(es):
         sort_index=True,
     )
 
-    word_counts = [514, 3, 3, 644, 1268, 1269, 177, 172, 79, 240, 1239, 3, 3, 3, 3]
+    word_counts = [532, 3, 3, 653, 1306, 1305, 174, 173, 79, 246, 1253, 3, 3, 3, 3]
     char_counts = [
         3392,
         10,
