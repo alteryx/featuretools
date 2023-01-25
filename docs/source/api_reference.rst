@@ -211,6 +211,7 @@ Datetime Transform Primitives
     Month
     PartOfDay
     Quarter
+    Season
     Second
     Week
     Weekday
@@ -269,7 +270,6 @@ Location Transform Primitives
     IsInGeoBox
     Latitude
     Longitude
-    Season
 
 NaturalLanguage Transform Primitives
 ************************************

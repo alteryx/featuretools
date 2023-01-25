@@ -1,12 +1,11 @@
 import numpy as np
 import pandas as pd
+import pytest
 
 from featuretools.primitives import SameAsPrevious
 
 
 class TestSameAsPrevious:
-    primitive = SameAsPrevious
-
     def test_ints(self):
         primitive_func = SameAsPrevious().get_function()
         array = pd.Series([1, 2, 2, 3, 2], dtype="int64")
@@ -36,7 +35,7 @@ class TestSameAsPrevious:
         np.testing.assert_array_equal(answer, correct_answer)
 
     def test_nan(self):
-        primitive_instance = self.primitive()
+        primitive_instance = SameAsPrevious()
         primitive_func = primitive_instance.get_function()
         array = pd.Series([1, np.nan, 3, np.nan, 2], dtype="float64")
         answer = primitive_func(array)
@@ -44,7 +43,7 @@ class TestSameAsPrevious:
         np.testing.assert_array_equal(answer, correct_answer)
 
     def test_all_nan(self):
-        primitive_instance = self.primitive()
+        primitive_instance = SameAsPrevious()
         primitive_func = primitive_instance.get_function()
         array = pd.Series([np.nan, np.nan, np.nan, np.nan], dtype="float64")
         answer = primitive_func(array)
@@ -52,7 +51,7 @@ class TestSameAsPrevious:
         np.testing.assert_array_equal(answer, correct_answer)
 
     def test_inf(self):
-        primitive_instance = self.primitive()
+        primitive_instance = SameAsPrevious()
         primitive_func = primitive_instance.get_function()
         array = pd.Series([1, np.inf, 3, np.inf, 2], dtype="float64")
         answer = primitive_func(array)
@@ -60,7 +59,7 @@ class TestSameAsPrevious:
         np.testing.assert_array_equal(answer, correct_answer)
 
     def test_all_inf(self):
-        primitive_instance = self.primitive()
+        primitive_instance = SameAsPrevious()
         primitive_func = primitive_instance.get_function()
         array = pd.Series([np.inf, np.inf, np.inf, np.inf], dtype="float64")
         answer = primitive_func(array)
@@ -68,7 +67,7 @@ class TestSameAsPrevious:
         np.testing.assert_array_equal(answer, correct_answer)
 
     def test_fill_method_bfill(self):
-        primitive_instance = self.primitive(fill_method="bfill")
+        primitive_instance = SameAsPrevious(fill_method="bfill")
         primitive_func = primitive_instance.get_function()
         array = pd.Series([1, np.nan, 3, 2, 2], dtype="float64")
         answer = primitive_func(array)
@@ -76,9 +75,13 @@ class TestSameAsPrevious:
         np.testing.assert_array_equal(answer, correct_answer)
 
     def test_fill_method_bfill_with_limit(self):
-        primitive_instance = self.primitive(fill_method="bfill", limit=2)
+        primitive_instance = SameAsPrevious(fill_method="bfill", limit=2)
         primitive_func = primitive_instance.get_function()
         array = pd.Series([1, np.nan, np.nan, np.nan, 2, 3], dtype="float64")
         answer = primitive_func(array)
         correct_answer = pd.Series([False, False, False, True, True, False])
         np.testing.assert_array_equal(answer, correct_answer)
+
+    def test_raises(self):
+        with pytest.raises(ValueError):
+            SameAsPrevious(fill_method="invalid")

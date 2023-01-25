@@ -10,6 +10,7 @@ from featuretools.primitives.base import TransformPrimitive
 class Season(TransformPrimitive):
     """Determines the season of a given datetime.
         Returns winter, spring, summer, or fall.
+        This only works for northern hemisphere.
 
     Description:
         Given a list of datetimes, return the season of each one

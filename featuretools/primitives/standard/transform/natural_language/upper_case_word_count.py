@@ -27,7 +27,7 @@ class UpperCaseWordCount(TransformPrimitive):
     default_value = 0
 
     def get_function(self):
-        pattern = r"(\b[A-Z0-9]+\b)"
+        pattern = r"(\w[A-Z0-9]+\b)"
 
         def upper_case_word_count(x):
             x = x.reset_index(drop=True)
