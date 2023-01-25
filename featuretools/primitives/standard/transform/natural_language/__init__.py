@@ -43,6 +43,9 @@ from featuretools.primitives.standard.transform.natural_language.total_word_leng
 from featuretools.primitives.standard.transform.natural_language.upper_case_count import (
     UpperCaseCount,
 )
+from featuretools.primitives.standard.transform.natural_language.upper_case_word_count import (
+    UpperCaseWordCount,
+)
 from featuretools.primitives.standard.transform.natural_language.whitespace_count import (
     WhitespaceCount,
 )

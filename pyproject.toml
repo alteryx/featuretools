@@ -106,7 +106,7 @@ docs = [
     "featuretools[sklearn, spark, test]",
 ]
 dev = [
-    "ruff >= 0.0.216",
+    "ruff >= 0.0.231",
     "black[jupyter] >= 22.6.0",
     "pre-commit >= 2.20.0",
     "featuretools[docs, spark, test]",

@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ``AbsoluteDiff``, ``SameAsPrevious``, ``Variance``, ``Season``, ``UpperCaseWordCount`` transform primitives (:pr:`2460`)
     * Fixes
         * Fix bug with consecutive spaces in ``NumWords`` (:pr:`2459`)
     * Changes
@@ -14,7 +15,7 @@ Future Release
         * Update ``release.md`` with instructions for launching Looking Glass performance test runs (:pr:`2461`)
     * Testing Changes
         * Add test suite for ``NumWords`` primitive (:pr:`2459`)
-    
+
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`sbadithe`, :user:`thehomebrewnerd`
 

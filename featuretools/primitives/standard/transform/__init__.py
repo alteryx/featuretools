@@ -1,4 +1,5 @@
 # flake8: noqa
+from featuretools.primitives.standard.transform.absolute_diff import AbsoluteDiff
 from featuretools.primitives.standard.transform.binary import *
 from featuretools.primitives.standard.transform.cumulative import *
 from featuretools.primitives.standard.transform.datetime import *
