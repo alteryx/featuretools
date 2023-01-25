@@ -1,3 +1,6 @@
+from typing import Optional
+
+import pandas as pd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import NaturalLanguage
 
@@ -24,6 +27,11 @@ class NumCharacters(TransformPrimitive):
 
     def get_function(self):
         def character_counter(array):
-            return array.fillna("").str.len()
+            def _get_num_characters(elem: Optional[str]) -> Optional[int]:
+                if pd.isna(elem):
+                    return pd.NA
+                return len(elem)
+
+            return array.apply(_get_num_characters())
 
         return character_counter
