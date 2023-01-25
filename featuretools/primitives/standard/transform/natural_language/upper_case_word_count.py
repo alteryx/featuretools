@@ -24,7 +24,7 @@ class UpperCaseWordCount(TransformPrimitive):
         >>> x = ['This IS a string.', 'This is a string', 'AAA']
         >>> upper_case_word_count = UpperCaseWordCount()
         >>> upper_case_word_count(x).tolist()
-        [1.0, 0.0, 1.0]
+        [1, 0, 1]
     """
 
     name = "upper_case_word_count"
