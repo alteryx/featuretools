@@ -2,7 +2,7 @@ from typing import Optional
 
 import pandas as pd
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import NaturalLanguage
+from woodwork.logical_types import IntegerNullable, NaturalLanguage
 
 from featuretools.primitives.base import TransformPrimitive
 from featuretools.utils.gen_utils import Library
@@ -21,7 +21,7 @@ class NumCharacters(TransformPrimitive):
 
     name = "num_characters"
     input_types = [ColumnSchema(logical_type=NaturalLanguage)]
-    return_type = ColumnSchema(semantic_tags={"numeric"})
+    return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={"numeric"})
     compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the number of characters in {}"
 
