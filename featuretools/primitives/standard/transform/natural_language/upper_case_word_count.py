@@ -1,8 +1,14 @@
-import numpy as np
+import re
+from string import punctuation
+
+import pandas as pd
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import IntegerNullable, NaturalLanguage
+from woodwork.logical_types import Double, NaturalLanguage
 
 from featuretools.primitives.base import TransformPrimitive
+from featuretools.primitives.standard.transform.natural_language.constants import (
+    DELIMITERS,
+)
 
 
 class UpperCaseWordCount(TransformPrimitive):
@@ -23,17 +29,20 @@ class UpperCaseWordCount(TransformPrimitive):
 
     name = "upper_case_word_count"
     input_types = [ColumnSchema(logical_type=NaturalLanguage)]
-    return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={"numeric"})
+    return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
     default_value = 0
 
     def get_function(self):
-        pattern = r"(\s|^)[A-Z0-9_]+(?=([.!?\s]|$))"
-
         def upper_case_word_count(x):
-            x = x.reset_index(drop=True)
-            counts = x.str.extractall(pattern).groupby(level=0).count()[0]
-            counts = counts.reindex_like(x).fillna(0)
-            counts[x.isnull()] = np.nan
-            return counts
+            def _count_upper_case_words(elem):
+                if pd.isna(elem):
+                    return pd.NA
+                return sum(
+                    1
+                    for word in re.split(DELIMITERS, elem)
+                    if word.strip(punctuation) and word.upper() == word
+                )
+
+            return x.apply(_count_upper_case_words)
 
         return upper_case_word_count

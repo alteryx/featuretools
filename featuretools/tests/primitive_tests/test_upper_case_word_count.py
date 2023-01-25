@@ -14,11 +14,12 @@ class TestUpperCaseWordCount:
                 "Testing AAA",
                 "Testing AAA BBB",
                 "Testing TEsTIng AA3 AA_33 HELLO",
+                "AAA $@()#$@@#$",
             ],
             dtype="string",
         )
         primitive_func = self.primitive().get_function()
-        answers = pd.Series([2.0, 1.0, 2.0, 3.0])
+        answers = pd.Series([2.0, 1.0, 2.0, 3.0, 1.0])
         pd.testing.assert_series_equal(
             primitive_func(x), answers, check_names=False, check_dtype=False
         )
