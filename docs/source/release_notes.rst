@@ -14,7 +14,7 @@ Future Release
     * Documentation Changes
         * Update ``release.md`` with instructions for launching Looking Glass performance test runs (:pr:`2461`)
     * Testing Changes
-        * Add test suite for ``NumWords`` and ``NumCharacters`` primitives (:pr:`2459`, :pr:`2463`)
+        * Add test suites for ``NumWords`` and ``NumCharacters`` primitives (:pr:`2459`, :pr:`2463`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`sbadithe`, :user:`thehomebrewnerd`
