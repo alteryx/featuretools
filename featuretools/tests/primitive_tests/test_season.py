@@ -57,8 +57,13 @@ class TestSeason:
                 datetime(2011, 6, 1),
                 datetime(2011, 9, 1),
                 datetime(2011, 12, 1),
+                # leap year
+                datetime(2020, 2, 29),
             ],
         )
-        answer = pd.Series(["winter", "spring", "summer", "fall"], dtype="string")
+        answer = pd.Series(
+            ["winter", "spring", "summer", "fall", "winter"],
+            dtype="string",
+        )
         given_answer = primitive_func(case)
         pd.testing.assert_series_equal(given_answer, answer)
