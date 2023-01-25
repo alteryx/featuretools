@@ -32,6 +32,6 @@ class NumCharacters(TransformPrimitive):
                     return pd.NA
                 return len(elem)
 
-            return array.apply(_get_num_characters())
+            return array.apply(_get_num_characters)
 
         return character_counter
