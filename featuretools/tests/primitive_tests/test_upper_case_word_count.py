@@ -12,14 +12,16 @@ class TestUpperCaseWordCount:
             [
                 "This IS a STRING.",
                 "Testing AAA",
-                "Testing AAA-BBB",
-                "Testing AA3",
+                "Testing AAA BBB",
+                "Testing TEsTIng AA3 AA_33 HELLO",
             ],
             dtype="string",
         )
         primitive_func = self.primitive().get_function()
-        answers = pd.Series([1.0, 1.0, 2.0, 1.0], dtype="float64")
-        pd.testing.assert_series_equal(primitive_func(x), answers, check_names=False)
+        answers = pd.Series([2.0, 1.0, 2.0, 3.0])
+        pd.testing.assert_series_equal(
+            primitive_func(x), answers, check_names=False, check_dtype=False
+        )
 
     def test_nan(self):
         x = pd.Series(

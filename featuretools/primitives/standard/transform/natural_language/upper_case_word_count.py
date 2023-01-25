@@ -1,6 +1,6 @@
 import numpy as np
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Double, NaturalLanguage
+from woodwork.logical_types import IntegerNullable, NaturalLanguage
 
 from featuretools.primitives.base import TransformPrimitive
 
@@ -23,17 +23,17 @@ class UpperCaseWordCount(TransformPrimitive):
 
     name = "upper_case_word_count"
     input_types = [ColumnSchema(logical_type=NaturalLanguage)]
-    return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
+    return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={"numeric"})
     default_value = 0
 
     def get_function(self):
-        pattern = r"(\w[A-Z0-9]+\w)"
+        pattern = r"(\s|^)[A-Z0-9_]+(?=([.!?\s]|$))"
 
         def upper_case_word_count(x):
             x = x.reset_index(drop=True)
             counts = x.str.extractall(pattern).groupby(level=0).count()[0]
             counts = counts.reindex_like(x).fillna(0)
             counts[x.isnull()] = np.nan
-            return counts.astype("float64")
+            return counts
 
         return upper_case_word_count
