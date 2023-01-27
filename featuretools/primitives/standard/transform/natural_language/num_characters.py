@@ -1,4 +1,3 @@
-from typing import Optional
 
 import pandas as pd
 from woodwork.column_schema import ColumnSchema
