@@ -88,9 +88,7 @@ def test_valid_input_types():
 
 def test_descriptions():
     primitives = {
-        NumCharacters: "Calculates the number of characters in a given string, "
-        "including whitespace and punctuation. Can also be interpreted as "
-        "returning the length of a given string.",
+        NumCharacters: "Calculates the number of characters in a given string, including whitespace and punctuation.",
         Day: "Determines the day of the month from a datetime.",
         Last: "Determines the last value in a list.",
         GreaterThan: "Determines if values in one list are greater than another list.",
