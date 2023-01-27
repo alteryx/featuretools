@@ -92,6 +92,7 @@ sklearn = [
 docs = [
     "ipython == 8.4.0",
     "jupyter == 1.0.0",
+    "jupyter-client==7.4.9",
     "matplotlib == 3.5.2",
     "Sphinx == 5.1.1",
     "nbsphinx == 0.8.9",

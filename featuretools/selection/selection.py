@@ -170,16 +170,20 @@ def remove_highly_correlated_features(
         more_complex_name = columns_to_check[i]
         more_complex_col = fm_to_check[more_complex_name]
 
-        # Convert boolean column to be float64
-        if pd.api.types.is_bool_dtype(more_complex_col):
+        # Convert boolean or Int64 column to be float64
+        if pd.api.types.is_bool_dtype(more_complex_col) or isinstance(
+            more_complex_col.dtype, pd.Int64Dtype
+        ):
             more_complex_col = more_complex_col.astype("float64")
 
         for j in range(i - 1, -1, -1):
             less_complex_name = columns_to_check[j]
             less_complex_col = fm_to_check[less_complex_name]
 
-            # Convert boolean column to be float64
-            if pd.api.types.is_bool_dtype(less_complex_col):
+            # Convert boolean or Int64 column to be float64
+            if pd.api.types.is_bool_dtype(less_complex_col) or isinstance(
+                less_complex_col.dtype, pd.Int64Dtype
+            ):
                 less_complex_col = less_complex_col.astype("float64")
 
             if abs(more_complex_col.corr(less_complex_col)) >= pct_corr_threshold:

@@ -11,10 +11,12 @@ Future Release
         * Fix bug with consecutive spaces in ``NumWords`` (:pr:`2459`)
     * Changes
         * Specify black and ruff config arguments in pre-commit-config (:pr:`2456`)
+        * ``NumCharacters`` returns null given null input (:pr:`2463`)
     * Documentation Changes
         * Update ``release.md`` with instructions for launching Looking Glass performance test runs (:pr:`2461`)
+        * Pin ``jupyter-client==7.4.9`` to fix broken documentation build (:pr:`2463`) 
     * Testing Changes
-        * Add test suite for ``NumWords`` primitive (:pr:`2459`)
+        * Add test suites for ``NumWords`` and ``NumCharacters`` primitives (:pr:`2459`, :pr:`2463`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`sbadithe`, :user:`thehomebrewnerd`
