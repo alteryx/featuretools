@@ -66,7 +66,10 @@ class TestNumWords(PrimitiveT):
         actual = self.primitive().get_function()(x)
         expected = pd.Series([pd.NA, pd.NA, pd.NA, 5])
         pd.testing.assert_series_equal(
-            actual, expected, check_names=False, check_dtype=False
+            actual,
+            expected,
+            check_names=False,
+            check_dtype=False,
         )
 
     def test_with_featuretools(self, es):

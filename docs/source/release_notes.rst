@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ``AbsoluteDiff``, ``SameAsPrevious``, ``Variance``, ``Season``, ``UpperCaseWordCount`` transform primitives (:pr:`2460`)
     * Fixes
         * Fix bug with consecutive spaces in ``NumWords`` (:pr:`2459`)
     * Changes

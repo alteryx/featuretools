@@ -211,6 +211,7 @@ Datetime Transform Primitives
     Month
     PartOfDay
     Quarter
+    Season
     Second
     Week
     Weekday
@@ -244,6 +245,7 @@ General Transform Primitives
 .. autosummary::
     :toctree: generated/
 
+    AbsoluteDiff
     Absolute
     Cosine
     IsNull
@@ -251,23 +253,23 @@ General Transform Primitives
     Negate
     Percentile
     RateOfChange
+    SameAsPrevious
     Sine
     SquareRoot
     Tangent
-
+    Variance
 
 Location Transform Primitives
 *****************************
 .. autosummary::
    :toctree: generated/
 
-   CityblockDistance
-   GeoMidpoint
-   Haversine
-   IsInGeoBox
-   Latitude
-   Longitude
-
+    CityblockDistance
+    GeoMidpoint
+    Haversine
+    IsInGeoBox
+    Latitude
+    Longitude
 
 NaturalLanguage Transform Primitives
 ************************************
@@ -289,6 +291,7 @@ NaturalLanguage Transform Primitives
    TitleWordCount
    TotalWordLength
    UpperCaseCount
+   UpperCaseWordCount
    WhitespaceCount
 
 Postal Code Primitives
