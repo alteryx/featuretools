@@ -7,7 +7,8 @@ from featuretools.utils.gen_utils import Library
 
 
 class NumCharacters(TransformPrimitive):
-    """Calculates the number of characters in a string.
+    """Calculates the number of characters in a given string, including whitespace and punctuation.
+    Can also be interpreted as returning the length of a given string.
 
     Examples:
         >>> num_characters = NumCharacters()
