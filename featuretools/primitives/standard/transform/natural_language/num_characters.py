@@ -27,7 +27,7 @@ class NumCharacters(TransformPrimitive):
 
     def get_function(self):
         def character_counter(array):
-            def _get_num_characters(elem: Optional[str]):
+            def _get_num_characters(elem: Optional[str]) -> Optional[int]:
                 """Returns the length of elem, or pd.NA given null input"""
                 if pd.isna(elem):
                     return pd.NA
