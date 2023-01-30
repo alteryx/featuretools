@@ -15,7 +15,7 @@ Future Release
     * Documentation Changes
         * Update ``release.md`` with instructions for launching Looking Glass performance test runs (:pr:`2461`)
         * Pin ``jupyter-client==7.4.9`` to fix broken documentation build (:pr:`2463`) 
-        * Unpin jupyter-client documentation requirement #2468 (:pr:`2468`) 
+        * Unpin jupyter-client documentation requirement (:pr:`2468`) 
     * Testing Changes
         * Add test suites for ``NumWords`` and ``NumCharacters`` primitives (:pr:`2459`, :pr:`2463`)
 
