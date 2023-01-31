@@ -4,11 +4,11 @@ Release Notes
 -------------
 .. Future Release
 ==============
-* Enhancements
-* Fixes
-* Changes
-* Documentation Changes
-* Testing Changes
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
 
 .. Thanks to the following people for contributing to this release:
 
