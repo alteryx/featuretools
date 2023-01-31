@@ -2,6 +2,7 @@
 
 Release Notes
 -------------
+
 .. Future Release
 ==============
     * Enhancements
