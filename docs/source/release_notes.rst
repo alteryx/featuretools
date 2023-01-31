@@ -2,9 +2,18 @@
 
 Release Notes
 -------------
-
-Future Release
+.. Future Release
 ==============
+* Enhancements
+* Fixes
+* Changes
+* Documentation Changes
+* Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.22.0 Jan 31, 2023
+====================
     * Enhancements
         * Add ``AbsoluteDiff``, ``SameAsPrevious``, ``Variance``, ``Season``, ``UpperCaseWordCount`` transform primitives (:pr:`2460`)
     * Fixes
