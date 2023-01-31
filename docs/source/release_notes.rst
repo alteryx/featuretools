@@ -4,7 +4,7 @@ Release Notes
 -------------
 
 .. Future Release
-==============
+  ==============
     * Enhancements
     * Fixes
     * Changes
