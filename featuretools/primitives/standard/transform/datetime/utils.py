@@ -19,7 +19,7 @@ class HolidayUtil:
             error = "must be one of the available countries:\n%s" % available_countries
             raise ValueError(error)
 
-        self.federal_holidays = getattr(holidays, country)(years=range(1950, 2100))
+        self.federal_holidays = getattr(holidays, country)(years=range(1950, 2075))
 
     def to_df(self):
         holidays_df = pd.DataFrame(
