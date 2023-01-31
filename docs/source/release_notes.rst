@@ -9,13 +9,14 @@ Future Release
         * Add ``AbsoluteDiff``, ``SameAsPrevious``, ``Variance``, ``Season``, ``UpperCaseWordCount`` transform primitives (:pr:`2460`)
     * Fixes
         * Fix bug with consecutive spaces in ``NumWords`` (:pr:`2459`)
+        * Fix for compatibility with ``holidays`` v0.19.0 (:pr:`2471`)
     * Changes
         * Specify black and ruff config arguments in pre-commit-config (:pr:`2456`)
         * ``NumCharacters`` returns null given null input (:pr:`2463`)
     * Documentation Changes
         * Update ``release.md`` with instructions for launching Looking Glass performance test runs (:pr:`2461`)
-        * Pin ``jupyter-client==7.4.9`` to fix broken documentation build (:pr:`2463`) 
-        * Unpin jupyter-client documentation requirement (:pr:`2468`) 
+        * Pin ``jupyter-client==7.4.9`` to fix broken documentation build (:pr:`2463`)
+        * Unpin jupyter-client documentation requirement (:pr:`2468`)
     * Testing Changes
         * Add test suites for ``NumWords`` and ``NumCharacters`` primitives (:pr:`2459`, :pr:`2463`)
 
