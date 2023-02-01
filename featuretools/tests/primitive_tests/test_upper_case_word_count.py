@@ -24,7 +24,6 @@ class TestUpperCaseWordCount:
             primitive_func(x),
             answers,
             check_names=False,
-            check_dtype=False,
         )
 
     def test_nan(self):
@@ -42,5 +41,4 @@ class TestUpperCaseWordCount:
             primitive_func(x),
             answers,
             check_names=False,
-            check_dtype=False,
         )
