@@ -58,4 +58,4 @@ jobs:
         id: check-linked-issues
         if: ${{ steps.branch.outputs.is_valid_branch_name == 'false' }}
         with:
-          exclude-branches: "release_v/**, backport_v/**, main, latest-dep-update-/**, min-dep-update-/**"\
+          exclude-branches: "release_v/**, backport_v/**, main, latest-dep-update-/**, min-dep-update-/**"
