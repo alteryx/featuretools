@@ -6,7 +6,7 @@ on:
     branches:
       - main
 jobs:
-  lint_test:
+  lint_check:
     name: ${{ matrix.python_version }} lint check
     runs-on: ubuntu-latest
     strategy:
