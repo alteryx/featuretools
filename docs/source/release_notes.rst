@@ -8,13 +8,14 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Change ``TotalWordLength`` and ``UpperCaseWordCount`` to return ``IntegerNullable`` (:pr:`2474`)
     * Documentation Changes
     * Testing Changes
        * Add GitHub Actions cache to speed up workflows (:pr:`2475`)
        * Fix latest dependency checker install command (:pr:`2476`)
        
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`sbadithe`
 
 v1.22.0 Jan 31, 2023
 ====================
