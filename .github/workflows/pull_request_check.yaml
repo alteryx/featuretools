@@ -16,7 +16,7 @@ jobs:
       - name: Print helpful error message
         if: ${{ steps.check-linked-issues.outputs.linked_issues_count }} == "0" }}
         run: |
-          msg="Linked issues: "${{ steps.check-linked-issues.outputs.linked_issues }}""
+          msg="Linked issues: ${{ steps.check-linked-issues.outputs.linked_issues }}"
           echo $msg 
           echo $msg >> $GITHUB_STEP_SUMMARY
           msg="Please link the pull request to the issue(s) it resolves."
