@@ -3,7 +3,7 @@ on:
   pull_request:
     types: [opened, edited, reopened, synchronize]
 jobs:
-  pull_request_check
+  pull_request_check:
     name: pull request check
     runs-on: ubuntu-latest
     steps:
