@@ -37,7 +37,6 @@ class Trend(AggregationPrimitive):
 
     def get_function(self, agg_type=Library.PANDAS):
         def pd_trend(y, x):
-
             return calculate_trend(pd.Series(data=y.values, index=x.values))
 
         return pd_trend

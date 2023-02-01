@@ -43,7 +43,6 @@ class TestCountAboveMean:
         assert np.isnan(actual) == np.isnan(expected)
 
     def test_nan_with_ignore_nan(self):
-
         data = pd.Series([np.nan, 1, 2, 3, 4, 5, np.nan, np.nan])
         expected = 2
         primitive_func = self.primitive(skipna=True).get_function()

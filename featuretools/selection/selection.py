@@ -208,7 +208,6 @@ def _apply_feature_selection(keep, feature_matrix, features=None):
         new_features = []
         for f in features:
             if f.number_output_features > 1:
-
                 slices = [
                     f[i]
                     for i in range(f.number_output_features)
