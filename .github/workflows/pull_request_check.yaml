@@ -13,6 +13,7 @@ jobs:
         with:
           exclude-branches: "release_v/**, backport_v/**, main, latest-dep-update-/**, min-dep-update-/**, dependabot/**"
           comment: false
+          github-token: ${{ secrets.REPO_SCOPED_TOKEN }}
       - name: Print helpful error message
         if: ${{ steps.check-linked-issues.outputs.linked_issues_count }} == "0" }}
         run: |
