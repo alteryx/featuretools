@@ -18,26 +18,39 @@ jobs:
       matrix:
         python_version: ["3.8", "3.10"]
     steps:
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python_version }}
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Set up python ${{ matrix.python_version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python_version }}
+          cache: 'pip' 
+          cache-dependency-path: 'pyproject.toml'
+      - uses: actions/cache@v3
+        id: cache
+        with:
+          path: ${{ env.pythonLocation }} 
+          key: ${{ matrix.python_version }}-docs-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
       - name: Build featuretools package
-        run: make package
-      - name: Install featuretools with doc requirements
+        run: |
+          make package
+      - name: Install complete version of featuretools from sdist (not using cache)
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          python -m pip install "unpacked_sdist/[dev]"
+      - name: Install complete version of featuretools from sdist (using cache)
+        if: steps.cache.outputs.cache-hit == 'true'
+        run: |
+          python -m pip install "unpacked_sdist/[dev]" --no-deps
+      - name: Install apt packages
         run: |
           sudo apt update
           sudo apt install -y pandoc
           sudo apt install -y graphviz
           sudo apt install -y openjdk-11-jre-headless
-          pip config --site set global.progress_bar off
-          python -m pip install --upgrade pip
-          python -m pip install unpacked_sdist/
-          python -m pip install unpacked_sdist/[dev]
           python -m pip check
       - name: Build docs
         run: make -C docs/ -e "SPHINXOPTS=-W -j auto" clean html

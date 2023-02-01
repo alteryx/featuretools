@@ -96,7 +96,6 @@ def test_args_string_mixed():
 
 
 def test_args_string_undefined():
-
     string = Max().get_args_string()
     assert string == ""
 

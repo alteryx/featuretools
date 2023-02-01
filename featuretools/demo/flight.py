@@ -161,7 +161,6 @@ def make_es(data):
 
 
 def _clean_data(data):
-
     # Make column names snake case
     clean_data = data.rename(columns={col: convert(col) for col in data})
 
