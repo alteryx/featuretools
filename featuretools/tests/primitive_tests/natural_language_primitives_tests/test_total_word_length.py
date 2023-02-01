@@ -36,7 +36,7 @@ class TestTotalWordLength(PrimitiveT):
     def test_null(self):
         x = pd.Series([np.nan, pd.NA, None, "This is a test file."])
 
-        expected = pd.Series([np.nan, np.nan, np.nan, 15.0])
+        expected = pd.Series([np.nan, np.nan, np.nan, 15])
         actual = self.primitive().get_function()(x).astype(float)
         pd.testing.assert_series_equal(actual, expected, check_names=False)
 

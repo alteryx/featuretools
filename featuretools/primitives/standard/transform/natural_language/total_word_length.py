@@ -1,5 +1,5 @@
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Double, NaturalLanguage
+from woodwork.logical_types import IntegerNullable, NaturalLanguage
 
 from featuretools.primitives.base import TransformPrimitive
 from featuretools.primitives.standard.transform.natural_language.constants import (
@@ -24,12 +24,12 @@ class TotalWordLength(TransformPrimitive):
         >>> x = ['This is a test file', 'This is second line', 'third line $1,000', None]
         >>> total_word_length = TotalWordLength()
         >>> total_word_length(x).tolist()
-        [15.0, 16.0, 13.0, nan]
+        [15, 16, 13, nan]
     """
 
     name = "total_word_length"
     input_types = [ColumnSchema(logical_type=NaturalLanguage)]
-    return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
+    return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={"numeric"})
 
     default_value = 0
 

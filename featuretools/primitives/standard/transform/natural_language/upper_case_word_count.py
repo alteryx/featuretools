@@ -3,7 +3,7 @@ from string import punctuation
 
 import pandas as pd
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Double, NaturalLanguage
+from woodwork.logical_types import IntegerNullable, NaturalLanguage
 
 from featuretools.primitives.base import TransformPrimitive
 from featuretools.primitives.standard.transform.natural_language.constants import (
@@ -29,7 +29,7 @@ class UpperCaseWordCount(TransformPrimitive):
 
     name = "upper_case_word_count"
     input_types = [ColumnSchema(logical_type=NaturalLanguage)]
-    return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
+    return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={"numeric"})
     default_value = 0
 
     def get_function(self):
