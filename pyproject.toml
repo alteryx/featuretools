@@ -104,13 +104,13 @@ docs = [
     "nlp_primitives >= 2.3.0",
     "autonormalize >= 2.0.1",
     "click >=7.0.0",
-    "featuretools[sklearn, spark, test]",
+    "featuretools[sklearn,spark,test]",
 ]
 dev = [
     "ruff >= 0.0.239",
     "black[jupyter] >= 23.1.0",
     "pre-commit >= 2.20.0",
-    "featuretools[docs, spark, test]",
+    "featuretools[docs,spark,test]",
 ]
 complete = [
     "featuretools[autonormalize, nlp, sklearn, spark, sql, tsfresh, updater]",
