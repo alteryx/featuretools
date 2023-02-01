@@ -39,7 +39,7 @@ jobs:
         uses: nearform/github-action-check-linked-issues@v1
         id: check-linked-issues
         with:
-          exclude-branches: "release_v/**, backport_v/**, main, latest-dep-update-/**, min-dep-update-/**"\
+          exclude-branches: "release_v/**, backport_v/**, main, latest-dep-update-/**, min-dep-update-/**"
       - name: check pull request branch name
         if: ${{ steps.check-linked-issues.outputs.linked_issues_count }}" != "0"
         id: branch
