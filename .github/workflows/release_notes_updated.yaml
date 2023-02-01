@@ -1,9 +1,7 @@
 name: Release Notes Updated
-
 on:
   pull_request:
     types: [opened, synchronize]
-
 jobs:
   release_notes_updated:
     name: release notes updated
@@ -24,12 +22,13 @@ jobs:
           ref = "${{ github.event.pull_request.head.ref }}"
           is_dev = not any(pattern.match(ref) for pattern in patterns)
           print('::set-output name=is_dev::' + str(is_dev))
-      - if: ${{ steps.branch.outputs.is_dev == 'True' }}
+      - if: ${{ steps.branch.outputs.is_dev == 'true' }}
         name: Checkout repository
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-      - if: ${{ steps.branch.outputs.is_dev == 'True' }}
+      - if: ${{ steps.branch.outputs.is_dev == 'true' }}
         name: Check if release notes were updated
         run: cat docs/source/release_notes.rst | grep ":pr:\`${{ github.event.number }}\`"
+        
