@@ -33,7 +33,7 @@ jobs:
         id: cache
         with:
           path: ${{ env.pythonLocation }} 
-          key: ${{ matrix.python_version }}-lint-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
+          key: ${{ matrix.python_version }}-docs-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
       - name: Build featuretools package
         run: |
           make package
