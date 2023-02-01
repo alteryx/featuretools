@@ -9,7 +9,6 @@ jobs:
     steps:
       - uses: nearform/github-action-check-linked-issues@v1
         id: check-linked-issues
-        if: ${{ steps.branch.outputs.is_valid_branch_name == 'false' }}
         with:
           exclude-branches: "release_v/**, backport_v/**, main, latest-dep-update-/**, min-dep-update-/**, dependabot/**"
           comment: false
