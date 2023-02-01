@@ -12,6 +12,7 @@ Future Release
     * Testing Changes
        * Add GitHub Actions cache to speed up workflows (:pr:`2475`)
        * Fix latest dependency checker install command (:pr:`2476`)
+       
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
 
