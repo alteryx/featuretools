@@ -113,7 +113,7 @@ dev = [
     "featuretools[docs,spark,test]",
 ]
 complete = [
-    "featuretools[autonormalize, nlp, sklearn, spark, sql, tsfresh, updater]",
+    "featuretools[autonormalize,nlp,sklearn,spark,sql,tsfresh,updater]",
 ]
 
 [tool.setuptools]
