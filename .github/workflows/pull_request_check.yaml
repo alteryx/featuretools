@@ -14,7 +14,7 @@ jobs:
           comment: false
           github-token: ${{ secrets.REPO_SCOPED_TOKEN }}
       - name: Print helpful error message
-        if: ${{ steps.check-linked-issues.outputs.linked_issues_count }} == "0" }}
+        if: ${{ steps.check-linked-issues.outputs.linked_issues_count == "0" }}
         run: |
           msg="Linked issues: ${{ steps.check-linked-issues.outputs.linked_issues }}"
           echo $msg 
