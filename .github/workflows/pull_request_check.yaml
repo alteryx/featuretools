@@ -1,0 +1,32 @@
+name: Pull Request check
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+jobs:
+  pull_request_check
+    name: pull request check
+    runs-on: ubuntu-latest
+    steps:
+      - name: check pull request branch name
+        if: ${{ steps.check-linked-issues.outputs.linked_issues_count }}" != "0"
+        id: branch
+        shell: python
+        run: |
+          import re
+          pull_request_branch_name = "${{ github.head_ref }}"
+          regex_branch = r'OSSWW-\d+'
+          match_pr = re.search(regex_branch, pull_request_branch_name)
+          pull_request_body = "${{ github.event.pull_request.body }}"
+          regex_body = '\d+'
+          is_valid_branch_name = False
+          if match_pr:
+            print(f'pull request branch name contains OSSWW-{match_pr.group(0)}')
+            print('::set-output name=is_valid_branch_name::' + str(is_valid_branch_name))
+          else:
+            print('::set-output name=is_valid_branch_name::' + str(is_valid_branch_name))
+      - name: check linked issues
+        uses: nearform-actions/github-action-check-linked-issues@v1
+        id: check-linked-issues
+        if: ${{ steps.branch.outputs.is_valid_branch_name == 'false' }}
+        with:
+          exclude-branches: "release_v/**, backport_v/**, main, latest-dep-update-/**, min-dep-update-/**"
