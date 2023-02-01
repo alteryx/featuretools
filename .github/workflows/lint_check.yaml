@@ -40,6 +40,6 @@ jobs:
       - name: Install featuretools with no requirements (using cache)
         if: steps.cache.outputs.cache-hit == 'true'
         run: |
-          python -m pip install -e . --no-deps
+          python -m pip install -e .[dev] --no-deps
       - name: Run lint test
         run: make lint
