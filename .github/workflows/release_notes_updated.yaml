@@ -1,7 +1,7 @@
 name: Release Notes Updated
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, edited, reopened, synchronize]
 jobs:
   release_notes_updated:
     name: release notes updated
