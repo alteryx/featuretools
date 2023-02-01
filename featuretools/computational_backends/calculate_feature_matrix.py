@@ -405,7 +405,6 @@ def calculate_chunk(
     include_cutoff_time=True,
     schema=None,
 ):
-
     if not isinstance(feature_set, FeatureSet):
         feature_set = cloudpickle.loads(feature_set)  # pragma: no cover
 

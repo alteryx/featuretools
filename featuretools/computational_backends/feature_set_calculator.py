@@ -746,7 +746,6 @@ class FeatureSetCalculator(object):
             # save aggregable features for later
             for f in features:
                 if _can_agg(f):
-
                     column_id = f.base_features[0].get_name()
                     if column_id not in to_agg:
                         to_agg[column_id] = []
