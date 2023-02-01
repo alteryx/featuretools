@@ -1,11 +1,10 @@
+name: Lint Check
 on:
   pull_request:
     types: [opened, synchronize]
   push:
     branches:
       - main
-
-name: Lint Check
 jobs:
   lint_test:
     name: ${{ matrix.python_version }} lint check
@@ -15,20 +14,32 @@ jobs:
       matrix:
         python_version: ["3.10"]
     steps:
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python_version }}
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Set up python ${{ matrix.python_version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python_version }}
+          cache: 'pip' 
+          cache-dependency-path: 'pyproject.toml'
+      - uses: actions/cache@v3
+        id: cache
+        with:
+          path: ${{ env.pythonLocation }} 
+          key: ${{ matrix.python_version }}-lint-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
       - name: Build featuretools package
-        run: make package
-      - name: Install featuretools with optional, dev, and test requirements
         run: |
-          pip config --site set global.progress_bar off
-          python -m pip install --upgrade pip
+          make package
+      - name: Install featuretools with optional, dev, and test requirements (not using cache)
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
           python -m pip install -e .[dev]
+      - name: Install featuretools with no requirements (using cache)
+        if: steps.cache.outputs.cache-hit == 'true'
+        run: |
+          python -m pip install -e . --no-deps
       - name: Run lint test
         run: make lint
