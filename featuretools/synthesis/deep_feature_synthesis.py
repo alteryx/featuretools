@@ -148,7 +148,6 @@ class DeepFeatureSynthesis(object):
         drop_exact=None,
         where_stacking_limit=1,
     ):
-
         if target_dataframe_name not in entityset.dataframe_dict:
             es_name = entityset.id or "entity set"
             msg = "Provided target dataframe %s does not exist in %s" % (
@@ -918,7 +917,6 @@ class DeepFeatureSynthesis(object):
         max_depth,
         column_schemas=None,
     ):
-
         if max_depth is not None and max_depth < 0:
             return []
 
@@ -1018,7 +1016,6 @@ class DeepFeatureSynthesis(object):
         require_direct_input=False,
         feature_filter=None,
     ):
-
         if not isinstance(input_types[0], list):
             input_types = [input_types]
         matching_inputs = []

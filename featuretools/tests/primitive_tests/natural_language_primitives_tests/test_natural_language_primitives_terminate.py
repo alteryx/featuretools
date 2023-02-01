@@ -7,7 +7,6 @@ TIMEOUT_THRESHOLD = 20
 
 
 class TestNaturalLanguagePrimitivesTerminate:
-
     # need to sort primitives to avoid pytest collection error
     primitives = sorted(_get_natural_language_primitives().items())
 

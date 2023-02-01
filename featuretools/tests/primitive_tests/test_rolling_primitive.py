@@ -443,7 +443,6 @@ def test_rolling_outlier_count(
     gap,
     rolling_outlier_series_pd,
 ):
-
     primitive_instance = RollingOutlierCount(
         window_length=window_length,
         gap=gap,

@@ -21,7 +21,6 @@ from featuretools.tests.testing_utils import feature_with_name
 
 
 class TestCumCount:
-
     primitive = CumCount
 
     def test_order(self):
@@ -51,7 +50,6 @@ class TestCumCount:
 
 
 class TestCumSum:
-
     primitive = CumSum
 
     def test_order(self):
@@ -98,7 +96,6 @@ class TestCumMean:
 
 
 class TestCumMax:
-
     primitive = CumMax
 
     def test_order(self):
@@ -122,7 +119,6 @@ class TestCumMax:
 
 
 class TestCumMin:
-
     primitive = CumMin
 
     def test_order(self):

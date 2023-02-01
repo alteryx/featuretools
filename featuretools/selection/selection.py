@@ -172,7 +172,8 @@ def remove_highly_correlated_features(
 
         # Convert boolean or Int64 column to be float64
         if pd.api.types.is_bool_dtype(more_complex_col) or isinstance(
-            more_complex_col.dtype, pd.Int64Dtype
+            more_complex_col.dtype,
+            pd.Int64Dtype,
         ):
             more_complex_col = more_complex_col.astype("float64")
 
@@ -182,7 +183,8 @@ def remove_highly_correlated_features(
 
             # Convert boolean or Int64 column to be float64
             if pd.api.types.is_bool_dtype(less_complex_col) or isinstance(
-                less_complex_col.dtype, pd.Int64Dtype
+                less_complex_col.dtype,
+                pd.Int64Dtype,
             ):
                 less_complex_col = less_complex_col.astype("float64")
 
@@ -206,7 +208,6 @@ def _apply_feature_selection(keep, feature_matrix, features=None):
         new_features = []
         for f in features:
             if f.number_output_features > 1:
-
                 slices = [
                     f[i]
                     for i in range(f.number_output_features)

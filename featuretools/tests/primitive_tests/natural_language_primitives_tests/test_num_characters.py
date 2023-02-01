@@ -45,7 +45,10 @@ class TestNumCharacters(PrimitiveT):
         actual = self.primitive().get_function()(x)
         expected = pd.Series([pd.NA, pd.NA, pd.NA, 20])
         pd.testing.assert_series_equal(
-            actual, expected, check_names=False, check_dtype=False
+            actual,
+            expected,
+            check_names=False,
+            check_dtype=False,
         )
 
     def test_with_featuretools(self, es):
