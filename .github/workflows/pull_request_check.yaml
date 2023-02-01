@@ -24,8 +24,7 @@ jobs:
             print('::set-output name=is_valid_branch_name::' + str(is_valid_branch_name))
           else:
             print('::set-output name=is_valid_branch_name::' + str(is_valid_branch_name))
-      - name: check linked issues
-        uses: nearform-actions/github-action-check-linked-issues@v1
+      - uses: nearform/github-action-check-linked-issues@v1
         id: check-linked-issues
         if: ${{ steps.branch.outputs.is_valid_branch_name == 'false' }}
         with:
