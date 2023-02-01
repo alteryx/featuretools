@@ -31,15 +31,11 @@ jobs:
       - if: ${{ steps.branch.outputs.is_dev == 'true' }}
         name: Check if release notes were updated
         run: cat docs/source/release_notes.rst | grep ":pr:\`${{ github.event.number }}\`"
+        
   lint_check:
     name: pull request check
     runs-on: ubuntu-latest
     steps:
-      - name: check linked issues
-        uses: nearform/github-action-check-linked-issues@v1
-        id: check-linked-issues
-        with:
-          exclude-branches: "release_v/**, backport_v/**, main, latest-dep-update-/**, min-dep-update-/**"
       - name: check pull request branch name
         if: ${{ steps.check-linked-issues.outputs.linked_issues_count }}" != "0"
         id: branch
@@ -57,16 +53,9 @@ jobs:
             print('::set-output name=is_valid_branch_name::' + str(is_valid_branch_name))
           else:
             print('::set-output name=is_valid_branch_name::' + str(is_valid_branch_name))
-      - name: Get the output
-        if: ${{ steps.check-linked-issues.outputs.linked_issues_count }}" == "0" }} || ${{ steps.branch.outputs.is_valid_branch_name != 'true' }} 
-        run: |
-          msg = "Linked issues: ${{ steps.check-linked-issues.outputs.linked_issues }}"
-          echo $msg 
-          echo $msg >> $GITHUB_STEP_SUMMARY
-          msg = "Please link the pull request to the issue(s) it resolves."
-          echo $msg 
-          echo $msg >> $GITHUB_STEP_SUMMARY
-          msg = "If you are not sure how to do this, please see https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue"
-          echo $msg
-          echo $msg >> $GITHUB_STEP_SUMMARY
-          exit 1
+      - name: check linked issues
+        uses: nearform/github-action-check-linked-issues@v1
+        id: check-linked-issues
+        if: ${{ steps.branch.outputs.is_valid_branch_name == 'false' }}
+        with:
+          exclude-branches: "release_v/**, backport_v/**, main, latest-dep-update-/**, min-dep-update-/**"\
