@@ -30,9 +30,6 @@ jobs:
         with:
           path: ${{ env.pythonLocation }} 
           key: ${{ matrix.python_version }}-lint-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
-      - name: Build featuretools package
-        run: |
-          make package
       - name: Install featuretools with optional, dev, and test requirements (not using cache)
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
