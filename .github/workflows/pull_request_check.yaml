@@ -10,8 +10,7 @@ jobs:
       - uses: nearform/github-action-check-linked-issues@v1
         id: check-linked-issues
         with:
-          exclude-branches: "release_v/**, backport_v/**, main, latest-dep-update-/**, min-dep-update-/**, dependabot/**"
-          comment: false
+          exclude-branches: "release_v**, backport_v**, main, latest-dep-update-**, min-dep-update-**, dependabot/**"          
           github-token: ${{ secrets.REPO_SCOPED_TOKEN }}
       - name: Print helpful error message
         if: ${{ steps.check-linked-issues.outputs.linked_issues_count == '0' }}
