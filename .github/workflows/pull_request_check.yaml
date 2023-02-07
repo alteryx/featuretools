@@ -10,19 +10,5 @@ jobs:
       - uses: nearform/github-action-check-linked-issues@v1
         id: check-linked-issues
         with:
-          exclude-branches: "release_v/**, backport_v/**, main, latest-dep-update-/**, min-dep-update-/**, dependabot/**"
-          comment: false
+          exclude-branches: "release_v**, backport_v**, main, latest-dep-update-**, min-dep-update-**, dependabot/**"          
           github-token: ${{ secrets.REPO_SCOPED_TOKEN }}
-      - name: Print helpful error message
-        if: ${{ steps.check-linked-issues.outputs.linked_issues_count == '0' }}
-        run: |
-          msg="Linked issues: ${{ steps.check-linked-issues.outputs.linked_issues_count }}"
-          echo $msg 
-          echo $msg >> $GITHUB_STEP_SUMMARY
-          msg="Please link the pull request to the issue(s) it resolves."
-          echo $msg 
-          echo $msg >> $GITHUB_STEP_SUMMARY
-          msg="If you are not sure how to do this, please see https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue"
-          echo $msg
-          echo $msg >> $GITHUB_STEP_SUMMARY
-          exit 1
