@@ -14,18 +14,16 @@ from featuretools.primitives import (
 
 
 class TestCountAboveMean:
-    primitive = CountAboveMean
-
     def test_regular(self):
         data = pd.Series([1, 2, 3, 4, 5])
         expected = 2
-        primitive_func = self.primitive().get_function()
+        primitive_func = CountAboveMean().get_function()
         actual = primitive_func(data)
         assert expected == actual
 
         data = pd.Series([1, 2, 3.1, 4, 5])
         expected = 3
-        primitive_func = self.primitive().get_function()
+        primitive_func = CountAboveMean().get_function()
         actual = primitive_func(data)
         assert expected == actual
 
@@ -33,54 +31,54 @@ class TestCountAboveMean:
         data = pd.Series([np.nan, 1, 2, 3, 4, 5, np.nan, np.nan])
         expected = np.nan
 
-        primitive_func = self.primitive(skipna=False).get_function()
+        primitive_func = CountAboveMean(skipna=False).get_function()
         actual = primitive_func(data)
         assert np.isnan(actual) == np.isnan(expected)
 
         data = pd.Series([np.nan])
-        primitive_func = self.primitive(skipna=False).get_function()
+        primitive_func = CountAboveMean(skipna=False).get_function()
         actual = primitive_func(data)
         assert np.isnan(actual) == np.isnan(expected)
 
     def test_nan_with_ignore_nan(self):
         data = pd.Series([np.nan, 1, 2, 3, 4, 5, np.nan, np.nan])
         expected = 2
-        primitive_func = self.primitive(skipna=True).get_function()
+        primitive_func = CountAboveMean(skipna=True).get_function()
         actual = primitive_func(data)
         assert expected == actual
 
         data = pd.Series([np.nan, 1, 2, 3.1, 4, 5, np.nan, np.nan])
         expected = 3
-        primitive_func = self.primitive(skipna=True).get_function()
+        primitive_func = CountAboveMean(skipna=True).get_function()
         actual = primitive_func(data)
         assert expected == actual
 
         data = pd.Series([np.nan])
         expected = np.nan
-        primitive_func = self.primitive(skipna=True).get_function()
+        primitive_func = CountAboveMean(skipna=True).get_function()
         actual = primitive_func(data)
         assert np.isnan(actual) == np.isnan(expected)
 
     def test_inf(self):
         data = pd.Series([np.NINF, 1, 2, 3, 4, 5])
         expected = 5
-        primitive_func = self.primitive().get_function()
+        primitive_func = CountAboveMean().get_function()
         actual = primitive_func(data)
         assert expected == actual
 
         data = pd.Series([1, 2, 3, 4, 5, np.inf])
         expected = 0
-        primitive_func = self.primitive().get_function()
+        primitive_func = CountAboveMean().get_function()
         actual = primitive_func(data)
         assert expected == actual
 
         data = pd.Series([np.NINF, 1, 2, 3, 4, 5, np.inf])
         expected = np.nan
-        primitive_func = self.primitive().get_function()
+        primitive_func = CountAboveMean().get_function()
         actual = primitive_func(data)
         assert np.isnan(actual) == np.isnan(expected)
 
-        primitive_func = self.primitive(skipna=False).get_function()
+        primitive_func = CountAboveMean(skipna=False).get_function()
         actual = primitive_func(data)
         assert np.isnan(actual) == np.isnan(expected)
 
@@ -90,7 +88,7 @@ class TestCountGreaterThan:
 
     def compare_results(self, data, thresholds, results):
         for threshold, result in zip(thresholds, results):
-            primitive = self.primitive(threshold=threshold)
+            primitive = CountAboveMean(threshold=threshold)
             function = primitive.get_function()
             assert function(data) == result
             assert isinstance(function(data), np.int64)
@@ -144,12 +142,12 @@ class TestCountInsideNthSTD:
         )
 
         first_outliers = [-152.0, 298.0, 146.0, 116.0, -217.0, 144.0, 120.0]
-        primitive_instance = self.primitive(1)
+        primitive_instance = CountAboveMean(1)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == len(x) - len(first_outliers)
 
         second_outliers = [298.0]
-        primitive_instance = self.primitive(2)
+        primitive_instance = CountAboveMean(2)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == len(x) - len(second_outliers)
 
@@ -180,12 +178,12 @@ class TestCountInsideNthSTD:
         )
 
         first_outliers = [3, 3, 0, 0, 3, 3, 3, 0, 3, 0]
-        primitive_instance = self.primitive(1)
+        primitive_instance = CountAboveMean(1)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == len(x) - len(first_outliers)
 
         second_outliers = []
-        primitive_instance = self.primitive(2)
+        primitive_instance = CountAboveMean(2)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == len(x) - len(second_outliers)
 
@@ -217,20 +215,20 @@ class TestCountInsideNthSTD:
         )
         x = pd.concat([x, pd.Series([np.nan] * 20)])
         first_outliers = [-152.0, 298.0, 146.0, 116.0, -217.0, 144.0, 120.0]
-        primitive_instance = self.primitive(1)
+        primitive_instance = CountAboveMean(1)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == len(x) - len(first_outliers) - 20
 
         # test a series with all nan values
         x = pd.Series([np.nan] * 20)
 
-        primitive_instance = self.primitive(1)
+        primitive_instance = CountAboveMean(1)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 0
 
     def test_negative_n(self):
         with raises(ValueError):
-            self.primitive(-1)
+            CountAboveMean(-1)
 
 
 class TestCountInsideRange:
@@ -239,30 +237,30 @@ class TestCountInsideRange:
     def test_integer_range(self):
         # all integers from -100 to 100
         x = pd.Series(np.arange(-100, 101, 1))
-        primitive_instance = self.primitive(-100, 100)
+        primitive_instance = CountAboveMean(-100, 100)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 201
 
-        primitive_instance = self.primitive(-50, 50)
+        primitive_instance = CountAboveMean(-50, 50)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 101
 
-        primitive_instance = self.primitive(1, 1)
+        primitive_instance = CountAboveMean(1, 1)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 1
 
     def test_float_range(self):
         x = pd.Series(np.linspace(-3, 3, 10))
 
-        primitive_instance = self.primitive(-3, 3)
+        primitive_instance = CountAboveMean(-3, 3)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 10
 
-        primitive_instance = self.primitive(-0.34, 1.68)
+        primitive_instance = CountAboveMean(-0.34, 1.68)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 4
 
-        primitive_instance = self.primitive(-3, -3)
+        primitive_instance = CountAboveMean(-3, -3)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 1
 
@@ -270,11 +268,11 @@ class TestCountInsideRange:
         x = pd.Series(np.linspace(-3, 3, 10))
         x = pd.concat([x, pd.Series([np.nan] * 20)])
 
-        primitive_instance = self.primitive(-0.34, 1.68)
+        primitive_instance = CountAboveMean(-0.34, 1.68)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 4
 
-        primitive_instance = self.primitive(-3, 3, False)
+        primitive_instance = CountAboveMean(-3, 3, False)
         primitive_func = primitive_instance.get_function()
         assert np.isnan(primitive_func(x))
 
@@ -285,15 +283,15 @@ class TestCountInsideRange:
         num_inf = 10
         x = pd.concat([x, pd.Series([np.inf] * num_inf)])
 
-        primitive_instance = self.primitive(-3, 3)
+        primitive_instance = CountAboveMean(-3, 3)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 10
 
-        primitive_instance = self.primitive(np.NINF, 3)
+        primitive_instance = CountAboveMean(np.NINF, 3)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 10 + num_NINF
 
-        primitive_instance = self.primitive(-3, np.inf)
+        primitive_instance = CountAboveMean(-3, np.inf)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 10 + num_inf
 
@@ -303,7 +301,7 @@ class TestCountLessThan:
 
     def compare_answers(self, data, thresholds, answers):
         for threshold, answer in zip(thresholds, answers):
-            primitive = self.primitive(threshold=threshold)
+            primitive = CountAboveMean(threshold=threshold)
             function = primitive.get_function()
             assert function(data) == answer
             assert isinstance(function(data), np.int64)
@@ -430,7 +428,7 @@ class TestCountOutsideNthSTD:
             ],
         )
         outliers = [10, 20, 763]
-        primitive_instance = self.primitive(2)
+        primitive_instance = CountAboveMean(2)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == len(outliers)
 
@@ -460,11 +458,11 @@ class TestCountOutsideNthSTD:
             ],
         )
 
-        primitive_instance = self.primitive(1)
+        primitive_instance = CountAboveMean(1)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 10
 
-        primitive_instance = self.primitive(2)
+        primitive_instance = CountAboveMean(2)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 0
 
@@ -495,20 +493,20 @@ class TestCountOutsideNthSTD:
             ],
         )
         x = pd.concat([x, pd.Series([np.nan * 20])])
-        primitive_instance = self.primitive(1)
+        primitive_instance = CountAboveMean(1)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 7
 
         # test a series with all nan values
         x = pd.Series([np.nan] * 20)
 
-        primitive_instance = self.primitive(1)
+        primitive_instance = CountAboveMean(1)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 0
 
     def test_negative_n(self):
         with raises(ValueError):
-            self.primitive(-1)
+            CountAboveMean(-1)
 
 
 class TestCountOutsideRange:
@@ -517,41 +515,41 @@ class TestCountOutsideRange:
     def test_integer_range(self):
         # all integers from -100 to 100
         x = pd.Series(np.arange(-100, 101, 1))
-        primitive_instance = self.primitive(-100, 100)
+        primitive_instance = CountAboveMean(-100, 100)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 0
 
-        primitive_instance = self.primitive(-50, 50)
+        primitive_instance = CountAboveMean(-50, 50)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 100
 
-        primitive_instance = self.primitive(1, 1)
+        primitive_instance = CountAboveMean(1, 1)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == len(x) - 1
 
     def test_float_range(self):
         x = pd.Series(np.linspace(-3, 3, 10))
 
-        primitive_instance = self.primitive(-3, 3)
+        primitive_instance = CountAboveMean(-3, 3)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 0
 
-        primitive_instance = self.primitive(-0.34, 1.68)
+        primitive_instance = CountAboveMean(-0.34, 1.68)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 6
 
-        primitive_instance = self.primitive(-3, -3)
+        primitive_instance = CountAboveMean(-3, -3)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 9
 
     def test_nan(self):
         x = pd.Series(np.linspace(-3, 3, 10))
         x = pd.concat([x, pd.Series([np.nan] * 20)])
-        primitive_instance = self.primitive(-0.34, 1.68)
+        primitive_instance = CountAboveMean(-0.34, 1.68)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 6
 
-        primitive_instance = self.primitive(-3, 3, False)
+        primitive_instance = CountAboveMean(-3, 3, False)
         primitive_func = primitive_instance.get_function()
         assert np.isnan(primitive_func(x))
 
@@ -562,18 +560,18 @@ class TestCountOutsideRange:
         num_inf = 10
         x = pd.concat([x, pd.Series([np.inf] * num_inf)])
 
-        primitive_instance = self.primitive(-3, 3)
+        primitive_instance = CountAboveMean(-3, 3)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == num_inf + num_NINF
 
-        primitive_instance = self.primitive(-0.34, 1.68)
+        primitive_instance = CountAboveMean(-0.34, 1.68)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 6 + num_inf + num_NINF
 
-        primitive_instance = self.primitive(np.NINF, 3)
+        primitive_instance = CountAboveMean(np.NINF, 3)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == num_inf
 
-        primitive_instance = self.primitive(-3, np.inf)
+        primitive_instance = CountAboveMean(-3, np.inf)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == num_NINF

@@ -1,6 +1,9 @@
 from featuretools.primitives.standard.aggregation.all_primitive import All
 from featuretools.primitives.standard.aggregation.any_primitive import Any
 from featuretools.primitives.standard.aggregation.avg_time_between import AvgTimeBetween
+from featuretools.primitives.standard.aggregation.average_count_per_unique import (
+    AverageCountPerUnique,
+)
 from featuretools.primitives.standard.aggregation.count import Count
 from featuretools.primitives.standard.aggregation.count_above_mean import CountAboveMean
 from featuretools.primitives.standard.aggregation.count_below_mean import CountBelowMean
@@ -22,6 +25,9 @@ from featuretools.primitives.standard.aggregation.count_outside_range import (
 )
 from featuretools.primitives.standard.aggregation.entropy import Entropy
 from featuretools.primitives.standard.aggregation.first import First
+from featuretools.primitives.standard.aggregation.first_last_time_delta import (
+    FirstLastTimeDelta,
+)
 from featuretools.primitives.standard.aggregation.last import Last
 from featuretools.primitives.standard.aggregation.max_primitive import Max
 from featuretools.primitives.standard.aggregation.max_consecutive_false import (
