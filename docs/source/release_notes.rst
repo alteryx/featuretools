@@ -10,7 +10,7 @@ Future Release
     * Changes
         * Change ``TotalWordLength`` and ``UpperCaseWordCount`` to return ``IntegerNullable`` (:pr:`2474`)
     * Documentation Changes
-        * Fix build docs workflow and bump RTD to use Python 3.9 #2483
+        * Fix build docs workflow and bump RTD to use Python 3.9 (:pr:`2483`)
     * Testing Changes
         * Add GitHub Actions cache to speed up workflows (:pr:`2475`)
         * Fix latest dependency checker install command (:pr:`2476`)
