@@ -1,7 +1,9 @@
 # flake8: noqa
 from featuretools.primitives.standard.transform.absolute_diff import AbsoluteDiff
 from featuretools.primitives.standard.transform.binary import *
-from featuretools.primitives.standard.transform.country_code_to_continent import *
+from featuretools.primitives.standard.transform.country_code_to_continent import (
+    CountryCodeToContinent,
+)
 from featuretools.primitives.standard.transform.cumulative import *
 from featuretools.primitives.standard.transform.datetime import *
 from featuretools.primitives.standard.transform.email import *
@@ -14,6 +16,7 @@ from featuretools.primitives.standard.transform.natural_language import *
 from featuretools.primitives.standard.transform.not_primitive import Not
 from featuretools.primitives.standard.transform.numeric import *
 from featuretools.primitives.standard.transform.percent_unique import PercentUnique
+from featuretools.primitives.standard.transform.percent_change import PercentChange
 from featuretools.primitives.standard.transform.postal import *
 from featuretools.primitives.standard.transform.savgol_filter import SavgolFilter
 from featuretools.primitives.standard.transform.time_series import *
