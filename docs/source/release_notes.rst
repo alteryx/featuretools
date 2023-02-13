@@ -10,11 +10,12 @@ Future Release
     * Changes
         * Change ``TotalWordLength`` and ``UpperCaseWordCount`` to return ``IntegerNullable`` (:pr:`2474`)
     * Documentation Changes
+        * Fix build docs workflow and bump RTD to use Python 3.9 #2483
     * Testing Changes
-       * Add GitHub Actions cache to speed up workflows (:pr:`2475`)
-       * Fix latest dependency checker install command (:pr:`2476`)
-       * Add pull request check for linked issues to CI workflow (:pr:`2477`, :pr:`2481`)
-       * Remove make package from lint workflow (:pr:`2479`)
+        * Add GitHub Actions cache to speed up workflows (:pr:`2475`)
+        * Fix latest dependency checker install command (:pr:`2476`)
+        * Add pull request check for linked issues to CI workflow (:pr:`2477`, :pr:`2481`)
+        * Remove make package from lint workflow (:pr:`2479`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`sbadithe`
