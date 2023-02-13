@@ -11,6 +11,7 @@ from featuretools import (
     load_features,
     save_features,
 )
+from featuretools.primitives.base import AggregationPrimitive, TransformPrimitive
 from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 PRIMITIVES = list_primitives()
@@ -35,7 +36,7 @@ def get_number_from_offset(offset):
         return offset
 
 
-class PrimitiveT:
+class PrimitiveTestBase:
     primitive = None
 
     @pytest.fixture(autouse=True)
@@ -73,10 +74,19 @@ class PrimitiveT:
                 assert hasattr(primitive_, name)
 
     def test_serialize(self, es):
+        trans_primitives = []
+        agg_primitives = []
+        if issubclass(self.primitive, AggregationPrimitive):
+            agg_primitives = [self.primitive]
+        elif issubclass(self.primitive, TransformPrimitive):
+            trans_primitives = [self.primitive]
+        else:
+            raise ValueError("Primitive must be Aggregation or Transform")
         features = dfs(
             entityset=es,
             target_dataframe_name="log",
-            trans_primitives=[self.primitive],
+            agg_primitives=agg_primitives,
+            trans_primitives=trans_primitives,
             max_features=-1,
             max_depth=3,
             features_only=True,
@@ -173,6 +183,7 @@ def valid_dfs(
         entityset=es,
         features=applicable_features,
         instance_ids=instance_ids,
+        n_jobs=1,
     )
 
     encode_features(df, applicable_features)

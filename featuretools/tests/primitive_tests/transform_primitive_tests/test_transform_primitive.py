@@ -34,6 +34,11 @@ from featuretools.primitives import (
     Week,
     get_transform_primitives,
 )
+from featuretools.tests.primitive_tests.utils import (
+    PrimitiveTestBase,
+    find_applicable_primitives,
+    valid_dfs,
+)
 
 
 def test_time_since():
@@ -953,7 +958,9 @@ def test_rate_of_change_primitive_with_nan():
     pd.testing.assert_series_equal(actual, expected)
 
 
-class TestFileExtension:
+class TestFileExtension(PrimitiveTestBase):
+    primitive = FileExtension
+
     def test_filepaths(self):
         primitive_func = FileExtension().get_function()
         array = pd.Series(
@@ -972,3 +979,9 @@ class TestFileExtension:
         array = pd.Series(["doc.txt", "~/documents/data", np.nan])
         answer = pd.Series([".txt", np.nan, np.nan])
         pd.testing.assert_series_equal(primitive_func(array), answer)
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        transform.append(primitive_instance)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())

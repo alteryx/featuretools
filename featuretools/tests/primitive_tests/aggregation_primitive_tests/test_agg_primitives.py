@@ -13,6 +13,11 @@ from featuretools.primitives import (
     Variance,
     get_aggregation_primitives,
 )
+from featuretools.tests.primitive_tests.utils import (
+    PrimitiveTestBase,
+    find_applicable_primitives,
+    valid_dfs,
+)
 
 
 def test_nmostcommon_categorical():
@@ -56,7 +61,8 @@ def test_percent_true_boolean():
     pct_true(booleans) == 0.5
 
 
-class TestAverageCountPerUnique:
+class TestAverageCountPerUnique(PrimitiveTestBase):
+    primitive = AverageCountPerUnique
     array = pd.Series([1, 1, 2, 2, 3, 4, 5, 6, 7, 8])
 
     def test_percent_unique(self):
@@ -76,49 +82,64 @@ class TestAverageCountPerUnique:
         array_empty_string = pd.concat([self.array.copy(), pd.Series([np.nan, "", ""])])
         assert primitive_func(array_empty_string) == (4 / 3.0)
 
+    def test_with_featuretools(self, pd_es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
+        valid_dfs(pd_es, aggregation, transform, self.primitive.name.upper())
 
-class TestVariance:
+
+class TestVariance(PrimitiveTestBase):
+    primitive = Variance
+
     def test_regular(self):
-        variance = Variance().get_function()
+        variance = self.primitive().get_function()
         np.testing.assert_almost_equal(variance(np.array([0, 3, 4, 3])), 2.25)
 
     def test_single(self):
-        variance = Variance().get_function()
+        variance = self.primitive().get_function()
         np.testing.assert_almost_equal(variance(np.array([4])), 0)
 
     def test_double(self):
-        variance = Variance().get_function()
+        variance = self.primitive().get_function()
         np.testing.assert_almost_equal(variance(np.array([3, 4])), 0.25)
 
     def test_empty(self):
-        variance = Variance().get_function()
+        variance = self.primitive().get_function()
         np.testing.assert_almost_equal(variance(np.array([])), np.nan)
 
     def test_nan(self):
-        variance = Variance().get_function()
+        variance = self.primitive().get_function()
         np.testing.assert_almost_equal(
             variance(pd.Series([0, np.nan, 4, 3])),
             2.8888888888888893,
         )
 
     def test_allnan(self):
-        variance = Variance().get_function()
+        variance = self.primitive().get_function()
         np.testing.assert_almost_equal(
             variance(pd.Series([np.nan, np.nan, np.nan])),
             np.nan,
         )
 
 
-class TestFirstLastTimeDelta:
+class TestFirstLastTimeDelta(PrimitiveTestBase):
+    primitive = FirstLastTimeDelta
     times = pd.Series([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)])
     actual_delta = (times.iloc[-1] - times.iloc[0]).total_seconds()
 
     def test_first_last_time_delta(self):
-        primitive_func = FirstLastTimeDelta().get_function()
+        primitive_func = self.primitive().get_function()
         assert primitive_func(self.times) == self.actual_delta
 
     def test_with_nans(self):
-        primitive_func = FirstLastTimeDelta().get_function()
+        primitive_func = self.primitive().get_function()
         times = pd.concat([self.times, pd.Series([np.nan])])
         assert primitive_func(times) == self.actual_delta
         assert pd.isna(primitive_func(pd.Series([np.nan])))
+
+    def test_with_featuretools(self, pd_es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
+        valid_dfs(pd_es, aggregation, transform, self.primitive.name.upper())

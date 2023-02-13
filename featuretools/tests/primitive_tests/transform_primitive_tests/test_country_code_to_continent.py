@@ -2,9 +2,16 @@ import numpy as np
 import pandas as pd
 
 from featuretools.primitives import CountryCodeToContinent
+from featuretools.tests.primitive_tests.utils import (
+    PrimitiveTestBase,
+    find_applicable_primitives,
+    valid_dfs,
+)
 
 
-class TestCountryCodeToContinent:
+class TestCountryCodeToContinent(PrimitiveTestBase):
+    primitive = CountryCodeToContinent
+
     def test_country_codes(self):
         primitive_instance = CountryCodeToContinent
         primitive_func = primitive_instance().get_function()
@@ -37,3 +44,9 @@ class TestCountryCodeToContinent:
             answer,
             check_names=False,
         )
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        transform.append(primitive_instance)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())

@@ -24,7 +24,6 @@ class IsFreeEmailDomain(TransformPrimitive):
     name = "is_free_email_domain"
     input_types = [ColumnSchema(logical_type=EmailAddress)]
     return_type = ColumnSchema(logical_type=BooleanNullable)
-
     filename = "free_email_provider_domains.txt"
 
     def get_function(self):

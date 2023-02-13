@@ -3,13 +3,13 @@ import pandas as pd
 
 from featuretools.primitives import NumberOfCommonWords
 from featuretools.tests.primitive_tests.utils import (
-    PrimitiveT,
+    PrimitiveTestBase,
     find_applicable_primitives,
     valid_dfs,
 )
 
 
-class TestNumberOfCommonWords(PrimitiveT):
+class TestNumberOfCommonWords(PrimitiveTestBase):
     primitive = NumberOfCommonWords
     test_word_bank = {"and", "a", "is"}
 

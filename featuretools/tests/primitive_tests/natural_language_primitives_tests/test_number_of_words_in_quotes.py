@@ -4,13 +4,13 @@ import pytest
 
 from featuretools.primitives import NumberOfWordsInQuotes
 from featuretools.tests.primitive_tests.utils import (
-    PrimitiveT,
+    PrimitiveTestBase,
     find_applicable_primitives,
     valid_dfs,
 )
 
 
-class TestNumberOfWordsInQuotes(PrimitiveT):
+class TestNumberOfWordsInQuotes(PrimitiveTestBase):
     primitive = NumberOfWordsInQuotes
 
     def test_regular_double_quotes_input(self):

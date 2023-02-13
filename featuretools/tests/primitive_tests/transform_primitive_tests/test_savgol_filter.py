@@ -5,9 +5,15 @@ import pandas as pd
 from pytest import raises
 
 from featuretools.primitives import SavgolFilter
+from featuretools.tests.primitive_tests.utils import (
+    PrimitiveTestBase,
+    find_applicable_primitives,
+    valid_dfs,
+)
 
 
-class TestSavgolFilter:
+class TestSavgolFilter(PrimitiveTestBase):
+    primitive = SavgolFilter
     data = pd.Series(
         [
             0,
@@ -222,18 +228,18 @@ class TestSavgolFilter:
         polyorder = 3
         error_text = "polyorder must be less than window_length."
         with raises(ValueError, match=error_text):
-            SavgolFilter(window_length, polyorder)
+            self.primitive(window_length, polyorder)
 
         error_text = (
             "Both window_length and polyorder must be defined if you define one."
         )
 
         with raises(ValueError, match=error_text):
-            SavgolFilter(window_length=window_length)
-            SavgolFilter(polyorder=polyorder)
+            self.primitive(window_length=window_length)
+            self.primitive(polyorder=polyorder)
 
     def test_less_window_size(self):
-        primitive_func = SavgolFilter().get_function()
+        primitive_func = self.primitive().get_function()
         for i in range(20):
             data = pd.Series(list(range(i)), dtype="float64")
             assert data.equals(primitive_func(data))
@@ -241,14 +247,20 @@ class TestSavgolFilter:
     def test_regular(self):
         window_length = floor(len(self.data) / 10) * 2 + 1
         polyorder = 3
-        primitive_func = SavgolFilter(window_length, polyorder).get_function()
+        primitive_func = self.primitive(window_length, polyorder).get_function()
         output = list(primitive_func(self.data))
         for a, b in zip(self.expected_output, output):
             assert np.isclose(a, b)
 
     def test_nans(self):
-        primitive_func = SavgolFilter().get_function()
+        primitive_func = self.primitive().get_function()
         data_nans = self.data.copy()
         data_nans = pd.concat([data_nans, pd.Series([np.nan] * 5, dtype="float64")])
         # more than 5 nans due to window
         assert sum(np.isnan(primitive_func(data_nans))) == 15
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instantiate = self.primitive()
+        transform.append(primitive_instantiate)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())

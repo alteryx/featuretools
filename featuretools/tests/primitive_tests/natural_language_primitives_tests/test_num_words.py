@@ -3,13 +3,13 @@ import pandas as pd
 
 from featuretools.primitives import NumWords
 from featuretools.tests.primitive_tests.utils import (
-    PrimitiveT,
+    PrimitiveTestBase,
     find_applicable_primitives,
     valid_dfs,
 )
 
 
-class TestNumWords(PrimitiveT):
+class TestNumWords(PrimitiveTestBase):
     primitive = NumWords
 
     def test_general(self):

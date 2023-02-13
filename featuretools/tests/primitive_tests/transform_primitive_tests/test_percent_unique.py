@@ -3,11 +3,11 @@ import pandas as pd
 
 from featuretools.primitives import PercentUnique
 from featuretools.tests.primitive_tests.utils import (
-    PrimitiveT,
+    PrimitiveTestBase,
 )
 
 
-class TestPercentUnique(PrimitiveT):
+class TestPercentUnique(PrimitiveTestBase):
     array = pd.Series([1, 1, 2, 2, 3, 4, 5, 6, 7, 8])
     primitive = PercentUnique
 

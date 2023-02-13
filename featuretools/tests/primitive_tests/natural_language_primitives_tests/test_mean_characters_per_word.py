@@ -4,13 +4,13 @@ import pytest
 
 from featuretools.primitives import MeanCharactersPerWord
 from featuretools.tests.primitive_tests.utils import (
-    PrimitiveT,
+    PrimitiveTestBase,
     find_applicable_primitives,
     valid_dfs,
 )
 
 
-class TestMeanCharactersPerWord(PrimitiveT):
+class TestMeanCharactersPerWord(PrimitiveTestBase):
     primitive = MeanCharactersPerWord
 
     def test_sentences(self):
