@@ -78,10 +78,8 @@ class PrimitiveTestBase:
         agg_primitives = []
         if issubclass(self.primitive, AggregationPrimitive):
             agg_primitives = [self.primitive]
-        elif issubclass(self.primitive, TransformPrimitive):
-            trans_primitives = [self.primitive]
         else:
-            raise ValueError("Primitive must be Aggregation or Transform")
+            trans_primitives = [self.primitive]
         features = dfs(
             entityset=es,
             target_dataframe_name="log",
