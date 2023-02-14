@@ -11,7 +11,7 @@ from featuretools import (
     load_features,
     save_features,
 )
-from featuretools.primitives.base import AggregationPrimitive, TransformPrimitive
+from featuretools.primitives.base import AggregationPrimitive
 from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 PRIMITIVES = list_primitives()
