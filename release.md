@@ -83,7 +83,7 @@ Checklist before merging:
 - All tests are currently green on checkin and on `main`.
 - The ReadtheDocs build for the release PR branch has passed, and the resulting docs contain the expected release notes.
 - PR has been reviewed and approved.
-- Confirm with the team that `main` will be frozen until step 2 (Github Release) is complete.
+- Confirm with the team that `main` will be frozen until step 3 (Github Release) is complete.
 
 After merging, verify again that ReadtheDocs "latest" is correct.
 

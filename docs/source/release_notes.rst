@@ -3,15 +3,22 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+    ==============
     * Enhancements
         * Add ``AverageCountPerUnique``, ``CountryCodeToContinent``, ``FileExtension``, ``FirstLastTimeDelta``, ``SavgolFilter``,
             ``CumulativeTimeSinceLastFalse``, ``CumulativeTimeSinceLastTrue``, ``PercentChange``, ``PercentUnique`` (:pr:`2485`)
     * Fixes
     * Changes
-        * Change ``TotalWordLength`` and ``UpperCaseWordCount`` to return ``IntegerNullable`` (:pr:`2474`)
     * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.23.0 Feb 15, 2023
+====================
+    * Changes
+        * Change ``TotalWordLength`` and ``UpperCaseWordCount`` to return ``IntegerNullable`` (:pr:`2474`)
     * Testing Changes
        * Add GitHub Actions cache to speed up workflows (:pr:`2475`)
        * Fix latest dependency checker install command (:pr:`2476`)
@@ -19,7 +26,7 @@ Future Release
        * Remove make package from lint workflow (:pr:`2479`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`sbadithe`
+    :user:`dreed`, :user:`gsheni`, :user:`sbadithe`
 
 v1.22.0 Jan 31, 2023
 ====================
