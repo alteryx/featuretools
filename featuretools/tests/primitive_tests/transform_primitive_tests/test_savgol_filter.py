@@ -226,6 +226,7 @@ class TestSavgolFilter(PrimitiveTestBase):
     def test_error(self):
         window_length = 1
         polyorder = 3
+        mode = "incorrect"
         error_text = "polyorder must be less than window_length."
         with raises(ValueError, match=error_text):
             self.primitive(window_length, polyorder)
@@ -238,6 +239,13 @@ class TestSavgolFilter(PrimitiveTestBase):
             self.primitive(window_length=window_length)
         with raises(ValueError, match=error_text):
             self.primitive(polyorder=polyorder)
+        error_text = "mode must be 'mirror', 'constant', 'nearest', 'wrap' or 'interp'."
+        with raises(ValueError, match=error_text):
+            self.primitive(
+                window_length=window_length,
+                polyorder=polyorder,
+                mode=mode,
+            )
 
     def test_less_window_size(self):
         primitive_func = self.primitive().get_function()
