@@ -6,7 +6,6 @@ from pandas.core.dtypes.dtypes import CategoricalDtype
 
 from featuretools.primitives import (
     AverageCountPerUnique,
-    DateFirstEvent,
     FirstLastTimeDelta,
     NMostCommon,
     PercentTrue,
@@ -144,42 +143,3 @@ class TestFirstLastTimeDelta(PrimitiveTestBase):
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
         valid_dfs(pd_es, aggregation, transform, self.primitive.name.upper())
-
-
-class TestDateFirstEvent(PrimitiveTestBase):
-    primitive = DateFirstEvent
-
-    def test_regular(self):
-        primitive_func = self.primitive().get_function()
-        case = pd.Series(
-            [
-                "2011-04-09 10:30:00",
-                "2011-04-09 10:30:06",
-                "2011-04-09 10:30:12",
-                "2011-04-09 10:30:18",
-            ],
-        ).astype("datetime64")
-        answer = pd.Timestamp("2011-04-09 10:30:00")
-        given_answer = primitive_func(case)
-        assert given_answer == answer
-
-    def test_nat(self):
-        primitive_func = self.primitive().get_function()
-        case = pd.Series(
-            [
-                pd.NaT,
-                pd.NaT,
-                "2011-04-09 10:30:12",
-                "2011-04-09 10:30:18",
-            ],
-        ).astype("datetime64")
-        answer = pd.Timestamp("2011-04-09 10:30:12")
-        given_answer = primitive_func(case)
-        assert given_answer == answer
-
-    def test_with_featuretools(self, es):
-        transform, aggregation = find_applicable_primitives(self.primitive)
-        primitive_instance = self.primitive()
-
-        aggregation.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
