@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from pytest import raises
 
 from featuretools.primitives import PercentChange
 from featuretools.tests.primitive_tests.utils import (
@@ -18,6 +19,10 @@ class TestPercentChange(PrimitiveTestBase):
         primtive_func = self.primitive().get_function()
         given_answer = primtive_func(data)
         np.testing.assert_array_equal(given_answer, answer)
+
+    def test_raises(self):
+        with raises(ValueError):
+            self.primitive(fill_method="invalid")
 
     def test_period(self):
         data = pd.Series([2, 4, 8])
