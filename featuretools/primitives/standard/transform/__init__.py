@@ -12,7 +12,6 @@ from featuretools.primitives.standard.transform.latlong import *
 from featuretools.primitives.standard.transform.natural_language import *
 from featuretools.primitives.standard.transform.not_primitive import Not
 from featuretools.primitives.standard.transform.numeric import *
-from featuretools.primitives.standard.transform.percent_unique import PercentUnique
 from featuretools.primitives.standard.transform.percent_change import PercentChange
 from featuretools.primitives.standard.transform.postal import *
 from featuretools.primitives.standard.transform.savgol_filter import SavgolFilter

@@ -58,6 +58,7 @@ from featuretools.primitives.standard.aggregation.num_consecutive_less_mean impo
     NumConsecutiveLessMean,
 )
 from featuretools.primitives.standard.aggregation.num_unique import NumUnique
+from featuretools.primitives.standard.aggregation.percent_unique import PercentUnique
 from featuretools.primitives.standard.aggregation.percent_true import PercentTrue
 from featuretools.primitives.standard.aggregation.skew import Skew
 from featuretools.primitives.standard.aggregation.std import Std

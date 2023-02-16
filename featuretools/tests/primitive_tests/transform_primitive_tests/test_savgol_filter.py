@@ -236,6 +236,7 @@ class TestSavgolFilter(PrimitiveTestBase):
 
         with raises(ValueError, match=error_text):
             self.primitive(window_length=window_length)
+        with raises(ValueError, match=error_text):
             self.primitive(polyorder=polyorder)
 
     def test_less_window_size(self):

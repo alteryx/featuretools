@@ -2,7 +2,7 @@ from scipy.stats import kurtosis
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Double
 
-from featuretools.primitives.base import AggregationPrimitive
+from featuretools.primitives import AggregationPrimitive
 
 
 class Kurtosis(AggregationPrimitive):

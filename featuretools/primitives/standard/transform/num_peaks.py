@@ -3,7 +3,7 @@ from scipy.signal import find_peaks
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Integer
 
-from featuretools.primitives.base import AggregationPrimitive
+from featuretools.primitives import AggregationPrimitive
 
 
 class NumPeaks(AggregationPrimitive):
