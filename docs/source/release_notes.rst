@@ -6,6 +6,8 @@ Release Notes
 .. Future Release
     ==============
     * Enhancements
+        * Add ``AverageCountPerUnique``, ``CountryCodeToContinent``, ``FileExtension``, ``FirstLastTimeDelta``, ``SavgolFilter``,
+            ``CumulativeTimeSinceLastFalse``, ``CumulativeTimeSinceLastTrue``, ``PercentChange``, ``PercentUnique`` (:pr:`2485`)
     * Fixes
     * Changes
     * Documentation Changes

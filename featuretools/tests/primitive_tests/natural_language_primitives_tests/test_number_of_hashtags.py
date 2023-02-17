@@ -3,13 +3,13 @@ import pandas as pd
 
 from featuretools.primitives import NumberOfHashtags
 from featuretools.tests.primitive_tests.utils import (
-    PrimitiveT,
+    PrimitiveTestBase,
     find_applicable_primitives,
     valid_dfs,
 )
 
 
-class TestNumberOfHashtags(PrimitiveT):
+class TestNumberOfHashtags(PrimitiveTestBase):
     primitive = NumberOfHashtags
 
     def test_regular_input(self):

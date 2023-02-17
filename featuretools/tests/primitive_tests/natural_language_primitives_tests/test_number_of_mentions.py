@@ -3,13 +3,13 @@ import pandas as pd
 
 from featuretools.primitives import NumberOfMentions
 from featuretools.tests.primitive_tests.utils import (
-    PrimitiveT,
+    PrimitiveTestBase,
     find_applicable_primitives,
     valid_dfs,
 )
 
 
-class TestNumberOfMentions(PrimitiveT):
+class TestNumberOfMentions(PrimitiveTestBase):
     primitive = NumberOfMentions
 
     def test_regular_input(self):

@@ -11,6 +11,7 @@ from featuretools.primitives import (
     DayOfYear,
     DaysInMonth,
     EmailAddressToDomain,
+    FileExtension,
     IsFreeEmailDomain,
     IsLeapYear,
     IsLunchTime,
@@ -32,6 +33,11 @@ from featuretools.primitives import (
     URLToTLD,
     Week,
     get_transform_primitives,
+)
+from featuretools.tests.primitive_tests.utils import (
+    PrimitiveTestBase,
+    find_applicable_primitives,
+    valid_dfs,
 )
 
 
@@ -950,3 +956,32 @@ def test_rate_of_change_primitive_with_nan():
     expected = pd.Series([np.nan, 15, np.nan, np.nan, 45])
     actual = rate_of_change(values, times)
     pd.testing.assert_series_equal(actual, expected)
+
+
+class TestFileExtension(PrimitiveTestBase):
+    primitive = FileExtension
+
+    def test_filepaths(self):
+        primitive_func = FileExtension().get_function()
+        array = pd.Series(
+            [
+                "doc.txt",
+                "~/documents/data.json",
+                "data.JSON",
+                "C:\\Projects\\apilibrary\\apilibrary.sln",
+            ],
+        )
+        answer = pd.Series([".txt", ".json", ".json", ".sln"])
+        pd.testing.assert_series_equal(primitive_func(array), answer)
+
+    def test_invalid(self):
+        primitive_func = FileExtension().get_function()
+        array = pd.Series(["doc.txt", "~/documents/data", np.nan])
+        answer = pd.Series([".txt", np.nan, np.nan])
+        pd.testing.assert_series_equal(primitive_func(array), answer)
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        transform.append(primitive_instance)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())

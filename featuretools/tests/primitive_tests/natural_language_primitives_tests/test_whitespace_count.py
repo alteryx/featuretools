@@ -3,13 +3,13 @@ import pandas as pd
 
 from featuretools.primitives import WhitespaceCount
 from featuretools.tests.primitive_tests.utils import (
-    PrimitiveT,
+    PrimitiveTestBase,
     find_applicable_primitives,
     valid_dfs,
 )
 
 
-class TestWhitespaceCount(PrimitiveT):
+class TestWhitespaceCount(PrimitiveTestBase):
     primitive = WhitespaceCount
 
     def compare(self, primitive_initiated, test_cases, answers):

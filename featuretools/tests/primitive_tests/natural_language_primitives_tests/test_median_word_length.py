@@ -3,13 +3,13 @@ import pandas as pd
 
 from featuretools.primitives import MedianWordLength
 from featuretools.tests.primitive_tests.utils import (
-    PrimitiveT,
+    PrimitiveTestBase,
     find_applicable_primitives,
     valid_dfs,
 )
 
 
-class TestMedianWordLength(PrimitiveT):
+class TestMedianWordLength(PrimitiveTestBase):
     primitive = MedianWordLength
 
     def test_delimiter_override(self):

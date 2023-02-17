@@ -3,13 +3,13 @@ import pandas as pd
 
 from featuretools.primitives import TitleWordCount
 from featuretools.tests.primitive_tests.utils import (
-    PrimitiveT,
+    PrimitiveTestBase,
     find_applicable_primitives,
     valid_dfs,
 )
 
 
-class TestTitleWordCount(PrimitiveT):
+class TestTitleWordCount(PrimitiveTestBase):
     primitive = TitleWordCount
 
     def test_strings(self):

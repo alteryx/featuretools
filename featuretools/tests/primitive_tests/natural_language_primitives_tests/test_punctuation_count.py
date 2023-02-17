@@ -3,13 +3,13 @@ import pandas as pd
 
 from featuretools.primitives import PunctuationCount
 from featuretools.tests.primitive_tests.utils import (
-    PrimitiveT,
+    PrimitiveTestBase,
     find_applicable_primitives,
     valid_dfs,
 )
 
 
-class TestPunctuationCount(PrimitiveT):
+class TestPunctuationCount(PrimitiveTestBase):
     primitive = PunctuationCount
 
     def test_punctuation(self):

@@ -11,9 +11,10 @@ from featuretools.primitives import (
     CountOutsideNthSTD,
     CountOutsideRange,
 )
+from featuretools.tests.primitive_tests.utils import PrimitiveTestBase
 
 
-class TestCountAboveMean:
+class TestCountAboveMean(PrimitiveTestBase):
     primitive = CountAboveMean
 
     def test_regular(self):
@@ -85,7 +86,7 @@ class TestCountAboveMean:
         assert np.isnan(actual) == np.isnan(expected)
 
 
-class TestCountGreaterThan:
+class TestCountGreaterThan(PrimitiveTestBase):
     primitive = CountGreaterThan
 
     def compare_results(self, data, thresholds, results):
@@ -233,7 +234,7 @@ class TestCountInsideNthSTD:
             self.primitive(-1)
 
 
-class TestCountInsideRange:
+class TestCountInsideRange(PrimitiveTestBase):
     primitive = CountInsideRange
 
     def test_integer_range(self):
@@ -298,7 +299,7 @@ class TestCountInsideRange:
         assert primitive_func(x) == 10 + num_inf
 
 
-class TestCountLessThan:
+class TestCountLessThan(PrimitiveTestBase):
     primitive = CountLessThan
 
     def compare_answers(self, data, thresholds, answers):
@@ -327,7 +328,7 @@ class TestCountLessThan:
         self.compare_answers(data, thresholds, answers)
 
 
-class TestCountOutsideNthSTD:
+class TestCountOutsideNthSTD(PrimitiveTestBase):
     primitive = CountOutsideNthSTD
 
     def test_normal_distribution(self):
@@ -511,47 +512,47 @@ class TestCountOutsideNthSTD:
             self.primitive(-1)
 
 
-class TestCountOutsideRange:
+class TestCountOutsideRange(PrimitiveTestBase):
     primitive = CountOutsideRange
 
     def test_integer_range(self):
         # all integers from -100 to 100
         x = pd.Series(np.arange(-100, 101, 1))
-        primitive_instance = self.primitive(-100, 100)
+        primitive_instance = CountOutsideRange(-100, 100)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 0
 
-        primitive_instance = self.primitive(-50, 50)
+        primitive_instance = CountOutsideRange(-50, 50)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 100
 
-        primitive_instance = self.primitive(1, 1)
+        primitive_instance = CountOutsideRange(1, 1)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == len(x) - 1
 
     def test_float_range(self):
         x = pd.Series(np.linspace(-3, 3, 10))
 
-        primitive_instance = self.primitive(-3, 3)
+        primitive_instance = CountOutsideRange(-3, 3)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 0
 
-        primitive_instance = self.primitive(-0.34, 1.68)
+        primitive_instance = CountOutsideRange(-0.34, 1.68)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 6
 
-        primitive_instance = self.primitive(-3, -3)
+        primitive_instance = CountOutsideRange(-3, -3)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 9
 
     def test_nan(self):
         x = pd.Series(np.linspace(-3, 3, 10))
         x = pd.concat([x, pd.Series([np.nan] * 20)])
-        primitive_instance = self.primitive(-0.34, 1.68)
+        primitive_instance = CountOutsideRange(-0.34, 1.68)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 6
 
-        primitive_instance = self.primitive(-3, 3, False)
+        primitive_instance = CountOutsideRange(-3, 3, False)
         primitive_func = primitive_instance.get_function()
         assert np.isnan(primitive_func(x))
 
@@ -562,18 +563,18 @@ class TestCountOutsideRange:
         num_inf = 10
         x = pd.concat([x, pd.Series([np.inf] * num_inf)])
 
-        primitive_instance = self.primitive(-3, 3)
+        primitive_instance = CountOutsideRange(-3, 3)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == num_inf + num_NINF
 
-        primitive_instance = self.primitive(-0.34, 1.68)
+        primitive_instance = CountOutsideRange(-0.34, 1.68)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == 6 + num_inf + num_NINF
 
-        primitive_instance = self.primitive(np.NINF, 3)
+        primitive_instance = CountOutsideRange(np.NINF, 3)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == num_inf
 
-        primitive_instance = self.primitive(-3, np.inf)
+        primitive_instance = CountOutsideRange(-3, np.inf)
         primitive_func = primitive_instance.get_function()
         assert primitive_func(x) == num_NINF

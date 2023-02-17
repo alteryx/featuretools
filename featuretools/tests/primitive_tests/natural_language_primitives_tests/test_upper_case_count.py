@@ -3,13 +3,13 @@ import pandas as pd
 
 from featuretools.primitives import UpperCaseCount
 from featuretools.tests.primitive_tests.utils import (
-    PrimitiveT,
+    PrimitiveTestBase,
     find_applicable_primitives,
     valid_dfs,
 )
 
 
-class TestUpperCaseCount(PrimitiveT):
+class TestUpperCaseCount(PrimitiveTestBase):
     primitive = UpperCaseCount
 
     def test_strings(self):

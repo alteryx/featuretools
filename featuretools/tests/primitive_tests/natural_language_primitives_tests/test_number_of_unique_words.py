@@ -3,13 +3,13 @@ import pandas as pd
 
 from featuretools.primitives import NumberOfUniqueWords
 from featuretools.tests.primitive_tests.utils import (
-    PrimitiveT,
+    PrimitiveTestBase,
     find_applicable_primitives,
     valid_dfs,
 )
 
 
-class TestNumberOfUniqueWords(PrimitiveT):
+class TestNumberOfUniqueWords(PrimitiveTestBase):
     primitive = NumberOfUniqueWords
 
     def test_general(self):
