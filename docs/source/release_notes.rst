@@ -3,17 +3,19 @@
 Release Notes
 -------------
 
-.. Future Release
-    ==============
+Future Release
+==============
     * Enhancements
         * Add ``AverageCountPerUnique``, ``CountryCodeToContinent``, ``FileExtension``, ``FirstLastTimeDelta``, ``SavgolFilter``,
             ``CumulativeTimeSinceLastFalse``, ``CumulativeTimeSinceLastTrue``, ``PercentChange``, ``PercentUnique`` (:pr:`2485`)
     * Fixes
+        * Pin github-action-check-linked-issues to 1.4.5 (:pr:`2497`)
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 v1.23.0 Feb 15, 2023
 ====================
