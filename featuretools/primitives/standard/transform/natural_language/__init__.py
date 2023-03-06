@@ -1,3 +1,6 @@
+from featuretools.primitives.standard.transform.natural_language.openai import (
+    OpenAIEmbeddings,
+)
 from featuretools.primitives.standard.transform.natural_language.count_string import (
     CountString,
 )

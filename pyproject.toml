@@ -40,6 +40,8 @@ dependencies = [
     "scipy >= 1.4.0",
     "tqdm >= 4.32.0",
     "woodwork[dask] >= 0.18.0",
+    "openai[embeddings] >= 0.26.5",
+    "tiktoken >= 0.3.0",
 ]
 
 [project.urls]
