@@ -73,46 +73,51 @@ class PrimitiveTestBase:
             if parameter.default is not parameter.empty:
                 assert hasattr(primitive_, name)
 
-    def test_serialize(self, es):
-        trans_primitives = []
-        agg_primitives = []
-        if issubclass(self.primitive, AggregationPrimitive):
-            agg_primitives = [self.primitive]
-        else:
-            trans_primitives = [self.primitive]
-        features = dfs(
-            entityset=es,
-            target_dataframe_name="log",
-            agg_primitives=agg_primitives,
-            trans_primitives=trans_primitives,
-            max_features=-1,
-            max_depth=3,
-            features_only=True,
-        )
+    def test_serialize(self, es, target_dataframe_name="log"):
+        test_serialize(primitive=self.primitive, es=es, target_dataframe_name="log")
 
-        feat_to_serialize = None
-        for feature in features:
-            if feature.primitive.__class__ == self.primitive:
-                feat_to_serialize = feature
+
+def test_serialize(primitive, es, target_dataframe_name="log"):
+    trans_primitives = []
+    agg_primitives = []
+    if issubclass(primitive, AggregationPrimitive):
+        agg_primitives = [primitive]
+    else:
+        trans_primitives = [primitive]
+    features = dfs(
+        entityset=es,
+        target_dataframe_name=target_dataframe_name,
+        agg_primitives=agg_primitives,
+        trans_primitives=trans_primitives,
+        max_features=-1,
+        max_depth=3,
+        features_only=True,
+        return_types="all",
+    )
+
+    feat_to_serialize = None
+    for feature in features:
+        if feature.primitive.__class__ == primitive:
+            feat_to_serialize = feature
+            break
+        for base_feature in feature.get_dependencies(deep=True):
+            if base_feature.primitive.__class__ == primitive:
+                feat_to_serialize = base_feature
                 break
-            for base_feature in feature.get_dependencies(deep=True):
-                if base_feature.primitive.__class__ == self.primitive:
-                    feat_to_serialize = base_feature
-                    break
-        assert feat_to_serialize is not None
+    assert feat_to_serialize is not None
 
-        # Skip calculating feature matrix for long running primitives
-        skip_primitives = ["elmo"]
+    # Skip calculating feature matrix for long running primitives
+    skip_primitives = ["elmo"]
 
-        if self.primitive.name not in skip_primitives:
-            df1 = calculate_feature_matrix([feat_to_serialize], entityset=es)
+    if primitive.name not in skip_primitives:
+        df1 = calculate_feature_matrix([feat_to_serialize], entityset=es)
 
-        new_feat = load_features(save_features([feat_to_serialize]))[0]
-        assert isinstance(new_feat, FeatureBase)
+    new_feat = load_features(save_features([feat_to_serialize]))[0]
+    assert isinstance(new_feat, FeatureBase)
 
-        if self.primitive.name not in skip_primitives:
-            df2 = calculate_feature_matrix([new_feat], entityset=es)
-            assert df1.equals(df2)
+    if primitive.name not in skip_primitives:
+        df2 = calculate_feature_matrix([new_feat], entityset=es)
+        assert df1.equals(df2)
 
 
 def find_applicable_primitives(primitive):

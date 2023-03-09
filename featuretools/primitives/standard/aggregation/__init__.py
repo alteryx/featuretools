@@ -1,3 +1,7 @@
+from featuretools.primitives.standard.aggregation.autocorrelation import (
+    Autocorrelation,
+)
+from featuretools.primitives.standard.aggregation.correlation import Correlation
 from featuretools.primitives.standard.aggregation.all_primitive import All
 from featuretools.primitives.standard.aggregation.any_primitive import Any
 from featuretools.primitives.standard.aggregation.avg_time_between import AvgTimeBetween
@@ -23,6 +27,7 @@ from featuretools.primitives.standard.aggregation.count_outside_nth_std import (
 from featuretools.primitives.standard.aggregation.count_outside_range import (
     CountOutsideRange,
 )
+from featuretools.primitives.standard.aggregation.date_first_event import DateFirstEvent
 from featuretools.primitives.standard.aggregation.entropy import Entropy
 from featuretools.primitives.standard.aggregation.first import First
 from featuretools.primitives.standard.aggregation.first_last_time_delta import (

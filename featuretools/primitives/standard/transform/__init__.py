@@ -6,6 +6,15 @@ from featuretools.primitives.standard.transform.datetime import *
 from featuretools.primitives.standard.transform.email import *
 from featuretools.primitives.standard.transform.exponential import *
 from featuretools.primitives.standard.transform.file_extension import FileExtension
+from featuretools.primitives.standard.transform.full_name_to_first_name import (
+    FullNameToFirstName,
+)
+from featuretools.primitives.standard.transform.full_name_to_last_name import (
+    FullNameToLastName,
+)
+from featuretools.primitives.standard.transform.full_name_to_title import (
+    FullNameToTitle,
+)
 from featuretools.primitives.standard.transform.is_in import IsIn
 from featuretools.primitives.standard.transform.is_null import IsNull
 from featuretools.primitives.standard.transform.latlong import *
