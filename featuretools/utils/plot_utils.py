@@ -10,7 +10,7 @@ def check_graphviz():
     graphviz = import_or_raise("graphviz", GRAPHVIZ_ERR_MSG)
     # Try rendering a dummy graph to see if a working backend is installed
     try:
-        graphviz.Digraph().pipe()
+        graphviz.Digraph().pipe(format="pdf")
     except graphviz.backend.ExecutableNotFound:
         raise RuntimeError(
             "To plot entity sets, a graphviz backend is required.\n"
