@@ -10,6 +10,8 @@ Future Release
             ``CumulativeTimeSinceLastFalse``, ``CumulativeTimeSinceLastTrue``, ``PercentChange``, ``PercentUnique`` (:pr:`2485`)
         * Add ``FullNameToFirstName``, ``FullNameToLastName``, ``FullNameToTitle``, ``Autocorrelation``,
             ``Correlation``, ``DateFirstEvent`` (:pr:`2507`)
+        * Add ``Kurtosis``, ``MinCount``, ``NumFalseSinceLastTrue``, ``NumPeaks``,
+            ``NumTrueSinceLastFalse``, ``NumZeroCrossings`` (:pr:`2514`)
     * Fixes
         * Pin github-action-check-linked-issues to 1.4.5 (:pr:`2497`)
         * Support Woodwork's update numeric inference (integers as strings) (:pr:`2505`)
