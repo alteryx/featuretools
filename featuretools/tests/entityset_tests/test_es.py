@@ -939,7 +939,7 @@ def test_dataframe_init(es):
         df = dd.from_pandas(df, npartitions=2)
     elif es.dataframe_type == Library.SPARK:
         df = ps.from_pandas(df)
-    logical_types = {"id": Integer, "time": Datetime}
+    logical_types = {"id": Categorical, "time": Datetime}
     if not isinstance(df, pd.DataFrame):
         extra_logical_types = {
             "category": Categorical,
@@ -973,7 +973,7 @@ def test_dataframe_init(es):
     if es.dataframe_type == Library.SPARK:
         assert set(es["test_dataframe"]["id"].to_list()) == set(df["id"].to_list())
     else:
-        assert set(es["test_dataframe"]["id"]) == set(df["id"].astype("int64"))
+        assert set(es["test_dataframe"]["id"]) == set(df["id"])
 
 
 @pytest.fixture
