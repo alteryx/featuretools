@@ -39,7 +39,7 @@ def get_number_from_offset(offset):
 class PrimitiveTestBase:
     primitive = None
 
-    @pytest.fixture(autouse=True)
+    @pytest.fixture()
     def es(self):
         es = make_ecommerce_entityset()
         return es
