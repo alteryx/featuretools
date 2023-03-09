@@ -23,7 +23,6 @@ from featuretools.primitives import (
     IsYearEnd,
     IsYearStart,
     Lag,
-    MinCount,
     NumericLag,
     PartOfDay,
     Quarter,
@@ -985,49 +984,4 @@ class TestFileExtension(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         transform.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
-
-
-class TestMinCount(PrimitiveTestBase):
-    primitive = MinCount
-
-    def test_nan(self):
-        data = pd.Series([np.nan, np.nan, np.nan])
-        primitive_func = self.primitive().get_function()
-        answer = primitive_func(data)
-        assert np.isnan(answer)
-
-    def test_inf(self):
-        data = pd.Series([5, 10, 10, np.inf, np.inf, np.inf])
-        primitive_func = self.primitive().get_function()
-        answer = primitive_func(data)
-        assert answer == 1
-
-    def test_regular(self):
-        data = pd.Series([1, 2, 2, 2, 3, 4, 4, 4, 5])
-        primitive_func = self.primitive().get_function()
-        answer = primitive_func(data)
-        assert answer == 1
-
-        data = pd.Series([2, 2, 2, 3, 4, 4, 4])
-        primitive_func = self.primitive().get_function()
-        answer = primitive_func(data)
-        assert answer == 3
-
-    def test_skipna(self):
-        data = pd.Series([1, 1, 2, 3, 4, 4, np.nan, 5])
-        primitive_func = self.primitive(skipna=False).get_function()
-        answer = primitive_func(data)
-        assert np.isnan(answer)
-
-    def test_ninf(self):
-        data = pd.Series([np.NINF, np.NINF, np.nan])
-        primitive_func = self.primitive().get_function()
-        answer = primitive_func(data)
-        assert answer == 2
-
-    def test_with_featuretools(self, es):
-        transform, aggregation = find_applicable_primitives(self.primitive)
-        primitive_instantiate = self.primitive()
-        aggregation.append(primitive_instantiate)
         valid_dfs(es, aggregation, transform, self.primitive.name.upper())
