@@ -8,6 +8,8 @@ Future Release
     * Enhancements
         * Add ``AverageCountPerUnique``, ``CountryCodeToContinent``, ``FileExtension``, ``FirstLastTimeDelta``, ``SavgolFilter``,
             ``CumulativeTimeSinceLastFalse``, ``CumulativeTimeSinceLastTrue``, ``PercentChange``, ``PercentUnique`` (:pr:`2485`)
+        * Add ``FullNameToFirstName``, ``FullNameToLastName``, ``FullNameToTitle``, ``Autocorrelation``,
+            ``Correlation``, ``DateFirstEvent`` (:pr:`2507`)
     * Fixes
         * Pin github-action-check-linked-issues to 1.4.5 (:pr:`2497`)
     * Changes
