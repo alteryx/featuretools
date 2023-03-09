@@ -166,18 +166,18 @@ class TestKurtosis(PrimitiveTestBase):
         assert np.isnan(given_answer)
 
     def test_empty(self):
-        data = pd.Series([])
+        data = pd.Series([], dtype="float64")
         primitive_func = self.primitive().get_function()
         given_answer = primitive_func(data)
         assert np.isnan(given_answer)
 
     def test_inf(self):
-        data = pd.Series([1, np.inf])
+        data = pd.Series([1, np.inf], dtype="float64")
         primitive_func = self.primitive().get_function()
         given_answer = primitive_func(data)
         assert np.isnan(given_answer)
 
-        data = pd.Series([np.NINF, 1, np.inf])
+        data = pd.Series([np.NINF, 1, np.inf], dtype="float64")
         primitive_func = self.primitive().get_function()
         given_answer = primitive_func(data)
         assert np.isnan(given_answer)
@@ -245,7 +245,7 @@ class TestNumZeroCrossings(PrimitiveTestBase):
         assert given_answer == answer
 
     def test_empty(self):
-        data = pd.Series([])
+        data = pd.Series([], dtype="int64")
         answer = 0
         primtive_func = self.primitive().get_function()
         given_answer = primtive_func(data)
@@ -405,7 +405,10 @@ class TestNumPeaks(PrimitiveTestBase):
 
     def test_negative_and_positive_nums(self):
         get_peaks = self.primitive().get_function()
-        assert get_peaks(pd.Series([-5, 0, 10, 0, 10, -5, -4, -5, 10, 0])) == 4
+        assert (
+            get_peaks(pd.Series([-5, 0, 10, 0, 10, -5, -4, -5, 10, 0], dtype="int64"))
+            == 4
+        )
 
     def test_plateu(self):
         get_peaks = self.primitive().get_function()
@@ -477,7 +480,7 @@ class TestNumPeaks(PrimitiveTestBase):
 
     def test_too_small_data(self):
         get_peaks = self.primitive().get_function()
-        assert get_peaks(pd.Series([])) == 0
+        assert get_peaks(pd.Series([], dtype="int64")) == 0
         assert get_peaks(pd.Series([1])) == 0
         assert get_peaks(pd.Series([1, 1])) == 0
         assert get_peaks(pd.Series([1, 2])) == 0
@@ -580,8 +583,8 @@ class TestCorrelation(PrimitiveTestBase):
         primitive_func = self.primitive().get_function()
         array_nans = pd.Series([np.nan, np.nan, np.nan, np.nan, np.nan])
         assert pd.isna(primitive_func(array_nans, array_nans))
-        array_1_nans = self.array_1.copy().append(pd.Series([np.nan, np.nan]))
-        array_2 = self.array_2.copy().append(pd.Series([12, 14]))
+        array_1_nans = pd.concat([self.array_1, pd.Series([np.nan, np.nan])])
+        array_2 = pd.concat([self.array_2, pd.Series([12, 14])])
         assert primitive_func(array_1_nans, array_2) == 0.382596278303975
 
     def test_method(self):
@@ -648,6 +651,12 @@ class TestDateFirstEvent(PrimitiveTestBase):
         answer = pd.Timestamp("2011-04-09 10:30:12")
         given_answer = primitive_func(case)
         assert given_answer == answer
+
+    def test_empty(self):
+        primitive_func = self.primitive().get_function()
+        case = pd.Series([], dtype="datetime64[ns]")
+        given_answer = primitive_func(case)
+        assert pd.isna(given_answer)
 
     def test_with_featuretools(self, pd_es):
         transform, aggregation = find_applicable_primitives(self.primitive)

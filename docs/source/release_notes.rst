@@ -8,7 +8,7 @@ Future Release
     * Enhancements
         * Add ``AverageCountPerUnique``, ``CountryCodeToContinent``, ``FileExtension``, ``FirstLastTimeDelta``, ``SavgolFilter``,
             ``CumulativeTimeSinceLastFalse``, ``CumulativeTimeSinceLastTrue``, ``PercentChange``, ``PercentUnique`` (:pr:`2485`)
-        * Add ``FullNameToFirstName``, ``FullNameToLastName``, ``FullNameToTitle``, ``Autocorrelation``,
+        * Add ``FullNameToFirstName``, ``FullNameToLastName``, ``FullNameToTitle``, ``AutoCorrelation``,
             ``Correlation``, ``DateFirstEvent`` (:pr:`2507`)
         * Add ``Kurtosis``, ``MinCount``, ``NumFalseSinceLastTrue``, ``NumPeaks``,
             ``NumTrueSinceLastFalse``, ``NumZeroCrossings`` (:pr:`2514`)
