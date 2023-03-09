@@ -3,9 +3,13 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 from pandas.core.dtypes.dtypes import CategoricalDtype
+from pytest import raises
 
 from featuretools.primitives import (
+    AutoCorrelation,
     AverageCountPerUnique,
+    Correlation,
+    DateFirstEvent,
     FirstLastTimeDelta,
     NMostCommon,
     PercentTrue,
@@ -15,6 +19,7 @@ from featuretools.primitives import (
 )
 from featuretools.tests.primitive_tests.utils import (
     PrimitiveTestBase,
+    check_serialize,
     find_applicable_primitives,
     valid_dfs,
 )
@@ -143,3 +148,146 @@ class TestFirstLastTimeDelta(PrimitiveTestBase):
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
         valid_dfs(pd_es, aggregation, transform, self.primitive.name.upper())
+
+
+class TestAutoCorrelation(PrimitiveTestBase):
+    primitive = AutoCorrelation
+
+    def test_regular(self):
+        primitive_instance = self.primitive()
+        primitive_func = primitive_instance.get_function()
+        array = pd.Series([1, 2, 3, 1, 3, 2])
+        assert round(primitive_func(array), 3) == -0.598
+
+    def test_with_lag(self):
+        primitive_instance = self.primitive(lag=3)
+        primitive_func = primitive_instance.get_function()
+        array = pd.Series([1, 2, 3, 1, 2, 3])
+        assert round(primitive_func(array), 3) == 1.0
+
+    def test_starts_with_nan(self):
+        primitive_instance = self.primitive()
+        primitive_func = primitive_instance.get_function()
+        array = pd.Series([np.nan, 2, 3, 1, 3, 2])
+        assert round(primitive_func(array), 3) == -0.818
+
+    def test_ends_with_nan(self):
+        primitive_instance = self.primitive()
+        primitive_func = primitive_instance.get_function()
+        array = pd.Series([1, 2, 3, 1, 3, np.nan])
+        assert round(primitive_func(array), 3) == -0.636
+
+    def test_all_nan(self):
+        primitive_instance = self.primitive()
+        primitive_func = primitive_instance.get_function()
+        array = pd.Series([np.nan, np.nan, np.nan, np.nan])
+        assert pd.isna(primitive_func(array))
+
+    def test_negative_lag(self):
+        primitive_instance = self.primitive(lag=-3)
+        primitive_func = primitive_instance.get_function()
+        array = pd.Series([1, 2, 3, 1, 2, 3])
+        assert round(primitive_func(array), 3) == 1.0
+
+    def test_with_featuretools(self, pd_es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
+        valid_dfs(pd_es, aggregation, transform, self.primitive.name.upper())
+
+
+class TestCorrelation(PrimitiveTestBase):
+    primitive = Correlation
+    array_1 = pd.Series([1, 4, 6, 7, 10, 12, 11.5])
+    array_2 = pd.Series([1, 5, 9, 7, 11, 9, 1])
+
+    def test_default_corr(self):
+        correlation_val = 0.382596278303975
+        primitive_func = self.primitive().get_function()
+        assert np.isclose(self.array_1.corr(self.array_2), correlation_val)
+        assert np.isclose(primitive_func(self.array_1, self.array_2), correlation_val)
+        assert np.isclose(
+            primitive_func(self.array_1, self.array_2),
+            primitive_func(self.array_2, self.array_1),
+        )
+
+    def test_all_nans(self):
+        primitive_func = self.primitive().get_function()
+        array_nans = pd.Series([np.nan, np.nan, np.nan, np.nan, np.nan])
+        assert pd.isna(primitive_func(array_nans, array_nans))
+        array_1_nans = self.array_1.copy().append(pd.Series([np.nan, np.nan]))
+        array_2 = self.array_2.copy().append(pd.Series([12, 14]))
+        assert primitive_func(array_1_nans, array_2) == 0.382596278303975
+
+    def test_method(self):
+        method = "kendall"
+        correlation_val = 0.3504383220252312
+        primitive_func = self.primitive(method=method).get_function()
+        assert np.isclose(
+            self.array_1.corr(self.array_2, method=method),
+            correlation_val,
+        )
+        assert np.isclose(primitive_func(self.array_1, self.array_2), correlation_val)
+
+    def test_errors(self):
+        error_message = (
+            "Invalid method, valid methods are ['pearson', 'spearman', 'kendall']"
+        )
+        with raises(ValueError, match=error_message):
+            self.primitive(method="invalid")
+            self.primitive(method=5)
+
+    def test_with_featuretools(self, pd_es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
+        valid_dfs(
+            pd_es,
+            aggregation,
+            transform,
+            self.primitive.name.upper(),
+            max_depth=2,
+        )
+
+
+class TestDateFirstEvent(PrimitiveTestBase):
+    primitive = DateFirstEvent
+
+    def test_regular(self):
+        primitive_func = self.primitive().get_function()
+        case = pd.Series(
+            [
+                "2011-04-09 10:30:00",
+                "2011-04-09 10:30:06",
+                "2011-04-09 10:30:12",
+                "2011-04-09 10:30:18",
+            ],
+            dtype="datetime64[ns]",
+        )
+        answer = pd.Timestamp("2011-04-09 10:30:00")
+        given_answer = primitive_func(case)
+        assert given_answer == answer
+
+    def test_nat(self):
+        primitive_func = self.primitive().get_function()
+        case = pd.Series(
+            [
+                pd.NaT,
+                pd.NaT,
+                "2011-04-09 10:30:12",
+                "2011-04-09 10:30:18",
+            ],
+            dtype="datetime64[ns]",
+        )
+        answer = pd.Timestamp("2011-04-09 10:30:12")
+        given_answer = primitive_func(case)
+        assert given_answer == answer
+
+    def test_with_featuretools(self, pd_es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
+        valid_dfs(pd_es, aggregation, transform, self.primitive.name.upper())
+
+    def test_serialize(self, es):
+        check_serialize(self.primitive, es, target_dataframe_name="sessions")
