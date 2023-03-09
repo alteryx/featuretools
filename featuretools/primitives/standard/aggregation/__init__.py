@@ -53,6 +53,7 @@ from featuretools.primitives.standard.aggregation.max_consecutive_zeros import (
 )
 from featuretools.primitives.standard.aggregation.mean import Mean
 from featuretools.primitives.standard.aggregation.median import Median
+from featuretools.primitives.standard.aggregation.min_count import MinCount
 from featuretools.primitives.standard.aggregation.min_primitive import Min
 from featuretools.primitives.standard.aggregation.mode import Mode
 from featuretools.primitives.standard.aggregation.n_most_common import NMostCommon
