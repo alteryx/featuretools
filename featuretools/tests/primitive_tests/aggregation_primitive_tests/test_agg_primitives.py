@@ -19,8 +19,8 @@ from featuretools.primitives import (
 )
 from featuretools.tests.primitive_tests.utils import (
     PrimitiveTestBase,
+    check_serialize,
     find_applicable_primitives,
-    test_serialize,
     valid_dfs,
 )
 
@@ -290,4 +290,4 @@ class TestDateFirstEvent(PrimitiveTestBase):
         valid_dfs(pd_es, aggregation, transform, self.primitive.name.upper())
 
     def test_serialize(self, es):
-        test_serialize(self.primitive, es, target_dataframe_name="sessions")
+        check_serialize(self.primitive, es, target_dataframe_name="sessions")

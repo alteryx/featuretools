@@ -74,10 +74,10 @@ class PrimitiveTestBase:
                 assert hasattr(primitive_, name)
 
     def test_serialize(self, es, target_dataframe_name="log"):
-        test_serialize(primitive=self.primitive, es=es, target_dataframe_name="log")
+        check_serialize(primitive=self.primitive, es=es, target_dataframe_name="log")
 
 
-def test_serialize(primitive, es, target_dataframe_name="log"):
+def check_serialize(primitive, es, target_dataframe_name="log"):
     trans_primitives = []
     agg_primitives = []
     if issubclass(primitive, AggregationPrimitive):
