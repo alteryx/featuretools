@@ -6,7 +6,7 @@ from pandas.core.dtypes.dtypes import CategoricalDtype
 from pytest import raises
 
 from featuretools.primitives import (
-    Autocorrelation,
+    AutoCorrelation,
     AverageCountPerUnique,
     Correlation,
     DateFirstEvent,
@@ -150,8 +150,8 @@ class TestFirstLastTimeDelta(PrimitiveTestBase):
         valid_dfs(pd_es, aggregation, transform, self.primitive.name.upper())
 
 
-class TestAutocorrelation(PrimitiveTestBase):
-    primitive = Autocorrelation
+class TestAutoCorrelation(PrimitiveTestBase):
+    primitive = AutoCorrelation
 
     def test_regular(self):
         primitive_instance = self.primitive()

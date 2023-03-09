@@ -1,5 +1,5 @@
 from featuretools.primitives.standard.aggregation.autocorrelation import (
-    Autocorrelation,
+    AutoCorrelation,
 )
 from featuretools.primitives.standard.aggregation.correlation import Correlation
 from featuretools.primitives.standard.aggregation.all_primitive import All
