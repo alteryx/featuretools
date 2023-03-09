@@ -929,7 +929,7 @@ def test_handles_datetime_mismatch():
 def test_dataframe_init(es):
     df = pd.DataFrame(
         {
-            "id": [0, 1, 2],
+            "id": ["0", "1", "2"],
             "time": [datetime(2011, 4, 9, 10, 31, 3 * i) for i in range(3)],
             "category": ["a", "b", "a"],
             "number": [4, 5, 6],
