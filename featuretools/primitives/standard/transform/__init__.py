@@ -19,7 +19,6 @@ from featuretools.primitives.standard.transform.is_in import IsIn
 from featuretools.primitives.standard.transform.is_null import IsNull
 from featuretools.primitives.standard.transform.latlong import *
 from featuretools.primitives.standard.transform.natural_language import *
-from featuretools.primitives.standard.transform.min_count import MinCount
 from featuretools.primitives.standard.transform.not_primitive import Not
 from featuretools.primitives.standard.transform.numeric import *
 from featuretools.primitives.standard.transform.percent_change import PercentChange
