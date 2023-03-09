@@ -939,11 +939,9 @@ def test_dataframe_init(es):
         df = dd.from_pandas(df, npartitions=2)
     elif es.dataframe_type == Library.SPARK:
         df = ps.from_pandas(df)
-
-    logical_types = {"time": Datetime}
+    logical_types = {"id": Categorical, "time": Datetime}
     if not isinstance(df, pd.DataFrame):
         extra_logical_types = {
-            "id": Categorical,
             "category": Categorical,
             "number": Integer,
         }
