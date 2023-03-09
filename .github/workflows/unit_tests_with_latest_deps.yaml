@@ -102,18 +102,18 @@ jobs:
       - name: Download miniconda
         shell: pwsh
         run: |
-          $File = "Miniconda3-4.7.12.1-Windows-x86_64.exe"
+          $File = "Miniconda3-latest-Windows-x86_64.exe"
           $Uri = "https://repo.anaconda.com/miniconda/$File"
           $ProgressPreference = "silentlyContinue"
           Invoke-WebRequest -Uri $Uri -Outfile "$env:USERPROFILE/$File"
           $hashFromFile = Get-FileHash "$env:USERPROFILE/$File" -Algorithm SHA256
-          $hashFromUrl = "f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45"
+          $hashFromUrl = "d4517212c8ac44fd8b5ccc2d4d9f38c2dd924c77a81c2be92c3a72e70dd3e907"
           if ($hashFromFile.Hash -ne "$hashFromUrl") {
             Throw "File hashes did not match!"
           }
       - name: Install miniconda
         shell: cmd
-        run: start /wait "" %UserProfile%\Miniconda3-4.7.12.1-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /S /D=%UserProfile%\Miniconda3
+        run: start /wait "" %UserProfile%\Miniconda3-latest-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /S /D=%UserProfile%\Miniconda3
       - name: Create python ${{ matrix.python_version }} environment
         shell: pwsh
         run: |
