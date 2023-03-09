@@ -973,7 +973,7 @@ def test_dataframe_init(es):
     if es.dataframe_type == Library.SPARK:
         assert set(es["test_dataframe"]["id"].to_list()) == set(df["id"].to_list())
     else:
-        assert set(es["test_dataframe"]["id"]) == set(df["id"])
+        assert set(es["test_dataframe"]["id"]) == set(df["id"].astype("int64"))
 
 
 @pytest.fixture
