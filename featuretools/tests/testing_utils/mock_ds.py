@@ -28,7 +28,7 @@ from featuretools.entityset import EntitySet
 def make_ecommerce_entityset(with_integer_time_index=False):
     """Makes a entityset with the following shape:
 
-      R         Regions
+      R         Régions
      / \\       .
     S   C       Stores, Customers
         |       .

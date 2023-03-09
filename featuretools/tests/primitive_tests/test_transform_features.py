@@ -45,6 +45,9 @@ from featuretools.primitives import (
     EqualScalar,
     FileExtension,
     First,
+    FullNameToFirstName,
+    FullNameToLastName,
+    FullNameToTitle,
     GreaterThan,
     GreaterThanEqualTo,
     GreaterThanEqualToScalar,
@@ -123,7 +126,12 @@ def test_init_and_name(es):
         features_to_use = log_features
         if transform_prim in [NotEqual, Equal, FileExtension]:
             continue
-        if transform_prim in [Age]:
+        if transform_prim in [
+            Age,
+            FullNameToFirstName,
+            FullNameToLastName,
+            FullNameToTitle,
+        ]:
             features_to_use = customers_features
 
         # use the input_types matching function from DFS
