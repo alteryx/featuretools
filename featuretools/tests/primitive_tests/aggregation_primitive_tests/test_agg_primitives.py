@@ -1,4 +1,5 @@
 from datetime import datetime
+from math import sqrt
 
 import numpy as np
 import pandas as pd
@@ -11,7 +12,13 @@ from featuretools.primitives import (
     Correlation,
     DateFirstEvent,
     FirstLastTimeDelta,
+    Kurtosis,
+    MinCount,
     NMostCommon,
+    NumFalseSinceLastTrue,
+    NumPeaks,
+    NumTrueSinceLastFalse,
+    NumZeroCrossings,
     PercentTrue,
     Trend,
     Variance,
@@ -87,11 +94,11 @@ class TestAverageCountPerUnique(PrimitiveTestBase):
         array_empty_string = pd.concat([self.array.copy(), pd.Series([np.nan, "", ""])])
         assert primitive_func(array_empty_string) == (4 / 3.0)
 
-    def test_with_featuretools(self, pd_es):
+    def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(pd_es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
 
 
 class TestVariance(PrimitiveTestBase):
@@ -143,11 +150,373 @@ class TestFirstLastTimeDelta(PrimitiveTestBase):
         assert primitive_func(times) == self.actual_delta
         assert pd.isna(primitive_func(pd.Series([np.nan])))
 
-    def test_with_featuretools(self, pd_es):
+    def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(pd_es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+
+
+class TestKurtosis(PrimitiveTestBase):
+    primitive = Kurtosis
+
+    def test_nan(self):
+        data = pd.Series([np.nan, 5, 3])
+        primitive_func = self.primitive().get_function()
+        given_answer = primitive_func(data)
+        assert np.isnan(given_answer)
+
+    def test_empty(self):
+        data = pd.Series([], dtype="float64")
+        primitive_func = self.primitive().get_function()
+        given_answer = primitive_func(data)
+        assert np.isnan(given_answer)
+
+    def test_inf(self):
+        data = pd.Series([1, np.inf], dtype="float64")
+        primitive_func = self.primitive().get_function()
+        given_answer = primitive_func(data)
+        assert np.isnan(given_answer)
+
+        data = pd.Series([np.NINF, 1, np.inf], dtype="float64")
+        primitive_func = self.primitive().get_function()
+        given_answer = primitive_func(data)
+        assert np.isnan(given_answer)
+
+    def test_regular(self):
+        data = pd.Series([1, 2, 3, 4, 5])
+        answer = -1.3
+        primitive_func = self.primitive().get_function()
+        given_answer = primitive_func(data)
+        assert answer == given_answer
+
+        data = pd.Series([1, 2, 3, 4, 5, 6])
+        answer = -1.2685714285714282
+        primitive_func = self.primitive().get_function()
+        given_answer = primitive_func(data)
+        assert answer == given_answer
+
+        data = pd.Series([x * x for x in list(range(100))])
+        answer = -0.8516897715415088
+        primitive_func = self.primitive().get_function()
+        given_answer = primitive_func(data)
+        assert answer == given_answer
+
+        data = pd.Series([sqrt(x) for x in list(range(100))])
+        answer = -0.4643347840875198
+        primitive_func = self.primitive().get_function()
+        given_answer = primitive_func(data)
+        assert answer == given_answer
+
+    def test_arg(self):
+        data = pd.Series([1, 2, 3, 4, 5, np.nan, np.nan])
+        answer = -1.3
+        primitive_func = self.primitive(nan_policy="omit").get_function()
+        given_answer = primitive_func(data)
+        assert answer == given_answer
+
+        primitive_func = self.primitive(nan_policy="propagate").get_function()
+        given_answer = primitive_func(data)
+        assert np.isnan(given_answer)
+
+        primitive_func = self.primitive(nan_policy="raise").get_function()
+        with raises(ValueError):
+            primitive_func(data)
+
+    def test_error(self):
+        with raises(ValueError):
+            self.primitive(nan_policy="invalid_policy").get_function()
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instantiate = self.primitive()
+        aggregation.append(primitive_instantiate)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+
+
+class TestNumZeroCrossings(PrimitiveTestBase):
+    primitive = NumZeroCrossings
+
+    def test_nan(self):
+        data = pd.Series([3, np.nan, 5, 3, np.nan, 0, np.nan, 0, np.nan, -2])
+        # crossing from 0 to np.nan to -2, which is 1 crossing
+        answer = 1
+        primtive_func = self.primitive().get_function()
+        given_answer = primtive_func(data)
+        assert given_answer == answer
+
+    def test_empty(self):
+        data = pd.Series([], dtype="int64")
+        answer = 0
+        primtive_func = self.primitive().get_function()
+        given_answer = primtive_func(data)
+        assert given_answer == answer
+
+    def test_inf(self):
+        data = pd.Series([-1, np.inf])
+        answer = 1
+        primtive_func = self.primitive().get_function()
+        given_answer = primtive_func(data)
+        assert given_answer == answer
+
+        data = pd.Series([np.NINF, 1, np.inf])
+        answer = 1
+        primtive_func = self.primitive().get_function()
+        given_answer = primtive_func(data)
+        assert given_answer == answer
+
+    def test_zeros(self):
+        data = pd.Series([1, 0, -1, 0, 1, 0, -1])
+        answer = 3
+        primtive_func = self.primitive().get_function()
+        given_answer = primtive_func(data)
+        assert given_answer == answer
+
+        data = pd.Series([1, 0, 1, 0, 1])
+        answer = 0
+        primtive_func = self.primitive().get_function()
+        given_answer = primtive_func(data)
+        assert given_answer == answer
+
+    def test_regular(self):
+        data = pd.Series([1, 2, 3, 4, 5])
+        answer = 0
+        primtive_func = self.primitive().get_function()
+        given_answer = primtive_func(data)
+        assert given_answer == answer
+
+        data = pd.Series([1, -1, 2, -2, 3, -3])
+        answer = 5
+        primtive_func = self.primitive().get_function()
+        given_answer = primtive_func(data)
+        assert given_answer == answer
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instantiate = self.primitive()
+        aggregation.append(primitive_instantiate)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+
+
+class TestNumTrueSinceLastFalse(PrimitiveTestBase):
+    primitive = NumTrueSinceLastFalse
+
+    def test_regular(self):
+        primitive_func = self.primitive().get_function()
+        bools = pd.Series([False, True, False, True, True])
+        answer = primitive_func(bools)
+        correct_answer = 2
+        assert answer == correct_answer
+
+    def test_regular_end_in_false(self):
+        primitive_func = self.primitive().get_function()
+        bools = pd.Series([False, True, False, True, True, False])
+        answer = primitive_func(bools)
+        correct_answer = 0
+        assert answer == correct_answer
+
+    def test_no_false(self):
+        primitive_func = self.primitive().get_function()
+        bools = pd.Series([True] * 5)
+        assert pd.isna(primitive_func(bools))
+
+    def test_all_false(self):
+        primitive_func = self.primitive().get_function()
+        bools = pd.Series([False, False, False])
+        answer = primitive_func(bools)
+        correct_answer = 0
+        assert answer == correct_answer
+
+    def test_nan(self):
+        primitive_func = self.primitive().get_function()
+        bools = pd.Series([False, True, np.nan, True, True])
+        answer = primitive_func(bools)
+        correct_answer = 3
+        assert answer == correct_answer
+
+    def test_all_nan(self):
+        primitive_func = self.primitive().get_function()
+        bools = pd.Series([np.nan, np.nan, np.nan])
+        assert pd.isna(primitive_func(bools))
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+
+
+class TestNumFalseSinceLastTrue(PrimitiveTestBase):
+    primitive = NumFalseSinceLastTrue
+
+    def test_regular(self):
+        primitive_func = self.primitive().get_function()
+        bools = pd.Series([True, False, True, False, False])
+        answer = primitive_func(bools)
+        correct_answer = 2
+        assert answer == correct_answer
+
+    def test_regular_end_in_true(self):
+        primitive_func = self.primitive().get_function()
+        bools = pd.Series([True, False, True, False, False, True])
+        answer = primitive_func(bools)
+        correct_answer = 0
+        assert answer == correct_answer
+
+    def test_no_true(self):
+        primitive_func = self.primitive().get_function()
+        bools = pd.Series([False] * 5)
+        assert pd.isna(primitive_func(bools))
+
+    def test_all_true(self):
+        primitive_func = self.primitive().get_function()
+        bools = pd.Series([True, True, True])
+        answer = primitive_func(bools)
+        correct_answer = 0
+        assert answer == correct_answer
+
+    def test_nan(self):
+        primitive_func = self.primitive().get_function()
+        bools = pd.Series([True, False, np.nan, False, False])
+        answer = primitive_func(bools)
+        correct_answer = 3
+        assert answer == correct_answer
+
+    def test_all_nan(self):
+        primitive_func = self.primitive().get_function()
+        bools = pd.Series([np.nan, np.nan, np.nan])
+        assert pd.isna(primitive_func(bools))
+
+    def test_numeric_and_string_input(self):
+        primitive_func = self.primitive().get_function()
+        bools = pd.Series([True, 0, 1, "10", ""])
+        answer = primitive_func(bools)
+        correct_answer = 1
+        assert answer == correct_answer
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+
+
+class TestNumPeaks(PrimitiveTestBase):
+    primitive = NumPeaks
+
+    def test_negative_and_positive_nums(self):
+        get_peaks = self.primitive().get_function()
+        assert (
+            get_peaks(pd.Series([-5, 0, 10, 0, 10, -5, -4, -5, 10, 0], dtype="int64"))
+            == 4
+        )
+
+    def test_plateu(self):
+        get_peaks = self.primitive().get_function()
+        assert get_peaks(pd.Series([1, 2, 3, 3, 3, 3, 3, 2, 1])) == 1
+        assert get_peaks(pd.Series([1, 2, 3, 3, 3, 4, 3, 3, 3, 2, 1])) == 1
+        assert (
+            get_peaks(
+                pd.Series(
+                    [
+                        5,
+                        4,
+                        3,
+                        3,
+                        3,
+                        3,
+                        3,
+                        3,
+                        4,
+                        5,
+                        5,
+                        5,
+                        5,
+                        5,
+                        3,
+                        3,
+                        3,
+                        3,
+                        4,
+                    ],
+                ),
+            )
+            == 1
+        )
+        assert (
+            get_peaks(
+                pd.Series(
+                    [
+                        1,
+                        2,
+                        3,
+                        3,
+                        3,
+                        2,
+                        1,
+                        2,
+                        3,
+                        3,
+                        3,
+                        2,
+                        5,
+                        5,
+                        5,
+                        2,
+                    ],
+                ),
+            )
+            == 3
+        )
+
+    def test_regular(self):
+        get_peaks = self.primitive().get_function()
+        assert get_peaks(pd.Series([1, 7, 3, 8, 2, 3, 4, 3, 4, 2, 4])) == 4
+        assert get_peaks(pd.Series([1, 2, 3, 2, 1])) == 1
+
+    def test_no_peak(self):
+        get_peaks = self.primitive().get_function()
+        assert get_peaks(pd.Series([1, 2, 3])) == 0
+        assert get_peaks(pd.Series([3, 2, 2, 2, 2, 1])) == 0
+
+    def test_too_small_data(self):
+        get_peaks = self.primitive().get_function()
+        assert get_peaks(pd.Series([], dtype="int64")) == 0
+        assert get_peaks(pd.Series([1])) == 0
+        assert get_peaks(pd.Series([1, 1])) == 0
+        assert get_peaks(pd.Series([1, 2])) == 0
+        assert get_peaks(pd.Series([2, 1])) == 0
+
+    def test_nans(self):
+        get_peaks = self.primitive().get_function()
+        array = pd.Series(
+            [
+                0.0,
+                5.0,
+                10,
+                15,
+                20,
+                0,
+                1,
+                2,
+                3,
+                0,
+                0,
+                5,
+                0,
+                7,
+                14,
+                np.NaN,
+                np.NaN,
+            ],
+        )
+        assert get_peaks(array) == 3
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instantiate = self.primitive()
+        aggregation.append(primitive_instantiate)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
 
 
 class TestAutoCorrelation(PrimitiveTestBase):
@@ -215,8 +584,8 @@ class TestCorrelation(PrimitiveTestBase):
         primitive_func = self.primitive().get_function()
         array_nans = pd.Series([np.nan, np.nan, np.nan, np.nan, np.nan])
         assert pd.isna(primitive_func(array_nans, array_nans))
-        array_1_nans = self.array_1.copy().append(pd.Series([np.nan, np.nan]))
-        array_2 = self.array_2.copy().append(pd.Series([12, 14]))
+        array_1_nans = pd.concat([self.array_1, pd.Series([np.nan, np.nan])])
+        array_2 = pd.concat([self.array_2, pd.Series([12, 14])])
         assert primitive_func(array_1_nans, array_2) == 0.382596278303975
 
     def test_method(self):
@@ -235,6 +604,7 @@ class TestCorrelation(PrimitiveTestBase):
         )
         with raises(ValueError, match=error_message):
             self.primitive(method="invalid")
+        with raises(ValueError, match=error_message):
             self.primitive(method=5)
 
     def test_with_featuretools(self, pd_es):
@@ -283,6 +653,12 @@ class TestDateFirstEvent(PrimitiveTestBase):
         given_answer = primitive_func(case)
         assert given_answer == answer
 
+    def test_empty(self):
+        primitive_func = self.primitive().get_function()
+        case = pd.Series([], dtype="datetime64[ns]")
+        given_answer = primitive_func(case)
+        assert pd.isna(given_answer)
+
     def test_with_featuretools(self, pd_es):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
@@ -291,3 +667,48 @@ class TestDateFirstEvent(PrimitiveTestBase):
 
     def test_serialize(self, es):
         check_serialize(self.primitive, es, target_dataframe_name="sessions")
+
+
+class TestMinCount(PrimitiveTestBase):
+    primitive = MinCount
+
+    def test_nan(self):
+        data = pd.Series([np.nan, np.nan, np.nan])
+        primitive_func = self.primitive().get_function()
+        answer = primitive_func(data)
+        assert np.isnan(answer)
+
+    def test_inf(self):
+        data = pd.Series([5, 10, 10, np.inf, np.inf, np.inf])
+        primitive_func = self.primitive().get_function()
+        answer = primitive_func(data)
+        assert answer == 1
+
+    def test_regular(self):
+        data = pd.Series([1, 2, 2, 2, 3, 4, 4, 4, 5])
+        primitive_func = self.primitive().get_function()
+        answer = primitive_func(data)
+        assert answer == 1
+
+        data = pd.Series([2, 2, 2, 3, 4, 4, 4])
+        primitive_func = self.primitive().get_function()
+        answer = primitive_func(data)
+        assert answer == 3
+
+    def test_skipna(self):
+        data = pd.Series([1, 1, 2, 3, 4, 4, np.nan, 5])
+        primitive_func = self.primitive(skipna=False).get_function()
+        answer = primitive_func(data)
+        assert pd.isna(answer)
+
+    def test_ninf(self):
+        data = pd.Series([np.NINF, np.NINF, np.nan])
+        primitive_func = self.primitive().get_function()
+        answer = primitive_func(data)
+        assert answer == 2
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instantiate = self.primitive()
+        aggregation.append(primitive_instantiate)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())

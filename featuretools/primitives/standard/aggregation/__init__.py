@@ -33,6 +33,7 @@ from featuretools.primitives.standard.aggregation.first import First
 from featuretools.primitives.standard.aggregation.first_last_time_delta import (
     FirstLastTimeDelta,
 )
+from featuretools.primitives.standard.aggregation.kurtosis import Kurtosis
 from featuretools.primitives.standard.aggregation.last import Last
 from featuretools.primitives.standard.aggregation.max_primitive import Max
 from featuretools.primitives.standard.aggregation.max_consecutive_false import (
@@ -52,10 +53,21 @@ from featuretools.primitives.standard.aggregation.max_consecutive_zeros import (
 )
 from featuretools.primitives.standard.aggregation.mean import Mean
 from featuretools.primitives.standard.aggregation.median import Median
+from featuretools.primitives.standard.aggregation.min_count import MinCount
 from featuretools.primitives.standard.aggregation.min_primitive import Min
 from featuretools.primitives.standard.aggregation.mode import Mode
 from featuretools.primitives.standard.aggregation.n_most_common import NMostCommon
 from featuretools.primitives.standard.aggregation.num_true import NumTrue
+from featuretools.primitives.standard.aggregation.num_peaks import NumPeaks
+from featuretools.primitives.standard.aggregation.num_zero_crossings import (
+    NumZeroCrossings,
+)
+from featuretools.primitives.standard.aggregation.num_true_since_last_false import (
+    NumTrueSinceLastFalse,
+)
+from featuretools.primitives.standard.aggregation.num_false_since_last_true import (
+    NumFalseSinceLastTrue,
+)
 from featuretools.primitives.standard.aggregation.num_consecutive_greater_mean import (
     NumConsecutiveGreaterMean,
 )

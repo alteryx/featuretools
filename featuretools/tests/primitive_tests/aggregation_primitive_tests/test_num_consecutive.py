@@ -106,7 +106,7 @@ class TestNumConsecutiveGreaterMean:
 
     def test_nan(self):
         x = pd.Series(range(10))
-        x = x.append(pd.Series([np.nan] * 20))
+        x = pd.concat([x, pd.Series([np.nan] * 20)])
         longest_sequence = [5, 6, 7, 8, 9]
 
         # test ignoring NaN values
