@@ -942,7 +942,6 @@ def test_dataframe_init(es):
     logical_types = {"id": Integer, "time": Datetime}
     if not isinstance(df, pd.DataFrame):
         extra_logical_types = {
-            "id": Categorical,
             "category": Categorical,
             "number": Integer,
         }
