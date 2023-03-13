@@ -16,6 +16,7 @@ Future Release
         * Pin github-action-check-linked-issues to 1.4.5 (:pr:`2497`)
         * Support Woodwork's update numeric inference (integers as strings) (:pr:`2505`)
     * Changes
+        * Separate Makefile command for core requirements, test requirements and dev requirements (:pr:`2518`)
     * Documentation Changes
     * Testing Changes
 
