@@ -1,10 +1,13 @@
 from itertools import combinations, permutations, product
-from typing import Dict, List
+from typing import Dict, List, Type, cast
 
 import woodwork.type_sys.type_system as ww_type_system
 from woodwork.column_schema import ColumnSchema
+from woodwork.logical_types import LogicalType
+from woodwork.table_schema import TableSchema
 
 from featuretools.feature_discovery.type_defs import Feature
+from featuretools.primitives.base.primitive_base import PrimitiveBase
 
 
 def index_input_set(input_set: List[ColumnSchema]):
@@ -83,8 +86,13 @@ def group_columns(columns: List[Feature]):
     return groups
 
 
-def get_matching_columns(col_groups: Dict[str, List[str]], primitive):
+def get_matching_columns(
+    col_groups: Dict[str, List[str]],
+    primitive: Type[PrimitiveBase],
+):
     input_sets = primitive.input_types
+
+    assert input_sets is not None
     if not isinstance(primitive.input_types[0], list):
         input_sets = [primitive.input_types]
 
@@ -103,40 +111,60 @@ def get_matching_columns(col_groups: Dict[str, List[str]], primitive):
     return out3
 
 
-# def my_dfs(schema) -> List[Feature]:
-#     columns = []
-#     features = []
-#     for row in schema:
-#         columns.append(Column(
-#             display_name=row["displayName"],
-#             internal_name=row['internalName'],
-#             logical_type=TEMPO_TO_WW_TYPE_MAP[row["logicalType"]],
-#             tags=row['tags']
-#         ))
-#         features.append(Feature(
-#             name=row["internalName"],
-#             primitive_name="PrimitiveBase",
-#             base_columns=[],
-#             commutative=False
-#         ))
+def my_dfs(schema: TableSchema, primitives: List[Type[PrimitiveBase]]) -> List[Feature]:
+    features = []
+    for col_name, column_schema in schema.columns.items():
+        assert isinstance(column_schema, ColumnSchema)
 
-#     col_groups = group_columns(columns=columns)
-#     primitives = get_valid_tempo_transform_primitives("classification")
+        logical_type = column_schema.logical_type
+        assert logical_type
+        assert issubclass(type(logical_type), LogicalType)
 
-#     print('# primitives', len(primitives))
+        tags = column_schema.semantic_tags
+        assert isinstance(tags, set)
 
-#     for p in primitives:
-#         x = get_matching_columns(
-#             col_groups=col_groups,
-#             primitive=p
-#         )
-#         for y in x:
-#             for z in y:
-#                 features.append(Feature(
-#                     name=None,
-#                     primitive_name=p.__name__,
-#                     base_columns=z,
-#                     commutative=p.commutative
-#                 ))
+        features.append(
+            Feature(
+                name=col_name,
+                logical_type=type(logical_type),
+                tags=tags,
+            ),
+        )
 
-#     return features
+    col_groups = group_columns(columns=features)
+
+    for primitive in primitives:
+
+        return_schema = cast(ColumnSchema, primitive.return_type)
+        assert isinstance(return_schema, ColumnSchema)
+
+        output_logical_type = return_schema.logical_type
+
+        output_tags = return_schema.semantic_tags
+        assert isinstance(output_tags, set)
+
+        x = get_matching_columns(
+            col_groups=col_groups,
+            primitive=primitive,
+        )
+        for base_columns in x:
+            base_features = []
+            for bc in base_columns:
+                base_features.append([x for x in features if x.id == bc][0])
+            if output_logical_type is None:
+                # TODO: big hack here to get a firm return type. I'm not sure if this works
+                output_logical_type = base_features[0].logical_type
+
+            # TODO: a hack to instantiate primitive to get access to generate_name
+            p = primitive()
+            features.append(
+                Feature(
+                    name=p.generate_name([x.name for x in base_features]),
+                    logical_type=output_logical_type,
+                    tags=output_tags,
+                    primitive=primitive,
+                    base_columns=base_columns,
+                ),
+            )
+
+    return features

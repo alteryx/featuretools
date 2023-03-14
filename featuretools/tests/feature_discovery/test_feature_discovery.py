@@ -9,9 +9,13 @@ from featuretools.feature_discovery.feature_discovery import (
     get_matching_columns,
     group_columns,
     index_input_set,
+    my_dfs,
 )
 from featuretools.feature_discovery.type_defs import Feature
 from featuretools.primitives import AddNumeric, DateFirstEvent, Equal, Lag, NumUnique
+from featuretools.tests.testing_utils.generate_fake_dataframe import (
+    generate_fake_dataframe,
+)
 
 
 @pytest.mark.parametrize(
@@ -224,3 +228,22 @@ def test_get_matching_columns(col_groups, primitive, expected):
     actual = get_matching_columns(col_groups, primitive)
 
     assert actual == expected
+
+
+def test_new_dfs():
+
+    df = generate_fake_dataframe(
+        col_defs=[
+            ("f_1", "Double"),
+            ("f_2", "Double"),
+            # ("f_2", "Boolean"),
+            # ("f_3", "Categorical")
+        ],
+    )
+
+    # schema = df.ww.schema.columns
+    # raise Exception
+
+    my_dfs(df.ww.schema, [AddNumeric])
+
+    raise Exception
