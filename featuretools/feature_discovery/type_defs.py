@@ -12,8 +12,8 @@ class Feature:
     name: Optional[str]
 
     logical_type: Type[LogicalType]
-    primitive: Optional[Type[PrimitiveBase]] = None
     tags: Set[str] = field(default_factory=set)
+    primitive: Optional[Type[PrimitiveBase]] = None
     base_columns: List[str] = field(default_factory=list)
     df_id: Optional[str] = None
     id: str = field(init=False)

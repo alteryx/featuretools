@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean, Double
+from woodwork.logical_types import Boolean, Datetime, Double
 
 from featuretools.feature_discovery.feature_discovery import (
     get_features,
@@ -11,7 +11,7 @@ from featuretools.feature_discovery.feature_discovery import (
     index_input_set,
 )
 from featuretools.feature_discovery.type_defs import Feature
-from featuretools.primitives import AddNumeric
+from featuretools.primitives import AddNumeric, DateFirstEvent, Equal, Lag, NumUnique
 
 
 @pytest.mark.parametrize(
@@ -49,6 +49,18 @@ def test_index_input_set(column_list, expected):
                 "numeric": ["f1", "f2", "f3"],
             },
         ),
+        (
+            [("f1", Datetime, {"time_index"}), ("f2", Double)],
+            {
+                "ANY": ["f1", "f2"],
+                "Datetime": ["f1"],
+                "time_index": ["f1"],
+                "Datetime,time_index": ["f1"],
+                "Double": ["f2"],
+                "numeric": ["f2"],
+                "Double,numeric": ["f1"],
+            },
+        ),
     ],
 )
 @patch.object(Feature, "_generate_hash", lambda x: x.name)
@@ -79,6 +91,17 @@ def test_group_columns(column_list, expected):
             True,
             [["f1", "f2"]],
         ),
+        (
+            {
+                "ANY": ["f1"],
+                "Datetime": ["f1"],
+                "time_index": ["f1"],
+                "Datetime,time_index": ["f1"],
+            },
+            [ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"})],
+            False,
+            [["f1"]],
+        ),
     ],
 )
 def test_get_features(col_groups, input_set, commutative, expected):
@@ -96,7 +119,104 @@ def test_get_features(col_groups, input_set, commutative, expected):
                 "numeric": ["f1", "f2", "f3"],
             },
             AddNumeric,
-            [[["f1", "f2"], ["f1", "f3"], ["f2", "f3"]]],
+            [["f1", "f2"], ["f1", "f3"], ["f2", "f3"]],
+        ),
+        (
+            {
+                "ANY": ["f1", "f2", "f3"],
+                "Boolean": ["f1", "f2", "f3"],
+            },
+            AddNumeric,
+            [],
+        ),
+        (
+            {
+                "ANY": ["f1"],
+                "Datetime": ["f1"],
+            },
+            DateFirstEvent,
+            [],
+        ),
+        (
+            {
+                "ANY": ["f1"],
+                "time_index": ["f1"],
+            },
+            DateFirstEvent,
+            [],
+        ),
+        (
+            {
+                "ANY": ["f1"],
+                "Datetime": ["f1"],
+                "time_index": ["f1"],
+                "Datetime,time_index": ["f1"],
+            },
+            DateFirstEvent,
+            [["f1"]],
+        ),
+        (
+            {
+                "ANY": ["f1", "f2"],
+                "Datetime": ["f1"],
+                "time_index": ["f1"],
+                "Datetime,time_index": ["f1"],
+                "Double": ["f2"],
+                "numeric": ["f2"],
+                "Double,numeric": ["f2"],
+            },
+            NumUnique,
+            [],
+        ),
+        (
+            {
+                "ANY": ["f1", "f2", "f3"],
+                "Datetime": ["f1"],
+                "time_index": ["f1"],
+                "Datetime,time_index": ["f1"],
+                "Double": ["f2"],
+                "numeric": ["f2"],
+                "Double,numeric": ["f2"],
+                "Ordinal": ["f3"],
+                "category": ["f3"],
+                "Ordinal,category": ["f3"],
+            },
+            NumUnique,
+            [["f3"]],
+        ),
+        (
+            {
+                "ANY": ["f1", "f2", "f3"],
+                "Datetime": ["f1"],
+                "time_index": ["f1"],
+                "Datetime,time_index": ["f1"],
+                "Double": ["f2"],
+                "numeric": ["f2"],
+                "Double,numeric": ["f2"],
+                "Ordinal": ["f3"],
+                "category": ["f3"],
+                "Ordinal,category": ["f3"],
+            },
+            Equal,
+            [["f1", "f2"], ["f1", "f3"], ["f2", "f3"]],
+        ),
+        (
+            {
+                "ANY": ["f1", "f2", "f3", "f4", "f5"],
+                "Datetime": ["f1"],
+                "time_index": ["f1"],
+                "Datetime,time_index": ["f1"],
+                "Ordinal": ["f2"],
+                "category": ["f2"],
+                "Ordinal,category": ["f2"],
+                "Double": ["f3"],
+                "numeric": ["f3"],
+                "Double,numeric": ["f3"],
+                "Boolean": ["f4"],
+                "BooleanNullable": ["f5"],
+            },
+            Lag,
+            [["f2", "f1"], ["f3", "f1"], ["f4", "f1"], ["f5", "f1"]],
         ),
     ],
 )

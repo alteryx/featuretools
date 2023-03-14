@@ -12,21 +12,22 @@ def index_input_set(input_set: List[ColumnSchema]):
     for c in input_set:
         lt = type(c.logical_type).__name__
 
-        if lt != "NoneType":
-            if lt in out:
-                out[lt] += 1
-            else:
-                out[lt] = 1
+        if lt == "NoneType":
+            lt_key = None
+        else:
+            lt_key = lt
 
         tags = c.semantic_tags
-        for tag in tags:
-            if tag is not None:
-                if tag in out:
-                    out[tag] += 1
-                else:
-                    out[tag] = 1
 
-        if lt == "NoneType" and len(tags) == 0:
+        if len(tags) > 0:
+            for tag in tags:
+                if tag is not None:
+                    key = f"{lt_key},{tag}" if lt_key is not None else tag
+                    out[key] = out.get(key, 0) + 1
+
+        elif lt_key is not None:
+            out[lt_key] = out.get(lt_key, 0) + 1
+        else:
             if "ANY" in out:
                 out["ANY"] += 1
             else:
@@ -70,25 +71,13 @@ def group_columns(columns: List[Feature]):
     groups = {"ANY": []}
     for c in columns:
         lt_name = c.logical_type.__name__
-        if lt_name in groups:
-            groups[lt_name].append(c.id)
-        else:
-            groups[lt_name] = [c.id]
+        groups.setdefault(lt_name, []).append(c.id)
 
         inferred_tags = ww_type_system.str_to_logical_type(lt_name).standard_tags
-        for tag in inferred_tags:
-            if tag in groups:
-                groups[tag].append(c.id)
-            else:
-                groups[tag] = [c.id]
+        for tag in inferred_tags.union(c.tags):
+            groups.setdefault(tag, []).append(c.id)
+            groups.setdefault(f"{lt_name},{tag}", []).append(c.id)
 
-        for tag in c.tags:
-            if tag in groups:
-                groups[tag].append(c.id)
-            else:
-                groups[tag] = [c.id]
-
-        # if c.logical_type != "Unknown":
         groups["ANY"].append(c.id)
 
     return groups
@@ -101,8 +90,6 @@ def get_matching_columns(col_groups: Dict[str, List[str]], primitive):
 
     commutative = primitive.commutative
 
-    # raise Exception
-
     out3 = []
     for input_set in input_sets:
         out = get_features(
@@ -111,7 +98,7 @@ def get_matching_columns(col_groups: Dict[str, List[str]], primitive):
             commutative=commutative,
         )
 
-        out3.append(out)
+        out3.extend(out)
 
     return out3
 
