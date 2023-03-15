@@ -32,6 +32,7 @@ class SubtractNumeric(TransformPrimitive):
     return_type = ColumnSchema(semantic_tags={"numeric"})
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "the result of {} minus {}"
+    commutative = True
 
     def __init__(self, commutative=True):
         self.commutative = commutative

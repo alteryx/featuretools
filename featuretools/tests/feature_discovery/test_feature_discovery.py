@@ -4,6 +4,7 @@ import pytest
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, Datetime, Double
 
+from featuretools.entityset.entityset import EntitySet
 from featuretools.feature_discovery.feature_discovery import (
     get_features,
     get_matching_columns,
@@ -19,7 +20,9 @@ from featuretools.primitives import (
     Equal,
     Lag,
     NumUnique,
+    SubtractNumeric,
 )
+from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils.generate_fake_dataframe import (
     generate_fake_dataframe,
 )
@@ -271,3 +274,44 @@ def test_new_dfs(col_defs, primitives, expected):
 
     new_feature_names = set([x.name for x in all_features]) - input_feature_names
     assert new_feature_names == expected
+
+
+@pytest.mark.parametrize(
+    "col_defs, primitives",
+    [
+        (
+            [
+                ("f_1", "Double"),
+                ("f_2", "Double"),
+                ("f_3", "Boolean"),
+                ("f_4", "Boolean"),
+                ("f_5", "Double"),
+            ],
+            [AddNumeric, Absolute, SubtractNumeric],
+        ),
+    ],
+)
+def test_compare_dfs(col_defs, primitives):
+    input_feature_names = set([x[0] for x in col_defs])
+    df = generate_fake_dataframe(
+        col_defs=col_defs,
+        include_index=True,
+    )
+
+    all_features = my_dfs(df.ww.schema, primitives)
+
+    es = EntitySet(id="nums")
+    es.add_dataframe(df, "nums", index="idx")
+
+    fdefs = dfs(
+        entityset=es,
+        target_dataframe_name="nums",
+        trans_primitives=primitives,
+        features_only=True,
+    )
+
+    new_feature_names1 = set([x.name for x in all_features]) - input_feature_names
+
+    new_feature_names2 = set([x.get_name() for x in fdefs]) - input_feature_names
+
+    assert new_feature_names1 == new_feature_names2
