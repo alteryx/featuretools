@@ -1161,7 +1161,7 @@ def can_stack_primitive_on_inputs(primitive, inputs):
         f_primitive = _find_root_primitive(feature)
 
         # check if stacking is disabled
-        if not _check_if_stacking_is_prohibited(
+        if _check_if_stacking_is_prohibited(
             feature,
             f_primitive,
             primitive,
