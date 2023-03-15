@@ -64,6 +64,7 @@ logical_type_mapping = {
 def generate_fake_dataframe(
     col_defs=[("f_1", "Numeric"), ("f_2", "Datetime", "time_index")],
     n_rows=10,
+    include_index=False,
 ):
     def randomize(values_):
         random.seed(10)
@@ -83,7 +84,13 @@ def generate_fake_dataframe(
         assert isinstance(inferred_tags, set)
         return inferred_tags.union(tags)
 
-    df = pd.DataFrame({"idx": range(n_rows)})
+    other_kwargs = {}
+
+    if include_index:
+        df = pd.DataFrame({"idx": range(n_rows)})
+        other_kwargs["index"] = "idx"
+    else:
+        df = pd.DataFrame()
 
     lt_dict = {}
     tags_dict = {}
@@ -100,8 +107,6 @@ def generate_fake_dataframe(
         lt_dict[name] = lt
         tags_dict[name] = get_tags(lt)
 
-    other_kwargs = {}
-
     # if problem_type == "time series regression" and time_index is None:
     #     raise Exception("Time index must be specified for time series regression")
 
@@ -112,7 +117,6 @@ def generate_fake_dataframe(
 
     df.ww.init(
         name="nums",
-        index="idx",
         logical_types=lt_dict,
         semantic_tags=tags_dict,
         **other_kwargs,

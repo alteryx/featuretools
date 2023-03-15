@@ -12,7 +12,14 @@ from featuretools.feature_discovery.feature_discovery import (
     my_dfs,
 )
 from featuretools.feature_discovery.type_defs import Feature
-from featuretools.primitives import AddNumeric, DateFirstEvent, Equal, Lag, NumUnique
+from featuretools.primitives import (
+    Absolute,
+    AddNumeric,
+    DateFirstEvent,
+    Equal,
+    Lag,
+    NumUnique,
+)
 from featuretools.tests.testing_utils.generate_fake_dataframe import (
     generate_fake_dataframe,
 )
@@ -230,20 +237,37 @@ def test_get_matching_columns(col_groups, primitive, expected):
     assert actual == expected
 
 
-def test_new_dfs():
+@pytest.mark.parametrize(
+    "col_defs, primitives, expected",
+    [
+        (
+            [
+                ("f_1", "Double"),
+                ("f_2", "Double"),
+                ("f_3", "Boolean"),
+                ("f_4", "Double"),
+            ],
+            [AddNumeric],
+            {"f_1 + f_2", "f_1 + f_4", "f_2 + f_4"},
+        ),
+        (
+            [
+                ("f_1", "Double"),
+                ("f_2", "Double"),
+            ],
+            [Absolute],
+            {"ABSOLUTE(f_1)", "ABSOLUTE(f_2)"},
+        ),
+    ],
+)
+def test_new_dfs(col_defs, primitives, expected):
 
+    input_feature_names = set([x[0] for x in col_defs])
     df = generate_fake_dataframe(
-        col_defs=[
-            ("f_1", "Double"),
-            ("f_2", "Double"),
-            # ("f_2", "Boolean"),
-            # ("f_3", "Categorical")
-        ],
+        col_defs=col_defs,
     )
 
-    # schema = df.ww.schema.columns
-    # raise Exception
+    all_features = my_dfs(df.ww.schema, primitives)
 
-    my_dfs(df.ww.schema, [AddNumeric])
-
-    raise Exception
+    new_feature_names = set([x.name for x in all_features]) - input_feature_names
+    assert new_feature_names == expected
