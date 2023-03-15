@@ -1124,13 +1124,11 @@ def _check_if_stacking_is_permitted(
 ):
     if primitive_stack_on_self and isinstance(f_primitive, primitive_class):
         return True
-
     if tuple_primitive_stack_on is None or isinstance(
         f_primitive,
         tuple_primitive_stack_on,
     ):
         return True
-
     if f_primitive.base_of is None:
         return True
     if primitive_class in f_primitive.base_of:
@@ -1145,14 +1143,15 @@ def can_stack_primitive_on_inputs(primitive, inputs):
     Returns True if stacking is possible, and False if not.
     """
 
-    def _convert_to_tuple(t):
-        if t is None:
-            return tuple()
-        return tuple(t)
-
     primitive_class = primitive.__class__
-    tuple_primitive_stack_on = _convert_to_tuple(primitive.stack_on)
-    tuple_primitive_stack_on_exclude = _convert_to_tuple(primitive.stack_on_exclude)
+    tuple_primitive_stack_on = (
+        tuple(primitive.stack_on) if primitive.stack_on is not None else None
+    )
+    tuple_primitive_stack_on_exclude = (
+        tuple(primitive.stack_on_exclude)
+        if primitive.stack_on_exclude is not None
+        else tuple()
+    )
     primitive_stack_on_self: bool = primitive.stack_on_self
 
     for feature in inputs:
