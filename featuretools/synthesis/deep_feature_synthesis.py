@@ -1147,7 +1147,7 @@ def can_stack_primitive_on_inputs(primitive, inputs):
 
     def _convert_to_tuple(t):
         if t is None:
-            return None
+            return tuple()
         return tuple(t)
 
     primitive_class = primitive.__class__
