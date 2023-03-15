@@ -1094,21 +1094,65 @@ def _find_root_primitive(feature):
     return feature.primitive
 
 
+def _check_if_stacking_is_prohibited(
+    feature,
+    f_primitive,
+    primitive,
+    primitive_class,
+    primitive_stack_on_self,
+    tuple_primitive_stack_on_exclude,
+):
+    if not primitive_stack_on_self and isinstance(f_primitive, primitive_class):
+        return False
+
+    if isinstance(f_primitive, tuple_primitive_stack_on_exclude):
+        return False
+
+    if feature.number_output_features > 1:
+        return False
+
+    if f_primitive.base_of_exclude is not None and isinstance(
+        primitive,
+        tuple(f_primitive.base_of_exclude),
+    ):
+        return False
+    return True
+
+
+def _check_if_stacking_is_permitted(
+    f_primitive, primitive_class, primitive_stack_on_self, tuple_primitive_stack_on
+):
+    if primitive_stack_on_self and isinstance(f_primitive, primitive_class):
+        return True
+
+    if tuple_primitive_stack_on is None or isinstance(
+        f_primitive,
+        tuple_primitive_stack_on,
+    ):
+        return True
+
+    if f_primitive.base_of is None:
+        return True
+    if primitive_class in f_primitive.base_of:
+        return True
+    return False
+
+
 def can_stack_primitive_on_inputs(primitive, inputs):
     """
     Checks if features in inputs can be used with supplied primitive
     using the stacking rules.
     Returns True if stacking is possible, and False if not.
     """
+
+    def _convert_to_tuple(t):
+        if t is None:
+            return None
+        return tuple(t)
+
     primitive_class = primitive.__class__
-    tup_primitive_stack_on = (
-        tuple(primitive.stack_on) if primitive.stack_on is not None else None
-    )
-    tup_primitive_stack_on_exclude = (
-        tuple(primitive.stack_on_exclude)
-        if primitive.stack_on_exclude is not None
-        else tuple()
-    )
+    tuple_primitive_stack_on = _convert_to_tuple(primitive.stack_on)
+    tuple_primitive_stack_on_exclude = _convert_to_tuple(primitive.stack_on_exclude)
     primitive_stack_on_self: bool = primitive.stack_on_self
 
     for feature in inputs:
@@ -1116,43 +1160,34 @@ def can_stack_primitive_on_inputs(primitive, inputs):
         # However, we want to check stacking rules with the primitive the DirectFeature is based on.
         f_primitive = _find_root_primitive(feature)
 
-        if not primitive_stack_on_self and isinstance(f_primitive, primitive_class):
-            return False
-
-        if isinstance(f_primitive, tup_primitive_stack_on_exclude):
-            return False
-
-        if feature.number_output_features > 1:
-            return False
-
-        if f_primitive.base_of_exclude is not None and isinstance(
-            primitive,
-            tuple(f_primitive.base_of_exclude),
-        ):
-            return False
-
-        if primitive_stack_on_self and isinstance(f_primitive, primitive_class):
-            continue
-
-        if tup_primitive_stack_on is None or isinstance(
+        # check if stacking is disabled
+        if not _check_if_stacking_is_prohibited(
+            feature,
             f_primitive,
-            tup_primitive_stack_on,
+            primitive,
+            primitive_class,
+            primitive_stack_on_self,
+            tuple_primitive_stack_on_exclude,
+        ):
+            return False
+
+        # we permit stacking only if it is not prohibited and meets the criterion to be permitted
+        if _check_if_stacking_is_permitted(
+            f_primitive,
+            primitive_class,
+            primitive_stack_on_self,
+            tuple_primitive_stack_on,
         ):
             continue
 
-        if f_primitive.base_of is None:
-            continue
-        if primitive_class in f_primitive.base_of:
-            continue
-
+        # if we reach this case, we default to stacking not being permitted
         return False
 
     return True
 
 
 def match_by_schema(features, column_schema):
-    matches = [f for f in features if is_valid_input(f.column_schema, column_schema)]
-    return matches
+    return [f for f in features if is_valid_input(f.column_schema, column_schema)]
 
 
 def match(
