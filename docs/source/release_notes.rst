@@ -17,11 +17,12 @@ Future Release
         * Support Woodwork's update numeric inference (integers as strings) (:pr:`2505`)
     * Changes
         * Separate Makefile command for core requirements, test requirements and dev requirements (:pr:`2518`)
+        * Refactor ``can_stack_primitive_on_inputs`` (:pr:`2522`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`sbadithe`
 
 v1.23.0 Feb 15, 2023
 ====================
