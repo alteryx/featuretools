@@ -1103,20 +1103,20 @@ def _check_if_stacking_is_prohibited(
     tuple_primitive_stack_on_exclude,
 ):
     if not primitive_stack_on_self and isinstance(f_primitive, primitive_class):
-        return False
+        return True
 
     if isinstance(f_primitive, tuple_primitive_stack_on_exclude):
-        return False
+        return True
 
     if feature.number_output_features > 1:
-        return False
+        return True
 
     if f_primitive.base_of_exclude is not None and isinstance(
         primitive,
         tuple(f_primitive.base_of_exclude),
     ):
-        return False
-    return True
+        return True
+    return False
 
 
 def _check_if_stacking_is_permitted(
