@@ -1,5 +1,5 @@
 from itertools import combinations, permutations, product
-from typing import Dict, List, Type, cast
+from typing import Dict, List, Type
 
 import woodwork.type_sys.type_system as ww_type_system
 from woodwork.column_schema import ColumnSchema
@@ -70,7 +70,7 @@ def get_features(
     return out3
 
 
-def group_columns(columns: List[Feature]):
+def group_columns(columns: List[Feature]) -> dict[str, list[str]]:
     groups = {"ANY": []}
     for c in columns:
         lt_name = c.logical_type.__name__
@@ -91,7 +91,6 @@ def get_matching_columns(
     primitive: Type[PrimitiveBase],
 ):
     input_sets = primitive.input_types
-
     assert input_sets is not None
     if not isinstance(primitive.input_types[0], list):
         input_sets = [primitive.input_types]
@@ -109,6 +108,58 @@ def get_matching_columns(
         out3.extend(out)
 
     return out3
+
+
+def get_primitive_return_type(primitive: Type[PrimitiveBase]) -> ColumnSchema:
+    if primitive.return_type is None:
+        return_type = primitive.input_types[0]
+        if isinstance(return_type, list):
+            return_type = return_type[0]
+    else:
+        return_type = primitive.return_type
+
+    return return_type
+
+
+def features_from_primitive(
+    primitive: Type[PrimitiveBase],
+    existing_features: List[Feature],
+    col_groups: dict[str, list[str]],
+):
+    return_schema = get_primitive_return_type(primitive=primitive)
+    assert isinstance(return_schema, ColumnSchema)
+
+    output_logical_type = return_schema.logical_type
+
+    output_tags = return_schema.semantic_tags
+    assert isinstance(output_tags, set)
+
+    x = get_matching_columns(
+        col_groups=col_groups,
+        primitive=primitive,
+    )
+    features = []
+    for base_columns in x:
+        base_features = []
+        for bc in base_columns:
+            base_features.append([x for x in existing_features if x.id == bc][0])
+
+        if output_logical_type is None:
+            # TODO: big hack here to get a firm return type. I'm not sure if this works
+            output_logical_type = base_features[0].logical_type
+
+        # TODO: a hack to instantiate primitive to get access to generate_name
+        prim_instance = primitive()
+        features.append(
+            Feature(
+                name=prim_instance.generate_name([x.name for x in base_features]),
+                logical_type=output_logical_type,
+                tags=output_tags,
+                primitive=primitive,
+                base_columns=base_columns,
+            ),
+        )
+    return features
 
 
 def my_dfs(schema: TableSchema, primitives: List[Type[PrimitiveBase]]) -> List[Feature]:
@@ -135,11 +186,12 @@ def my_dfs(schema: TableSchema, primitives: List[Type[PrimitiveBase]]) -> List[F
             ),
         )
 
+    # Group Columns by LogicalType, Tag, and combination
     col_groups = group_columns(columns=features)
 
     for primitive in primitives:
 
-        return_schema = cast(ColumnSchema, primitive.return_type)
+        return_schema = get_primitive_return_type(primitive=primitive)
         assert isinstance(return_schema, ColumnSchema)
 
         output_logical_type = return_schema.logical_type
@@ -155,15 +207,16 @@ def my_dfs(schema: TableSchema, primitives: List[Type[PrimitiveBase]]) -> List[F
             base_features = []
             for bc in base_columns:
                 base_features.append([x for x in features if x.id == bc][0])
+
             if output_logical_type is None:
                 # TODO: big hack here to get a firm return type. I'm not sure if this works
                 output_logical_type = base_features[0].logical_type
 
             # TODO: a hack to instantiate primitive to get access to generate_name
-            p = primitive()
+            prim_instance = primitive()
             features.append(
                 Feature(
-                    name=p.generate_name([x.name for x in base_features]),
+                    name=prim_instance.generate_name([x.name for x in base_features]),
                     logical_type=output_logical_type,
                     tags=output_tags,
                     primitive=primitive,
