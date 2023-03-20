@@ -70,7 +70,7 @@ def get_features(
     return out3
 
 
-def group_columns(columns: List[Feature]) -> dict[str, list[str]]:
+def group_columns(columns: List[Feature]) -> Dict[str, List[str]]:
     groups = {"ANY": []}
     for c in columns:
         lt_name = c.logical_type.__name__
@@ -124,7 +124,7 @@ def get_primitive_return_type(primitive: Type[PrimitiveBase]) -> ColumnSchema:
 def features_from_primitive(
     primitive: Type[PrimitiveBase],
     existing_features: List[Feature],
-    col_groups: dict[str, list[str]],
+    col_groups: Dict[str, List[str]],
 ):
     return_schema = get_primitive_return_type(primitive=primitive)
     assert isinstance(return_schema, ColumnSchema)
