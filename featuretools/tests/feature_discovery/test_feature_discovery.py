@@ -10,7 +10,7 @@ from featuretools.feature_discovery.feature_discovery import (
     features_from_primitive,
     get_features,
     get_matching_columns,
-    group_columns,
+    group_features,
     index_input_set,
     my_dfs,
 )
@@ -201,9 +201,10 @@ def test_index_input_set(column_list, expected):
     ],
 )
 @patch.object(Feature, "_generate_hash", lambda x: x.name)
-def test_group_columns(column_list, expected):
+def test_group_features(column_list, expected):
     column_list = [Feature(*x) for x in column_list]
-    actual = group_columns(column_list)
+    actual = group_features(column_list)
+    actual = {k: [x.id for x in v] for k, v in actual.items()}
     assert actual == expected
 
 
@@ -438,12 +439,10 @@ def test_features_from_primitive(primitive):
                 Feature(f"f_{idx}", logical_type, semantic_tags),
             )
 
-    col_groups = group_columns(test_features)
-    generated_features = features_from_primitive(primitive, test_features, col_groups)
+    col_groups = group_features(test_features)
+    generated_features = features_from_primitive(primitive, col_groups)
 
     assert len(generated_features) > 0
-    # if primitive.commutative:
-    #     assert len(generated_features) == len(input_list)
 
 
 @pytest.mark.parametrize(

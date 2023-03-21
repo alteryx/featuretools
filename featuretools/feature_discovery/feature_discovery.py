@@ -40,7 +40,7 @@ def index_input_set(input_set: List[ColumnSchema]):
 
 
 def get_features(
-    col_groups: Dict[str, List[str]],
+    col_groups: Dict[str, List[Feature]],
     input_set: List[ColumnSchema],
     commutative: bool,
 ):
@@ -70,35 +70,43 @@ def get_features(
     return out3
 
 
-def group_columns(columns: List[Feature]) -> Dict[str, List[str]]:
+def group_features(features: List[Feature]) -> Dict[str, List[Feature]]:
     groups = {"ANY": []}
-    for c in columns:
-        lt_name = c.logical_type.__name__
-        groups.setdefault(lt_name, []).append(c.id)
+    for f in features:
+        logical_type = f.logical_type
+        lt_name = None
+        if logical_type is not None:
+            lt_name = logical_type.__name__
+            groups.setdefault(lt_name, []).append(f)
 
-        inferred_tags = ww_type_system.str_to_logical_type(lt_name).standard_tags
-        for tag in inferred_tags.union(c.tags):
-            groups.setdefault(tag, []).append(c.id)
-            groups.setdefault(f"{lt_name},{tag}", []).append(c.id)
+        inferred_tags = (
+            ww_type_system.str_to_logical_type(lt_name).standard_tags
+            if lt_name
+            else set()
+        )
+        for tag in inferred_tags.union(f.tags):
+            groups.setdefault(tag, []).append(f)
+            groups.setdefault(f"{lt_name},{tag}", []).append(f)
 
-        groups["ANY"].append(c.id)
+        groups["ANY"].append(f)
 
     return groups
 
 
 def get_matching_columns(
-    col_groups: Dict[str, List[str]],
+    col_groups: Dict[str, List[Feature]],
     primitive: Type[PrimitiveBase],
 ):
     input_sets = primitive.input_types
     assert input_sets is not None
-    if not isinstance(primitive.input_types[0], list):
+    if not isinstance(input_sets[0], list):
         input_sets = [primitive.input_types]
 
     commutative = primitive.commutative
 
     out3 = []
     for input_set in input_sets:
+        assert input_set is not None
         out = get_features(
             col_groups=col_groups,
             input_set=input_set,
@@ -123,8 +131,7 @@ def get_primitive_return_type(primitive: Type[PrimitiveBase]) -> ColumnSchema:
 
 def features_from_primitive(
     primitive: Type[PrimitiveBase],
-    existing_features: List[Feature],
-    col_groups: Dict[str, List[str]],
+    col_groups: Dict[str, List[Feature]],
 ):
     return_schema = get_primitive_return_type(primitive=primitive)
     assert isinstance(return_schema, ColumnSchema)
@@ -134,29 +141,25 @@ def features_from_primitive(
     output_tags = return_schema.semantic_tags
     assert isinstance(output_tags, set)
 
-    x = get_matching_columns(
+    features = []
+    feature_sets = get_matching_columns(
         col_groups=col_groups,
         primitive=primitive,
     )
-    features = []
-    for base_columns in x:
-        base_features = []
-        for bc in base_columns:
-            base_features.append([x for x in existing_features if x.id == bc][0])
-
+    for feature_set in feature_sets:
         if output_logical_type is None:
             # TODO: big hack here to get a firm return type. I'm not sure if this works
-            output_logical_type = base_features[0].logical_type
+            output_logical_type = feature_set[0].logical_type
 
         # TODO: a hack to instantiate primitive to get access to generate_name
         prim_instance = primitive()
         features.append(
             Feature(
-                name=prim_instance.generate_name([x.name for x in base_features]),
+                name=prim_instance.generate_name([x.name for x in feature_set]),
                 logical_type=output_logical_type,
                 tags=output_tags,
                 primitive=primitive,
-                base_columns=base_columns,
+                base_features=feature_set,
             ),
         )
     return features
@@ -187,41 +190,10 @@ def my_dfs(schema: TableSchema, primitives: List[Type[PrimitiveBase]]) -> List[F
         )
 
     # Group Columns by LogicalType, Tag, and combination
-    col_groups = group_columns(columns=features)
+    col_groups = group_features(features=features)
 
     for primitive in primitives:
-
-        return_schema = get_primitive_return_type(primitive=primitive)
-        assert isinstance(return_schema, ColumnSchema)
-
-        output_logical_type = return_schema.logical_type
-
-        output_tags = return_schema.semantic_tags
-        assert isinstance(output_tags, set)
-
-        x = get_matching_columns(
-            col_groups=col_groups,
-            primitive=primitive,
-        )
-        for base_columns in x:
-            base_features = []
-            for bc in base_columns:
-                base_features.append([x for x in features if x.id == bc][0])
-
-            if output_logical_type is None:
-                # TODO: big hack here to get a firm return type. I'm not sure if this works
-                output_logical_type = base_features[0].logical_type
-
-            # TODO: a hack to instantiate primitive to get access to generate_name
-            prim_instance = primitive()
-            features.append(
-                Feature(
-                    name=prim_instance.generate_name([x.name for x in base_features]),
-                    logical_type=output_logical_type,
-                    tags=output_tags,
-                    primitive=primitive,
-                    base_columns=base_columns,
-                ),
-            )
+        features_ = features_from_primitive(primitive=primitive, col_groups=col_groups)
+        features.extend(features_)
 
     return features
