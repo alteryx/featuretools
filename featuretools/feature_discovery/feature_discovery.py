@@ -150,6 +150,8 @@ def features_from_primitive(
         if output_logical_type is None:
             # TODO: big hack here to get a firm return type. I'm not sure if this works
             output_logical_type = feature_set[0].logical_type
+        else:
+            output_logical_type = type(output_logical_type)
 
         # TODO: a hack to instantiate primitive to get access to generate_name
         prim_instance = primitive()
