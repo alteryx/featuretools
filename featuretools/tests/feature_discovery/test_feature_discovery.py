@@ -183,6 +183,7 @@ def test_index_input_set(column_list, expected):
                 "ANY": ["f1", "f2", "f3"],
                 "Double": ["f1", "f2", "f3"],
                 "numeric": ["f1", "f2", "f3"],
+                "Double,numeric": ["f1", "f2", "f3"],
             },
         ),
         (
@@ -194,7 +195,7 @@ def test_index_input_set(column_list, expected):
                 "Datetime,time_index": ["f1"],
                 "Double": ["f2"],
                 "numeric": ["f2"],
-                "Double,numeric": ["f1"],
+                "Double,numeric": ["f2"],
             },
         ),
     ],

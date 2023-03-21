@@ -18,6 +18,38 @@ class Feature:
     df_id: Optional[str] = None
     id: str = field(init=False)
 
+    @staticmethod
+    def hash(
+        name: Optional[str],
+        primitive: Optional[Type[PrimitiveBase]] = None,
+        base_columns: List[str] = [],
+        df_id: Optional[str] = None,
+    ):
+        hash_msg = hashlib.sha256()
+
+        if df_id:
+            hash_msg.update(df_id.encode("utf-8"))
+
+        if primitive:
+            primitive_name = primitive.name
+            assert isinstance(primitive_name, str)
+            commutative = primitive.commutative
+            hash_msg.update(primitive_name.encode("utf-8"))
+
+            assert len(base_columns) > 0
+            base_columns = base_columns
+            if commutative:
+                base_columns.sort()
+
+            for c in base_columns:
+                hash_msg.update(c.encode("utf-8"))
+
+        else:
+            assert name
+            hash_msg.update(name.encode("utf-8"))
+
+        return hash_msg.hexdigest()
+
     def __eq__(self, other):
         return self.id == other.id
 
@@ -28,31 +60,12 @@ class Feature:
         return hash(self.id)
 
     def _generate_hash(self) -> str:
-        hash_msg = hashlib.sha256()
-
-        if self.df_id:
-            hash_msg.update(self.df_id.encode("utf-8"))
-
-        if self.primitive:
-            primitive_name = self.primitive.name
-            assert isinstance(primitive_name, str)
-            commutative = self.primitive.commutative
-            hash_msg.update(primitive_name.encode("utf-8"))
-
-            assert len(self.base_columns) > 0
-            base_columns = self.base_columns
-            if commutative:
-                base_columns.sort()
-
-            for c in base_columns:
-                hash_msg.update(c.encode("utf-8"))
-
-        else:
-            assert self.name
-            hash_msg.update(self.name.encode("utf-8"))
-
-        return hash_msg.hexdigest()
+        return self.hash(
+            name=self.name,
+            primitive=self.primitive,
+            base_columns=self.base_columns,
+            df_id=self.df_id,
+        )
 
     def __post_init__(self):
-
         self.id = self._generate_hash()
