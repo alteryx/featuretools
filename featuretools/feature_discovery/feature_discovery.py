@@ -43,7 +43,7 @@ def get_features(
     col_groups: Dict[str, List[Feature]],
     input_set: List[ColumnSchema],
     commutative: bool,
-):
+) -> List[List[Feature]]:
     indexed_input_set = index_input_set(input_set)
 
     prod_iter = []
@@ -58,16 +58,9 @@ def get_features(
         else:
             prod_iter.append(permutations(features2, count))
 
-    out = product(*prod_iter)
+    feature_combinations = product(*prod_iter)
 
-    out3 = []
-    for x in out:
-        out2 = []
-        for y in x:
-            for z in y:
-                out2.append(z)
-        out3.append(out2)
-    return out3
+    return [[z for y in x for z in y] for x in feature_combinations]
 
 
 def group_features(features: List[Feature]) -> Dict[str, List[Feature]]:
@@ -84,7 +77,12 @@ def group_features(features: List[Feature]) -> Dict[str, List[Feature]]:
             if lt_name
             else set()
         )
-        for tag in inferred_tags.union(f.tags):
+        if "index" in f.tags:
+            all_tags = f.tags
+        else:
+            all_tags = inferred_tags.union(f.tags)
+
+        for tag in all_tags:
             groups.setdefault(tag, []).append(f)
             groups.setdefault(f"{lt_name},{tag}", []).append(f)
 

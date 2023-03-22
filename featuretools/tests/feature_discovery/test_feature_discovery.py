@@ -178,12 +178,14 @@ def test_index_input_set(column_list, expected):
             {"ANY": ["f1", "f2", "f3"], "Boolean": ["f1", "f2", "f3"]},
         ),
         (
-            [("f1", Double), ("f2", Double), ("f3", Double)],
+            [("f1", Double), ("f2", Double), ("f3", Double, {"index"})],
             {
                 "ANY": ["f1", "f2", "f3"],
                 "Double": ["f1", "f2", "f3"],
-                "numeric": ["f1", "f2", "f3"],
-                "Double,numeric": ["f1", "f2", "f3"],
+                "numeric": ["f1", "f2"],
+                "Double,numeric": ["f1", "f2"],
+                "index": ["f3"],
+                "Double,index": ["f3"],
             },
         ),
         (
@@ -450,6 +452,7 @@ def test_features_from_primitive(primitive):
     [
         (
             [
+                ("idx", "Double", {"index"}),
                 ("f_1", "Double"),
                 ("f_2", "Double"),
                 ("f_3", "Boolean"),
@@ -464,23 +467,22 @@ def test_compare_dfs(col_defs, primitives):
     input_feature_names = set([x[0] for x in col_defs])
     df = generate_fake_dataframe(
         col_defs=col_defs,
-        include_index=True,
     )
-
-    all_features = my_dfs(df.ww.schema, primitives)
 
     es = EntitySet(id="nums")
     es.add_dataframe(df, "nums", index="idx")
 
-    fdefs = dfs(
+    features_old = dfs(
         entityset=es,
         target_dataframe_name="nums",
         trans_primitives=primitives,
         features_only=True,
     )
 
-    new_feature_names1 = set([x.name for x in all_features]) - input_feature_names
+    features_new = my_dfs(df.ww.schema, primitives)
 
-    new_feature_names2 = set([x.get_name() for x in fdefs]) - input_feature_names
+    feature_names_old = set([x.get_name() for x in features_old]) - input_feature_names
 
-    assert new_feature_names1 == new_feature_names2
+    feature_names_new = set([x.name for x in features_new]) - input_feature_names
+
+    assert feature_names_old == feature_names_new

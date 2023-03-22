@@ -64,7 +64,6 @@ logical_type_mapping = {
 def generate_fake_dataframe(
     col_defs=[("f_1", "Numeric"), ("f_2", "Datetime", "time_index")],
     n_rows=10,
-    include_index=False,
 ):
     def randomize(values_):
         random.seed(10)
@@ -82,16 +81,15 @@ def generate_fake_dataframe(
     def get_tags(lt, tags=set()):
         inferred_tags = ww_type_system.str_to_logical_type(lt).standard_tags
         assert isinstance(inferred_tags, set)
-        return inferred_tags.union(tags)
+        return inferred_tags.union(tags) - {"index"}
 
     other_kwargs = {}
 
-    if include_index:
-        df = pd.DataFrame({"idx": range(n_rows)})
-        other_kwargs["index"] = "idx"
-    else:
-        df = pd.DataFrame()
-
+    # if include_index:
+    #     df = pd.DataFrame({"idx": range(n_rows)})
+    #     other_kwargs["index"] = "idx"
+    # else:
+    df = pd.DataFrame()
     lt_dict = {}
     tags_dict = {}
     for name, lt, *rest in col_defs:
@@ -99,21 +97,23 @@ def generate_fake_dataframe(
             values = logical_type_mapping[lt]
             if lt == logical_types.Ordinal.__name__:
                 lt = logical_types.Ordinal(order=values)
+            values = gen_series(values)
         else:
             raise Exception(f"Unknown logical type {lt}")
 
-        s = pd.Series(gen_series(values), name=name)
-        df = pd.concat([df, s], axis=1)
         lt_dict[name] = lt
-        tags_dict[name] = get_tags(lt)
 
-    # if problem_type == "time series regression" and time_index is None:
-    #     raise Exception("Time index must be specified for time series regression")
+        if len(rest):
+            tags = rest[0]
+            if "index" in tags:
+                other_kwargs["index"] = name
+                values = range(n_rows)
+            tags_dict[name] = get_tags(lt, tags)
+        else:
+            tags_dict[name] = get_tags(lt)
 
-    # if time_index:
-    #     df[time_index] = pd.date_range(start=dt(2020, 1, 1, 12, 0, 0), periods=n_rows)
-    #     lt_dict[time_index] = "Datetime"
-    #     other_kwargs["time_index"] = time_index
+        s = pd.Series(values, name=name)
+        df = pd.concat([df, s], axis=1)
 
     df.ww.init(
         name="nums",
