@@ -181,9 +181,9 @@ def my_dfs(schema: TableSchema, primitives: List[Type[PrimitiveBase]]) -> List[F
         tags = column_schema.semantic_tags
         assert isinstance(tags, set)
 
-        # TODO: ignorning index columns. Think more about this and put this in a differnt location
-        if "index" in tags:
-            continue
+        # # TODO: ignorning index columns. Think more about this and put this in a differnt location
+        # if "index" in tags:
+        #     continue
 
         features.append(
             Feature(
