@@ -125,7 +125,11 @@ class Feature:
             primitives_map[input_dict["primitive"]] if input_dict["primitive"] else None
         )
 
-        logical_type = logical_types_map[input_dict["logical_type"]]
+        logical_type = (
+            logical_types_map[input_dict["logical_type"]]
+            if input_dict["logical_type"]
+            else None
+        )
 
         hydrated_feature = Feature(
             name=input_dict["name"],
