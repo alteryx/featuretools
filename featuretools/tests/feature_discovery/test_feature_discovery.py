@@ -19,6 +19,7 @@ from featuretools.primitives import (
     Absolute,
     AddNumeric,
     DateFirstEvent,
+    Day,
     Equal,
     ExpandingCount,
     ExpandingMax,
@@ -460,6 +461,17 @@ def test_features_from_primitive(primitive):
                 ("f_5", "Double"),
             ],
             [AddNumeric, Absolute, SubtractNumeric],
+        ),
+        (
+            [
+                ("idx", "Double", {"index"}),
+                ("t_idx", "Datetime", {"time_index"}),
+                ("f_2", "Double"),
+                ("f_3", "Boolean"),
+                ("f_4", "Boolean"),
+                ("f_5", "Double"),
+            ],
+            [Lag, Day, Absolute, AddNumeric],
         ),
     ],
 )

@@ -81,14 +81,10 @@ def generate_fake_dataframe(
     def get_tags(lt, tags=set()):
         inferred_tags = ww_type_system.str_to_logical_type(lt).standard_tags
         assert isinstance(inferred_tags, set)
-        return inferred_tags.union(tags) - {"index"}
+        return inferred_tags.union(tags) - {"index", "time_index"}
 
     other_kwargs = {}
 
-    # if include_index:
-    #     df = pd.DataFrame({"idx": range(n_rows)})
-    #     other_kwargs["index"] = "idx"
-    # else:
     df = pd.DataFrame()
     lt_dict = {}
     tags_dict = {}
@@ -108,6 +104,9 @@ def generate_fake_dataframe(
             if "index" in tags:
                 other_kwargs["index"] = name
                 values = range(n_rows)
+            if "time_index" in tags:
+                other_kwargs["time_index"] = name
+                values = pd.date_range("2000-01-01", periods=n_rows)
             tags_dict[name] = get_tags(lt, tags)
         else:
             tags_dict[name] = get_tags(lt)
