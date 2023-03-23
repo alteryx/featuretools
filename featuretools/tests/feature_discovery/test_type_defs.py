@@ -13,7 +13,6 @@ from featuretools.tests.testing_utils.generate_fake_dataframe import (
 
 
 def test_feature_type():
-
     Feature(
         name="Column 1",
         primitive=AddNumeric,

@@ -428,7 +428,6 @@ def test_get_matching_features(feature_groups, primitive, expected):
     ],
 )
 def test_new_dfs(col_defs, primitives, expected):
-
     input_feature_names = set([x[0] for x in col_defs])
     df = generate_fake_dataframe(
         col_defs=col_defs,
