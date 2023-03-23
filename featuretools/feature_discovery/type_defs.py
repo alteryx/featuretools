@@ -13,6 +13,8 @@ import featuretools as ft
 from featuretools.feature_base.feature_base import FeatureBase
 from featuretools.primitives.base.primitive_base import PrimitiveBase
 
+ANY = "ANY"
+
 
 def get_all_primitives():
     """Helper function that selects all primitives

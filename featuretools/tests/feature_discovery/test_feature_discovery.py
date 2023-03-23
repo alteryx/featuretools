@@ -1,4 +1,4 @@
-from typing import List, cast
+from typing import List, Set, cast
 from unittest.mock import patch
 
 import pytest
@@ -7,9 +7,11 @@ from woodwork.logical_types import Boolean, Datetime, Double, Ordinal
 
 from featuretools.entityset.entityset import EntitySet
 from featuretools.feature_discovery.feature_discovery import (
+    column_to_keys,
+    feature_to_keys,
     features_from_primitive,
     get_features,
-    get_matching_columns,
+    get_matching_features,
     group_features,
     index_input_set,
     my_dfs,
@@ -152,6 +154,41 @@ def get_valid_tempo_transform_primitives():
 
 
 @pytest.mark.parametrize(
+    "column_schema, expected",
+    [
+        (ColumnSchema(logical_type=Double), ["Double"]),
+        (ColumnSchema(semantic_tags={"index"}), ["index"]),
+        (
+            ColumnSchema(logical_type=Double, semantic_tags={"index", "other"}),
+            ["Double,index", "Double,other"],
+        ),
+    ],
+)
+def test_column_to_keys(column_schema, expected):
+    actual = column_to_keys(column_schema)
+    assert set(actual) == set(expected)
+
+
+@pytest.mark.parametrize(
+    "feature, expected",
+    [
+        (("f1", Double), ["Double", "numeric", "Double,numeric", "ANY"]),
+        (
+            ("f1", Datetime, {"time_index"}),
+            ["Datetime", "time_index", "Datetime,time_index", "ANY"],
+        ),
+        (
+            ("f1", Double, {"index", "other"}),
+            ["Double", "index", "other", "Double,index", "Double,other", "ANY"],
+        ),
+    ],
+)
+def test_feature_to_keys(feature, expected):
+    actual = feature_to_keys(Feature(*feature))
+    assert set(actual) == set(expected)
+
+
+@pytest.mark.parametrize(
     "column_list, expected",
     [
         ([ColumnSchema(logical_type=Boolean)], {"Boolean": 1}),
@@ -251,7 +288,7 @@ def test_get_features(col_groups, input_set, commutative, expected):
 
 
 @pytest.mark.parametrize(
-    "col_groups, primitive, expected",
+    "feature_groups, primitive, expected",
     [
         (
             {
@@ -361,8 +398,8 @@ def test_get_features(col_groups, input_set, commutative, expected):
         ),
     ],
 )
-def test_get_matching_columns(col_groups, primitive, expected):
-    actual = get_matching_columns(col_groups, primitive)
+def test_get_matching_features(feature_groups, primitive, expected):
+    actual = get_matching_features(feature_groups, primitive)
 
     assert actual == expected
 
@@ -403,7 +440,7 @@ def test_new_dfs(col_defs, primitives, expected):
     assert new_feature_names == expected
 
 
-def get_default_logical_type(tags: set[str]):
+def get_default_logical_type(tags: Set[str]):
     for tag, lt in DEFAULT_LT_FOR_TAG.items():
         if tag in tags:
             return lt
@@ -443,7 +480,7 @@ def test_features_from_primitive(primitive):
             )
 
     col_groups = group_features(test_features)
-    generated_features = features_from_primitive(primitive, col_groups)
+    generated_features = features_from_primitive(col_groups, primitive)
 
     assert len(generated_features) > 0
 

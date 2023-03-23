@@ -6,8 +6,42 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import LogicalType
 from woodwork.table_schema import TableSchema
 
-from featuretools.feature_discovery.type_defs import Feature
+from featuretools.feature_discovery.type_defs import ANY, Feature
 from featuretools.primitives.base.primitive_base import PrimitiveBase
+
+
+def column_to_keys(column_schema: ColumnSchema) -> List[str]:
+    """
+    Generate hashing keys from Columns Schema. For example:
+    - ColumnSchema(logical_type=Double) -> ["Double"]
+    - ColumnSchema(semantic_tags={"index"}) -> ["index"]
+    - ColumnSchema(logical_type=Double, semantic_tags={"index", "other"}) -> ["Double,index", "Double,other"]
+
+    Args:
+        column_schema (ColumnSchema):
+
+    Returns:
+        List[str]
+            List of hashing keys
+    """
+    keys: List[str] = []
+    lt = column_schema.logical_type
+    tags = column_schema.semantic_tags
+    lt_key = None
+    if lt:
+        lt_key = type(lt).__name__
+
+    if len(tags) > 0:
+        for tag in tags:
+            if tag is not None:
+                keys.append(f"{lt_key},{tag}" if lt_key is not None else tag)
+
+    elif lt_key is not None:
+        keys.append(lt_key)
+    else:
+        keys.append(ANY)
+
+    return keys
 
 
 def index_input_set(input_set: List[ColumnSchema]) -> Dict[str, int]:
@@ -33,36 +67,14 @@ def index_input_set(input_set: List[ColumnSchema]) -> Dict[str, int]:
             {"numeric": 2}
     """
     out = {}
-    for c in input_set:
-        lt = type(c.logical_type).__name__
-
-        if lt == "NoneType":
-            lt_key = None
-        else:
-            lt_key = lt
-
-        tags = c.semantic_tags
-
-        if len(tags) > 0:
-            for tag in tags:
-                if tag is not None:
-                    # TODO: create a function that consistently manages this key type
-                    key = f"{lt_key},{tag}" if lt_key is not None else tag
-                    out[key] = out.get(key, 0) + 1
-
-        elif lt_key is not None:
-            out[lt_key] = out.get(lt_key, 0) + 1
-        else:
-            if "ANY" in out:
-                out["ANY"] += 1
-            else:
-                out["ANY"] = 1
-
+    for column_schema in input_set:
+        for key in column_to_keys(column_schema):
+            out[key] = out.get(key, 0) + 1
     return out
 
 
 def get_features(
-    col_groups: Dict[str, List[Feature]],
+    feature_groups: Dict[str, List[Feature]],
     input_set: List[ColumnSchema],
     commutative: bool,
 ) -> List[List[Feature]]:
@@ -70,7 +82,7 @@ def get_features(
     Calculates all Feature combinations using the given hashmap of existing features, and the input set of required columns.
 
     Args:
-        col_groups (Dict[str, List[Feature]]):
+        feature_groups (Dict[str, List[Feature]]):
             Hashmap from Key to List of Features. Key is either: LogicalType name (eg. "Double"), Semantic tag (eg. "index"),
             or combination (eg. "Double,index").
         input_set (List(ColumnSchema)):
@@ -88,7 +100,7 @@ def get_features(
             from featuretools.feature_discovery.feature_discovery import get_features
             from woodwork.column_schema import ColumnSchema
 
-            col_groups = {
+            feature_groups = {
                 "ANY": ["f1", "f2", "f3"],
                 "Double": ["f1", "f2", "f3"],
                 "numeric": ["f1", "f2", "f3"],
@@ -101,10 +113,10 @@ def get_features(
 
     prod_iter = []
     for name, count in indexed_input_set.items():
-        if name not in col_groups:
+        if name not in feature_groups:
             return []
 
-        features2 = col_groups[name]
+        features2 = feature_groups[name]
 
         if commutative:
             prod_iter.append(combinations(features2, count))
@@ -114,6 +126,43 @@ def get_features(
     feature_combinations = product(*prod_iter)
 
     return [[z for y in x for z in y] for x in feature_combinations]
+
+
+def feature_to_keys(feature: Feature) -> List[str]:
+    """
+    Generate hashing keys from Feature. For example:
+    - Feature("f1", Double) -> ['Double', 'numeric', 'Double,numeric', 'ANY']
+    - Feature("f1", Datetime, {"time_index"}) -> ['Datetime', 'time_index', 'Datetime,time_index', 'ANY']
+    - Feature("f1", Double, {"index", "other"}) -> ['Double', 'index', 'other', 'Double,index', 'Double,other', 'ANY']
+
+    Args:
+        feature (Feature):
+
+    Returns:
+        List[str]
+            List of hashing keys
+    """
+    keys: List[str] = []
+    logical_type = feature.logical_type
+    lt_name = None
+    if logical_type is not None:
+        lt_name = logical_type.__name__
+        keys.append(lt_name)
+
+    inferred_tags = (
+        ww_type_system.str_to_logical_type(lt_name).standard_tags if lt_name else set()
+    )
+    if "index" in feature.tags:
+        all_tags = feature.tags
+    else:
+        all_tags = inferred_tags.union(feature.tags)
+
+    for tag in all_tags:
+        keys.append(tag)
+        keys.append(f"{lt_name},{tag}")
+
+    keys.append(ANY)
+    return keys
 
 
 def group_features(features: List[Feature]) -> Dict[str, List[Feature]]:
@@ -148,42 +197,23 @@ def group_features(features: List[Feature]) -> Dict[str, List[Feature]]:
                 "Boolean": ["f3"]
             }
     """
-    groups = {"ANY": []}
-    for f in features:
-        logical_type = f.logical_type
-        lt_name = None
-        if logical_type is not None:
-            lt_name = logical_type.__name__
-            groups.setdefault(lt_name, []).append(f)
-
-        inferred_tags = (
-            ww_type_system.str_to_logical_type(lt_name).standard_tags
-            if lt_name
-            else set()
-        )
-        if "index" in f.tags:
-            all_tags = f.tags
-        else:
-            all_tags = inferred_tags.union(f.tags)
-
-        for tag in all_tags:
-            groups.setdefault(tag, []).append(f)
-            groups.setdefault(f"{lt_name},{tag}", []).append(f)
-
-        groups["ANY"].append(f)
+    groups = {ANY: []}
+    for feature in features:
+        for key in feature_to_keys(feature=feature):
+            groups.setdefault(key, []).append(feature)
 
     return groups
 
 
-def get_matching_columns(
-    col_groups: Dict[str, List[Feature]],
+def get_matching_features(
+    feature_groups: Dict[str, List[Feature]],
     primitive: Type[PrimitiveBase],
 ) -> List[List[Feature]]:
     """
     For a given primitive, find all feature sets that can be used to create new feature
 
     Args:
-        col_groups (Dict[str, List[Feature]]):
+        feature_groups (Dict[str, List[Feature]]):
             Hashmap from Key to List of Features. Key is either: LogicalType name (eg. "Double"), Semantic tag (eg. "index"),
             or combination (eg. "Double,index").
         primitive (Type[PrimitiveBase])
@@ -198,14 +228,14 @@ def get_matching_columns(
             from featuretools.feature_discovery.feature_discovery import get_matching_columns
             from woodwork.column_schema import ColumnSchema
 
-            col_groups = {
+            feature_groups = {
                 "ANY": ["f1", "f2", "f3"],
                 "Double": ["f1", "f2", "f3"],
                 "numeric": ["f1", "f2", "f3"],
                 "Double,numeric": ["f1", "f2", "f3"],
             }
 
-            feature_sets = get_matching_columns(col_groups, AddNumeric)
+            feature_sets = get_matching_features(col_groups, AddNumeric)
 
             [
                 ["f1", "f2"],
@@ -220,18 +250,18 @@ def get_matching_columns(
 
     commutative = primitive.commutative
 
-    out3 = []
+    feature_sets = []
     for input_set in input_sets:
         assert input_set is not None
-        out = get_features(
-            col_groups=col_groups,
+        feature_sets_ = get_features(
+            feature_groups=feature_groups,
             input_set=input_set,
             commutative=commutative,
         )
 
-        out3.extend(out)
+        feature_sets.extend(feature_sets_)
 
-    return out3
+    return feature_sets
 
 
 def get_primitive_return_type(primitive: Type[PrimitiveBase]) -> ColumnSchema:
@@ -246,14 +276,14 @@ def get_primitive_return_type(primitive: Type[PrimitiveBase]) -> ColumnSchema:
 
 
 def features_from_primitive(
-    col_groups: Dict[str, List[Feature]],
+    feature_groups: Dict[str, List[Feature]],
     primitive: Type[PrimitiveBase],
 ) -> List[Feature]:
     """
     For a given primitive, creates all engineered features
 
     Args:
-        col_groups (Dict[str, List[Feature]]):
+        feature_groups (Dict[str, List[Feature]]):
             Hashmap from Key to List of Features. Key is either: LogicalType name (eg. "Double"), Semantic tag (eg. "index"),
             or combination (eg. "Double,index").
         primitive (Type[PrimitiveBase])
@@ -268,14 +298,14 @@ def features_from_primitive(
             from featuretools.feature_discovery.feature_discovery import get_matching_columns
             from woodwork.column_schema import ColumnSchema
 
-            col_groups = {
+            feature_groups = {
                 "ANY": ["f1", "f2", "f3"],
                 "Double": ["f1", "f2", "f3"],
                 "numeric": ["f1", "f2", "f3"],
                 "Double,numeric": ["f1", "f2", "f3"],
             }
 
-            feature_sets = features_from_primitive(col_groups, AddNumeric)
+            feature_sets = features_from_primitive(feature_groups, AddNumeric)
 
             [
                 ["f1", "f2"],
@@ -292,8 +322,8 @@ def features_from_primitive(
     assert isinstance(output_tags, set)
 
     features = []
-    feature_sets = get_matching_columns(
-        col_groups=col_groups,
+    feature_sets = get_matching_features(
+        feature_groups=feature_groups,
         primitive=primitive,
     )
     for feature_set in feature_sets:
@@ -375,7 +405,7 @@ def my_dfs(schema: TableSchema, primitives: List[Type[PrimitiveBase]]) -> List[F
 
     for primitive in primitives:
         features_ = features_from_primitive(
-            col_groups=feature_groups,
+            feature_groups=feature_groups,
             primitive=primitive,
         )
         features.extend(features_)
