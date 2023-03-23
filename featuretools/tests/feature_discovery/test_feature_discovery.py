@@ -169,6 +169,9 @@ def test_column_to_keys(column_schema, expected):
     assert set(actual) == set(expected)
 
 
+TEMPO_PRIMITIVES = get_valid_tempo_transform_primitives()
+
+
 @pytest.mark.parametrize(
     "feature, expected",
     [
@@ -449,7 +452,7 @@ def get_default_logical_type(tags: Set[str]):
 
 @pytest.mark.parametrize(
     "primitive",
-    get_valid_tempo_transform_primitives(),
+    TEMPO_PRIMITIVES,
 )
 def test_features_from_primitive(primitive):
     # primitive = Absolute
