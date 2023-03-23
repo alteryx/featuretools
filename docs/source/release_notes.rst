@@ -12,6 +12,7 @@ Future Release
             ``Correlation``, ``DateFirstEvent`` (:pr:`2507`)
         * Add ``Kurtosis``, ``MinCount``, ``NumFalseSinceLastTrue``, ``NumPeaks``,
             ``NumTrueSinceLastFalse``, ``NumZeroCrossings`` (:pr:`2514`)
+        * Introduce New Single-Table DFS Algorithm (:pr:`2516`)
     * Fixes
         * Pin github-action-check-linked-issues to 1.4.5 (:pr:`2497`)
         * Support Woodwork's update numeric inference (integers as strings) (:pr:`2505`)
@@ -21,7 +22,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`dvreed77`
 
 v1.23.0 Feb 15, 2023
 ====================
@@ -34,7 +35,7 @@ v1.23.0 Feb 15, 2023
        * Remove make package from lint workflow (:pr:`2479`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dreed`, :user:`gsheni`, :user:`sbadithe`
+    :user:`dvreed77`, :user:`gsheni`, :user:`sbadithe`
 
 v1.22.0 Jan 31, 2023
 ====================
