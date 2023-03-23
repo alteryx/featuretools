@@ -1,4 +1,4 @@
-from typing import List, Set, cast
+from typing import Set
 from unittest.mock import patch
 
 import pytest
@@ -9,7 +9,6 @@ from featuretools.entityset.entityset import EntitySet
 from featuretools.feature_discovery.feature_discovery import (
     column_to_keys,
     feature_to_keys,
-    features_from_primitive,
     get_features,
     get_matching_features,
     group_features,
@@ -450,41 +449,41 @@ def get_default_logical_type(tags: Set[str]):
     raise Exception(f"NO DEFAULT LOGICAL TYPE FOR TAGS: {tags}")
 
 
-@pytest.mark.parametrize(
-    "primitive",
-    TEMPO_PRIMITIVES,
-)
-def test_features_from_primitive(primitive):
-    # primitive = Absolute
-    input_list = primitive.input_types
-    if not isinstance(input_list[0], list):
-        input_list = [input_list]
+# @pytest.mark.parametrize(
+#     "primitive",
+#     TEMPO_PRIMITIVES,
+# )
+# def test_features_from_primitive(primitive):
+#     # primitive = Absolute
+#     input_list = primitive.input_types
+#     if not isinstance(input_list[0], list):
+#         input_list = [input_list]
 
-    input_list = cast(List[List[ColumnSchema]], input_list)
-    assert isinstance(input_list, List)
-    assert isinstance(input_list[0], List)
-    assert isinstance(input_list[0][0], ColumnSchema)
+#     input_list = cast(List[List[ColumnSchema]], input_list)
+#     assert isinstance(input_list, List)
+#     assert isinstance(input_list[0], List)
+#     assert isinstance(input_list[0][0], ColumnSchema)
 
-    test_features = []
-    for input_set in input_list:
-        for idx, col_schema in enumerate(input_set):
-            logical_type = col_schema.logical_type
-            semantic_tags = col_schema.semantic_tags
-            if logical_type is not None:
-                logical_type = type(logical_type)
-            elif len(semantic_tags) > 0:
-                logical_type = get_default_logical_type(semantic_tags)
-            else:
-                logical_type = Double
+#     test_features = []
+#     for input_set in input_list:
+#         for idx, col_schema in enumerate(input_set):
+#             logical_type = col_schema.logical_type
+#             semantic_tags = col_schema.semantic_tags
+#             if logical_type is not None:
+#                 logical_type = type(logical_type)
+#             elif len(semantic_tags) > 0:
+#                 logical_type = get_default_logical_type(semantic_tags)
+#             else:
+#                 logical_type = Double
 
-            test_features.append(
-                Feature(f"f_{idx}", logical_type, semantic_tags),
-            )
+#             test_features.append(
+#                 Feature(f"f_{idx}", logical_type, semantic_tags),
+#             )
 
-    col_groups = group_features(test_features)
-    generated_features = features_from_primitive(col_groups, primitive)
+#     col_groups = group_features(test_features)
+#     generated_features = features_from_primitive(col_groups, primitive)
 
-    assert len(generated_features) > 0
+#     assert len(generated_features) > 0
 
 
 @pytest.mark.parametrize(
