@@ -10,7 +10,28 @@ from featuretools.feature_discovery.type_defs import Feature
 from featuretools.primitives.base.primitive_base import PrimitiveBase
 
 
-def index_input_set(input_set: List[ColumnSchema]):
+def index_input_set(input_set: List[ColumnSchema]) -> Dict[str, int]:
+    """
+    Indexes input set to find types of columns and the quantity of eatch
+
+    Args:
+        input_set (List(ColumnSchema)):
+            List of Column types needed by associated primitive.
+
+    Returns:
+        Dict[str, int]
+            A hashmap from key to int
+
+    Examples:
+        .. code-block:: python
+
+            from featuretools.feature_discovery.feature_discovery import get_features
+            from woodwork.column_schema import ColumnSchema
+
+            input_set = [ColumnSchema(semantic_tags={"numeric"}), ColumnSchema(semantic_tags={"numeric"})]
+            indexed_input_set = index_input_set(input_set)
+            {"numeric": 2}
+    """
     out = {}
     for c in input_set:
         lt = type(c.logical_type).__name__
@@ -25,6 +46,7 @@ def index_input_set(input_set: List[ColumnSchema]):
         if len(tags) > 0:
             for tag in tags:
                 if tag is not None:
+                    # TODO: create a function that consistently manages this key type
                     key = f"{lt_key},{tag}" if lt_key is not None else tag
                     out[key] = out.get(key, 0) + 1
 
@@ -44,6 +66,37 @@ def get_features(
     input_set: List[ColumnSchema],
     commutative: bool,
 ) -> List[List[Feature]]:
+    """
+    Calculates all Feature combinations using the given hashmap of existing features, and the input set of required columns.
+
+    Args:
+        col_groups (Dict[str, List[Feature]]):
+            Hashmap from Key to List of Features. Key is either: LogicalType name (eg. "Double"), Semantic tag (eg. "index"),
+            or combination (eg. "Double,index").
+        input_set (List(ColumnSchema)):
+            List of Column types needed by associated primitive.
+        commutative (bool):
+            whether or not we need to use product or combinations to create feature sets.
+
+    Returns:
+        List[List[Feature]]
+            A list of Feature sets.
+
+    Examples:
+        .. code-block:: python
+
+            from featuretools.feature_discovery.feature_discovery import get_features
+            from woodwork.column_schema import ColumnSchema
+
+            col_groups = {
+                "ANY": ["f1", "f2", "f3"],
+                "Double": ["f1", "f2", "f3"],
+                "numeric": ["f1", "f2", "f3"],
+                "Double,numeric": ["f1", "f2", "f3"],
+            }
+            input_set = [ColumnSchema(semantic_tags={"numeric"}), ColumnSchema(semantic_tags={"numeric"})]
+            features = get_features(col_groups, input_set, commutative=False)
+    """
     indexed_input_set = index_input_set(input_set)
 
     prod_iter = []
@@ -64,6 +117,37 @@ def get_features(
 
 
 def group_features(features: List[Feature]) -> Dict[str, List[Feature]]:
+    """
+    Groups all Features by logical_type, tags, and combination
+
+    Args:
+        features ( List[Feature]):
+            Hashmap from Key to List of Features. Key is either: LogicalType name (eg. "Double"), Semantic tag (eg. "index"),
+            or combination (eg. "Double,index").
+
+    Returns:
+        Dict[str, List[Feature]]
+            Hashmap from key to list of features
+
+    Examples:
+        .. code-block:: python
+
+            from featuretools.feature_discovery.feature_discovery import get_features
+            from woodwork.column_schema import ColumnSchema
+
+            f1 = Feature('f1', Double)
+            f2 = Feature('f2', Boolean)
+
+            feature_groups = group_features([f1, f2])
+
+            {
+                "ANY": ["f1", "f2"],
+                "Double": ["f1"],
+                "numeric": ["f1"],
+                "Double,numeric": ["f1"],
+                "Boolean": ["f3"]
+            }
+    """
     groups = {"ANY": []}
     for f in features:
         logical_type = f.logical_type
@@ -94,7 +178,41 @@ def group_features(features: List[Feature]) -> Dict[str, List[Feature]]:
 def get_matching_columns(
     col_groups: Dict[str, List[Feature]],
     primitive: Type[PrimitiveBase],
-):
+) -> List[List[Feature]]:
+    """
+    For a given primitive, find all feature sets that can be used to create new feature
+
+    Args:
+        col_groups (Dict[str, List[Feature]]):
+            Hashmap from Key to List of Features. Key is either: LogicalType name (eg. "Double"), Semantic tag (eg. "index"),
+            or combination (eg. "Double,index").
+        primitive (Type[PrimitiveBase])
+
+    Returns:
+        List[List[Feature]]
+            List of feature sets
+
+    Examples:
+        .. code-block:: python
+
+            from featuretools.feature_discovery.feature_discovery import get_matching_columns
+            from woodwork.column_schema import ColumnSchema
+
+            col_groups = {
+                "ANY": ["f1", "f2", "f3"],
+                "Double": ["f1", "f2", "f3"],
+                "numeric": ["f1", "f2", "f3"],
+                "Double,numeric": ["f1", "f2", "f3"],
+            }
+
+            feature_sets = get_matching_columns(col_groups, AddNumeric)
+
+            [
+                ["f1", "f2"],
+                ["f1", "f3"],
+                ["f2", "f3"]
+            ]
+    """
     input_sets = primitive.input_types
     assert input_sets is not None
     if not isinstance(input_sets[0], list):
@@ -128,9 +246,43 @@ def get_primitive_return_type(primitive: Type[PrimitiveBase]) -> ColumnSchema:
 
 
 def features_from_primitive(
-    primitive: Type[PrimitiveBase],
     col_groups: Dict[str, List[Feature]],
-):
+    primitive: Type[PrimitiveBase],
+) -> List[Feature]:
+    """
+    For a given primitive, creates all engineered features
+
+    Args:
+        col_groups (Dict[str, List[Feature]]):
+            Hashmap from Key to List of Features. Key is either: LogicalType name (eg. "Double"), Semantic tag (eg. "index"),
+            or combination (eg. "Double,index").
+        primitive (Type[PrimitiveBase])
+
+    Returns:
+        List[List[Feature]]
+            List of feature sets
+
+    Examples:
+        .. code-block:: python
+
+            from featuretools.feature_discovery.feature_discovery import get_matching_columns
+            from woodwork.column_schema import ColumnSchema
+
+            col_groups = {
+                "ANY": ["f1", "f2", "f3"],
+                "Double": ["f1", "f2", "f3"],
+                "numeric": ["f1", "f2", "f3"],
+                "Double,numeric": ["f1", "f2", "f3"],
+            }
+
+            feature_sets = features_from_primitive(col_groups, AddNumeric)
+
+            [
+                ["f1", "f2"],
+                ["f1", "f3"],
+                ["f2", "f3"]
+            ]
+    """
     return_schema = get_primitive_return_type(primitive=primitive)
     assert isinstance(return_schema, ColumnSchema)
 
@@ -168,6 +320,37 @@ def features_from_primitive(
 
 
 def my_dfs(schema: TableSchema, primitives: List[Type[PrimitiveBase]]) -> List[Feature]:
+    """
+    Calculates all Features for a given input woodwork table schema and list of primitives.
+
+    Args:
+        schema (TableSchema):
+            Woodwork TableSchema object
+        primitives (List[Type[PrimitiveBase]])
+            List of primitive classes
+
+    Returns:
+        List[Feature]
+
+    Examples:
+        .. code-block:: python
+
+            from featuretools.feature_discovery.feature_discovery import my_dfs
+            from featuretools.primitives import Absolute, IsNull
+            import pandas as pd
+            import woodwork as ww
+
+            df = pd.DataFrame({
+                "idx": [0,1,2,3],
+                "f1": ["A", "B", "C", "D"],
+                "f2": [1.2, 2.3, 3.4, 4.5]
+            })
+
+            df.ww.init()
+
+            features = my_dfs(df.ww.schema, [Absolute, IsNull])
+
+    """
     features = []
     for col_name, column_schema in schema.columns.items():
         assert isinstance(column_schema, ColumnSchema)
@@ -179,10 +362,6 @@ def my_dfs(schema: TableSchema, primitives: List[Type[PrimitiveBase]]) -> List[F
         tags = column_schema.semantic_tags
         assert isinstance(tags, set)
 
-        # # TODO: ignorning index columns. Think more about this and put this in a differnt location
-        # if "index" in tags:
-        #     continue
-
         features.append(
             Feature(
                 name=col_name,
@@ -192,10 +371,13 @@ def my_dfs(schema: TableSchema, primitives: List[Type[PrimitiveBase]]) -> List[F
         )
 
     # Group Columns by LogicalType, Tag, and combination
-    col_groups = group_features(features=features)
+    feature_groups = group_features(features=features)
 
     for primitive in primitives:
-        features_ = features_from_primitive(primitive=primitive, col_groups=col_groups)
+        features_ = features_from_primitive(
+            col_groups=feature_groups,
+            primitive=primitive,
+        )
         features.extend(features_)
 
     return features
