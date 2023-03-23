@@ -111,6 +111,7 @@ dev = [
     "black[jupyter] >= 23.1.0",
     "pre-commit >= 2.20.0",
     "featuretools[docs,spark,test]",
+    "typing_extensions==4.5.0"
 ]
 complete = [
     "featuretools[autonormalize,nlp,sklearn,spark,sql,tsfresh,updater]",
