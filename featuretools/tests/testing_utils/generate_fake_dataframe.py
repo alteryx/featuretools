@@ -1,39 +1,10 @@
 import random
 from datetime import datetime as dt
-from typing import Sequence, TypeVar, Union
 
 import numpy as np
 import pandas as pd
 import woodwork.type_sys.type_system as ww_type_system
-from typing_extensions import TypeGuard
 from woodwork import logical_types
-
-T = TypeVar("T")
-
-
-def is_list_of_lists(
-    val: Sequence[Union[T, Sequence[T]]],
-) -> TypeGuard[Sequence[Sequence[T]]]:
-    """Determines if input is list of lists"""
-    return isinstance(val[0], list)
-
-
-def is_list(val: Sequence[Union[T, Sequence[T]]]) -> TypeGuard[Sequence[T]]:
-    """Determines if input is list"""
-    return not isinstance(val[0], list)
-
-
-def flatten_list(input_list: Sequence[Union[T, Sequence[T]]]) -> Sequence[T]:
-    """Flatten a list of lists into a single list"""
-    if is_list_of_lists(input_list):
-        a = [y for x in input_list for y in x]
-        return a
-    elif is_list(input_list):
-        # this is a function because mypy needs help to successfully narrow type to Sequence[T]
-        return input_list
-    else:
-        raise ValueError("Input must be a list or list of lists")
-
 
 logical_type_mapping = {
     logical_types.Boolean.__name__: [True, False],
@@ -59,6 +30,10 @@ logical_type_mapping = {
     logical_types.URL.__name__: ["https://www.example.com", "https://www.example2.com"],
     logical_types.PostalCode.__name__: ["60018", "60018-0123"],
 }
+
+
+def flatten_list(nested_list):
+    return [item for sublist in nested_list for item in sublist]
 
 
 def generate_fake_dataframe(
