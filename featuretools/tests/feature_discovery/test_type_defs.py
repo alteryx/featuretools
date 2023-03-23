@@ -1,23 +1,74 @@
 import json
 
+import pytest
 from woodwork.logical_types import Double
 
 from featuretools.entityset.entityset import EntitySet
 from featuretools.feature_base.feature_base import FeatureBase
 from featuretools.feature_discovery.type_defs import Feature, convert_old_to_new
-from featuretools.primitives import AddNumeric
+from featuretools.primitives import AddNumeric, DivideNumeric
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils.generate_fake_dataframe import (
     generate_fake_dataframe,
 )
 
 
-def test_feature_type():
-    Feature(
+def test_feature_type_equality():
+    f1 = Feature("f1", Double)
+    f2 = Feature("f2", Double)
+
+    # Add Numeric is Commutative, so should all be equal
+    f3 = Feature(
         name="Column 1",
         primitive=AddNumeric,
         logical_type=Double,
+        base_features=[f1, f2],
     )
+
+    f4 = Feature(
+        name="Column 10",
+        primitive=AddNumeric,
+        logical_type=Double,
+        base_features=[f1, f2],
+    )
+
+    f5 = Feature(
+        name="Column 20",
+        primitive=AddNumeric,
+        logical_type=Double,
+        base_features=[f2, f1],
+    )
+
+    assert f3 == f4 == f5
+
+    # Divide Numeric is not Commutative, so should not be equal
+    f6 = Feature(
+        name="Column 1",
+        primitive=DivideNumeric,
+        logical_type=Double,
+        base_features=[f1, f2],
+    )
+
+    f7 = Feature(
+        name="Column 1",
+        primitive=DivideNumeric,
+        logical_type=Double,
+        base_features=[f2, f1],
+    )
+
+    assert f6 != f7
+
+
+def test_feature_type_assertions():
+    with pytest.raises(
+        AssertionError,
+        match="there must be base features if give a primitive",
+    ):
+        Feature(
+            name="Column 1",
+            primitive=AddNumeric,
+            logical_type=Double,
+        )
 
 
 def test_feature_to_dict():
@@ -82,13 +133,13 @@ def test_feature_from_dict():
 
 def test_convert_old_to_new():
     col_defs = [
+        ("idx", "Integer", {"index"}),
         ("f_1", "Double"),
         ("f_2", "Double"),
     ]
 
     df = generate_fake_dataframe(
         col_defs=col_defs,
-        include_index=True,
     )
 
     es = EntitySet(id="nums")

@@ -71,7 +71,9 @@ class Feature:
             commutative = primitive.commutative
             hash_msg.update(primitive_name.encode("utf-8"))
 
-            assert len(base_features) > 0
+            assert (
+                len(base_features) > 0
+            ), "there must be base features if give a primitive"
             base_columns = base_features
             if commutative:
                 base_features.sort()
