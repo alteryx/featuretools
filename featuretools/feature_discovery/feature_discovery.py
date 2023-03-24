@@ -265,13 +265,11 @@ def get_matching_features(
 
 
 def get_primitive_return_type(primitive: Type[PrimitiveBase]) -> ColumnSchema:
-    if primitive.return_type is None:
-        return_type = primitive.input_types[0]
-        if isinstance(return_type, list):
-            return_type = return_type[0]
-    else:
-        return_type = primitive.return_type
-
+    if primitive.return_type: 
+       return primitive.return_type
+    return_type = primitive.input_types[0]
+    if isinstance(return_type, list):
+       return_type = return_type[0]
     return return_type
 
 
