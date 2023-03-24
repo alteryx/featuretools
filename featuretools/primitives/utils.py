@@ -4,7 +4,7 @@ from inspect import getfullargspec, getsource, isclass
 from typing import Dict, List
 
 import pandas as pd
-from woodwork import list_logical_types, list_semantic_tags
+from woodwork import list_logical_types, list_semantic_tags, type_system
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import NaturalLanguage
 
@@ -43,6 +43,17 @@ def get_transform_primitives():
     of compatibility
     """
     return _get_primitives(featuretools.primitives.TransformPrimitive)
+
+
+def get_all_primitives():
+    """Helper function to return all primitives"""
+    primitives = set()
+    for attribute_string in dir(featuretools.primitives):
+        attribute = getattr(featuretools.primitives, attribute_string)
+        if isclass(attribute):
+            if issubclass(attribute, PrimitiveBase) and attribute.name:
+                primitives.add(attribute)
+    return {prim.__name__: prim for prim in primitives}
 
 
 def _get_natural_language_primitives():
@@ -433,3 +444,8 @@ class PrimitivesDeserializer(object):
 
             if cls_key == search_key:
                 return cls
+
+
+def get_all_logical_types():
+    """Helper function that returns all registered woodwork logical types"""
+    return {lt.__name__: lt for lt in type_system.registered_types}

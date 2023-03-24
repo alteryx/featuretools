@@ -5,7 +5,10 @@ from woodwork.logical_types import Double
 
 from featuretools.entityset.entityset import EntitySet
 from featuretools.feature_base.feature_base import FeatureBase
-from featuretools.feature_discovery.type_defs import Feature, convert_old_to_new
+from featuretools.feature_discovery.type_defs import (
+    Feature,
+    convert_featurebase_to_feature,
+)
 from featuretools.primitives import AddNumeric, DivideNumeric
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils.generate_fake_dataframe import (
@@ -131,7 +134,7 @@ def test_feature_from_dict():
     assert f_orig == f_from_dict
 
 
-def test_convert_old_to_new():
+def test_convert_featurebase_to_feature():
     col_defs = [
         ("idx", "Integer", {"index"}),
         ("f_1", "Double"),
@@ -154,9 +157,7 @@ def test_convert_old_to_new():
     assert isinstance(fdefs, list)
     assert isinstance(fdefs[0], FeatureBase)
 
-    convert_old_to_new(fdefs[2])
-
-    converted_features = set([convert_old_to_new(x) for x in fdefs])
+    converted_features = set([convert_featurebase_to_feature(x) for x in fdefs])
 
     f1 = Feature("f_1", Double)
     f2 = Feature("f_2", Double)

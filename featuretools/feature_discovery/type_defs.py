@@ -3,39 +3,15 @@ from __future__ import annotations
 import hashlib
 from dataclasses import dataclass, field
 from functools import total_ordering
-from inspect import isclass
 from typing import Dict, List, Optional, Set, Type
 
-import woodwork as ww
 from woodwork.logical_types import LogicalType
 
-import featuretools as ft
 from featuretools.feature_base.feature_base import FeatureBase
 from featuretools.primitives.base.primitive_base import PrimitiveBase
+from featuretools.primitives.utils import get_all_logical_types, get_all_primitives
 
 ANY = "ANY"
-
-
-def get_all_primitives():
-    """Helper function that selects all primitives
-    that are instances of `primitive_kind`
-    """
-    primitives = set()
-    for attribute_string in dir(ft.primitives):
-        attribute = getattr(ft.primitives, attribute_string)
-        if isclass(attribute):
-            if issubclass(attribute, PrimitiveBase) and attribute.name:
-                primitives.add(attribute)
-    return {prim.__name__: prim for prim in primitives}
-
-
-def get_all_logical_types():
-    """Helper function that selects all primitives
-    that are instances of `primitive_kind`
-    """
-    all_types = ww.type_system.registered_types
-    return {lt.__name__: lt for lt in all_types}
-
 
 primitives_map = get_all_primitives()
 logical_types_map = get_all_logical_types()
@@ -149,8 +125,8 @@ class Feature:
         return hydrated_feature
 
 
-def convert_old_to_new(feature: FeatureBase):
-    base_features = [convert_old_to_new(x) for x in feature.base_features]
+def convert_featurebase_to_feature(feature: FeatureBase):
+    base_features = [convert_featurebase_to_feature(x) for x in feature.base_features]
 
     name = feature.get_name()
     col_schema = feature.column_schema
