@@ -19,7 +19,7 @@ class SubtractNumeric(TransformPrimitive):
             guarantee which of the two will be generated. Defaults to True.
 
     Notes:
-        commutative is True by default since False would result in 2 perfectly 
+        commutative is True by default since False would result in 2 perfectly
         correlated series.
 
     Examples:
