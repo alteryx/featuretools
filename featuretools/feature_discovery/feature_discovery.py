@@ -8,9 +8,10 @@ from woodwork.table_schema import TableSchema
 
 from featuretools.feature_discovery.type_defs import ANY, Feature
 from featuretools.primitives.base.primitive_base import PrimitiveBase
+from featuretools.tests.testing_utils.generate_fake_dataframe import flatten_list
 
 
-def column_to_keys(column_schema: ColumnSchema) -> List[str]:
+def generate_hashing_keys_from_column_schema(column_schema: ColumnSchema) -> List[str]:
     """
     Generate hashing keys from Columns Schema. For example:
     - ColumnSchema(logical_type=Double) -> ["Double"]
@@ -25,11 +26,11 @@ def column_to_keys(column_schema: ColumnSchema) -> List[str]:
             List of hashing keys
     """
     keys: List[str] = []
-    lt = column_schema.logical_type
+    logical_type = column_schema.logical_type
     tags = column_schema.semantic_tags
     lt_key = None
-    if lt:
-        lt_key = type(lt).__name__
+    if logical_type:
+        lt_key = type(logical_type).__name__
 
     if len(tags) > 0:
         for tag in tags:
@@ -44,12 +45,12 @@ def column_to_keys(column_schema: ColumnSchema) -> List[str]:
     return keys
 
 
-def index_input_set(input_set: List[ColumnSchema]) -> Dict[str, int]:
+def index_column_set(column_set: List[ColumnSchema]) -> Dict[str, int]:
     """
     Indexes input set to find types of columns and the quantity of eatch
 
     Args:
-        input_set (List(ColumnSchema)):
+        column_set (List(ColumnSchema)):
             List of Column types needed by associated primitive.
 
     Returns:
@@ -62,20 +63,20 @@ def index_input_set(input_set: List[ColumnSchema]) -> Dict[str, int]:
             from featuretools.feature_discovery.feature_discovery import get_features
             from woodwork.column_schema import ColumnSchema
 
-            input_set = [ColumnSchema(semantic_tags={"numeric"}), ColumnSchema(semantic_tags={"numeric"})]
-            indexed_input_set = index_input_set(input_set)
+            column_set = [ColumnSchema(semantic_tags={"numeric"}), ColumnSchema(semantic_tags={"numeric"})]
+            indexed_column_set = index_column_set(column_set)
             {"numeric": 2}
     """
     out = {}
-    for column_schema in input_set:
-        for key in column_to_keys(column_schema):
+    for column_schema in column_set:
+        for key in generate_hashing_keys_from_column_schema(column_schema):
             out[key] = out.get(key, 0) + 1
     return out
 
 
 def get_features(
     feature_groups: Dict[str, List[Feature]],
-    input_set: List[ColumnSchema],
+    column_set: List[ColumnSchema],
     commutative: bool,
 ) -> List[List[Feature]]:
     """
@@ -85,7 +86,7 @@ def get_features(
         feature_groups (Dict[str, List[Feature]]):
             Hashmap from Key to List of Features. Key is either: LogicalType name (eg. "Double"), Semantic tag (eg. "index"),
             or combination (eg. "Double,index").
-        input_set (List(ColumnSchema)):
+        column_set (List(ColumnSchema)):
             List of Column types needed by associated primitive.
         commutative (bool):
             whether or not we need to use product or combinations to create feature sets.
@@ -106,13 +107,13 @@ def get_features(
                 "numeric": ["f1", "f2", "f3"],
                 "Double,numeric": ["f1", "f2", "f3"],
             }
-            input_set = [ColumnSchema(semantic_tags={"numeric"}), ColumnSchema(semantic_tags={"numeric"})]
-            features = get_features(col_groups, input_set, commutative=False)
+            column_set = [ColumnSchema(semantic_tags={"numeric"}), ColumnSchema(semantic_tags={"numeric"})]
+            features = get_features(col_groups, column_set, commutative=False)
     """
-    indexed_input_set = index_input_set(input_set)
+    indexed_column_set = index_column_set(column_set)
 
     prod_iter = []
-    for name, count in indexed_input_set.items():
+    for name, count in indexed_column_set.items():
         if name not in feature_groups:
             return []
 
@@ -125,7 +126,7 @@ def get_features(
 
     feature_combinations = product(*prod_iter)
 
-    return [[z for y in x for z in y] for x in feature_combinations]
+    return [flatten_list(x) for x in feature_combinations]
 
 
 def feature_to_keys(feature: Feature) -> List[str]:
@@ -144,13 +145,15 @@ def feature_to_keys(feature: Feature) -> List[str]:
     """
     keys: List[str] = []
     logical_type = feature.logical_type
-    lt_name = None
+    logical_type_name = None
     if logical_type is not None:
-        lt_name = logical_type.__name__
-        keys.append(lt_name)
+        logical_type_name = logical_type.__name__
+        keys.append(logical_type_name)
 
     inferred_tags = (
-        ww_type_system.str_to_logical_type(lt_name).standard_tags if lt_name else set()
+        ww_type_system.str_to_logical_type(logical_type_name).standard_tags
+        if logical_type_name
+        else set()
     )
     if "index" in feature.tags:
         all_tags = feature.tags
@@ -159,7 +162,7 @@ def feature_to_keys(feature: Feature) -> List[str]:
 
     for tag in all_tags:
         keys.append(tag)
-        keys.append(f"{lt_name},{tag}")
+        keys.append(f"{logical_type_name},{tag}")
 
     keys.append(ANY)
     return keys
@@ -243,19 +246,19 @@ def get_matching_features(
                 ["f2", "f3"]
             ]
     """
-    input_sets = primitive.input_types
-    assert input_sets is not None
-    if not isinstance(input_sets[0], list):
-        input_sets = [primitive.input_types]
+    column_sets = primitive.input_types
+    assert column_sets is not None
+    if not isinstance(column_sets[0], list):
+        column_sets = [primitive.input_types]
 
     commutative = primitive.commutative
 
     feature_sets = []
-    for input_set in input_sets:
-        assert input_set is not None
+    for column_set in column_sets:
+        assert column_set is not None
         feature_sets_ = get_features(
             feature_groups=feature_groups,
-            input_set=input_set,
+            column_set=column_set,
             commutative=commutative,
         )
 
@@ -265,11 +268,11 @@ def get_matching_features(
 
 
 def get_primitive_return_type(primitive: Type[PrimitiveBase]) -> ColumnSchema:
-    if primitive.return_type: 
-       return primitive.return_type
+    if primitive.return_type:
+        return primitive.return_type
     return_type = primitive.input_types[0]
     if isinstance(return_type, list):
-       return_type = return_type[0]
+        return_type = return_type[0]
     return return_type
 
 

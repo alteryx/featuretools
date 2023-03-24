@@ -7,12 +7,12 @@ from woodwork.logical_types import Boolean, Datetime, Double, Ordinal
 
 from featuretools.entityset.entityset import EntitySet
 from featuretools.feature_discovery.feature_discovery import (
-    column_to_keys,
     feature_to_keys,
+    generate_hashing_keys_from_column_schema,
     get_features,
     get_matching_features,
     group_features,
-    index_input_set,
+    index_column_set,
     my_dfs,
 )
 from featuretools.feature_discovery.type_defs import Feature
@@ -50,7 +50,7 @@ DEFAULT_LT_FOR_TAG = {
     ],
 )
 def test_column_to_keys(column_schema, expected):
-    actual = column_to_keys(column_schema)
+    actual = generate_hashing_keys_from_column_schema(column_schema)
     assert set(actual) == set(expected)
 
 
@@ -88,7 +88,7 @@ def test_feature_to_keys(feature, expected):
     ],
 )
 def test_index_input_set(column_list, expected):
-    actual = index_input_set(column_list)
+    actual = index_column_set(column_list)
 
     assert actual == expected
 
