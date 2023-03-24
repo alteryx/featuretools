@@ -18,6 +18,10 @@ class SubtractNumeric(TransformPrimitive):
             generate both x - y and y - x, or just one. If True, there is no
             guarantee which of the two will be generated. Defaults to True.
 
+    Notes:
+        commutative is True by default since result would perfectly correlated
+        series.
+
     Examples:
         >>> subtract_numeric = SubtractNumeric()
         >>> subtract_numeric([2, 1, 2], [1, 2, 2]).tolist()
