@@ -166,7 +166,7 @@ def convert_old_to_new(feature: FeatureBase):
     if primitive == PrimitiveBase:
         primitive = None
 
-    f = Feature(
+    return Feature(
         name=name,
         logical_type=logical_type,
         tags=tags,
@@ -175,5 +175,3 @@ def convert_old_to_new(feature: FeatureBase):
         # TODO: replace this with dataframe name?
         df_id=None,
     )
-
-    return f
