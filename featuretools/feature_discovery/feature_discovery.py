@@ -1,5 +1,5 @@
 from itertools import combinations, permutations, product
-from typing import Dict, List, Type
+from typing import Dict, List, Type, cast
 
 import woodwork.type_sys.type_system as ww_type_system
 from woodwork.column_schema import ColumnSchema
@@ -208,6 +208,29 @@ def group_features(features: List[Feature]) -> Dict[str, List[Feature]]:
     return groups
 
 
+def primitive_to_columnsets(primitive: Type[PrimitiveBase]) -> List[List[ColumnSchema]]:
+    column_sets = primitive.input_types
+    assert column_sets is not None
+    if not isinstance(column_sets[0], list):
+        column_sets = [primitive.input_types]
+
+    column_sets = cast(List[List[ColumnSchema]], column_sets)
+
+    # Some primtives are commutative, yet have explicit versions of commutative pairs (eg. MultiplyNumericBoolean)
+    if primitive.commutative:
+        existing = set()
+        uniq_column_sets = []
+        for column_set in column_sets:
+            key = "_".join(sorted([x.__repr__() for x in column_set]))
+            if key not in existing:
+                uniq_column_sets.append(column_set)
+                existing.add(key)
+
+        column_sets = uniq_column_sets
+
+    return column_sets
+
+
 def get_matching_features(
     feature_groups: Dict[str, List[Feature]],
     primitive: Type[PrimitiveBase],
@@ -246,10 +269,7 @@ def get_matching_features(
                 ["f2", "f3"]
             ]
     """
-    column_sets = primitive.input_types
-    assert column_sets is not None
-    if not isinstance(column_sets[0], list):
-        column_sets = [primitive.input_types]
+    column_sets = primitive_to_columnsets(primitive=primitive)
 
     commutative = primitive.commutative
 

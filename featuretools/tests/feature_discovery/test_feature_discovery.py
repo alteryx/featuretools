@@ -26,6 +26,9 @@ from featuretools.primitives import (
     NumUnique,
     SubtractNumeric,
 )
+from featuretools.primitives.standard.transform.binary.multiply_numeric_boolean import (
+    MultiplyNumericBoolean,
+)
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils.generate_fake_dataframe import (
     generate_fake_dataframe,
@@ -191,6 +194,17 @@ def test_get_features(col_groups, input_set, commutative, expected):
             },
             AddNumeric,
             [],
+        ),
+        (
+            {
+                "ANY": ["f1", "f2"],
+                "Double": ["f1"],
+                "numeric": ["f1"],
+                "Double,numeric": ["f1"],
+                "Boolean": ["f2"],
+            },
+            MultiplyNumericBoolean,
+            [["f1", "f2"]],
         ),
         (
             {
