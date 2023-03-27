@@ -17,6 +17,7 @@ Future Release
         * Support Woodwork's update numeric inference (integers as strings) (:pr:`2505`)
         * Update SubtractNumeric Primitive with commutative class property (:pr:`2527`)
     * Changes
+        * Separate Makefile command for core requirements, test requirements and dev requirements (:pr:`2518`)
     * Documentation Changes
     * Testing Changes
 
