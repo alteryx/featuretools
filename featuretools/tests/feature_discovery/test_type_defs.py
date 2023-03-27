@@ -1,15 +1,22 @@
+import hashlib
 import json
+from typing import List, Type
 
 import pytest
 from woodwork.logical_types import Double
 
 from featuretools.entityset.entityset import EntitySet
 from featuretools.feature_base.feature_base import FeatureBase
+from featuretools.feature_base.features_serializer import FeaturesSerializer
+from featuretools.feature_discovery.feature_discovery import my_dfs
 from featuretools.feature_discovery.type_defs import (
     Feature,
+    convert_feature_to_featurebase,
     convert_featurebase_to_feature,
 )
 from featuretools.primitives import AddNumeric, DivideNumeric
+from featuretools.primitives.base.primitive_base import PrimitiveBase
+from featuretools.primitives.standard.transform.numeric.absolute import Absolute
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils.generate_fake_dataframe import (
     generate_fake_dataframe,
@@ -171,3 +178,74 @@ def test_convert_featurebase_to_feature():
     orig_features = set([f1, f2, f3])
 
     assert len(orig_features.symmetric_difference(converted_features)) == 0
+
+
+def hash_old_feature(feature: FeatureBase):
+    feature_dict = feature.to_dictionary()
+    # "type": type(self).__name__,
+    #         "dependencies": [dep.unique_name() for dep in self.get_dependencies()],
+    #         "arguments": self.get_arguments(),
+
+    hash_msg = hashlib.sha256()
+
+    hash_msg.update(feature_dict["type"])
+
+    for dep in feature_dict["dep"]:
+        hash_msg.update(dep)
+
+    # if primitive:
+    #     primitive_name = primitive.name
+    #     assert isinstance(primitive_name, str)
+    #     commutative = primitive.commutative
+    #     hash_msg.update(primitive_name.encode("utf-8"))
+
+    #     assert (
+    #         len(base_features) > 0
+    #     ), "there must be base features if give a primitive"
+    #     base_columns = base_features
+    #     if commutative:
+    #         base_features.sort()
+
+    #     for c in base_columns:
+    #         hash_msg.update(c.id.encode("utf-8"))
+
+    # else:
+    #     assert name
+    #     hash_msg.update(name.encode("utf-8"))
+
+    return hash_msg.hexdigest()
+
+
+def test_convert_feature_to_feature_base():
+    col_defs = [
+        ("idx", "Integer", {"index"}),
+        ("f_1", "Double"),
+        ("f_2", "Double"),
+    ]
+
+    df = generate_fake_dataframe(
+        col_defs=col_defs,
+    )
+
+    es = EntitySet(id="nums")
+    es.add_dataframe(df, "nums", index="idx")
+
+    primitives: List[Type[PrimitiveBase]] = [Absolute]
+
+    features_old = dfs(
+        entityset=es,
+        target_dataframe_name="nums",
+        trans_primitives=primitives,
+        features_only=True,
+    )
+    features_new = my_dfs(df.ww.schema, primitives)
+
+    features_new = [x for x in features_new if "index" not in x.tags]
+
+    converted_features = [convert_feature_to_featurebase(x, es) for x in features_new]
+
+    f1 = set(FeaturesSerializer(features_old).to_dict()["feature_list"])
+
+    f2 = set(FeaturesSerializer(converted_features).to_dict()["feature_list"])
+
+    assert f1 == f2

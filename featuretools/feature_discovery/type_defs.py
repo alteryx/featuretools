@@ -7,7 +7,12 @@ from typing import Dict, List, Optional, Set, Type
 
 from woodwork.logical_types import LogicalType
 
-from featuretools.feature_base.feature_base import FeatureBase
+from featuretools.entityset.entityset import EntitySet
+from featuretools.feature_base.feature_base import (
+    FeatureBase,
+    IdentityFeature,
+    TransformFeature,
+)
 from featuretools.primitives.base.primitive_base import PrimitiveBase
 from featuretools.primitives.utils import get_all_logical_types, get_all_primitives
 
@@ -125,7 +130,7 @@ class Feature:
         return hydrated_feature
 
 
-def convert_featurebase_to_feature(feature: FeatureBase):
+def convert_featurebase_to_feature(feature: FeatureBase) -> Feature:
     base_features = [convert_featurebase_to_feature(x) for x in feature.base_features]
 
     name = feature.get_name()
@@ -151,3 +156,21 @@ def convert_featurebase_to_feature(feature: FeatureBase):
         # TODO: replace this with dataframe name?
         df_id=None,
     )
+
+
+def convert_feature_to_featurebase(feature: Feature, es: EntitySet) -> FeatureBase:
+    if feature.primitive is None:
+        column_name = feature.name
+        if feature.df_id is None:
+            dataframe_names = list(es.dataframe_dict.keys())
+            assert len(dataframe_names) == 1
+            dataframe_name = dataframe_names[0]
+        else:
+            dataframe_name = feature.df_id
+        return IdentityFeature(es[dataframe_name].ww[column_name])
+
+    base_features = [
+        convert_feature_to_featurebase(x, es) for x in feature.base_features
+    ]
+
+    return TransformFeature(base_features, feature.primitive)
