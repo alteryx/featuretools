@@ -15,13 +15,14 @@ Future Release
     * Fixes
         * Pin github-action-check-linked-issues to 1.4.5 (:pr:`2497`)
         * Support Woodwork's update numeric inference (integers as strings) (:pr:`2505`)
+        * Update SubtractNumeric Primitive with commutative class property (:pr:`2527`)
     * Changes
         * Separate Makefile command for core requirements, test requirements and dev requirements (:pr:`2518`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`dvreed77`, :user:`gsheni`
 
 v1.23.0 Feb 15, 2023
 ====================
