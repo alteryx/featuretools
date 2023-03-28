@@ -18,6 +18,10 @@ class SubtractNumeric(TransformPrimitive):
             generate both x - y and y - x, or just one. If True, there is no
             guarantee which of the two will be generated. Defaults to True.
 
+    Notes:
+        commutative is True by default since False would result in 2 perfectly
+        correlated series.
+
     Examples:
         >>> subtract_numeric = SubtractNumeric()
         >>> subtract_numeric([2, 1, 2], [1, 2, 2]).tolist()
@@ -32,6 +36,7 @@ class SubtractNumeric(TransformPrimitive):
     return_type = ColumnSchema(semantic_tags={"numeric"})
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "the result of {} minus {}"
+    commutative = True
 
     def __init__(self, commutative=True):
         self.commutative = commutative
