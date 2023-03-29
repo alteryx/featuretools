@@ -47,7 +47,7 @@ def generate_hashing_keys_from_column_schema(column_schema: ColumnSchema) -> Lis
 
 def index_column_set(column_set: List[ColumnSchema]) -> Dict[str, int]:
     """
-    Indexes input set to find types of columns and the quantity of eatch
+    Indexes input set to find types of columns and the quantity of each
 
     Args:
         column_set (List(ColumnSchema)):
