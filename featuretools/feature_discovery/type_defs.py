@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from functools import total_ordering
 from typing import Dict, List, Optional, Set, Type
 
+import pandas as pd
 from woodwork.logical_types import LogicalType
 
 from featuretools.entityset.entityset import EntitySet
@@ -174,3 +175,27 @@ def convert_feature_to_featurebase(feature: Feature, es: EntitySet) -> FeatureBa
     ]
 
     return TransformFeature(base_features, feature.primitive)
+
+
+def convert_feature_list_to_featurebase_list(
+    dataframe: pd.DataFrame,
+    feature_list: List[Feature],
+) -> List[FeatureBase]:
+    identity_features = {}
+    engineered_features2 = []
+
+    col_list = dataframe.columns
+    for col in col_list:
+        identity_feature = IdentityFeature(dataframe.ww[col])
+        identity_features[col] = identity_feature
+
+    for ef in feature_list:
+        if ef.name in col_list:
+            engineered_features2.append(identity_features[ef.name])
+        else:
+            base_features = [identity_features[bf.name] for bf in ef.base_features]
+            engineered_features2.append(
+                TransformFeature(base_features, ef.primitive),
+            )
+
+    return engineered_features2
