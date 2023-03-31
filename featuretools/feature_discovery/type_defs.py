@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 from dataclasses import dataclass, field
 from functools import total_ordering
-from typing import Dict, List, Optional, Set, Type
+from typing import Any, Dict, List, Optional, Set, Type
 
 import pandas as pd
 from woodwork.logical_types import LogicalType
@@ -33,6 +33,8 @@ class Feature:
     primitive: Optional[Type[PrimitiveBase]] = None
     base_features: List[Feature] = field(default_factory=list)
     df_id: Optional[str] = None
+
+    extra: Dict[str, Any] = field(default_factory=dict)
     id: str = field(init=False)
 
     @staticmethod
@@ -91,6 +93,8 @@ class Feature:
 
     def __post_init__(self):
         self.id = self._generate_hash()
+        if self.extra is None:
+            self.extra = {}
 
     def to_dict(self):
         return {
@@ -100,8 +104,20 @@ class Feature:
             "primitive": self.primitive.__name__ if self.primitive else None,
             "base_features": [x.to_dict() for x in self.base_features],
             "df_id": self.df_id,
+            "extra": self.extra,
             "id": self.id,
         }
+
+    def copy(self):
+        return Feature(
+            name=self.name,
+            logical_type=self.logical_type,
+            tags=self.tags,
+            primitive=self.primitive,
+            base_features=[x.copy() for x in self.base_features],
+            extra=self.extra,
+            df_id=self.df_id,
+        )
 
     @staticmethod
     def from_dict(input_dict: Dict) -> Feature:
@@ -123,6 +139,7 @@ class Feature:
             tags=set(input_dict["tags"]),
             primitive=primitive,
             base_features=base_features,
+            extra=input_dict["df_id"],
             df_id=input_dict["df_id"],
         )
 
