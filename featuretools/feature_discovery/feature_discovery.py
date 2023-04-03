@@ -1,12 +1,13 @@
+import inspect
 from itertools import combinations, permutations, product
-from typing import Dict, List, Type, cast
+from typing import Callable, Dict, Iterable, List, Type, cast
 
 import woodwork.type_sys.type_system as ww_type_system
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import LogicalType
 from woodwork.table_schema import TableSchema
 
-from featuretools.feature_discovery.type_defs import ANY, Feature
+from featuretools.feature_discovery.type_defs import ANY, Feature, FeatureCollection
 from featuretools.primitives.base.primitive_base import PrimitiveBase
 from featuretools.tests.testing_utils.generate_fake_dataframe import flatten_list
 
@@ -357,10 +358,13 @@ def features_from_primitive(
         assert issubclass(logical_type, LogicalType)
 
         # TODO: a hack to instantiate primitive to get access to generate_name
-        prim_instance = primitive()
+        if inspect.isclass(primitive):
+            primitive_instance = primitive()
+        else:
+            primitive_instance = primitive
         features.append(
             Feature(
-                name=prim_instance.generate_name([x.name for x in feature_set]),
+                name=primitive_instance.generate_name([x.name for x in feature_set]),
                 logical_type=logical_type,
                 tags=output_tags,
                 primitive=primitive,
@@ -370,7 +374,33 @@ def features_from_primitive(
     return features
 
 
-def my_dfs(schema: TableSchema, primitives: List[Type[PrimitiveBase]]) -> List[Feature]:
+def schema_to_features(schema: TableSchema) -> List[Feature]:
+    features = []
+    for col_name, column_schema in schema.columns.items():
+        assert isinstance(column_schema, ColumnSchema)
+
+        logical_type = column_schema.logical_type
+        assert logical_type
+        assert issubclass(type(logical_type), LogicalType)
+
+        tags = column_schema.semantic_tags
+        assert isinstance(tags, set)
+
+        features.append(
+            Feature(
+                name=col_name,
+                logical_type=type(logical_type),
+                tags=tags,
+            ),
+        )
+
+    return features
+
+
+def my_dfs(
+    origin_features: Iterable[Feature],
+    primitives: List[Type[PrimitiveBase]],
+) -> FeatureCollection:
     """
     Calculates all Features for a given input woodwork table schema and list of primitives.
 
@@ -402,24 +432,7 @@ def my_dfs(schema: TableSchema, primitives: List[Type[PrimitiveBase]]) -> List[F
             features = my_dfs(df.ww.schema, [Absolute, IsNull])
 
     """
-    features = []
-    for col_name, column_schema in schema.columns.items():
-        assert isinstance(column_schema, ColumnSchema)
-
-        logical_type = column_schema.logical_type
-        assert logical_type
-        assert issubclass(type(logical_type), LogicalType)
-
-        tags = column_schema.semantic_tags
-        assert isinstance(tags, set)
-
-        features.append(
-            Feature(
-                name=col_name,
-                logical_type=type(logical_type),
-                tags=tags,
-            ),
-        )
+    features = [x.copy() for x in origin_features]
 
     # Group Columns by LogicalType, Tag, and combination
     feature_groups = group_features(features=features)
@@ -431,4 +444,39 @@ def my_dfs(schema: TableSchema, primitives: List[Type[PrimitiveBase]]) -> List[F
         )
         features.extend(features_)
 
-    return features
+    return FeatureCollection(features=features)
+
+
+PredicateFuncType = Callable[[Feature], bool]
+
+
+def has_tag_predicate(tag: str) -> PredicateFuncType:
+    return lambda feature: tag in feature.tags
+
+
+def is_logical_type(logical_type: Type[LogicalType]) -> PredicateFuncType:
+    return lambda feature: feature.logical_type == logical_type
+
+
+def any_predicate_func(predicate_funcs: List[PredicateFuncType]) -> PredicateFuncType:
+    return lambda feature: any([f(feature) for f in predicate_funcs])
+
+
+def has_dependency(dependent_feature: Feature) -> PredicateFuncType:
+    return lambda feature: dependent_feature in feature.get_dependencies(deep=True)
+
+
+def is_feature(other_feature: Feature) -> PredicateFuncType:
+    return lambda feature: feature == other_feature
+
+
+def not_predicate(predicate_func: PredicateFuncType) -> PredicateFuncType:
+    return lambda feature: not predicate_func(feature)
+
+
+def filter_features(features: List[Feature], predicate_funcs: List[PredicateFuncType]):
+    return [
+        feature
+        for feature in features
+        if all(func(feature) for func in predicate_funcs)
+    ]
