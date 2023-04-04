@@ -4,7 +4,7 @@ import hashlib
 import inspect
 from dataclasses import dataclass, field
 from functools import total_ordering
-from typing import Any, Dict, List, Optional, Set, Type, Union
+from typing import Dict, List, Optional, Set, Type, Union
 
 import pandas as pd
 import woodwork.type_sys.type_system as ww_type_system
@@ -18,7 +18,12 @@ from featuretools.feature_base.feature_base import (
     TransformFeature,
 )
 from featuretools.primitives.base.primitive_base import PrimitiveBase
-from featuretools.primitives.utils import get_all_logical_types, get_all_primitives
+from featuretools.primitives.utils import (
+    PrimitivesDeserializer,
+    get_all_logical_types,
+    get_all_primitives,
+    serialize_primitive,
+)
 
 ANY = "ANY"
 
@@ -29,15 +34,13 @@ logical_types_map = get_all_logical_types()
 @total_ordering
 @dataclass
 class Feature:
-    name: Optional[str] = None
-
+    name: str = ""
     logical_type: Optional[Type[LogicalType]] = None
     tags: Set[str] = field(default_factory=set)
     primitive: Optional[PrimitiveBase] = None
     base_features: List[Feature] = field(default_factory=list)
     df_id: Optional[str] = None
 
-    extra: Dict[str, Any] = field(default_factory=dict)
     id: str = field(init=False)
     n_output_features: int = 1
     depth = 0
@@ -130,7 +133,10 @@ class Feature:
             )
             self.n_output_features = primitive_instance.number_output_features
             self.depth = max([x.depth for x in self.base_features]) + 1
+        elif self.name == "":
+            raise Exception("Name must be given if origin feature")
 
+        # TODO(dreed): find a better way to do this
         if self.logical_type is not None and "index" not in self.tags:
             logical_type_name = self.logical_type.__name__
 
@@ -141,8 +147,6 @@ class Feature:
             )
 
             self.tags = self.tags | inferred_tags
-        if self.extra is None:
-            self.extra = {}
 
     @property
     def column_schema(self):
@@ -165,10 +169,11 @@ class Feature:
             "name": self.name,
             "logical_type": self.logical_type.__name__ if self.logical_type else None,
             "tags": list(self.tags),
-            "primitive": self.primitive.__name__ if self.primitive else None,
+            "primitive": serialize_primitive(self.primitive)
+            if self.primitive
+            else None,
             "base_features": [x.to_dict() for x in self.base_features],
             "df_id": self.df_id,
-            "extra": self.extra,
             "id": self.id,
         }
 
@@ -179,17 +184,23 @@ class Feature:
             tags=self.tags,
             primitive=self.primitive,
             base_features=[x.copy() for x in self.base_features],
-            extra=self.extra,
             df_id=self.df_id,
         )
 
     @staticmethod
     def from_dict(input_dict: Dict) -> Feature:
+
+        # TODO(dreed): can this be initialized at the module level?
+        primitive_deserializer = PrimitivesDeserializer()
         base_features = [Feature.from_dict(x) for x in input_dict["base_features"]]
 
-        primitive = (
-            primitives_map[input_dict["primitive"]] if input_dict["primitive"] else None
-        )
+        if input_dict["primitive"]:
+            primitive = primitive_deserializer.deserialize_primitive(
+                input_dict["primitive"],
+            )
+            assert isinstance(primitive, PrimitiveBase)
+        else:
+            primitive = None
 
         logical_type = (
             logical_types_map[input_dict["logical_type"]]
@@ -203,7 +214,6 @@ class Feature:
             tags=set(input_dict["tags"]),
             primitive=primitive,
             base_features=base_features,
-            extra=input_dict["df_id"],
             df_id=input_dict["df_id"],
         )
 
@@ -332,3 +342,9 @@ class FeatureCollection:
         assert origin_feature, "no origin feature with that name exists"
 
         return self.by_origin_feature[origin_feature]
+
+    def to_dict():
+        pass
+
+    def from_dict():
+        pass

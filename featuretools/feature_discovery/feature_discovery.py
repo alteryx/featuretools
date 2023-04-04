@@ -1,6 +1,6 @@
 import inspect
 from itertools import combinations, permutations, product
-from typing import Callable, Dict, Iterable, List, Type, cast
+from typing import Callable, Dict, Iterable, List, Type, Union, cast
 
 import woodwork.type_sys.type_system as ww_type_system
 from woodwork.column_schema import ColumnSchema
@@ -209,7 +209,7 @@ def group_features(features: List[Feature]) -> Dict[str, List[Feature]]:
     return groups
 
 
-def primitive_to_columnsets(primitive: Type[PrimitiveBase]) -> List[List[ColumnSchema]]:
+def primitive_to_columnsets(primitive: PrimitiveBase) -> List[List[ColumnSchema]]:
     column_sets = primitive.input_types
     assert column_sets is not None
     if not isinstance(column_sets[0], list):
@@ -234,7 +234,7 @@ def primitive_to_columnsets(primitive: Type[PrimitiveBase]) -> List[List[ColumnS
 
 def get_matching_features(
     feature_groups: Dict[str, List[Feature]],
-    primitive: Type[PrimitiveBase],
+    primitive: PrimitiveBase,
 ) -> List[List[Feature]]:
     """
     For a given primitive, find all feature sets that can be used to create new feature
@@ -288,7 +288,7 @@ def get_matching_features(
     return feature_sets
 
 
-def get_primitive_return_type(primitive: Type[PrimitiveBase]) -> ColumnSchema:
+def get_primitive_return_type(primitive: PrimitiveBase) -> ColumnSchema:
     if primitive.return_type:
         return primitive.return_type
     return_type = primitive.input_types[0]
@@ -299,7 +299,7 @@ def get_primitive_return_type(primitive: Type[PrimitiveBase]) -> ColumnSchema:
 
 def features_from_primitive(
     feature_groups: Dict[str, List[Feature]],
-    primitive: Type[PrimitiveBase],
+    primitive: PrimitiveBase,
 ) -> List[Feature]:
     """
     For a given primitive, creates all engineered features
@@ -335,6 +335,7 @@ def features_from_primitive(
                 ["f2", "f3"]
             ]
     """
+    assert isinstance(primitive, PrimitiveBase)
     return_schema = get_primitive_return_type(primitive=primitive)
     assert isinstance(return_schema, ColumnSchema)
 
@@ -357,14 +358,9 @@ def features_from_primitive(
 
         assert issubclass(logical_type, LogicalType)
 
-        # TODO: a hack to instantiate primitive to get access to generate_name
-        if inspect.isclass(primitive):
-            primitive_instance = primitive()
-        else:
-            primitive_instance = primitive
         features.append(
             Feature(
-                name=primitive_instance.generate_name([x.name for x in feature_set]),
+                name=primitive.generate_name([x.name for x in feature_set]),
                 logical_type=logical_type,
                 tags=output_tags,
                 primitive=primitive,
@@ -399,7 +395,7 @@ def schema_to_features(schema: TableSchema) -> List[Feature]:
 
 def my_dfs(
     origin_features: Iterable[Feature],
-    primitives: List[Type[PrimitiveBase]],
+    primitives: List[Union[Type[PrimitiveBase], PrimitiveBase]],
 ) -> FeatureCollection:
     """
     Calculates all Features for a given input woodwork table schema and list of primitives.
@@ -432,12 +428,28 @@ def my_dfs(
             features = my_dfs(df.ww.schema, [Absolute, IsNull])
 
     """
+    try:
+        iter(origin_features)
+    except TypeError:
+        raise ValueError("Input is not iterable")
+
+    assert isinstance(primitives, List)
+
+    primitive_instances: List[PrimitiveBase] = []
+    for primitive in primitives:
+        if inspect.isclass(primitive) and issubclass(primitive, PrimitiveBase):
+            primitive_instances.append(primitive())
+        elif isinstance(primitive, PrimitiveBase):
+            primitive_instances.append(primitive)
+        else:
+            raise ValueError("Input must be a Primitive Class or a Primitive Instance")
+
     features = [x.copy() for x in origin_features]
 
     # Group Columns by LogicalType, Tag, and combination
     feature_groups = group_features(features=features)
 
-    for primitive in primitives:
+    for primitive in primitive_instances:
         features_ = features_from_primitive(
             feature_groups=feature_groups,
             primitive=primitive,

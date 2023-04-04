@@ -14,6 +14,7 @@ from featuretools.feature_discovery.feature_discovery import (
     group_features,
     index_column_set,
     my_dfs,
+    schema_to_features,
 )
 from featuretools.feature_discovery.type_defs import Feature
 from featuretools.primitives import (
@@ -326,15 +327,19 @@ def test_get_matching_features(feature_groups, primitive, expected):
         ),
     ],
 )
+@patch.object(Feature, "_generate_hash", lambda x: x.name)
 def test_new_dfs(col_defs, primitives, expected):
     input_feature_names = set([x[0] for x in col_defs])
     df = generate_fake_dataframe(
         col_defs=col_defs,
     )
 
-    all_features = my_dfs(df.ww.schema, primitives)
+    origin_features = schema_to_features(df.ww.schema)
+    feature_collection = my_dfs(origin_features, primitives)
 
-    new_feature_names = set([x.name for x in all_features]) - input_feature_names
+    new_feature_names = (
+        set([x.name for x in feature_collection.all_features]) - input_feature_names
+    )
     assert new_feature_names == expected
 
 
@@ -373,6 +378,7 @@ def get_default_logical_type(tags: Set[str]):
         ),
     ],
 )
+@patch.object(Feature, "_generate_hash", lambda x: x.name)
 def test_compare_dfs(col_defs, primitives):
     input_feature_names = set([x[0] for x in col_defs])
     df = generate_fake_dataframe(
@@ -389,10 +395,13 @@ def test_compare_dfs(col_defs, primitives):
         features_only=True,
     )
 
-    features_new = my_dfs(df.ww.schema, primitives)
+    origin_features = schema_to_features(df.ww.schema)
+    features_collection = my_dfs(origin_features, primitives)
 
     feature_names_old = set([x.get_name() for x in features_old]) - input_feature_names
 
-    feature_names_new = set([x.name for x in features_new]) - input_feature_names
+    feature_names_new = (
+        set([x.name for x in features_collection.all_features]) - input_feature_names
+    )
 
     assert feature_names_old == feature_names_new

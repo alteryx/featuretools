@@ -7,7 +7,7 @@ from woodwork.logical_types import Double
 from featuretools.entityset.entityset import EntitySet
 from featuretools.feature_base.feature_base import FeatureBase
 from featuretools.feature_base.features_serializer import FeaturesSerializer
-from featuretools.feature_discovery.feature_discovery import my_dfs
+from featuretools.feature_discovery.feature_discovery import my_dfs, schema_to_features
 from featuretools.feature_discovery.type_defs import (
     Feature,
     convert_feature_list_to_featurebase_list,
@@ -29,21 +29,21 @@ def test_feature_type_equality():
     # Add Numeric is Commutative, so should all be equal
     f3 = Feature(
         name="Column 1",
-        primitive=AddNumeric,
+        primitive=AddNumeric(),
         logical_type=Double,
         base_features=[f1, f2],
     )
 
     f4 = Feature(
         name="Column 10",
-        primitive=AddNumeric,
+        primitive=AddNumeric(),
         logical_type=Double,
         base_features=[f1, f2],
     )
 
     f5 = Feature(
         name="Column 20",
-        primitive=AddNumeric,
+        primitive=AddNumeric(),
         logical_type=Double,
         base_features=[f2, f1],
     )
@@ -53,14 +53,14 @@ def test_feature_type_equality():
     # Divide Numeric is not Commutative, so should not be equal
     f6 = Feature(
         name="Column 1",
-        primitive=DivideNumeric,
+        primitive=DivideNumeric(),
         logical_type=Double,
         base_features=[f1, f2],
     )
 
     f7 = Feature(
         name="Column 1",
-        primitive=DivideNumeric,
+        primitive=DivideNumeric(),
         logical_type=Double,
         base_features=[f2, f1],
     )
@@ -75,7 +75,7 @@ def test_feature_type_assertions():
     ):
         Feature(
             name="Column 1",
-            primitive=AddNumeric,
+            primitive=AddNumeric(),
             logical_type=Double,
         )
 
@@ -85,21 +85,25 @@ def test_feature_to_dict():
     f2 = Feature("f2", Double)
     f = Feature(
         name="Column 1",
-        primitive=AddNumeric,
+        primitive=AddNumeric(),
         logical_type=Double,
         base_features=[f1, f2],
     )
 
     expected = {
-        "name": "Column 1",
+        "name": "f1 + f2",
         "logical_type": "Double",
-        "tags": [],
-        "primitive": "AddNumeric",
+        "tags": ["numeric"],
+        "primitive": {
+            "type": "AddNumeric",
+            "module": "featuretools.primitives.standard.transform.binary.add_numeric",
+            "arguments": {},
+        },
         "base_features": [
             {
                 "name": "f1",
                 "logical_type": "Double",
-                "tags": [],
+                "tags": ["numeric"],
                 "primitive": None,
                 "base_features": [],
                 "df_id": None,
@@ -108,7 +112,7 @@ def test_feature_to_dict():
             {
                 "name": "f2",
                 "logical_type": "Double",
-                "tags": [],
+                "tags": ["numeric"],
                 "primitive": None,
                 "base_features": [],
                 "df_id": None,
@@ -129,8 +133,7 @@ def test_feature_from_dict():
     f1 = Feature("f1", Double)
     f2 = Feature("f2", Double)
     f_orig = Feature(
-        name="Column 1",
-        primitive=AddNumeric,
+        primitive=AddNumeric(),
         logical_type=Double,
         base_features=[f1, f2],
     )
@@ -170,7 +173,7 @@ def test_convert_featurebase_to_feature():
     f3 = Feature(
         name="f_1 + f_2",
         tags={"numeric"},
-        primitive=AddNumeric,
+        primitive=AddNumeric(),
         base_features=[f1, f2],
     )
 
@@ -201,9 +204,14 @@ def test_convert_feature_to_feature_base():
         trans_primitives=primitives,
         features_only=True,
     )
-    features_new = my_dfs(df.ww.schema, primitives)
 
-    features_new = [x for x in features_new if "index" not in x.tags]
+    origin_features = schema_to_features(df.ww.schema)
+
+    features_collection = my_dfs(origin_features, primitives)
+
+    features_new = [
+        x for x in features_collection.all_features if "index" not in x.tags
+    ]
 
     converted_features = convert_feature_list_to_featurebase_list(df, features_new)
 
