@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import hashlib
-import inspect
 from dataclasses import dataclass, field
 from functools import total_ordering
-from typing import Dict, List, Optional, Set, Type, Union
+from typing import Any, Dict, List, Optional, Set, Type, Union
 
 import pandas as pd
 import woodwork.type_sys.type_system as ww_type_system
@@ -17,6 +16,7 @@ from featuretools.feature_base.feature_base import (
     IdentityFeature,
     TransformFeature,
 )
+from featuretools.primitives import TransformPrimitive
 from featuretools.primitives.base.primitive_base import PrimitiveBase
 from featuretools.primitives.utils import (
     PrimitivesDeserializer,
@@ -43,6 +43,8 @@ class Feature:
 
     id: str = field(init=False)
     n_output_features: int = 1
+
+    _names: List[str] = field(init=False, default_factory=list)
     depth = 0
 
     @staticmethod
@@ -99,7 +101,7 @@ class Feature:
             df_id=self.df_id,
         )
 
-    def get_primitive_name(self):
+    def get_primitive_name(self) -> Union[str, None]:
         return self.primitive.name if self.primitive else None
 
     def get_dependencies(self, deep=False) -> List[Feature]:
@@ -115,7 +117,7 @@ class Feature:
                     flattened_dependencies.append(dependencies)
         return flattened_dependencies
 
-    def get_origin_features(self):
+    def get_origin_features(self) -> List[Feature]:
         all_dependencies = self.get_dependencies(deep=True)
         return [f for f in all_dependencies if f.depth == 0]
 
@@ -123,18 +125,18 @@ class Feature:
         self.id = self._generate_hash()
 
         if self.primitive:
-            # TODO(dreed): a hack to instantiate primitive to get access to generate_name
-            if inspect.isclass(self.primitive):
-                primitive_instance = self.primitive()
-            else:
-                primitive_instance = self.primitive
-            self.name = primitive_instance.generate_name(
-                [x.name for x in self.base_features],
+            assert isinstance(self.primitive, PrimitiveBase)
+            self.rename(
+                self.primitive.generate_name(
+                    [x.name for x in self.base_features],
+                ),
             )
-            self.n_output_features = primitive_instance.number_output_features
+            self.n_output_features = self.primitive.number_output_features
             self.depth = max([x.depth for x in self.base_features]) + 1
         elif self.name == "":
             raise Exception("Name must be given if origin feature")
+        else:
+            self.rename(self.name)
 
         # TODO(dreed): find a better way to do this
         if self.logical_type is not None and "index" not in self.tags:
@@ -149,22 +151,35 @@ class Feature:
             self.tags = self.tags | inferred_tags
 
     @property
-    def column_schema(self):
+    def column_schema(self) -> ColumnSchema:
         return ColumnSchema(logical_type=self.logical_type, semantic_tags=self.tags)
 
-    def get_name(self):
+    def rename(self, name: str):
+        self.name = name
+        if self.n_output_features > 1:
+            self._names = [f"{name}[{idx}]" for idx in range(self.n_output_features)]
+        else:
+            self._names = [name]
+
+    def get_name(self) -> str:
         return self.name
 
-    def get_depth(self):
+    def get_depth(self) -> int:
         return self.depth
 
-    def get_feature_names(self):
-        if self.n_output_features > 1:
-            return [f"{self.name}[{idx}]" for idx in range(self.n_output_features)]
-        else:
-            return [self.name]
+    def get_feature_names(self) -> List[str]:
+        return self._names
 
-    def to_dict(self):
+    def dependendent_primitives(self) -> Set[Type[PrimitiveBase]]:
+        dependent_features = self.get_dependencies(deep=True)
+        dependent_primitives = {
+            type(f.primitive) for f in dependent_features if f.primitive
+        }
+        if self.primitive:
+            dependent_primitives.add(type(self.primitive))
+        return dependent_primitives
+
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "name": self.name,
             "logical_type": self.logical_type.__name__ if self.logical_type else None,
@@ -177,8 +192,8 @@ class Feature:
             "id": self.id,
         }
 
-    def copy(self):
-        return Feature(
+    def copy(self) -> Feature:
+        copied_feature = Feature(
             name=self.name,
             logical_type=self.logical_type,
             tags=self.tags,
@@ -186,6 +201,12 @@ class Feature:
             base_features=[x.copy() for x in self.base_features],
             df_id=self.df_id,
         )
+
+        # TODO(dreed): a little hacky
+        copied_feature.name = self.name
+        copied_feature._names = self._names
+
+        return copied_feature
 
     @staticmethod
     def from_dict(input_dict: Dict) -> Feature:
@@ -272,24 +293,35 @@ def convert_feature_list_to_featurebase_list(
     dataframe: pd.DataFrame,
     feature_list: List[Feature],
 ) -> List[FeatureBase]:
-    identity_features = {}
-    engineered_features2 = []
+    feature_cache: Dict[str, FeatureBase] = {}
 
-    col_list = dataframe.columns
-    for col in col_list:
-        identity_feature = IdentityFeature(dataframe.ww[col])
-        identity_features[col] = identity_feature
+    def rfunc(feature: Feature) -> FeatureBase:
+        if feature.id in feature_cache:
+            return feature_cache[feature.id]
 
-    for ef in feature_list:
-        if ef.name in col_list:
-            engineered_features2.append(identity_features[ef.name])
-        else:
-            base_features = [identity_features[bf.name] for bf in ef.base_features]
-            engineered_features2.append(
-                TransformFeature(base_features, ef.primitive),
-            )
+        if feature.depth == 0:
+            fb = IdentityFeature(dataframe.ww[feature.name])
+            fb = fb.rename(feature.name)
+            feature_cache[feature.id] = fb
+            return fb
 
-    return engineered_features2
+        base_features = [rfunc(bf) for bf in feature.base_features]
+
+        assert feature.primitive
+        assert isinstance(
+            feature.primitive,
+            TransformPrimitive,
+        ), "Only Transform Primitives"
+        fb = TransformFeature(base_features, feature.primitive)
+        fb = fb.rename(feature.name)
+
+        if feature.n_output_features > 1:
+            fb.set_feature_names(feature._names)
+
+        feature_cache[feature.id] = fb
+        return fb
+
+    return [rfunc(f) for f in feature_list]
 
 
 class FeatureCollection:

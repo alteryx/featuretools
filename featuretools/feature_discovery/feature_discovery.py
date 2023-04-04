@@ -395,7 +395,7 @@ def schema_to_features(schema: TableSchema) -> List[Feature]:
 
 def my_dfs(
     origin_features: Iterable[Feature],
-    primitives: List[Union[Type[PrimitiveBase], PrimitiveBase]],
+    primitives: Union[List[Type[PrimitiveBase]], List[PrimitiveBase]],
 ) -> FeatureCollection:
     """
     Calculates all Features for a given input woodwork table schema and list of primitives.
