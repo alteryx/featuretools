@@ -1,9 +1,9 @@
 cloudpickle==2.2.1
 dask==2023.3.2
-distributed==2023.3.2
-holidays==0.21.13
+distributed==2023.3.2.1
+holidays==0.22
 numpy==1.23.5
-pandas==1.5.3
+pandas==2.0.0
 psutil==5.9.4
 pyspark==3.2.3
 scipy==1.10.1
