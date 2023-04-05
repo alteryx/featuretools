@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from dataclasses import dataclass, field
 from functools import total_ordering
 from typing import Any, Dict, List, Optional, Set, Type, Union
@@ -50,7 +51,7 @@ class Feature:
     @staticmethod
     def hash(
         name: Optional[str],
-        primitive: Optional[Type[PrimitiveBase]] = None,
+        primitive: Optional[PrimitiveBase] = None,
         base_features: List[Feature] = [],
         df_id: Optional[str] = None,
     ):
@@ -63,7 +64,7 @@ class Feature:
             primitive_name = primitive.name
             assert isinstance(primitive_name, str)
             commutative = primitive.commutative
-            hash_msg.update(primitive_name.encode("utf-8"))
+            hash_msg.update(json.dumps(serialize_primitive(primitive)).encode("utf-8"))
 
             assert (
                 len(base_features) > 0
@@ -125,14 +126,13 @@ class Feature:
         self.id = self._generate_hash()
 
         if self.primitive:
+
             assert isinstance(self.primitive, PrimitiveBase)
-            self.rename(
-                self.primitive.generate_name(
-                    [x.name for x in self.base_features],
-                ),
-            )
             self.n_output_features = self.primitive.number_output_features
             self.depth = max([x.depth for x in self.base_features]) + 1
+            self.rename(
+                self.primitive.generate_name([x.name for x in self.base_features]),
+            )
         elif self.name == "":
             raise Exception("Name must be given if origin feature")
         else:
@@ -256,9 +256,8 @@ def convert_featurebase_to_feature(feature: FeatureBase) -> Feature:
 
     tags = col_schema.semantic_tags
 
-    primitive = type(feature.primitive)
-    if primitive == PrimitiveBase:
-        primitive = None
+    primitive = feature.primitive
+    assert isinstance(primitive, PrimitiveBase)
 
     return Feature(
         name=name,

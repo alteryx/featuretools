@@ -16,6 +16,7 @@ from featuretools.feature_discovery.type_defs import (
 from featuretools.primitives import AddNumeric, DivideNumeric
 from featuretools.primitives.base.primitive_base import PrimitiveBase
 from featuretools.primitives.standard.transform.numeric.absolute import Absolute
+from featuretools.primitives.standard.transform.time_series.lag import Lag
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils.generate_fake_dataframe import (
     generate_fake_dataframe,
@@ -141,6 +142,33 @@ def test_feature_from_dict():
     input_dict = f_orig.to_dict()
     f_from_dict = Feature.from_dict(input_dict)
     assert f_orig == f_from_dict
+
+
+def test_feature_hash():
+    bf = Feature("bf", Double)
+
+    p1 = Lag(periods=1)
+    p2 = Lag(periods=2)
+    f1 = Feature(
+        primitive=p1,
+        logical_type=Double,
+        base_features=[bf],
+    )
+
+    f2 = Feature(
+        primitive=p2,
+        logical_type=Double,
+        base_features=[bf],
+    )
+
+    f3 = Feature(
+        primitive=p2,
+        logical_type=Double,
+        base_features=[bf],
+    )
+
+    assert f1 != f2
+    assert f2 == f3
 
 
 def test_convert_featurebase_to_feature():
