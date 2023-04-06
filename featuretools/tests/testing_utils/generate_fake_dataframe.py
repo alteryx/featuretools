@@ -39,6 +39,7 @@ def flatten_list(nested_list):
 def generate_fake_dataframe(
     col_defs=[("f_1", "Numeric"), ("f_2", "Datetime", "time_index")],
     n_rows=10,
+    df_name="df",
 ):
     def randomize(values_):
         random.seed(10)
@@ -90,7 +91,7 @@ def generate_fake_dataframe(
         df = pd.concat([df, s], axis=1)
 
     df.ww.init(
-        name="nums",
+        name=df_name,
         logical_types=lt_dict,
         semantic_tags=tags_dict,
         **other_kwargs,

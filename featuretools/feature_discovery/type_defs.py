@@ -126,13 +126,17 @@ class Feature:
         self.id = self._generate_hash()
 
         if self.primitive:
-
             assert isinstance(self.primitive, PrimitiveBase)
             self.n_output_features = self.primitive.number_output_features
             self.depth = max([x.depth for x in self.base_features]) + 1
-            self.rename(
-                self.primitive.generate_name([x.name for x in self.base_features]),
-            )
+
+            if self.name == "":
+                # if name not provided, generate from primitive
+                self.rename(
+                    self.primitive.generate_name([x.name for x in self.base_features]),
+                )
+            else:
+                self.rename(self.name)
         elif self.name == "":
             raise Exception("Name must be given if origin feature")
         else:
@@ -169,6 +173,18 @@ class Feature:
 
     def get_feature_names(self) -> List[str]:
         return self._names
+
+    def split_feature(self) -> List[Feature]:
+        if self.n_output_features == 1:
+            return [self]
+
+        out: List[Feature] = []
+        for name in self._names:
+            f = self.copy()
+            f.n_output_features = 1
+            f.rename(name)
+            out.append(f)
+        return out
 
     def dependendent_primitives(self) -> Set[Type[PrimitiveBase]]:
         dependent_features = self.get_dependencies(deep=True)

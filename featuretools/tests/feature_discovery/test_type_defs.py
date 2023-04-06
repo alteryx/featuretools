@@ -171,6 +171,19 @@ def test_feature_hash():
     assert f2 == f3
 
 
+def test_feature_forced_name():
+    bf = Feature("bf", Double)
+
+    p1 = Lag(periods=1)
+    f1 = Feature(
+        name="target_delay_1",
+        primitive=p1,
+        logical_type=Double,
+        base_features=[bf],
+    )
+    assert f1.name == "target_delay_1"
+
+
 def test_convert_featurebase_to_feature():
     col_defs = [
         ("idx", "Integer", {"index"}),

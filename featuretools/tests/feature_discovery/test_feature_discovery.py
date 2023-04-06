@@ -6,6 +6,7 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, Datetime, Double, Ordinal
 
 from featuretools.entityset.entityset import EntitySet
+from featuretools.feature_base import Feature as OldFeature
 from featuretools.feature_discovery.feature_discovery import (
     feature_to_keys,
     generate_hashing_keys_from_column_schema,
@@ -18,6 +19,7 @@ from featuretools.feature_discovery.feature_discovery import (
 )
 from featuretools.feature_discovery.type_defs import Feature
 from featuretools.primitives import (
+    LSA,
     Absolute,
     AddNumeric,
     DateFirstEvent,
@@ -385,12 +387,12 @@ def test_compare_dfs(col_defs, primitives):
         col_defs=col_defs,
     )
 
-    es = EntitySet(id="nums")
-    es.add_dataframe(df, "nums", index="idx")
+    es = EntitySet(id="test")
+    es.add_dataframe(df, "df", index="idx")
 
     features_old = dfs(
         entityset=es,
-        target_dataframe_name="nums",
+        target_dataframe_name="df",
         trans_primitives=primitives,
         features_only=True,
     )
@@ -405,3 +407,45 @@ def test_compare_dfs(col_defs, primitives):
     )
 
     assert feature_names_old == feature_names_new
+
+
+def test_lag_on_lsa():
+    col_defs = [
+        ("idx", "Double", {"index"}),
+        ("t_idx", "Datetime", {"time_index"}),
+        ("f_1", "NaturalLanguage"),
+    ]
+    df = generate_fake_dataframe(
+        col_defs=col_defs,
+    )
+
+    primitives = [LSA]
+
+    es = EntitySet(id="test")
+    es.add_dataframe(df, df.ww.name, index="idx")
+
+    features_old = dfs(
+        entityset=es,
+        target_dataframe_name=df.ww.name,
+        trans_primitives=primitives,
+        features_only=True,
+    )
+    assert len(features_old) == 1
+
+    feature = features_old[0]
+    time_index_feature = OldFeature(df.ww["t_idx"])
+
+    base_features = [feature, time_index_feature]
+
+    lag_instance = Lag(periods=2)
+
+    with pytest.raises(ValueError, match="Cannot stack on whole multi-output feature."):
+        OldFeature(base_features, primitive=lag_instance)
+
+    split_lsa = [feature[i] for i in range(feature.number_output_features)]
+    lagged_lsa_features = []
+    for f in split_lsa:
+        base_features = [f, time_index_feature]
+        lagged_lsa_features.append(OldFeature(base_features, primitive=lag_instance))
+
+    raise
