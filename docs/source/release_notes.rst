@@ -11,6 +11,7 @@ Future Release
             ``NUniqueWeeks``, ``IsFirstWeekOfMonth`` (:pr:`2533`)
     * Fixes
     * Changes
+        * Pinned pandas to 2.0.0 (:pr:`2533`)
     * Documentation Changes
     * Testing Changes
 
