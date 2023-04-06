@@ -3,15 +3,19 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
+        * Add ``MaxCount``, ``MedianCount``, ``MaxMinDelta``, ``NUniqueDays``, ``NMostCommonFrequency``,
+            ``NUniqueDaysOfCalendarYear``, ``NUniqueDaysOfMonth``, ``NUniqueMonths``,
+            ``NUniqueWeeks``, ``IsFirstWeekOfMonth`` (:pr:`2533`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 v1.24.0 Mar 28, 2023
 ====================
