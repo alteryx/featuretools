@@ -150,7 +150,7 @@ class FeatureSetCalculator(object):
                     extra_columns=df.columns,
                 )
 
-                df = default_df.append(df, sort=True)
+                df = pd.concat([df, default_df], sort=True)
 
             df.index.name = self.entityset[self.feature_set.target_df_name].ww.index
 

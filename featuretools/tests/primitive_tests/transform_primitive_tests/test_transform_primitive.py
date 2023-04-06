@@ -12,6 +12,7 @@ from featuretools.primitives import (
     DaysInMonth,
     EmailAddressToDomain,
     FileExtension,
+    IsFirstWeekOfMonth,
     IsFreeEmailDomain,
     IsLeapYear,
     IsLunchTime,
@@ -979,6 +980,86 @@ class TestFileExtension(PrimitiveTestBase):
         array = pd.Series(["doc.txt", "~/documents/data", np.nan])
         answer = pd.Series([".txt", np.nan, np.nan])
         pd.testing.assert_series_equal(primitive_func(array), answer)
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        transform.append(primitive_instance)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+
+
+class TestIsFirstWeekOfMonth(PrimitiveTestBase):
+    primitive = IsFirstWeekOfMonth
+
+    def test_valid_dates(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(
+            [
+                pd.to_datetime("03/01/2019"),
+                pd.to_datetime("03/03/2019"),
+                pd.to_datetime("03/31/2019"),
+                pd.to_datetime("03/30/2019"),
+            ],
+        )
+        answers = primitive_func(array).tolist()
+        correct_answers = [True, False, False, False]
+        np.testing.assert_array_equal(answers, correct_answers)
+
+    def test_leap_year(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(
+            [
+                pd.to_datetime("03/01/2019"),
+                pd.to_datetime("02/29/2016"),
+                pd.to_datetime("03/31/2019"),
+                pd.to_datetime("03/30/2019"),
+            ],
+        )
+        answers = primitive_func(array).tolist()
+        correct_answers = [True, False, False, False]
+        np.testing.assert_array_equal(answers, correct_answers)
+
+    def test_year_before_1970(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(
+            [
+                pd.to_datetime("06/01/1965"),
+                pd.to_datetime("03/02/2019"),
+                pd.to_datetime("03/31/2019"),
+                pd.to_datetime("03/30/2019"),
+            ],
+        )
+        answers = primitive_func(array).tolist()
+        correct_answers = [True, True, False, False]
+        np.testing.assert_array_equal(answers, correct_answers)
+
+    def test_year_after_2038(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(
+            [
+                pd.to_datetime("12/31/2040"),
+                pd.to_datetime("01/01/2040"),
+                pd.to_datetime("03/31/2019"),
+                pd.to_datetime("03/30/2019"),
+            ],
+        )
+        answers = primitive_func(array).tolist()
+        correct_answers = [False, True, False, False]
+        np.testing.assert_array_equal(answers, correct_answers)
+
+    def test_nan_input(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(
+            [
+                pd.to_datetime("03/01/2019"),
+                np.nan,
+                np.datetime64("NaT"),
+                pd.to_datetime("03/30/2019"),
+            ],
+        )
+        answers = primitive_func(array).tolist()
+        correct_answers = [True, np.nan, np.nan, False]
+        np.testing.assert_array_equal(answers, correct_answers)
 
     def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)

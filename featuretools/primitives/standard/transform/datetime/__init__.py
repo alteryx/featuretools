@@ -17,6 +17,9 @@ from featuretools.primitives.standard.transform.datetime.distance_to_holiday imp
     DistanceToHoliday,
 )
 from featuretools.primitives.standard.transform.datetime.hour import Hour
+from featuretools.primitives.standard.transform.datetime.is_first_week_of_month import (
+    IsFirstWeekOfMonth,
+)
 from featuretools.primitives.standard.transform.datetime.is_federal_holiday import (
     IsFederalHoliday,
 )

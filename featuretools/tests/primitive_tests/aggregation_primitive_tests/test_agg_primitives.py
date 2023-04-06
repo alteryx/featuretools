@@ -13,12 +13,21 @@ from featuretools.primitives import (
     DateFirstEvent,
     FirstLastTimeDelta,
     Kurtosis,
+    MaxCount,
+    MaxMinDelta,
+    MedianCount,
     MinCount,
     NMostCommon,
+    NMostCommonFrequency,
     NumFalseSinceLastTrue,
     NumPeaks,
     NumTrueSinceLastFalse,
     NumZeroCrossings,
+    NUniqueDays,
+    NUniqueDaysOfCalendarYear,
+    NUniqueDaysOfMonth,
+    NUniqueMonths,
+    NUniqueWeeks,
     PercentTrue,
     Trend,
     Variance,
@@ -229,8 +238,8 @@ class TestKurtosis(PrimitiveTestBase):
 
     def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
-        primitive_instantiate = self.primitive()
-        aggregation.append(primitive_instantiate)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
         valid_dfs(es, aggregation, transform, self.primitive.name.upper())
 
 
@@ -293,8 +302,8 @@ class TestNumZeroCrossings(PrimitiveTestBase):
 
     def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
-        primitive_instantiate = self.primitive()
-        aggregation.append(primitive_instantiate)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
         valid_dfs(es, aggregation, transform, self.primitive.name.upper())
 
 
@@ -514,8 +523,8 @@ class TestNumPeaks(PrimitiveTestBase):
 
     def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
-        primitive_instantiate = self.primitive()
-        aggregation.append(primitive_instantiate)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
         valid_dfs(es, aggregation, transform, self.primitive.name.upper())
 
 
@@ -709,6 +718,391 @@ class TestMinCount(PrimitiveTestBase):
 
     def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
-        primitive_instantiate = self.primitive()
-        aggregation.append(primitive_instantiate)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+
+
+class TestMaxCount(PrimitiveTestBase):
+    primitive = MaxCount
+
+    def test_nan(self):
+        data = pd.Series([np.nan, np.nan, np.nan])
+        primitive_func = self.primitive().get_function()
+        answer = primitive_func(data)
+        assert np.isnan(answer)
+
+    def test_inf(self):
+        data = pd.Series([5, 10, 10, np.inf, np.inf, np.inf])
+        primitive_func = self.primitive().get_function()
+        answer = primitive_func(data)
+        assert answer == 3
+
+    def test_regular(self):
+        data = pd.Series([1, 1, 2, 3, 4, 4, 4, 5])
+        primitive_func = self.primitive().get_function()
+        answer = primitive_func(data)
+        assert answer == 1
+
+        data = pd.Series([1, 1, 2, 3, 4, 4, 4])
+        primitive_func = self.primitive().get_function()
+        answer = primitive_func(data)
+        assert answer == 3
+
+    def test_skipna(self):
+        data = pd.Series([1, 1, 2, 3, 4, 4, np.nan, 5])
+        primitive_func = self.primitive(skipna=False).get_function()
+        answer = primitive_func(data)
+        assert np.isnan(answer)
+
+    def test_ninf(self):
+        data = pd.Series([np.NINF, np.NINF, np.nan])
+        primitive_func = self.primitive().get_function()
+        answer = primitive_func(data)
+        assert answer == 2
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+
+
+class TestMaxMinDelta(PrimitiveTestBase):
+    primitive = MaxMinDelta
+    array = pd.Series([1, 1, 2, 2, 3, 4, 5, 6, 7, 8])
+
+    def test_max_min_delta(self):
+        primitive_func = self.primitive().get_function()
+        assert primitive_func(self.array) == 7.0
+
+    def test_nans(self):
+        primitive_func = self.primitive().get_function()
+        array_nans = pd.concat([self.array, pd.Series([np.nan])])
+        assert primitive_func(array_nans) == 7.0
+        primitive_func = self.primitive(skipna=False).get_function()
+        array_nans = pd.concat([self.array, pd.Series([np.nan])])
+        assert pd.isna(primitive_func(array_nans))
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+
+
+class TestMedianCount(PrimitiveTestBase):
+    primitive = MedianCount
+
+    def test_regular(self):
+        primitive_func = self.primitive().get_function()
+        case = pd.Series([1, 3, 5, 7])
+        given_answer = primitive_func(case)
+        assert given_answer == 0
+
+    def test_nans(self):
+        primitive_func = self.primitive().get_function()
+        case = pd.Series([1, 3, 4, 4, 4, 5, 7, np.nan, np.nan])
+        given_answer = primitive_func(case)
+        assert given_answer == 3
+        primitive_func = self.primitive(skipna=False).get_function()
+        given_answer = primitive_func(case)
+        assert np.isnan(given_answer)
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+
+
+class TestNMostCommonFrequency(PrimitiveTestBase):
+    primitive = NMostCommonFrequency
+
+    def test_regular(self):
+        test_cases = [
+            pd.Series([8, 7, 10, 10, 10, 3, 4, 5, 10, 8, 7]),
+            pd.Series([7, 7, 7, 6, 6, 5, 4]),
+            pd.Series([4, 5, 6, 6, 7, 7, 7]),
+        ]
+
+        answers = [
+            pd.Series([4, 2, 2]),
+            pd.Series([3, 2, 1]),
+            pd.Series([3, 2, 1]),
+        ]
+
+        primtive_func = self.primitive(3).get_function()
+
+        for case, answer in zip(test_cases, answers):
+            given_answer = primtive_func(case)
+            given_answer = given_answer.reset_index(drop=True)
+            assert given_answer.equals(answer)
+
+    def test_n_larger_than_len(self):
+        test_cases = [
+            pd.Series(["red", "red", "blue", "green"]),
+            pd.Series(["red", "red", "red", "blue", "green"]),
+            pd.Series(["red", "blue", "green", "orange"]),
+        ]
+        answers = [
+            pd.Series([2, 1, 1, np.nan, np.nan]),
+            pd.Series([3, 1, 1, np.nan, np.nan]),
+            pd.Series([1, 1, 1, 1, np.nan]),
+        ]
+
+        primtive_func = self.primitive(5).get_function()
+        for case, answer in zip(test_cases, answers):
+            given_answer = primtive_func(case)
+            given_answer = given_answer.reset_index(drop=True)
+            assert given_answer.equals(answer)
+
+    def test_skipna(self):
+        array = pd.Series(["red", "red", "blue", "green", np.nan, np.nan])
+        primtive_func = self.primitive(5, skipna=False).get_function()
+        given_answer = primtive_func(array)
+        given_answer = given_answer.reset_index(drop=True)
+        answer = pd.Series([2, 2, 1, 1, np.nan])
+        assert given_answer.equals(answer)
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        aggregation.append(self.primitive(5))
+        valid_dfs(
+            es,
+            aggregation,
+            transform,
+            self.primitive.name.upper(),
+            target_dataframe_name="customers",
+            multi_output=True,
+        )
+
+    def test_with_featuretools_args(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        aggregation.append(self.primitive(5, skipna=False))
+        valid_dfs(
+            es,
+            aggregation,
+            transform,
+            self.primitive.name.upper(),
+            target_dataframe_name="customers",
+            multi_output=True,
+        )
+
+    def test_serialize(self, es):
+        check_serialize(
+            primitive=self.primitive,
+            es=es,
+            target_dataframe_name="customers",
+        )
+
+
+class TestNUniqueDays(PrimitiveTestBase):
+    primitive = NUniqueDays
+
+    def test_two_years(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(pd.date_range("2010-01-01", "2011-12-31"))
+        assert primitive_func(array) == 365 * 2
+
+    def test_leap_year(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(pd.date_range("2016-01-01", "2017-12-31"))
+        assert primitive_func(array) == 365 * 2 + 1
+
+    def test_ten_years(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(pd.date_range("2010-01-01", "2019-12-31"))
+        assert primitive_func(array) == 365 * 10 + 1 + 1
+
+    def test_distinct_dt(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(
+            [
+                datetime(2019, 2, 21),
+                datetime(2019, 2, 1, 1, 20, 0),
+                datetime(2019, 2, 1, 1, 30, 0),
+                datetime(2018, 2, 1),
+                datetime(2019, 1, 1),
+            ],
+        )
+        assert primitive_func(array) == 4
+
+    def test_NaT(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(pd.date_range("2010-01-01", "2011-12-31"))
+        NaT_array = pd.Series([pd.NaT] * 100)
+        assert primitive_func(array.append(NaT_array)) == 365 * 2
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+
+
+class TestNUniqueDaysOfCalendarYear(PrimitiveTestBase):
+    primitive = NUniqueDaysOfCalendarYear
+
+    def test_two_years(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(pd.date_range("2010-01-01", "2011-12-31"))
+        assert primitive_func(array) == 365
+
+    def test_leap_year(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(pd.date_range("2016-01-01", "2017-12-31"))
+        assert primitive_func(array) == 366
+
+    def test_ten_years(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(pd.date_range("2010-01-01", "2019-12-31"))
+        assert primitive_func(array) == 366
+
+    def test_distinct_dt(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(
+            [
+                datetime(2019, 2, 21),
+                datetime(2019, 2, 1, 1, 20, 0),
+                datetime(2019, 2, 1, 1, 30, 0),
+                datetime(2018, 2, 1),
+                datetime(2019, 1, 1),
+            ],
+        )
+        assert primitive_func(array) == 3
+
+    def test_NaT(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(pd.date_range("2010-01-01", "2011-12-31"))
+        NaT_array = pd.Series([pd.NaT] * 100)
+        assert primitive_func(array.append(NaT_array)) == 365
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+
+
+class TestNUniqueDaysOfMonth(PrimitiveTestBase):
+    primitive = NUniqueDaysOfMonth
+
+    def test_two_days(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(pd.date_range("2010-01-01", "2010-01-02"))
+        assert primitive_func(array) == 2
+
+    def test_one_year(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(pd.date_range("2010-01-01", "2010-12-31"))
+        assert primitive_func(array) == 31
+
+    def test_leap_year(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(pd.date_range("2016-01-01", "2017-12-31"))
+        assert primitive_func(array) == 31
+
+    def test_distinct_dt(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(
+            [
+                datetime(2019, 2, 21),
+                datetime(2019, 2, 1, 1, 20, 0),
+                datetime(2019, 2, 1, 1, 30, 0),
+                datetime(2018, 2, 1),
+                datetime(2019, 1, 1),
+            ],
+        )
+        assert primitive_func(array) == 2
+
+    def test_NaT(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(pd.date_range("2010-01-01", "2010-12-31"))
+        NaT_array = pd.Series([pd.NaT] * 100)
+        assert primitive_func(array.append(NaT_array)) == 31
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+
+
+class TestNUniqueMonths(PrimitiveTestBase):
+    primitive = NUniqueMonths
+
+    def test_two_days(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(pd.date_range("2010-01-01", "2010-01-02"))
+        assert primitive_func(array) == 1
+
+    def test_ten_years(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(pd.date_range("2010-01-01", "2019-12-31"))
+        assert primitive_func(array) == 12 * 10
+
+    def test_distinct_dt(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(
+            [
+                datetime(2019, 2, 21),
+                datetime(2019, 2, 1, 1, 20, 0),
+                datetime(2019, 2, 1, 1, 30, 0),
+                datetime(2018, 2, 1),
+                datetime(2019, 1, 1),
+            ],
+        )
+        assert primitive_func(array) == 3
+
+    def test_NaT(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(pd.date_range("2010-01-01", "2011-12-31"))
+        NaT_array = pd.Series([pd.NaT] * 100)
+        assert primitive_func(array.append(NaT_array)) == 12 * 2
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+
+
+class TestNUniqueWeeks(PrimitiveTestBase):
+    primitive = NUniqueWeeks
+
+    def test_same_week(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(pd.date_range("2019-01-01", "2019-01-02"))
+        assert primitive_func(array) == 1
+
+    def test_ten_years(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(pd.date_range("2010-01-01", "2019-12-31"))
+        assert primitive_func(array) == 523
+
+    def test_distinct_dt(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(
+            [
+                datetime(2019, 2, 21),
+                datetime(2019, 2, 1, 1, 20, 0),
+                datetime(2019, 2, 1, 1, 30, 0),
+                datetime(2018, 2, 2),
+                datetime(2019, 2, 3, 1, 30, 0),
+                datetime(2019, 1, 1),
+            ],
+        )
+        assert primitive_func(array) == 4
+
+    def test_NaT(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(pd.date_range("2019-01-01", "2019-01-02"))
+        NaT_array = pd.Series([pd.NaT] * 100)
+        assert primitive_func(array.append(NaT_array)) == 1
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
         valid_dfs(es, aggregation, transform, self.primitive.name.upper())
