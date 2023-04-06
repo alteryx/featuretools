@@ -455,8 +455,26 @@ def test_lag_on_lsa():
     origin_features = schema_to_features(df.ww.schema)
 
     feature_groups = group_features(origin_features)
-    feature_sets = features_from_primitive(feature_groups, LSA())
+    lsa_features = features_from_primitive(feature_groups, LSA())
 
-    convert_feature_list_to_featurebase_list(df, feature_sets)
+    # Confirm 2 LSA features are properly converted into a single FeatureBase
+    # LSA feature with proper names
+    converted_features = convert_feature_list_to_featurebase_list(df, lsa_features)
 
-    raise
+    assert len(converted_features) == 1
+    lsa_feature = converted_features[0]
+    assert lsa_feature.get_feature_names() == ["LSA(f_1)[0]", "LSA(f_1)[1]"]
+
+    time_index_feature = [x for x in origin_features if x.name == "t_idx"][0]
+    feature_groups = group_features(lsa_features + [time_index_feature])
+    lag_features = features_from_primitive(feature_groups, lag_instance)
+    assert len(lag_features) == 2
+    assert set([x.get_name() for x in lag_features]) == set(
+        ["LAG(LSA(f_1)[0], t_idx, periods=2)", "LAG(LSA(f_1)[1], t_idx, periods=2)"],
+    )
+
+    converted_features = convert_feature_list_to_featurebase_list(df, lag_features)
+
+    assert set([x.get_name() for x in converted_features]) == set(
+        ["LAG(LSA(f_1)[0], t_idx, periods=2)", "LAG(LSA(f_1)[1], t_idx, periods=2)"],
+    )

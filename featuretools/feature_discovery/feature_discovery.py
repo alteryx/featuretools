@@ -361,10 +361,8 @@ def features_from_primitive(
         if primitive.number_output_features > 1:
             related_features: Set[Feature] = set()
             for n in range(primitive.number_output_features):
-                name = primitive.generate_name([x.name for x in feature_set])
-                name = f"{name}[{n}]"
                 feature = Feature(
-                    name=name,
+                    name=primitive.generate_name([x.get_name() for x in feature_set]),
                     logical_type=logical_type,
                     tags=output_tags,
                     primitive=primitive,
@@ -380,7 +378,7 @@ def features_from_primitive(
         else:
             features.append(
                 Feature(
-                    name=primitive.generate_name([x.name for x in feature_set]),
+                    name=primitive.generate_name([x.get_name() for x in feature_set]),
                     logical_type=logical_type,
                     tags=output_tags,
                     primitive=primitive,

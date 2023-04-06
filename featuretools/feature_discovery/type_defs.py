@@ -4,7 +4,8 @@ import hashlib
 import json
 from dataclasses import dataclass, field
 from functools import total_ordering
-from typing import Any, Dict, List, Optional, Set, Type, Union
+from itertools import product
+from typing import Any, Dict, List, Optional, Set, Type, Union, cast
 
 import pandas as pd
 import woodwork.type_sys.type_system as ww_type_system
@@ -45,7 +46,7 @@ class Feature:
     id: str = field(init=False)
     n_output_features: int = 1
 
-    _names: List[str] = field(init=False, default_factory=list)
+    # _names: List[str] = field(init=False, default_factory=list)
     depth = 0
     related_features: Set[Feature] = field(default_factory=set)
     idx: int = 0
@@ -166,31 +167,33 @@ class Feature:
 
     def rename(self, name: str):
         self.name = name
-        if self.n_output_features > 1:
-            self._names = [f"{name}[{idx}]" for idx in range(self.n_output_features)]
-        else:
-            self._names = [name]
+        # if self.n_output_features > 1:
+        #     self._names = [f"{name}[{idx}]" for idx in range(self.n_output_features)]
+        # else:
+        #     self._names = [name]
 
     def get_name(self) -> str:
+        if len(self.related_features) > 0:
+            return f"{self.name}[{self.idx}]"
         return self.name
 
     def get_depth(self) -> int:
         return self.depth
 
-    def get_feature_names(self) -> List[str]:
-        return self._names
+    # def get_feature_names(self) -> List[str]:
+    #     return self._names
 
-    def split_feature(self) -> List[Feature]:
-        if self.n_output_features == 1:
-            return [self]
+    # def split_feature(self) -> List[Feature]:
+    #     if self.n_output_features == 1:
+    #         return [self]
 
-        out: List[Feature] = []
-        for name in self._names:
-            f = self.copy()
-            f.n_output_features = 1
-            f.rename(name)
-            out.append(f)
-        return out
+    #     out: List[Feature] = []
+    #     for name in self._names:
+    #         f = self.copy()
+    #         f.n_output_features = 1
+    #         f.rename(name)
+    #         out.append(f)
+    #     return out
 
     def dependendent_primitives(self) -> Set[Type[PrimitiveBase]]:
         dependent_features = self.get_dependencies(deep=True)
@@ -224,9 +227,9 @@ class Feature:
             df_id=self.df_id,
         )
 
-        # TODO(dreed): a little hacky
-        copied_feature.name = self.name
-        copied_feature._names = self._names
+        # # TODO(dreed): a little hacky
+        # copied_feature.name = self.name
+        # copied_feature._names = self._names
 
         return copied_feature
 
@@ -314,19 +317,17 @@ def convert_feature_list_to_featurebase_list(
     dataframe: pd.DataFrame,
     feature_list: List[Feature],
 ) -> List[FeatureBase]:
-    feature_cache: Dict[str, FeatureBase] = {}
+    feature_cache: Dict[str, List[FeatureBase]] = {}
 
-    def rfunc(feature: Feature) -> FeatureBase:
+    def rfunc(feature: Feature, depth=0) -> List[FeatureBase]:
         if feature.id in feature_cache:
             return feature_cache[feature.id]
 
         if feature.depth == 0:
             fb = IdentityFeature(dataframe.ww[feature.name])
-            fb = fb.rename(feature.name)
-            feature_cache[feature.id] = fb
-            return fb
-
-        base_features = [rfunc(bf) for bf in feature.base_features]
+            fb = cast(IdentityFeature, fb.rename(feature.name))
+            feature_cache[feature.id] = [fb]
+            return [fb]
 
         assert feature.primitive
         assert isinstance(
@@ -334,29 +335,54 @@ def convert_feature_list_to_featurebase_list(
             TransformPrimitive,
         ), "Only Transform Primitives"
 
-        fb = TransformFeature(base_features, feature.primitive)
-        fb = fb.rename(feature.name)
+        base_feature_sets = [rfunc(bf, depth=1) for bf in feature.base_features]
 
-        if feature.primitive.number_output_features > 1:
-            assert (
-                len(feature.related_features)
-                == feature.primitive.number_output_features - 1
-            )
-            # feature_ids = [f.id for f in feature.related_features] + [feature.id]
-            if any([f.id in feature_cache for f in feature.related_features]):
-                raise
+        out = []
+        for base_features in product(*base_feature_sets):
+            if feature.primitive.number_output_features > 1:
+                assert (
+                    len(feature.related_features)
+                    == feature.primitive.number_output_features - 1
+                )
 
-            [f for f in feature.related_features] + [feature]
+                if any([f.id in feature_cache for f in feature.related_features]):
+                    # if related id is already in cache, we already created this feature
+                    continue
 
-            raise
+                # sort the features according to index to be in the right order
+                sorted_features = sorted(
+                    [f for f in feature.related_features] + [feature],
+                    key=lambda x: x.idx,
+                )
+                names = [x.get_name() for x in sorted_features]
+                fb = TransformFeature(base_features, feature.primitive)
+                # raise
+                fb.set_feature_names(names)
+                feature_cache[feature.id] = [fb]
 
-        if feature.n_output_features > 1:
-            fb.set_feature_names(feature._names)
+                if depth > 0:
+                    out.extend(
+                        [
+                            fb[i]
+                            for i in range(feature.primitive.number_output_features)
+                        ],
+                    )
+                else:
+                    out.append(fb)
+            else:
+                fb = TransformFeature(base_features, feature.primitive)
 
-        feature_cache[feature.id] = fb
-        return fb
+                # TODO(dreed): I think I need this if features are renamed
+                # fb = fb.rename(feature.get_name())
 
-    return [rfunc(f) for f in feature_list]
+                feature_cache[feature.id] = [fb]
+                out.append(fb)
+
+        return out
+
+    final_features = [rfunc(f) for f in feature_list]
+
+    return [item for sublist in final_features for item in sublist]
 
 
 class FeatureCollection:
