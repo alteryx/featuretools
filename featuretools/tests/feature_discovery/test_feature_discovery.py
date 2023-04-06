@@ -9,6 +9,7 @@ from featuretools.entityset.entityset import EntitySet
 from featuretools.feature_base import Feature as OldFeature
 from featuretools.feature_discovery.feature_discovery import (
     feature_to_keys,
+    features_from_primitive,
     generate_hashing_keys_from_column_schema,
     get_features,
     get_matching_features,
@@ -17,7 +18,10 @@ from featuretools.feature_discovery.feature_discovery import (
     my_dfs,
     schema_to_features,
 )
-from featuretools.feature_discovery.type_defs import Feature
+from featuretools.feature_discovery.type_defs import (
+    Feature,
+    convert_feature_list_to_featurebase_list,
+)
 from featuretools.primitives import (
     LSA,
     Absolute,
@@ -447,5 +451,12 @@ def test_lag_on_lsa():
     for f in split_lsa:
         base_features = [f, time_index_feature]
         lagged_lsa_features.append(OldFeature(base_features, primitive=lag_instance))
+
+    origin_features = schema_to_features(df.ww.schema)
+
+    feature_groups = group_features(origin_features)
+    feature_sets = features_from_primitive(feature_groups, LSA())
+
+    convert_feature_list_to_featurebase_list(df, feature_sets)
 
     raise

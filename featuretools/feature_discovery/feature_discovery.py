@@ -1,6 +1,6 @@
 import inspect
 from itertools import combinations, permutations, product
-from typing import Callable, Dict, Iterable, List, Type, Union, cast
+from typing import Callable, Dict, Iterable, List, Set, Type, Union, cast
 
 import woodwork.type_sys.type_system as ww_type_system
 from woodwork.column_schema import ColumnSchema
@@ -344,7 +344,7 @@ def features_from_primitive(
     output_tags = return_schema.semantic_tags
     assert isinstance(output_tags, set)
 
-    features = []
+    features: List[Feature] = []
     feature_sets = get_matching_features(
         feature_groups=feature_groups,
         primitive=primitive,
@@ -358,15 +358,35 @@ def features_from_primitive(
 
         assert issubclass(logical_type, LogicalType)
 
-        features.append(
-            Feature(
-                name=primitive.generate_name([x.name for x in feature_set]),
-                logical_type=logical_type,
-                tags=output_tags,
-                primitive=primitive,
-                base_features=feature_set,
-            ),
-        )
+        if primitive.number_output_features > 1:
+            related_features: Set[Feature] = set()
+            for n in range(primitive.number_output_features):
+                name = primitive.generate_name([x.name for x in feature_set])
+                name = f"{name}[{n}]"
+                feature = Feature(
+                    name=name,
+                    logical_type=logical_type,
+                    tags=output_tags,
+                    primitive=primitive,
+                    base_features=feature_set,
+                    idx=n,
+                )
+
+                related_features.add(feature)
+
+            for f in related_features:
+                f.related_features = related_features - {f}
+                features.append(f)
+        else:
+            features.append(
+                Feature(
+                    name=primitive.generate_name([x.name for x in feature_set]),
+                    logical_type=logical_type,
+                    tags=output_tags,
+                    primitive=primitive,
+                    base_features=feature_set,
+                ),
+            )
     return features
 
 

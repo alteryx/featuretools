@@ -47,6 +47,8 @@ class Feature:
 
     _names: List[str] = field(init=False, default_factory=list)
     depth = 0
+    related_features: Set[Feature] = field(default_factory=set)
+    idx: int = 0
 
     @staticmethod
     def hash(
@@ -54,6 +56,7 @@ class Feature:
         primitive: Optional[PrimitiveBase] = None,
         base_features: List[Feature] = [],
         df_id: Optional[str] = None,
+        idx: int = 0,
     ):
         hash_msg = hashlib.sha256()
 
@@ -80,6 +83,8 @@ class Feature:
             assert name
             hash_msg.update(name.encode("utf-8"))
 
+        hash_msg.update(str(idx).encode("utf-8"))
+
         return hash_msg.hexdigest()
 
     def __eq__(self, other: Feature):
@@ -100,6 +105,7 @@ class Feature:
             primitive=self.primitive,
             base_features=self.base_features,
             df_id=self.df_id,
+            idx=self.idx,
         )
 
     def get_primitive_name(self) -> Union[str, None]:
@@ -327,8 +333,22 @@ def convert_feature_list_to_featurebase_list(
             feature.primitive,
             TransformPrimitive,
         ), "Only Transform Primitives"
+
         fb = TransformFeature(base_features, feature.primitive)
         fb = fb.rename(feature.name)
+
+        if feature.primitive.number_output_features > 1:
+            assert (
+                len(feature.related_features)
+                == feature.primitive.number_output_features - 1
+            )
+            # feature_ids = [f.id for f in feature.related_features] + [feature.id]
+            if any([f.id in feature_cache for f in feature.related_features]):
+                raise
+
+            [f for f in feature.related_features] + [feature]
+
+            raise
 
         if feature.n_output_features > 1:
             fb.set_feature_names(feature._names)
