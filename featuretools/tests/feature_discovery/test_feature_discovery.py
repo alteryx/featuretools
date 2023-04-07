@@ -7,6 +7,10 @@ from woodwork.logical_types import Boolean, Datetime, Double, Ordinal
 
 from featuretools.entityset.entityset import EntitySet
 from featuretools.feature_base import Feature as OldFeature
+from featuretools.feature_base import (
+    IdentityFeature,
+    TransformFeature,
+)
 from featuretools.feature_discovery.feature_discovery import (
     feature_to_keys,
     features_from_primitive,
@@ -21,6 +25,7 @@ from featuretools.feature_discovery.feature_discovery import (
 from featuretools.feature_discovery.type_defs import (
     Feature,
     convert_feature_list_to_featurebase_list,
+    convert_feature_to_featurebase2,
 )
 from featuretools.primitives import (
     LSA,
@@ -478,3 +483,126 @@ def test_lag_on_lsa():
     assert set([x.get_name() for x in converted_features]) == set(
         ["LAG(LSA(f_1)[0], t_idx, periods=2)", "LAG(LSA(f_1)[1], t_idx, periods=2)"],
     )
+
+
+def test_origin_feature_conversion():
+    df = generate_fake_dataframe(
+        col_defs=[("idx", "Double", {"index"}), ("f_1", "Double")],
+    )
+    # TODO(dreed): don't like how I have to make an entityset
+    es = EntitySet(id="test")
+    es.add_dataframe(df, df.ww.name)
+
+    origin_features = schema_to_features(df.ww.schema)
+    f_1 = [f for f in origin_features if f.name == "f_1"][0]
+    fb = convert_feature_to_featurebase2(f_1, df)
+
+    assert isinstance(fb, IdentityFeature)
+    assert fb.get_name() == "f_1"
+
+    f_1.rename("new name")
+
+    df.ww.rename({"f_1": "new name"}, inplace=True)
+    fb = convert_feature_to_featurebase2(f_1, df)
+
+    assert isinstance(fb, IdentityFeature)
+    assert fb.get_name() == "new name"
+
+
+def test_stacked_feature_conversion():
+    df = generate_fake_dataframe(
+        col_defs=[("idx", "Double", {"index"}), ("f_1", "Double")],
+    )
+    # TODO(dreed): don't like how I have to make an entityset
+    es = EntitySet(id="test")
+    es.add_dataframe(df, df.ww.name)
+
+    origin_features = schema_to_features(df.ww.schema)
+    f_1 = [f for f in origin_features if f.name == "f_1"][0]
+    fc = my_dfs([f_1], [Absolute()])
+
+    f_2 = [f for f in fc.all_features if f.name == "ABSOLUTE(f_1)"][0]
+
+    fb = convert_feature_to_featurebase2(f_2, df)
+
+    assert isinstance(fb, TransformFeature)
+    assert fb.get_name() == "ABSOLUTE(f_1)"
+    assert len(fb.base_features) == 1
+    assert fb.base_features[0].get_name() == "f_1"
+
+    f_2.rename("f_2")
+    fb = convert_feature_to_featurebase2(f_2, df)
+
+    assert isinstance(fb, TransformFeature)
+    assert fb.get_name() == "f_2"
+    assert len(fb.base_features) == 1
+    assert fb.base_features[0].get_name() == "f_1"
+
+
+def test_multi_output_to_featurebase():
+    df = generate_fake_dataframe(
+        col_defs=[
+            ("idx", "Double", {"index"}),
+            ("f_1", "NaturalLanguage"),
+        ],
+    )
+
+    # TODO(dreed): don't like how I have to make an entityset
+    es = EntitySet(id="test")
+    es.add_dataframe(df, df.ww.name)
+
+    # primitive_instance = LSA()
+    origin_features = schema_to_features(df.ww.schema)
+    f_1 = [f for f in origin_features if f.name == "f_1"][0]
+    fc = my_dfs([f_1], [LSA()])
+
+    lsa_features = [f for f in fc.all_features if f.get_primitive_name() == "lsa"]
+    assert len(lsa_features) == 2
+
+    fb = convert_feature_to_featurebase2(lsa_features[0], df)
+    assert isinstance(fb, TransformFeature)
+    assert fb.get_name() == "LSA(f_1)"
+    assert len(fb.base_features) == 1
+    assert set(fb.get_feature_names()) == set(["LSA(f_1)[0]", "LSA(f_1)[1]"])
+    assert fb.base_features[0].get_name() == "f_1"
+
+    lsa_features[0].rename("f_2")
+    lsa_features[1].rename("f_3")
+
+    fb = convert_feature_to_featurebase2(lsa_features[0], df)
+    assert isinstance(fb, TransformFeature)
+    assert len(fb.base_features) == 1
+    assert set(fb.get_feature_names()) == set(["f_2", "f_3"])
+    assert fb.base_features[0].get_name() == "f_1"
+
+
+def test_stacking_on_multioutput_to_featurebase():
+    col_defs = [
+        ("idx", "Double", {"index"}),
+        ("t_idx", "Datetime", {"time_index"}),
+        ("f_1", "NaturalLanguage"),
+    ]
+    df = generate_fake_dataframe(
+        col_defs=col_defs,
+    )
+    # TODO(dreed): don't like how I have to make an entityset
+    es = EntitySet(id="test")
+    es.add_dataframe(df, df.ww.name)
+
+    origin_features = schema_to_features(df.ww.schema)
+    time_index_feature = [f for f in origin_features if f.name == "t_idx"][0]
+    f_1 = [f for f in origin_features if f.name == "f_1"][0]
+
+    fc = my_dfs([f_1], [LSA()])
+    lsa_features = [f for f in fc.all_features if f.get_primitive_name() == "lsa"]
+    assert len(lsa_features) == 2
+
+    fc = my_dfs(lsa_features + [time_index_feature], [Lag(periods=2)])
+    lag_features = [f for f in fc.all_features if f.get_primitive_name() == "lag"]
+    assert len(lag_features) == 2
+
+    fb = convert_feature_to_featurebase2(lag_features[0], df)
+
+    assert isinstance(fb, TransformFeature)
+    assert fb.get_name() == lag_features[0].get_name()
+    assert len(fb.base_features) == 2

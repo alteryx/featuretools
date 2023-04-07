@@ -36,7 +36,7 @@ logical_types_map = get_all_logical_types()
 @total_ordering
 @dataclass
 class Feature:
-    name: str = ""
+    name: Optional[str] = None
     logical_type: Optional[Type[LogicalType]] = None
     tags: Set[str] = field(default_factory=set)
     primitive: Optional[PrimitiveBase] = None
@@ -44,9 +44,9 @@ class Feature:
     df_id: Optional[str] = None
 
     id: str = field(init=False)
+    _gen_name: str = field(init=False)
     n_output_features: int = 1
 
-    # _names: List[str] = field(init=False, default_factory=list)
     depth = 0
     related_features: Set[Feature] = field(default_factory=set)
     idx: int = 0
@@ -136,18 +136,14 @@ class Feature:
             assert isinstance(self.primitive, PrimitiveBase)
             self.n_output_features = self.primitive.number_output_features
             self.depth = max([x.depth for x in self.base_features]) + 1
+            self._gen_name = self.primitive.generate_name(
+                [x.get_name() for x in self.base_features],
+            )
 
-            if self.name == "":
-                # if name not provided, generate from primitive
-                self.rename(
-                    self.primitive.generate_name([x.name for x in self.base_features]),
-                )
-            else:
-                self.rename(self.name)
-        elif self.name == "":
+        elif self.name is None:
             raise Exception("Name must be given if origin feature")
         else:
-            self.rename(self.name)
+            self._gen_name = self.name
 
         # TODO(dreed): find a better way to do this
         if self.logical_type is not None and "index" not in self.tags:
@@ -167,33 +163,16 @@ class Feature:
 
     def rename(self, name: str):
         self.name = name
-        # if self.n_output_features > 1:
-        #     self._names = [f"{name}[{idx}]" for idx in range(self.n_output_features)]
-        # else:
-        #     self._names = [name]
 
     def get_name(self) -> str:
-        if len(self.related_features) > 0:
-            return f"{self.name}[{self.idx}]"
-        return self.name
+        if self.name:
+            return self.name
+        elif len(self.related_features) > 0:
+            return f"{self._gen_name}[{self.idx}]"
+        return self._gen_name
 
     def get_depth(self) -> int:
         return self.depth
-
-    # def get_feature_names(self) -> List[str]:
-    #     return self._names
-
-    # def split_feature(self) -> List[Feature]:
-    #     if self.n_output_features == 1:
-    #         return [self]
-
-    #     out: List[Feature] = []
-    #     for name in self._names:
-    #         f = self.copy()
-    #         f.n_output_features = 1
-    #         f.rename(name)
-    #         out.append(f)
-    #     return out
 
     def dependendent_primitives(self) -> Set[Type[PrimitiveBase]]:
         dependent_features = self.get_dependencies(deep=True)
@@ -216,6 +195,9 @@ class Feature:
             "df_id": self.df_id,
             "id": self.id,
         }
+
+    def is_multioutput(self) -> bool:
+        return len(self.related_features) > 0
 
     def copy(self) -> Feature:
         copied_feature = Feature(
@@ -279,8 +261,11 @@ def convert_featurebase_to_feature(feature: FeatureBase) -> Feature:
 
     tags = col_schema.semantic_tags
 
-    primitive = feature.primitive
-    assert isinstance(primitive, PrimitiveBase)
+    if isinstance(feature, IdentityFeature):
+        primitive = None
+    else:
+        primitive = feature.primitive
+        assert isinstance(primitive, PrimitiveBase)
 
     return Feature(
         name=name,
@@ -439,3 +424,76 @@ class FeatureCollection:
 
     def from_dict():
         pass
+
+
+def to_identity_feature(feature: Feature, dataframe: pd.DataFrame) -> FeatureBase:
+    fb = IdentityFeature(dataframe.ww[feature.name])
+    fb = cast(IdentityFeature, fb.rename(feature.name))
+    return fb
+
+
+FeatureCache = Dict[str, FeatureBase]
+
+
+def get_base_features(
+    feature: Feature,
+    feature_cache: FeatureCache,
+) -> List[FeatureBase]:
+    new_base_features: List[FeatureBase] = []
+    for bf in feature.base_features:
+        fb = feature_cache[bf.id]
+        if bf.is_multioutput():
+            idx = bf.idx
+            # if its multioutput, you can index on the FeatureBase
+            new_base_features.append(fb[idx])
+        else:
+            new_base_features.append(fb)
+
+    return new_base_features
+
+
+def to_transform_feature(
+    feature: Feature,
+    base_features: List[FeatureBase],
+) -> FeatureBase:
+    assert feature.primitive
+    assert isinstance(
+        feature.primitive,
+        TransformPrimitive,
+    ), "Only Transform Primitives"
+
+    fb = TransformFeature(base_features, feature.primitive)
+    if len(feature.related_features) > 0:
+        sorted_features = sorted(
+            [f for f in feature.related_features] + [feature],
+        )
+        names = [x.get_name() for x in sorted_features]
+
+        fb = fb.rename(feature.name)
+        fb.set_feature_names(names)
+    else:
+        fb = fb.rename(feature.get_name())
+
+    return fb
+
+
+def convert_feature_to_featurebase2(feature: Feature, dataframe: pd.DataFrame):
+    cache: FeatureCache = {}
+
+    def rfunc(feature: Feature) -> FeatureBase:
+        if feature.id in cache:
+            return cache[feature.id]
+
+        if feature.depth == 0:
+            fb = to_identity_feature(feature=feature, dataframe=dataframe)
+            cache[feature.id] = fb
+            return fb
+
+        base_features = [rfunc(bf) for bf in feature.base_features]
+        base_features = get_base_features(feature, cache)
+
+        fb = to_transform_feature(feature, base_features)
+        cache[feature.id] = fb
+        return fb
+
+    return rfunc(feature)
