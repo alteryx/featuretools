@@ -66,6 +66,15 @@ from featuretools.primitives.standard.aggregation.n_unique_days_of_calendar_year
 from featuretools.primitives.standard.aggregation.n_unique_days_of_month import (
     NUniqueDaysOfMonth,
 )
+from featuretools.primitives.standard.aggregation.has_no_duplicates import (
+    HasNoDuplicates,
+)
+from featuretools.primitives.standard.aggregation.is_monotonically_decreasing import (
+    IsMonotonicallyDecreasing,
+)
+from featuretools.primitives.standard.aggregation.is_monotonically_increasing import (
+    IsMonotonicallyIncreasing,
+)
 from featuretools.primitives.standard.aggregation.n_unique_months import NUniqueMonths
 from featuretools.primitives.standard.aggregation.n_unique_weeks import NUniqueWeeks
 from featuretools.primitives.standard.aggregation.n_most_common import NMostCommon

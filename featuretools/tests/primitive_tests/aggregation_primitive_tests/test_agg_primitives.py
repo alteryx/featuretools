@@ -12,6 +12,9 @@ from featuretools.primitives import (
     Correlation,
     DateFirstEvent,
     FirstLastTimeDelta,
+    HasNoDuplicates,
+    IsMonotonicallyDecreasing,
+    IsMonotonicallyIncreasing,
     Kurtosis,
     MaxCount,
     MaxMinDelta,
@@ -932,7 +935,7 @@ class TestNUniqueDays(PrimitiveTestBase):
         primitive_func = self.primitive().get_function()
         array = pd.Series(pd.date_range("2010-01-01", "2011-12-31"))
         NaT_array = pd.Series([pd.NaT] * 100)
-        assert primitive_func(array.append(NaT_array)) == 365 * 2
+        assert primitive_func(pd.concat([array, NaT_array])) == 365 * 2
 
     def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
@@ -976,7 +979,7 @@ class TestNUniqueDaysOfCalendarYear(PrimitiveTestBase):
         primitive_func = self.primitive().get_function()
         array = pd.Series(pd.date_range("2010-01-01", "2011-12-31"))
         NaT_array = pd.Series([pd.NaT] * 100)
-        assert primitive_func(array.append(NaT_array)) == 365
+        assert primitive_func(pd.concat([array, NaT_array])) == 365
 
     def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
@@ -1020,7 +1023,7 @@ class TestNUniqueDaysOfMonth(PrimitiveTestBase):
         primitive_func = self.primitive().get_function()
         array = pd.Series(pd.date_range("2010-01-01", "2010-12-31"))
         NaT_array = pd.Series([pd.NaT] * 100)
-        assert primitive_func(array.append(NaT_array)) == 31
+        assert primitive_func(pd.concat([array, NaT_array])) == 31
 
     def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
@@ -1059,7 +1062,7 @@ class TestNUniqueMonths(PrimitiveTestBase):
         primitive_func = self.primitive().get_function()
         array = pd.Series(pd.date_range("2010-01-01", "2011-12-31"))
         NaT_array = pd.Series([pd.NaT] * 100)
-        assert primitive_func(array.append(NaT_array)) == 12 * 2
+        assert primitive_func(pd.concat([array, NaT_array])) == 12 * 2
 
     def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
@@ -1099,10 +1102,142 @@ class TestNUniqueWeeks(PrimitiveTestBase):
         primitive_func = self.primitive().get_function()
         array = pd.Series(pd.date_range("2019-01-01", "2019-01-02"))
         NaT_array = pd.Series([pd.NaT] * 100)
-        assert primitive_func(array.append(NaT_array)) == 1
+        assert primitive_func(pd.concat([array, NaT_array])) == 1
 
     def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+
+
+class TestHasNoDuplicates(PrimitiveTestBase):
+    primitive = HasNoDuplicates
+
+    def test_regular(self):
+        primitive_func = self.primitive().get_function()
+        data = pd.Series([1, 1, 2])
+        assert not primitive_func(data)
+        assert isinstance(primitive_func(data), bool)
+
+        data = pd.Series([1, 2, 3])
+        assert primitive_func(data)
+        assert isinstance(primitive_func(data), bool)
+
+        data = pd.Series([1, 2, 4])
+        assert primitive_func(data)
+        assert isinstance(primitive_func(data), bool)
+
+        data = pd.Series(["red", "blue", "orange"])
+        assert primitive_func(data)
+        assert isinstance(primitive_func(data), bool)
+
+        data = pd.Series(["red", "blue", "red"])
+        assert not primitive_func(data)
+
+    def test_nan(self):
+        primitive_func = self.primitive().get_function()
+        data = pd.Series([np.nan, 1, 2, 3])
+        assert primitive_func(data)
+        assert isinstance(primitive_func(data), bool)
+
+        data = pd.Series([np.nan, np.nan, 1])
+        # drop both nans, so has 1 value
+        assert primitive_func(data) is True
+        assert isinstance(primitive_func(data), bool)
+
+        primitive_func = self.primitive(skipna=False).get_function()
+        data = pd.Series([np.nan, np.nan, 1])
+        assert primitive_func(data) is False
+        assert isinstance(primitive_func(data), bool)
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instantiate = self.primitive()
+        aggregation.append(primitive_instantiate)
+        valid_dfs(
+            es,
+            aggregation,
+            transform,
+            self.primitive.name.upper(),
+            target_dataframe_name="customers",
+            instance_ids=[0, 1, 2],
+        )
+
+
+class TestIsMonotonicallyDecreasing(PrimitiveTestBase):
+    primitive = IsMonotonicallyDecreasing
+
+    def test_monotonically_decreasing(self):
+        primitive_func = self.primitive().get_function()
+        case = pd.Series([9, 5, 3, 1, -1])
+        assert primitive_func(case) is True
+
+    def test_monotonically_increasing(self):
+        primitive_func = self.primitive().get_function()
+        case = pd.Series([-1, 1, 3, 5, 9])
+        assert primitive_func(case) is False
+
+    def test_non_monotonic(self):
+        primitive_func = self.primitive().get_function()
+        case = pd.Series([-1, 1, 3, 2, 5])
+        assert primitive_func(case) is False
+
+    def test_weakly_decreasing(self):
+        primitive_func = self.primitive().get_function()
+        case = pd.Series([9, 3, 3, 1, -1])
+        assert primitive_func(case) is True
+
+    def test_nan(self):
+        primitive_func = self.primitive().get_function()
+        case = pd.Series([9, 5, 3, np.nan, 1, -1])
+        assert primitive_func(case) is True
+
+        primitive_func = self.primitive().get_function()
+        case = pd.Series([-1, 1, 3, np.nan, 5, 9])
+        assert primitive_func(case) is False
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instantiate = self.primitive()
+        aggregation.append(primitive_instantiate)
+        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+
+
+class TestIsMonotonicallyIncreasing(PrimitiveTestBase):
+    primitive = IsMonotonicallyIncreasing
+
+    def test_monotonically_increasing(self):
+        primitive_func = self.primitive().get_function()
+        case = pd.Series([-1, 1, 3, 5, 9])
+        assert primitive_func(case) is True
+
+    def test_monotonically_decreasing(self):
+        primitive_func = self.primitive().get_function()
+        case = pd.Series([9, 5, 3, 1, -1])
+        assert primitive_func(case) is False
+
+    def test_non_monotonic(self):
+        primitive_func = self.primitive().get_function()
+        case = pd.Series([-1, 1, 3, 2, 5])
+        assert primitive_func(case) is False
+
+    def test_weakly_increasing(self):
+        primitive_func = self.primitive().get_function()
+        case = pd.Series([-1, 1, 3, 3, 9])
+        assert primitive_func(case) is True
+
+    def test_nan(self):
+        primitive_func = self.primitive().get_function()
+        case = pd.Series([-1, 1, 3, np.nan, 5, 9])
+        assert primitive_func(case) is True
+
+        primitive_func = self.primitive().get_function()
+        case = pd.Series([9, 5, 3, np.nan, 1, -1])
+        assert primitive_func(case) is False
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instantiate = self.primitive()
+        aggregation.append(primitive_instantiate)
         valid_dfs(es, aggregation, transform, self.primitive.name.upper())
