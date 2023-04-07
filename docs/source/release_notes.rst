@@ -9,6 +9,8 @@ Future Release
         * Add ``MaxCount``, ``MedianCount``, ``MaxMinDelta``, ``NUniqueDays``, ``NMostCommonFrequency``,
             ``NUniqueDaysOfCalendarYear``, ``NUniqueDaysOfMonth``, ``NUniqueMonths``,
             ``NUniqueWeeks``, ``IsFirstWeekOfMonth`` (:pr:`2533`)
+        * Add ``HasNoDuplicates``, ``NthWeekOfMonth``, ``HasNoDuplicates``, ``IsMonotonicallyDecreasing``,
+            ``IsMonotonicallyIncreasing`` (:pr:`2537`)
     * Fixes
     * Changes
         * Pinned pandas to 2.0.0 (:pr:`2533`)
