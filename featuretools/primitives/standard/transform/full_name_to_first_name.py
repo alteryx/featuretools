@@ -35,9 +35,9 @@ class FullNameToFirstName(TransformPrimitive):
             titles_pattern = r"([A-Z][a-z]+)\. "
             df = pd.DataFrame({"names": x})
             # remove any entries with just a title and a name
-            df["names"] = df["names"].str.replace(title_with_last_pattern, "")
+            df["names"] = df["names"].str.replace(title_with_last_pattern, "", regex=True)
             # remove any known titles
-            df["names"] = df["names"].str.replace(titles_pattern, "")
+            df["names"] = df["names"].str.replace(titles_pattern, "", regex=True)
             # extract first names
             pattern = r"([A-Z][a-z]+ |, [A-Z][a-z]+$|^[A-Z][a-z]+$)"
             df["first_name"] = df["names"].str.extract(pattern)
