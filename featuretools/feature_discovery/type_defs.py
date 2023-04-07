@@ -225,11 +225,9 @@ class Feature:
             primitive=self.primitive,
             base_features=[x.copy() for x in self.base_features],
             df_id=self.df_id,
+            idx=self.idx,
+            related_features=self.related_features,
         )
-
-        # # TODO(dreed): a little hacky
-        # copied_feature.name = self.name
-        # copied_feature._names = self._names
 
         return copied_feature
 
@@ -409,7 +407,7 @@ class FeatureCollection:
             if feature.depth == 0:
                 self.by_origin_feature.setdefault(feature, set()).add(feature)
 
-            feature_name = feature.name
+            feature_name = feature.get_name()
             assert feature_name is not None
             assert feature_name not in self.by_name
 
