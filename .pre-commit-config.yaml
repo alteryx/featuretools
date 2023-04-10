@@ -2,7 +2,6 @@ exclude: |
   (?x)
   .html$|.csv$|.svg$|.md$|.txt$|.json$|.xml$|.pickle$|^.github/|
   (LICENSE.*|README.*)
-default_stages: [commit]
 repos:
   - repo: https://github.com/kynan/nbstripout
     rev: 0.5.0

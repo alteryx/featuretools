@@ -6,6 +6,22 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ``MaxCount``, ``MedianCount``, ``MaxMinDelta``, ``NUniqueDays``, ``NMostCommonFrequency``,
+            ``NUniqueDaysOfCalendarYear``, ``NUniqueDaysOfMonth``, ``NUniqueMonths``,
+            ``NUniqueWeeks``, ``IsFirstWeekOfMonth`` (:pr:`2533`)
+    * Fixes
+    * Changes
+        * Pinned pandas to 2.0.0 (:pr:`2533`)
+        * Rewrite new DFS Algorithm (:pr:`2516`)
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`dvreed77`, :user:`gsheni`
+
+v1.24.0 Mar 28, 2023
+====================
+    * Enhancements
         * Add ``AverageCountPerUnique``, ``CountryCodeToContinent``, ``FileExtension``, ``FirstLastTimeDelta``, ``SavgolFilter``,
             ``CumulativeTimeSinceLastFalse``, ``CumulativeTimeSinceLastTrue``, ``PercentChange``, ``PercentUnique`` (:pr:`2485`)
         * Add ``FullNameToFirstName``, ``FullNameToLastName``, ``FullNameToTitle``, ``AutoCorrelation``,
@@ -16,13 +32,12 @@ Future Release
     * Fixes
         * Pin github-action-check-linked-issues to 1.4.5 (:pr:`2497`)
         * Support Woodwork's update numeric inference (integers as strings) (:pr:`2505`)
+        * Update ``SubtractNumeric`` Primitive with commutative class property (:pr:`2527`)
     * Changes
         * Separate Makefile command for core requirements, test requirements and dev requirements (:pr:`2518`)
-    * Documentation Changes
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`dvreed77`
+    :user:`dvreed77`, :user:`gsheni`, :user:`ozzieD`
 
 v1.23.0 Feb 15, 2023
 ====================
