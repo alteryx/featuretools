@@ -1,7 +1,7 @@
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import BooleanNullable
 
-from featuretools.primitives import AggregationPrimitive
+from featuretools.primitives.base import AggregationPrimitive
 
 
 class IsUnique(AggregationPrimitive):

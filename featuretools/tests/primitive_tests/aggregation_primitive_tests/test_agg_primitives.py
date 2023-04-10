@@ -3,6 +3,7 @@ from math import sqrt
 
 import numpy as np
 import pandas as pd
+import pytest
 from pandas.core.dtypes.dtypes import CategoricalDtype
 from pytest import raises
 
@@ -491,20 +492,28 @@ class TestNumPeaks(PrimitiveTestBase):
         assert get_peaks(pd.Series([1, 2, 3])) == 0
         assert get_peaks(pd.Series([3, 2, 2, 2, 2, 1])) == 0
 
-    def test_too_small_data(self):
+    @pytest.mark.parametrize(
+        "dtype",
+        ["int64", "float64", "Int64"],
+    )
+    def test_too_small_data(self, dtype):
         get_peaks = self.primitive().get_function()
-        assert get_peaks(pd.Series([], dtype="int64")) == 0
+        assert get_peaks(pd.Series([], dtype=dtype)) == 0
         assert get_peaks(pd.Series([1])) == 0
         assert get_peaks(pd.Series([1, 1])) == 0
         assert get_peaks(pd.Series([1, 2])) == 0
         assert get_peaks(pd.Series([2, 1])) == 0
 
-    def test_nans(self):
+    @pytest.mark.parametrize(
+        "dtype",
+        ["int64", "float64", "Int64"],
+    )
+    def test_nans(self, dtype):
         get_peaks = self.primitive().get_function()
         array = pd.Series(
             [
-                0.0,
-                5.0,
+                0,
+                5,
                 10,
                 15,
                 20,
@@ -518,10 +527,14 @@ class TestNumPeaks(PrimitiveTestBase):
                 0,
                 7,
                 14,
-                np.NaN,
-                np.NaN,
             ],
+            dtype=dtype,
         )
+        if dtype == "float64":
+            array = pd.concat([array, pd.Series([np.nan, np.nan])])
+        elif dtype == "Int64":
+            array = pd.concat([array, pd.Series([pd.NA, pd.NA])])
+        array = array.astype(dtype=dtype)
         assert get_peaks(array) == 3
 
     def test_with_featuretools(self, es):

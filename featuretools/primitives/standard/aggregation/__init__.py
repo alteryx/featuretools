@@ -34,6 +34,7 @@ from featuretools.primitives.standard.aggregation.first_last_time_delta import (
     FirstLastTimeDelta,
 )
 from featuretools.primitives.standard.aggregation.kurtosis import Kurtosis
+from featuretools.primitives.standard.aggregation.is_unique import IsUnique
 from featuretools.primitives.standard.aggregation.last import Last
 from featuretools.primitives.standard.aggregation.max_primitive import Max
 from featuretools.primitives.standard.aggregation.max_consecutive_false import (

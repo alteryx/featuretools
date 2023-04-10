@@ -34,7 +34,11 @@ class FullNameToLastName(TransformPrimitive):
             pattern = r"(^.+?,|^[A-Z][a-z]+\. [A-Z][a-z]+$| [A-Z][a-z]+$| [A-Z][a-z]+[/-][A-Z][a-z]+$)"
             df["last_name"] = df["names"].str.extract(pattern)
             # remove titles
-            df["last_name"] = df["last_name"].str.replace(titles_pattern, "", regex=True)
+            df["last_name"] = df["last_name"].str.replace(
+                titles_pattern,
+                "",
+                regex=True,
+            )
             # clean up white space and leftover commas
             df["last_name"] = df["last_name"].str.replace(",", "").str.strip()
             return df["last_name"]
