@@ -217,7 +217,7 @@ def primitive_to_columnsets(primitive: PrimitiveBase) -> List[List[ColumnSchema]
 
     column_sets = cast(List[List[ColumnSchema]], column_sets)
 
-    # Some primtives are commutative, yet have explicit versions of commutative pairs (eg. MultiplyNumericBoolean)
+    # Some primitives are commutative, yet have explicit versions of commutative pairs (eg. MultiplyNumericBoolean), which would create multiple versions, so this resolved that.
     if primitive.commutative:
         existing = set()
         uniq_column_sets = []
@@ -289,6 +289,15 @@ def get_matching_features(
 
 
 def get_primitive_return_type(primitive: PrimitiveBase) -> ColumnSchema:
+    """
+    Get Return type from a primitive
+
+    Args:
+        primitive (PrimitiveBase)
+
+    Returns:
+        ColumnSchema
+    """
     if primitive.return_type:
         return primitive.return_type
     return_type = primitive.input_types[0]
@@ -388,6 +397,35 @@ def features_from_primitive(
 
 
 def schema_to_features(schema: TableSchema) -> List[Feature]:
+    """
+    Convert a Woodwork Schema object to a list of origin features
+
+    Args:
+        schema (TableSchema):
+            Woodwork TableSchema object
+
+    Returns:
+        List[Feature]
+
+    Examples:
+        .. code-block:: python
+
+            from featuretools.feature_discovery.feature_discovery import my_dfs
+            from featuretools.primitives import Absolute, IsNull
+            import pandas as pd
+            import woodwork as ww
+
+            df = pd.DataFrame({
+                "idx": [0,1,2,3],
+                "f1": ["A", "B", "C", "D"],
+                "f2": [1.2, 2.3, 3.4, 4.5]
+            })
+
+            df.ww.init()
+
+            features = schema_to_features(df.ww.schema)
+
+    """
     features = []
     for col_name, column_schema in schema.columns.items():
         assert isinstance(column_schema, ColumnSchema)
@@ -415,11 +453,11 @@ def my_dfs(
     primitives: Union[List[Type[PrimitiveBase]], List[PrimitiveBase]],
 ) -> FeatureCollection:
     """
-    Calculates all Features for a given input woodwork table schema and list of primitives.
+    Calculates all Features for a given input of features and a list of primitives.
 
     Args:
-        schema (TableSchema):
-            Woodwork TableSchema object
+        origin_features (List[Feature]):
+            List of origin features
         primitives (List[Type[PrimitiveBase]])
             List of primitive classes
 
@@ -441,8 +479,8 @@ def my_dfs(
             })
 
             df.ww.init()
-
-            features = my_dfs(df.ww.schema, [Absolute, IsNull])
+            origin_features = schema_to_features(df.ww.schema)
+            features = my_dfs(origin_features, [Absolute, IsNull])
 
     """
     try:

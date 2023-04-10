@@ -12,7 +12,7 @@ Future Release
     * Fixes
     * Changes
         * Pinned pandas to 2.0.0 (:pr:`2533`)
-        * Rewrite new DFS Algorithm (:pr:`2516`)
+        * Introduce New Single-Table DFS Algorithm (:pr:`2516`)
     * Documentation Changes
     * Testing Changes
 
@@ -28,7 +28,6 @@ v1.24.0 Mar 28, 2023
             ``Correlation``, ``DateFirstEvent`` (:pr:`2507`)
         * Add ``Kurtosis``, ``MinCount``, ``NumFalseSinceLastTrue``, ``NumPeaks``,
             ``NumTrueSinceLastFalse``, ``NumZeroCrossings`` (:pr:`2514`)
-        * Introduce New Single-Table DFS Algorithm (:pr:`2516`)
     * Fixes
         * Pin github-action-check-linked-issues to 1.4.5 (:pr:`2497`)
         * Support Woodwork's update numeric inference (integers as strings) (:pr:`2505`)

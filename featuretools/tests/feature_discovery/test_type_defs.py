@@ -80,55 +80,37 @@ def test_feature_type_assertions():
         )
 
 
-# @patch.object(Feature, "_generate_hash", lambda x: x.name)
-# def test_feature_to_dict():
-#     f1 = Feature("f1", Double)
-#     f2 = Feature("f2", Double)
-#     f = Feature(
-#         name="Column 1",
-#         primitive=AddNumeric(),
-#         logical_type=Double,
-#         base_features=[f1, f2],
-#     )
+@patch.object(Feature, "_generate_hash", lambda x: x.name)
+@patch(
+    "featuretools.feature_discovery.type_defs.hash_primitive",
+    lambda x: (x.name, None),
+)
+def test_feature_to_dict():
+    f1 = Feature("f1", Double)
+    f2 = Feature("f2", Double)
+    f = Feature(
+        name="Column 1",
+        primitive=AddNumeric(),
+        logical_type=Double,
+        base_features=[f1, f2],
+    )
 
-#     expected = {
-#         "name": "Column 1",
-#         "logical_type": "Double",
-#         "tags": ["numeric"],
-#         "primitive": {
-#             "type": "AddNumeric",
-#             "module": "featuretools.primitives.standard.transform.binary.add_numeric",
-#             "arguments": {},
-#         },
-#         "base_features": [
-#             {
-#                 "name": "f1",
-#                 "logical_type": "Double",
-#                 "tags": ["numeric"],
-#                 "primitive": None,
-#                 "base_features": [],
-#                 "df_id": None,
-#                 "id": "f1",
-#                 "related_features"
-#             },
-#             {
-#                 "name": "f2",
-#                 "logical_type": "Double",
-#                 "tags": ["numeric"],
-#                 "primitive": None,
-#                 "base_features": [],
-#                 "df_id": None,
-#                 "id": "f2",
-#             },
-#         ],
-#         "df_id": None,
-#         "id": "Column 1",
-#     }
+    expected = {
+        "name": "Column 1",
+        "logical_type": "Double",
+        "tags": ["numeric"],
+        "primitive": "add_numeric",
+        "base_features": ["f1", "f2"],
+        "df_id": None,
+        "id": "Column 1",
+        "related_features": [],
+        "idx": 0,
+    }
 
-#     actual = f.to_dict()
-#     json_str = json.dumps(actual)
-#     assert actual == expected
-#     assert json.dumps(expected) == json_str
+    actual = f.to_dict()
+    json_str = json.dumps(actual)
+    assert actual == expected
+    assert json.dumps(expected) == json_str
 
 
 def test_feature_from_dict():
