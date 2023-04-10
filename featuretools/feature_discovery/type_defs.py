@@ -202,44 +202,6 @@ class Feature:
 
         return copied_feature
 
-    @staticmethod
-    def from_dict(input_dict: Dict) -> Feature:
-        # TODO(dreed): can this be initialized at the module level?
-        primitive_deserializer = PrimitivesDeserializer()
-        base_features = [Feature.from_dict(x) for x in input_dict["base_features"]]
-        related_features = [
-            Feature.from_dict(x) for x in input_dict["related_features"]
-        ]
-
-        if input_dict["primitive"]:
-            primitive = primitive_deserializer.deserialize_primitive(
-                input_dict["primitive"],
-            )
-            assert isinstance(primitive, PrimitiveBase)
-        else:
-            primitive = None
-
-        logical_type = (
-            logical_types_map[input_dict["logical_type"]]
-            if input_dict["logical_type"]
-            else None
-        )
-
-        hydrated_feature = Feature(
-            name=input_dict["name"],
-            logical_type=logical_type,
-            tags=set(input_dict["tags"]),
-            primitive=primitive,
-            base_features=base_features,
-            df_id=input_dict["df_id"],
-            related_features=set(related_features),
-            idx=input_dict["idx"],
-        )
-
-        assert hydrated_feature.id == input_dict["id"]
-
-        return hydrated_feature
-
 
 def hash_primitive(primitive: PrimitiveBase) -> Tuple[str, Dict[str, Any]]:
     hash_msg = hashlib.sha256()
@@ -339,7 +301,6 @@ class FeatureCollection:
 
     @staticmethod
     def from_dict(input_dict):
-
         primitive_deserializer = PrimitivesDeserializer()
 
         primitives = {}

@@ -10,12 +10,14 @@ from featuretools.feature_discovery.type_defs import (
     FeatureCollection,
 )
 from featuretools.primitives import (
-    LSA,
     Absolute,
     AddNumeric,
     DivideNumeric,
     Lag,
     MultiplyNumeric,
+)
+from featuretools.tests.feature_discovery.test_feature_discovery import (
+    TestMultiOutputPrimitive,
 )
 from featuretools.tests.testing_utils.generate_fake_dataframe import (
     generate_fake_dataframe,
@@ -111,20 +113,6 @@ def test_feature_to_dict():
     json_str = json.dumps(actual)
     assert actual == expected
     assert json.dumps(expected) == json_str
-
-
-def test_feature_from_dict():
-    f1 = Feature("f1", Double)
-    f2 = Feature("f2", Double)
-    f_orig = Feature(
-        primitive=AddNumeric(),
-        logical_type=Double,
-        base_features=[f1, f2],
-    )
-
-    input_dict = f_orig.to_dict()
-    f_from_dict = Feature.from_dict(input_dict)
-    assert f_orig == f_from_dict
 
 
 def test_feature_hash():
@@ -311,7 +299,7 @@ def test_feature_collection_serialization_roundtrip():
     )
 
     origin_features = schema_to_features(df.ww.schema)
-    fc = my_dfs(origin_features, [Absolute, MultiplyNumeric, LSA])
+    fc = my_dfs(origin_features, [Absolute, MultiplyNumeric, TestMultiOutputPrimitive])
 
     fc = my_dfs(fc.all_features, [Lag])
 
@@ -327,8 +315,8 @@ def test_feature_collection_serialization_roundtrip():
             "ABSOLUTE(f_1)",
             "ABSOLUTE(f_2)",
             "f_1 * f_2",
-            "LSA(f_5)[0]",
-            "LSA(f_5)[1]",
+            "TEST_MO(f_5)[0]",
+            "TEST_MO(f_5)[1]",
             "LAG(f_1, t_idx)",
             "LAG(f_2, t_idx)",
             "LAG(f_3, t_idx)",
@@ -336,8 +324,8 @@ def test_feature_collection_serialization_roundtrip():
             "LAG(ABSOLUTE(f_1), t_idx)",
             "LAG(ABSOLUTE(f_2), t_idx)",
             "LAG(f_1 * f_2, t_idx)",
-            "LAG(LSA(f_5)[1], t_idx)",
-            "LAG(LSA(f_5)[0], t_idx)",
+            "LAG(TEST_MO(f_5)[1], t_idx)",
+            "LAG(TEST_MO(f_5)[0], t_idx)",
         ],
     )
 
@@ -350,5 +338,5 @@ def test_feature_collection_serialization_roundtrip():
     fc2 = FeatureCollection.from_dict(fc2_dict)
 
     assert fc == fc2
-    lsa_features = [x for x in fc2.all_features if x.get_primitive_name() == "lsa"]
+    lsa_features = [x for x in fc2.all_features if x.get_primitive_name() == "test_mo"]
     assert len(lsa_features[0].related_features) == 1

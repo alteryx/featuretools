@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean, Datetime, Double, Ordinal
+from woodwork.logical_types import Boolean, Datetime, Double, NaturalLanguage, Ordinal
 
 from featuretools.entityset.entityset import EntitySet
 from featuretools.feature_discovery.feature_discovery import (
@@ -29,6 +29,7 @@ from featuretools.primitives import (
     NumUnique,
     SubtractNumeric,
 )
+from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
 from featuretools.primitives.standard.transform.binary.multiply_numeric_boolean import (
     MultiplyNumericBoolean,
 )
@@ -42,6 +43,19 @@ DEFAULT_LT_FOR_TAG = {
     "numeric": Double,
     "time_index": Datetime,
 }
+
+
+class TestMultiOutputPrimitive(TransformPrimitive):
+    name = "test_mo"
+    input_types = [ColumnSchema(logical_type=NaturalLanguage)]
+    return_type = ColumnSchema(semantic_tags={"numeric"})
+    number_output_features = 2
+
+    def get_function(self):
+        def func(x):
+            return 0, 1
+
+        return func
 
 
 @pytest.mark.parametrize(

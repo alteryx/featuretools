@@ -1,5 +1,3 @@
-from typing import List, Type
-
 from woodwork.logical_types import Double
 
 from featuretools.entityset.entityset import EntitySet
@@ -17,9 +15,11 @@ from featuretools.feature_discovery.feature_discovery import my_dfs, schema_to_f
 from featuretools.feature_discovery.type_defs import (
     Feature,
 )
-from featuretools.primitives import LSA, Absolute, AddNumeric, Lag
-from featuretools.primitives.base.primitive_base import PrimitiveBase
+from featuretools.primitives import Absolute, AddNumeric, Lag
 from featuretools.synthesis import dfs
+from featuretools.tests.feature_discovery.test_feature_discovery import (
+    TestMultiOutputPrimitive,
+)
 from featuretools.tests.testing_utils.generate_fake_dataframe import (
     generate_fake_dataframe,
 )
@@ -62,66 +62,6 @@ def test_convert_featurebase_to_feature():
     orig_features = set([f1, f2, f3])
 
     assert len(orig_features.symmetric_difference(converted_features)) == 0
-
-
-# def test_lag_on_lsa():
-#     col_defs = [
-#         ("idx", "Double", {"index"}),
-#         ("t_idx", "Datetime", {"time_index"}),
-#         ("f_1", "NaturalLanguage"),
-#     ]
-#     df = generate_fake_dataframe(
-#         col_defs=col_defs,
-#     )
-
-#     primitives = [LSA]
-
-#     es = EntitySet(id="test")
-#     es.add_dataframe(df, df.ww.name, index="idx")
-
-#     features_old = dfs(
-#         entityset=es,
-#         target_dataframe_name=df.ww.name,
-#         trans_primitives=primitives,
-#         features_only=True,
-#     )
-#     assert len(features_old) == 1
-
-#     # Generate Old LSA Feature
-#     lsa_feature_old = features_old[0]
-#     time_index_feature = OldFeature(df.ww["t_idx"])
-
-#     base_features = [lsa_feature_old, time_index_feature]
-
-#     lag_instance = Lag(periods=2)
-
-#     # Assert that stacking on Multi-output fails as expected
-#     with pytest.raises(ValueError, match="Cannot stack on whole multi-output feature."):
-#         OldFeature(base_features, primitive=lag_instance)
-
-#     # Manually Create Stack features, by splitting multi-output feature
-#     lsa_feature_list_old = [lsa_feature_old[i] for i in range(lsa_feature_old.number_output_features)]
-#     lagged_lsa_features = []
-#     for f in lsa_feature_list_old:
-#         base_features = [f, time_index_feature]
-#         lagged_lsa_features.append(OldFeature(base_features, primitive=lag_instance))
-
-
-#     # With New DFS
-#     origin_features = schema_to_features(df.ww.schema)
-#     new_features = my_dfs(origin_features, [LSA()])
-
-#     lsa_features = [f for f in new_features.all_features if f.get_primitive_name() == 'lsa']
-#     assert len(lsa_features) == 2
-
-
-#     converted_features = convert_feature_list_to_featurebase_list(lsa_features, df)
-
-#     assert len(converted_features) == 1
-#     lsa_feature = converted_features[0]
-#     assert lsa_feature.get_feature_names() == ["LSA(f_1)[0]", "LSA(f_1)[1]"]
-
-#     raise
 
 
 def test_origin_feature_to_featurebase():
@@ -184,33 +124,33 @@ def test_multi_output_to_featurebase():
             ("f_1", "NaturalLanguage"),
         ],
     )
-
     # TODO(dreed): don't like how I have to make an entityset
     es = EntitySet(id="test")
     es.add_dataframe(df, df.ww.name)
 
-    # primitive_instance = LSA()
     origin_features = schema_to_features(df.ww.schema)
     f_1 = [f for f in origin_features if f.name == "f_1"][0]
-    fc = my_dfs([f_1], [LSA()])
+    fc = my_dfs([f_1], [TestMultiOutputPrimitive()])
 
-    lsa_features = [f for f in fc.all_features if f.get_primitive_name() == "lsa"]
+    lsa_features = [f for f in fc.all_features if f.get_primitive_name() == "test_mo"]
     assert len(lsa_features) == 2
 
     # Test Single Feature
     fb = convert_feature_to_featurebase(lsa_features[0], df, {})
     assert isinstance(fb, TransformFeature)
-    assert fb.get_name() == "LSA(f_1)"
+    assert fb.get_name() == "TEST_MO(f_1)"
     assert len(fb.base_features) == 1
-    assert set(fb.get_feature_names()) == set(["LSA(f_1)[0]", "LSA(f_1)[1]"])
+    assert set(fb.get_feature_names()) == set(["TEST_MO(f_1)[0]", "TEST_MO(f_1)[1]"])
     assert fb.base_features[0].get_name() == "f_1"
 
     # Test that feature gets consolidated
     fb_list = convert_feature_list_to_featurebase_list(lsa_features, df)
     assert len(fb_list) == 1
-    assert fb_list[0].get_name() == "LSA(f_1)"
+    assert fb_list[0].get_name() == "TEST_MO(f_1)"
     assert len(fb_list[0].base_features) == 1
-    assert set(fb_list[0].get_feature_names()) == set(["LSA(f_1)[0]", "LSA(f_1)[1]"])
+    assert set(fb_list[0].get_feature_names()) == set(
+        ["TEST_MO(f_1)[0]", "TEST_MO(f_1)[1]"],
+    )
     assert fb_list[0].base_features[0].get_name() == "f_1"
 
     lsa_features[0].rename("f_2")
@@ -247,8 +187,8 @@ def test_stacking_on_multioutput_to_featurebase():
     time_index_feature = [f for f in origin_features if f.name == "t_idx"][0]
     f_1 = [f for f in origin_features if f.name == "f_1"][0]
 
-    fc = my_dfs([f_1], [LSA()])
-    lsa_features = [f for f in fc.all_features if f.get_primitive_name() == "lsa"]
+    fc = my_dfs([f_1], [TestMultiOutputPrimitive()])
+    lsa_features = [f for f in fc.all_features if f.get_primitive_name() == "test_mo"]
     assert len(lsa_features) == 2
 
     fc = my_dfs(lsa_features + [time_index_feature], [Lag(periods=2)])
@@ -260,7 +200,10 @@ def test_stacking_on_multioutput_to_featurebase():
     assert len(fb_list) == 2
     assert isinstance(fb_list[0], TransformFeature)
     assert set([x.get_name() for x in fb_list]) == set(
-        ["LAG(LSA(f_1)[0], t_idx, periods=2)", "LAG(LSA(f_1)[1], t_idx, periods=2)"],
+        [
+            "LAG(TEST_MO(f_1)[0], t_idx, periods=2)",
+            "LAG(TEST_MO(f_1)[1], t_idx, periods=2)",
+        ],
     )
 
     lsa_features[0].rename("f_2")
@@ -275,45 +218,3 @@ def test_stacking_on_multioutput_to_featurebase():
     assert set([x.get_name() for x in fb_list]) == set(
         ["LAG(f_2, t_idx, periods=2)", "LAG(f_3, t_idx, periods=2)"],
     )
-
-
-def test_convert_feature_to_feature_base():
-    col_defs = [
-        ("idx", "Integer", {"index"}),
-        ("f_1", "Double"),
-        ("f_2", "Double"),
-    ]
-
-    df = generate_fake_dataframe(
-        col_defs=col_defs,
-    )
-
-    es = EntitySet(id="nums")
-    es.add_dataframe(df, "nums", index="idx")
-
-    primitives: List[Type[PrimitiveBase]] = [Absolute]
-
-    dfs(
-        entityset=es,
-        target_dataframe_name="nums",
-        trans_primitives=primitives,
-        features_only=True,
-    )
-
-    origin_features = schema_to_features(df.ww.schema)
-
-    features_collection = my_dfs(origin_features, primitives)
-
-    features_new = [
-        x for x in features_collection.all_features if "index" not in x.tags
-    ]
-
-    convert_feature_list_to_featurebase_list(df, features_new)
-
-    raise
-
-    # f1 = set(FeaturesSerializer(features_old).to_dict()["feature_list"])
-
-    # f2 = set(FeaturesSerializer(converted_features).to_dict()["feature_list"])
-
-    # assert f1 == f2
