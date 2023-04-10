@@ -4,18 +4,11 @@ from unittest.mock import patch
 import pytest
 from woodwork.logical_types import Double
 
-from featuretools.entityset.entityset import EntitySet
-from featuretools.feature_base.feature_base import FeatureBase
 from featuretools.feature_discovery.type_defs import (
     Feature,
-    convert_featurebase_to_feature,
 )
 from featuretools.primitives import AddNumeric, DivideNumeric
 from featuretools.primitives.standard.transform.time_series.lag import Lag
-from featuretools.synthesis import dfs
-from featuretools.tests.testing_utils.generate_fake_dataframe import (
-    generate_fake_dataframe,
-)
 
 
 def test_feature_type_equality():
@@ -178,82 +171,3 @@ def test_feature_forced_name():
         base_features=[bf],
     )
     assert f1.name == "target_delay_1"
-
-
-def test_convert_featurebase_to_feature():
-    col_defs = [
-        ("idx", "Integer", {"index"}),
-        ("f_1", "Double"),
-        ("f_2", "Double"),
-    ]
-
-    df = generate_fake_dataframe(
-        col_defs=col_defs,
-    )
-
-    es = EntitySet(id="es")
-    es.add_dataframe(df, df.ww.name, index="idx")
-
-    fdefs = dfs(
-        entityset=es,
-        target_dataframe_name=df.ww.name,
-        trans_primitives=[AddNumeric],
-        features_only=True,
-    )
-    assert isinstance(fdefs, list)
-    assert isinstance(fdefs[0], FeatureBase)
-
-    converted_features = set([convert_featurebase_to_feature(x) for x in fdefs])
-
-    f1 = Feature("f_1", Double)
-    f2 = Feature("f_2", Double)
-    f3 = Feature(
-        name="f_1 + f_2",
-        tags={"numeric"},
-        primitive=AddNumeric(),
-        base_features=[f1, f2],
-    )
-
-    orig_features = set([f1, f2, f3])
-
-    assert len(orig_features.symmetric_difference(converted_features)) == 0
-
-
-# def test_convert_feature_to_feature_base():
-#     col_defs = [
-#         ("idx", "Integer", {"index"}),
-#         ("f_1", "Double"),
-#         ("f_2", "Double"),
-#     ]
-
-#     df = generate_fake_dataframe(
-#         col_defs=col_defs,
-#     )
-
-#     es = EntitySet(id="nums")
-#     es.add_dataframe(df, "nums", index="idx")
-
-#     primitives: List[Type[PrimitiveBase]] = [Absolute]
-
-#     features_old = dfs(
-#         entityset=es,
-#         target_dataframe_name="nums",
-#         trans_primitives=primitives,
-#         features_only=True,
-#     )
-
-#     origin_features = schema_to_features(df.ww.schema)
-
-#     features_collection = my_dfs(origin_features, primitives)
-
-#     features_new = [
-#         x for x in features_collection.all_features if "index" not in x.tags
-#     ]
-
-#     converted_features = convert_feature_list_to_featurebase_list(df, features_new)
-
-#     f1 = set(FeaturesSerializer(features_old).to_dict()["feature_list"])
-
-#     f2 = set(FeaturesSerializer(converted_features).to_dict()["feature_list"])
-
-#     assert f1 == f2

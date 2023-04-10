@@ -4,21 +4,12 @@ import hashlib
 import json
 from dataclasses import dataclass, field
 from functools import total_ordering
-from itertools import product
-from typing import Any, Dict, List, Optional, Set, Type, Union, cast
+from typing import Any, Dict, List, Optional, Set, Type, Union
 
-import pandas as pd
 import woodwork.type_sys.type_system as ww_type_system
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import LogicalType
 
-from featuretools.entityset.entityset import EntitySet
-from featuretools.feature_base.feature_base import (
-    FeatureBase,
-    IdentityFeature,
-    TransformFeature,
-)
-from featuretools.primitives import TransformPrimitive
 from featuretools.primitives.base.primitive_base import PrimitiveBase
 from featuretools.primitives.utils import (
     PrimitivesDeserializer,
@@ -215,7 +206,6 @@ class Feature:
 
     @staticmethod
     def from_dict(input_dict: Dict) -> Feature:
-
         # TODO(dreed): can this be initialized at the module level?
         primitive_deserializer = PrimitivesDeserializer()
         base_features = [Feature.from_dict(x) for x in input_dict["base_features"]]
@@ -246,126 +236,6 @@ class Feature:
         assert hydrated_feature.id == input_dict["id"]
 
         return hydrated_feature
-
-
-def convert_featurebase_to_feature(feature: FeatureBase) -> Feature:
-    base_features = [convert_featurebase_to_feature(x) for x in feature.base_features]
-
-    name = feature.get_name()
-    col_schema = feature.column_schema
-
-    logical_type = col_schema.logical_type
-    if logical_type is not None:
-        assert issubclass(type(logical_type), LogicalType)
-        logical_type = type(logical_type)
-
-    tags = col_schema.semantic_tags
-
-    if isinstance(feature, IdentityFeature):
-        primitive = None
-    else:
-        primitive = feature.primitive
-        assert isinstance(primitive, PrimitiveBase)
-
-    return Feature(
-        name=name,
-        logical_type=logical_type,
-        tags=tags,
-        primitive=primitive,
-        base_features=base_features,
-        # TODO: replace this with dataframe name?
-        df_id=None,
-    )
-
-
-def convert_feature_to_featurebase(feature: Feature, es: EntitySet) -> FeatureBase:
-    if feature.primitive is None:
-        column_name = feature.name
-        if feature.df_id is None:
-            dataframe_names = list(es.dataframe_dict.keys())
-            assert len(dataframe_names) == 1
-            dataframe_name = dataframe_names[0]
-        else:
-            dataframe_name = feature.df_id
-        return IdentityFeature(es[dataframe_name].ww[column_name])
-
-    base_features = [
-        convert_feature_to_featurebase(x, es) for x in feature.base_features
-    ]
-
-    return TransformFeature(base_features, feature.primitive)
-
-
-def convert_feature_list_to_featurebase_list(
-    dataframe: pd.DataFrame,
-    feature_list: List[Feature],
-) -> List[FeatureBase]:
-    feature_cache: Dict[str, List[FeatureBase]] = {}
-
-    def rfunc(feature: Feature, depth=0) -> List[FeatureBase]:
-        if feature.id in feature_cache:
-            return feature_cache[feature.id]
-
-        if feature.depth == 0:
-            fb = IdentityFeature(dataframe.ww[feature.name])
-            fb = cast(IdentityFeature, fb.rename(feature.name))
-            feature_cache[feature.id] = [fb]
-            return [fb]
-
-        assert feature.primitive
-        assert isinstance(
-            feature.primitive,
-            TransformPrimitive,
-        ), "Only Transform Primitives"
-
-        base_feature_sets = [rfunc(bf, depth=1) for bf in feature.base_features]
-
-        out = []
-        for base_features in product(*base_feature_sets):
-            if feature.primitive.number_output_features > 1:
-                assert (
-                    len(feature.related_features)
-                    == feature.primitive.number_output_features - 1
-                )
-
-                if any([f.id in feature_cache for f in feature.related_features]):
-                    # if related id is already in cache, we already created this feature
-                    continue
-
-                # sort the features according to index to be in the right order
-                sorted_features = sorted(
-                    [f for f in feature.related_features] + [feature],
-                    key=lambda x: x.idx,
-                )
-                names = [x.get_name() for x in sorted_features]
-                fb = TransformFeature(base_features, feature.primitive)
-                # raise
-                fb.set_feature_names(names)
-                feature_cache[feature.id] = [fb]
-
-                if depth > 0:
-                    out.extend(
-                        [
-                            fb[i]
-                            for i in range(feature.primitive.number_output_features)
-                        ],
-                    )
-                else:
-                    out.append(fb)
-            else:
-                fb = TransformFeature(base_features, feature.primitive)
-
-                # TODO(dreed): I think I need this if features are renamed
-                # fb = fb.rename(feature.get_name())
-
-                feature_cache[feature.id] = [fb]
-                out.append(fb)
-
-        return out
-
-    final_features = [rfunc(f) for f in feature_list]
-
-    return [item for sublist in final_features for item in sublist]
 
 
 class FeatureCollection:
@@ -424,76 +294,3 @@ class FeatureCollection:
 
     def from_dict():
         pass
-
-
-def to_identity_feature(feature: Feature, dataframe: pd.DataFrame) -> FeatureBase:
-    fb = IdentityFeature(dataframe.ww[feature.name])
-    fb = cast(IdentityFeature, fb.rename(feature.name))
-    return fb
-
-
-FeatureCache = Dict[str, FeatureBase]
-
-
-def get_base_features(
-    feature: Feature,
-    feature_cache: FeatureCache,
-) -> List[FeatureBase]:
-    new_base_features: List[FeatureBase] = []
-    for bf in feature.base_features:
-        fb = feature_cache[bf.id]
-        if bf.is_multioutput():
-            idx = bf.idx
-            # if its multioutput, you can index on the FeatureBase
-            new_base_features.append(fb[idx])
-        else:
-            new_base_features.append(fb)
-
-    return new_base_features
-
-
-def to_transform_feature(
-    feature: Feature,
-    base_features: List[FeatureBase],
-) -> FeatureBase:
-    assert feature.primitive
-    assert isinstance(
-        feature.primitive,
-        TransformPrimitive,
-    ), "Only Transform Primitives"
-
-    fb = TransformFeature(base_features, feature.primitive)
-    if len(feature.related_features) > 0:
-        sorted_features = sorted(
-            [f for f in feature.related_features] + [feature],
-        )
-        names = [x.get_name() for x in sorted_features]
-
-        fb = fb.rename(feature.name)
-        fb.set_feature_names(names)
-    else:
-        fb = fb.rename(feature.get_name())
-
-    return fb
-
-
-def convert_feature_to_featurebase2(feature: Feature, dataframe: pd.DataFrame):
-    cache: FeatureCache = {}
-
-    def rfunc(feature: Feature) -> FeatureBase:
-        if feature.id in cache:
-            return cache[feature.id]
-
-        if feature.depth == 0:
-            fb = to_identity_feature(feature=feature, dataframe=dataframe)
-            cache[feature.id] = fb
-            return fb
-
-        base_features = [rfunc(bf) for bf in feature.base_features]
-        base_features = get_base_features(feature, cache)
-
-        fb = to_transform_feature(feature, base_features)
-        cache[feature.id] = fb
-        return fb
-
-    return rfunc(feature)
