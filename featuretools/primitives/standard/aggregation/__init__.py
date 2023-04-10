@@ -1,7 +1,3 @@
-from featuretools.primitives.standard.aggregation.autocorrelation import (
-    AutoCorrelation,
-)
-from featuretools.primitives.standard.aggregation.correlation import Correlation
 from featuretools.primitives.standard.aggregation.all_primitive import All
 from featuretools.primitives.standard.aggregation.any_primitive import Any
 from featuretools.primitives.standard.aggregation.avg_time_between import AvgTimeBetween

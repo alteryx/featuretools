@@ -14,7 +14,7 @@ Future Release
     * Fixes
     * Changes
         * Pinned pandas to 2.0.0 (:pr:`2533`)
-        * Removed the ``Correlation`` primitive (:pr:`2537`)
+        * Removed the ``Correlation`` and ``AutoCorrelation`` primitive as these could lead to data leakage (:pr:`2537`)
     * Documentation Changes
     * Testing Changes
 

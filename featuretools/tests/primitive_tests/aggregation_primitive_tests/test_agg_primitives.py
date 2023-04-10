@@ -8,9 +8,7 @@ from pandas.core.dtypes.dtypes import CategoricalDtype
 from pytest import raises
 
 from featuretools.primitives import (
-    AutoCorrelation,
     AverageCountPerUnique,
-    Correlation,
     DateFirstEvent,
     FirstLastTimeDelta,
     HasNoDuplicates,
@@ -417,17 +415,25 @@ class TestNumFalseSinceLastTrue(PrimitiveTestBase):
 class TestNumPeaks(PrimitiveTestBase):
     primitive = NumPeaks
 
-    def test_negative_and_positive_nums(self):
+    @pytest.mark.parametrize(
+        "dtype",
+        ["int64", "float64", "Int64"],
+    )
+    def test_negative_and_positive_nums(self, dtype):
         get_peaks = self.primitive().get_function()
         assert (
-            get_peaks(pd.Series([-5, 0, 10, 0, 10, -5, -4, -5, 10, 0], dtype="int64"))
+            get_peaks(pd.Series([-5, 0, 10, 0, 10, -5, -4, -5, 10, 0], dtype=dtype))
             == 4
         )
 
-    def test_plateu(self):
+    @pytest.mark.parametrize(
+        "dtype",
+        ["int64", "float64", "Int64"],
+    )
+    def test_plateu(self, dtype):
         get_peaks = self.primitive().get_function()
-        assert get_peaks(pd.Series([1, 2, 3, 3, 3, 3, 3, 2, 1])) == 1
-        assert get_peaks(pd.Series([1, 2, 3, 3, 3, 4, 3, 3, 3, 2, 1])) == 1
+        assert get_peaks(pd.Series([1, 2, 3, 3, 3, 3, 3, 2, 1], dtype=dtype)) == 1
+        assert get_peaks(pd.Series([1, 2, 3, 3, 3, 4, 3, 3, 3, 2, 1], dtype=dtype)) == 1
         assert (
             get_peaks(
                 pd.Series(
@@ -452,6 +458,7 @@ class TestNumPeaks(PrimitiveTestBase):
                         3,
                         4,
                     ],
+                    dtype=dtype,
                 ),
             )
             == 1
@@ -477,20 +484,29 @@ class TestNumPeaks(PrimitiveTestBase):
                         5,
                         2,
                     ],
+                    dtype=dtype,
                 ),
             )
             == 3
         )
 
-    def test_regular(self):
+    @pytest.mark.parametrize(
+        "dtype",
+        ["int64", "float64", "Int64"],
+    )
+    def test_regular(self, dtype):
         get_peaks = self.primitive().get_function()
-        assert get_peaks(pd.Series([1, 7, 3, 8, 2, 3, 4, 3, 4, 2, 4])) == 4
-        assert get_peaks(pd.Series([1, 2, 3, 2, 1])) == 1
+        assert get_peaks(pd.Series([1, 7, 3, 8, 2, 3, 4, 3, 4, 2, 4], dtype=dtype)) == 4
+        assert get_peaks(pd.Series([1, 2, 3, 2, 1], dtype=dtype)) == 1
 
-    def test_no_peak(self):
+    @pytest.mark.parametrize(
+        "dtype",
+        ["int64", "float64", "Int64"],
+    )
+    def test_no_peak(self, dtype):
         get_peaks = self.primitive().get_function()
-        assert get_peaks(pd.Series([1, 2, 3])) == 0
-        assert get_peaks(pd.Series([3, 2, 2, 2, 2, 1])) == 0
+        assert get_peaks(pd.Series([1, 2, 3], dtype=dtype)) == 0
+        assert get_peaks(pd.Series([3, 2, 2, 2, 2, 1], dtype=dtype)) == 0
 
     @pytest.mark.parametrize(
         "dtype",
@@ -542,107 +558,6 @@ class TestNumPeaks(PrimitiveTestBase):
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
         valid_dfs(es, aggregation, transform, self.primitive.name.upper())
-
-
-class TestAutoCorrelation(PrimitiveTestBase):
-    primitive = AutoCorrelation
-
-    def test_regular(self):
-        primitive_instance = self.primitive()
-        primitive_func = primitive_instance.get_function()
-        array = pd.Series([1, 2, 3, 1, 3, 2])
-        assert round(primitive_func(array), 3) == -0.598
-
-    def test_with_lag(self):
-        primitive_instance = self.primitive(lag=3)
-        primitive_func = primitive_instance.get_function()
-        array = pd.Series([1, 2, 3, 1, 2, 3])
-        assert round(primitive_func(array), 3) == 1.0
-
-    def test_starts_with_nan(self):
-        primitive_instance = self.primitive()
-        primitive_func = primitive_instance.get_function()
-        array = pd.Series([np.nan, 2, 3, 1, 3, 2])
-        assert round(primitive_func(array), 3) == -0.818
-
-    def test_ends_with_nan(self):
-        primitive_instance = self.primitive()
-        primitive_func = primitive_instance.get_function()
-        array = pd.Series([1, 2, 3, 1, 3, np.nan])
-        assert round(primitive_func(array), 3) == -0.636
-
-    def test_all_nan(self):
-        primitive_instance = self.primitive()
-        primitive_func = primitive_instance.get_function()
-        array = pd.Series([np.nan, np.nan, np.nan, np.nan])
-        assert pd.isna(primitive_func(array))
-
-    def test_negative_lag(self):
-        primitive_instance = self.primitive(lag=-3)
-        primitive_func = primitive_instance.get_function()
-        array = pd.Series([1, 2, 3, 1, 2, 3])
-        assert round(primitive_func(array), 3) == 1.0
-
-    def test_with_featuretools(self, pd_es):
-        transform, aggregation = find_applicable_primitives(self.primitive)
-        primitive_instance = self.primitive()
-        aggregation.append(primitive_instance)
-        valid_dfs(pd_es, aggregation, transform, self.primitive.name.upper())
-
-
-class TestCorrelation(PrimitiveTestBase):
-    primitive = Correlation
-    array_1 = pd.Series([1, 4, 6, 7, 10, 12, 11.5])
-    array_2 = pd.Series([1, 5, 9, 7, 11, 9, 1])
-
-    def test_default_corr(self):
-        correlation_val = 0.382596278303975
-        primitive_func = self.primitive().get_function()
-        assert np.isclose(self.array_1.corr(self.array_2), correlation_val)
-        assert np.isclose(primitive_func(self.array_1, self.array_2), correlation_val)
-        assert np.isclose(
-            primitive_func(self.array_1, self.array_2),
-            primitive_func(self.array_2, self.array_1),
-        )
-
-    def test_all_nans(self):
-        primitive_func = self.primitive().get_function()
-        array_nans = pd.Series([np.nan, np.nan, np.nan, np.nan, np.nan])
-        assert pd.isna(primitive_func(array_nans, array_nans))
-        array_1_nans = pd.concat([self.array_1, pd.Series([np.nan, np.nan])])
-        array_2 = pd.concat([self.array_2, pd.Series([12, 14])])
-        assert primitive_func(array_1_nans, array_2) == 0.382596278303975
-
-    def test_method(self):
-        method = "kendall"
-        correlation_val = 0.3504383220252312
-        primitive_func = self.primitive(method=method).get_function()
-        assert np.isclose(
-            self.array_1.corr(self.array_2, method=method),
-            correlation_val,
-        )
-        assert np.isclose(primitive_func(self.array_1, self.array_2), correlation_val)
-
-    def test_errors(self):
-        error_message = (
-            "Invalid method, valid methods are ['pearson', 'spearman', 'kendall']"
-        )
-        with raises(ValueError, match=error_message):
-            self.primitive(method="invalid")
-        with raises(ValueError, match=error_message):
-            self.primitive(method=5)
-
-    def test_with_featuretools(self, pd_es):
-        transform, aggregation = find_applicable_primitives(self.primitive)
-        primitive_instance = self.primitive()
-        aggregation.append(primitive_instance)
-        valid_dfs(
-            pd_es,
-            aggregation,
-            transform,
-            self.primitive.name.upper(),
-            max_depth=2,
-        )
 
 
 class TestDateFirstEvent(PrimitiveTestBase):
