@@ -4,7 +4,7 @@ import hashlib
 import json
 from dataclasses import dataclass, field
 from functools import total_ordering
-from typing import Any, Dict, List, Optional, Set, Type, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union, cast
 
 import woodwork.type_sys.type_system as ww_type_system
 from woodwork.column_schema import ColumnSchema
@@ -56,11 +56,9 @@ class Feature:
             hash_msg.update(df_id.encode("utf-8"))
 
         if primitive:
-            primitive_name = primitive.name
-            assert isinstance(primitive_name, str)
+            # TODO: hashing should be on primitive
+            hash_msg.update(hash_primitive(primitive)[0].encode("utf-8"))
             commutative = primitive.commutative
-            hash_msg.update(json.dumps(serialize_primitive(primitive)).encode("utf-8"))
-
             assert (
                 len(base_features) > 0
             ), "there must be base features if give a primitive"
@@ -179,12 +177,12 @@ class Feature:
             "name": self.name,
             "logical_type": self.logical_type.__name__ if self.logical_type else None,
             "tags": list(self.tags),
-            "primitive": serialize_primitive(self.primitive)
-            if self.primitive
-            else None,
-            "base_features": [x.to_dict() for x in self.base_features],
+            "primitive": hash_primitive(self.primitive)[0] if self.primitive else None,
+            "base_features": [x.id for x in self.base_features],
             "df_id": self.df_id,
             "id": self.id,
+            "related_features": [x.id for x in self.related_features],
+            "idx": self.idx,
         }
 
     def is_multioutput(self) -> bool:
@@ -209,6 +207,9 @@ class Feature:
         # TODO(dreed): can this be initialized at the module level?
         primitive_deserializer = PrimitivesDeserializer()
         base_features = [Feature.from_dict(x) for x in input_dict["base_features"]]
+        related_features = [
+            Feature.from_dict(x) for x in input_dict["related_features"]
+        ]
 
         if input_dict["primitive"]:
             primitive = primitive_deserializer.deserialize_primitive(
@@ -231,6 +232,8 @@ class Feature:
             primitive=primitive,
             base_features=base_features,
             df_id=input_dict["df_id"],
+            related_features=set(related_features),
+            idx=input_dict["idx"],
         )
 
         assert hydrated_feature.id == input_dict["id"]
@@ -238,9 +241,20 @@ class Feature:
         return hydrated_feature
 
 
+def hash_primitive(primitive: PrimitiveBase) -> Tuple[str, Dict[str, Any]]:
+    hash_msg = hashlib.sha256()
+    primitive_name = primitive.name
+    assert isinstance(primitive_name, str)
+    primitive_dict = serialize_primitive(primitive)
+    primitive_json = json.dumps(primitive_dict).encode("utf-8")
+    hash_msg.update(primitive_json)
+    key = hash_msg.hexdigest()
+    return (key, primitive_dict)
+
+
 class FeatureCollection:
     def __init__(self, features: List[Feature]):
-        self.all_features: List[Feature] = features
+        self.all_features: List[Feature] = sorted(features)
         self.by_logical_type: Dict[Union[Type[LogicalType], None], Set[Feature]] = {}
         self.by_tag: Dict[str, Set[Feature]] = {}
         self.by_origin_feature: Dict[Feature, Set[Feature]] = {}
@@ -289,8 +303,97 @@ class FeatureCollection:
 
         return self.by_origin_feature[origin_feature]
 
-    def to_dict():
-        pass
+    def flatten_features(self) -> Dict[str, Feature]:
+        all_features_dict: Dict[str, Feature] = {}
 
-    def from_dict():
-        pass
+        def rfunc(feature_list: List[Feature]):
+            for feature in feature_list:
+                all_features_dict.setdefault(feature.id, feature)
+                rfunc(feature.base_features)
+
+        rfunc(self.all_features)
+        return all_features_dict
+
+    def flatten_primitives(self) -> Dict[str, Dict[str, Any]]:
+        all_primitives_dict: Dict[str, Dict[str, Any]] = {}
+
+        def rfunc(feature_list: List[Feature]):
+            for feature in feature_list:
+                if feature.primitive:
+                    key, prim_dict = hash_primitive(feature.primitive)
+                    all_primitives_dict.setdefault(key, prim_dict)
+                rfunc(feature.base_features)
+
+        rfunc(self.all_features)
+        return all_primitives_dict
+
+    def to_dict(self):
+        all_primitives_dict = self.flatten_primitives()
+        all_features_dict = self.flatten_features()
+
+        return {
+            "primitives": all_primitives_dict,
+            "feature_ids": [f.id for f in self.all_features],
+            "all_features": {k: f.to_dict() for k, f in all_features_dict.items()},
+        }
+
+    @staticmethod
+    def from_dict(input_dict):
+
+        primitive_deserializer = PrimitivesDeserializer()
+
+        primitives = {}
+        for prim_key, prim_dict in input_dict["primitives"].items():
+            primitive = primitive_deserializer.deserialize_primitive(
+                prim_dict,
+            )
+            assert isinstance(primitive, PrimitiveBase)
+            primitives[prim_key] = primitive
+
+        hydrated_features: Dict[str, Feature] = {}
+
+        feature_ids: List[str] = cast(List[str], input_dict["feature_ids"])
+        all_features: Dict[str, Any] = cast(Dict[str, Any], input_dict["all_features"])
+
+        def hydrate_feature(feature_id: str) -> Feature:
+            if feature_id in hydrated_features:
+                return hydrated_features[feature_id]
+
+            feature_dict = all_features[feature_id]
+            base_features = [hydrate_feature(x) for x in feature_dict["base_features"]]
+            #
+
+            logical_type = (
+                logical_types_map[feature_dict["logical_type"]]
+                if feature_dict["logical_type"]
+                else None
+            )
+
+            hydrated_feature = Feature(
+                name=feature_dict["name"],
+                logical_type=logical_type,
+                tags=set(feature_dict["tags"]),
+                primitive=primitives[feature_dict["primitive"]]
+                if feature_dict["primitive"]
+                else None,
+                base_features=base_features,
+                df_id=feature_dict["df_id"],
+                related_features=set(),
+                idx=feature_dict["idx"],
+            )
+
+            assert hydrated_feature.id == feature_dict["id"] == feature_id
+            hydrated_features[feature_id] = hydrated_feature
+
+            # need to link after features are stored on cache
+            related_features = [
+                hydrate_feature(x) for x in feature_dict["related_features"]
+            ]
+            hydrated_feature.related_features = set(related_features)
+
+            return hydrated_feature
+
+        return FeatureCollection([hydrate_feature(x) for x in feature_ids])
+
+    def __eq__(self, other: FeatureCollection) -> bool:
+        return all([x == y for x, y in zip(self.all_features, other.all_features)])

@@ -400,7 +400,7 @@ def test_compare_dfs(col_defs, primitives):
     origin_features = schema_to_features(df.ww.schema)
     features_collection = my_dfs(origin_features, primitives)
 
-    feature_names_old = set([x.get_name() for x in features_old]) - input_feature_names
+    feature_names_old = set([x.get_name() for x in features_old]) - input_feature_names  # type: ignore
 
     feature_names_new = (
         set([x.name for x in features_collection.all_features]) - input_feature_names
