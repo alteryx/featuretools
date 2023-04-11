@@ -185,7 +185,6 @@ def valid_dfs(
                           return %s "
             % (feature_substrings, feature_substrings),
         )
-    applicable_features = [applicable_features[0]]
     df = calculate_feature_matrix(
         entityset=es,
         features=applicable_features,
