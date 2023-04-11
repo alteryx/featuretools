@@ -421,3 +421,24 @@ def test_compare_dfs(col_defs, primitives):
     )
 
     assert feature_names_old == feature_names_new
+
+
+def test_dfs_inputs():
+    f1 = Feature("f1", Double)
+    with pytest.raises(
+        ValueError,
+        match="input_features must be an iterable of Feature objects",
+    ):
+        my_dfs(f1, [Absolute])
+
+    with pytest.raises(
+        ValueError,
+        match="input_features must be an iterable of Feature objects",
+    ):
+        my_dfs([f1, "other"], [Absolute])
+
+    with pytest.raises(
+        ValueError,
+        match="primitives must be a list of Primitive classes or Primitive instances",
+    ):
+        my_dfs([f1], ["absolute"])

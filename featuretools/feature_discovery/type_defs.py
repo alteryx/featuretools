@@ -23,6 +23,12 @@ ANY = "ANY"
 primitives_map = get_all_primitives()
 logical_types_map = get_all_logical_types()
 
+inferred_tag_map: Dict[Union[str, None], Set[str]] = {
+    k: ww_type_system.str_to_logical_type(k).standard_tags
+    for k in logical_types_map.keys()
+}
+inferred_tag_map[None] = set()
+
 
 @total_ordering
 @dataclass
@@ -138,12 +144,7 @@ class Feature:
         if self.logical_type is not None and "index" not in self.tags:
             logical_type_name = self.logical_type.__name__
 
-            inferred_tags = (
-                ww_type_system.str_to_logical_type(logical_type_name).standard_tags
-                if logical_type_name
-                else set()
-            )
-
+            inferred_tags = inferred_tag_map[logical_type_name]
             self.tags = self.tags | inferred_tags
 
     @property

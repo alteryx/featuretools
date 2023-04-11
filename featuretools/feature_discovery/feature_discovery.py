@@ -1,6 +1,6 @@
 import inspect
 from itertools import combinations, permutations, product
-from typing import Callable, Dict, Iterable, List, Set, Type, Union, cast
+from typing import Callable, Dict, Iterable, List, Set, Tuple, Type, Union, cast
 
 import woodwork.type_sys.type_system as ww_type_system
 from woodwork.column_schema import ColumnSchema
@@ -448,8 +448,35 @@ def schema_to_features(schema: TableSchema) -> List[Feature]:
     return features
 
 
+def _check_inputs(
+    input_features: Iterable[Feature],
+    primitives: Union[List[Type[PrimitiveBase]], List[PrimitiveBase]],
+) -> Tuple[Iterable[Feature], List[PrimitiveBase]]:
+    if not hasattr(input_features, "__iter__"):
+        raise ValueError("input_features must be an iterable of Feature objects")
+
+    for feature in input_features:
+        if not isinstance(feature, Feature):
+            raise ValueError("input_features must be an iterable of Feature objects")
+
+    assert isinstance(primitives, List)
+
+    primitive_instances: List[PrimitiveBase] = []
+    for primitive in primitives:
+        if inspect.isclass(primitive) and issubclass(primitive, PrimitiveBase):
+            primitive_instances.append(primitive())
+        elif isinstance(primitive, PrimitiveBase):
+            primitive_instances.append(primitive)
+        else:
+            raise ValueError(
+                "primitives must be a list of Primitive classes or Primitive instances",
+            )
+
+    return (input_features, primitive_instances)
+
+
 def my_dfs(
-    origin_features: Iterable[Feature],
+    input_features: Iterable[Feature],
     primitives: Union[List[Type[PrimitiveBase]], List[PrimitiveBase]],
 ) -> FeatureCollection:
     """
@@ -483,28 +510,15 @@ def my_dfs(
             features = my_dfs(origin_features, [Absolute, IsNull])
 
     """
-    try:
-        iter(origin_features)
-    except TypeError:
-        raise ValueError("Input is not iterable")
 
-    assert isinstance(primitives, List)
+    (input_features, primitives) = _check_inputs(input_features, primitives)
 
-    primitive_instances: List[PrimitiveBase] = []
-    for primitive in primitives:
-        if inspect.isclass(primitive) and issubclass(primitive, PrimitiveBase):
-            primitive_instances.append(primitive())
-        elif isinstance(primitive, PrimitiveBase):
-            primitive_instances.append(primitive)
-        else:
-            raise ValueError("Input must be a Primitive Class or a Primitive Instance")
-
-    features = [x.copy() for x in origin_features]
+    features = [x.copy() for x in input_features]
 
     # Group Columns by LogicalType, Tag, and combination
     feature_groups = group_features(features=features)
 
-    for primitive in primitive_instances:
+    for primitive in primitives:
         features_ = features_from_primitive(
             feature_groups=feature_groups,
             primitive=primitive,
