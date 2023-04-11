@@ -1,6 +1,6 @@
 from scipy.stats import kurtosis
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Double, Integer, IntegerNullable
+from woodwork.logical_types import Double, Integer
 
 from featuretools.primitives.base import AggregationPrimitive
 
@@ -49,7 +49,6 @@ class Kurtosis(AggregationPrimitive):
     name = "kurtosis"
     input_types = [
         [ColumnSchema(logical_type=Integer, semantic_tags={"numeric"})],
-        [ColumnSchema(logical_type=IntegerNullable, semantic_tags={"numeric"})],
         [ColumnSchema(logical_type=Double, semantic_tags={"numeric"})],
     ]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
