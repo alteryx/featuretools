@@ -10,6 +10,7 @@ from pytest import raises
 from featuretools.primitives import (
     AverageCountPerUnique,
     DateFirstEvent,
+    Entropy,
     FirstLastTimeDelta,
     HasNoDuplicates,
     IsMonotonicallyDecreasing,
@@ -109,7 +110,7 @@ class TestAverageCountPerUnique(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestVariance(PrimitiveTestBase):
@@ -165,7 +166,51 @@ class TestFirstLastTimeDelta(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
+
+
+class TestEntropy(PrimitiveTestBase):
+    primitive = Entropy
+
+    @pytest.mark.parametrize(
+        "dtype",
+        ["category", "object", "string"],
+    )
+    def test_regular(self, dtype):
+        data = pd.Series([1, 2, 3, 2], dtype=dtype)
+        primitive_func = self.primitive().get_function()
+        given_answer = primitive_func(data)
+        assert np.isclose(given_answer, 1.03, atol=0.01)
+
+    @pytest.mark.parametrize(
+        "dtype",
+        ["category", "object", "string"],
+    )
+    def test_empty(self, dtype):
+        data = pd.Series([], dtype=dtype)
+        primitive_func = self.primitive().get_function()
+        given_answer = primitive_func(data)
+        assert given_answer == 0.0
+
+    @pytest.mark.parametrize(
+        "dtype",
+        ["category", "object", "string"],
+    )
+    def test_args(self, dtype):
+        data = pd.Series([1, 2, 3, 2], dtype=dtype)
+        if dtype == "string":
+            data = pd.concat([data, pd.Series([pd.NA, pd.NA], dtype=dtype)])
+        else:
+            data = pd.concat([data, pd.Series([np.nan, np.nan], dtype=dtype)])
+        primitive_func = self.primitive(dropna=True, base=2).get_function()
+        given_answer = primitive_func(data)
+        assert np.isclose(given_answer, 1.5, atol=0.001)
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        aggregation.append(primitive_instance)
+        valid_dfs(es, aggregation, transform, self.primitive, max_depth=2)
 
 
 class TestKurtosis(PrimitiveTestBase):
@@ -242,7 +287,7 @@ class TestKurtosis(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestNumZeroCrossings(PrimitiveTestBase):
@@ -306,7 +351,7 @@ class TestNumZeroCrossings(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestNumTrueSinceLastFalse(PrimitiveTestBase):
@@ -354,7 +399,7 @@ class TestNumTrueSinceLastFalse(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestNumFalseSinceLastTrue(PrimitiveTestBase):
@@ -409,7 +454,7 @@ class TestNumFalseSinceLastTrue(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestNumPeaks(PrimitiveTestBase):
@@ -557,7 +602,7 @@ class TestNumPeaks(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestDateFirstEvent(PrimitiveTestBase):
@@ -603,7 +648,7 @@ class TestDateFirstEvent(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(pd_es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(pd_es, aggregation, transform, self.primitive)
 
     def test_serialize(self, es):
         check_serialize(self.primitive, es, target_dataframe_name="sessions")
@@ -651,7 +696,7 @@ class TestMinCount(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestMaxCount(PrimitiveTestBase):
@@ -696,7 +741,7 @@ class TestMaxCount(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestMaxMinDelta(PrimitiveTestBase):
@@ -719,7 +764,7 @@ class TestMaxMinDelta(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestMedianCount(PrimitiveTestBase):
@@ -744,7 +789,7 @@ class TestMedianCount(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestNMostCommonFrequency(PrimitiveTestBase):
@@ -803,7 +848,7 @@ class TestNMostCommonFrequency(PrimitiveTestBase):
             es,
             aggregation,
             transform,
-            self.primitive.name.upper(),
+            self.primitive,
             target_dataframe_name="customers",
             multi_output=True,
         )
@@ -815,7 +860,7 @@ class TestNMostCommonFrequency(PrimitiveTestBase):
             es,
             aggregation,
             transform,
-            self.primitive.name.upper(),
+            self.primitive,
             target_dataframe_name="customers",
             multi_output=True,
         )
@@ -869,7 +914,7 @@ class TestNUniqueDays(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestNUniqueDaysOfCalendarYear(PrimitiveTestBase):
@@ -913,7 +958,7 @@ class TestNUniqueDaysOfCalendarYear(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestNUniqueDaysOfMonth(PrimitiveTestBase):
@@ -957,7 +1002,7 @@ class TestNUniqueDaysOfMonth(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestNUniqueMonths(PrimitiveTestBase):
@@ -996,7 +1041,7 @@ class TestNUniqueMonths(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestNUniqueWeeks(PrimitiveTestBase):
@@ -1036,7 +1081,7 @@ class TestNUniqueWeeks(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestHasNoDuplicates(PrimitiveTestBase):
@@ -1087,7 +1132,7 @@ class TestHasNoDuplicates(PrimitiveTestBase):
             es,
             aggregation,
             transform,
-            self.primitive.name.upper(),
+            self.primitive,
             target_dataframe_name="customers",
             instance_ids=[0, 1, 2],
         )
@@ -1129,7 +1174,7 @@ class TestIsMonotonicallyDecreasing(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instantiate = self.primitive()
         aggregation.append(primitive_instantiate)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestIsMonotonicallyIncreasing(PrimitiveTestBase):
@@ -1168,4 +1213,4 @@ class TestIsMonotonicallyIncreasing(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instantiate = self.primitive()
         aggregation.append(primitive_instantiate)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)

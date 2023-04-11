@@ -158,12 +158,12 @@ def valid_dfs(
     max_features=-1,
     instance_ids=[0, 1, 2, 3],
 ):
-    if isinstance(feature_substrings, PrimitiveBase):
-        feature_substrings = feature_substrings.name
     if not isinstance(feature_substrings, list):
         feature_substrings = [feature_substrings]
 
-    feature_substrings = [x.upper() for x in feature_substrings]
+    if any([issubclass(x, PrimitiveBase) for x in feature_substrings]):
+        feature_substrings = [x.name.upper() for x in feature_substrings]
+
     features = dfs(
         entityset=es,
         target_dataframe_name=target_dataframe_name,
@@ -185,6 +185,7 @@ def valid_dfs(
                           return %s "
             % (feature_substrings, feature_substrings),
         )
+    applicable_features = [applicable_features[0]]
     df = calculate_feature_matrix(
         entityset=es,
         features=applicable_features,

@@ -48,9 +48,9 @@ class Kurtosis(AggregationPrimitive):
 
     name = "kurtosis"
     input_types = [
-        [ColumnSchema(logical_type=Integer)],
-        [ColumnSchema(logical_type=IntegerNullable)],
-        [ColumnSchema(logical_type=Double)],
+        [ColumnSchema(logical_type=Integer, semantic_tags={"numeric"})],
+        [ColumnSchema(logical_type=IntegerNullable, semantic_tags={"numeric"})],
+        [ColumnSchema(logical_type=Double, semantic_tags={"numeric"})],
     ]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
     stack_on_self = False
