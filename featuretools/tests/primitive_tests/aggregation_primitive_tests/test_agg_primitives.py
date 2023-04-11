@@ -216,56 +216,64 @@ class TestEntropy(PrimitiveTestBase):
 class TestKurtosis(PrimitiveTestBase):
     primitive = Kurtosis
 
-    def test_nan(self):
-        data = pd.Series([np.nan, 5, 3])
+    @pytest.mark.parametrize(
+        "dtype",
+        ["int64", "float64"],
+    )
+    def test_regular(self, dtype):
+        data = pd.Series([1, 2, 3, 4, 5], dtype=dtype)
+        answer = -1.3
         primitive_func = self.primitive().get_function()
         given_answer = primitive_func(data)
-        assert np.isnan(given_answer)
+        assert np.isclose(answer, given_answer, atol=0.01)
 
-    def test_empty(self):
-        data = pd.Series([], dtype="float64")
+        data = pd.Series([1, 2, 3, 4, 5, 6], dtype=dtype)
+        answer = -1.26
         primitive_func = self.primitive().get_function()
         given_answer = primitive_func(data)
-        assert np.isnan(given_answer)
+        assert np.isclose(answer, given_answer, atol=0.01)
+
+        data = pd.Series([x * x for x in list(range(100))], dtype=dtype)
+        answer = -0.85
+        primitive_func = self.primitive().get_function()
+        given_answer = primitive_func(data)
+        assert np.isclose(answer, given_answer, atol=0.01)
+
+        data = pd.Series([sqrt(x) for x in list(range(100))], dtype=dtype)
+        answer = -0.46
+        primitive_func = self.primitive().get_function()
+        given_answer = primitive_func(data)
+        assert np.isclose(answer, given_answer, atol=0.01)
+
+    def test_nan(self):
+        data = pd.Series([np.nan, 5, 3], dtype="float64")
+        primitive_func = self.primitive().get_function()
+        given_answer = primitive_func(data)
+        assert pd.isna(given_answer)
+
+    @pytest.mark.parametrize(
+        "dtype",
+        ["int64", "float64"],
+    )
+    def test_empty(self, dtype):
+        data = pd.Series([], dtype=dtype)
+        primitive_func = self.primitive().get_function()
+        given_answer = primitive_func(data)
+        assert pd.isna(given_answer)
 
     def test_inf(self):
         data = pd.Series([1, np.inf], dtype="float64")
         primitive_func = self.primitive().get_function()
         given_answer = primitive_func(data)
-        assert np.isnan(given_answer)
+        assert pd.isna(given_answer)
 
         data = pd.Series([np.NINF, 1, np.inf], dtype="float64")
         primitive_func = self.primitive().get_function()
         given_answer = primitive_func(data)
-        assert np.isnan(given_answer)
-
-    def test_regular(self):
-        data = pd.Series([1, 2, 3, 4, 5])
-        answer = -1.3
-        primitive_func = self.primitive().get_function()
-        given_answer = primitive_func(data)
-        assert answer == given_answer
-
-        data = pd.Series([1, 2, 3, 4, 5, 6])
-        answer = -1.2685714285714282
-        primitive_func = self.primitive().get_function()
-        given_answer = primitive_func(data)
-        assert answer == given_answer
-
-        data = pd.Series([x * x for x in list(range(100))])
-        answer = -0.8516897715415088
-        primitive_func = self.primitive().get_function()
-        given_answer = primitive_func(data)
-        assert answer == given_answer
-
-        data = pd.Series([sqrt(x) for x in list(range(100))])
-        answer = -0.4643347840875198
-        primitive_func = self.primitive().get_function()
-        given_answer = primitive_func(data)
-        assert answer == given_answer
+        assert pd.isna(given_answer)
 
     def test_arg(self):
-        data = pd.Series([1, 2, 3, 4, 5, np.nan, np.nan])
+        data = pd.Series([1, 2, 3, 4, 5, np.nan, np.nan], dtype="float64")
         answer = -1.3
         primitive_func = self.primitive(nan_policy="omit").get_function()
         given_answer = primitive_func(data)
@@ -661,7 +669,7 @@ class TestMinCount(PrimitiveTestBase):
         data = pd.Series([np.nan, np.nan, np.nan])
         primitive_func = self.primitive().get_function()
         answer = primitive_func(data)
-        assert np.isnan(answer)
+        assert pd.isna(answer)
 
     def test_inf(self):
         data = pd.Series([5, 10, 10, np.inf, np.inf, np.inf])
@@ -706,7 +714,7 @@ class TestMaxCount(PrimitiveTestBase):
         data = pd.Series([np.nan, np.nan, np.nan])
         primitive_func = self.primitive().get_function()
         answer = primitive_func(data)
-        assert np.isnan(answer)
+        assert pd.isna(answer)
 
     def test_inf(self):
         data = pd.Series([5, 10, 10, np.inf, np.inf, np.inf])
@@ -729,7 +737,7 @@ class TestMaxCount(PrimitiveTestBase):
         data = pd.Series([1, 1, 2, 3, 4, 4, np.nan, 5])
         primitive_func = self.primitive(skipna=False).get_function()
         answer = primitive_func(data)
-        assert np.isnan(answer)
+        assert pd.isna(answer)
 
     def test_ninf(self):
         data = pd.Series([np.NINF, np.NINF, np.nan])
@@ -783,7 +791,7 @@ class TestMedianCount(PrimitiveTestBase):
         assert given_answer == 3
         primitive_func = self.primitive(skipna=False).get_function()
         given_answer = primitive_func(case)
-        assert np.isnan(given_answer)
+        assert pd.isna(given_answer)
 
     def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)

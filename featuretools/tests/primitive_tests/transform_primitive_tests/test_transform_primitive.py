@@ -972,9 +972,10 @@ class TestFileExtension(PrimitiveTestBase):
                 "data.JSON",
                 "C:\\Projects\\apilibrary\\apilibrary.sln",
             ],
+            dtype="string",
         )
-        answer = pd.Series([".txt", ".json", ".json", ".sln"])
-        pd.testing.assert_series_equal(primitive_func(array), answer)
+        answer = pd.Series([".txt", ".json", ".json", ".sln"], dtype="category")
+        pd.testing.assert_series_equal(primitive_func(array).astype("category"), answer)
 
     def test_invalid(self):
         primitive_func = FileExtension().get_function()
