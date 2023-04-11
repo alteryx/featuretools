@@ -13,7 +13,7 @@ Future Release
             ``IsUnique`` (:pr:`2537`)
     * Fixes
     * Changes
-        * Pinned pandas to < 2.0.0 (:pr:`2533`)
+        * Restrict pandas to < 2.0.0 and upgrade minimum pandas to 1.5.0 (:pr:`2533`)
         * Removed the ``Correlation`` and ``AutoCorrelation`` primitive as these could lead to data leakage (:pr:`2537`)
         * Remove IntegerNullable support for ``Kurtosis`` primitive  (:pr:`2537`)
     * Documentation Changes
