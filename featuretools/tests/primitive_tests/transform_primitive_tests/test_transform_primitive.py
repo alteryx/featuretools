@@ -974,13 +974,13 @@ class TestFileExtension(PrimitiveTestBase):
             ],
             dtype="string",
         )
-        answer = pd.Series([".txt", ".json", ".json", ".sln"], dtype="category")
-        pd.testing.assert_series_equal(primitive_func(array).astype("category"), answer)
+        answer = pd.Series([".txt", ".json", ".json", ".sln"], dtype="string")
+        pd.testing.assert_series_equal(primitive_func(array), answer)
 
     def test_invalid(self):
         primitive_func = FileExtension().get_function()
-        array = pd.Series(["doc.txt", "~/documents/data", np.nan])
-        answer = pd.Series([".txt", np.nan, np.nan])
+        array = pd.Series(["doc.txt", "~/documents/data", np.nan], dtype="string")
+        answer = pd.Series([".txt", np.nan, np.nan], dtype="string")
         pd.testing.assert_series_equal(primitive_func(array), answer)
 
     def test_with_featuretools(self, es):
