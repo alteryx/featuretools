@@ -216,6 +216,7 @@ def hash_primitive(primitive: PrimitiveBase) -> Tuple[str, Dict[str, Any]]:
 
 
 class FeatureCollection:
+    # TODO: this could be sped up by not doing all this work in the initializer and intead creating an index method
     def __init__(self, features: List[Feature]):
         self.all_features: List[Feature] = sorted(features)
         self.by_logical_type: Dict[Union[Type[LogicalType], None], Set[Feature]] = {}

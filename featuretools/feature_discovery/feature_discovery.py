@@ -1,3 +1,5 @@
+import concurrent.futures
+import functools
 import inspect
 from itertools import combinations, permutations, product
 from typing import Callable, Dict, Iterable, List, Set, Tuple, Type, Union, cast
@@ -307,17 +309,17 @@ def get_primitive_return_type(primitive: PrimitiveBase) -> ColumnSchema:
 
 
 def features_from_primitive(
-    feature_groups: Dict[str, List[Feature]],
     primitive: PrimitiveBase,
+    feature_groups: Dict[str, List[Feature]],
 ) -> List[Feature]:
     """
     For a given primitive, creates all engineered features
 
     Args:
+        primitive (Type[PrimitiveBase])
         feature_groups (Dict[str, List[Feature]]):
             Hashmap from Key to List of Features. Key is either: LogicalType name (eg. "Double"), Semantic tag (eg. "index"),
             or combination (eg. "Double,index").
-        primitive (Type[PrimitiveBase])
 
     Returns:
         List[List[Feature]]
@@ -336,7 +338,7 @@ def features_from_primitive(
                 "Double,numeric": ["f1", "f2", "f3"],
             }
 
-            feature_sets = features_from_primitive(feature_groups, AddNumeric)
+            feature_sets = features_from_primitive(AddNumeric, feature_groups)
 
             [
                 ["f1", "f2"],
@@ -518,12 +520,18 @@ def my_dfs(
     # Group Columns by LogicalType, Tag, and combination
     feature_groups = group_features(features=features)
 
-    for primitive in primitives:
-        features_ = features_from_primitive(
-            feature_groups=feature_groups,
-            primitive=primitive,
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        new_features = list(
+            executor.map(
+                functools.partial(
+                    features_from_primitive,
+                    feature_groups=feature_groups,
+                ),
+                primitives,
+            ),
         )
-        features.extend(features_)
+
+    features.extend(flatten_list(new_features))
 
     return FeatureCollection(features=features)
 
