@@ -4,10 +4,13 @@ from unittest.mock import patch
 import pytest
 from woodwork.logical_types import Double
 
-from featuretools.feature_discovery.feature_discovery import my_dfs, schema_to_features
+from featuretools.feature_discovery.feature_discovery import (
+    lite_dfs,
+    schema_to_features,
+)
 from featuretools.feature_discovery.type_defs import (
-    Feature,
     FeatureCollection,
+    LiteFeature,
 )
 from featuretools.primitives import (
     Absolute,
@@ -25,25 +28,25 @@ from featuretools.tests.testing_utils.generate_fake_dataframe import (
 
 
 def test_feature_type_equality():
-    f1 = Feature("f1", Double)
-    f2 = Feature("f2", Double)
+    f1 = LiteFeature("f1", Double)
+    f2 = LiteFeature("f2", Double)
 
     # Add Numeric is Commutative, so should all be equal
-    f3 = Feature(
+    f3 = LiteFeature(
         name="Column 1",
         primitive=AddNumeric(),
         logical_type=Double,
         base_features=[f1, f2],
     )
 
-    f4 = Feature(
+    f4 = LiteFeature(
         name="Column 10",
         primitive=AddNumeric(),
         logical_type=Double,
         base_features=[f1, f2],
     )
 
-    f5 = Feature(
+    f5 = LiteFeature(
         name="Column 20",
         primitive=AddNumeric(),
         logical_type=Double,
@@ -53,14 +56,14 @@ def test_feature_type_equality():
     assert f3 == f4 == f5
 
     # Divide Numeric is not Commutative, so should not be equal
-    f6 = Feature(
+    f6 = LiteFeature(
         name="Column 1",
         primitive=DivideNumeric(),
         logical_type=Double,
         base_features=[f1, f2],
     )
 
-    f7 = Feature(
+    f7 = LiteFeature(
         name="Column 1",
         primitive=DivideNumeric(),
         logical_type=Double,
@@ -75,22 +78,22 @@ def test_feature_type_assertions():
         AssertionError,
         match="there must be base features if give a primitive",
     ):
-        Feature(
+        LiteFeature(
             name="Column 1",
             primitive=AddNumeric(),
             logical_type=Double,
         )
 
 
-@patch.object(Feature, "_generate_hash", lambda x: x.name)
+@patch.object(LiteFeature, "_generate_hash", lambda x: x.name)
 @patch(
     "featuretools.feature_discovery.type_defs.hash_primitive",
     lambda x: (x.name, None),
 )
 def test_feature_to_dict():
-    f1 = Feature("f1", Double)
-    f2 = Feature("f2", Double)
-    f = Feature(
+    f1 = LiteFeature("f1", Double)
+    f2 = LiteFeature("f2", Double)
+    f = LiteFeature(
         name="Column 1",
         primitive=AddNumeric(),
         logical_type=Double,
@@ -116,23 +119,23 @@ def test_feature_to_dict():
 
 
 def test_feature_hash():
-    bf = Feature("bf", Double)
+    bf = LiteFeature("bf", Double)
 
     p1 = Lag(periods=1)
     p2 = Lag(periods=2)
-    f1 = Feature(
+    f1 = LiteFeature(
         primitive=p1,
         logical_type=Double,
         base_features=[bf],
     )
 
-    f2 = Feature(
+    f2 = LiteFeature(
         primitive=p2,
         logical_type=Double,
         base_features=[bf],
     )
 
-    f3 = Feature(
+    f3 = LiteFeature(
         primitive=p2,
         logical_type=Double,
         base_features=[bf],
@@ -143,10 +146,10 @@ def test_feature_hash():
 
 
 def test_feature_forced_name():
-    bf = Feature("bf", Double)
+    bf = LiteFeature("bf", Double)
 
     p1 = Lag(periods=1)
-    f1 = Feature(
+    f1 = LiteFeature(
         name="target_delay_1",
         primitive=p1,
         logical_type=Double,
@@ -155,11 +158,11 @@ def test_feature_forced_name():
     assert f1.name == "target_delay_1"
 
 
-@patch.object(Feature, "_generate_hash", lambda x: x.name)
+@patch.object(LiteFeature, "_generate_hash", lambda x: x.name)
 def test_feature_collection_to_dict():
-    f1 = Feature("f1", Double)
-    f2 = Feature("f2", Double)
-    f3 = Feature(
+    f1 = LiteFeature("f1", Double)
+    f2 = LiteFeature("f2", Double)
+    f3 = LiteFeature(
         name="Column 1",
         primitive=AddNumeric(),
         logical_type=Double,
@@ -219,11 +222,11 @@ def test_feature_collection_to_dict():
     assert json.dumps(expected, sort_keys=True) == json.dumps(actual, sort_keys=True)
 
 
-@patch.object(Feature, "_generate_hash", lambda x: x.name)
+@patch.object(LiteFeature, "_generate_hash", lambda x: x.name)
 def test_feature_collection_from_dict():
-    f1 = Feature("f1", Double)
-    f2 = Feature("f2", Double)
-    f3 = Feature(
+    f1 = LiteFeature("f1", Double)
+    f2 = LiteFeature("f2", Double)
+    f3 = LiteFeature(
         name="Column 1",
         primitive=AddNumeric(),
         logical_type=Double,
@@ -299,9 +302,13 @@ def test_feature_collection_serialization_roundtrip():
     )
 
     origin_features = schema_to_features(df.ww.schema)
-    fc = my_dfs(origin_features, [Absolute, MultiplyNumeric, TestMultiOutputPrimitive])
+    fc = lite_dfs(
+        origin_features,
+        [Absolute, MultiplyNumeric, TestMultiOutputPrimitive],
+        parallelize=False,
+    )
 
-    fc = my_dfs(fc.all_features, [Lag])
+    fc = lite_dfs(fc.all_features, [Lag])
 
     assert set([x.get_name() for x in fc.all_features]) == set(
         [

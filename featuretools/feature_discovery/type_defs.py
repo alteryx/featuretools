@@ -32,12 +32,12 @@ inferred_tag_map[None] = set()
 
 @total_ordering
 @dataclass
-class Feature:
+class LiteFeature:
     name: Optional[str] = None
     logical_type: Optional[Type[LogicalType]] = None
     tags: Set[str] = field(default_factory=set)
     primitive: Optional[PrimitiveBase] = None
-    base_features: List[Feature] = field(default_factory=list)
+    base_features: List[LiteFeature] = field(default_factory=list)
     df_id: Optional[str] = None
 
     id: str = field(init=False)
@@ -45,14 +45,14 @@ class Feature:
     n_output_features: int = 1
 
     depth = 0
-    related_features: Set[Feature] = field(default_factory=set)
+    related_features: Set[LiteFeature] = field(default_factory=set)
     idx: int = 0
 
     @staticmethod
     def hash(
         name: Optional[str],
         primitive: Optional[PrimitiveBase] = None,
-        base_features: List[Feature] = [],
+        base_features: List[LiteFeature] = [],
         df_id: Optional[str] = None,
         idx: int = 0,
     ):
@@ -83,10 +83,10 @@ class Feature:
 
         return hash_msg.hexdigest()
 
-    def __eq__(self, other: Feature):
+    def __eq__(self, other: LiteFeature):
         return self.id == other.id
 
-    def __lt__(self, other: Feature):
+    def __lt__(self, other: LiteFeature):
         return self.id < other.id
 
     def __ne__(self, other):
@@ -107,7 +107,7 @@ class Feature:
     def get_primitive_name(self) -> Union[str, None]:
         return self.primitive.name if self.primitive else None
 
-    def get_dependencies(self, deep=False) -> List[Feature]:
+    def get_dependencies(self, deep=False) -> List[LiteFeature]:
         flattened_dependencies = []
         for f in self.base_features:
             flattened_dependencies.append(f)
@@ -120,7 +120,7 @@ class Feature:
                     flattened_dependencies.append(dependencies)
         return flattened_dependencies
 
-    def get_origin_features(self) -> List[Feature]:
+    def get_origin_features(self) -> List[LiteFeature]:
         all_dependencies = self.get_dependencies(deep=True)
         return [f for f in all_dependencies if f.depth == 0]
 
@@ -189,8 +189,8 @@ class Feature:
     def is_multioutput(self) -> bool:
         return len(self.related_features) > 0
 
-    def copy(self) -> Feature:
-        copied_feature = Feature(
+    def copy(self) -> LiteFeature:
+        copied_feature = LiteFeature(
             name=self.name,
             logical_type=self.logical_type,
             tags=self.tags,
@@ -217,13 +217,16 @@ def hash_primitive(primitive: PrimitiveBase) -> Tuple[str, Dict[str, Any]]:
 
 class FeatureCollection:
     # TODO: this could be sped up by not doing all this work in the initializer and intead creating an index method
-    def __init__(self, features: List[Feature]):
-        self.all_features: List[Feature] = sorted(features)
-        self.by_logical_type: Dict[Union[Type[LogicalType], None], Set[Feature]] = {}
-        self.by_tag: Dict[str, Set[Feature]] = {}
-        self.by_origin_feature: Dict[Feature, Set[Feature]] = {}
-        self.by_depth: Dict[int, Set[Feature]] = {}
-        self.by_name: Dict[str, Feature] = {}
+    def __init__(self, features: List[LiteFeature]):
+        self.all_features: List[LiteFeature] = sorted(features)
+        self.by_logical_type: Dict[
+            Union[Type[LogicalType], None],
+            Set[LiteFeature],
+        ] = {}
+        self.by_tag: Dict[str, Set[LiteFeature]] = {}
+        self.by_origin_feature: Dict[LiteFeature, Set[LiteFeature]] = {}
+        self.by_depth: Dict[int, Set[LiteFeature]] = {}
+        self.by_name: Dict[str, LiteFeature] = {}
 
         for feature in features:
             logical_type = feature.logical_type
@@ -246,31 +249,31 @@ class FeatureCollection:
 
             self.by_name[feature_name] = feature
 
-    def get_by_logical_type(self, logical_type: Type[LogicalType]) -> Set[Feature]:
+    def get_by_logical_type(self, logical_type: Type[LogicalType]) -> Set[LiteFeature]:
         return self.by_logical_type.get(logical_type, set())
 
-    def get_by_tag(self, tag: str) -> Set[Feature]:
+    def get_by_tag(self, tag: str) -> Set[LiteFeature]:
         return self.by_tag.get(tag, set())
 
-    def get_by_origin_feature(self, origin_feature: Feature) -> Set[Feature]:
+    def get_by_origin_feature(self, origin_feature: LiteFeature) -> Set[LiteFeature]:
         return self.by_origin_feature.get(origin_feature, set())
 
-    def get_by_origin_feature_name(self, name: str) -> Feature:
+    def get_by_origin_feature_name(self, name: str) -> LiteFeature:
         feature = self.by_name.get(name)
         assert feature is not None
         return feature
 
-    def get_dependencies_by_origin_name(self, name) -> Set[Feature]:
+    def get_dependencies_by_origin_name(self, name) -> Set[LiteFeature]:
         origin_feature = self.by_name[name]
 
         assert origin_feature, "no origin feature with that name exists"
 
         return self.by_origin_feature[origin_feature]
 
-    def flatten_features(self) -> Dict[str, Feature]:
-        all_features_dict: Dict[str, Feature] = {}
+    def flatten_features(self) -> Dict[str, LiteFeature]:
+        all_features_dict: Dict[str, LiteFeature] = {}
 
-        def rfunc(feature_list: List[Feature]):
+        def rfunc(feature_list: List[LiteFeature]):
             for feature in feature_list:
                 all_features_dict.setdefault(feature.id, feature)
                 rfunc(feature.base_features)
@@ -281,7 +284,7 @@ class FeatureCollection:
     def flatten_primitives(self) -> Dict[str, Dict[str, Any]]:
         all_primitives_dict: Dict[str, Dict[str, Any]] = {}
 
-        def rfunc(feature_list: List[Feature]):
+        def rfunc(feature_list: List[LiteFeature]):
             for feature in feature_list:
                 if feature.primitive:
                     key, prim_dict = hash_primitive(feature.primitive)
@@ -313,12 +316,12 @@ class FeatureCollection:
             assert isinstance(primitive, PrimitiveBase)
             primitives[prim_key] = primitive
 
-        hydrated_features: Dict[str, Feature] = {}
+        hydrated_features: Dict[str, LiteFeature] = {}
 
         feature_ids: List[str] = cast(List[str], input_dict["feature_ids"])
         all_features: Dict[str, Any] = cast(Dict[str, Any], input_dict["all_features"])
 
-        def hydrate_feature(feature_id: str) -> Feature:
+        def hydrate_feature(feature_id: str) -> LiteFeature:
             if feature_id in hydrated_features:
                 return hydrated_features[feature_id]
 
@@ -332,7 +335,7 @@ class FeatureCollection:
                 else None
             )
 
-            hydrated_feature = Feature(
+            hydrated_feature = LiteFeature(
                 name=feature_dict["name"],
                 logical_type=logical_type,
                 tags=set(feature_dict["tags"]),

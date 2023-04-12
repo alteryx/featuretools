@@ -13,11 +13,11 @@ from featuretools.feature_discovery.feature_discovery import (
     get_matching_features,
     group_features,
     index_column_set,
-    my_dfs,
+    lite_dfs,
     schema_to_features,
 )
 from featuretools.feature_discovery.type_defs import (
-    Feature,
+    LiteFeature,
 )
 from featuretools.primitives import (
     Absolute,
@@ -89,7 +89,7 @@ def test_column_to_keys(column_schema, expected):
     ],
 )
 def test_feature_to_keys(feature, expected):
-    actual = feature_to_keys(Feature(*feature))
+    actual = feature_to_keys(LiteFeature(*feature))
     assert set(actual) == set(expected)
 
 
@@ -145,9 +145,9 @@ def test_index_input_set(column_list, expected):
         ),
     ],
 )
-@patch.object(Feature, "_generate_hash", lambda x: x.name)
+@patch.object(LiteFeature, "_generate_hash", lambda x: x.name)
 def test_group_features(column_list, expected):
-    column_list = [Feature(*x) for x in column_list]
+    column_list = [LiteFeature(*x) for x in column_list]
     actual = group_features(column_list)
     actual = {k: [x.id for x in v] for k, v in actual.items()}
     assert actual == expected
@@ -343,7 +343,7 @@ def test_get_matching_features(feature_groups, primitive, expected):
         ),
     ],
 )
-@patch.object(Feature, "_generate_hash", lambda x: x.name)
+@patch.object(LiteFeature, "_generate_hash", lambda x: x.name)
 def test_new_dfs(col_defs, primitives, expected):
     input_feature_names = set([x[0] for x in col_defs])
     df = generate_fake_dataframe(
@@ -351,7 +351,7 @@ def test_new_dfs(col_defs, primitives, expected):
     )
 
     origin_features = schema_to_features(df.ww.schema)
-    feature_collection = my_dfs(origin_features, primitives)
+    feature_collection = lite_dfs(origin_features, primitives)
 
     new_feature_names = (
         set([x.name for x in feature_collection.all_features]) - input_feature_names
@@ -394,7 +394,7 @@ def get_default_logical_type(tags: Set[str]):
         ),
     ],
 )
-@patch.object(Feature, "_generate_hash", lambda x: x.name)
+@patch.object(LiteFeature, "_generate_hash", lambda x: x.name)
 def test_compare_dfs(col_defs, primitives):
     input_feature_names = set([x[0] for x in col_defs])
     df = generate_fake_dataframe(
@@ -412,7 +412,7 @@ def test_compare_dfs(col_defs, primitives):
     )
 
     origin_features = schema_to_features(df.ww.schema)
-    features_collection = my_dfs(origin_features, primitives)
+    features_collection = lite_dfs(origin_features, primitives)
 
     feature_names_old = set([x.get_name() for x in features_old]) - input_feature_names  # type: ignore
 
@@ -424,21 +424,21 @@ def test_compare_dfs(col_defs, primitives):
 
 
 def test_dfs_inputs():
-    f1 = Feature("f1", Double)
+    f1 = LiteFeature("f1", Double)
     with pytest.raises(
         ValueError,
-        match="input_features must be an iterable of Feature objects",
+        match="input_features must be an iterable of LiteFeature objects",
     ):
-        my_dfs(f1, [Absolute])
+        lite_dfs(f1, [Absolute])
 
     with pytest.raises(
         ValueError,
-        match="input_features must be an iterable of Feature objects",
+        match="input_features must be an iterable of LiteFeature objects",
     ):
-        my_dfs([f1, "other"], [Absolute])
+        lite_dfs([f1, "other"], [Absolute])
 
     with pytest.raises(
         ValueError,
         match="primitives must be a list of Primitive classes or Primitive instances",
     ):
-        my_dfs([f1], ["absolute"])
+        lite_dfs([f1], ["absolute"])

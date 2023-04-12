@@ -10,22 +10,22 @@ from featuretools.feature_base.feature_base import (
     IdentityFeature,
     TransformFeature,
 )
-from featuretools.feature_discovery.type_defs import Feature
+from featuretools.feature_discovery.type_defs import LiteFeature
 from featuretools.primitives import TransformPrimitive
 from featuretools.primitives.base.primitive_base import PrimitiveBase
 
 FeatureCache = Dict[str, FeatureBase]
 
 
-def convert_featurebase_to_feature(feature: FeatureBase) -> Feature:
+def convert_featurebase_to_feature(feature: FeatureBase) -> LiteFeature:
     """
-    Convert a FeatureBase object to a Feature object
+    Convert a FeatureBase object to a LiteFeature object
 
     Args:
         feature (FeatureBase):
 
     Returns:
-       Feature - converted Feature object
+       LiteFeature - converted LiteFeature object
     """
     base_features = [convert_featurebase_to_feature(x) for x in feature.base_features]
 
@@ -45,7 +45,7 @@ def convert_featurebase_to_feature(feature: FeatureBase) -> Feature:
         primitive = feature.primitive
         assert isinstance(primitive, PrimitiveBase)
 
-    return Feature(
+    return LiteFeature(
         name=name,
         logical_type=logical_type,
         tags=tags,
@@ -56,36 +56,8 @@ def convert_featurebase_to_feature(feature: FeatureBase) -> Feature:
     )
 
 
-def get_base_features(
-    feature: Feature,
-    feature_cache: FeatureCache,
-) -> List[FeatureBase]:
-    """
-    Get base features off of cache. Handles the case where feature maybe
-    multioutput.
-
-    Args:
-        feature (Feature)
-        feature_cache (FeatureCache) already converted features
-
-    Returns:
-       List[FeatureBase]
-    """
-    new_base_features: List[FeatureBase] = []
-    for bf in feature.base_features:
-        fb = feature_cache[bf.id]
-        if bf.is_multioutput():
-            idx = bf.idx
-            # if its multioutput, you can index on the FeatureBase
-            new_base_features.append(fb[idx])
-        else:
-            new_base_features.append(fb)
-
-    return new_base_features
-
-
 def to_transform_feature(
-    feature: Feature,
+    feature: LiteFeature,
     base_features: List[FeatureBase],
 ) -> FeatureBase:
     """
@@ -93,7 +65,7 @@ def to_transform_feature(
     feature in correct way.
 
     Args:
-        feature (Feature)
+        feature (LiteFeature)
         base_features (List[FeatureBase])
 
     Returns:
@@ -121,7 +93,7 @@ def to_transform_feature(
 
 
 def convert_feature_to_featurebase(
-    feature: Feature,
+    feature: LiteFeature,
     dataframe: pd.DataFrame,
     cache: FeatureCache = {},
 ) -> FeatureBase:
@@ -129,7 +101,7 @@ def convert_feature_to_featurebase(
     Recursively transforms a feature object into a Featurebase object
 
     Args:
-        feature (Feature)
+        feature (LiteFeature)
         base_features (List[FeatureBase])
         cache (FeatureCache) already converted features
 
@@ -137,19 +109,33 @@ def convert_feature_to_featurebase(
        FeatureBase
     """
 
-    def rfunc(feature: Feature) -> FeatureBase:
+    def get_base_features(
+        feature: LiteFeature,
+    ) -> List[FeatureBase]:
+        new_base_features: List[FeatureBase] = []
+        for bf in feature.base_features:
+            fb = rfunc(bf)
+            if bf.is_multioutput():
+                idx = bf.idx
+                # if its multioutput, you can index on the FeatureBase
+                new_base_features.append(fb[idx])
+            else:
+                new_base_features.append(fb)
+
+        return new_base_features
+
+    def rfunc(feature: LiteFeature) -> FeatureBase:
         # if feature has already been converted, return from cache
         if feature.id in cache:
             return cache[feature.id]
 
-        # if depth is 0, we are at an origin featire
+        # if depth is 0, we are at an origin feature
         if feature.depth == 0:
             fb = IdentityFeature(dataframe.ww[feature.name])
             cache[feature.id] = fb
             return fb
 
-        base_features = [rfunc(bf) for bf in feature.base_features]
-        base_features = get_base_features(feature, cache)
+        base_features = get_base_features(feature)
 
         fb = to_transform_feature(feature, base_features)
         cache[feature.id] = fb
@@ -159,14 +145,14 @@ def convert_feature_to_featurebase(
 
 
 def convert_feature_list_to_featurebase_list(
-    feature_list: List[Feature],
+    feature_list: List[LiteFeature],
     dataframe: pd.DataFrame,
 ) -> List[FeatureBase]:
     """
-    Convert a list of Feature objects into a list of FeatureBase objects
+    Convert a list of LiteFeature objects into a list of FeatureBase objects
 
     Args:
-        feature_list (List[Feature])
+        feature_list (List[LiteFeature])
         dataframe (pd.DataFrame)
 
     Returns:
