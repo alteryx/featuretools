@@ -3,22 +3,28 @@ from unittest.mock import patch
 
 import pytest
 from woodwork.column_schema import ColumnSchema
-from woodwork.logical_types import Boolean, Datetime, Double, NaturalLanguage, Ordinal
+from woodwork.logical_types import (
+    Boolean,
+    BooleanNullable,
+    Datetime,
+    Double,
+    NaturalLanguage,
+    Ordinal,
+)
 
 from featuretools.entityset.entityset import EntitySet
 from featuretools.feature_discovery.feature_discovery import (
-    feature_to_keys,
-    generate_hashing_keys_from_column_schema,
     get_features,
     get_matching_features,
-    group_features,
     index_column_set,
     lite_dfs,
     schema_to_features,
 )
-from featuretools.feature_discovery.type_defs import (
+from featuretools.feature_discovery.FeatureCollection import FeatureCollection
+from featuretools.feature_discovery.LiteFeature import (
     LiteFeature,
 )
+from featuretools.feature_discovery.utils import column_schema_to_keys
 from featuretools.primitives import (
     Absolute,
     AddNumeric,
@@ -65,12 +71,12 @@ class TestMultiOutputPrimitive(TransformPrimitive):
         (ColumnSchema(semantic_tags={"index"}), ["index"]),
         (
             ColumnSchema(logical_type=Double, semantic_tags={"index", "other"}),
-            ["Double,index", "Double,other"],
+            ["Double,index,other"],
         ),
     ],
 )
-def test_column_to_keys(column_schema, expected):
-    actual = generate_hashing_keys_from_column_schema(column_schema)
+def test_column_schema_to_keys(column_schema, expected):
+    actual = column_schema_to_keys(column_schema)
     assert set(actual) == set(expected)
 
 
@@ -84,12 +90,42 @@ def test_column_to_keys(column_schema, expected):
         ),
         (
             ("f1", Double, {"index", "other"}),
-            ["Double", "index", "other", "Double,index", "Double,other", "ANY"],
+            [
+                "Double",
+                "index",
+                "other",
+                "index,other",
+                "Double,index",
+                "Double,other",
+                "Double,index,other",
+                "ANY",
+            ],
+        ),
+        (
+            ("f1", Double, {"A", "numeric", "B"}),
+            [
+                "Double",
+                "A",
+                "B",
+                "numeric",
+                "A,B",
+                "A,numeric",
+                "B,numeric",
+                "A,B,numeric",
+                "Double,A",
+                "Double,B",
+                "Double,numeric",
+                "Double,A,B",
+                "Double,A,numeric",
+                "Double,B,numeric",
+                "Double,A,B,numeric",
+                "ANY",
+            ],
         ),
     ],
 )
 def test_feature_to_keys(feature, expected):
-    actual = feature_to_keys(LiteFeature(*feature))
+    actual = LiteFeature(*feature).to_keys()
     assert set(actual) == set(expected)
 
 
@@ -113,211 +149,153 @@ def test_index_input_set(column_list, expected):
     assert actual == expected
 
 
+# @pytest.mark.parametrize(
+#     "column_list, expected",
+#     [
+#         (
+#             [("f1", Boolean), ("f2", Boolean), ("f3", Boolean)],
+#             {"ANY": ["f1", "f2", "f3"], "Boolean": ["f1", "f2", "f3"]},
+#         ),
+#         (
+#             [("f1", Double), ("f2", Double), ("f3", Double, {"index"})],
+#             {
+#                 "ANY": ["f1", "f2", "f3"],
+#                 "Double": ["f1", "f2", "f3"],
+#                 "numeric": ["f1", "f2"],
+#                 "Double,numeric": ["f1", "f2"],
+#                 "index": ["f3"],
+#                 "Double,index": ["f3"],
+#             },
+#         ),
+#         (
+#             [("f1", Datetime, {"time_index"}), ("f2", Double)],
+#             {
+#                 "ANY": ["f1", "f2"],
+#                 "Datetime": ["f1"],
+#                 "time_index": ["f1"],
+#                 "Datetime,time_index": ["f1"],
+#                 "Double": ["f2"],
+#                 "numeric": ["f2"],
+#                 "Double,numeric": ["f2"],
+#             },
+#         ),
+#     ],
+# )
+# @patch.object(LiteFeature, "_generate_hash", lambda x: x.name)
+# def test_group_features(column_list, expected):
+#     column_list = [LiteFeature(*x) for x in column_list]
+#     actual = group_features(column_list)
+#     actual = {k: [x.id for x in v] for k, v in actual.items()}
+#     assert actual == expected
+
+
 @pytest.mark.parametrize(
-    "column_list, expected",
+    "feature_args, input_set, commutative, expected",
     [
         (
             [("f1", Boolean), ("f2", Boolean), ("f3", Boolean)],
-            {"ANY": ["f1", "f2", "f3"], "Boolean": ["f1", "f2", "f3"]},
-        ),
-        (
-            [("f1", Double), ("f2", Double), ("f3", Double, {"index"})],
-            {
-                "ANY": ["f1", "f2", "f3"],
-                "Double": ["f1", "f2", "f3"],
-                "numeric": ["f1", "f2"],
-                "Double,numeric": ["f1", "f2"],
-                "index": ["f3"],
-                "Double,index": ["f3"],
-            },
-        ),
-        (
-            [("f1", Datetime, {"time_index"}), ("f2", Double)],
-            {
-                "ANY": ["f1", "f2"],
-                "Datetime": ["f1"],
-                "time_index": ["f1"],
-                "Datetime,time_index": ["f1"],
-                "Double": ["f2"],
-                "numeric": ["f2"],
-                "Double,numeric": ["f2"],
-            },
-        ),
-    ],
-)
-@patch.object(LiteFeature, "_generate_hash", lambda x: x.name)
-def test_group_features(column_list, expected):
-    column_list = [LiteFeature(*x) for x in column_list]
-    actual = group_features(column_list)
-    actual = {k: [x.id for x in v] for k, v in actual.items()}
-    assert actual == expected
-
-
-@pytest.mark.parametrize(
-    "col_groups, input_set, commutative, expected",
-    [
-        (
-            {"ANY": ["f1", "f2", "f3"], "Boolean": ["f1", "f2", "f3"]},
             [ColumnSchema(logical_type=Boolean)],
             False,
             [["f1"], ["f2"], ["f3"]],
         ),
         (
-            {"ANY": ["f1", "f2"], "Boolean": ["f1", "f2"]},
+            [("f1", Boolean), ("f2", Boolean)],
             [ColumnSchema(logical_type=Boolean), ColumnSchema(logical_type=Boolean)],
             False,
             [["f1", "f2"], ["f2", "f1"]],
         ),
         (
-            {"ANY": ["f1", "f2"], "Boolean": ["f1", "f2"]},
+            [("f1", Boolean), ("f2", Boolean)],
             [ColumnSchema(logical_type=Boolean), ColumnSchema(logical_type=Boolean)],
             True,
             [["f1", "f2"]],
         ),
         (
-            {
-                "ANY": ["f1"],
-                "Datetime": ["f1"],
-                "time_index": ["f1"],
-                "Datetime,time_index": ["f1"],
-            },
+            [("f1", Datetime, {"time_index"})],
             [ColumnSchema(logical_type=Datetime, semantic_tags={"time_index"})],
+            False,
+            [["f1"]],
+        ),
+        (
+            [("f1", Double, {"other", "index"})],
+            [ColumnSchema(logical_type=Double, semantic_tags={"index", "other"})],
             False,
             [["f1"]],
         ),
     ],
 )
-def test_get_features(col_groups, input_set, commutative, expected):
-    actual = get_features(col_groups, input_set, commutative)
-    assert actual == expected
+@patch.object(LiteFeature, "_generate_hash", lambda x: x.name)
+def test_get_features(feature_args, input_set, commutative, expected):
+    features = [LiteFeature(*args) for args in feature_args]
+    feature_collection = FeatureCollection(features).reindex()
+    actual = get_features(feature_collection, input_set, commutative)
+
+    assert [[y.id for y in x] for x in actual] == expected
 
 
 @pytest.mark.parametrize(
-    "feature_groups, primitive, expected",
+    "feature_args, primitive, expected",
     [
         (
-            {
-                "ANY": ["f1", "f2", "f3"],
-                "Double": ["f1", "f2", "f3"],
-                "numeric": ["f1", "f2", "f3"],
-            },
+            [("f1", Double), ("f2", Double), ("f3", Double)],
             AddNumeric,
             [["f1", "f2"], ["f1", "f3"], ["f2", "f3"]],
         ),
         (
-            {
-                "ANY": ["f1", "f2", "f3"],
-                "Boolean": ["f1", "f2", "f3"],
-            },
+            [("f1", Boolean), ("f2", Boolean), ("f3", Boolean)],
             AddNumeric,
             [],
         ),
         (
-            {
-                "ANY": ["f1", "f2"],
-                "Double": ["f1"],
-                "numeric": ["f1"],
-                "Double,numeric": ["f1"],
-                "Boolean": ["f2"],
-            },
+            [("f1", Double), ("f2", Boolean)],
             MultiplyNumericBoolean,
             [["f1", "f2"]],
         ),
         (
-            {
-                "ANY": ["f1"],
-                "Datetime": ["f1"],
-            },
+            [("f1", Datetime)],
             DateFirstEvent,
             [],
         ),
         (
-            {
-                "ANY": ["f1"],
-                "time_index": ["f1"],
-            },
-            DateFirstEvent,
-            [],
-        ),
-        (
-            {
-                "ANY": ["f1"],
-                "Datetime": ["f1"],
-                "time_index": ["f1"],
-                "Datetime,time_index": ["f1"],
-            },
+            [("f1", Datetime, {"time_index"})],
             DateFirstEvent,
             [["f1"]],
         ),
         (
-            {
-                "ANY": ["f1", "f2"],
-                "Datetime": ["f1"],
-                "time_index": ["f1"],
-                "Datetime,time_index": ["f1"],
-                "Double": ["f2"],
-                "numeric": ["f2"],
-                "Double,numeric": ["f2"],
-            },
+            [("f1", Datetime, {"time_index"}), ("f2", Double)],
             NumUnique,
             [],
         ),
         (
-            {
-                "ANY": ["f1", "f2", "f3"],
-                "Datetime": ["f1"],
-                "time_index": ["f1"],
-                "Datetime,time_index": ["f1"],
-                "Double": ["f2"],
-                "numeric": ["f2"],
-                "Double,numeric": ["f2"],
-                "Ordinal": ["f3"],
-                "category": ["f3"],
-                "Ordinal,category": ["f3"],
-            },
+            [("f1", Datetime, {"time_index"}), ("f2", Double), ("f3", Ordinal)],
             NumUnique,
             [["f3"]],
         ),
         (
-            {
-                "ANY": ["f1", "f2", "f3"],
-                "Datetime": ["f1"],
-                "time_index": ["f1"],
-                "Datetime,time_index": ["f1"],
-                "Double": ["f2"],
-                "numeric": ["f2"],
-                "Double,numeric": ["f2"],
-                "Ordinal": ["f3"],
-                "category": ["f3"],
-                "Ordinal,category": ["f3"],
-            },
+            [("f1", Datetime, {"time_index"}), ("f2", Double), ("f3", Ordinal)],
             Equal,
             [["f1", "f2"], ["f1", "f3"], ["f2", "f3"]],
         ),
         (
-            {
-                "ANY": ["f1", "f2", "f3", "f4", "f5"],
-                "Datetime": ["f1"],
-                "time_index": ["f1"],
-                "Datetime,time_index": ["f1"],
-                "Ordinal": ["f2"],
-                "category": ["f2"],
-                "Ordinal,category": ["f2"],
-                "Double": ["f3"],
-                "numeric": ["f3"],
-                "Double,numeric": ["f3"],
-                "Boolean": ["f4"],
-                "BooleanNullable": ["f5"],
-            },
+            [
+                ("t_idx", Datetime, {"time_index"}),
+                ("f2", Ordinal),
+                ("f3", Double),
+                ("f4", Boolean),
+                ("f5", BooleanNullable),
+            ],
             Lag,
-            [["f2", "f1"], ["f3", "f1"], ["f4", "f1"], ["f5", "f1"]],
+            [["f2", "t_idx"], ["f3", "t_idx"], ["f4", "t_idx"], ["f5", "t_idx"]],
         ),
     ],
 )
-def test_get_matching_features(feature_groups, primitive, expected):
-    actual = get_matching_features(feature_groups, primitive)
+@patch.object(LiteFeature, "_generate_hash", lambda x: x.name)
+def test_get_matching_features(feature_args, primitive, expected):
+    features = [LiteFeature(*args) for args in feature_args]
+    feature_collection = FeatureCollection(features).reindex()
+    actual = get_matching_features(feature_collection, primitive)
 
-    assert actual == expected
+    assert [[y.id for y in x] for x in actual] == expected
 
 
 @pytest.mark.parametrize(

@@ -15,7 +15,7 @@ from featuretools.feature_discovery.feature_discovery import (
     lite_dfs,
     schema_to_features,
 )
-from featuretools.feature_discovery.type_defs import (
+from featuretools.feature_discovery.LiteFeature import (
     LiteFeature,
 )
 from featuretools.primitives import Absolute, AddNumeric, Lag

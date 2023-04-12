@@ -10,7 +10,7 @@ from featuretools.feature_base.feature_base import (
     IdentityFeature,
     TransformFeature,
 )
-from featuretools.feature_discovery.type_defs import LiteFeature
+from featuretools.feature_discovery.LiteFeature import LiteFeature
 from featuretools.primitives import TransformPrimitive
 from featuretools.primitives.base.primitive_base import PrimitiveBase
 

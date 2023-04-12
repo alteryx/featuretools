@@ -4,48 +4,15 @@ import inspect
 from itertools import combinations, permutations, product
 from typing import Callable, Dict, Iterable, List, Set, Tuple, Type, Union, cast
 
-import woodwork.type_sys.type_system as ww_type_system
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import LogicalType
 from woodwork.table_schema import TableSchema
 
-from featuretools.feature_discovery.type_defs import ANY, FeatureCollection, LiteFeature
+from featuretools.feature_discovery.FeatureCollection import FeatureCollection
+from featuretools.feature_discovery.LiteFeature import LiteFeature
+from featuretools.feature_discovery.utils import column_schema_to_keys
 from featuretools.primitives.base.primitive_base import PrimitiveBase
 from featuretools.tests.testing_utils.generate_fake_dataframe import flatten_list
-
-
-def generate_hashing_keys_from_column_schema(column_schema: ColumnSchema) -> List[str]:
-    """
-    Generate hashing keys from Columns Schema. For example:
-    - ColumnSchema(logical_type=Double) -> ["Double"]
-    - ColumnSchema(semantic_tags={"index"}) -> ["index"]
-    - ColumnSchema(logical_type=Double, semantic_tags={"index", "other"}) -> ["Double,index", "Double,other"]
-
-    Args:
-        column_schema (ColumnSchema):
-
-    Returns:
-        List[str]
-            List of hashing keys
-    """
-    keys: List[str] = []
-    logical_type = column_schema.logical_type
-    tags = column_schema.semantic_tags
-    lt_key = None
-    if logical_type:
-        lt_key = type(logical_type).__name__
-
-    if len(tags) > 0:
-        for tag in tags:
-            if tag is not None:
-                keys.append(f"{lt_key},{tag}" if lt_key is not None else tag)
-
-    elif lt_key is not None:
-        keys.append(lt_key)
-    else:
-        keys.append(ANY)
-
-    return keys
 
 
 def index_column_set(column_set: List[ColumnSchema]) -> Dict[str, int]:
@@ -72,13 +39,13 @@ def index_column_set(column_set: List[ColumnSchema]) -> Dict[str, int]:
     """
     out = {}
     for column_schema in column_set:
-        for key in generate_hashing_keys_from_column_schema(column_schema):
+        for key in column_schema_to_keys(column_schema):
             out[key] = out.get(key, 0) + 1
     return out
 
 
 def get_features(
-    feature_groups: Dict[str, List[LiteFeature]],
+    feature_collection: FeatureCollection,
     column_set: List[ColumnSchema],
     commutative: bool,
 ) -> List[List[LiteFeature]]:
@@ -116,11 +83,8 @@ def get_features(
     indexed_column_set = index_column_set(column_set)
 
     prod_iter = []
-    for name, count in indexed_column_set.items():
-        if name not in feature_groups:
-            return []
-
-        features2 = feature_groups[name]
+    for key, count in indexed_column_set.items():
+        features2 = list(feature_collection.get_by_key(key))
 
         if commutative:
             prod_iter.append(combinations(features2, count))
@@ -132,83 +96,44 @@ def get_features(
     return [flatten_list(x) for x in feature_combinations]
 
 
-def feature_to_keys(feature: LiteFeature) -> List[str]:
-    """
-    Generate hashing keys from LiteFeature. For example:
-    - LiteFeature("f1", Double) -> ['Double', 'numeric', 'Double,numeric', 'ANY']
-    - LiteFeature("f1", Datetime, {"time_index"}) -> ['Datetime', 'time_index', 'Datetime,time_index', 'ANY']
-    - LiteFeature("f1", Double, {"index", "other"}) -> ['Double', 'index', 'other', 'Double,index', 'Double,other', 'ANY']
+# def group_features(features: List[LiteFeature]) -> Dict[str, List[LiteFeature]]:
+#     """
+#     Groups all Features by logical_type, tags, and combination
 
-    Args:
-        feature (LiteFeature):
+#     Args:
+#         features ( List[LiteFeature]):
+#             Hashmap from Key to List of Features. Key is either: LogicalType name (eg. "Double"), Semantic tag (eg. "index"),
+#             or combination (eg. "Double,index").
 
-    Returns:
-        List[str]
-            List of hashing keys
-    """
-    keys: List[str] = []
-    logical_type = feature.logical_type
-    logical_type_name = None
-    if logical_type is not None:
-        logical_type_name = logical_type.__name__
-        keys.append(logical_type_name)
+#     Returns:
+#         Dict[str, List[LiteFeature]]
+#             Hashmap from key to list of features
 
-    inferred_tags = (
-        ww_type_system.str_to_logical_type(logical_type_name).standard_tags
-        if logical_type_name
-        else set()
-    )
-    if "index" in feature.tags:
-        all_tags = feature.tags
-    else:
-        all_tags = inferred_tags.union(feature.tags)
+#     Examples:
+#         .. code-block:: python
 
-    for tag in all_tags:
-        keys.append(tag)
-        keys.append(f"{logical_type_name},{tag}")
+#             from featuretools.feature_discovery.feature_discovery import get_features
+#             from woodwork.column_schema import ColumnSchema
 
-    keys.append(ANY)
-    return keys
+#             f1 = LiteFeature('f1', Double)
+#             f2 = LiteFeature('f2', Boolean)
 
+#             feature_groups = group_features([f1, f2])
 
-def group_features(features: List[LiteFeature]) -> Dict[str, List[LiteFeature]]:
-    """
-    Groups all Features by logical_type, tags, and combination
+#             {
+#                 "ANY": ["f1", "f2"],
+#                 "Double": ["f1"],
+#                 "numeric": ["f1"],
+#                 "Double,numeric": ["f1"],
+#                 "Boolean": ["f3"]
+#             }
+#     """
+#     groups = {ANY: []}
+#     for feature in features:
+#         for key in feature_to_keys(feature=feature):
+#             groups.setdefault(key, []).append(feature)
 
-    Args:
-        features ( List[LiteFeature]):
-            Hashmap from Key to List of Features. Key is either: LogicalType name (eg. "Double"), Semantic tag (eg. "index"),
-            or combination (eg. "Double,index").
-
-    Returns:
-        Dict[str, List[LiteFeature]]
-            Hashmap from key to list of features
-
-    Examples:
-        .. code-block:: python
-
-            from featuretools.feature_discovery.feature_discovery import get_features
-            from woodwork.column_schema import ColumnSchema
-
-            f1 = LiteFeature('f1', Double)
-            f2 = LiteFeature('f2', Boolean)
-
-            feature_groups = group_features([f1, f2])
-
-            {
-                "ANY": ["f1", "f2"],
-                "Double": ["f1"],
-                "numeric": ["f1"],
-                "Double,numeric": ["f1"],
-                "Boolean": ["f3"]
-            }
-    """
-    groups = {ANY: []}
-    for feature in features:
-        for key in feature_to_keys(feature=feature):
-            groups.setdefault(key, []).append(feature)
-
-    return groups
+#     return groups
 
 
 def primitive_to_columnsets(primitive: PrimitiveBase) -> List[List[ColumnSchema]]:
@@ -235,7 +160,7 @@ def primitive_to_columnsets(primitive: PrimitiveBase) -> List[List[ColumnSchema]
 
 
 def get_matching_features(
-    feature_groups: Dict[str, List[LiteFeature]],
+    feature_collection: FeatureCollection,
     primitive: PrimitiveBase,
 ) -> List[List[LiteFeature]]:
     """
@@ -280,7 +205,7 @@ def get_matching_features(
     for column_set in column_sets:
         assert column_set is not None
         feature_sets_ = get_features(
-            feature_groups=feature_groups,
+            feature_collection=feature_collection,
             column_set=column_set,
             commutative=commutative,
         )
@@ -310,7 +235,7 @@ def get_primitive_return_type(primitive: PrimitiveBase) -> ColumnSchema:
 
 def features_from_primitive(
     primitive: PrimitiveBase,
-    feature_groups: Dict[str, List[LiteFeature]],
+    feature_collection: FeatureCollection,
 ) -> List[LiteFeature]:
     """
     For a given primitive, creates all engineered features
@@ -357,7 +282,7 @@ def features_from_primitive(
 
     features: List[LiteFeature] = []
     feature_sets = get_matching_features(
-        feature_groups=feature_groups,
+        feature_collection=feature_collection,
         primitive=primitive,
     )
     for feature_set in feature_sets:
@@ -520,8 +445,11 @@ def lite_dfs(
 
     features = [x.copy() for x in input_features]
 
-    # Group Columns by LogicalType, Tag, and combination
-    feature_groups = group_features(features=features)
+    feature_collection = FeatureCollection(features=features)
+    feature_collection.reindex()
+
+    # # Group Columns by LogicalType, Tag, and combination
+    # feature_groups = group_features(features=features)
 
     if parallelize:
         with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -529,7 +457,7 @@ def lite_dfs(
                 executor.map(
                     functools.partial(
                         features_from_primitive,
-                        feature_groups=feature_groups,
+                        feature_collection=feature_collection,
                     ),
                     primitives,
                 ),
@@ -540,7 +468,7 @@ def lite_dfs(
         for primitive in primitives:
             features_ = features_from_primitive(
                 primitive=primitive,
-                feature_groups=feature_groups,
+                feature_collection=feature_collection,
             )
             features.extend(features_)
 

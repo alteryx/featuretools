@@ -8,10 +8,8 @@ from featuretools.feature_discovery.feature_discovery import (
     lite_dfs,
     schema_to_features,
 )
-from featuretools.feature_discovery.type_defs import (
-    FeatureCollection,
-    LiteFeature,
-)
+from featuretools.feature_discovery.FeatureCollection import FeatureCollection
+from featuretools.feature_discovery.LiteFeature import LiteFeature
 from featuretools.primitives import (
     Absolute,
     AddNumeric,
@@ -87,7 +85,7 @@ def test_feature_type_assertions():
 
 @patch.object(LiteFeature, "_generate_hash", lambda x: x.name)
 @patch(
-    "featuretools.feature_discovery.type_defs.hash_primitive",
+    "featuretools.feature_discovery.LiteFeature.hash_primitive",
     lambda x: (x.name, None),
 )
 def test_feature_to_dict():
@@ -159,6 +157,14 @@ def test_feature_forced_name():
 
 
 @patch.object(LiteFeature, "_generate_hash", lambda x: x.name)
+@patch(
+    "featuretools.feature_discovery.FeatureCollection.hash_primitive",
+    lambda x: (x.name, None),
+)
+@patch(
+    "featuretools.feature_discovery.LiteFeature.hash_primitive",
+    lambda x: (x.name, None),
+)
 def test_feature_collection_to_dict():
     f1 = LiteFeature("f1", Double)
     f2 = LiteFeature("f2", Double)
@@ -173,22 +179,18 @@ def test_feature_collection_to_dict():
 
     expected = {
         "primitives": {
-            "009da67f0a1430630c4a419c84aac270ec62337ab20c080e4495272950fd03b3": {
-                "type": "AddNumeric",
-                "module": "featuretools.primitives.standard.transform.binary.add_numeric",
-                "arguments": {},
-            },
+            "add_numeric": None,
         },
         "feature_ids": ["Column 1"],
         "all_features": {
-            "f2": {
-                "name": "f2",
+            "Column 1": {
+                "name": "Column 1",
                 "logical_type": "Double",
                 "tags": ["numeric"],
-                "primitive": None,
-                "base_features": [],
+                "primitive": "add_numeric",
+                "base_features": ["f1", "f2"],
                 "df_id": None,
-                "id": "f2",
+                "id": "Column 1",
                 "related_features": [],
                 "idx": 0,
             },
@@ -203,14 +205,14 @@ def test_feature_collection_to_dict():
                 "related_features": [],
                 "idx": 0,
             },
-            "Column 1": {
-                "name": "Column 1",
+            "f2": {
+                "name": "f2",
                 "logical_type": "Double",
                 "tags": ["numeric"],
-                "primitive": "009da67f0a1430630c4a419c84aac270ec62337ab20c080e4495272950fd03b3",
-                "base_features": ["f1", "f2"],
+                "primitive": None,
+                "base_features": [],
                 "df_id": None,
-                "id": "Column 1",
+                "id": "f2",
                 "related_features": [],
                 "idx": 0,
             },
