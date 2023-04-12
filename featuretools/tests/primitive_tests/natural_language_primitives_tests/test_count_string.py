@@ -211,7 +211,7 @@ class TestCountString(PrimitiveTestBase):
             match_whole_words_only=False,
         )
         transform.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
 
     def test_with_featuretools_nan(self, es):
         log_df = es["log"]
@@ -231,4 +231,4 @@ class TestCountString(PrimitiveTestBase):
             match_whole_words_only=False,
         )
         transform.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)

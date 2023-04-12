@@ -73,4 +73,4 @@ class TestPercentChange(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instantiate = self.primitive
         transform.append(primitive_instantiate)
-        valid_dfs(pd_es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(pd_es, aggregation, transform, self.primitive)

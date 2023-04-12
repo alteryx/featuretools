@@ -75,4 +75,4 @@ class TestNumberOfMentions(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         transform.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
