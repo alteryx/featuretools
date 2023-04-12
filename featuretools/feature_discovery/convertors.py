@@ -164,7 +164,7 @@ def convert_feature_list_to_featurebase_list(
     for feature in feature_list:
         if feature.is_multioutput():
             related_feature_ids = [f.id for f in feature.related_features]
-            if any([x in feature_cache for x in related_feature_ids]):
+            if any((x in feature_cache for x in related_feature_ids)):
                 # feature base already created for related ids
                 continue
 
