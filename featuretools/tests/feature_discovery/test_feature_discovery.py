@@ -14,10 +14,10 @@ from woodwork.logical_types import (
 
 from featuretools.entityset.entityset import EntitySet
 from featuretools.feature_discovery.feature_discovery import (
+    generate_features_from_primitives,
     get_features,
     get_matching_features,
     index_column_set,
-    lite_dfs,
     schema_to_features,
 )
 from featuretools.feature_discovery.FeatureCollection import FeatureCollection
@@ -132,14 +132,14 @@ def test_feature_to_keys(feature, expected):
 @pytest.mark.parametrize(
     "column_list, expected",
     [
-        ([ColumnSchema(logical_type=Boolean)], {"Boolean": 1}),
-        ([ColumnSchema()], {"ANY": 1}),
+        ([ColumnSchema(logical_type=Boolean)], [("Boolean", 1)]),
+        ([ColumnSchema()], [("ANY", 1)]),
         (
             [
                 ColumnSchema(logical_type=Boolean),
                 ColumnSchema(logical_type=Boolean),
             ],
-            {"Boolean": 2},
+            [("Boolean", 2)],
         ),
     ],
 )
@@ -147,46 +147,6 @@ def test_index_input_set(column_list, expected):
     actual = index_column_set(column_list)
 
     assert actual == expected
-
-
-# @pytest.mark.parametrize(
-#     "column_list, expected",
-#     [
-#         (
-#             [("f1", Boolean), ("f2", Boolean), ("f3", Boolean)],
-#             {"ANY": ["f1", "f2", "f3"], "Boolean": ["f1", "f2", "f3"]},
-#         ),
-#         (
-#             [("f1", Double), ("f2", Double), ("f3", Double, {"index"})],
-#             {
-#                 "ANY": ["f1", "f2", "f3"],
-#                 "Double": ["f1", "f2", "f3"],
-#                 "numeric": ["f1", "f2"],
-#                 "Double,numeric": ["f1", "f2"],
-#                 "index": ["f3"],
-#                 "Double,index": ["f3"],
-#             },
-#         ),
-#         (
-#             [("f1", Datetime, {"time_index"}), ("f2", Double)],
-#             {
-#                 "ANY": ["f1", "f2"],
-#                 "Datetime": ["f1"],
-#                 "time_index": ["f1"],
-#                 "Datetime,time_index": ["f1"],
-#                 "Double": ["f2"],
-#                 "numeric": ["f2"],
-#                 "Double,numeric": ["f2"],
-#             },
-#         ),
-#     ],
-# )
-# @patch.object(LiteFeature, "_generate_hash", lambda x: x.name)
-# def test_group_features(column_list, expected):
-#     column_list = [LiteFeature(*x) for x in column_list]
-#     actual = group_features(column_list)
-#     actual = {k: [x.id for x in v] for k, v in actual.items()}
-#     assert actual == expected
 
 
 @pytest.mark.parametrize(
@@ -228,7 +188,9 @@ def test_index_input_set(column_list, expected):
 def test_get_features(feature_args, input_set, commutative, expected):
     features = [LiteFeature(*args) for args in feature_args]
     feature_collection = FeatureCollection(features).reindex()
-    actual = get_features(feature_collection, input_set, commutative)
+
+    column_keys = index_column_set(input_set)
+    actual = get_features(feature_collection, tuple(column_keys), commutative)
 
     assert [[y.id for y in x] for x in actual] == expected
 
@@ -242,60 +204,59 @@ def test_get_features(feature_args, input_set, commutative, expected):
             [["f1", "f2"], ["f1", "f3"], ["f2", "f3"]],
         ),
         (
-            [("f1", Boolean), ("f2", Boolean), ("f3", Boolean)],
+            [("f4", Boolean), ("f5", Boolean), ("f6", Boolean)],
             AddNumeric,
             [],
         ),
         (
-            [("f1", Double), ("f2", Boolean)],
+            [("f7", Double), ("f8", Boolean)],
             MultiplyNumericBoolean,
-            [["f1", "f2"]],
+            [["f7", "f8"]],
         ),
         (
-            [("f1", Datetime)],
+            [("f9", Datetime)],
             DateFirstEvent,
             [],
         ),
         (
-            [("f1", Datetime, {"time_index"})],
+            [("f10", Datetime, {"time_index"})],
             DateFirstEvent,
-            [["f1"]],
+            [["f10"]],
         ),
         (
-            [("f1", Datetime, {"time_index"}), ("f2", Double)],
+            [("f11", Datetime, {"time_index"}), ("f12", Double)],
             NumUnique,
             [],
         ),
         (
-            [("f1", Datetime, {"time_index"}), ("f2", Double), ("f3", Ordinal)],
+            [("f13", Datetime, {"time_index"}), ("f14", Double), ("f15", Ordinal)],
             NumUnique,
-            [["f3"]],
+            [["f15"]],
         ),
         (
-            [("f1", Datetime, {"time_index"}), ("f2", Double), ("f3", Ordinal)],
+            [("f16", Datetime, {"time_index"}), ("f17", Double), ("f18", Ordinal)],
             Equal,
-            [["f1", "f2"], ["f1", "f3"], ["f2", "f3"]],
+            [["f16", "f17"], ["f16", "f18"], ["f17", "f18"]],
         ),
         (
             [
                 ("t_idx", Datetime, {"time_index"}),
-                ("f2", Ordinal),
-                ("f3", Double),
-                ("f4", Boolean),
-                ("f5", BooleanNullable),
+                ("f19", Ordinal),
+                ("f20", Double),
+                ("f21", Boolean),
+                ("f22", BooleanNullable),
             ],
             Lag,
-            [["f2", "t_idx"], ["f3", "t_idx"], ["f4", "t_idx"], ["f5", "t_idx"]],
+            [["f19", "t_idx"], ["f20", "t_idx"], ["f21", "t_idx"], ["f22", "t_idx"]],
         ),
     ],
 )
-@patch.object(LiteFeature, "_generate_hash", lambda x: x.name)
+@patch.object(LiteFeature, "__lt__", lambda x, y: x.name < y.name)
 def test_get_matching_features(feature_args, primitive, expected):
     features = [LiteFeature(*args) for args in feature_args]
     feature_collection = FeatureCollection(features).reindex()
     actual = get_matching_features(feature_collection, primitive)
-
-    assert [[y.id for y in x] for x in actual] == expected
+    assert [[y.name for y in x] for x in actual] == expected
 
 
 @pytest.mark.parametrize(
@@ -321,19 +282,17 @@ def test_get_matching_features(feature_args, primitive, expected):
         ),
     ],
 )
-@patch.object(LiteFeature, "_generate_hash", lambda x: x.name)
-def test_new_dfs(col_defs, primitives, expected):
+@patch.object(LiteFeature, "__lt__", lambda x, y: x.name < y.name)
+def test_generate_features_from_primitives(col_defs, primitives, expected):
     input_feature_names = set([x[0] for x in col_defs])
     df = generate_fake_dataframe(
         col_defs=col_defs,
     )
 
     origin_features = schema_to_features(df.ww.schema)
-    feature_collection = lite_dfs(origin_features, primitives)
+    features = generate_features_from_primitives(origin_features, primitives)
 
-    new_feature_names = (
-        set([x.name for x in feature_collection.all_features]) - input_feature_names
-    )
+    new_feature_names = set([x.name for x in features]) - input_feature_names
     assert new_feature_names == expected
 
 
@@ -390,33 +349,31 @@ def test_compare_dfs(col_defs, primitives):
     )
 
     origin_features = schema_to_features(df.ww.schema)
-    features_collection = lite_dfs(origin_features, primitives)
+    features = generate_features_from_primitives(origin_features, primitives)
 
     feature_names_old = set([x.get_name() for x in features_old]) - input_feature_names  # type: ignore
 
-    feature_names_new = (
-        set([x.name for x in features_collection.all_features]) - input_feature_names
-    )
+    feature_names_new = set([x.name for x in features]) - input_feature_names
 
     assert feature_names_old == feature_names_new
 
 
-def test_dfs_inputs():
+def test_generate_features_from_primitives_inputs():
     f1 = LiteFeature("f1", Double)
     with pytest.raises(
         ValueError,
         match="input_features must be an iterable of LiteFeature objects",
     ):
-        lite_dfs(f1, [Absolute])
+        generate_features_from_primitives(f1, [Absolute])
 
     with pytest.raises(
         ValueError,
         match="input_features must be an iterable of LiteFeature objects",
     ):
-        lite_dfs([f1, "other"], [Absolute])
+        generate_features_from_primitives([f1, "other"], [Absolute])
 
     with pytest.raises(
         ValueError,
         match="primitives must be a list of Primitive classes or Primitive instances",
     ):
-        lite_dfs([f1], ["absolute"])
+        generate_features_from_primitives([f1], ["absolute"])

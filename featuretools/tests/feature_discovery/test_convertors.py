@@ -12,7 +12,7 @@ from featuretools.feature_discovery.convertors import (
     convert_featurebase_to_feature,
 )
 from featuretools.feature_discovery.feature_discovery import (
-    lite_dfs,
+    generate_features_from_primitives,
     schema_to_features,
 )
 from featuretools.feature_discovery.LiteFeature import (
@@ -100,9 +100,9 @@ def test_stacked_feature_to_featurebase():
 
     origin_features = schema_to_features(df.ww.schema)
     f_1 = [f for f in origin_features if f.name == "f_1"][0]
-    fc = lite_dfs([f_1], [Absolute()])
+    features = generate_features_from_primitives([f_1], [Absolute()])
 
-    f_2 = [f for f in fc.all_features if f.name == "ABSOLUTE(f_1)"][0]
+    f_2 = [f for f in features if f.name == "ABSOLUTE(f_1)"][0]
 
     fb = convert_feature_to_featurebase(f_2, df, {})
 
@@ -133,9 +133,9 @@ def test_multi_output_to_featurebase():
 
     origin_features = schema_to_features(df.ww.schema)
     f_1 = [f for f in origin_features if f.name == "f_1"][0]
-    fc = lite_dfs([f_1], [TestMultiOutputPrimitive()], parallelize=False)
+    features = generate_features_from_primitives([f_1], [TestMultiOutputPrimitive()])
 
-    lsa_features = [f for f in fc.all_features if f.get_primitive_name() == "test_mo"]
+    lsa_features = [f for f in features if f.get_primitive_name() == "test_mo"]
     assert len(lsa_features) == 2
 
     # Test Single LiteFeature
@@ -190,16 +190,15 @@ def test_stacking_on_multioutput_to_featurebase():
     time_index_feature = [f for f in origin_features if f.name == "t_idx"][0]
     f_1 = [f for f in origin_features if f.name == "f_1"][0]
 
-    fc = lite_dfs([f_1], [TestMultiOutputPrimitive()], parallelize=False)
-    lsa_features = [f for f in fc.all_features if f.get_primitive_name() == "test_mo"]
+    features = generate_features_from_primitives([f_1], [TestMultiOutputPrimitive()])
+    lsa_features = [f for f in features if f.get_primitive_name() == "test_mo"]
     assert len(lsa_features) == 2
 
-    fc = lite_dfs(
+    features = generate_features_from_primitives(
         lsa_features + [time_index_feature],
         [Lag(periods=2)],
-        parallelize=False,
     )
-    lag_features = [f for f in fc.all_features if f.get_primitive_name() == "lag"]
+    lag_features = [f for f in features if f.get_primitive_name() == "lag"]
     assert len(lag_features) == 2
 
     fb_list = convert_feature_list_to_featurebase_list(lag_features, df)
@@ -215,8 +214,11 @@ def test_stacking_on_multioutput_to_featurebase():
 
     lsa_features[0].rename("f_2")
     lsa_features[1].rename("f_3")
-    fc = lite_dfs(lsa_features + [time_index_feature], [Lag(periods=2)])
-    lag_features = [f for f in fc.all_features if f.get_primitive_name() == "lag"]
+    features = generate_features_from_primitives(
+        lsa_features + [time_index_feature],
+        [Lag(periods=2)],
+    )
+    lag_features = [f for f in features if f.get_primitive_name() == "lag"]
     assert len(lag_features) == 2
 
     fb_list = convert_feature_list_to_featurebase_list(lag_features, df)

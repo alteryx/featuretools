@@ -52,9 +52,6 @@ class FeatureCollection:
         return self.hash_key == other.hash_key
 
     def reindex(self) -> FeatureCollection:
-        if not self.sorted:
-            self.sort_features()
-
         self.by_logical_type: Dict[
             Union[Type[LogicalType], None],
             Set[LiteFeature],

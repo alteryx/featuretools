@@ -5,7 +5,7 @@ import pytest
 from woodwork.logical_types import Double
 
 from featuretools.feature_discovery.feature_discovery import (
-    lite_dfs,
+    generate_features_from_primitives,
     schema_to_features,
 )
 from featuretools.feature_discovery.FeatureCollection import FeatureCollection
@@ -304,15 +304,14 @@ def test_feature_collection_serialization_roundtrip():
     )
 
     origin_features = schema_to_features(df.ww.schema)
-    fc = lite_dfs(
+    features = generate_features_from_primitives(
         origin_features,
         [Absolute, MultiplyNumeric, TestMultiOutputPrimitive],
-        parallelize=False,
     )
 
-    fc = lite_dfs(fc.all_features, [Lag])
+    features = generate_features_from_primitives(features, [Lag])
 
-    assert set([x.get_name() for x in fc.all_features]) == set(
+    assert set([x.get_name() for x in features]) == set(
         [
             "idx",
             "t_idx",
@@ -323,7 +322,7 @@ def test_feature_collection_serialization_roundtrip():
             "f_5",
             "ABSOLUTE(f_1)",
             "ABSOLUTE(f_2)",
-            "f_2 * f_1",
+            "f_1 * f_2",
             "TEST_MO(f_5)[0]",
             "TEST_MO(f_5)[1]",
             "LAG(f_1, t_idx)",
@@ -332,12 +331,12 @@ def test_feature_collection_serialization_roundtrip():
             "LAG(f_4, t_idx)",
             "LAG(ABSOLUTE(f_1), t_idx)",
             "LAG(ABSOLUTE(f_2), t_idx)",
-            "LAG(f_2 * f_1, t_idx)",
+            "LAG(f_1 * f_2, t_idx)",
             "LAG(TEST_MO(f_5)[1], t_idx)",
             "LAG(TEST_MO(f_5)[0], t_idx)",
         ],
     )
-
+    fc = FeatureCollection(features=features)
     fc_dict = fc.to_dict()
 
     fc_json = json.dumps(fc_dict)
