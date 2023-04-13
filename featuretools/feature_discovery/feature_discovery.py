@@ -15,7 +15,7 @@ from featuretools.primitives.base.primitive_base import PrimitiveBase
 from featuretools.tests.testing_utils.generate_fake_dataframe import flatten_list
 
 
-def index_column_set(column_set: List[ColumnSchema]) -> Dict[str, int]:
+def index_column_set(column_set: Tuple[ColumnSchema]) -> Dict[str, int]:
     """
     Indexes input set to find types of columns and the quantity of each
 
@@ -46,7 +46,7 @@ def index_column_set(column_set: List[ColumnSchema]) -> Dict[str, int]:
 
 def get_features(
     feature_collection: FeatureCollection,
-    column_set: List[ColumnSchema],
+    column_set: Tuple[ColumnSchema],
     commutative: bool,
 ) -> List[List[LiteFeature]]:
     """
@@ -56,7 +56,7 @@ def get_features(
         feature_groups (Dict[str, List[LiteFeature]]):
             Hashmap from Key to List of Features. Key is either: LogicalType name (eg. "Double"), Semantic tag (eg. "index"),
             or combination (eg. "Double,index").
-        column_set (List(ColumnSchema)):
+        column_set (Tuple[ColumnSchema]):
             List of Column types needed by associated primitive.
         commutative (bool):
             whether or not we need to use product or combinations to create feature sets.
@@ -206,7 +206,7 @@ def get_matching_features(
         assert column_set is not None
         feature_sets_ = get_features(
             feature_collection=feature_collection,
-            column_set=column_set,
+            column_set=tuple(column_set),
             commutative=commutative,
         )
 

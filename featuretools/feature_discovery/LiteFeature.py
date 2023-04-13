@@ -109,10 +109,11 @@ class LiteFeature:
         return [f for f in all_dependencies if f.depth == 0]
 
     def __post_init__(self):
-        self.id = self._generate_hash()
-
         if self.primitive:
             assert isinstance(self.primitive, PrimitiveBase)
+            assert (
+                len(self.base_features) > 0
+            ), "there must be base features if give a primitive"
             self.n_output_features = self.primitive.number_output_features
             self.depth = max([x.depth for x in self.base_features]) + 1
             self._gen_name = self.primitive.generate_name(
@@ -130,6 +131,8 @@ class LiteFeature:
 
             inferred_tags = inferred_tag_map[logical_type_name]
             self.tags = self.tags | inferred_tags
+
+        self.id = self._generate_hash()
 
     @property
     def column_schema(self) -> ColumnSchema:
