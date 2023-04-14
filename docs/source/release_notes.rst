@@ -3,6 +3,18 @@
 Release Notes
 -------------
 
+Future Release
+==============
+    * Enhancements
+    * Fixes
+    * Changes
+        * Introduce New Single-Table DFS Algorithm (:pr:`2516`)
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`dvreed77`
+
 v1.24.0 Apr 13, 2023
 ====================
     * Enhancements
