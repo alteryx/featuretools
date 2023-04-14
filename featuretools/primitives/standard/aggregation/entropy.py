@@ -22,7 +22,7 @@ class Entropy(AggregationPrimitive):
 
     Examples:
         >>> pd_entropy = Entropy()
-        >>> pd_entropy([1,2,3,4])
+        >>> pd_entropy([1, 2, 3, 4])
         1.3862943611198906
     """
 
@@ -39,6 +39,8 @@ class Entropy(AggregationPrimitive):
     def get_function(self, agg_type=Library.PANDAS):
         def pd_entropy(s):
             distribution = s.value_counts(normalize=True, dropna=self.dropna)
-            return stats.entropy(distribution, base=self.base)
+            if distribution.dtype == "Float64":
+                distribution = distribution.astype("float64")
+            return stats.entropy(distribution.to_numpy(), base=self.base)
 
         return pd_entropy

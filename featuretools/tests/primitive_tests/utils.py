@@ -11,7 +11,7 @@ from featuretools import (
     load_features,
     save_features,
 )
-from featuretools.primitives.base import AggregationPrimitive
+from featuretools.primitives.base import AggregationPrimitive, PrimitiveBase
 from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 PRIMITIVES = list_primitives()
@@ -160,6 +160,9 @@ def valid_dfs(
 ):
     if not isinstance(feature_substrings, list):
         feature_substrings = [feature_substrings]
+
+    if any([issubclass(x, PrimitiveBase) for x in feature_substrings]):
+        feature_substrings = [x.name.upper() for x in feature_substrings]
 
     features = dfs(
         entityset=es,

@@ -272,4 +272,4 @@ class TestSavgolFilter(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instantiate = self.primitive()
         transform.append(primitive_instantiate)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)

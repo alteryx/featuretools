@@ -3,18 +3,19 @@
 Release Notes
 -------------
 
-Future Release
-==============
+v1.24.0 Apr 13, 2023
+====================
     * Enhancements
         * Add ``MaxCount``, ``MedianCount``, ``MaxMinDelta``, ``NUniqueDays``, ``NMostCommonFrequency``,
             ``NUniqueDaysOfCalendarYear``, ``NUniqueDaysOfMonth``, ``NUniqueMonths``,
             ``NUniqueWeeks``, ``IsFirstWeekOfMonth`` (:pr:`2533`)
-    * Fixes
+        * Add ``HasNoDuplicates``, ``NthWeekOfMonth``, ``IsMonotonicallyDecreasing``, ``IsMonotonicallyIncreasing``,
+            ``IsUnique`` (:pr:`2537`)
     * Changes
-        * Pinned pandas to 2.0.0 (:pr:`2533`)
-        * Introduce New Single-Table DFS Algorithm (:pr:`2516`)
-    * Documentation Changes
-    * Testing Changes
+        * Restrict pandas to < 2.0.0 (:pr:`2533`)
+        * Upgrade minimum pandas to 1.5.0 (:pr:`2537`)
+        * Removed the ``Correlation`` and ``AutoCorrelation`` primitive as these could lead to data leakage (:pr:`2537`)
+        * Remove IntegerNullable support for ``Kurtosis`` primitive  (:pr:`2537`)
 
     Thanks to the following people for contributing to this release:
     :user:`dvreed77`, :user:`gsheni`

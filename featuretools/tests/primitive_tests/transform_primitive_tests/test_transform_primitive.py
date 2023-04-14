@@ -24,6 +24,7 @@ from featuretools.primitives import (
     IsYearEnd,
     IsYearStart,
     Lag,
+    NthWeekOfMonth,
     NumericLag,
     PartOfDay,
     Quarter,
@@ -971,21 +972,28 @@ class TestFileExtension(PrimitiveTestBase):
                 "data.JSON",
                 "C:\\Projects\\apilibrary\\apilibrary.sln",
             ],
+            dtype="string",
         )
-        answer = pd.Series([".txt", ".json", ".json", ".sln"])
+        answer = pd.Series([".txt", ".json", ".json", ".sln"], dtype="string")
         pd.testing.assert_series_equal(primitive_func(array), answer)
 
     def test_invalid(self):
         primitive_func = FileExtension().get_function()
-        array = pd.Series(["doc.txt", "~/documents/data", np.nan])
-        answer = pd.Series([".txt", np.nan, np.nan])
+        array = pd.Series(["doc.txt", "~/documents/data", np.nan], dtype="string")
+        answer = pd.Series([".txt", np.nan, np.nan], dtype="string")
         pd.testing.assert_series_equal(primitive_func(array), answer)
 
     def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         transform.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(
+            es,
+            aggregation,
+            transform,
+            self.primitive,
+            target_dataframe_name="sessions",
+        )
 
 
 class TestIsFirstWeekOfMonth(PrimitiveTestBase):
@@ -1065,4 +1073,85 @@ class TestIsFirstWeekOfMonth(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         transform.append(primitive_instance)
-        valid_dfs(es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(es, aggregation, transform, self.primitive)
+
+
+class TestNthWeekOfMonth(PrimitiveTestBase):
+    primitive = NthWeekOfMonth
+
+    def test_valid_dates(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(
+            [
+                pd.to_datetime("03/01/2019"),
+                pd.to_datetime("03/03/2019"),
+                pd.to_datetime("03/31/2019"),
+                pd.to_datetime("03/30/2019"),
+                pd.to_datetime("09/01/2019"),
+            ],
+        )
+        answers = primitive_func(array)
+        correct_answers = [1, 2, 6, 5, 1]
+        np.testing.assert_array_equal(answers, correct_answers)
+
+    def test_leap_year(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(
+            [
+                pd.to_datetime("03/01/2019"),
+                pd.to_datetime("02/29/2016"),
+                pd.to_datetime("03/31/2019"),
+                pd.to_datetime("03/30/2019"),
+            ],
+        )
+        answers = primitive_func(array)
+        correct_answers = [1, 5, 6, 5]
+        np.testing.assert_array_equal(answers, correct_answers)
+
+    def test_year_before_1970(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(
+            [
+                pd.to_datetime("06/06/1965"),
+                pd.to_datetime("03/02/2019"),
+                pd.to_datetime("03/31/2019"),
+                pd.to_datetime("03/30/2019"),
+            ],
+        )
+        answers = primitive_func(array)
+        correct_answers = [2, 1, 6, 5]
+        np.testing.assert_array_equal(answers, correct_answers)
+
+    def test_year_after_2038(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(
+            [
+                pd.to_datetime("12/31/2040"),
+                pd.to_datetime("01/01/2001"),
+                pd.to_datetime("03/31/2019"),
+                pd.to_datetime("03/30/2019"),
+            ],
+        )
+        answers = primitive_func(array)
+        correct_answers = [6, 1, 6, 5]
+        np.testing.assert_array_equal(answers, correct_answers)
+
+    def test_nan_input(self):
+        primitive_func = self.primitive().get_function()
+        array = pd.Series(
+            [
+                pd.to_datetime("03/01/2019"),
+                np.nan,
+                np.datetime64("NaT"),
+                pd.to_datetime("03/30/2019"),
+            ],
+        )
+        answers = primitive_func(array)
+        correct_answers = [1, np.nan, np.nan, 5]
+        np.testing.assert_array_equal(answers, correct_answers)
+
+    def test_with_featuretools(self, es):
+        transform, aggregation = find_applicable_primitives(self.primitive)
+        primitive_instance = self.primitive()
+        transform.append(primitive_instance)
+        valid_dfs(es, aggregation, transform, self.primitive)
