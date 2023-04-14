@@ -3,7 +3,7 @@
 Release Notes
 -------------
 
-v1.24.0 Apr 13, 2023
+v1.25.0 Apr 13, 2023
 ====================
     * Enhancements
         * Add ``MaxCount``, ``MedianCount``, ``MaxMinDelta``, ``NUniqueDays``, ``NMostCommonFrequency``,
@@ -11,6 +11,8 @@ v1.24.0 Apr 13, 2023
             ``NUniqueWeeks``, ``IsFirstWeekOfMonth`` (:pr:`2533`)
         * Add ``HasNoDuplicates``, ``NthWeekOfMonth``, ``IsMonotonicallyDecreasing``, ``IsMonotonicallyIncreasing``,
             ``IsUnique`` (:pr:`2537`)
+    * Fixes
+        * Fix release notes header version (:pr:`2544`)
     * Changes
         * Restrict pandas to < 2.0.0 (:pr:`2533`)
         * Upgrade minimum pandas to 1.5.0 (:pr:`2537`)
