@@ -1,6 +1,5 @@
 import importlib.util
 import os
-from functools import cache
 from inspect import getfullargspec, getsource, isclass
 from typing import Dict, List
 
@@ -382,7 +381,6 @@ def load_primitive_from_file(filepath):
     return primitives[0]
 
 
-@cache
 def serialize_primitive(primitive: PrimitiveBase):
     """build a dictionary with the data necessary to construct the given primitive"""
     args_dict = {name: val for name, val in primitive.get_arguments()}

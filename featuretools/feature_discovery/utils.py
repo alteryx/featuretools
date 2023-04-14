@@ -1,5 +1,6 @@
 import hashlib
 import json
+from functools import cache
 from typing import Any, Dict, List, Set, Tuple, Union
 
 import woodwork.type_sys.type_system as ww_type_system
@@ -57,6 +58,7 @@ def column_schema_to_keys(column_schema: ColumnSchema) -> List[str]:
     return keys
 
 
+@cache
 def hash_primitive(primitive: PrimitiveBase) -> Tuple[str, Dict[str, Any]]:
     hash_msg = hashlib.sha256()
     primitive_name = primitive.name
