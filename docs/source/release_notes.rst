@@ -3,6 +3,18 @@
 Release Notes
 -------------
 
+Future Release
+==============
+    * Enhancements
+        * Add premium primitives install command (:pr:`2545`)
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
+
 v1.25.0 Apr 13, 2023
 ====================
     * Enhancements
