@@ -3,7 +3,7 @@
 Release Notes
 -------------
 
-v1.24.0 Apr 13, 2023
+v1.25.0 Apr 13, 2023
 ====================
     * Enhancements
         * Add ``MaxCount``, ``MedianCount``, ``MaxMinDelta``, ``NUniqueDays``, ``NMostCommonFrequency``,
