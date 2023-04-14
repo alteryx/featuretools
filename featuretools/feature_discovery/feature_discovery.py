@@ -42,7 +42,6 @@ def index_column_set(column_set: List[ColumnSchema]) -> List[Tuple[str, int]]:
     return [(k, v) for k, v in out.items()]
 
 
-# @functools.cache
 def get_features(
     feature_collection: FeatureCollection,
     column_keys: Tuple[Tuple[str, int]],
