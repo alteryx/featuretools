@@ -77,6 +77,9 @@ updater = [
 tsfresh = [
     "featuretools-tsfresh-primitives >= 1.0.0",
 ]
+primitives = [
+    "premium_primitives >= 0.0.1",
+]
 nlp = [
     "nlp-primitives[complete] >= 2.0.0",
 ]
@@ -113,7 +116,7 @@ dev = [
     "featuretools[docs,spark,test]",
 ]
 complete = [
-    "featuretools[autonormalize,nlp,sklearn,spark,sql,tsfresh,updater]",
+    "featuretools[autonormalize,nlp,primitives,sklearn,spark,sql,tsfresh,updater]",
 ]
 
 [tool.setuptools]
