@@ -6,7 +6,7 @@ from featuretools.utils.gen_utils import Library
 
 
 class DaysInMonth(TransformPrimitive):
-    """The number of days in the month of given datetime.
+    """Determines the number of days in the month of given datetime.
 
     Examples:
         >>> from datetime import datetime
