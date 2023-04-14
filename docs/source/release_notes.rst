@@ -3,6 +3,18 @@
 Release Notes
 -------------
 
+Future Release
+==============
+    * Enhancements
+    * Fixes
+        Fix Description of `DaysInMonth` (:pr:`2547`)
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`dvreed77`
+
 v1.25.0 Apr 13, 2023
 ====================
     * Enhancements
