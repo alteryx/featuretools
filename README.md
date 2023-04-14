@@ -59,6 +59,12 @@ python -m pip install "featuretools[complete]"
 python -m pip install "featuretools[updater]"
 ```
 
+**Premium Primitives** - Use Premium Primitives:
+
+```
+python -m pip install "featuretools[primitives]"
+```
+
 **NLP Primitives** - Use Natural Language Processing Primitives:
 
 ```
