@@ -32,7 +32,7 @@ v1.25.0 Apr 13, 2023
         * Remove IntegerNullable support for ``Kurtosis`` primitive  (:pr:`2537`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`gsheni`
+    :user:`gsheni`
 
 v1.24.0 Mar 28, 2023
 ====================
