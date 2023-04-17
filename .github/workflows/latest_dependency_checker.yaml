@@ -24,6 +24,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e ".[spark,test]"
           make checkdeps OUTPUT_PATH=featuretools/tests/requirement_files/latest_requirements.txt
+          pre-commit autoupdate
       - name: Create pull request
         uses: peter-evans/create-pull-request@v3
         with:

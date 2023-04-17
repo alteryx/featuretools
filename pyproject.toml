@@ -14,6 +14,7 @@ classifiers = [
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX",
     "Operating System :: Unix",
@@ -30,7 +31,7 @@ license = {text = "BSD 3-clause"}
 requires-python = ">=3.8,<4"
 dependencies = [
     "cloudpickle >= 1.5.0",
-    "dask[dataframe] >= 2022.11.1",
+    "dask[dataframe] >= 2022.11.1, < 2023.4.0",
     "distributed >= 2022.11.1",
     "holidays >= 0.13",
     "numpy >= 1.21.0",
@@ -68,11 +69,11 @@ test = [
 ]
 spark = [
     "woodwork[spark] >= 0.23.0",
-    "pyspark >= 3.2.2, <3.4.0",
+    "pyspark >= 3.2.0",
     "numpy < 1.24.0",
 ]
 updater = [
-    "alteryx-open-src-update-checker >= 2.1.0"
+    "alteryx-open-src-update-checker >= 3.1.0"
 ]
 tsfresh = [
     "featuretools-tsfresh-primitives >= 1.0.0",
@@ -146,7 +147,6 @@ namespaces = true
 [tool.setuptools.dynamic]
 version = {attr = "featuretools.version.__version__"}
 
-
 [tool.pytest.ini_options]
 addopts = "--doctest-modules --ignore=featuretools/tests/entry_point_tests/add-ons"
 testpaths = [
@@ -159,7 +159,7 @@ filterwarnings = [
 
 [tool.black]
 line-length = 88
-target-version = ["py310"]
+target-version = ["py311"]
 
 [tool.ruff]
 line-length = 88

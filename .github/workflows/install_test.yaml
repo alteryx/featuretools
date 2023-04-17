@@ -14,10 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python_version: ["3.8", "3.9", "3.10"]
-        exclude:
-          - python_version: "3.10"
-            os: macos-latest
+        python_version: ["3.8", "3.9", "3.10", "3.11"]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -29,12 +26,12 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
-          cache: 'pip' 
+          cache: 'pip'
           cache-dependency-path: 'pyproject.toml'
       - uses: actions/cache@v3
         id: cache
         with:
-          path: ${{ env.pythonLocation }} 
+          path: ${{ env.pythonLocation }}
           key: ${{ matrix.os- }}-${{ matrix.python_version }}-install-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
       - name: Build featuretools package
         run: |
