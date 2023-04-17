@@ -9,6 +9,8 @@ Future Release
     * Fixes
     * Changes
         * Introduce New Single-Table DFS Algorithm (:pr:`2516`)
+        * Fix Description of `DaysInMonth` (:pr:`2547`)
+    * Changes
     * Documentation Changes
     * Testing Changes
 
