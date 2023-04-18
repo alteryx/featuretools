@@ -52,10 +52,11 @@ jobs:
           python -c "import alteryx_open_src_update_checker"
           python -c "import nlp_primitives"
           python -c "from featuretools.nlp_primitives import PolarityScore"
+          python -c "from featuretools.primitives import CountryCodeToContinent"
           python -c "from featuretools_sql import DBConnector"
       - name: Check package conflicts
         run: |
           python -m pip check
       - name: Verify extra_requires commands
         run: |
-          python -m pip install "unpacked_sdist/[nlp,spark,updater,sql]"
+          python -m pip install "unpacked_sdist/[nlp,spark,updater,sql,premium]"

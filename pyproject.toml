@@ -30,8 +30,8 @@ license = {text = "BSD 3-clause"}
 requires-python = ">=3.8,<4"
 dependencies = [
     "cloudpickle >= 1.5.0",
-    "dask[dataframe] >= 2022.11.1",
-    "distributed >= 2022.11.1",
+    "dask[dataframe] >= 2022.11.1, < 2023.4.0",
+    "distributed >= 2022.11.1, < 2023.4.0",
     "holidays >= 0.13",
     "numpy >= 1.21.0",
     "packaging >= 20.0",
@@ -77,6 +77,9 @@ updater = [
 tsfresh = [
     "featuretools-tsfresh-primitives >= 1.0.0",
 ]
+premium = [
+    "premium_primitives >= 0.0.1",
+]
 nlp = [
     "nlp-primitives[complete] >= 2.0.0",
 ]
@@ -113,7 +116,7 @@ dev = [
     "featuretools[docs,spark,test]",
 ]
 complete = [
-    "featuretools[autonormalize,nlp,sklearn,spark,sql,tsfresh,updater]",
+    "featuretools[autonormalize,nlp,premium,sklearn,spark,sql,tsfresh,updater]",
 ]
 
 [tool.setuptools]
