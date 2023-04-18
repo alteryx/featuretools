@@ -31,7 +31,7 @@ $ python -m pip install "featuretools[complete]"
 ```
 ```{tab} Premium Primitives
 ```console
-$ python -m pip install "featuretools[primitives]"
+$ python -m pip install "featuretools[premium]"
 ```
 ```{tab} NLP Primitives
 ```console
