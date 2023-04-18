@@ -77,7 +77,7 @@ updater = [
 tsfresh = [
     "featuretools-tsfresh-primitives >= 1.0.0",
 ]
-primitives = [
+premium = [
     "premium_primitives >= 0.0.1",
 ]
 nlp = [
