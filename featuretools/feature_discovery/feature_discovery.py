@@ -336,7 +336,7 @@ def _check_inputs(
     input_features: Iterable[LiteFeature],
     primitives: Union[List[Type[PrimitiveBase]], List[PrimitiveBase]],
 ) -> Tuple[Iterable[LiteFeature], List[PrimitiveBase]]:
-    if not hasattr(input_features, "__iter__"):
+    if not isinstance(input_features, Iterable):
         raise ValueError("input_features must be an iterable of LiteFeature objects")
 
     for feature in input_features:
