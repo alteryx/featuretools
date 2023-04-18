@@ -74,7 +74,7 @@ def test_feature_type_equality():
 def test_feature_type_assertions():
     with pytest.raises(
         AssertionError,
-        match="there must be base features if give a primitive",
+        match="there must be base features if given a primitive",
     ):
         LiteFeature(
             name="Column 1",

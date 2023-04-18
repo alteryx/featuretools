@@ -1,44 +1,35 @@
 import hashlib
 import json
 from functools import lru_cache
-from typing import Any, Dict, List, Set, Tuple, Union
+from typing import Any, Dict, Tuple
 
-import woodwork.type_sys.type_system as ww_type_system
 from woodwork.column_schema import ColumnSchema
 
 from featuretools.feature_discovery.type_defs import ANY
 from featuretools.primitives.base.primitive_base import PrimitiveBase
 from featuretools.primitives.utils import (
-    get_all_logical_types,
+    get_all_logical_type_names,
     get_all_primitives,
     serialize_primitive,
 )
 
 primitives_map = get_all_primitives()
-logical_types_map = get_all_logical_types()
-
-inferred_tag_map: Dict[Union[str, None], Set[str]] = {
-    k: ww_type_system.str_to_logical_type(k).standard_tags
-    for k in logical_types_map.keys()
-}
-inferred_tag_map[None] = set()
+logical_types_map = get_all_logical_type_names()
 
 
-def column_schema_to_keys(column_schema: ColumnSchema) -> List[str]:
+def column_schema_to_keys(column_schema: ColumnSchema) -> str:
     """
-    Generate hashing keys from Columns Schema. For example:
-    - ColumnSchema(logical_type=Double) -> ["Double"]
-    - ColumnSchema(semantic_tags={"index"}) -> ["index"]
-    - ColumnSchema(logical_type=Double, semantic_tags={"index", "other"}) -> ["Double,index", "Double,other"]
+    Generate a hashing key from a Columns Schema. For example:
+    - ColumnSchema(logical_type=Double) -> "Double"
+    - ColumnSchema(semantic_tags={"index"}) -> "index"
+    - ColumnSchema(logical_type=Double, semantic_tags={"index", "other"}) -> "Double,index,other"
 
     Args:
         column_schema (ColumnSchema):
 
     Returns:
-        List[str]
-            List of hashing keys
+        str: hashing key
     """
-    keys: List[str] = []
     logical_type = column_schema.logical_type
     tags = column_schema.semantic_tags
     lt_key = None
@@ -48,14 +39,12 @@ def column_schema_to_keys(column_schema: ColumnSchema) -> List[str]:
     tags = sorted(tags)
     if len(tags) > 0:
         tag_key = ",".join(tags)
-        keys.append(f"{lt_key},{tag_key}" if lt_key is not None else tag_key)
+        return f"{lt_key},{tag_key}" if lt_key is not None else tag_key
 
     elif lt_key is not None:
-        keys.append(lt_key)
+        return lt_key
     else:
-        keys.append(ANY)
-
-    return keys
+        return ANY
 
 
 @lru_cache(maxsize=None)

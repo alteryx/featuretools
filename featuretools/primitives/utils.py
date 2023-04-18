@@ -446,6 +446,6 @@ class PrimitivesDeserializer(object):
                 return cls
 
 
-def get_all_logical_types():
+def get_all_logical_type_names():
     """Helper function that returns all registered woodwork logical types"""
     return {lt.__name__: lt for lt in type_system.registered_types}

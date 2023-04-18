@@ -1,14 +1,13 @@
 import random
 from datetime import datetime as dt
 
-import numpy as np
 import pandas as pd
 import woodwork.type_sys.type_system as ww_type_system
 from woodwork import logical_types
 
 logical_type_mapping = {
     logical_types.Boolean.__name__: [True, False],
-    logical_types.BooleanNullable.__name__: [True, False, np.nan],
+    logical_types.BooleanNullable.__name__: [True, False, pd.NA],
     logical_types.Categorical.__name__: ["A", "B", "C"],
     logical_types.Datetime.__name__: [
         dt(2020, 1, 1, 12, 0, 0),
@@ -16,7 +15,7 @@ logical_type_mapping = {
     ],
     logical_types.Double.__name__: [1.2, 2.3, 3.4],
     logical_types.Integer.__name__: [1, 2, 3],
-    logical_types.IntegerNullable.__name__: [1, 2, 3, np.nan],
+    logical_types.IntegerNullable.__name__: [1, 2, 3, pd.NA],
     logical_types.EmailAddress.__name__: [
         "john.smith@example.com",
         "sally.jones@example.com",

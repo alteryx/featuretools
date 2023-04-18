@@ -89,7 +89,6 @@ def test_origin_feature_to_featurebase():
     df = generate_fake_dataframe(
         col_defs=[("idx", "Double", {"index"}), ("f_1", "Double")],
     )
-    # TODO(dreed): don't like how I have to make an entityset
     es = EntitySet(id="test")
     es.add_dataframe(df, df.ww.name)
 
@@ -112,7 +111,6 @@ def test_stacked_feature_to_featurebase():
     df = generate_fake_dataframe(
         col_defs=[("idx", "Double", {"index"}), ("f_1", "Double")],
     )
-    # TODO(dreed): don't like how I have to make an entityset
     es = EntitySet(id="test")
     es.add_dataframe(df, df.ww.name)
 
@@ -145,7 +143,6 @@ def test_multi_output_to_featurebase():
             ("f_1", "NaturalLanguage"),
         ],
     )
-    # TODO(dreed): don't like how I have to make an entityset
     es = EntitySet(id="test")
     es.add_dataframe(df, df.ww.name)
 
@@ -200,7 +197,6 @@ def test_stacking_on_multioutput_to_featurebase():
     df = generate_fake_dataframe(
         col_defs=col_defs,
     )
-    # TODO(dreed): don't like how I have to make an entityset
     es = EntitySet(id="test")
     es.add_dataframe(df, df.ww.name)
 

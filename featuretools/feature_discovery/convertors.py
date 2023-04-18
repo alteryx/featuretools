@@ -92,7 +92,7 @@ def convert_featurebase_list_to_feature_list(
     ]
 
 
-def to_transform_feature(
+def _feature_to_transform_feature(
     feature: LiteFeature,
     base_features: List[FeatureBase],
 ) -> FeatureBase:
@@ -131,7 +131,7 @@ def to_transform_feature(
 def convert_feature_to_featurebase(
     feature: LiteFeature,
     dataframe: pd.DataFrame,
-    cache: FeatureCache = {},
+    cache: FeatureCache,
 ) -> FeatureBase:
     """
     Recursively transforms a feature object into a Featurebase object
@@ -173,7 +173,7 @@ def convert_feature_to_featurebase(
 
         base_features = get_base_features(feature)
 
-        fb = to_transform_feature(feature, base_features)
+        fb = _feature_to_transform_feature(feature, base_features)
         cache[feature.id] = fb
         return fb
 

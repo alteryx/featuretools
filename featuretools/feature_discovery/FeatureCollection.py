@@ -21,8 +21,9 @@ class FeatureCollection:
         self._hash_key: Optional[str] = None
 
     def sort_features(self):
-        self.all_features = sorted(self.all_features)
-        self.sorted = True
+        if not self.sorted:
+            self.all_features = sorted(self.all_features)
+            self.sorted = True
 
     def __repr__(self):
         return f"<FeatureCollection ({self.hash_key[:5]}) n_features={len(self.all_features)} indexed={self.indexed}>"
@@ -36,7 +37,7 @@ class FeatureCollection:
         assert self._hash_key is not None
         return self._hash_key
 
-    def _set_hash(self) -> FeatureCollection:
+    def _set_hash(self):
         hash_msg = hashlib.sha256()
 
         for feature in self.all_features:

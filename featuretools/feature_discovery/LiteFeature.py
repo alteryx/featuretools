@@ -10,7 +10,7 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import LogicalType
 
 from featuretools.feature_discovery.type_defs import ANY
-from featuretools.feature_discovery.utils import hash_primitive, inferred_tag_map
+from featuretools.feature_discovery.utils import hash_primitive
 from featuretools.primitives.base.primitive_base import PrimitiveBase
 
 
@@ -55,7 +55,7 @@ class LiteFeature:
             assert isinstance(self.primitive, PrimitiveBase)
             assert (
                 len(self.base_features) > 0
-            ), "there must be base features if give a primitive"
+            ), "there must be base features if given a primitive"
             self.n_output_features = self.primitive.number_output_features
             self.depth = max([x.depth for x in self.base_features]) + 1
             self._gen_name = self.primitive.generate_name(
@@ -67,12 +67,8 @@ class LiteFeature:
         else:
             self._gen_name = self.name
 
-        # TODO(dreed): find a better way to do this
         if self.logical_type is not None and "index" not in self.tags:
-            logical_type_name = self.logical_type.__name__
-
-            inferred_tags = inferred_tag_map[logical_type_name]
-            self.tags = self.tags | inferred_tags
+            self.tags = self.tags | self.logical_type.standard_tags
 
         self.id = self._generate_hash()
 
@@ -173,7 +169,7 @@ class LiteFeature:
     def get_depth(self) -> int:
         return self.depth
 
-    def dependendent_primitives(self) -> Set[Type[PrimitiveBase]]:
+    def dependent_primitives(self) -> Set[Type[PrimitiveBase]]:
         dependent_features = self.get_dependencies(deep=True)
         dependent_primitives = {
             type(f.primitive) for f in dependent_features if f.primitive
@@ -233,7 +229,7 @@ class LiteFeature:
             logical_type_name = logical_type.__name__
             keys.append(logical_type_name)
 
-        inferred_tags = inferred_tag_map[logical_type_name]
+        inferred_tags = logical_type.standard_tags if logical_type else set()
 
         if "index" in self.tags:
             all_tags = self.tags

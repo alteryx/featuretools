@@ -1,4 +1,5 @@
 import inspect
+from collections import defaultdict
 from itertools import combinations, permutations, product
 from typing import Callable, Iterable, List, Set, Tuple, Type, Union, cast
 
@@ -35,11 +36,11 @@ def index_column_set(column_set: List[ColumnSchema]) -> List[Tuple[str, int]]:
             indexed_column_set = index_column_set(column_set)
             [("numeric": 2)]
     """
-    out = {}
+    out = defaultdict(int)
     for column_schema in column_set:
-        for key in column_schema_to_keys(column_schema):
-            out[key] = out.get(key, 0) + 1
-    return [(k, v) for k, v in out.items()]
+        key = column_schema_to_keys(column_schema)
+        out[key] += 1
+    return list(out.items())
 
 
 def get_features(
@@ -51,8 +52,8 @@ def get_features(
     Calculates all LiteFeature combinations using the given hashmap of existing features, and the input set of required columns.
 
     Args:
-        feature_groups (FeatureCollection):
-            An index feature collection object for efficient querying of features
+        feature_collection (FeatureCollection):
+            An indexed feature collection object for efficient querying of features
         column_keys (List[Tuple[str, int]]):
             List of Column types needed by associated primitive.
         commutative (bool):
@@ -123,9 +124,8 @@ def get_matching_features(
     For a given primitive, find all feature sets that can be used to create new feature
 
     Args:
-        feature_groups (Dict[str, List[LiteFeature]]):
-            Hashmap from Key to List of Features. Key is either: LogicalType name (eg. "Double"), Semantic tag (eg. "index"),
-            or combination (eg. "Double,index").
+        feature_collection (FeatureCollection):
+            An indexed feature collection object for efficient querying of features
         primitive (Type[PrimitiveBase])
 
     Returns:
@@ -200,9 +200,8 @@ def features_from_primitive(
 
     Args:
         primitive (Type[PrimitiveBase])
-        feature_groups (Dict[str, List[LiteFeature]]):
-            Hashmap from Key to List of Features. Key is either: LogicalType name (eg. "Double"), Semantic tag (eg. "index"),
-            or combination (eg. "Double,index").
+        feature_collection (FeatureCollection):
+            An indexed feature collection object for efficient querying of features
 
     Returns:
         List[List[LiteFeature]]

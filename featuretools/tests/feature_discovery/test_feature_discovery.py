@@ -32,12 +32,10 @@ from featuretools.primitives import (
     Day,
     Equal,
     Lag,
+    MultiplyNumericBoolean,
     NumUnique,
     SubtractNumeric,
-)
-from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
-from featuretools.primitives.standard.transform.binary.multiply_numeric_boolean import (
-    MultiplyNumericBoolean,
+    TransformPrimitive,
 )
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils.generate_fake_dataframe import (
@@ -67,11 +65,11 @@ class TestMultiOutputPrimitive(TransformPrimitive):
 @pytest.mark.parametrize(
     "column_schema, expected",
     [
-        (ColumnSchema(logical_type=Double), ["Double"]),
-        (ColumnSchema(semantic_tags={"index"}), ["index"]),
+        (ColumnSchema(logical_type=Double), "Double"),
+        (ColumnSchema(semantic_tags={"index"}), "index"),
         (
             ColumnSchema(logical_type=Double, semantic_tags={"index", "other"}),
-            ["Double,index,other"],
+            "Double,index,other",
         ),
     ],
 )
