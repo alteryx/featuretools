@@ -1,4 +1,4 @@
-from woodwork.logical_types import Double
+from woodwork.logical_types import Double, NaturalLanguage
 
 from featuretools.entityset.entityset import EntitySet
 from featuretools.feature_base.feature_base import (
@@ -9,7 +9,7 @@ from featuretools.feature_base.feature_base import (
 from featuretools.feature_discovery.convertors import (
     convert_feature_list_to_featurebase_list,
     convert_feature_to_featurebase,
-    convert_featurebase_to_feature,
+    convert_featurebase_list_to_feature_list,
 )
 from featuretools.feature_discovery.feature_discovery import (
     generate_features_from_primitives,
@@ -28,11 +28,12 @@ from featuretools.tests.testing_utils.generate_fake_dataframe import (
 )
 
 
-def test_convert_featurebase_to_feature():
+def test_convert_featurebase_list_to_feature_list():
     col_defs = [
         ("idx", "Integer", {"index"}),
         ("f_1", "Double"),
         ("f_2", "Double"),
+        ("f_3", "NaturalLanguage"),
     ]
 
     df = generate_fake_dataframe(
@@ -45,24 +46,41 @@ def test_convert_featurebase_to_feature():
     fdefs = dfs(
         entityset=es,
         target_dataframe_name=df.ww.name,
-        trans_primitives=[AddNumeric],
+        trans_primitives=[AddNumeric, TestMultiOutputPrimitive],
         features_only=True,
     )
     assert isinstance(fdefs, list)
     assert isinstance(fdefs[0], FeatureBase)
 
-    converted_features = set([convert_featurebase_to_feature(x) for x in fdefs])
+    converted_features = set(convert_featurebase_list_to_feature_list(fdefs))
 
     f1 = LiteFeature("f_1", Double)
     f2 = LiteFeature("f_2", Double)
-    f3 = LiteFeature(
+    f3 = LiteFeature("f_3", NaturalLanguage)
+    fadd = LiteFeature(
         name="f_1 + f_2",
         tags={"numeric"},
         primitive=AddNumeric(),
         base_features=[f1, f2],
     )
+    fmo0 = LiteFeature(
+        name="TEST_MO(f_3)[0]",
+        tags={"numeric"},
+        primitive=TestMultiOutputPrimitive(),
+        base_features=[f3],
+        idx=0,
+    )
+    fmo1 = LiteFeature(
+        name="TEST_MO(f_3)[1]",
+        tags={"numeric"},
+        primitive=TestMultiOutputPrimitive(),
+        base_features=[f3],
+        idx=1,
+    )
+    fmo0.related_features = {fmo1}
+    fmo1.related_features = {fmo0}
 
-    orig_features = set([f1, f2, f3])
+    orig_features = set([f1, f2, fadd, fmo0, fmo1])
 
     assert len(orig_features.symmetric_difference(converted_features)) == 0
 

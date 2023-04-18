@@ -17,7 +17,9 @@ from featuretools.primitives.base.primitive_base import PrimitiveBase
 FeatureCache = Dict[str, FeatureBase]
 
 
-def convert_featurebase_to_feature(feature: FeatureBase) -> LiteFeature:
+def convert_featurebase_list_to_feature_list(
+    featurebase_list: List[FeatureBase],
+) -> List[LiteFeature]:
     """
     Convert a FeatureBase object to a LiteFeature object
 
@@ -27,33 +29,67 @@ def convert_featurebase_to_feature(feature: FeatureBase) -> LiteFeature:
     Returns:
        LiteFeature - converted LiteFeature object
     """
-    base_features = [convert_featurebase_to_feature(x) for x in feature.base_features]
 
-    name = feature.get_name()
-    col_schema = feature.column_schema
+    def rfunc(fb: FeatureBase) -> List[LiteFeature]:
+        base_features = [
+            feature
+            for feature_list in [rfunc(x) for x in fb.base_features]
+            for feature in feature_list
+        ]
+        col_schema = fb.column_schema
 
-    logical_type = col_schema.logical_type
-    if logical_type is not None:
-        assert issubclass(type(logical_type), LogicalType)
-        logical_type = type(logical_type)
+        logical_type = col_schema.logical_type
+        if logical_type is not None:
+            assert issubclass(type(logical_type), LogicalType)
+            logical_type = type(logical_type)
 
-    tags = col_schema.semantic_tags
+        tags = col_schema.semantic_tags
 
-    if isinstance(feature, IdentityFeature):
-        primitive = None
-    else:
-        primitive = feature.primitive
-        assert isinstance(primitive, PrimitiveBase)
+        if isinstance(fb, IdentityFeature):
+            primitive = None
+        else:
+            primitive = fb.primitive
+            assert isinstance(primitive, PrimitiveBase)
 
-    return LiteFeature(
-        name=name,
-        logical_type=logical_type,
-        tags=tags,
-        primitive=primitive,
-        base_features=base_features,
-        # TODO: replace this with dataframe name?
-        df_id=None,
-    )
+        if fb.number_output_features > 1:
+            features = []
+
+            for idx, name in enumerate(fb.get_feature_names()):
+                f = LiteFeature(
+                    name=name,
+                    logical_type=logical_type,
+                    tags=tags,
+                    primitive=primitive,
+                    base_features=base_features,
+                    # TODO: replace this with dataframe name?
+                    df_id=None,
+                    idx=idx,
+                )
+                features.append(f)
+
+            for feature in features:
+                related_features = [f for f in features if f.id != feature.id]
+                feature.related_features = set(related_features)
+
+            return features
+
+        return [
+            LiteFeature(
+                name=fb.get_name(),
+                logical_type=logical_type,
+                tags=tags,
+                primitive=primitive,
+                base_features=base_features,
+                # TODO: replace this with dataframe name?
+                df_id=None,
+            ),
+        ]
+
+    return [
+        feature
+        for feature_list in [rfunc(fb) for fb in featurebase_list]
+        for feature in feature_list
+    ]
 
 
 def to_transform_feature(

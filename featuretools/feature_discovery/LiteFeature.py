@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass, field
+from dataclasses import field
 from functools import total_ordering
 from itertools import combinations
 from typing import Any, Dict, List, Optional, Set, Type, Union
@@ -15,7 +15,6 @@ from featuretools.primitives.base.primitive_base import PrimitiveBase
 
 
 @total_ordering
-@dataclass
 class LiteFeature:
     name: Optional[str] = None
     logical_type: Optional[Type[LogicalType]] = None
@@ -24,13 +23,58 @@ class LiteFeature:
     base_features: List[LiteFeature] = field(default_factory=list)
     df_id: Optional[str] = None
 
-    id: str = field(init=False)
-    _gen_name: str = field(init=False)
+    id: str
+    _gen_name: str
     n_output_features: int = 1
 
     depth = 0
-    related_features: Set[LiteFeature] = field(default_factory=set)
+    related_features: Set[LiteFeature]
     idx: int = 0
+
+    def __init__(
+        self,
+        name: Optional[str] = None,
+        logical_type: Optional[Type[LogicalType]] = None,
+        tags: Optional[Set[str]] = None,
+        primitive: Optional[PrimitiveBase] = None,
+        base_features: Optional[List[LiteFeature]] = None,
+        df_id: Optional[str] = None,
+        related_features: Optional[Set[LiteFeature]] = None,
+        idx: Optional[int] = None,
+    ):
+        self.name = name
+        self.logical_type = logical_type
+        self.tags = tags if tags else set()
+        self.primitive = primitive
+        self.base_features = base_features if base_features else []
+        self.df_id = df_id
+        self.idx = idx if idx is not None else 0
+        self.related_features = related_features if related_features else set()
+
+        if self.primitive:
+            assert isinstance(self.primitive, PrimitiveBase)
+            assert (
+                len(self.base_features) > 0
+            ), "there must be base features if give a primitive"
+            self.n_output_features = self.primitive.number_output_features
+            self.depth = max([x.depth for x in self.base_features]) + 1
+            self._gen_name = self.primitive.generate_name(
+                [x.get_name() for x in self.base_features],
+            )
+
+        elif self.name is None:
+            raise Exception("Name must be given if origin feature")
+        else:
+            self._gen_name = self.name
+
+        # TODO(dreed): find a better way to do this
+        if self.logical_type is not None and "index" not in self.tags:
+            logical_type_name = self.logical_type.__name__
+
+            inferred_tags = inferred_tag_map[logical_type_name]
+            self.tags = self.tags | inferred_tags
+
+        self.id = self._generate_hash()
 
     @staticmethod
     def hash(
@@ -108,31 +152,9 @@ class LiteFeature:
         all_dependencies = self.get_dependencies(deep=True)
         return [f for f in all_dependencies if f.depth == 0]
 
-    def __post_init__(self):
-        if self.primitive:
-            assert isinstance(self.primitive, PrimitiveBase)
-            assert (
-                len(self.base_features) > 0
-            ), "there must be base features if give a primitive"
-            self.n_output_features = self.primitive.number_output_features
-            self.depth = max([x.depth for x in self.base_features]) + 1
-            self._gen_name = self.primitive.generate_name(
-                [x.get_name() for x in self.base_features],
-            )
-
-        elif self.name is None:
-            raise Exception("Name must be given if origin feature")
-        else:
-            self._gen_name = self.name
-
-        # TODO(dreed): find a better way to do this
-        if self.logical_type is not None and "index" not in self.tags:
-            logical_type_name = self.logical_type.__name__
-
-            inferred_tags = inferred_tag_map[logical_type_name]
-            self.tags = self.tags | inferred_tags
-
-        self.id = self._generate_hash()
+    def __repr__(self) -> str:
+        base_features = ", ".join([f"{x.id[:5]}..." for x in self.base_features])
+        return f"LiteFeature(name='{self.get_name()}', logical_type={self.logical_type}, tags={self.tags}, primitive={self.get_primitive_name()}, base_features=[{base_features}], df_id=None, id='{self.id[:5]}...' n_output_features={self.n_output_features} idx={self.idx})"
 
     @property
     def column_schema(self) -> ColumnSchema:
