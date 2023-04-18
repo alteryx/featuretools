@@ -8,12 +8,13 @@ Future Release
     * Enhancements
         * Add premium primitives install command (:pr:`2545`)
     * Fixes
+        Fix Description of `DaysInMonth` (:pr:`2547`)
     * Changes
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`dvreed77`, :user:`gsheni`
 
 v1.25.0 Apr 13, 2023
 ====================
