@@ -144,6 +144,29 @@ def test_index_input_set(column_list, expected):
             False,
             [["f1"]],
         ),
+        (
+            [
+                ("f1", Double),
+                ("f2", Boolean),
+                ("f3", Double),
+                ("f4", Boolean),
+                ("f5", Double),
+            ],
+            [
+                ColumnSchema(logical_type=Double),
+                ColumnSchema(logical_type=Double),
+                ColumnSchema(logical_type=Boolean),
+            ],
+            True,
+            [
+                ["f1", "f3", "f2"],
+                ["f1", "f3", "f4"],
+                ["f1", "f5", "f2"],
+                ["f1", "f5", "f4"],
+                ["f3", "f5", "f2"],
+                ["f3", "f5", "f4"],
+            ],
+        ),
     ],
 )
 @patch.object(LiteFeature, "_generate_hash", lambda x: x.name)
@@ -154,7 +177,9 @@ def test_get_features(feature_args, input_set, commutative, expected):
     column_keys = index_column_set(input_set)
     actual = get_features(feature_collection, tuple(column_keys), commutative)
 
-    assert [[y.id for y in x] for x in actual] == expected
+    assert set([tuple([y.id for y in x]) for x in actual]) == set(
+        [tuple(x) for x in expected],
+    )
 
 
 @pytest.mark.parametrize(
