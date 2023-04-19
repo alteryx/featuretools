@@ -28,6 +28,7 @@ from featuretools.feature_discovery.utils import column_schema_to_keys
 from featuretools.primitives import (
     Absolute,
     AddNumeric,
+    Count,
     DateFirstEvent,
     Day,
     Equal,
@@ -58,6 +59,18 @@ class TestMultiOutputPrimitive(TransformPrimitive):
     def get_function(self):
         def func(x):
             return 0, 1
+
+        return func
+
+
+class TestDoublePrimitive(TransformPrimitive):
+    name = "test_double"
+    input_types = [ColumnSchema(logical_type=Double)]
+    return_type = ColumnSchema(logical_type=Double)
+
+    def get_function(self):
+        def func(x):
+            return x
 
         return func
 
@@ -202,7 +215,7 @@ def test_get_features(feature_args, input_set, commutative, expected):
             [["f1", "f2"], ["f1", "f3"], ["f2", "f3"]],
         ),
         (
-            [("f4", Boolean), ("f5", Boolean), ("f6", Boolean)],
+            [("f1", Boolean), ("f2", Boolean), ("f3", Boolean)],
             AddNumeric,
             [],
         ),
@@ -246,6 +259,22 @@ def test_get_features(feature_args, input_set, commutative, expected):
             ],
             Lag,
             [["f19", "t_idx"], ["f20", "t_idx"], ["f21", "t_idx"], ["f22", "t_idx"]],
+        ),
+        (
+            [
+                ("idx", Double, {"index"}),
+                ("f23", Double),
+            ],
+            Count,
+            [["idx"]],
+        ),
+        (
+            [
+                ("idx", Double, {"index"}),
+                ("f23", Double),
+            ],
+            AddNumeric,
+            [],
         ),
     ],
 )
@@ -314,7 +343,7 @@ def get_default_logical_type(tags: Set[str]):
                 ("f_4", "Boolean"),
                 ("f_5", "Double"),
             ],
-            [AddNumeric, Absolute, SubtractNumeric],
+            [AddNumeric, Absolute, SubtractNumeric, TestDoublePrimitive],
         ),
         (
             [
@@ -344,6 +373,7 @@ def test_compare_dfs(col_defs, primitives):
         target_dataframe_name="df",
         trans_primitives=primitives,
         features_only=True,
+        return_types="all",
     )
 
     origin_features = schema_to_features(df.ww.schema)
