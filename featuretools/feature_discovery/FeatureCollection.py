@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import hashlib
+from itertools import combinations
 from typing import Any, Dict, List, Optional, Set, Type, Union, cast
 
 from woodwork.logical_types import LogicalType
 
 from featuretools.feature_discovery.LiteFeature import LiteFeature
+from featuretools.feature_discovery.type_defs import ANY
 from featuretools.feature_discovery.utils import hash_primitive, logical_types_map
 from featuretools.primitives.base.primitive_base import PrimitiveBase
 from featuretools.primitives.utils import (
@@ -64,7 +66,7 @@ class FeatureCollection:
         self.by_key: Dict[str, List[LiteFeature]] = {}
 
         for feature in self.all_features:
-            for key in feature.to_keys():
+            for key in self.feature_to_keys(feature):
                 self.by_key.setdefault(key, []).append(feature)
 
             logical_type = feature.logical_type
@@ -148,6 +150,47 @@ class FeatureCollection:
             "feature_ids": [f.id for f in self.all_features],
             "all_features": {k: f.to_dict() for k, f in all_features_dict.items()},
         }
+
+    @staticmethod
+    def feature_to_keys(feature: LiteFeature) -> List[str]:
+        """
+        Generate hashing keys from LiteFeature. For example:
+        - LiteFeature("f1", Double, {"numeric"}) -> ['Double', 'numeric', 'Double,numeric', 'ANY']
+        - LiteFeature("f1", Datetime, {"time_index"}) -> ['Datetime', 'time_index', 'Datetime,time_index', 'ANY']
+        - LiteFeature("f1", Double, {"index", "other"}) -> ['Double', 'index', 'other', 'Double,index', 'Double,other', 'ANY']
+        TODO(dreed): make sure this is well tested.
+        Args:
+            feature (LiteFeature):
+
+        Returns:
+            List[str]
+                List of hashing keys
+        """
+        keys: List[str] = []
+        logical_type = feature.logical_type
+        logical_type_name = None
+        if logical_type is not None:
+            logical_type_name = logical_type.__name__
+            keys.append(logical_type_name)
+
+        all_tags = sorted(feature.tags)
+
+        tag_combinations = []
+
+        # generate combinations of all lengths from 1 to the length of the input list
+        for i in range(1, len(all_tags) + 1):
+            # generate combinations of length i and append to the combinations_list
+            for comb in combinations(all_tags, i):
+                tag_combinations.append(list(comb))
+
+        for tag_combination in tag_combinations:
+            tags_key = ",".join(tag_combination)
+            keys.append(tags_key)
+            if logical_type_name:
+                keys.append(f"{logical_type_name},{tags_key}")
+
+        keys.append(ANY)
+        return keys
 
     @staticmethod
     def from_dict(input_dict):

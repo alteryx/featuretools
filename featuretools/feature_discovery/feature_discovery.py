@@ -88,6 +88,7 @@ def get_features(
         else:
             prod_iter.append(permutations(relevant_features, count))
 
+    # TODO(dreed): add a better test that shows off what the product is doing here.
     feature_combinations = product(*prod_iter)
 
     return [flatten_list(x) for x in feature_combinations]
@@ -101,7 +102,8 @@ def primitive_to_columnsets(primitive: PrimitiveBase) -> List[List[ColumnSchema]
 
     column_sets = cast(List[List[ColumnSchema]], column_sets)
 
-    # Some primitives are commutative, yet have explicit versions of commutative pairs (eg. MultiplyNumericBoolean), which would create multiple versions, so this resolved that.
+    # Some primitives are commutative, yet have explicit versions of commutative pairs (eg. MultiplyNumericBoolean),
+    # which would create multiple versions, so this resolved that.
     if primitive.commutative:
         existing = set()
         uniq_column_sets = []
@@ -126,7 +128,7 @@ def get_matching_features(
     Args:
         feature_collection (FeatureCollection):
             An indexed feature collection object for efficient querying of features
-        primitive (Type[PrimitiveBase])
+        primitive (PrimitiveBase)
 
     Returns:
         List[List[LiteFeature]]
@@ -244,7 +246,9 @@ def features_from_primitive(
     )
     for feature_set in feature_sets:
         if output_logical_type is None:
-            # TODO: big hack here to get a firm return type. I'm not sure if this works
+            # TODO(dreed): big hack here to get a firm return type. I'm not sure if this works
+            # logical type is not required, this doesn't work for DivideNumeric useed with Integer
+            # maybe call feature_set base_features
             logical_type = feature_set[0].logical_type
         else:
             logical_type = type(output_logical_type)
@@ -403,9 +407,6 @@ def generate_features_from_primitives(
 
     feature_collection = FeatureCollection(features=features)
     feature_collection.reindex()
-
-    # # Group Columns by LogicalType, Tag, and combination
-    # feature_groups = group_features(features=features)
 
     for primitive in primitives:
         features_ = features_from_primitive(

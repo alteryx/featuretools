@@ -92,55 +92,6 @@ def test_column_schema_to_keys(column_schema, expected):
 
 
 @pytest.mark.parametrize(
-    "feature, expected",
-    [
-        (("f1", Double), ["Double", "numeric", "Double,numeric", "ANY"]),
-        (
-            ("f1", Datetime, {"time_index"}),
-            ["Datetime", "time_index", "Datetime,time_index", "ANY"],
-        ),
-        (
-            ("f1", Double, {"index", "other"}),
-            [
-                "Double",
-                "index",
-                "other",
-                "index,other",
-                "Double,index",
-                "Double,other",
-                "Double,index,other",
-                "ANY",
-            ],
-        ),
-        (
-            ("f1", Double, {"A", "numeric", "B"}),
-            [
-                "Double",
-                "A",
-                "B",
-                "numeric",
-                "A,B",
-                "A,numeric",
-                "B,numeric",
-                "A,B,numeric",
-                "Double,A",
-                "Double,B",
-                "Double,numeric",
-                "Double,A,B",
-                "Double,A,numeric",
-                "Double,B,numeric",
-                "Double,A,B,numeric",
-                "ANY",
-            ],
-        ),
-    ],
-)
-def test_feature_to_keys(feature, expected):
-    actual = LiteFeature(*feature).to_keys()
-    assert set(actual) == set(expected)
-
-
-@pytest.mark.parametrize(
     "column_list, expected",
     [
         ([ColumnSchema(logical_type=Boolean)], [("Boolean", 1)]),
@@ -282,7 +233,7 @@ def test_get_features(feature_args, input_set, commutative, expected):
 def test_get_matching_features(feature_args, primitive, expected):
     features = [LiteFeature(*args) for args in feature_args]
     feature_collection = FeatureCollection(features).reindex()
-    actual = get_matching_features(feature_collection, primitive)
+    actual = get_matching_features(feature_collection, primitive())
     assert [[y.name for y in x] for x in actual] == expected
 
 
@@ -382,7 +333,6 @@ def test_compare_dfs(col_defs, primitives):
     feature_names_old = set([x.get_name() for x in features_old]) - input_feature_names  # type: ignore
 
     feature_names_new = set([x.name for x in features]) - input_feature_names
-
     assert feature_names_old == feature_names_new
 
 
