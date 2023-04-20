@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add premium primitives install command (:pr:`2545`)
     * Fixes
         Fix Description of `DaysInMonth` (:pr:`2547`)
     * Changes
