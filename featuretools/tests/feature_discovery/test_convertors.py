@@ -99,7 +99,7 @@ def test_origin_feature_to_featurebase():
     assert isinstance(fb, IdentityFeature)
     assert fb.get_name() == "f_1"
 
-    f_1.rename("new name")
+    f_1.name = "new name"
     df.ww.rename({"f_1": "new name"}, inplace=True)
     fb = convert_feature_to_featurebase(f_1, df, {})
 
@@ -127,7 +127,7 @@ def test_stacked_feature_to_featurebase():
     assert len(fb.base_features) == 1
     assert fb.base_features[0].get_name() == "f_1"
 
-    f_2.rename("f_2")
+    f_2.name = "f_2"
     fb = convert_feature_to_featurebase(f_2, df, {})
 
     assert isinstance(fb, TransformFeature)
@@ -171,8 +171,8 @@ def test_multi_output_to_featurebase():
     )
     assert fb_list[0].base_features[0].get_name() == "f_1"
 
-    lsa_features[0].rename("f_2")
-    lsa_features[1].rename("f_3")
+    lsa_features[0].name = "f_2"
+    lsa_features[1].name = "f_3"
 
     fb = convert_feature_to_featurebase(lsa_features[0], df, {})
     assert isinstance(fb, TransformFeature)
@@ -226,8 +226,8 @@ def test_stacking_on_multioutput_to_featurebase():
         ],
     )
 
-    lsa_features[0].rename("f_2")
-    lsa_features[1].rename("f_3")
+    lsa_features[0].name = "f_2"
+    lsa_features[1].name = "f_3"
     features = generate_features_from_primitives(
         lsa_features + [time_index_feature],
         [Lag(periods=2)],

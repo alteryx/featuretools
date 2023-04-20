@@ -273,7 +273,6 @@ def features_from_primitive(
         else:
             features.append(
                 LiteFeature(
-                    name=primitive.generate_name([x.get_name() for x in feature_set]),
                     logical_type=logical_type,
                     tags=output_tags,
                     primitive=primitive,

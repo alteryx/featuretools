@@ -52,7 +52,7 @@ def convert_featurebase_list_to_feature_list(
             assert isinstance(primitive, PrimitiveBase)
 
         if fb.number_output_features > 1:
-            features = []
+            features: List[LiteFeature] = []
 
             for idx, name in enumerate(fb.get_feature_names()):
                 f = LiteFeature(
@@ -114,16 +114,16 @@ def _feature_to_transform_feature(
     ), "Only Transform Primitives"
 
     fb = TransformFeature(base_features, feature.primitive)
-    if len(feature.related_features) > 0:
+    if feature.is_multioutput():
         sorted_features = sorted(
             [f for f in feature.related_features] + [feature],
         )
-        names = [x.get_name() for x in sorted_features]
+        names = [x.name for x in sorted_features]
 
-        fb = fb.rename(feature._gen_name)
+        fb = fb.rename(feature.non_indexed_name)
         fb.set_feature_names(names)
     else:
-        fb = fb.rename(feature.get_name())
+        fb = fb.rename(feature.name)
 
     return fb
 

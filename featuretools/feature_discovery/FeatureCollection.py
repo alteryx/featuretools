@@ -83,7 +83,7 @@ class FeatureCollection:
             if feature.depth == 0:
                 self.by_origin_feature.setdefault(feature, set()).add(feature)
 
-            feature_name = feature.get_name()
+            feature_name = feature.name
             assert feature_name is not None
             assert feature_name not in self.by_name
 
@@ -215,7 +215,6 @@ class FeatureCollection:
 
             feature_dict = all_features[feature_id]
             base_features = [hydrate_feature(x) for x in feature_dict["base_features"]]
-            #
 
             logical_type = (
                 logical_types_map[feature_dict["logical_type"]]

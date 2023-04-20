@@ -117,30 +117,40 @@ def test_feature_to_dict():
 
 
 def test_feature_hash():
-    bf = LiteFeature("bf", Double)
+    bf1 = LiteFeature("bf", Double)
+    bf2 = LiteFeature("bf", Double, df_id="df")
 
     p1 = Lag(periods=1)
     p2 = Lag(periods=2)
     f1 = LiteFeature(
         primitive=p1,
         logical_type=Double,
-        base_features=[bf],
+        base_features=[bf1],
     )
 
     f2 = LiteFeature(
         primitive=p2,
         logical_type=Double,
-        base_features=[bf],
+        base_features=[bf1],
     )
 
     f3 = LiteFeature(
         primitive=p2,
         logical_type=Double,
-        base_features=[bf],
+        base_features=[bf1],
     )
+
+    f4 = LiteFeature(
+        primitive=p1,
+        logical_type=Double,
+        base_features=[bf2],
+    )
+
+    # TODO(dreed): ensure ID is parquet and arrow acceptable, length and starting character might be problematic
 
     assert f1 != f2
     assert f2 == f3
+    assert f1 != f4
 
 
 def test_feature_forced_name():
@@ -288,6 +298,7 @@ def test_feature_collection_from_dict():
     assert actual == expected
 
 
+@patch.object(LiteFeature, "__lt__", lambda x, y: x.name < y.name)
 def test_feature_collection_serialization_roundtrip():
     col_defs = [
         ("idx", "Integer", {"index"}),
@@ -311,7 +322,7 @@ def test_feature_collection_serialization_roundtrip():
 
     features = generate_features_from_primitives(features, [Lag])
 
-    assert set([x.get_name() for x in features]) == set(
+    assert set([x.name for x in features]) == set(
         [
             "idx",
             "t_idx",

@@ -14,20 +14,21 @@ from featuretools.primitives.base.primitive_base import PrimitiveBase
 
 @total_ordering
 class LiteFeature:
-    name: Optional[str] = None
-    logical_type: Optional[Type[LogicalType]] = None
-    tags: Set[str] = field(default_factory=set)
-    primitive: Optional[PrimitiveBase] = None
-    base_features: List[LiteFeature] = field(default_factory=list)
-    df_id: Optional[str] = None
+    _name: Optional[str] = None
+    _alias: Optional[str] = None
 
-    id: str
-    _gen_name: str
-    n_output_features: int = 1
+    _logical_type: Optional[Type[LogicalType]] = None
+    _tags: Set[str] = field(default_factory=set)
+    _primitive: Optional[PrimitiveBase] = None
+    _base_features: List[LiteFeature] = field(default_factory=list)
+    _df_id: Optional[str] = None
 
-    depth = 0
-    related_features: Set[LiteFeature]
-    idx: int = 0
+    _id: str
+    _n_output_features: int = 1
+
+    _depth = 0
+    _related_features: Set[LiteFeature]
+    _idx: int = 0
 
     def __init__(
         self,
@@ -40,37 +41,134 @@ class LiteFeature:
         related_features: Optional[Set[LiteFeature]] = None,
         idx: Optional[int] = None,
     ):
-        self.name = name
-        self.logical_type = logical_type
-        self.tags = tags if tags else set()
-        self.primitive = primitive
-        self.base_features = base_features if base_features else []
-        self.df_id = df_id
-        self.idx = idx if idx is not None else 0
-        self.related_features = related_features if related_features else set()
+        self._name = name
+        self._logical_type = logical_type
+        self._tags = tags if tags else set()
+        self._primitive = primitive
+        self._base_features = base_features if base_features else []
+        self._df_id = df_id
+        self._idx = idx if idx is not None else 0
+        self._related_features = related_features if related_features else set()
 
-        if self.primitive:
-            assert isinstance(self.primitive, PrimitiveBase)
+        if self._primitive:
+            assert isinstance(self._primitive, PrimitiveBase)
             assert (
                 len(self.base_features) > 0
             ), "there must be base features if given a primitive"
-            self.n_output_features = self.primitive.number_output_features
-            self.depth = max([x.depth for x in self.base_features]) + 1
-            self._gen_name = self.primitive.generate_name(
-                [x.get_name() for x in self.base_features],
+            self._n_output_features = self._primitive.number_output_features
+            self._depth = max([x.depth for x in self.base_features]) + 1
+            self._alias = self._name
+            self._name = self._primitive.generate_name(
+                [x.name for x in self.base_features],
             )
 
-        elif self.name is None:
+        elif self._name is None:
             raise TypeError("Name must be given if origin feature")
-        elif self.logical_type is None:
+        elif self._logical_type is None:
             raise TypeError("Logical Type must be given if origin feature")
-        else:
-            self._gen_name = self.name
 
-        if self.logical_type is not None and "index" not in self.tags:
-            self.tags = self.tags | self.logical_type.standard_tags
+        if self._logical_type is not None and "index" not in self._tags:
+            self._tags = self._tags | self._logical_type.standard_tags
 
-        self.id = self._generate_hash()
+        self._id = self._generate_hash()
+
+    @property
+    def name(self):
+        if self._alias:
+            return self._alias
+        elif self.is_multioutput():
+            return f"{self._name}[{self.idx}]"
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        self._alias = value
+
+    @property
+    def non_indexed_name(self):
+        if not self.is_multioutput():
+            raise ValueError("only used on multioutput features")
+        return self._name
+
+    @property
+    def logical_type(self):
+        return self._logical_type
+
+    @logical_type.setter
+    def logical_type(self, _):
+        raise AttributeError("logical_type is immutable")
+
+    @property
+    def tags(self):
+        return self._tags
+
+    @tags.setter
+    def tags(self, _):
+        raise AttributeError("tags is immutable")
+
+    @property
+    def primitive(self):
+        return self._primitive
+
+    @primitive.setter
+    def primitive(self, _):
+        raise AttributeError("primitive is immutable")
+
+    @property
+    def base_features(self):
+        return self._base_features
+
+    @base_features.setter
+    def base_features(self, _):
+        raise AttributeError("primitive is immutable")
+
+    @property
+    def df_id(self):
+        return self._df_id
+
+    @df_id.setter
+    def df_id(self, _):
+        raise AttributeError("df_id is immutable")
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, _):
+        raise AttributeError("id is immutable")
+
+    @property
+    def n_output_features(self):
+        return self._n_output_features
+
+    @n_output_features.setter
+    def n_output_features(self, _):
+        raise AttributeError("n_output_features is immutable")
+
+    @property
+    def depth(self):
+        return self._depth
+
+    @depth.setter
+    def depth(self, _):
+        raise AttributeError("depth is immutable")
+
+    @property
+    def related_features(self):
+        return self._related_features
+
+    @related_features.setter
+    def related_features(self, value: Set[LiteFeature]):
+        self._related_features = value
+
+    @property
+    def idx(self):
+        return self._idx
+
+    @idx.setter
+    def idx(self, _):
+        raise AttributeError("idx is immutable")
 
     @staticmethod
     def hash(
@@ -81,9 +179,6 @@ class LiteFeature:
         idx: int = 0,
     ):
         hash_msg = hashlib.sha256()
-
-        if df_id:
-            hash_msg.update(df_id.encode("utf-8"))
 
         if primitive:
             # TODO: hashing should be on primitive
@@ -102,38 +197,40 @@ class LiteFeature:
         else:
             assert name
             hash_msg.update(name.encode("utf-8"))
+            if df_id:
+                hash_msg.update(df_id.encode("utf-8"))
 
         hash_msg.update(str(idx).encode("utf-8"))
 
         return hash_msg.hexdigest()
 
     def __eq__(self, other: LiteFeature):
-        return self.id == other.id
+        return self._id == other._id
 
     def __lt__(self, other: LiteFeature):
-        return self.id < other.id
+        return self._id < other._id
 
     def __ne__(self, other):
-        return self.id != other.id
+        return self._id != other._id
 
     def __hash__(self):
-        return hash(self.id)
+        return hash(self._id)
 
     def _generate_hash(self) -> str:
         return self.hash(
-            name=self.name,
-            primitive=self.primitive,
-            base_features=self.base_features,
-            df_id=self.df_id,
-            idx=self.idx,
+            name=self._name,
+            primitive=self._primitive,
+            base_features=self._base_features,
+            df_id=self._df_id,
+            idx=self._idx,
         )
 
     def get_primitive_name(self) -> Union[str, None]:
-        return self.primitive.name if self.primitive else None
+        return self._primitive.name if self._primitive else None
 
     def get_dependencies(self, deep=False) -> List[LiteFeature]:
         flattened_dependencies = []
-        for f in self.base_features:
+        for f in self._base_features:
             flattened_dependencies.append(f)
 
             if deep:
@@ -146,36 +243,19 @@ class LiteFeature:
 
     def get_origin_features(self) -> List[LiteFeature]:
         all_dependencies = self.get_dependencies(deep=True)
-        return [f for f in all_dependencies if f.depth == 0]
-
-    def __repr__(self) -> str:
-        base_features = ", ".join([f"{x.id[:5]}..." for x in self.base_features])
-        return f"LiteFeature(name='{self.get_name()}', logical_type={self.logical_type}, tags={self.tags}, primitive={self.get_primitive_name()}, base_features=[{base_features}], df_id=None, id='{self.id[:5]}...' n_output_features={self.n_output_features} idx={self.idx})"
+        return [f for f in all_dependencies if f._depth == 0]
 
     @property
     def column_schema(self) -> ColumnSchema:
         return ColumnSchema(logical_type=self.logical_type, semantic_tags=self.tags)
 
-    def rename(self, name: str):
-        self.name = name
-
-    def get_name(self) -> str:
-        if self.name:
-            return self.name
-        elif len(self.related_features) > 0:
-            return f"{self._gen_name}[{self.idx}]"
-        return self._gen_name
-
-    def get_depth(self) -> int:
-        return self.depth
-
     def dependent_primitives(self) -> Set[Type[PrimitiveBase]]:
         dependent_features = self.get_dependencies(deep=True)
         dependent_primitives = {
-            type(f.primitive) for f in dependent_features if f.primitive
+            type(f._primitive) for f in dependent_features if f._primitive
         }
-        if self.primitive:
-            dependent_primitives.add(type(self.primitive))
+        if self._primitive:
+            dependent_primitives.add(type(self._primitive))
         return dependent_primitives
 
     def to_dict(self) -> Dict[str, Any]:
@@ -192,18 +272,24 @@ class LiteFeature:
         }
 
     def is_multioutput(self) -> bool:
-        return len(self.related_features) > 0
+        return len(self._related_features) > 0
 
     def copy(self) -> LiteFeature:
         copied_feature = LiteFeature(
-            name=self.name,
-            logical_type=self.logical_type,
-            tags=self.tags,
-            primitive=self.primitive,
-            base_features=[x.copy() for x in self.base_features],
-            df_id=self.df_id,
-            idx=self.idx,
-            related_features=self.related_features,
+            name=self._name,
+            logical_type=self._logical_type,
+            tags=self._tags,
+            primitive=self._primitive,
+            base_features=[x.copy() for x in self._base_features],
+            df_id=self._df_id,
+            idx=self._idx,
+            related_features=self._related_features,
         )
 
+        copied_feature.name = self._alias
+
         return copied_feature
+
+    def __repr__(self) -> str:
+        base_features = ", ".join([f"{x.id[:5]}..." for x in self._base_features])
+        return f"LiteFeature(name='{self.name}', logical_type={self.logical_type}, tags={self.tags}, primitive={self.get_primitive_name()}, base_features=[{base_features}], df_id=None, id='{self.id[:5]}...' n_output_features={self.n_output_features} idx={self.idx})"
