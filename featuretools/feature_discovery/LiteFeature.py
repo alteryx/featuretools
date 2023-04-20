@@ -61,7 +61,9 @@ class LiteFeature:
             )
 
         elif self.name is None:
-            raise Exception("Name must be given if origin feature")
+            raise TypeError("Name must be given if origin feature")
+        elif self.logical_type is None:
+            raise TypeError("Logical Type must be given if origin feature")
         else:
             self._gen_name = self.name
 

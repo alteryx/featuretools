@@ -158,8 +158,8 @@ class FeatureCollection:
         - LiteFeature("f1", Double, {"numeric"}) -> ['Double', 'numeric', 'Double,numeric', 'ANY']
         - LiteFeature("f1", Datetime, {"time_index"}) -> ['Datetime', 'time_index', 'Datetime,time_index', 'ANY']
         - LiteFeature("f1", Double, {"index", "other"}) -> ['Double', 'index', 'other', 'Double,index', 'Double,other', 'ANY']
-        TODO(dreed): make sure this is well tested.
-        Args:
+
+                Args:
             feature (LiteFeature):
 
         Returns:

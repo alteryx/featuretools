@@ -348,3 +348,46 @@ def test_feature_collection_serialization_roundtrip():
     assert fc == fc2
     lsa_features = [x for x in fc2.all_features if x.get_primitive_name() == "test_mo"]
     assert len(lsa_features[0].related_features) == 1
+
+
+def test_lite_feature_assertions():
+    f1 = LiteFeature(name="f1", logical_type=Double)
+    f2 = LiteFeature(name="f1", logical_type=Double, df_id="df1")
+
+    assert f1 != f2
+
+    with pytest.raises(
+        TypeError,
+        match="Name must be given if origin feature",
+    ):
+        LiteFeature(logical_type=Double)
+
+    with pytest.raises(
+        TypeError,
+        match="Logical Type must be given if origin feature",
+    ):
+        LiteFeature(name="f1")
+
+
+def test_lite_feature_to_column_schema():
+    f1 = LiteFeature(name="f1", logical_type=Double, tags={"index", "numeric"})
+
+    column_schema = f1.column_schema
+
+    assert column_schema.is_numeric
+    assert isinstance(column_schema.logical_type, Double)
+    assert column_schema.semantic_tags == {"index", "numeric"}
+
+
+def test_lite_feature_to_dependent_primitives():
+    f1 = LiteFeature(name="f1", logical_type=Double)
+
+    f2 = LiteFeature(name="f2", primitive=Absolute(), base_features=[f1])
+
+    f3 = LiteFeature(name="f3", primitive=AddNumeric(), base_features=[f1, f2])
+
+    f4 = LiteFeature(name="f4", primitive=MultiplyNumeric(), base_features=[f1, f3])
+
+    assert set([x.name for x in f4.dependent_primitives()]) == set(
+        ["multiply_numeric", "absolute", "add_numeric"],
+    )

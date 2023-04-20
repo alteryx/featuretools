@@ -1,7 +1,7 @@
 import inspect
 from collections import defaultdict
 from itertools import combinations, permutations, product
-from typing import Callable, Iterable, List, Set, Tuple, Type, Union, cast
+from typing import Iterable, List, Set, Tuple, Type, Union, cast
 
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import LogicalType
@@ -88,7 +88,6 @@ def get_features(
         else:
             prod_iter.append(permutations(relevant_features, count))
 
-    # TODO(dreed): add a better test that shows off what the product is doing here.
     feature_combinations = product(*prod_iter)
 
     return [flatten_list(x) for x in feature_combinations]
@@ -416,41 +415,3 @@ def generate_features_from_primitives(
         features.extend(features_)
 
     return features
-
-
-PredicateFuncType = Callable[[LiteFeature], bool]
-
-
-def has_tag_predicate(tag: str) -> PredicateFuncType:
-    return lambda feature: tag in feature.tags
-
-
-def is_logical_type(logical_type: Type[LogicalType]) -> PredicateFuncType:
-    return lambda feature: feature.logical_type == logical_type
-
-
-def any_predicate_func(predicate_funcs: List[PredicateFuncType]) -> PredicateFuncType:
-    return lambda feature: any([f(feature) for f in predicate_funcs])
-
-
-def has_dependency(dependent_feature: LiteFeature) -> PredicateFuncType:
-    return lambda feature: dependent_feature in feature.get_dependencies(deep=True)
-
-
-def is_feature(other_feature: LiteFeature) -> PredicateFuncType:
-    return lambda feature: feature == other_feature
-
-
-def not_predicate(predicate_func: PredicateFuncType) -> PredicateFuncType:
-    return lambda feature: not predicate_func(feature)
-
-
-def filter_features(
-    features: List[LiteFeature],
-    predicate_funcs: List[PredicateFuncType],
-):
-    return [
-        feature
-        for feature in features
-        if all(func(feature) for func in predicate_funcs)
-    ]

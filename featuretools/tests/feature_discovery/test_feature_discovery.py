@@ -1,4 +1,3 @@
-from typing import Set
 from unittest.mock import patch
 
 import pytest
@@ -56,23 +55,11 @@ class TestMultiOutputPrimitive(TransformPrimitive):
     return_type = ColumnSchema(semantic_tags={"numeric"})
     number_output_features = 2
 
-    def get_function(self):
-        def func(x):
-            return 0, 1
-
-        return func
-
 
 class TestDoublePrimitive(TransformPrimitive):
     name = "test_double"
     input_types = [ColumnSchema(logical_type=Double)]
     return_type = ColumnSchema(logical_type=Double)
-
-    def get_function(self):
-        def func(x):
-            return x
-
-        return func
 
 
 @pytest.mark.parametrize(
@@ -297,14 +284,6 @@ def test_generate_features_from_primitives(col_defs, primitives, expected):
 
     new_feature_names = set([x.name for x in features]) - input_feature_names
     assert new_feature_names == expected
-
-
-def get_default_logical_type(tags: Set[str]):
-    for tag, lt in DEFAULT_LT_FOR_TAG.items():
-        if tag in tags:
-            return lt
-
-    raise Exception(f"NO DEFAULT LOGICAL TYPE FOR TAGS: {tags}")
 
 
 @pytest.mark.parametrize(
