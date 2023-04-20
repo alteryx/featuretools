@@ -97,7 +97,7 @@ docs = [
     "ipython == 8.4.0",
     "jupyter == 1.0.0",
     "jupyter-client >= 8.0.2",
-    "matplotlib == 3.5.2",
+    "matplotlib == 3.7.1",
     "Sphinx == 5.1.1",
     "nbsphinx == 0.8.9",
     "nbconvert == 6.5.0",

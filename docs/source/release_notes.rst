@@ -12,10 +12,10 @@ Future Release
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Add Python 3.11 markers, add 3.11 for unit tests & install test (:pr:`1678`)
+        * Add Python 3.11 markers, add 3.11 for unit tests & install test (:pr:`2552`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`gsheni`
+    :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`
 
 v1.25.0 Apr 13, 2023
 ====================
