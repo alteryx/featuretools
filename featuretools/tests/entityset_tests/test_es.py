@@ -2473,7 +2473,7 @@ def test_empty_es_pickling():
     assert es.__eq__(unpickled, deep=True)
 
 
-@patch("featuretools.EntitySet.add_dataframe")
+@patch("featuretools.entityset.entityset.EntitySet.add_dataframe")
 def test_setitem(add_dataframe):
     es = EntitySet()
     df = pd.DataFrame()
