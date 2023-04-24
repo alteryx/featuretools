@@ -31,6 +31,10 @@ class FeatureCollection:
         return f"<FeatureCollection ({self.hash_key[:5]}) n_features={len(self._all_features)} indexed={self.indexed}>"
 
     @property
+    def all_features(self):
+        return self._all_features.copy()
+
+    @property
     def hash_key(self) -> str:
         if self._hash_key is None:
             if not self.sorted:
