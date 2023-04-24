@@ -97,7 +97,7 @@ def _feature_to_transform_feature(
     base_features: List[FeatureBase],
 ) -> FeatureBase:
     """
-    Transform feature into FeatureBase object. Handles the Multi-output
+    Transform LiteFeature into FeatureBase object. Handles the Multi-output
     feature in correct way.
 
     Args:
@@ -135,7 +135,7 @@ def convert_feature_to_featurebase(
     cache: FeatureCache,
 ) -> FeatureBase:
     """
-    Recursively transforms a feature object into a Featurebase object
+    Recursively transforms a LiteFeature object into a Featurebase object
 
     Args:
         feature (LiteFeature)

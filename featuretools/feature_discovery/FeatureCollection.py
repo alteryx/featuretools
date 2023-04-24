@@ -17,18 +17,18 @@ from featuretools.primitives.utils import (
 
 class FeatureCollection:
     def __init__(self, features: List[LiteFeature]):
-        self.all_features: List[LiteFeature] = features
+        self._all_features: List[LiteFeature] = features
         self.indexed = False
         self.sorted = False
         self._hash_key: Optional[str] = None
 
     def sort_features(self):
         if not self.sorted:
-            self.all_features = sorted(self.all_features)
+            self._all_features = sorted(self._all_features)
             self.sorted = True
 
     def __repr__(self):
-        return f"<FeatureCollection ({self.hash_key[:5]}) n_features={len(self.all_features)} indexed={self.indexed}>"
+        return f"<FeatureCollection ({self.hash_key[:5]}) n_features={len(self._all_features)} indexed={self.indexed}>"
 
     @property
     def hash_key(self) -> str:
@@ -42,7 +42,7 @@ class FeatureCollection:
     def _set_hash(self):
         hash_msg = hashlib.sha256()
 
-        for feature in self.all_features:
+        for feature in self._all_features:
             hash_msg.update(feature.id.encode("utf-8"))
 
         self._hash_key = hash_msg.hexdigest()
@@ -65,7 +65,7 @@ class FeatureCollection:
         self.by_name: Dict[str, LiteFeature] = {}
         self.by_key: Dict[str, List[LiteFeature]] = {}
 
-        for feature in self.all_features:
+        for feature in self._all_features:
             for key in self.feature_to_keys(feature):
                 self.by_key.setdefault(key, []).append(feature)
 
@@ -102,20 +102,18 @@ class FeatureCollection:
     def get_by_origin_feature(self, origin_feature: LiteFeature) -> Set[LiteFeature]:
         return self.by_origin_feature.get(origin_feature, set())
 
-    def get_by_origin_feature_name(self, name: str) -> LiteFeature:
+    def get_by_origin_feature_name(self, name: str) -> Union[LiteFeature, None]:
         feature = self.by_name.get(name)
-        assert feature is not None
         return feature
 
     def get_dependencies_by_origin_name(self, name) -> Set[LiteFeature]:
-        origin_feature = self.by_name[name]
+        origin_feature = self.by_name.get(name)
+        if origin_feature:
+            return self.by_origin_feature[origin_feature]
+        return set()
 
-        assert origin_feature, "no origin feature with that name exists"
-
-        return self.by_origin_feature[origin_feature]
-
-    def get_by_key(self, key: str) -> Set[LiteFeature]:
-        return self.by_key.get(key, set())
+    def get_by_key(self, key: str) -> List[LiteFeature]:
+        return self.by_key.get(key, [])
 
     def flatten_features(self) -> Dict[str, LiteFeature]:
         all_features_dict: Dict[str, LiteFeature] = {}
@@ -125,7 +123,7 @@ class FeatureCollection:
                 all_features_dict.setdefault(feature.id, feature)
                 rfunc(feature.base_features)
 
-        rfunc(self.all_features)
+        rfunc(self._all_features)
         return all_features_dict
 
     def flatten_primitives(self) -> Dict[str, Dict[str, Any]]:
@@ -138,7 +136,7 @@ class FeatureCollection:
                     all_primitives_dict.setdefault(key, prim_dict)
                 rfunc(feature.base_features)
 
-        rfunc(self.all_features)
+        rfunc(self._all_features)
         return all_primitives_dict
 
     def to_dict(self):
@@ -147,7 +145,7 @@ class FeatureCollection:
 
         return {
             "primitives": all_primitives_dict,
-            "feature_ids": [f.id for f in self.all_features],
+            "feature_ids": [f.id for f in self._all_features],
             "all_features": {k: f.to_dict() for k, f in all_features_dict.items()},
         }
 
