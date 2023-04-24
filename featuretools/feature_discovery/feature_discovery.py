@@ -174,24 +174,6 @@ def get_matching_features(
     return feature_sets
 
 
-def get_primitive_return_type(primitive: PrimitiveBase) -> ColumnSchema:
-    """
-    Get Return type from a primitive
-
-    Args:
-        primitive (PrimitiveBase)
-
-    Returns:
-        ColumnSchema
-    """
-    if primitive.return_type:
-        return primitive.return_type
-    return_type = primitive.input_types[0]
-    if isinstance(return_type, list):
-        return_type = return_type[0]
-    return return_type
-
-
 def features_from_primitive(
     primitive: PrimitiveBase,
     feature_collection: FeatureCollection,
@@ -230,13 +212,6 @@ def features_from_primitive(
             ]
     """
     assert isinstance(primitive, PrimitiveBase)
-    return_schema = get_primitive_return_type(primitive=primitive)
-    assert isinstance(return_schema, ColumnSchema)
-
-    output_logical_type = return_schema.logical_type
-
-    output_tags = return_schema.semantic_tags
-    assert isinstance(output_tags, set)
 
     features: List[LiteFeature] = []
     feature_sets = get_matching_features(
@@ -244,22 +219,10 @@ def features_from_primitive(
         primitive=primitive,
     )
     for feature_set in feature_sets:
-        if output_logical_type is None:
-            # TODO(dreed): big hack here to get a firm return type. I'm not sure if this works
-            # logical type is not required, this doesn't work for DivideNumeric useed with Integer
-            # maybe call feature_set base_features
-            logical_type = feature_set[0].logical_type
-        else:
-            logical_type = type(output_logical_type)
-
-        assert issubclass(logical_type, LogicalType)
-
         if primitive.number_output_features > 1:
             related_features: Set[LiteFeature] = set()
             for n in range(primitive.number_output_features):
                 feature = LiteFeature(
-                    logical_type=logical_type,
-                    tags=output_tags,
                     primitive=primitive,
                     base_features=feature_set,
                     idx=n,
@@ -273,8 +236,6 @@ def features_from_primitive(
         else:
             features.append(
                 LiteFeature(
-                    logical_type=logical_type,
-                    tags=output_tags,
                     primitive=primitive,
                     base_features=feature_set,
                 ),

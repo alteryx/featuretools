@@ -94,13 +94,12 @@ def test_feature_to_dict():
     f = LiteFeature(
         name="Column 1",
         primitive=AddNumeric(),
-        logical_type=Double,
         base_features=[f1, f2],
     )
 
     expected = {
         "name": "Column 1",
-        "logical_type": "Double",
+        "logical_type": None,
         "tags": ["numeric"],
         "primitive": "add_numeric",
         "base_features": ["f1", "f2"],
@@ -181,7 +180,6 @@ def test_feature_collection_to_dict():
     f3 = LiteFeature(
         name="Column 1",
         primitive=AddNumeric(),
-        logical_type=Double,
         base_features=[f1, f2],
     )
 
@@ -195,7 +193,7 @@ def test_feature_collection_to_dict():
         "all_features": {
             "Column 1": {
                 "name": "Column 1",
-                "logical_type": "Double",
+                "logical_type": None,
                 "tags": ["numeric"],
                 "primitive": "add_numeric",
                 "base_features": ["f1", "f2"],
@@ -241,7 +239,6 @@ def test_feature_collection_from_dict():
     f3 = LiteFeature(
         name="Column 1",
         primitive=AddNumeric(),
-        logical_type=Double,
         base_features=[f1, f2],
     )
 
@@ -281,7 +278,7 @@ def test_feature_collection_from_dict():
             },
             "Column 1": {
                 "name": "Column 1",
-                "logical_type": "Double",
+                "logical_type": None,
                 "tags": ["numeric"],
                 "primitive": "009da67f0a1430630c4a419c84aac270ec62337ab20c080e4495272950fd03b3",
                 "base_features": ["f1", "f2"],
@@ -388,6 +385,11 @@ def test_lite_feature_to_column_schema():
     assert column_schema.is_numeric
     assert isinstance(column_schema.logical_type, Double)
     assert column_schema.semantic_tags == {"index", "numeric"}
+
+    f2 = LiteFeature(name="f2", primitive=Absolute(), base_features=[f1])
+
+    column_schema = f2.column_schema
+    assert column_schema.semantic_tags == {"numeric"}
 
 
 def test_lite_feature_to_dependent_primitives():

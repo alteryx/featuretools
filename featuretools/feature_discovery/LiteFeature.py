@@ -8,7 +8,10 @@ from typing import Any, Dict, List, Optional, Set, Type, Union
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import LogicalType
 
-from featuretools.feature_discovery.utils import hash_primitive
+from featuretools.feature_discovery.utils import (
+    get_primitive_return_type,
+    hash_primitive,
+)
 from featuretools.primitives.base.primitive_base import PrimitiveBase
 
 
@@ -62,6 +65,10 @@ class LiteFeature:
                 [x.name for x in self.base_features],
             )
 
+            return_column_schema = get_primitive_return_type(self._primitive)
+            self._logical_type = return_column_schema.logical_type
+            self._tags = return_column_schema.semantic_tags
+
         elif self._name is None:
             raise TypeError("Name must be given if origin feature")
         elif self._logical_type is None:
@@ -100,7 +107,7 @@ class LiteFeature:
 
     @property
     def tags(self):
-        return self._tags
+        return self._tags.copy()
 
     @tags.setter
     def tags(self, _):
@@ -278,12 +285,12 @@ class LiteFeature:
         copied_feature = LiteFeature(
             name=self._name,
             logical_type=self._logical_type,
-            tags=self._tags,
+            tags=self._tags.copy(),
             primitive=self._primitive,
-            base_features=[x.copy() for x in self._base_features],
+            base_features=[f.copy() for f in self._base_features],
             df_id=self._df_id,
             idx=self._idx,
-            related_features=self._related_features,
+            related_features=self._related_features.copy(),
         )
 
         copied_feature.name = self._alias

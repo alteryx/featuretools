@@ -57,3 +57,21 @@ def hash_primitive(primitive: PrimitiveBase) -> Tuple[str, Dict[str, Any]]:
     hash_msg.update(primitive_json)
     key = hash_msg.hexdigest()
     return (key, primitive_dict)
+
+
+def get_primitive_return_type(primitive: PrimitiveBase) -> ColumnSchema:
+    """
+    Get Return type from a primitive
+
+    Args:
+        primitive (PrimitiveBase)
+
+    Returns:
+        ColumnSchema
+    """
+    if primitive.return_type:
+        return primitive.return_type
+    return_type = primitive.input_types[0]
+    if isinstance(return_type, list):
+        return_type = return_type[0]
+    return return_type
