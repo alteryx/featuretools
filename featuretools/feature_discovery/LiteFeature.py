@@ -59,6 +59,9 @@ class LiteFeature:
             if len(self.base_features) == 0:
                 raise ValueError("there must be base features if given a primitive")
 
+            if self._primitive.commutative:
+                self._base_features = sorted(self._base_features)
+
             self._n_output_features = self._primitive.number_output_features
             self._depth = max([x.depth for x in self.base_features]) + 1
 
@@ -77,6 +80,7 @@ class LiteFeature:
             )
 
             self._tags = return_column_schema.semantic_tags
+
         else:
             if name is None:
                 raise TypeError("Name must be given if origin feature")

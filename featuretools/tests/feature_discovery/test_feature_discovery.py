@@ -29,14 +29,13 @@ from featuretools.primitives import (
     AddNumeric,
     Count,
     DateFirstEvent,
-    Day,
     Equal,
     Lag,
     MultiplyNumericBoolean,
     NumUnique,
-    SubtractNumeric,
     TransformPrimitive,
 )
+from featuretools.primitives.utils import get_transform_primitives
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils.generate_fake_dataframe import (
     generate_fake_dataframe,
@@ -286,30 +285,44 @@ def test_generate_features_from_primitives(col_defs, primitives, expected):
     assert new_feature_names == expected
 
 
+ALL_TRANSFORM_PRIMITIVES = list(get_transform_primitives().values())
+
+
 @pytest.mark.parametrize(
     "col_defs, primitives",
     [
         (
             [
                 ("idx", "Double", {"index"}),
-                ("f_1", "Double"),
-                ("f_2", "Double"),
-                ("f_3", "Boolean"),
-                ("f_4", "Boolean"),
-                ("f_5", "Double"),
-            ],
-            [AddNumeric, Absolute, SubtractNumeric, TestDoublePrimitive],
-        ),
-        (
-            [
-                ("idx", "Double", {"index"}),
                 ("t_idx", "Datetime", {"time_index"}),
-                ("f_2", "Double"),
                 ("f_3", "Boolean"),
                 ("f_4", "Boolean"),
-                ("f_5", "Double"),
+                ("f_5", "BooleanNullable"),
+                ("f_6", "BooleanNullable"),
+                ("f_7", "Categorical"),
+                ("f_8", "Categorical"),
+                ("f_9", "Datetime"),
+                ("f_10", "Datetime"),
+                ("f_11", "Double"),
+                ("f_12", "Double"),
+                ("f_13", "Integer"),
+                ("f_14", "Integer"),
+                ("f_15", "IntegerNullable"),
+                ("f_16", "IntegerNullable"),
+                ("f_17", "EmailAddress"),
+                ("f_18", "EmailAddress"),
+                ("f_19", "LatLong"),
+                ("f_20", "LatLong"),
+                ("f_21", "NaturalLanguage"),
+                ("f_22", "NaturalLanguage"),
+                ("f_23", "Ordinal"),
+                ("f_24", "Ordinal"),
+                ("f_25", "URL"),
+                ("f_26", "URL"),
+                ("f_27", "PostalCode"),
+                ("f_28", "PostalCode"),
             ],
-            [Lag, Day, Absolute, AddNumeric],
+            ALL_TRANSFORM_PRIMITIVES,
         ),
     ],
 )

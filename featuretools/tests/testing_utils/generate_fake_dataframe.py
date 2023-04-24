@@ -63,14 +63,16 @@ def generate_fake_dataframe(
     df = pd.DataFrame()
     lt_dict = {}
     tags_dict = {}
-    for name, lt, *rest in col_defs:
-        if lt in logical_type_mapping:
-            values = logical_type_mapping[lt]
-            if lt == logical_types.Ordinal.__name__:
+    for name, lt_name, *rest in col_defs:
+        if lt_name in logical_type_mapping:
+            values = logical_type_mapping[lt_name]
+            if lt_name == logical_types.Ordinal.__name__:
                 lt = logical_types.Ordinal(order=values)
+            else:
+                lt = lt_name
             values = gen_series(values)
         else:
-            raise Exception(f"Unknown logical type {lt}")
+            raise Exception(f"Unknown logical type {lt_name}")
 
         lt_dict[name] = lt
 
@@ -82,9 +84,9 @@ def generate_fake_dataframe(
             if "time_index" in tags:
                 other_kwargs["time_index"] = name
                 values = pd.date_range("2000-01-01", periods=n_rows)
-            tags_dict[name] = get_tags(lt, tags)
+            tags_dict[name] = get_tags(lt_name, tags)
         else:
-            tags_dict[name] = get_tags(lt)
+            tags_dict[name] = get_tags(lt_name)
 
         s = pd.Series(values, name=name)
         df = pd.concat([df, s], axis=1)
