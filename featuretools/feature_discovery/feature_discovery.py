@@ -308,7 +308,10 @@ def _check_inputs(
                 "input_features must be an iterable of LiteFeature objects",
             )
 
-    assert isinstance(primitives, List)
+    if not isinstance(primitives, List):
+        raise ValueError(
+            "primitives must be a list of Primitive classes or Primitive instances",
+        )
 
     primitive_instances: List[PrimitiveBase] = []
     for primitive in primitives:

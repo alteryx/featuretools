@@ -44,7 +44,6 @@ class LiteFeature:
         related_features: Optional[Set[LiteFeature]] = None,
         idx: Optional[int] = None,
     ):
-        self._name = name
         self._logical_type = logical_type
         self._tags = tags if tags else set()
         self._primitive = primitive
@@ -54,25 +53,38 @@ class LiteFeature:
         self._related_features = related_features if related_features else set()
 
         if self._primitive:
-            assert isinstance(self._primitive, PrimitiveBase)
-            assert (
-                len(self.base_features) > 0
-            ), "there must be base features if given a primitive"
+            if not isinstance(self._primitive, PrimitiveBase):
+                raise ValueError("primitive input must be of type PrimitiveBase")
+
+            if len(self.base_features) == 0:
+                raise ValueError("there must be base features if given a primitive")
+
             self._n_output_features = self._primitive.number_output_features
             self._depth = max([x.depth for x in self.base_features]) + 1
-            self._alias = self._name
+
+            if name:
+                self._alias = name
+
             self._name = self._primitive.generate_name(
                 [x.name for x in self.base_features],
             )
 
             return_column_schema = get_primitive_return_type(self._primitive)
-            self._logical_type = return_column_schema.logical_type
-            self._tags = return_column_schema.semantic_tags
+            self._logical_type = (
+                type(return_column_schema.logical_type)
+                if return_column_schema.logical_type
+                else None
+            )
 
-        elif self._name is None:
-            raise TypeError("Name must be given if origin feature")
-        elif self._logical_type is None:
-            raise TypeError("Logical Type must be given if origin feature")
+            self._tags = return_column_schema.semantic_tags
+        else:
+            if name is None:
+                raise TypeError("Name must be given if origin feature")
+
+            if self._logical_type is None:
+                raise TypeError("Logical Type must be given if origin feature")
+
+            self._name = name
 
         if self._logical_type is not None and "index" not in self._tags:
             self._tags = self._tags | self._logical_type.standard_tags
@@ -88,7 +100,10 @@ class LiteFeature:
         return self._name
 
     @name.setter
-    def name(self, value):
+    def name(self, _):
+        raise AttributeError("name is immutable")
+
+    def set_alias(self, value: Union[str, None]):
         self._alias = value
 
     @property
@@ -127,7 +142,7 @@ class LiteFeature:
 
     @base_features.setter
     def base_features(self, _):
-        raise AttributeError("primitive is immutable")
+        raise AttributeError("base_features are immutable")
 
     @property
     def df_id(self):
@@ -163,7 +178,7 @@ class LiteFeature:
 
     @property
     def related_features(self):
-        return self._related_features
+        return self._related_features.copy()
 
     @related_features.setter
     def related_features(self, value: Set[LiteFeature]):
@@ -293,10 +308,13 @@ class LiteFeature:
             related_features=self._related_features.copy(),
         )
 
-        copied_feature.name = self._alias
+        copied_feature.set_alias(self._alias)
 
         return copied_feature
 
     def __repr__(self) -> str:
-        base_features = ", ".join([f"{x.id[:5]}..." for x in self._base_features])
-        return f"LiteFeature(name='{self.name}', logical_type={self.logical_type}, tags={self.tags}, primitive={self.get_primitive_name()}, base_features=[{base_features}], df_id=None, id='{self.id[:5]}...' n_output_features={self.n_output_features} idx={self.idx})"
+        name = f"name='{self.name}'"
+        logical_type = f"logical_type={self.logical_type}"
+        tags = f"tags={self.tags}"
+        primitive = f"primitive={self.get_primitive_name()}"
+        return f"LiteFeature({name}, {logical_type}, {tags}, {primitive})"

@@ -21,13 +21,13 @@ def convert_featurebase_list_to_feature_list(
     featurebase_list: List[FeatureBase],
 ) -> List[LiteFeature]:
     """
-    Convert a FeatureBase object to a LiteFeature object
+    Convert a List of FeatureBase objects to a list LiteFeature objects
 
     Args:
-        feature (FeatureBase):
+        featurebase_list (List[FeatureBase]):
 
     Returns:
-       LiteFeature - converted LiteFeature object
+       LiteFeatures (List[LiteFeature]) - converted LiteFeature objects
     """
 
     def rfunc(fb: FeatureBase) -> List[LiteFeature]:
@@ -108,6 +108,7 @@ def _feature_to_transform_feature(
        FeatureBase
     """
     assert feature.primitive
+
     assert isinstance(
         feature.primitive,
         TransformPrimitive,
