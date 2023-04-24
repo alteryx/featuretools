@@ -1,4 +1,3 @@
-import dask.dataframe as dd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
 
@@ -14,6 +13,7 @@ from featuretools.primitives.base import (
 from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.utils.wrangle import _check_time_against_column, _check_timedelta
 
+dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
 
 _ES_REF = {}
@@ -53,7 +53,7 @@ class FeatureBase(object):
             primitive = primitive()
 
         # default library is PANDAS
-        if isinstance(dataframe, dd.DataFrame):
+        if is_instance(dataframe, dd, "DataFrame"):
             primitive.series_library = Library.DASK
         elif is_instance(dataframe, ps, "DataFrame"):
             primitive.series_library = Library.SPARK

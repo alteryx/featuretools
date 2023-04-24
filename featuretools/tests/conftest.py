@@ -3,11 +3,9 @@ import copy
 import os
 
 import composeml as cp
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
-from distributed import LocalCluster
 from packaging.version import parse
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, Integer
@@ -21,14 +19,24 @@ from featuretools.utils.spark_utils import pd_to_spark_clean
 
 @pytest.fixture()
 def dask_cluster():
-    with LocalCluster() as cluster:
-        yield cluster
+    LocalCluster = pytest.importorskip(
+        "distributed.LocalCluster",
+        reason="Dask not installed, skipping",
+    )
+    if LocalCluster:
+        with LocalCluster() as cluster:
+            yield cluster
 
 
 @pytest.fixture()
 def three_worker_dask_cluster():
-    with LocalCluster(n_workers=3) as cluster:
-        yield cluster
+    LocalCluster = pytest.importorskip(
+        "distributed.LocalCluster",
+        reason="Dask not installed, skipping",
+    )
+    if LocalCluster:
+        with LocalCluster(n_workers=3) as cluster:
+            yield cluster
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -71,6 +79,7 @@ def pd_int_es(make_int_es):
 
 @pytest.fixture
 def dask_int_es(pd_int_es):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     es = EntitySet(id=pd_int_es.id)
     for df in pd_int_es.dataframes:
         dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
@@ -114,6 +123,7 @@ def int_es(request):
 
 @pytest.fixture
 def dask_es(pd_es):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     es = EntitySet(id=pd_es.id)
     for df in pd_es.dataframes:
         dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
@@ -158,12 +168,12 @@ def es(request):
 @pytest.fixture
 def pd_latlong_df():
     df = pd.DataFrame({"idx": [0, 1, 2], "latLong": [pd.NA, (1, 2), (pd.NA, pd.NA)]})
-
     return df
 
 
 @pytest.fixture
 def dask_latlong_df(pd_latlong_df):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     return dd.from_pandas(pd_latlong_df.reset_index(drop=True), npartitions=4)
 
 
@@ -243,6 +253,7 @@ def pd_diamond_es():
 
 @pytest.fixture
 def dask_diamond_es(pd_diamond_es):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     dataframes = {}
     for df in pd_diamond_es.dataframes:
         dd_df = dd.from_pandas(df, npartitions=2)
@@ -317,6 +328,7 @@ def pd_default_value_es():
 
 @pytest.fixture
 def dask_default_value_es(pd_default_value_es):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     dataframes = {}
     for df in pd_default_value_es.dataframes:
         dd_df = dd.from_pandas(df, npartitions=4)
@@ -392,6 +404,7 @@ def pd_home_games_es():
 
 @pytest.fixture
 def dask_home_games_es(pd_home_games_es):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     dataframes = {}
     for df in pd_home_games_es.dataframes:
         dd_df = dd.from_pandas(df, npartitions=2)
@@ -453,6 +466,7 @@ def pd_mock_customer():
 
 @pytest.fixture
 def dd_mock_customer(pd_mock_customer):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     dataframes = {}
     for df in pd_mock_customer.dataframes:
         dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
@@ -564,6 +578,7 @@ def pd_dataframes():
 
 @pytest.fixture
 def dask_dataframes():
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = pd.DataFrame(
         {
@@ -664,6 +679,7 @@ def pd_transform_es():
 
 @pytest.fixture
 def dask_transform_es(pd_transform_es):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     es = EntitySet(id=pd_transform_es.id)
     for df in pd_transform_es.dataframes:
         es.add_dataframe(
@@ -714,6 +730,7 @@ def divide_by_zero_es_pd():
 
 @pytest.fixture
 def divide_by_zero_es_dask(divide_by_zero_es_pd):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     es = EntitySet(id=divide_by_zero_es_pd.id)
     for df in divide_by_zero_es_pd.dataframes:
         es.add_dataframe(
@@ -781,6 +798,7 @@ def postal_code_dataframe_pyspark(postal_code_dataframe_pd):
 
 @pytest.fixture
 def postal_code_dataframe_dask(postal_code_dataframe_pd):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     df = dd.from_pandas(
         postal_code_dataframe_pd,
         npartitions=1,

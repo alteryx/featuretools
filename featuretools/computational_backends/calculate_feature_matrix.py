@@ -7,7 +7,6 @@ import warnings
 from datetime import datetime
 
 import cloudpickle
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 from woodwork.logical_types import (
@@ -39,10 +38,12 @@ from featuretools.utils import Trie
 from featuretools.utils.gen_utils import (
     Library,
     import_or_none,
+    import_or_raise,
     is_instance,
     make_tqdm_iterator,
 )
 
+dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
 
 logger = logging.getLogger("featuretools.computational_backend")
@@ -127,7 +128,7 @@ def calculate_feature_matrix(
             percentage of all rows. if None, and n_jobs > 1 it will be set to 1/n_jobs
 
         n_jobs (int, optional): number of parallel processes to use when
-            calculating feature matrix.
+            calculating feature matrix. Requires Dask.
 
         dask_kwargs (dict, optional): Dictionary of keyword arguments to be
             passed when creating the dask client and scheduler. Even if n_jobs
@@ -216,7 +217,7 @@ def calculate_feature_matrix(
             )
             instance_ids = df[index_col]
 
-        if isinstance(instance_ids, dd.Series):
+        if is_instance(instance_ids, dd, "Series"):
             instance_ids = instance_ids.compute()
         elif is_instance(instance_ids, ps, "Series"):
             instance_ids = instance_ids.to_pandas()
@@ -586,7 +587,7 @@ def calculate_chunk(
                             pass_through.set_index([id_name, "time"], inplace=True)
                             for col in pass_columns:
                                 _feature_matrix[col] = pass_through[col]
-                    elif isinstance(_feature_matrix, dd.DataFrame) and (
+                    elif is_instance(_feature_matrix, dd, "DataFrame") and (
                         len(pass_columns) > 0
                     ):
                         _feature_matrix["time"] = time_last
@@ -762,6 +763,10 @@ def parallel_calculate_chunks(
     progress_callback=None,
     include_cutoff_time=True,
 ):
+    import_or_raise(
+        "dask",
+        "Dask must be installed to calculate feature matrix in parallel.",
+    )
     from dask.base import tokenize
     from distributed import Future, as_completed
 
@@ -968,7 +973,7 @@ def init_ww_and_concat_fm(feature_matrix, ww_init_kwargs):
             is_pandas_df_with_null = (
                 isinstance(fm, pd.DataFrame) and fm[col].isnull().any()
             )
-            is_dask_df = isinstance(fm, dd.DataFrame)
+            is_dask_df = is_instance(fm, dd, "DataFrame")
             is_spark_df = is_instance(fm, ps, "DataFrame")
             if is_pandas_df_with_null or is_dask_df or is_spark_df:
                 current_type = ww_init_kwargs["logical_types"][col].type_string
@@ -977,7 +982,7 @@ def init_ww_and_concat_fm(feature_matrix, ww_init_kwargs):
         cols_to_check = cols_to_check - updated_cols
         fm.ww.init(**ww_init_kwargs)
 
-    if any(isinstance(fm, dd.DataFrame) for fm in feature_matrix):
+    if any(is_instance(fm, dd, "DataFrame") for fm in feature_matrix):
         feature_matrix = dd.concat(feature_matrix)
     elif any(is_instance(fm, ps, "DataFrame") for fm in feature_matrix):
         feature_matrix = ps.concat(feature_matrix)

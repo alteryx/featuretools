@@ -1,10 +1,11 @@
 import numpy as np
-from dask import dataframe as dd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
 
 from featuretools.primitives.base.aggregation_primitive_base import AggregationPrimitive
-from featuretools.utils.gen_utils import Library
+from featuretools.utils.gen_utils import Library, import_or_none
+
+dd = import_or_none("dask.dataframe")
 
 
 class Any(AggregationPrimitive):

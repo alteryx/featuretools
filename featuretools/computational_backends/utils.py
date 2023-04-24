@@ -5,7 +5,6 @@ import warnings
 from datetime import datetime
 from functools import wraps
 
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import psutil
@@ -14,9 +13,10 @@ from woodwork.logical_types import Datetime, Double
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, DirectFeature
 from featuretools.utils import Trie
-from featuretools.utils.gen_utils import Library
+from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.utils.wrangle import _check_time_type, _check_timedelta
 
+dd = import_or_none("dask.dataframe")
 logger = logging.getLogger("featuretools.computational_backend")
 
 
@@ -213,20 +213,21 @@ def get_client_cluster():
     """
     Separated out the imports to make it easier to mock during testing
     """
-    from distributed import Client, LocalCluster
+    Client = import_or_none("distributed.Client")
+    LocalCluster = import_or_none("distributed.LocalCluster")
 
     return Client, LocalCluster
 
 
 def _validate_cutoff_time(
-    cutoff_time: typing.Union[dd.DataFrame, pd.DataFrame, str, datetime],
+    cutoff_time: typing.Union[pd.DataFrame, str, datetime],
     target_dataframe,
 ):
     """
     Verify that the cutoff time is a single value or a pandas dataframe with the proper columns
     containing no duplicate rows
     """
-    if isinstance(cutoff_time, dd.DataFrame):
+    if is_instance(cutoff_time, dd, "DataFrame"):
         msg = (
             "cutoff_time should be a Pandas DataFrame: "
             "computing cutoff_time, this may take a while"

@@ -1,5 +1,5 @@
-import dask.dataframe as dd
 import pandas as pd
+import pytest
 from woodwork.logical_types import (
     Datetime,
     Double,
@@ -10,8 +10,12 @@ from woodwork.logical_types import (
 
 from featuretools import dfs
 from featuretools.entityset import EntitySet
+from featuretools.utils.gen_utils import import_or_none
+
+dd = import_or_none("dask.dataframe")
 
 
+@pytest.mark.skipif("not dd")
 def test_single_table_dask_entityset():
     primitives_list = [
         "absolute",
@@ -72,6 +76,7 @@ def test_single_table_dask_entityset():
     pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
 
 
+@pytest.mark.skipif("not dd")
 def test_single_table_dask_entityset_ids_not_sorted():
     primitives_list = [
         "absolute",
@@ -134,6 +139,7 @@ def test_single_table_dask_entityset_ids_not_sorted():
     )
 
 
+@pytest.mark.skipif("not dd")
 def test_single_table_dask_entityset_with_instance_ids():
     primitives_list = [
         "absolute",
@@ -200,6 +206,7 @@ def test_single_table_dask_entityset_with_instance_ids():
     )
 
 
+@pytest.mark.skipif("not dd")
 def test_single_table_dask_entityset_single_cutoff_time():
     primitives_list = [
         "absolute",
@@ -264,6 +271,7 @@ def test_single_table_dask_entityset_single_cutoff_time():
     )
 
 
+@pytest.mark.skipif("not dd")
 def test_single_table_dask_entityset_cutoff_time_df():
     primitives_list = [
         "absolute",
@@ -340,6 +348,7 @@ def test_single_table_dask_entityset_cutoff_time_df():
     pd.testing.assert_frame_equal(fm, dask_fm, check_dtype=False)
 
 
+@pytest.mark.skipif("not dd")
 def test_single_table_dask_entityset_dates_not_sorted():
     dask_es = EntitySet(id="dask_es")
     df = pd.DataFrame(
@@ -400,6 +409,7 @@ def test_single_table_dask_entityset_dates_not_sorted():
     )
 
 
+@pytest.mark.skipif("not dd")
 def test_dask_entityset_secondary_time_index():
     log_df = pd.DataFrame()
     log_df["id"] = [0, 1, 2, 3]

@@ -1,4 +1,3 @@
-import dask.dataframe as dd
 import pandas as pd
 import pytest
 from woodwork import list_logical_types as ww_list_logical_types
@@ -41,6 +40,7 @@ def test_is_instance_single_module(df):
 
 
 def test_is_instance_multiple_modules(df):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     df2 = dd.from_pandas(df, npartitions=2)
     assert is_instance(df, (dd, pd), "DataFrame")
     assert is_instance(df2, (dd, pd), "DataFrame")

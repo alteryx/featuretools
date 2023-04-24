@@ -4,7 +4,6 @@ import composeml as cp
 import numpy as np
 import pandas as pd
 import pytest
-from dask import dataframe as dd
 from packaging.version import parse
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import NaturalLanguage
@@ -19,7 +18,9 @@ from featuretools.primitives.base import AggregationPrimitive, TransformPrimitiv
 from featuretools.synthesis import dfs
 from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
 from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import Library
+from featuretools.utils.gen_utils import Library, import_or_none, is_instance
+
+dd = import_or_none("dask.dataframe")
 
 
 @pytest.fixture
@@ -141,6 +142,7 @@ def test_accepts_cutoff_time_df(dataframes, relationships):
 
 
 def test_warns_cutoff_time_dask(dataframes, relationships):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3], "time": [10, 12, 15]})
     cutoff_times_df = dd.from_pandas(cutoff_times_df, npartitions=2)
     match = (
@@ -292,7 +294,7 @@ def test_features_only(dataframes, relationships):
     # spark creates 9 features (no skew, no percent_true)
     if isinstance(dataframes["transactions"][0], pd.DataFrame):
         expected_features = 11
-    elif isinstance(dataframes["transactions"][0], dd.DataFrame):
+    elif is_instance(dataframes["transactions"][0], dd, "DataFrame"):
         expected_features = 10
     else:
         expected_features = 9

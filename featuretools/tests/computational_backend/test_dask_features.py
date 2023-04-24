@@ -1,10 +1,13 @@
 import pandas as pd
-from dask.base import tokenize
+import pytest
 
 from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
 def test_tokenize_entityset(pd_es, pd_int_es):
+    pytest.importorskip("dask", reason="Dask not installed, skipping")
+    from dask.base import tokenize
+
     dupe = make_ecommerce_entityset()
 
     # check identitcal entitysets hash to same token

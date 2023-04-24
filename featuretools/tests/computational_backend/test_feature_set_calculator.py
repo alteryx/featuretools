@@ -3,7 +3,6 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pytest
-from dask import dataframe as dd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Categorical, Datetime, Double, Integer
 
@@ -43,7 +42,9 @@ from featuretools.primitives import (
 from featuretools.primitives.base import AggregationPrimitive
 from featuretools.tests.testing_utils import backward_path, to_pandas
 from featuretools.utils import Trie
-from featuretools.utils.gen_utils import Library
+from featuretools.utils.gen_utils import Library, import_or_none, is_instance
+
+dd = import_or_none("dask.dataframe")
 
 
 def test_make_identity(es):
@@ -506,6 +507,7 @@ def pd_df():
 
 @pytest.fixture
 def dd_df(pd_df):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     return dd.from_pandas(pd_df, npartitions=2)
 
 
@@ -528,7 +530,7 @@ def test_make_3_stacked_agg_feats(df):
     as dataframes are merged together
 
     """
-    if isinstance(df, dd.DataFrame):
+    if is_instance(df, dd, "DataFrame"):
         pytest.xfail("normalize_datdataframe fails with dask DataFrame")
     es = EntitySet()
     ltypes = {"e1": Categorical, "e2": Categorical, "e3": Categorical, "val": Double}
@@ -855,6 +857,7 @@ def pd_parent_child():
 
 @pytest.fixture
 def dd_parent_child(pd_parent_child):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     parent_df, child_df = pd_parent_child
     parent_df = dd.from_pandas(parent_df, npartitions=2)
     child_df = dd.from_pandas(child_df, npartitions=2)

@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 import psutil
 import pytest
-from dask import dataframe as dd
 from tqdm import tqdm
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import (
@@ -63,7 +62,9 @@ from featuretools.tests.testing_utils import (
     get_mock_client_cluster,
     to_pandas,
 )
-from featuretools.utils.gen_utils import Library
+from featuretools.utils.gen_utils import Library, import_or_none
+
+dd = import_or_none("dask.dataframe")
 
 
 def test_scatter_warning(caplog):
@@ -171,6 +172,7 @@ def test_calc_feature_matrix(es):
 
 
 def test_cfm_warns_dask_cutoff_time(es):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     times = list(
         [datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)]
         + [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)]
@@ -1730,6 +1732,7 @@ class TestCreateClientAndCluster(object):
         )
 
 
+@pytest.mark.skipif("not dd")
 def test_parallel_failure_raises_correct_error(pd_es):
     times = (
         [datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)]

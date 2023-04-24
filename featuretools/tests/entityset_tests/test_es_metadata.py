@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-from dask import dataframe as dd
 
 from featuretools import EntitySet
 from featuretools.tests.testing_utils import backward_path, forward_path
@@ -145,6 +144,7 @@ def pd_employee_df():
 
 @pytest.fixture
 def dd_employee_df(pd_employee_df):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     return dd.from_pandas(pd_employee_df, npartitions=2)
 
 

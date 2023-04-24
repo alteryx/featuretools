@@ -1,4 +1,3 @@
-import dask.dataframe as dd
 import pandas as pd
 import pytest
 
@@ -21,6 +20,7 @@ def pd_entry_point_dfs():
 
 @pytest.fixture
 def dask_entry_point_dfs(pd_entry_point_dfs):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     cards_df = dd.from_pandas(pd_entry_point_dfs[0], npartitions=2)
     transactions_df = dd.from_pandas(pd_entry_point_dfs[1], npartitions=2)
     return cards_df, transactions_df
