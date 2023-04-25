@@ -764,7 +764,7 @@ def parallel_calculate_chunks(
     include_cutoff_time=True,
 ):
     import_or_raise(
-        "dask",
+        "distributed",
         "Dask must be installed to calculate feature matrix with n_jobs set to anything but 1",
     )
     from dask.base import tokenize
