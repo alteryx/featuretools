@@ -10,7 +10,7 @@ Future Release
     * Fixes
         * Fix Description of `DaysInMonth` (:pr:`2547`)
     * Changes
-        * Make Dask and optional dependency (:pr:`2560`)
+        * Make Dask an optional dependency (:pr:`2560`)
     * Documentation Changes
     * Testing Changes
 
