@@ -220,8 +220,14 @@ def get_client_cluster():
     return Client, LocalCluster
 
 
+if dd:
+    CutoffTimeType = typing.Union[dd.DataFrame, pd.DataFrame, str, datetime]
+else:
+    CutoffTimeType = typing.Union[pd.DataFrame, str, datetime]
+
+
 def _validate_cutoff_time(
-    cutoff_time: typing.Union[pd.DataFrame, str, datetime],
+    cutoff_time: CutoffTimeType,
     target_dataframe,
 ):
     """
