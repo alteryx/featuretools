@@ -213,8 +213,9 @@ def get_client_cluster():
     """
     Separated out the imports to make it easier to mock during testing
     """
-    Client = import_or_none("distributed.Client")
-    LocalCluster = import_or_none("distributed.LocalCluster")
+    distributed = import_or_none("distributed")
+    Client = distributed.Client
+    LocalCluster = distributed.LocalCluster
 
     return Client, LocalCluster
 

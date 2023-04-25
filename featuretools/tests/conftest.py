@@ -19,23 +19,26 @@ from featuretools.utils.spark_utils import pd_to_spark_clean
 
 @pytest.fixture()
 def dask_cluster():
-    LocalCluster = pytest.importorskip(
-        "distributed.LocalCluster",
+    distributed = pytest.importorskip(
+        "distributed",
         reason="Dask not installed, skipping",
     )
-    if LocalCluster:
-        with LocalCluster() as cluster:
+    if distributed:
+        import pdb
+
+        pdb.set_trace()
+        with distributed.LocalCluster() as cluster:
             yield cluster
 
 
 @pytest.fixture()
 def three_worker_dask_cluster():
-    LocalCluster = pytest.importorskip(
-        "distributed.LocalCluster",
+    distributed = pytest.importorskip(
+        "distributed",
         reason="Dask not installed, skipping",
     )
-    if LocalCluster:
-        with LocalCluster(n_workers=3) as cluster:
+    if distributed:
+        with distributed.LocalCluster(n_workers=3) as cluster:
             yield cluster
 
 
