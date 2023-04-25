@@ -37,6 +37,10 @@ $ python -m pip install "featuretools[premium]"
 ```console
 $ python -m pip install "featuretools[nlp]"
 ```
+```{tab} Dask
+```console
+$ python -m pip install "featuretools[dask]"
+```
 ```{tab} Spark
 ```console
 $ python -m pip install "featuretools[spark]"
@@ -75,6 +79,10 @@ $ conda install -c conda-forge nlp-primitives
 ```console
 $ conda install -c conda-forge featuretools-tsfresh-primitives
 ```
+```{tab} Dask
+```console
+$ conda install -c conda-forge dask distributed
+```
 ```{tab} Spark
 ```console
 $ conda install -c conda-forge pyspark
@@ -91,6 +99,7 @@ $ conda install -c conda-forge alteryx-open-src-update-checker
 
 - **NLP Primitives**: Use Natural Language Processing Primitives in Featuretools
 - **TSFresh Primitives**: Use 60+ primitives from [tsfresh](https://tsfresh.readthedocs.io/en/latest/) in Featuretools
+- **Dask**: Use Woodwork with Dask DataFrames and run `calculate_feature_matrix` in parallel with `n_jobs`
 - **Spark**: Use Woodwork with Spark DataFrames
 - **AutoNormalize**: Automated creation of normalized `EntitySet` from denormalized data
 - **Update Checker**: Receive automatic notifications of new Featuretools releases

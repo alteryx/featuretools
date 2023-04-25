@@ -77,6 +77,12 @@ python -m pip install "featuretools[nlp]"
 python -m pip install "featuretools[tsfresh]"
 ```
 
+**Dask Support** - Use Dask Dataframes to create EntitySets or run DFS with njobs > 1
+
+```
+python -m pip install "featuretools[dask]"
+```
+
 **SQL** - Automatic EntitySet generation from relational data stored in a SQL database: 
 
 ```

@@ -30,8 +30,6 @@ license = {text = "BSD 3-clause"}
 requires-python = ">=3.8,<4"
 dependencies = [
     "cloudpickle >= 1.5.0",
-    "dask[dataframe] >= 2022.11.1, < 2023.4.0",
-    "distributed >= 2022.11.1, < 2023.4.0",
     "holidays >= 0.13",
     "numpy >= 1.21.0",
     "packaging >= 20.0",
@@ -39,7 +37,7 @@ dependencies = [
     "psutil >= 5.6.6",
     "scipy >= 1.4.0",
     "tqdm >= 4.32.0",
-    "woodwork[dask] >= 0.23.0",
+    "woodwork >= 0.23.0",
 ]
 
 [project.urls]
@@ -65,6 +63,11 @@ test = [
     "smart-open >= 5.0.0",
     "urllib3 >= 1.26.5",
     "pytest-timeout >= 2.1.0"
+]
+dask = [
+    "dask[dataframe] >= 2022.11.1, < 2023.4.0",
+    "distributed >= 2022.11.1, < 2023.4.0",
+    "woodwork[dask] >= 0.23.0",
 ]
 spark = [
     "woodwork[spark] >= 0.23.0",
@@ -107,16 +110,16 @@ docs = [
     "nlp_primitives >= 2.3.0",
     "autonormalize >= 2.0.1",
     "click >= 7.0.0",
-    "featuretools[sklearn,spark,test]",
+    "featuretools[sklearn,dask,spark,test]",
 ]
 dev = [
     "ruff >= 0.0.239",
     "black[jupyter] >= 23.1.0",
     "pre-commit >= 2.20.0",
-    "featuretools[docs,spark,test]",
+    "featuretools[docs,dask,spark,test]",
 ]
 complete = [
-    "featuretools[autonormalize,nlp,premium,sklearn,spark,sql,tsfresh,updater]",
+    "featuretools[autonormalize,nlp,premium,sklearn,dask,spark,sql,tsfresh,updater]",
 ]
 
 [tool.setuptools]

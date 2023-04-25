@@ -3,7 +3,6 @@ import logging
 import warnings
 from collections import defaultdict
 
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 from woodwork import init_series
@@ -20,6 +19,7 @@ from featuretools.utils.plot_utils import (
 )
 from featuretools.utils.wrangle import _check_timedelta
 
+dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
 
 pd.options.mode.chained_assignment = None  # default='warn'
@@ -191,7 +191,7 @@ class EntitySet(object):
         if self.dataframes:
             if isinstance(self.dataframes[0], pd.DataFrame):
                 df_type = Library.PANDAS
-            elif isinstance(self.dataframes[0], dd.DataFrame):
+            elif is_instance(self.dataframes[0], dd, "DataFrame"):
                 df_type = Library.DASK
             elif is_instance(self.dataframes[0], ps, "DataFrame"):
                 df_type = Library.SPARK
@@ -700,7 +700,7 @@ class EntitySet(object):
                 )
             # Warn when performing inference on Dask or Spark DataFrames
             if not set(dataframe.columns).issubset(set(logical_types.keys())) and (
-                isinstance(dataframe, dd.DataFrame)
+                is_instance(dataframe, dd, "DataFrame")
                 or is_instance(dataframe, ps, "DataFrame")
             ):
                 warnings.warn(
@@ -1161,13 +1161,13 @@ class EntitySet(object):
             if es_lti_dict[dataframe.ww.name] is None:
                 if dataframe.ww.time_index is not None:
                     lti = dataframe[dataframe.ww.time_index].copy()
-                    if isinstance(dataframe, dd.DataFrame):
+                    if is_instance(dataframe, dd, "DataFrame"):
                         # The current Dask implementation doesn't set the index of the dataframe
                         # to the dataframe's index, so we have to do it manually here
                         lti.index = dataframe[dataframe.ww.index].copy()
                 else:
                     lti = dataframe.ww[dataframe.ww.index].copy()
-                    if isinstance(dataframe, dd.DataFrame):
+                    if is_instance(dataframe, dd, "DataFrame"):
                         lti.index = dataframe[dataframe.ww.index].copy()
                         lti = lti.apply(lambda x: None)
                     elif is_instance(dataframe, ps, "DataFrame"):
@@ -1206,7 +1206,11 @@ class EntitySet(object):
                         continue
                     link_col = child_cols[dataframe.ww.name][child_df.ww.name].name
 
-                    lti_is_dask = isinstance(es_lti_dict[child_df.ww.name], dd.Series)
+                    lti_is_dask = is_instance(
+                        es_lti_dict[child_df.ww.name],
+                        dd,
+                        "Series",
+                    )
                     lti_is_spark = is_instance(
                         es_lti_dict[child_df.ww.name],
                         ps,
@@ -1320,7 +1324,7 @@ class EntitySet(object):
                         )
 
                 # Add the new column to the DataFrame
-                if isinstance(df, dd.DataFrame):
+                if is_instance(df, dd, "DataFrame"):
                     new_df = df.merge(lti.reset_index(), on=df.ww.index)
                     new_df.ww.init_with_partial_schema(
                         schema=df.ww.schema,
@@ -1495,7 +1499,7 @@ class EntitySet(object):
                 column_typing_info.append(col_string)
 
             columns_string = "\l".join(column_typing_info)  # noqa: W605
-            if isinstance(df, dd.DataFrame):  # dataframe is a dask dataframe
+            if is_instance(df, dd, "DataFrame"):  # dataframe is a dask dataframe
                 label = "{%s |%s\l}" % (df.ww.name, columns_string)  # noqa: W605
             else:
                 nrows = df.shape[0]
@@ -1576,7 +1580,7 @@ class EntitySet(object):
             df_empty = df.empty if isinstance(df, pd.DataFrame) else False
             if time_last is not None and not df_empty:
                 mask = df[secondary_time_index] >= time_last
-                if isinstance(df, dd.DataFrame):
+                if is_instance(df, dd, "DataFrame"):
                     for col in columns:
                         df[col] = df[col].mask(mask, np.nan)
                 elif is_instance(df, ps, "DataFrame"):
@@ -1840,7 +1844,7 @@ class EntitySet(object):
                             replace,
                             args=(True,),
                         )
-                elif isinstance(dataframe, dd.DataFrame):
+                elif is_instance(dataframe, dd, "DataFrame"):
                     dataframe[column] = dataframe[column].apply(
                         replace,
                         meta=(column, logical_type.primary_dtype),

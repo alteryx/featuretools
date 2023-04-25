@@ -1,8 +1,8 @@
-import dask.dataframe as dd
 import pandas as pd
 
 from featuretools.utils.gen_utils import import_or_none, is_instance
 
+dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
 
 
@@ -21,7 +21,7 @@ def to_pandas(df, index=None, sort_index=False, int_index=False):
     if isinstance(df, (pd.DataFrame, pd.Series)):
         return df
 
-    if isinstance(df, (dd.DataFrame, dd.Series)):
+    if is_instance(df, (dd, dd), ("DataFrame", "Series")):
         pd_df = df.compute()
     if is_instance(df, (ps, ps), ("DataFrame", "Series")):
         pd_df = df.to_pandas()
@@ -30,7 +30,7 @@ def to_pandas(df, index=None, sort_index=False, int_index=False):
         pd_df = pd_df.set_index(index)
     if sort_index:
         pd_df = pd_df.sort_index()
-    if int_index and isinstance(df, dd.DataFrame):
+    if int_index and is_instance(df, dd, "DataFrame"):
         pd_df.index = pd.Int64Index(pd_df.index)
 
     return pd_df

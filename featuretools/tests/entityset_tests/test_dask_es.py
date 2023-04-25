@@ -1,4 +1,3 @@
-import dask.dataframe as dd
 import pandas as pd
 import pytest
 from woodwork.logical_types import (
@@ -11,9 +10,12 @@ from woodwork.logical_types import (
 
 from featuretools.entityset import EntitySet
 from featuretools.tests.testing_utils import get_df_tags
-from featuretools.utils.gen_utils import Library
+from featuretools.utils.gen_utils import Library, import_or_none
+
+dd = import_or_none("dask.dataframe")
 
 
+@pytest.mark.skipif("not dd")
 def test_add_dataframe(pd_es):
     dask_es = EntitySet(id="dask_es")
     log_dask = dd.from_pandas(pd_es["log"], npartitions=2)
@@ -32,6 +34,7 @@ def test_add_dataframe(pd_es):
     )
 
 
+@pytest.mark.skipif("not dd")
 def test_add_dataframe_with_non_numeric_index(pd_es, dask_es):
     df = pd.DataFrame({"id": ["A_1", "A_2", "C", "D"], "values": [1, 12, -34, 27]})
     dask_df = dd.from_pandas(df, npartitions=2)
@@ -56,6 +59,7 @@ def test_add_dataframe_with_non_numeric_index(pd_es, dask_es):
     )
 
 
+@pytest.mark.skipif("not dd")
 def test_create_entityset_with_mixed_dataframe_types(pd_es, dask_es):
     df = pd.DataFrame({"id": [0, 1, 2, 3], "values": [1, 12, -34, 27]})
     dask_df = dd.from_pandas(df, npartitions=2)
@@ -85,6 +89,7 @@ def test_create_entityset_with_mixed_dataframe_types(pd_es, dask_es):
         dask_es.add_dataframe(dataframe_name="new_dataframe", dataframe=df, index="id")
 
 
+@pytest.mark.skipif("not dd")
 def test_add_last_time_indexes():
     pd_es = EntitySet(id="pd_es")
     dask_es = EntitySet(id="dask_es")
@@ -184,6 +189,7 @@ def test_add_last_time_indexes():
     )
 
 
+@pytest.mark.skipif("not dd")
 def test_add_dataframe_with_make_index():
     values = [1, 12, -23, 27]
     df = pd.DataFrame({"values": values})
@@ -202,5 +208,6 @@ def test_add_dataframe_with_make_index():
     pd.testing.assert_frame_equal(expected_df, dask_es["new_dataframe"].compute())
 
 
+@pytest.mark.skipif("not dd")
 def test_dataframe_type_dask(dask_es):
     assert dask_es.dataframe_type == Library.DASK

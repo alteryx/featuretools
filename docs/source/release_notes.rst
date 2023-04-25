@@ -8,13 +8,20 @@ Future Release
     * Enhancements
         * Add premium primitives install command (:pr:`2545`)
     * Fixes
-        Fix Description of `DaysInMonth` (:pr:`2547`)
+        * Fix Description of `DaysInMonth` (:pr:`2547`)
     * Changes
+        * Make Dask an optional dependency (:pr:`2560`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`gsheni`
+    :user:`dvreed77`, :user:`gsheni`, :user:`thehomebrewnerd`
+
+Breaking Changes
+++++++++++++++++
+* Dask is now an optional dependency of Featuretools. Users that run ``calculate_feature_matrix`` with ``n_jobs`` set
+  to anything other than 1, will now need to install Dask prior to running ``calculate_feature_matrix``. The required Dask
+  dependencies can be installed with ``pip install "featuretools[dask]"``.
 
 v1.25.0 Apr 13, 2023
 ====================
