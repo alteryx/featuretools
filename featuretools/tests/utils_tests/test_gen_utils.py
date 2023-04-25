@@ -11,6 +11,8 @@ from featuretools.utils.gen_utils import (
     is_instance,
 )
 
+dd = import_or_none("dask.dataframe")
+
 
 def test_import_or_raise_errors():
     with pytest.raises(ImportError, match="error message"):
@@ -39,8 +41,8 @@ def test_is_instance_single_module(df):
     assert is_instance(df, pd, "DataFrame")
 
 
+@pytest.mark.skipif("not dd")
 def test_is_instance_multiple_modules(df):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     df2 = dd.from_pandas(df, npartitions=2)
     assert is_instance(df, (dd, pd), "DataFrame")
     assert is_instance(df2, (dd, pd), "DataFrame")

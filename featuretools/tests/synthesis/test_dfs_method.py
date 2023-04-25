@@ -141,8 +141,8 @@ def test_accepts_cutoff_time_df(dataframes, relationships):
     assert len(feature_matrix.columns) == len(features)
 
 
+@pytest.mark.skipif("not dd")
 def test_warns_cutoff_time_dask(dataframes, relationships):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3], "time": [10, 12, 15]})
     cutoff_times_df = dd.from_pandas(cutoff_times_df, npartitions=2)
     match = (
