@@ -128,7 +128,7 @@ def calculate_feature_matrix(
             percentage of all rows. if None, and n_jobs > 1 it will be set to 1/n_jobs
 
         n_jobs (int, optional): number of parallel processes to use when
-            calculating feature matrix. Requires Dask.
+            calculating feature matrix. Requires Dask if not equal to 1.
 
         dask_kwargs (dict, optional): Dictionary of keyword arguments to be
             passed when creating the dask client and scheduler. Even if n_jobs
