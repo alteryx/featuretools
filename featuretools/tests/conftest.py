@@ -24,9 +24,6 @@ def dask_cluster():
         reason="Dask not installed, skipping",
     )
     if distributed:
-        import pdb
-
-        pdb.set_trace()
         with distributed.LocalCluster() as cluster:
             yield cluster
 
