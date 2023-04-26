@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Introduce New Single-Table DFS Algorithm (:pr:`2516`)
+        * Introduce New Single-Table DFS Algorithm (:pr:`2516`). This includes **experimental** functionality and is not officially supported.
         * Add premium primitives install command (:pr:`2545`)
     * Fixes
         * Fix Description of `DaysInMonth` (:pr:`2547`)

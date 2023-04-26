@@ -98,3 +98,9 @@ def test_feature_collection_hashing():
     assert fc1.get_by_origin_feature(f1) == set([f1, f4, f5])
 
     assert fc1.get_dependencies_by_origin_name("f1") == set([f1, f4, f5])
+
+    assert fc1.get_dependencies_by_origin_name("null") == set()
+
+    assert fc1.get_by_origin_feature_name("f1") == f1
+
+    assert fc1.get_by_origin_feature_name("null") is None

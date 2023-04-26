@@ -2,7 +2,7 @@ import json
 from unittest.mock import patch
 
 import pytest
-from woodwork.logical_types import Double
+from woodwork.logical_types import Boolean, Double
 
 from featuretools.feature_discovery.feature_discovery import (
     generate_features_from_primitives,
@@ -375,6 +375,46 @@ def test_lite_feature_assertions():
         match="Logical Type must be given if origin feature",
     ):
         LiteFeature(name="f1")
+
+    with pytest.raises(
+        ValueError,
+        match="primitive input must be of type PrimitiveBase",
+    ):
+        LiteFeature(name="f3", primitive="AddNumeric", base_features=[f1, f2])
+
+    f = LiteFeature("f4", logical_type=Double)
+    with pytest.raises(AttributeError, match="name is immutable"):
+        f.name = "new name"
+
+    with pytest.raises(ValueError, match="only used on multioutput features"):
+        f.non_indexed_name
+
+    with pytest.raises(AttributeError, match="logical_type is immutable"):
+        f.logical_type = Boolean
+
+    with pytest.raises(AttributeError, match="tags is immutable"):
+        f.tags = {"other"}
+
+    with pytest.raises(AttributeError, match="primitive is immutable"):
+        f.primitive = AddNumeric
+
+    with pytest.raises(AttributeError, match="base_features are immutable"):
+        f.base_features = [f1]
+
+    with pytest.raises(AttributeError, match="df_id is immutable"):
+        f.df_id = "df_id"
+
+    with pytest.raises(AttributeError, match="id is immutable"):
+        f.id = "id"
+
+    with pytest.raises(AttributeError, match="n_output_features is immutable"):
+        f.n_output_features = "n_output_features"
+
+    with pytest.raises(AttributeError, match="depth is immutable"):
+        f.depth = "depth"
+
+    with pytest.raises(AttributeError, match="idx is immutable"):
+        f.idx = "idx"
 
 
 def test_lite_feature_to_column_schema():

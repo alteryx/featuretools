@@ -372,3 +372,9 @@ def test_generate_features_from_primitives_inputs():
         match="primitives must be a list of Primitive classes or Primitive instances",
     ):
         generate_features_from_primitives([f1], ["absolute"])
+
+    with pytest.raises(
+        ValueError,
+        match="primitives must be a list of Primitive classes or Primitive instances",
+    ):
+        generate_features_from_primitives([f1], Absolute)
