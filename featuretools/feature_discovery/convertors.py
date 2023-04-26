@@ -61,7 +61,7 @@ def convert_featurebase_list_to_feature_list(
                     tags=tags,
                     primitive=primitive,
                     base_features=base_features,
-                    # TODO: replace this with dataframe name?
+                    # TODO: use when working with multi-table
                     df_id=None,
                     idx=idx,
                 )
@@ -80,7 +80,7 @@ def convert_featurebase_list_to_feature_list(
                 tags=tags,
                 primitive=primitive,
                 base_features=base_features,
-                # TODO: replace this with dataframe name?
+                # TODO: use when working with multi-table
                 df_id=None,
             ),
         ]
@@ -118,6 +118,7 @@ def _feature_to_transform_feature(
     if feature.is_multioutput():
         sorted_features = sorted(
             [f for f in feature.related_features] + [feature],
+            key=lambda x: x.idx,
         )
         names = [x.name for x in sorted_features]
 
@@ -129,7 +130,7 @@ def _feature_to_transform_feature(
     return fb
 
 
-def convert_feature_to_featurebase(
+def _convert_feature_to_featurebase(
     feature: LiteFeature,
     dataframe: pd.DataFrame,
     cache: FeatureCache,
@@ -205,7 +206,7 @@ def convert_feature_list_to_featurebase_list(
                 # feature base already created for related ids
                 continue
 
-        fb = convert_feature_to_featurebase(
+        fb = _convert_feature_to_featurebase(
             feature=feature,
             dataframe=dataframe,
             cache=feature_cache,

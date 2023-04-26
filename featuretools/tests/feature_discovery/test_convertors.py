@@ -7,8 +7,8 @@ from featuretools.feature_base.feature_base import (
     TransformFeature,
 )
 from featuretools.feature_discovery.convertors import (
+    _convert_feature_to_featurebase,
     convert_feature_list_to_featurebase_list,
-    convert_feature_to_featurebase,
     convert_featurebase_list_to_feature_list,
 )
 from featuretools.feature_discovery.feature_discovery import (
@@ -94,14 +94,14 @@ def test_origin_feature_to_featurebase():
 
     origin_features = schema_to_features(df.ww.schema)
     f_1 = [f for f in origin_features if f.name == "f_1"][0]
-    fb = convert_feature_to_featurebase(f_1, df, {})
+    fb = _convert_feature_to_featurebase(f_1, df, {})
 
     assert isinstance(fb, IdentityFeature)
     assert fb.get_name() == "f_1"
 
     f_1.set_alias("new name")
     df.ww.rename({"f_1": "new name"}, inplace=True)
-    fb = convert_feature_to_featurebase(f_1, df, {})
+    fb = _convert_feature_to_featurebase(f_1, df, {})
 
     assert isinstance(fb, IdentityFeature)
     assert fb.get_name() == "new name"
@@ -120,7 +120,7 @@ def test_stacked_feature_to_featurebase():
 
     f_2 = [f for f in features if f.name == "ABSOLUTE(f_1)"][0]
 
-    fb = convert_feature_to_featurebase(f_2, df, {})
+    fb = _convert_feature_to_featurebase(f_2, df, {})
 
     assert isinstance(fb, TransformFeature)
     assert fb.get_name() == "ABSOLUTE(f_1)"
@@ -128,7 +128,7 @@ def test_stacked_feature_to_featurebase():
     assert fb.base_features[0].get_name() == "f_1"
 
     f_2.set_alias("f_2")
-    fb = convert_feature_to_featurebase(f_2, df, {})
+    fb = _convert_feature_to_featurebase(f_2, df, {})
 
     assert isinstance(fb, TransformFeature)
     assert fb.get_name() == "f_2"
@@ -154,7 +154,7 @@ def test_multi_output_to_featurebase():
     assert len(lsa_features) == 2
 
     # Test Single LiteFeature
-    fb = convert_feature_to_featurebase(lsa_features[0], df, {})
+    fb = _convert_feature_to_featurebase(lsa_features[0], df, {})
     assert isinstance(fb, TransformFeature)
     assert fb.get_name() == "TEST_MO(f_1)"
     assert len(fb.base_features) == 1
@@ -174,7 +174,7 @@ def test_multi_output_to_featurebase():
     lsa_features[0].set_alias("f_2")
     lsa_features[1].set_alias("f_3")
 
-    fb = convert_feature_to_featurebase(lsa_features[0], df, {})
+    fb = _convert_feature_to_featurebase(lsa_features[0], df, {})
     assert isinstance(fb, TransformFeature)
     assert len(fb.base_features) == 1
     assert set(fb.get_feature_names()) == set(["f_2", "f_3"])

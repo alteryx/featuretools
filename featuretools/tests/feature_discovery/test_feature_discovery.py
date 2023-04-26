@@ -13,10 +13,10 @@ from woodwork.logical_types import (
 
 from featuretools.entityset.entityset import EntitySet
 from featuretools.feature_discovery.feature_discovery import (
+    _get_features,
+    _get_matching_features,
+    _index_column_set,
     generate_features_from_primitives,
-    get_features,
-    get_matching_features,
-    index_column_set,
     schema_to_features,
 )
 from featuretools.feature_discovery.FeatureCollection import FeatureCollection
@@ -92,7 +92,7 @@ def test_column_schema_to_keys(column_schema, expected):
     ],
 )
 def test_index_input_set(column_list, expected):
-    actual = index_column_set(column_list)
+    actual = _index_column_set(column_list)
 
     assert actual == expected
 
@@ -160,8 +160,8 @@ def test_get_features(feature_args, input_set, commutative, expected):
     features = [LiteFeature(*args) for args in feature_args]
     feature_collection = FeatureCollection(features).reindex()
 
-    column_keys = index_column_set(input_set)
-    actual = get_features(feature_collection, tuple(column_keys), commutative)
+    column_keys = _index_column_set(input_set)
+    actual = _get_features(feature_collection, tuple(column_keys), commutative)
 
     assert set([tuple([y.id for y in x]) for x in actual]) == set(
         [tuple(x) for x in expected],
@@ -244,7 +244,7 @@ def test_get_features(feature_args, input_set, commutative, expected):
 def test_get_matching_features(feature_args, primitive, expected):
     features = [LiteFeature(*args) for args in feature_args]
     feature_collection = FeatureCollection(features).reindex()
-    actual = get_matching_features(feature_collection, primitive())
+    actual = _get_matching_features(feature_collection, primitive())
     assert [[y.name for y in x] for x in actual] == expected
 
 

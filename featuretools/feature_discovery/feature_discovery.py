@@ -14,7 +14,7 @@ from featuretools.primitives.base.primitive_base import PrimitiveBase
 from featuretools.tests.testing_utils.generate_fake_dataframe import flatten_list
 
 
-def index_column_set(column_set: List[ColumnSchema]) -> List[Tuple[str, int]]:
+def _index_column_set(column_set: List[ColumnSchema]) -> List[Tuple[str, int]]:
     """
     Indexes input set to find types of columns and the quantity of each
 
@@ -29,11 +29,11 @@ def index_column_set(column_set: List[ColumnSchema]) -> List[Tuple[str, int]]:
     Examples:
         .. code-block:: python
 
-            from featuretools.feature_discovery.feature_discovery import index_column_set
+            from featuretools.feature_discovery.feature_discovery import _index_column_set
             from woodwork.column_schema import ColumnSchema
 
             column_set = [ColumnSchema(semantic_tags={"numeric"}), ColumnSchema(semantic_tags={"numeric"})]
-            indexed_column_set = index_column_set(column_set)
+            indexed_column_set = _index_column_set(column_set)
             [("numeric": 2)]
     """
     out = defaultdict(int)
@@ -43,7 +43,7 @@ def index_column_set(column_set: List[ColumnSchema]) -> List[Tuple[str, int]]:
     return list(out.items())
 
 
-def get_features(
+def _get_features(
     feature_collection: FeatureCollection,
     column_keys: Tuple[Tuple[str, int]],
     commutative: bool,
@@ -66,7 +66,7 @@ def get_features(
     Examples:
         .. code-block:: python
 
-            from featuretools.feature_discovery.feature_discovery import get_features
+            from featuretools.feature_discovery.feature_discovery import _get_features
             from woodwork.column_schema import ColumnSchema
 
             feature_groups = {
@@ -76,7 +76,7 @@ def get_features(
                 "Double,numeric": ["f1", "f2", "f3"],
             }
             column_set = [ColumnSchema(semantic_tags={"numeric"}), ColumnSchema(semantic_tags={"numeric"})]
-            features = get_features(col_groups, column_set, commutative=False)
+            features = _get_features(col_groups, column_set, commutative=False)
     """
 
     prod_iter = []
@@ -93,7 +93,7 @@ def get_features(
     return [flatten_list(x) for x in feature_combinations]
 
 
-def primitive_to_columnsets(primitive: PrimitiveBase) -> List[List[ColumnSchema]]:
+def _primitive_to_columnsets(primitive: PrimitiveBase) -> List[List[ColumnSchema]]:
     column_sets = primitive.input_types
     assert column_sets is not None
     if not isinstance(column_sets[0], list):
@@ -117,7 +117,7 @@ def primitive_to_columnsets(primitive: PrimitiveBase) -> List[List[ColumnSchema]
     return column_sets
 
 
-def get_matching_features(
+def _get_matching_features(
     feature_collection: FeatureCollection,
     primitive: PrimitiveBase,
 ) -> List[List[LiteFeature]]:
@@ -146,7 +146,7 @@ def get_matching_features(
                 "Double,numeric": ["f1", "f2", "f3"],
             }
 
-            feature_sets = get_matching_features(col_groups, AddNumeric)
+            feature_sets = _get_matching_features(col_groups, AddNumeric)
 
             [
                 ["f1", "f2"],
@@ -154,16 +154,16 @@ def get_matching_features(
                 ["f2", "f3"]
             ]
     """
-    column_sets = primitive_to_columnsets(primitive=primitive)
+    column_sets = _primitive_to_columnsets(primitive=primitive)
 
-    column_keys_set = [index_column_set(c) for c in column_sets]
+    column_keys_set = [_index_column_set(c) for c in column_sets]
 
     commutative = primitive.commutative
 
     feature_sets = []
     for column_keys in column_keys_set:
         assert column_keys is not None
-        feature_sets_ = get_features(
+        feature_sets_ = _get_features(
             feature_collection=feature_collection,
             column_keys=tuple(column_keys),
             commutative=commutative,
@@ -174,7 +174,7 @@ def get_matching_features(
     return feature_sets
 
 
-def features_from_primitive(
+def _features_from_primitive(
     primitive: PrimitiveBase,
     feature_collection: FeatureCollection,
 ) -> List[LiteFeature]:
@@ -203,7 +203,7 @@ def features_from_primitive(
                 "Double,numeric": ["f1", "f2", "f3"],
             }
 
-            feature_sets = features_from_primitive(AddNumeric, feature_groups)
+            feature_sets = _features_from_primitive(AddNumeric, feature_groups)
 
             [
                 ["f1", "f2"],
@@ -214,7 +214,7 @@ def features_from_primitive(
     assert isinstance(primitive, PrimitiveBase)
 
     features: List[LiteFeature] = []
-    feature_sets = get_matching_features(
+    feature_sets = _get_matching_features(
         feature_collection=feature_collection,
         primitive=primitive,
     )
@@ -245,7 +245,8 @@ def features_from_primitive(
 
 def schema_to_features(schema: TableSchema) -> List[LiteFeature]:
     """
-    Convert a Woodwork Schema object to a list of origin features
+    ** EXPERIMENTAL **
+    Convert a Woodwork Schema object to a list of LiteFeatures.
 
     Args:
         schema (TableSchema):
@@ -332,6 +333,7 @@ def generate_features_from_primitives(
     primitives: Union[List[Type[PrimitiveBase]], List[PrimitiveBase]],
 ) -> List[LiteFeature]:
     """
+    ** EXPERIMENTAL **
     Calculates all Features for a given input of features and a list of primitives.
 
     Args:
@@ -371,7 +373,7 @@ def generate_features_from_primitives(
     feature_collection.reindex()
 
     for primitive in primitives:
-        features_ = features_from_primitive(
+        features_ = _features_from_primitive(
             primitive=primitive,
             feature_collection=feature_collection,
         )
