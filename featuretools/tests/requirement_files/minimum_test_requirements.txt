@@ -1,8 +1,6 @@
 boto3==1.17.46
 cloudpickle==1.5.0
 composeml==0.8.0
-dask[dataframe]==2022.11.1
-distributed==2022.11.1
 graphviz==0.8.4
 holidays==0.13
 moto[all]==3.0.7
@@ -21,4 +19,4 @@ scipy==1.4.0
 smart-open==5.0.0
 tqdm==4.32.0
 urllib3==1.26.5
-woodwork[dask]==0.23.0
+woodwork==0.23.0

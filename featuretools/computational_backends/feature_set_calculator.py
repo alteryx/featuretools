@@ -1,7 +1,6 @@
 from datetime import datetime
 from functools import partial
 
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
@@ -23,6 +22,7 @@ from featuretools.utils.gen_utils import (
     is_instance,
 )
 
+dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
 
 
@@ -286,7 +286,7 @@ class FeatureSetCalculator(object):
 
         # Pass filtered values, even if we are using a full df.
         if need_full_dataframe:
-            if isinstance(filter_values, dd.Series):
+            if is_instance(filter_values, dd, "Series"):
                 msg = "Cannot use primitives that require full dataframe with Dask EntitySets"
                 raise ValueError(msg)
             filtered_df = df[df[filter_column].isin(filter_values)]
@@ -749,7 +749,7 @@ class FeatureSetCalculator(object):
                     column_id = f.base_features[0].get_name()
                     if column_id not in to_agg:
                         to_agg[column_id] = []
-                    if isinstance(base_frame, dd.DataFrame):
+                    if is_instance(base_frame, dd, "DataFrame"):
                         func = f.get_function(agg_type=Library.DASK)
                     elif is_instance(base_frame, ps, "DataFrame"):
                         func = f.get_function(agg_type=Library.SPARK)
@@ -774,7 +774,7 @@ class FeatureSetCalculator(object):
 
                         func.__name__ = funcname
 
-                    if isinstance(func, dd.Aggregation):
+                    if dd and isinstance(func, dd.Aggregation):
                         # TODO: handle aggregation being applied to same column twice
                         # (see above partial wrapping of functions)
                         funcname = func.__name__
@@ -948,7 +948,7 @@ def update_feature_columns(feature_data, data):
     # Handle dask/spark input
     for name, col in new_cols.items():
         col.name = name
-        if isinstance(data, dd.DataFrame):
+        if is_instance(data, dd, "DataFrame"):
             data = dd.concat([data, col], axis=1)
         else:
             data = ps.concat([data, col], axis=1)

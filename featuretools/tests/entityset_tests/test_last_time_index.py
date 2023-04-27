@@ -2,13 +2,13 @@ from datetime import datetime
 
 import pandas as pd
 import pytest
-from dask import dataframe as dd
 from woodwork.logical_types import Categorical, Datetime, Integer
 
 from featuretools.entityset.entityset import LTI_COLUMN_NAME
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import Library, import_or_none
 
+dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
 
 
