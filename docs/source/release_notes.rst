@@ -19,7 +19,7 @@ v1.26.0 Apr 27, 2023
         * Introduce New Single-Table DFS Algorithm (:pr:`2516`). This includes **experimental** functionality and is not officially supported.
         * Add premium primitives install command (:pr:`2545`)
     * Fixes
-        * Fix Description of `DaysInMonth` (:pr:`2547`)
+        * Fix Description of ``DaysInMonth`` (:pr:`2547`)
     * Changes
         * Make Dask an optional dependency (:pr:`2560`)
 
