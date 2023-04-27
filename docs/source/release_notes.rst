@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Introduce New Single-Table DFS Algorithm (:pr:`2516`). This includes **experimental** functionality and is not officially supported.
         * Add premium primitives install command (:pr:`2545`)
     * Fixes
         * Fix Description of `DaysInMonth` (:pr:`2547`)
@@ -72,7 +73,7 @@ v1.23.0 Feb 15, 2023
        * Remove make package from lint workflow (:pr:`2479`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dreed`, :user:`gsheni`, :user:`sbadithe`
+    :user:`dvreed77`, :user:`gsheni`, :user:`sbadithe`
 
 v1.22.0 Jan 31, 2023
 ====================
