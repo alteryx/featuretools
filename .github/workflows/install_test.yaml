@@ -51,7 +51,8 @@ jobs:
         run: |
           python -c "import alteryx_open_src_update_checker"
           python -c "import premium_primitives"
-          python -c "from featuretools.premium_primitives import PolarityScore"
+          python -c "from premium_primitives import PolarityScore"
+          python -c "from featuretools.primitives import PolarityScore"
           python -c "from featuretools.primitives import CountryCodeToContinent"
           python -c "from featuretools_sql import DBConnector"
       - name: Check package conflicts
