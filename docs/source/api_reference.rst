@@ -343,15 +343,6 @@ Primitives in standard install
     PolarityScore
     StopwordCount
 
-Primitives that require installing tensorflow
-*********************************************
-.. currentmodule:: premium_primitives.tensorflow
-.. autosummary::
-    :toctree: generated/
-
-    Elmo
-    UniversalSentenceEncoder
-
 
 Feature methods
 ---------------
