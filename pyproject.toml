@@ -81,10 +81,7 @@ tsfresh = [
     "featuretools-tsfresh-primitives >= 1.0.0",
 ]
 premium = [
-    "premium_primitives >= 0.0.1",
-]
-nlp = [
-    "nlp-primitives[complete] >= 2.0.0",
+    "premium_primitives >= 0.0.2",
 ]
 autonormalize = [
     "autonormalize >= 2.0.1",
@@ -107,7 +104,7 @@ docs = [
     "sphinx-inline-tabs == 2022.1.2b11",
     "sphinx-copybutton == 0.5.0",
     "myst-parser == 0.18.0",
-    "nlp_primitives >= 2.3.0",
+    "premium_primitives >= 2.3.0",
     "autonormalize >= 2.0.1",
     "click >= 7.0.0",
     "featuretools[sklearn,dask,spark,test]",
@@ -119,7 +116,7 @@ dev = [
     "featuretools[docs,dask,spark,test]",
 ]
 complete = [
-    "featuretools[autonormalize,nlp,premium,sklearn,dask,spark,sql,tsfresh,updater]",
+    "featuretools[autonormalize,premium,sklearn,dask,spark,sql,tsfresh,updater]",
 ]
 
 [tool.setuptools]
