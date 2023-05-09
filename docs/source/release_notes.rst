@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-    ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
+        * Remove natural language primitives add-on (:pr:`2570`)
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 v1.26.0 Apr 27, 2023
 ====================
