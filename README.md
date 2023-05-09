@@ -59,16 +59,10 @@ python -m pip install "featuretools[complete]"
 python -m pip install "featuretools[updater]"
 ```
 
-**Premium Primitives** - Use Premium Primitives:
+**Premium Primitives** - Use Premium Primitives, including Natural Language Processing primitives:
 
 ```
 python -m pip install "featuretools[premium]"
-```
-
-**NLP Primitives** - Use Natural Language Processing Primitives:
-
-```
-python -m pip install "featuretools[nlp]"
 ```
 
 **TSFresh Primitives** - Use 60+ primitives from [tsfresh](https://tsfresh.readthedocs.io/en/latest/) within Featuretools
