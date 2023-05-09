@@ -33,10 +33,6 @@ $ python -m pip install "featuretools[complete]"
 ```console
 $ python -m pip install "featuretools[premium]"
 ```
-```{tab} NLP Primitives
-```console
-$ python -m pip install "featuretools[nlp]"
-```
 ```{tab} Dask
 ```console
 $ python -m pip install "featuretools[dask]"
@@ -70,10 +66,6 @@ $ python -m pip install "featuretools[sklearn]"
 ```{tab} All Add-ons
 ```console
 $ conda install -c conda-forge nlp-primitives featuretools-tsfresh-primitives pyspark alteryx-open-src-update-checker
-```
-```{tab} NLP Primitives
-```console
-$ conda install -c conda-forge nlp-primitives
 ```
 ```{tab} TSFresh Primitives
 ```console
