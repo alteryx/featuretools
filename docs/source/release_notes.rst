@@ -3,16 +3,18 @@
 Release Notes
 -------------
 
-.. Future Release
-    ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
+        * Remove nlp install command (:pr:`2562`)
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
-
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
+    
 v1.26.0 Apr 27, 2023
 ====================
     * Enhancements
