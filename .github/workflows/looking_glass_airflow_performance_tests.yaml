@@ -24,8 +24,8 @@ jobs:
         test_type: ["pandas", "dask", "spark"]
     steps:
       - name: Generate default ISO timestamp
-          run: |
-            echo "DEFAULT_TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3NZ")" >> $GITHUB_ENV
+        run: |
+          echo "DEFAULT_TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3NZ")" >> $GITHUB_ENV
       - name: Checkout Featuretools
         uses: actions/checkout@v3
         with:
