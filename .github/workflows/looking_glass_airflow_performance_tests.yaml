@@ -60,7 +60,7 @@ jobs:
           --header 'Content-Type: application/json' \
           --data-raw '{
             "conf": {
-                  "description": "${{ steps.get_current_hash.outputs.current_hash }}",
+                  "description": "${{ env.CURRENT_HASH }}",
                   "n_trials": 1,
                   "pytest_args": {
                     "n-jobs": 1
