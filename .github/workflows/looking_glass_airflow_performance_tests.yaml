@@ -25,7 +25,7 @@ jobs:
     steps:
       - name: Generate default ISO timestamp
         run: |
-          echo "DEFAULT_TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3NZ")" >> $GITHUB_ENV
+          echo "TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3NZ")" >> $GITHUB_ENV
       - name: Checkout Featuretools
         uses: actions/checkout@v3
         with:
