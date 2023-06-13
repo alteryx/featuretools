@@ -60,7 +60,7 @@ jobs:
           --header 'Content-Type: application/json' \
           --data-raw '{
             "conf": {
-                  "description": "${{ env.CURRENT_HASH }}",
+                  "description": "${{ matrix.test_type }}",
                   "n_trials": 1,
                   "pytest_args": {
                     "n-jobs": 1
