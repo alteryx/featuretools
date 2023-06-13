@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - OSSAIR-106_perf_tests_via_airflow
   workflow_dispatch:
     inputs:
       current_hash_input:
