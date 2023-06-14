@@ -11,9 +11,10 @@ Future Release
         * Remove natural language primitives add-on (:pr:`2570`)
     * Documentation Changes
     * Testing Changes
+        * Run looking glass performance tests on merge via Airflow (:pr:`2575`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`petejanuszewski1`
 
 v1.26.0 Apr 27, 2023
 ====================

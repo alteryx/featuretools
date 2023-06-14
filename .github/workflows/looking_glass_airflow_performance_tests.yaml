@@ -1,0 +1,76 @@
+name: Looking Glass performance tests
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      current_hash_input:
+        description: 'The new commit to evaluate (optional)'
+        required: false
+        type: string
+      previous_hash_input:
+        description: 'The previous commit to evaluate (optional)'
+        required: false
+        type: string
+jobs:
+  performance_tests:
+    name: Looking Glass performance tests - py38 - ${{ matrix.test_type }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        test_type: ["pandas", "dask", "spark"]
+    steps:
+      - name: Generate default ISO timestamp
+        run: |
+          echo "TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3NZ")" >> $GITHUB_ENV
+      - name: Checkout Featuretools
+        uses: actions/checkout@v3
+        with:
+          repository: 'alteryx/featuretools'
+          fetch-depth: 2
+      - name: Get current commit hash
+        id: get_current_hash
+        run: |
+          if [ -z "${{ inputs.current_hash_input }}" ]
+          then
+            current_hash=$(git rev-parse --short HEAD)
+          else
+            current_hash=${{ inputs.current_hash_input }}
+          fi
+          echo "Latest commit hash: $current_hash"
+          echo "CURRENT_HASH=$current_hash" >> $GITHUB_ENV
+      - name: Get previous commit hash
+        id: get_previous_hash
+        run: |
+          if [ -z "${{ inputs.previous_hash_input }}" ]
+          then
+            previous_hash=$(git rev-parse --short HEAD~1)
+          else
+            previous_hash=${{ inputs.previous_hash_input }}
+          fi
+          echo "Previous commit hash: $previous_hash"
+          echo "PREVIOUS_HASH=$previous_hash" >> $GITHUB_ENV
+      - name: Run performance tests and generate report
+        run: |
+          curl --location --request POST '${{ secrets.AIRFLOW_BASE_URL }}dags/featuretools_entitysets_run_tests_generate_report/dagRuns' \
+          -u '${{ secrets.AIRFLOW_USER }}:${{ secrets.AIRFLOW_PASS }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+            "conf": {
+                  "description": "${{ matrix.test_type }}",
+                  "n_trials": 1,
+                  "pytest_args": {
+                    "n-jobs": 1
+                  },
+                  "python_version": "3.8",
+                  "scenarios_yaml": "entityset_scenarios_${{ matrix.test_type }}.yaml",
+                  "featuretools_branch_previous": "${{ env.PREVIOUS_HASH }}",
+                  "featuretools_branch_new": "${{ env.CURRENT_HASH }}",
+                  "username": "${{ secrets.AIRFLOW_USER }}",
+                  "author": "${{ github.event.head_commit.author.name }}"
+                },
+            "logical_date": "${{ env.TIMESTAMP }}",
+            "dag_run_id": "api_featuretools_entitysets_run_tests_generate_report_${{ env.TIMESTAMP }}"
+          }'
