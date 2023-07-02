@@ -18,7 +18,9 @@ from featuretools.primitives import (
     Sum,
     TimeSinceFirst,
     TimeSinceLast,
-    get_aggregation_primitives
+    get_aggregation_primitives,
+    FirstNotNull,
+    LastNotNull
 )
 from featuretools.primitives.base import (
     AggregationPrimitive,
@@ -417,6 +419,28 @@ def test_time_since_first(pd_es):
     correct = [131376600.0, 131289600.0, 131287800.0]
     # note: must round to nearest second
     assert all(fm[f.get_name()].round().values == correct)
+
+
+def test_first_not_null():
+    f = FirstNotNull()
+    assert f([1, 2, 3]) == 1
+    assert f([1, None, 3]) == 1
+    assert f([1, np.NaN, 3]) == 1
+    assert f([None, 1, 3]) == 1
+    assert f([np.NaN, 1, 3]) == 1
+    assert f([None, None]) is None
+    assert f([]) is None
+
+
+def test_last_not_null():
+    f = LastNotNull()
+    assert f([1, 2, 3]) == 3
+    assert f([1, None, 3]) == 3
+    assert f([1, np.NaN, 3]) == 3
+    assert f([1, 3, None]) == 3
+    assert f([1, 3, np.NaN]) == 3
+    assert f([None, None]) is None
+    assert f([]) is None
 
 
 def test_median(pd_es):
