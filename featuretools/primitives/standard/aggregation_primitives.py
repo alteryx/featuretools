@@ -927,24 +927,3 @@ class LastNotNull(AggregationPrimitive):
 
         return pd_first_not_null
 
-
-class ModeNotNull(AggregationPrimitive):
-    """Determines the first value in a list that is not null.
-
-    Examples:
-        >>> last = LastNotNull()
-        >>> last([None, np.NaN, 1, 2, 3, 4, 5, None])
-        5.0
-    """
-    name = "last_not_null"
-    input_types = [Variable]
-    return_type = None
-    stack_on_self = False
-    description_template = "the last non-null instance of {}"
-
-    def get_function(self, agg_type=Library.PANDAS):
-        def pd_first_not_null(x):
-            idx = x.last_valid_index()  # will return None if all Nones
-            return x.loc[idx] if idx is not None else None
-
-        return pd_first_not_null
