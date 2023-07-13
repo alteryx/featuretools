@@ -72,7 +72,7 @@ dask = [
 ]
 spark = [
     "woodwork[spark] >= 0.23.0",
-    "pyspark >= 3.2.2, <3.4.0",
+    "pyspark >= 3.2.2",
     "numpy < 1.24.0",
 ]
 updater = [
@@ -163,7 +163,7 @@ filterwarnings = [
 
 [tool.black]
 line-length = 88
-target-version = ["py310"]
+target-version = ["py311"]
 
 [tool.ruff]
 line-length = 88
