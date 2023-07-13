@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.8", "3.9", "3.10"]
+        python_version: ["3.8", "3.9", "3.10", "3.11"]
         libraries: ["core", "spark/dask - misc", "spark/dask - computational", "spark/dask - entityset_1", "spark/dask - entityset_2", "spark/dask - primitives"]
 
     steps:
@@ -98,7 +98,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.8", "3.9", "3.10"]
+        python_version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
       - name: Download miniconda
         shell: pwsh
