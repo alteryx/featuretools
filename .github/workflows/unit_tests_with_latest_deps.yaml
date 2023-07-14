@@ -111,7 +111,7 @@ jobs:
           $hashFromFile = Get-FileHash "$env:USERPROFILE/$File" -Algorithm SHA256
           $hashFromUrl = "1"
           if ($hashFromFile.Hash -ne "$hashFromUrl") {
-            Throw "==== Featuretools workflow error: Miniconda file hashes did not match --- ${{ hashFromFile.Hash }} does not match $hashFromUrl"
+            Throw "==== Featuretools workflow error: Miniconda file hashes did not match --- ${hashFromFile.Hash} does not match $hashFromUrl"
           }
       - name: Install miniconda
         shell: cmd
