@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Add support for Python 3.11
+        * Add support for Python 3.11 (:pr:`2583`)
     * Fixes
     * Changes
         * Remove natural language primitives add-on (:pr:`2570`)
