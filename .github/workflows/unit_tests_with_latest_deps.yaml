@@ -109,10 +109,9 @@ jobs:
           $ProgressPreference = "silentlyContinue"
           Invoke-WebRequest -Uri $Uri -Outfile "$env:USERPROFILE/$File"
           $hashFromFile = Get-FileHash "$env:USERPROFILE/$File" -Algorithm SHA256
-          $hashFromUrl = "00e8370542836862d4c790aa8966f1d7344a8addd4b766004febcb23f40e2914"
+          $hashFromUrl = "1"
           if ($hashFromFile.Hash -ne "$hashFromUrl") {
-            Throw "==== File hashes did not match ===="
-            echo $hashFromFile.Hash does not match $hashFromUrl
+            Throw "==== Featuretools workflow error: Miniconda file hashes did not match --- $hashFromFile.Hash does not match $hashFromUrl"
           }
       - name: Install miniconda
         shell: cmd
