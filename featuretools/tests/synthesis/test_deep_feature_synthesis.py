@@ -134,7 +134,7 @@ def test_errors_unsupported_primitives(es):
     bad_trans_prim.compatibility, bad_agg_prim.compatibility = [], []
     library = es.dataframe_type
     error_text = "Selected primitives are incompatible with {} EntitySets: cum_sum, num_unique".format(
-        library,
+        library.value,
     )
     with pytest.raises(ValueError, match=error_text):
         DeepFeatureSynthesis(
