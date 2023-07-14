@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.8", "3.9", "3.10"]
+        python_version: ["3.8", "3.9", "3.10", "3.11"]
         libraries: ["core", "spark/dask - misc", "spark/dask - computational", "spark/dask - entityset_1", "spark/dask - entityset_2", "spark/dask - primitives"]
 
     steps:
@@ -92,13 +92,14 @@ jobs:
           files: ${{ github.workspace }}/coverage.xml
           verbose: true
 
+
   win_unit_tests:
     name: ${{ matrix.python_version }} windows unit tests
     runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.8", "3.9", "3.10"]
+        python_version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
       - name: Download miniconda
         shell: pwsh
@@ -108,9 +109,9 @@ jobs:
           $ProgressPreference = "silentlyContinue"
           Invoke-WebRequest -Uri $Uri -Outfile "$env:USERPROFILE/$File"
           $hashFromFile = Get-FileHash "$env:USERPROFILE/$File" -Algorithm SHA256
-          $hashFromUrl = "307194e1f12bbeb52b083634e89cc67db4f7980bd542254b43d3309eaf7cb358"
+          $hashFromUrl = "00e8370542836862d4c790aa8966f1d7344a8addd4b766004febcb23f40e2914"
           if ($hashFromFile.Hash -ne "$hashFromUrl") {
-            Throw "File hashes did not match!"
+            Throw "$File hashes do not match"
           }
       - name: Install miniconda
         shell: cmd
