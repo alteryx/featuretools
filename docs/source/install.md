@@ -1,6 +1,6 @@
 # Install
 
-Featuretools is available for Python 3.7, 3.8, 3.9, and 3.10. It can be installed from [pypi](https://pypi.org/project/featuretools/), [conda-forge](https://anaconda.org/conda-forge/featuretools), or from [source](https://github.com/alteryx/featuretools).
+Featuretools is available for Python 3.8 - 3.11. It can be installed from [pypi](https://pypi.org/project/featuretools/), [conda-forge](https://anaconda.org/conda-forge/featuretools), or from [source](https://github.com/alteryx/featuretools).
 
 To install Featuretools, run the following command:
 
@@ -144,7 +144,7 @@ If you installed graphviz for **Windows** with `pip`, install graphviz.exe from 
 
 ## Source
 
-To install Featuretools from source, clone the repository from [Github](https://github.com/alteryx/featuretools), and install the dependencies.
+To install Featuretools from source, clone the repository from [GitHub](https://github.com/alteryx/featuretools), and install the dependencies.
 
 ```{hint}
 Be sure to install [Scala and Spark](#scala-and-spark) if you want to run all unit tests
