@@ -9,7 +9,7 @@ Future Release
     * Fixes
     * Changes
         * Remove natural language primitives add-on (:pr:`2570`)
-        * Dependabot PR to bump scipy from 1.4.0 to 1.10.0 to address
+        * Dependabot PR to bump scipy from 1.4.0 to 1.10.0
     * Documentation Changes
     * Testing Changes
         * Run looking glass performance tests on merge via Airflow (:pr:`2575`)
