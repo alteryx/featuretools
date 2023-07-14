@@ -78,7 +78,7 @@ class TestFullNameToFirstName(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         transform.append(primitive_instance)
-        valid_dfs(pd_es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(pd_es, aggregation, transform, self.primitive)
 
 
 class TestFullNameToLastName(PrimitiveTestBase):
@@ -144,7 +144,7 @@ class TestFullNameToLastName(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         transform.append(primitive_instance)
-        valid_dfs(pd_es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(pd_es, aggregation, transform, self.primitive)
 
 
 class TestFullNameToTitle(PrimitiveTestBase):
@@ -188,4 +188,4 @@ class TestFullNameToTitle(PrimitiveTestBase):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         transform.append(primitive_instance)
-        valid_dfs(pd_es, aggregation, transform, self.primitive.name.upper())
+        valid_dfs(pd_es, aggregation, transform, self.primitive)

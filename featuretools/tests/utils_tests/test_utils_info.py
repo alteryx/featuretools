@@ -55,8 +55,6 @@ def test_installed_packages():
         "numpy",
         "tqdm",
         "cloudpickle",
-        "dask",
-        "distributed",
         "psutil",
     ]
     assert set(requirements).issubset(installed_set)

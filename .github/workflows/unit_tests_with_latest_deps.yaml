@@ -13,8 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.8", "3.9", "3.10"]
-        libraries: ["core", "spark - misc", "spark - computational", "spark - entityset_1", "spark - entityset_2", "spark - primitives"]
+        python_version: ["3.8", "3.9", "3.10", "3.11"]
+        libraries: ["core", "spark/dask - misc", "spark/dask - computational", "spark/dask - entityset_1", "spark/dask - entityset_2", "spark/dask - primitives"]
 
     steps:
       - uses: actions/setup-python@v4
@@ -32,19 +32,20 @@ jobs:
           pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
           sudo apt update && sudo apt install -y graphviz
-      - if: ${{ !startsWith(matrix.libraries, 'spark') }}
+      - if: ${{ !startsWith(matrix.libraries, 'spark/dask') }}
         name: Install featuretools with test requirements
         run: |
           python -m pip install -e unpacked_sdist/
           python -m pip install -e unpacked_sdist/[test]
-      - if: ${{ startsWith(matrix.libraries, 'spark') }}
-        name: Install spark pkg, featuretools with test requirements and spark requirements
+      - if: ${{ startsWith(matrix.libraries, 'spark/dask') }}
+        name: Install spark pkg, featuretools with test requirements and spark/dask requirements
         run: |
           sudo apt install -y openjdk-11-jre-headless
           JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+          python -m pip install -e unpacked_sdist/[dask]
           python -m pip install -e unpacked_sdist/[spark]
           python -m pip install -e unpacked_sdist/[test]
-      - if: ${{ matrix.python_version == 3.8 && startsWith(matrix.libraries, 'spark') }}
+      - if: ${{ matrix.python_version == 3.8 && startsWith(matrix.libraries, 'spark/dask') }}
         name: Generate coverage args
         run: echo "coverage_args=--cov=featuretools --cov-config=../pyproject.toml --cov-report=xml:../coverage.xml" >> $GITHUB_ENV
       - if: ${{ env.coverage_args }}
@@ -52,32 +53,32 @@ jobs:
         run: |
           cd unpacked_sdist
           coverage erase
-      - if: ${{ !startsWith(matrix.libraries, 'spark') }}
+      - if: ${{ !startsWith(matrix.libraries, 'spark/dask') }}
         name: Run unit tests (no code coverage)
         run: |
           cd unpacked_sdist
           pytest featuretools/ -n auto
-      - if: ${{ matrix.libraries == 'spark - misc' }}
+      - if: ${{ matrix.libraries == 'spark/dask - misc' }}
         name: Run unit tests (misc)
         run: |
           cd unpacked_sdist
           pytest featuretools/ -n auto --ignore=featuretools/tests/computational_backend --ignore=featuretools/tests/entityset_tests --ignore=featuretools/tests/primitive_tests ${{ env.coverage_args }}
-      - if: ${{ matrix.libraries == 'spark - computational' }}
+      - if: ${{ matrix.libraries == 'spark/dask - computational' }}
         name: Run unit tests (computational backend)
         run: |
           cd unpacked_sdist
           pytest featuretools/tests/computational_backend/ -n auto ${{ env.coverage_args }}
-      - if: ${{ matrix.libraries == 'spark - entityset_1' }}
+      - if: ${{ matrix.libraries == 'spark/dask - entityset_1' }}
         name: Run unit tests (entityset batch 1)
         run: |
           cd unpacked_sdist
           pytest featuretools/tests/entityset_tests -n auto --ignore=featuretools/tests/entityset_tests/test_es.py --ignore=featuretools/tests/entityset_tests/test_ww_es.py ${{ env.coverage_args }}
-      - if: ${{ matrix.libraries == 'spark - entityset_2' }}
+      - if: ${{ matrix.libraries == 'spark/dask - entityset_2' }}
         name: Run unit tests (entityset batch 2)
         run: |
           cd unpacked_sdist
           pytest featuretools/tests/entityset_tests/test_es.py featuretools/tests/entityset_tests/test_ww_es.py ${{ env.coverage_args }}
-      - if: ${{ matrix.libraries == 'spark - primitives' }}
+      - if: ${{ matrix.libraries == 'spark/dask - primitives' }}
         name: Run unit tests (primitives)
         run: |
           cd unpacked_sdist
@@ -91,13 +92,14 @@ jobs:
           files: ${{ github.workspace }}/coverage.xml
           verbose: true
 
+
   win_unit_tests:
     name: ${{ matrix.python_version }} windows unit tests
     runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.8", "3.9", "3.10"]
+        python_version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
       - name: Download miniconda
         shell: pwsh
@@ -107,9 +109,9 @@ jobs:
           $ProgressPreference = "silentlyContinue"
           Invoke-WebRequest -Uri $Uri -Outfile "$env:USERPROFILE/$File"
           $hashFromFile = Get-FileHash "$env:USERPROFILE/$File" -Algorithm SHA256
-          $hashFromUrl = "d4517212c8ac44fd8b5ccc2d4d9f38c2dd924c77a81c2be92c3a72e70dd3e907"
+          $hashFromUrl = "00e8370542836862d4c790aa8966f1d7344a8addd4b766004febcb23f40e2914"
           if ($hashFromFile.Hash -ne "$hashFromUrl") {
-            Throw "File hashes did not match!"
+            Throw "$File hashes do not match"
           }
       - name: Install miniconda
         shell: cmd

@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
@@ -16,8 +15,9 @@ from woodwork.logical_types import (
 
 from featuretools.entityset.entityset import LTI_COLUMN_NAME, EntitySet
 from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import Library, import_or_none
+from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 
+dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
 
 
@@ -38,6 +38,7 @@ def pd_df():
 
 @pytest.fixture
 def dd_df(pd_df):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     return dd.from_pandas(pd_df, npartitions=2)
 
 
@@ -623,7 +624,7 @@ def test_replace_dataframe_already_sorted(es):
     if ps and isinstance(df, ps.DataFrame):
         df["id"] = updated_id.to_list()
         df = df.sort_index()
-    elif isinstance(df, dd.DataFrame):
+    elif is_instance(df, dd, "DataFrame"):
         df["id"] = updated_id
 
     es.replace_dataframe(dataframe_name="sessions", df=df.copy(), already_sorted=False)
@@ -821,6 +822,7 @@ def test_replace_dataframe_different_woodwork_initialized(es):
     assert es["customers"]["cancel_date"].dtype == "datetime64[ns]"
 
 
+@pytest.mark.skipif("not dd")
 def test_replace_dataframe_different_dataframe_types():
     dask_es = EntitySet(id="dask_es")
 

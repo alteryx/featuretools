@@ -4,7 +4,6 @@ import re
 import graphviz
 import pandas as pd
 import pytest
-from dask import dataframe as dd
 
 from featuretools import EntitySet
 from featuretools.utils.gen_utils import Library
@@ -20,6 +19,7 @@ def pd_simple():
 
 @pytest.fixture
 def dd_simple():
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     es = EntitySet("test")
     df = pd.DataFrame({"foo": [1]})
     df = dd.from_pandas(df, npartitions=2)

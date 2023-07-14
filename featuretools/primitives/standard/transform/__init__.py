@@ -15,6 +15,7 @@ from featuretools.primitives.standard.transform.full_name_to_last_name import (
 from featuretools.primitives.standard.transform.full_name_to_title import (
     FullNameToTitle,
 )
+from featuretools.primitives.standard.transform.nth_week_of_month import NthWeekOfMonth
 from featuretools.primitives.standard.transform.is_in import IsIn
 from featuretools.primitives.standard.transform.is_null import IsNull
 from featuretools.primitives.standard.transform.latlong import *

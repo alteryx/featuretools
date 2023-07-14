@@ -1,11 +1,9 @@
 cloudpickle==2.2.1
-dask==2023.3.1
-distributed==2023.3.1
-holidays==0.21.13
+holidays==0.27.1
 numpy==1.23.5
 pandas==1.5.3
-psutil==5.9.4
-pyspark==3.2.3
+psutil==5.9.5
+pyspark==3.3.2
 scipy==1.10.1
 tqdm==4.65.0
-woodwork==0.22.0
+woodwork==0.24.0

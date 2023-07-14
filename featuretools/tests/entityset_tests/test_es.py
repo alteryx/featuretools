@@ -5,7 +5,6 @@ import re
 from datetime import datetime
 from unittest.mock import patch
 
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
@@ -30,9 +29,10 @@ from featuretools.demo import load_retail
 from featuretools.entityset import EntitySet
 from featuretools.entityset.entityset import LTI_COLUMN_NAME, WW_SCHEMA_KEY
 from featuretools.tests.testing_utils import get_df_tags, to_pandas
-from featuretools.utils.gen_utils import Library, import_or_none
+from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.utils.spark_utils import pd_to_spark_clean
 
+dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
 
 
@@ -451,6 +451,7 @@ def pd_df():
 
 @pytest.fixture
 def dd_df(pd_df):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     return dd.from_pandas(pd_df, npartitions=2)
 
 
@@ -608,6 +609,7 @@ def pd_df2():
 
 @pytest.fixture
 def dd_df2(pd_df2):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     return dd.from_pandas(pd_df2, npartitions=2)
 
 
@@ -652,6 +654,7 @@ def pd_df3():
 
 @pytest.fixture
 def dd_df3(pd_df3):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     return dd.from_pandas(pd_df3, npartitions=2)
 
 
@@ -726,6 +729,7 @@ def pd_df4():
 
 @pytest.fixture
 def dd_df4(pd_df4):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     return dd.from_pandas(pd_df4, npartitions=2)
 
 
@@ -821,6 +825,7 @@ def pd_datetime1():
 
 @pytest.fixture
 def dd_datetime1(pd_datetime1):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     return dd.from_pandas(pd_datetime1, npartitions=2)
 
 
@@ -866,6 +871,7 @@ def pd_datetime2():
 
 @pytest.fixture
 def dd_datetime2(pd_datetime2):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     return dd.from_pandas(pd_datetime2, npartitions=2)
 
 
@@ -953,7 +959,7 @@ def test_dataframe_init(es):
         time_index="time",
         logical_types=logical_types,
     )
-    if isinstance(df, dd.DataFrame):
+    if is_instance(df, dd, "DataFrame"):
         df_shape = (df.shape[0].compute(), df.shape[1])
     else:
         df_shape = df.shape
@@ -983,6 +989,7 @@ def pd_bad_df():
 
 @pytest.fixture
 def dd_bad_df(pd_bad_df):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     return dd.from_pandas(pd_bad_df, npartitions=2)
 
 
@@ -993,7 +1000,7 @@ def bad_df(request):
 
 # Skip for Spark, automatically converts non-str column names to str
 def test_nonstr_column_names(bad_df):
-    if isinstance(bad_df, dd.DataFrame):
+    if is_instance(bad_df, dd, "DataFrame"):
         pytest.xfail("Dask DataFrames cannot handle integer column names")
 
     es = EntitySet(id="Failure")
@@ -1267,6 +1274,7 @@ def pd_transactions_df():
 
 @pytest.fixture
 def dd_transactions_df(pd_transactions_df):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     return dd.from_pandas(pd_transactions_df, npartitions=3)
 
 
@@ -1286,7 +1294,7 @@ def transactions_df(request):
 def test_set_time_type_on_init(transactions_df):
     # create cards dataframe
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
-    if isinstance(transactions_df, dd.DataFrame):
+    if is_instance(transactions_df, dd, "DataFrame"):
         cards_df = dd.from_pandas(cards_df, npartitions=3)
     if ps and isinstance(transactions_df, ps.DataFrame):
         cards_df = ps.from_pandas(cards_df)
@@ -1331,7 +1339,7 @@ def test_sets_time_when_adding_dataframe(transactions_df):
     accounts_df_string = pd.DataFrame(
         {"id": [3, 4, 5], "signup_date": ["element", "exporting", "editable"]},
     )
-    if isinstance(transactions_df, dd.DataFrame):
+    if is_instance(transactions_df, dd, "DataFrame"):
         accounts_df = dd.from_pandas(accounts_df, npartitions=2)
     if ps and isinstance(transactions_df, ps.DataFrame):
         accounts_df = ps.from_pandas(accounts_df)
@@ -1614,6 +1622,7 @@ def pd_normalize_es():
 
 @pytest.fixture
 def dd_normalize_es(pd_normalize_es):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     es = EntitySet(id=pd_normalize_es.id)
     dd_df = dd.from_pandas(pd_normalize_es["data"], npartitions=2)
     dd_df.ww.init(schema=pd_normalize_es["data"].ww.schema)
@@ -1839,6 +1848,7 @@ def pd_datetime3():
 
 @pytest.fixture
 def dd_datetime3(pd_datetime3):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     return dd.from_pandas(pd_datetime3, npartitions=2)
 
 
@@ -1889,6 +1899,7 @@ def pd_index_df():
 
 @pytest.fixture
 def dd_index_df(pd_index_df):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     return dd.from_pandas(pd_index_df, npartitions=3)
 
 
@@ -2379,6 +2390,7 @@ def es_to_copy(request):
 
 @pytest.fixture
 def dask_es_to_copy(make_es):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     es = EntitySet(id=make_es.id)
     for df in make_es.dataframes:
         dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)

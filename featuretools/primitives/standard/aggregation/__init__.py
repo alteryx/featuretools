@@ -1,7 +1,3 @@
-from featuretools.primitives.standard.aggregation.autocorrelation import (
-    AutoCorrelation,
-)
-from featuretools.primitives.standard.aggregation.correlation import Correlation
 from featuretools.primitives.standard.aggregation.all_primitive import All
 from featuretools.primitives.standard.aggregation.any_primitive import Any
 from featuretools.primitives.standard.aggregation.avg_time_between import AvgTimeBetween
@@ -34,6 +30,7 @@ from featuretools.primitives.standard.aggregation.first_last_time_delta import (
     FirstLastTimeDelta,
 )
 from featuretools.primitives.standard.aggregation.kurtosis import Kurtosis
+from featuretools.primitives.standard.aggregation.is_unique import IsUnique
 from featuretools.primitives.standard.aggregation.last import Last
 from featuretools.primitives.standard.aggregation.max_primitive import Max
 from featuretools.primitives.standard.aggregation.max_consecutive_false import (
@@ -53,10 +50,34 @@ from featuretools.primitives.standard.aggregation.max_consecutive_zeros import (
 )
 from featuretools.primitives.standard.aggregation.mean import Mean
 from featuretools.primitives.standard.aggregation.median import Median
+from featuretools.primitives.standard.aggregation.max_count import MaxCount
+from featuretools.primitives.standard.aggregation.median_count import MedianCount
+from featuretools.primitives.standard.aggregation.max_min_delta import MaxMinDelta
 from featuretools.primitives.standard.aggregation.min_count import MinCount
 from featuretools.primitives.standard.aggregation.min_primitive import Min
 from featuretools.primitives.standard.aggregation.mode import Mode
+from featuretools.primitives.standard.aggregation.n_unique_days import NUniqueDays
+from featuretools.primitives.standard.aggregation.n_unique_days_of_calendar_year import (
+    NUniqueDaysOfCalendarYear,
+)
+from featuretools.primitives.standard.aggregation.n_unique_days_of_month import (
+    NUniqueDaysOfMonth,
+)
+from featuretools.primitives.standard.aggregation.has_no_duplicates import (
+    HasNoDuplicates,
+)
+from featuretools.primitives.standard.aggregation.is_monotonically_decreasing import (
+    IsMonotonicallyDecreasing,
+)
+from featuretools.primitives.standard.aggregation.is_monotonically_increasing import (
+    IsMonotonicallyIncreasing,
+)
+from featuretools.primitives.standard.aggregation.n_unique_months import NUniqueMonths
+from featuretools.primitives.standard.aggregation.n_unique_weeks import NUniqueWeeks
 from featuretools.primitives.standard.aggregation.n_most_common import NMostCommon
+from featuretools.primitives.standard.aggregation.n_most_common_frequency import (
+    NMostCommonFrequency,
+)
 from featuretools.primitives.standard.aggregation.num_true import NumTrue
 from featuretools.primitives.standard.aggregation.num_peaks import NumPeaks
 from featuretools.primitives.standard.aggregation.num_zero_crossings import (

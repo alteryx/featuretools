@@ -59,16 +59,22 @@ python -m pip install "featuretools[complete]"
 python -m pip install "featuretools[updater]"
 ```
 
-**NLP Primitives** - Use Natural Language Processing Primitives:
+**Premium Primitives** - Use Premium Primitives, including Natural Language Processing primitives:
 
 ```
-python -m pip install "featuretools[nlp]"
+python -m pip install "featuretools[premium]"
 ```
 
 **TSFresh Primitives** - Use 60+ primitives from [tsfresh](https://tsfresh.readthedocs.io/en/latest/) within Featuretools
 
 ```
 python -m pip install "featuretools[tsfresh]"
+```
+
+**Dask Support** - Use Dask Dataframes to create EntitySets or run DFS with njobs > 1
+
+```
+python -m pip install "featuretools[dask]"
 ```
 
 **SQL** - Automatic EntitySet generation from relational data stored in a SQL database: 
