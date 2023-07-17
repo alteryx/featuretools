@@ -66,14 +66,15 @@ test = [
     "pytest-timeout >= 2.1.0"
 ]
 dask = [
-    "dask[dataframe] >= 2022.11.1, < 2023.4.0",
-    "distributed >= 2022.11.1, < 2023.4.0",
+    "dask[dataframe] >= 2022.11.1",
+    "distributed >= 2022.11.1",
     "woodwork[dask] >= 0.23.0",
 ]
 spark = [
     "woodwork[spark] >= 0.23.0",
     "pyspark >= 3.2.2",
     "numpy < 1.24.0",
+    "pandas < 2.0.0",
 ]
 updater = [
     "alteryx-open-src-update-checker >= 2.1.0"
