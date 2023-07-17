@@ -43,7 +43,7 @@ class TestSeason:
                 "2019-03",
                 "NaT",
             ],
-        ).astype("datetime64")
+        ).astype("datetime64[ns]")
         answer = pd.Series([pd.NA, "winter", "winter", pd.NA], dtype="string")
         given_answer = pd.Series(primitive_func(case))
         pd.testing.assert_series_equal(given_answer, answer)

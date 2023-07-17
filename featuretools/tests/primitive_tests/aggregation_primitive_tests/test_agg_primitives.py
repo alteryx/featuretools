@@ -239,11 +239,13 @@ class TestKurtosis(PrimitiveTestBase):
         given_answer = primitive_func(data)
         assert np.isclose(answer, given_answer, atol=0.01)
 
-        data = pd.Series([sqrt(x) for x in list(range(100))], dtype=dtype)
-        answer = -0.46
-        primitive_func = self.primitive().get_function()
-        given_answer = primitive_func(data)
-        assert np.isclose(answer, given_answer, atol=0.01)
+        if dtype == "float64":
+            # Series contains floating point values - only check with float dtype
+            data = pd.Series([sqrt(x) for x in list(range(100))], dtype=dtype)
+            answer = -0.46
+            primitive_func = self.primitive().get_function()
+            given_answer = primitive_func(data)
+            assert np.isclose(answer, given_answer, atol=0.01)
 
     def test_nan(self):
         data = pd.Series([np.nan, 5, 3], dtype="float64")

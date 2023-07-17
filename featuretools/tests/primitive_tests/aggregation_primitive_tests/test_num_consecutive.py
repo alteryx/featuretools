@@ -124,15 +124,15 @@ class TestNumConsecutiveGreaterMean:
         primitive_func = primitive_instance.get_function()
 
         x = pd.Series(range(10))
-        x = x.append(pd.Series([np.inf]))
+        x = pd.concat([x, pd.Series([np.inf])])
         assert primitive_func(x) == 0
 
         x = pd.Series(range(10))
-        x = x.append(pd.Series([np.NINF]))
+        x = pd.concat([x, pd.Series([np.NINF])])
         assert primitive_func(x) == 10
 
         x = pd.Series(range(10))
-        x = x.append(pd.Series([np.NINF, np.inf, np.inf]))
+        x = pd.concat([x, pd.Series([np.NINF, np.inf, np.inf])])
         assert np.isnan(primitive_func(x))
 
 
@@ -238,7 +238,7 @@ class TestNumConsecutiveLessMean:
 
     def test_nan(self):
         x = pd.Series(range(10))
-        x = x.append(pd.Series([np.nan] * 20))
+        x = pd.concat([x, pd.Series([np.nan] * 20)])
         longest_sequence = [0, 1, 2, 3, 4]
 
         # test ignoring NaN values
@@ -256,13 +256,13 @@ class TestNumConsecutiveLessMean:
         primitive_func = primitive_instance.get_function()
 
         x = pd.Series(range(10))
-        x = x.append(pd.Series([np.inf]))
+        x = pd.concat([x, pd.Series([np.inf])])
         assert primitive_func(x) == 10
 
         x = pd.Series(range(10))
-        x = x.append(pd.Series([np.NINF]))
+        x = pd.concat([x, pd.Series([np.NINF])])
         assert primitive_func(x) == 0
 
         x = pd.Series(range(10))
-        x = x.append(pd.Series([np.NINF, np.inf, np.inf]))
+        x = pd.concat([x, pd.Series([np.NINF, np.inf, np.inf])])
         assert np.isnan(primitive_func(x))

@@ -17,28 +17,19 @@ class TestPercentUnique(PrimitiveTestBase):
 
     def test_nans(self):
         primitive_func = self.primitive().get_function()
-        array_nans = self.array.copy().append(pd.Series([np.nan]))
+        array_nans = pd.concat([self.array.copy(), pd.Series([np.nan])])
         assert primitive_func(array_nans) == (8 / 11.0)
         primitive_func = self.primitive(skipna=False).get_function()
-        array_nans = self.array.copy().append(pd.Series([np.nan]))
         assert primitive_func(array_nans) == (9 / 11.0)
 
     def test_multiple_nans(self):
         primitive_func = self.primitive().get_function()
-        array_nans = self.array.copy().append(pd.Series([np.nan] * 3))
+        array_nans = pd.concat([self.array.copy(), pd.Series([np.nan] * 3)])
         assert primitive_func(array_nans) == (8 / 13.0)
         primitive_func = self.primitive(skipna=False).get_function()
         assert primitive_func(array_nans) == (9 / 13.0)
 
     def test_empty_string(self):
         primitive_func = self.primitive().get_function()
-        array_empty_string = self.array.copy().append(
-            pd.Series(
-                [
-                    np.nan,
-                    "",
-                    "",
-                ],
-            ),
-        )
+        array_empty_string = pd.concat([self.array.copy(), pd.Series([np.nan, "", ""])])
         assert primitive_func(array_empty_string) == (9 / 13.0)

@@ -197,9 +197,9 @@ def _clean_data(data):
     clean_data = _reconstruct_times(clean_data)
 
     # Create a time index 6 months before scheduled_dep
-    clean_data.loc[:, "date_scheduled"] = clean_data[
-        "scheduled_dep_time"
-    ].dt.date - pd.Timedelta("120d")
+    clean_data.loc[:, "date_scheduled"] = pd.to_datetime(
+        clean_data["scheduled_dep_time"],
+    ).dt.date - pd.Timedelta("120d")
 
     # A null entry for a delay means no delay
     clean_data = _fill_labels(clean_data)
@@ -306,7 +306,9 @@ def _reconstruct_times(clean_data):
 
 def filter_data(clean_data, month_filter=None, categorical_filter=None):
     if month_filter is not None:
-        tmp = clean_data["scheduled_dep_time"].dt.month.isin(month_filter)
+        tmp = pd.to_datetime(clean_data["scheduled_dep_time"]).dt.month.isin(
+            month_filter,
+        )
         clean_data = clean_data[tmp]
 
     if categorical_filter is not None:
