@@ -1468,7 +1468,7 @@ def test_get_filepath(es):
 
         def get_function(self):
             filepath = self.get_filepath("featuretools_unit_test_example.csv")
-            reference = pd.read_csv(filepath, header=None, squeeze=True)
+            reference = pd.read_csv(filepath, header=None).squeeze("columns")
 
             def map_to_word(x):
                 def _map(x):

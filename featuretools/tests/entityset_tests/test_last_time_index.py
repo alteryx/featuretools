@@ -92,7 +92,7 @@ def extra_session_df(es):
     row_values = {"customer_id": 2, "device_name": "PC", "device_type": 0, "id": 6}
     row = pd.DataFrame(row_values, index=pd.Index([6], name="id"))
     df = to_pandas(es["sessions"])
-    df = df.append(row, sort=True).sort_index()
+    df = pd.concat([df, row]).sort_index()
     if es.dataframe_type == Library.DASK:
         df = dd.from_pandas(df, npartitions=3)
     elif es.dataframe_type == Library.SPARK:
@@ -158,7 +158,7 @@ class TestLastTimeIndex(object):
         }
         # make sure index doesn't have same name as column to suppress pandas warning
         row = pd.DataFrame(row_values, index=pd.Index([21]))
-        df = values.append(row, sort=True)
+        df = pd.concat([values, row])
         df = df[["value", "value_time"]].sort_values(by="value")
         df.index.name = None
 
@@ -293,7 +293,7 @@ class TestLastTimeIndex(object):
             "product_id": "toothpaste",
         }
         row = pd.DataFrame(row_values, index=pd.RangeIndex(start=7, stop=8))
-        df = wishlist_df.append(row)
+        df = pd.concat([wishlist_df, row])
         if es.dataframe_type == Library.DASK:
             df = dd.from_pandas(df, npartitions=2)
         logical_types = {
@@ -346,7 +346,7 @@ class TestLastTimeIndex(object):
             "product_id": "toothpaste",
         }
         row = pd.DataFrame(row_values, index=pd.RangeIndex(start=7, stop=8))
-        df = wishlist_df.append(row)
+        df = pd.concat([wishlist_df, row])
 
         # drop instance 4 so wishlist_log does not have session id 3 instance
         df.drop(4, inplace=True)

@@ -19,7 +19,7 @@ class MultiplyNumericBoolean(TransformPrimitive):
         >>> multiply_numeric_boolean = MultiplyNumericBoolean()
         >>> multiply_numeric_boolean([2, 1, 2], [True, True, False]).tolist()
         [2, 1, 0]
-        >>> multiply_numeric_boolean([2, None, None], [True, True, False]).tolist()
+        >>> multiply_numeric_boolean([2, None, None], [True, True, False]).astype("float64").tolist()
         [2.0, nan, nan]
         >>> multiply_numeric_boolean([2, 1, 2], pd.Series([True, True, pd.NA], dtype="boolean")).tolist()
         [2, 1, <NA>]
