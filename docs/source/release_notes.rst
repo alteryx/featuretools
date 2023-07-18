@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Add support for Python 3.11 (:pr:`2583`)
+        * Add support for ``pandas`` v2.0 (:pr:`2585`)
     * Fixes
     * Changes
         * Remove natural language primitives add-on (:pr:`2570`)
@@ -15,7 +16,7 @@ Future Release
         * Run looking glass performance tests on merge via Airflow (:pr:`2575`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`petejanuszewski1`, :user:`sbadithe`
+    :user:`gsheni`, :user:`petejanuszewski1`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v1.26.0 Apr 27, 2023
 ====================
