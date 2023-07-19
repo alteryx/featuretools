@@ -18,7 +18,7 @@ from featuretools.primitives import (
     MultiplyNumeric,
 )
 from featuretools.tests.feature_discovery.test_feature_discovery import (
-    TestMultiOutputPrimitive,
+    MultiOutputPrimitiveForTest,
 )
 from featuretools.tests.testing_utils.generate_fake_dataframe import (
     generate_fake_dataframe,
@@ -314,7 +314,7 @@ def test_feature_collection_serialization_roundtrip():
     origin_features = schema_to_features(df.ww.schema)
     features = generate_features_from_primitives(
         origin_features,
-        [Absolute, MultiplyNumeric, TestMultiOutputPrimitive],
+        [Absolute, MultiplyNumeric, MultiOutputPrimitiveForTest],
     )
 
     features = generate_features_from_primitives(features, [Lag])

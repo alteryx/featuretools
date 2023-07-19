@@ -20,6 +20,7 @@ def test_replace_inf_values(divide_by_zero_es):
             entityset=divide_by_zero_es,
             target_dataframe_name="zero",
             trans_primitives=[primitive],
+            max_depth=1,
         )
         assert np.inf in to_pandas(fm).values or -np.inf in to_pandas(fm).values
         replaced_fm = replace_inf_values(fm)
@@ -40,6 +41,7 @@ def test_replace_inf_values_specify_cols(divide_by_zero_es):
         entityset=divide_by_zero_es,
         target_dataframe_name="zero",
         trans_primitives=[div_by_scalar],
+        max_depth=1,
     )
 
     assert np.inf in to_pandas(fm["col1 / 0"]).values

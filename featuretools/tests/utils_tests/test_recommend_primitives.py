@@ -62,15 +62,15 @@ def es_with_skewed_dfs(
     right_skew_moderate_and_heavy_df,
 ):
     es = EntitySet()
-    es.add_dataframe(moderate_right_skewed_df, "moderate_right_skewed_df", "dataframe")
-    es.add_dataframe(heavy_right_skewed_df, "heavy_right_skewed_df", "dataframe")
-    es.add_dataframe(left_skewed_df, "left_skewed_df", "dataframe")
-    es.add_dataframe(skewed_df_zeros, "skewed_df_zeros", "dataframe")
-    es.add_dataframe(normal_df, "normal_df", "dataframe")
+    es.add_dataframe(moderate_right_skewed_df, "moderate_right_skewed_df", "id")
+    es.add_dataframe(heavy_right_skewed_df, "heavy_right_skewed_df", "id")
+    es.add_dataframe(left_skewed_df, "left_skewed_df", "id")
+    es.add_dataframe(skewed_df_zeros, "skewed_df_zeros", "id")
+    es.add_dataframe(normal_df, "normal_df", "id")
     es.add_dataframe(
         right_skew_moderate_and_heavy_df,
         "right_skew_moderate_and_heavy_df",
-        "dataframe",
+        "id",
     )
     return es
 
