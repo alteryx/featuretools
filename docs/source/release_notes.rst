@@ -11,7 +11,7 @@ Future Release
     * Fixes
     * Changes
         * Remove natural language primitives add-on (:pr:`2570`)
-        * Updates to silence FutureWarnings (:pr:`2589`)
+        * Updates to address various warnings (:pr:`2589`)
     * Documentation Changes
     * Testing Changes
         * Run looking glass performance tests on merge via Airflow (:pr:`2575`)
