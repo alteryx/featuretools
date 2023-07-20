@@ -48,14 +48,14 @@ DEFAULT_LT_FOR_TAG = {
 }
 
 
-class TestMultiOutputPrimitive(TransformPrimitive):
+class MultiOutputPrimitiveForTest(TransformPrimitive):
     name = "test_mo"
     input_types = [ColumnSchema(logical_type=NaturalLanguage)]
     return_type = ColumnSchema(semantic_tags={"numeric"})
     number_output_features = 2
 
 
-class TestDoublePrimitive(TransformPrimitive):
+class DoublePrimitiveForTest(TransformPrimitive):
     name = "test_double"
     input_types = [ColumnSchema(logical_type=Double)]
     return_type = ColumnSchema(logical_type=Double)
@@ -334,7 +334,7 @@ def test_compare_dfs(col_defs, primitives):
     )
 
     es = EntitySet(id="test")
-    es.add_dataframe(df, "df", index="idx")
+    es.add_dataframe(df, "df")
 
     features_old = dfs(
         entityset=es,
@@ -342,6 +342,7 @@ def test_compare_dfs(col_defs, primitives):
         trans_primitives=primitives,
         features_only=True,
         return_types="all",
+        max_depth=1,
     )
 
     origin_features = schema_to_features(df.ww.schema)

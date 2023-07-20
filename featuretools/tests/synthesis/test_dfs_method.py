@@ -257,13 +257,11 @@ def test_approximate_features(pd_dataframes, relationships):
 
 def test_all_columns(pd_dataframes, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3], "time": [10, 12, 15]})
-    instance_ids = [1, 2, 3, 4, 5]
     feature_matrix, features = dfs(
         dataframes=pd_dataframes,
         relationships=relationships,
         target_dataframe_name="transactions",
         cutoff_time=cutoff_times_df,
-        instance_ids=instance_ids,
         agg_primitives=[Max, Mean, Min, Sum],
         trans_primitives=[],
         groupby_trans_primitives=["cum_sum"],

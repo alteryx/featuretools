@@ -21,7 +21,7 @@ from featuretools.feature_discovery.LiteFeature import (
 from featuretools.primitives import Absolute, AddNumeric, Lag
 from featuretools.synthesis import dfs
 from featuretools.tests.feature_discovery.test_feature_discovery import (
-    TestMultiOutputPrimitive,
+    MultiOutputPrimitiveForTest,
 )
 from featuretools.tests.testing_utils.generate_fake_dataframe import (
     generate_fake_dataframe,
@@ -41,13 +41,14 @@ def test_convert_featurebase_list_to_feature_list():
     )
 
     es = EntitySet(id="es")
-    es.add_dataframe(df, df.ww.name, index="idx")
+    es.add_dataframe(df, df.ww.name)
 
     fdefs = dfs(
         entityset=es,
         target_dataframe_name=df.ww.name,
-        trans_primitives=[AddNumeric, TestMultiOutputPrimitive],
+        trans_primitives=[AddNumeric, MultiOutputPrimitiveForTest],
         features_only=True,
+        max_depth=1,
     )
     assert isinstance(fdefs, list)
     assert isinstance(fdefs[0], FeatureBase)
@@ -66,14 +67,14 @@ def test_convert_featurebase_list_to_feature_list():
     fmo0 = LiteFeature(
         name="TEST_MO(f_3)[0]",
         tags={"numeric"},
-        primitive=TestMultiOutputPrimitive(),
+        primitive=MultiOutputPrimitiveForTest(),
         base_features=[f3],
         idx=0,
     )
     fmo1 = LiteFeature(
         name="TEST_MO(f_3)[1]",
         tags={"numeric"},
-        primitive=TestMultiOutputPrimitive(),
+        primitive=MultiOutputPrimitiveForTest(),
         base_features=[f3],
         idx=1,
     )
@@ -148,7 +149,7 @@ def test_multi_output_to_featurebase():
 
     origin_features = schema_to_features(df.ww.schema)
     f_1 = [f for f in origin_features if f.name == "f_1"][0]
-    features = generate_features_from_primitives([f_1], [TestMultiOutputPrimitive()])
+    features = generate_features_from_primitives([f_1], [MultiOutputPrimitiveForTest()])
 
     lsa_features = [f for f in features if f.get_primitive_name() == "test_mo"]
     assert len(lsa_features) == 2
@@ -204,7 +205,7 @@ def test_stacking_on_multioutput_to_featurebase():
     time_index_feature = [f for f in origin_features if f.name == "t_idx"][0]
     f_1 = [f for f in origin_features if f.name == "f_1"][0]
 
-    features = generate_features_from_primitives([f_1], [TestMultiOutputPrimitive()])
+    features = generate_features_from_primitives([f_1], [MultiOutputPrimitiveForTest()])
     lsa_features = [f for f in features if f.get_primitive_name() == "test_mo"]
     assert len(lsa_features) == 2
 

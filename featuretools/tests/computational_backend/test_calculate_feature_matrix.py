@@ -958,7 +958,6 @@ def test_approximate_dfeat_of_agg_on_target(pd_es):
     feature_matrix = calculate_feature_matrix(
         [dfeat, agg_feat],
         pd_es,
-        instance_ids=[0, 2],
         approximate=Timedelta(10, "s"),
         cutoff_time=cutoff_time,
     )

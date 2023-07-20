@@ -75,7 +75,7 @@ def test_remove_highly_null_features():
         entityset=es,
         target_dataframe_name="nulls",
         trans_primitives=["is_null"],
-        max_depth=2,
+        max_depth=1,
     )
 
     with pytest.raises(
@@ -146,7 +146,7 @@ def test_remove_single_value_features():
         entityset=es,
         target_dataframe_name="single_vals",
         trans_primitives=["is_null"],
-        max_depth=2,
+        max_depth=1,
     )
 
     no_params, no_params_features = remove_single_value_features(fm, features)
@@ -193,7 +193,7 @@ def test_remove_highly_correlated_features():
         entityset=es,
         target_dataframe_name="correlated",
         trans_primitives=["num_characters"],
-        max_depth=2,
+        max_depth=1,
     )
 
     with pytest.raises(
@@ -266,7 +266,7 @@ def test_remove_highly_correlated_features_init_woodwork():
         entityset=es,
         target_dataframe_name="correlated",
         trans_primitives=["num_characters"],
-        max_depth=2,
+        max_depth=1,
     )
 
     no_ww_fm = fm.copy()
@@ -284,6 +284,7 @@ def test_multi_output_selection():
 
     df2 = pd.DataFrame(
         {
+            "index": [0, 1, 2, 3],
             "first_id": [0, 1, 1, 3],
             "all_nulls": [None, None, None, None],
             "quarter": ["a", "b", None, "c"],
@@ -306,7 +307,7 @@ def test_multi_output_selection():
         target_dataframe_name="first",
         trans_primitives=[],
         agg_primitives=["n_most_common"],
-        max_depth=2,
+        max_depth=1,
     )
 
     multi_output, multi_output_features = remove_single_value_features(fm, features)

@@ -353,7 +353,6 @@ def test_operations_invalidate_metadata(es):
     new_es.add_dataframe(
         es["customers"],
         "customers",
-        index=es["customers"].index,
         logical_types=customers_ltypes,
     )
     if not isinstance(es["sessions"], pd.DataFrame):
@@ -363,7 +362,6 @@ def test_operations_invalidate_metadata(es):
     new_es.add_dataframe(
         es["sessions"],
         "sessions",
-        index=es["sessions"].index,
         logical_types=sessions_ltypes,
     )
 
