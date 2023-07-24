@@ -3,16 +3,24 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.27.0 Jul 24, 2023
+====================
     * Enhancements
         * Add support for Python 3.11 (:pr:`2583`)
         * Add support for ``pandas`` v2.0 (:pr:`2585`)
-    * Fixes
     * Changes
         * Remove natural language primitives add-on (:pr:`2570`)
         * Updates to address various warnings (:pr:`2589`)
-    * Documentation Changes
     * Testing Changes
         * Run looking glass performance tests on merge via Airflow (:pr:`2575`)
 
