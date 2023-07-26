@@ -3,7 +3,7 @@ import logging
 import operator
 import warnings
 from collections import defaultdict
-from typing import Any, DefaultDict, Dict, List
+from typing import Any, DefaultDict, Dict, List, Type
 
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
@@ -1095,12 +1095,12 @@ def _find_root_primitive(feature):
 
 
 def _check_if_stacking_is_prohibited(
-    feature,
-    f_primitive,
-    primitive,
-    primitive_class,
-    primitive_stack_on_self,
-    tuple_primitive_stack_on_exclude,
+    feature: FeatureBase,
+    f_primitive: PrimitiveBase,
+    primitive: PrimitiveBase,
+    primitive_class: Type[PrimitiveBase],
+    primitive_stack_on_self: bool,
+    tuple_primitive_stack_on_exclude: tuple[Type[PrimitiveBase]],
 ):
     if not primitive_stack_on_self and isinstance(f_primitive, primitive_class):
         return True
@@ -1120,10 +1120,10 @@ def _check_if_stacking_is_prohibited(
 
 
 def _check_if_stacking_is_permitted(
-    f_primitive,
-    primitive_class,
-    primitive_stack_on_self,
-    tuple_primitive_stack_on,
+    f_primitive: PrimitiveBase,
+    primitive_class: Type[PrimitiveBase],
+    primitive_stack_on_self: bool,
+    tuple_primitive_stack_on: tuple[Type[PrimitiveBase]],
 ):
     if primitive_stack_on_self and isinstance(f_primitive, primitive_class):
         return True
@@ -1139,7 +1139,7 @@ def _check_if_stacking_is_permitted(
     return False
 
 
-def can_stack_primitive_on_inputs(primitive, inputs):
+def can_stack_primitive_on_inputs(primitive: PrimitiveBase, inputs: List[FeatureBase]):
     """
     Checks if features in inputs can be used with supplied primitive
     using the stacking rules.
