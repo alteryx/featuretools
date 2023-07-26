@@ -1120,7 +1120,10 @@ def _check_if_stacking_is_prohibited(
 
 
 def _check_if_stacking_is_permitted(
-    f_primitive, primitive_class, primitive_stack_on_self, tuple_primitive_stack_on
+    f_primitive,
+    primitive_class,
+    primitive_stack_on_self,
+    tuple_primitive_stack_on,
 ):
     if primitive_stack_on_self and isinstance(f_primitive, primitive_class):
         return True
@@ -1159,7 +1162,7 @@ def can_stack_primitive_on_inputs(primitive, inputs):
         # However, we want to check stacking rules with the primitive the DirectFeature is based on.
         f_primitive = _find_root_primitive(feature)
 
-        # check if stacking is disabled
+        # check if stacking is prohibited
         if _check_if_stacking_is_prohibited(
             feature,
             f_primitive,
@@ -1179,9 +1182,11 @@ def can_stack_primitive_on_inputs(primitive, inputs):
         ):
             continue
 
-        # if we reach this case, we default to stacking not being permitted
+        # if we reach this line, stacking is neither prohibited nor permitted, so
+        # we default to stacking not being permitted in this case
         return False
 
+    # if we reach this line nothing is prohibited and stacking is permitted for all inputs
     return True
 
 
