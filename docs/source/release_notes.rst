@@ -82,6 +82,7 @@ v1.24.0 Mar 28, 2023
         * Update ``SubtractNumeric`` Primitive with commutative class property (:pr:`2527`)
     * Changes
         * Separate Makefile command for core requirements, test requirements and dev requirements (:pr:`2518`)
+
     Thanks to the following people for contributing to this release:
     :user:`dvreed77`, :user:`gsheni`, :user:`ozzieD`
 
