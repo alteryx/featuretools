@@ -3,7 +3,7 @@ import logging
 import operator
 import warnings
 from collections import defaultdict
-from typing import Any, DefaultDict, Dict, List, Type
+from typing import Any, DefaultDict, Dict, List, Tuple, Type
 
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
@@ -1100,7 +1100,7 @@ def _check_if_stacking_is_prohibited(
     primitive: PrimitiveBase,
     primitive_class: Type[PrimitiveBase],
     primitive_stack_on_self: bool,
-    tuple_primitive_stack_on_exclude: tuple[Type[PrimitiveBase]],
+    tuple_primitive_stack_on_exclude: Tuple[Type[PrimitiveBase]],
 ):
     if not primitive_stack_on_self and isinstance(f_primitive, primitive_class):
         return True
@@ -1123,7 +1123,7 @@ def _check_if_stacking_is_permitted(
     f_primitive: PrimitiveBase,
     primitive_class: Type[PrimitiveBase],
     primitive_stack_on_self: bool,
-    tuple_primitive_stack_on: tuple[Type[PrimitiveBase]],
+    tuple_primitive_stack_on: Tuple[Type[PrimitiveBase]],
 ):
     if primitive_stack_on_self and isinstance(f_primitive, primitive_class):
         return True
