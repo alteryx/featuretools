@@ -1174,17 +1174,13 @@ def can_stack_primitive_on_inputs(primitive, inputs):
             return False
 
         # we permit stacking only if it is not prohibited and meets the criterion to be permitted
-        if _check_if_stacking_is_permitted(
+        if not _check_if_stacking_is_permitted(
             f_primitive,
             primitive_class,
             primitive_stack_on_self,
             tuple_primitive_stack_on,
         ):
-            continue
-
-        # if we reach this line, stacking is neither prohibited nor permitted, so
-        # we default to stacking not being permitted in this case
-        return False
+            return False
 
     # if we reach this line nothing is prohibited and stacking is permitted for all inputs
     return True
