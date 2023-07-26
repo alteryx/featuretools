@@ -184,7 +184,11 @@ def test_encode_unknown_features():
         index="index",
         make_index=True,
     )
-    features, feature_defs = dfs(entityset=pd_es, target_dataframe_name="a")
+    features, feature_defs = dfs(
+        entityset=pd_es,
+        target_dataframe_name="a",
+        max_depth=1,
+    )
 
     # Specify unknown token for replacement
     features_enc, _ = encode_features(features, feature_defs, include_unknown=True)
@@ -232,7 +236,11 @@ def test_encode_features_drop_first():
         index="index",
         make_index=True,
     )
-    features, feature_defs = dfs(entityset=pd_es, target_dataframe_name="a")
+    features, feature_defs = dfs(
+        entityset=pd_es,
+        target_dataframe_name="a",
+        max_depth=1,
+    )
     features_enc, _ = encode_features(
         features,
         feature_defs,
@@ -346,7 +354,11 @@ def test_encode_features_matches_calculate_feature_matrix():
         index="index",
         make_index=True,
     )
-    features, feature_defs = dfs(entityset=pd_es, target_dataframe_name="a")
+    features, feature_defs = dfs(
+        entityset=pd_es,
+        target_dataframe_name="a",
+        max_depth=1,
+    )
 
     features_enc, feature_defs_enc = encode_features(
         features,

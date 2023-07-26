@@ -737,6 +737,7 @@ class FeatureSetCalculator(object):
                         groupby_col,
                         observed=True,
                         sort=False,
+                        group_keys=False,
                     ).apply(last_n)
 
             to_agg = {}
@@ -798,6 +799,7 @@ class FeatureSetCalculator(object):
                     base_frame[groupby_col],
                     observed=True,
                     sort=False,
+                    group_keys=False,
                 ).apply(wrap)
                 frame = pd.merge(
                     left=frame,

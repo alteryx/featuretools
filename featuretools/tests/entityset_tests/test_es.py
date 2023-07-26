@@ -707,6 +707,7 @@ def test_bad_time_index_column(df3):
         es.add_dataframe(
             dataframe_name="test_dataframe",
             dataframe=df3,
+            index="category",
             time_index="time",
             logical_types=logical_types,
         )

@@ -42,8 +42,8 @@ class TestAbsoluteDiff:
         np.testing.assert_array_equal(given_answer, answer)
 
     def test_empty(self):
-        data = pd.Series([])
-        answer = pd.Series([])
+        data = pd.Series([], dtype="float64")
+        answer = pd.Series([], dtype="float64")
         primitive_func = AbsoluteDiff().get_function()
         given_answer = primitive_func(data)
         np.testing.assert_array_equal(given_answer, answer)
