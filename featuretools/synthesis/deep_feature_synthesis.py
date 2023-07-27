@@ -3,7 +3,7 @@ import logging
 import operator
 import warnings
 from collections import defaultdict
-from typing import Any, DefaultDict, Dict, List
+from typing import Any, DefaultDict, Dict, List, Tuple, Type
 
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
@@ -1094,17 +1094,63 @@ def _find_root_primitive(feature):
     return feature.primitive
 
 
-def can_stack_primitive_on_inputs(primitive, inputs):
+def _check_if_stacking_is_prohibited(
+    feature: FeatureBase,
+    f_primitive: PrimitiveBase,
+    primitive: PrimitiveBase,
+    primitive_class: Type[PrimitiveBase],
+    primitive_stack_on_self: bool,
+    tuple_primitive_stack_on_exclude: Tuple[Type[PrimitiveBase]],
+):
+    if not primitive_stack_on_self and isinstance(f_primitive, primitive_class):
+        return True
+
+    if isinstance(f_primitive, tuple_primitive_stack_on_exclude):
+        return True
+
+    if feature.number_output_features > 1:
+        return True
+
+    if f_primitive.base_of_exclude is not None and isinstance(
+        primitive,
+        tuple(f_primitive.base_of_exclude),
+    ):
+        return True
+    return False
+
+
+def _check_if_stacking_is_permitted(
+    f_primitive: PrimitiveBase,
+    primitive_class: Type[PrimitiveBase],
+    primitive_stack_on_self: bool,
+    tuple_primitive_stack_on: Tuple[Type[PrimitiveBase]],
+):
+    if primitive_stack_on_self and isinstance(f_primitive, primitive_class):
+        return True
+    if tuple_primitive_stack_on is None or isinstance(
+        f_primitive,
+        tuple_primitive_stack_on,
+    ):
+        return True
+    if f_primitive.base_of is None:
+        return True
+    if primitive_class in f_primitive.base_of:
+        return True
+    return False
+
+
+def can_stack_primitive_on_inputs(primitive: PrimitiveBase, inputs: List[FeatureBase]):
     """
     Checks if features in inputs can be used with supplied primitive
     using the stacking rules.
     Returns True if stacking is possible, and False if not.
     """
+
     primitive_class = primitive.__class__
-    tup_primitive_stack_on = (
+    tuple_primitive_stack_on = (
         tuple(primitive.stack_on) if primitive.stack_on is not None else None
     )
-    tup_primitive_stack_on_exclude = (
+    tuple_primitive_stack_on_exclude = (
         tuple(primitive.stack_on_exclude)
         if primitive.stack_on_exclude is not None
         else tuple()
@@ -1116,43 +1162,32 @@ def can_stack_primitive_on_inputs(primitive, inputs):
         # However, we want to check stacking rules with the primitive the DirectFeature is based on.
         f_primitive = _find_root_primitive(feature)
 
-        if not primitive_stack_on_self and isinstance(f_primitive, primitive_class):
-            return False
-
-        if isinstance(f_primitive, tup_primitive_stack_on_exclude):
-            return False
-
-        if feature.number_output_features > 1:
-            return False
-
-        if f_primitive.base_of_exclude is not None and isinstance(
-            primitive,
-            tuple(f_primitive.base_of_exclude),
-        ):
-            return False
-
-        if primitive_stack_on_self and isinstance(f_primitive, primitive_class):
-            continue
-
-        if tup_primitive_stack_on is None or isinstance(
+        # check if stacking is prohibited
+        if _check_if_stacking_is_prohibited(
+            feature,
             f_primitive,
-            tup_primitive_stack_on,
+            primitive,
+            primitive_class,
+            primitive_stack_on_self,
+            tuple_primitive_stack_on_exclude,
         ):
-            continue
+            return False
 
-        if f_primitive.base_of is None:
-            continue
-        if primitive_class in f_primitive.base_of:
-            continue
+        # we permit stacking only if it is not prohibited and meets the criterion to be permitted
+        if not _check_if_stacking_is_permitted(
+            f_primitive,
+            primitive_class,
+            primitive_stack_on_self,
+            tuple_primitive_stack_on,
+        ):
+            return False
 
-        return False
-
+    # if we reach this line nothing is prohibited and stacking is permitted for all inputs
     return True
 
 
 def match_by_schema(features, column_schema):
-    matches = [f for f in features if is_valid_input(f.column_schema, column_schema)]
-    return matches
+    return [f for f in features if is_valid_input(f.column_schema, column_schema)]
 
 
 def match(
