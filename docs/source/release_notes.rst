@@ -9,11 +9,12 @@ Future Release
     * Fixes
     * Changes
         * Refactor ``can_stack_primitive_on_inputs`` (:pr:`2522`)
+        * Update s3 bucket for docs image (:pr:`2593`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`thehomebrewnerd`
 
 v1.27.0 Jul 24, 2023
 ====================
