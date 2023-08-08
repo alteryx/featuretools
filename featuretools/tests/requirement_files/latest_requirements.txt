@@ -1,9 +1,9 @@
 cloudpickle==2.2.1
-holidays==0.29
+holidays==0.30
 numpy==1.23.5
 pandas==1.5.3
 psutil==5.9.5
 pyspark==3.4.1
 scipy==1.10.1
-tqdm==4.65.0
+tqdm==4.65.1
 woodwork==0.25.1
