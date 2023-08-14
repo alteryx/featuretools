@@ -7,7 +7,7 @@ on:
       - main
   workflow_dispatch:
 jobs:
-  py38_unit_tests_minimum_dependencies:
+  py38_tests_minimum_dependencies:
     name: Tests - 3.8 Minimum Dependencies
     runs-on: ubuntu-latest
     strategy:
