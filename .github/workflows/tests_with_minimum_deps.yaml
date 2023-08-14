@@ -1,4 +1,4 @@
-name: Unit Tests - Minimum Dependencies
+name: Tests - Minimum Dependencies
 on:
   pull_request:
     types: [opened, synchronize]
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 jobs:
   py38_unit_tests_minimum_dependencies:
-    name: Unit Tests - 3.8 Minimum Dependencies
+    name: Tests - 3.8 Minimum Dependencies
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
