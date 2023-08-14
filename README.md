@@ -7,7 +7,7 @@
 
 <p align="center">
     <a href="https://github.com/alteryx/featuretools/actions/workflows/tests_with_latest_deps.yaml" alt="Tests" target="_blank">
-        <img src="https://github.com/alteryx/featuretools/actions/workflows/unit_tests_with_latest_deps.yaml/badge.svg?branch=main" alt="Tests" />
+        <img src="https://github.com/alteryx/featuretools/actions/workflows/tests_with_latest_deps.yaml/badge.svg?branch=main" alt="Tests" />
     </a>
     <a href="https://codecov.io/gh/alteryx/featuretools">
         <img src="https://codecov.io/gh/alteryx/featuretools/branch/main/graph/badge.svg"/>
