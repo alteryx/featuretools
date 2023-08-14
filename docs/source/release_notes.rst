@@ -11,6 +11,7 @@ Future Release
         * Refactor ``can_stack_primitive_on_inputs`` (:pr:`2522`)
         * Update s3 bucket for docs image (:pr:`2593`)
     * Documentation Changes
+        * Fix badge on README for tests (:pr:`2598`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
