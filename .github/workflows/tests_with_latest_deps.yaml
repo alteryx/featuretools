@@ -1,4 +1,4 @@
-name: Unit Tests - Latest Dependencies
+name: Tests
 on:
   pull_request:
     types: [opened, synchronize]
@@ -7,8 +7,8 @@ on:
       - main
   workflow_dispatch:
 jobs:
-  unit_tests:
-    name: ${{ matrix.python_version }} unit tests ${{ matrix.libraries }}
+  tests:
+    name: ${{ matrix.python_version }} tests ${{ matrix.libraries }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
