@@ -1,10 +1,10 @@
-name: Unit Tests - Featuretools with Woodwork main branch
+name: Tests - Featuretools with Woodwork main branch
 on:
   workflow_dispatch:
 jobs:
   unit_tests_woodwork_main:
     if: ${{ github.repository_owner == 'alteryx' }}
-    name: ${{ matrix.python_version }} unit tests ${{ matrix.libraries }}
+    name: ${{ matrix.python_version }} tests ${{ matrix.libraries }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
