@@ -19,8 +19,6 @@ build:
   apt_packages:
     - graphviz
     - openjdk-11-jre-headless
-  commands:
-    - export JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
     
 python:
   install:
