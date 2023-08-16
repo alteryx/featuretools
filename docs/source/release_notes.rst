@@ -12,6 +12,7 @@ Future Release
         * Update s3 bucket for docs image (:pr:`2593`)
     * Documentation Changes
         * Fix badge on README for tests (:pr:`2598`)
+        * Update readthedocs config to use build.os (:pr:`2601`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:

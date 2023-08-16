@@ -12,9 +12,18 @@ sphinx:
 # Optionally build your docs in additional formats such as PDF and ePub
 formats: []
 
-# Optionally set the version of Python and requirements required to build your docs
+build:
+  os: "ubuntu-22.04"
+  tools:
+    python: "3.8"
+  apt_packages:
+    - graphviz
+    - openjdk-11-jre-headless
+  jobs:
+    post_build: 
+      - export JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+
 python:
-  version: "3.8"
   install:
     - method: pip
       path: .
