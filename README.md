@@ -25,7 +25,7 @@
         <img src="http://img.shields.io/badge/questions-on_stackoverflow-blue.svg" alt="StackOverflow" />
     </a>
     <a href="https://pepy.tech/project/featuretools" target="_blank">
-        <img src="https://pepy.tech/badge/featuretools/month" alt="PyPI Downloads" />
+        <img src="https://static.pepy.tech/badge/featuretools/month" alt="PyPI Downloads" />
     </a>
 </p>
 <hr>
