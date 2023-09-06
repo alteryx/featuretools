@@ -211,7 +211,7 @@ def test_init_and_name(es):
 
     for agg_prim in agg_primitives:
         input_types = agg_prim.input_types
-        if type(input_types[0]) != list:
+        if not isinstance(input_types[0], list):
             input_types = [input_types]
 
         # test each allowed input_types for this primitive
