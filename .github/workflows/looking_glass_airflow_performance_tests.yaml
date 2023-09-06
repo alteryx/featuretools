@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - 2614_update_perf_test_workflow
   workflow_dispatch:
     inputs:
       current_hash_input:
@@ -62,7 +63,9 @@ jobs:
                   "description": "${{ matrix.test_type }}",
                   "n_trials": 1,
                   "pytest_args": {
-                    "n-jobs": 1
+                    "n-jobs": 1,
+                    "datasets-bucket-name-s3": "featuretools-performance-tests",
+                    "results-bucket-name-s3": "featuretools-performance-results"
                   },
                   "python_version": "3.8",
                   "scenarios_yaml": "entityset_scenarios_${{ matrix.test_type }}.yaml",
