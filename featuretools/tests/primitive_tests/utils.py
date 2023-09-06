@@ -176,8 +176,7 @@ def valid_dfs(
     applicable_features = []
     for feat in features:
         applicable_features += [
-            feat for x in feature_substrings 
-            if x in feat.get_name()
+            feat for x in feature_substrings if x in feat.get_name()
         ]
     if len(applicable_features) == 0:
         raise ValueError(
