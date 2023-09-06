@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - 2614_update_perf_test_workflow
   workflow_dispatch:
     inputs:
       current_hash_input:
