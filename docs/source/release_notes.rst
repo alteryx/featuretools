@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Refactor ``featuretools/tests/primitive_tests/utils.py`` to leverage list comprehensions for improved Pythonic quality
         * Refactor ``can_stack_primitive_on_inputs`` (:pr:`2522`)
         * Update s3 bucket for docs image (:pr:`2593`)
         * Temporarily restrict pandas max version to ``<2.1.0`` and pyarrow to ``<13.0.0`` (:pr:`2609`)
