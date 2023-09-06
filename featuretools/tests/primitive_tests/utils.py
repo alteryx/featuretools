@@ -175,7 +175,10 @@ def valid_dfs(
     )
     applicable_features = []
     for feat in features:
-        applicable_features += [feat for x in feature_substrings if x in feat.get_name()]
+        applicable_features += [
+            feat for x in feature_substrings 
+            if x in feat.get_name()
+        ]
     if len(applicable_features) == 0:
         raise ValueError(
             "No feature names with %s, verify the name attribute \
