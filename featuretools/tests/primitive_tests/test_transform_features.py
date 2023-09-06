@@ -137,7 +137,7 @@ def test_init_and_name(es):
 
         # use the input_types matching function from DFS
         input_types = transform_prim.input_types
-        if type(input_types[0]) == list:
+        if isinstance(input_types[0], list):
             matching_inputs = match(input_types[0], features_to_use)
         else:
             matching_inputs = match(input_types, features_to_use)
