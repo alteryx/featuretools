@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Refactor ``featuretools/tests/primitive_tests/utils.py`` to leverage list comprehensions for improved Pythonic quality (:pr:`2607`)
         * Refactor ``can_stack_primitive_on_inputs`` (:pr:`2522`)
         * Update s3 bucket for docs image (:pr:`2593`)
         * Temporarily restrict pandas max version to ``<2.1.0`` and pyarrow to ``<13.0.0`` (:pr:`2609`)
@@ -17,7 +18,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tosemml`
 
 v1.27.0 Jul 24, 2023
 ====================
