@@ -99,7 +99,7 @@ class CountString(TransformPrimitive):
 
     def get_function(self):
         def count_string(words):
-            if type(words) != str:
+            if not isinstance(words, str):
                 return np.nan
             words = self.process_text(words)
             return len(re.findall(self.pattern, words))

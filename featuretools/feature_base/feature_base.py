@@ -190,7 +190,7 @@ class FeatureBase(object):
 
         input_types = self.primitive.input_types
         if input_types is not None:
-            if type(input_types[0]) != list:
+            if not isinstance(input_types[0], list):
                 input_types = [input_types]
 
             for t in input_types:
