@@ -10,6 +10,7 @@ Future Release
     * Changes
         * Refactor ``can_stack_primitive_on_inputs`` (:pr:`2522`)
         * Update s3 bucket for docs image (:pr:`2593`)
+        * Temporarily restrict Woodwork max version to ``<0.26.0`` (:pr:`2609`)
     * Documentation Changes
         * Fix badge on README for tests (:pr:`2598`)
         * Update readthedocs config to use build.os (:pr:`2601`)
