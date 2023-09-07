@@ -16,9 +16,10 @@ Future Release
         * Fix badge on README for tests (:pr:`2598`)
         * Update readthedocs config to use build.os (:pr:`2601`)
     * Testing Changes
+        * Update airflow looking glass performance tests workflow (:pr:`2615`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tosemml`
+    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`petejanuszewski1`, :user:`tosemml`
 
 v1.27.0 Jul 24, 2023
 ====================
