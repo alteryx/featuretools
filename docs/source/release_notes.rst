@@ -12,6 +12,7 @@ Future Release
         * Refactor ``can_stack_primitive_on_inputs`` (:pr:`2522`)
         * Update s3 bucket for docs image (:pr:`2593`)
         * Temporarily restrict pandas max version to ``<2.1.0`` and pyarrow to ``<13.0.0`` (:pr:`2609`)
+        * Update for compatibility with pandas version ``2.1.0`` and remove pandas upper version restriction (:pr:`2616`)
     * Documentation Changes
         * Fix badge on README for tests (:pr:`2598`)
         * Update readthedocs config to use build.os (:pr:`2601`)
