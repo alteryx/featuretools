@@ -18,6 +18,7 @@ Future Release
         * Update readthedocs config to use build.os (:pr:`2601`)
     * Testing Changes
         * Update airflow looking glass performance tests workflow (:pr:`2615`)
+        * Removed old performance testing workflow (:pr:`2620`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`thehomebrewnerd`, :user:`petejanuszewski1`, :user:`tosemml`
