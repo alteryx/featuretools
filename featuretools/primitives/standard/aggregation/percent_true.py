@@ -1,3 +1,4 @@
+import pandas as pd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable, Double
 
@@ -30,7 +31,7 @@ class PercentTrue(AggregationPrimitive):
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
     stack_on = []
     stack_on_exclude = []
-    default_value = 0
+    default_value = pd.NA
     compatibility = [Library.PANDAS, Library.DASK]
     description_template = "the percentage of true values in {}"
 
