@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fix bug with default value in ``PercentTrue`` primitive (:pr:`2627`)
     * Changes
         * Refactor ``featuretools/tests/primitive_tests/utils.py`` to leverage list comprehensions for improved Pythonic quality (:pr:`2607`)
         * Refactor ``can_stack_primitive_on_inputs`` (:pr:`2522`)
