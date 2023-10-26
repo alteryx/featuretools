@@ -3,9 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.28.0 Oct 26, 2023
+====================
     * Fixes
         * Fix bug with default value in ``PercentTrue`` primitive (:pr:`2627`)
     * Changes
@@ -22,7 +31,7 @@ Future Release
         * Removed old performance testing workflow (:pr:`2620`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`petejanuszewski1`, :user:`tosemml`
+    :user:`gsheni`, :user:`petejanuszewski1`, :user:`thehomebrewnerd`, :user:`tosemml`
 
 v1.27.0 Jul 24, 2023
 ====================
