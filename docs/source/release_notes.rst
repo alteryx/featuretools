@@ -3,15 +3,19 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
+        * Update featuretools_nav2.svg (:pr:`2632`)
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+Thanks to the following people for contributing to this release:
+:user:`LakshmanKishore`
+
+
 
 v1.28.0 Oct 26, 2023
 ====================
