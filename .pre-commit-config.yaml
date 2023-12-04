@@ -25,18 +25,15 @@ repos:
     hooks:
       - id: add-trailing-comma
         name: Add trailing comma
-  - repo: https://github.com/python/black
-    rev: 22.12.0
-    hooks:
-      - id: black
-        args:
-          - --config=./pyproject.toml
-        additional_dependencies: [".[jupyter]"]
-        types_or: [python, jupyter]
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 'v0.0.239'
+    rev: 'v0.1.6'
     hooks:
       - id: ruff
+        types_or: [ python, pyi, jupyter ]
+        args:
+          - --fix
+          - --config=./pyproject.toml
+      - id: ruff-format
+        types_or: [ python, pyi, jupyter ]
         args:
           - --config=./pyproject.toml
-          - --fix

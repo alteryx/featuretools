@@ -542,12 +542,14 @@ def test_roll_series_with_gap_different_input_types_same_result_uniform(
 def test_roll_series_with_gap_incorrect_types(window_series_pd):
     error = "Window length must be either an offset string or an integer."
     with pytest.raises(TypeError, match=error):
-        roll_series_with_gap(
-            window_series_pd,
-            window_length=4.2,
-            gap=4,
-            min_periods=1,
-        ),
+        (
+            roll_series_with_gap(
+                window_series_pd,
+                window_length=4.2,
+                gap=4,
+                min_periods=1,
+            ),
+        )
 
     error = "Gap must be either an offset string or an integer."
     with pytest.raises(TypeError, match=error):

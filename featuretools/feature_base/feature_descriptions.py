@@ -148,8 +148,7 @@ def generate_description(feature, feature_descriptions, primitive_templates):
 
 def get_direct_description(feature):
     direct_description = (
-        ' the instance of "{}" associated with this '
-        'instance of "{}"'.format(
+        ' the instance of "{}" associated with this ' 'instance of "{}"'.format(
             feature.relationship_path[-1][1].parent_dataframe.ww.name,
             feature.dataframe_name,
         )

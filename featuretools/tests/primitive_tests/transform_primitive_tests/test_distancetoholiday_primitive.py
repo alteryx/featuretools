@@ -1,10 +1,8 @@
 from datetime import datetime
 
-import holidays
 import numpy as np
 import pandas as pd
 import pytest
-from packaging.version import parse
 
 from featuretools.primitives import DistanceToHoliday
 
@@ -26,7 +24,7 @@ def test_distanceholiday():
 
 
 def test_holiday_out_of_range():
-    date_to_holiday = DistanceToHoliday("Boxing Day", country="Canada")
+    date_to_holiday = DistanceToHoliday("Canada Day", country="Canada")
 
     array = pd.Series(
         [
@@ -36,22 +34,12 @@ def test_holiday_out_of_range():
             datetime(2020, 12, 31),
         ],
     )
-    days_to_boxing_day = -157 if parse(holidays.__version__) >= parse("0.15.0") else 209
-    edge_case_first_day_of_year = (
-        -6 if parse(holidays.__version__) >= parse("0.17.0") else np.nan
+    answer = [181, 31, -30, 182]
+    pd.testing.assert_series_equal(
+        date_to_holiday(array),
+        pd.Series(answer),
+        check_names=False,
     )
-    edge_case_last_day_of_year = (
-        -5 if parse(holidays.__version__) >= parse("0.17.0") else np.nan
-    )
-    answer = pd.Series(
-        [
-            edge_case_first_day_of_year,
-            days_to_boxing_day,
-            148,
-            edge_case_last_day_of_year,
-        ],
-    )
-    pd.testing.assert_series_equal(date_to_holiday(array), answer, check_names=False)
 
 
 def test_unknown_country_error():
@@ -82,7 +70,7 @@ def test_nat():
 
 
 def test_valid_country():
-    distance_to_holiday = DistanceToHoliday("Victoria Day", country="Canada")
+    distance_to_holiday = DistanceToHoliday("Canada Day", country="Canada")
     case = pd.Series(
         [
             "2010-01-01",
@@ -91,7 +79,7 @@ def test_valid_country():
             "2020-12-31",
         ],
     ).astype("datetime64[ns]")
-    answer = [143, -10, -70, 144]
+    answer = [181, 31, -30, 182]
     given_answer = distance_to_holiday(case).astype("float")
     np.testing.assert_array_equal(given_answer, answer)
 

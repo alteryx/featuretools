@@ -59,7 +59,10 @@ class DistanceToHoliday(TransformPrimitive):
 
         available_holidays = list(set(self.holidayUtil.federal_holidays.values()))
         if self.holiday not in available_holidays:
-            error = "must be one of the available holidays:\n%s" % available_holidays
+            error = "{} must be one of the available holidays:\n{}".format(
+                self.holiday,
+                available_holidays,
+            )
             raise ValueError(error)
 
     def get_function(self):

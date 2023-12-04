@@ -20,7 +20,7 @@ build:
     - graphviz
     - openjdk-11-jre-headless
   jobs:
-    post_build: 
+    post_build:
       - export JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
 
 python:
