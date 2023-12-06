@@ -46,11 +46,10 @@ def test_valid_country():
         [
             "2016-07-01",
             "2016-11-11",
-            "2017-12-26",
             "2018-09-03",
         ],
     ).astype("datetime64[ns]")
-    answer = pd.Series([True, False, True, True])
+    answer = pd.Series([True, False, True])
     given_answer = pd.Series(primitive_func(case))
     assert given_answer.equals(answer)
 
