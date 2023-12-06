@@ -1,5 +1,5 @@
 cloudpickle==3.0.0
-holidays==0.32
+holidays==0.38
 numpy==1.23.5
 pandas==1.5.3
 psutil==5.9.6
