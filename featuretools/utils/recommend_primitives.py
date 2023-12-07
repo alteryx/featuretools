@@ -6,18 +6,16 @@ from featuretools.entityset import EntitySet
 from featuretools.primitives.utils import get_transform_primitives
 from featuretools.synthesis import dfs, get_valid_primitives
 
-ORDERED_PRIMITIVES = (
-    [  # non-numeric primitives that require specific ordering or a time index to be set
-        "cum_count",
-        "cumulative_time_since_last_false",
-        "cumulative_time_since_last_true",
-        "diff",
-        "diff_datetime",
-        "is_first_occurrence",
-        "is_last_occurrence",
-        "time_since_previous",
-    ]
-)
+ORDERED_PRIMITIVES = [  # non-numeric primitives that require specific ordering or a time index to be set
+    "cum_count",
+    "cumulative_time_since_last_false",
+    "cumulative_time_since_last_true",
+    "diff",
+    "diff_datetime",
+    "is_first_occurrence",
+    "is_last_occurrence",
+    "time_since_previous",
+]
 
 
 DEPRECATED_PRIMITIVES = [
