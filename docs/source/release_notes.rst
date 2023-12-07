@@ -11,7 +11,7 @@ Future Release
     * Documentation Changes
     * Testing Changes
       * Update tests for compatibility with new versions of ``holidays`` (:pr:`2636`)
-      * Update ruff to 0.1.6 and use ruff linter/formatter (:pr:`2638`)
+      * Update ruff to 0.1.6 and use ruff linter/formatter (:pr:`2639`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`thehomebrewnerd`
