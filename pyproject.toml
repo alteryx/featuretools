@@ -113,7 +113,7 @@ docs = [
     "featuretools[sklearn,dask,spark,test]",
 ]
 dev = [
-    "ruff >= 0.0.239",
+    "ruff >= 0.1.6",
     "black[jupyter] >= 23.1.0",
     "pre-commit >= 2.20.0",
     "featuretools[docs,dask,spark,test]",
@@ -152,7 +152,6 @@ namespaces = true
 [tool.setuptools.dynamic]
 version = {attr = "featuretools.version.__version__"}
 
-
 [tool.pytest.ini_options]
 addopts = "--doctest-modules --ignore=featuretools/tests/entry_point_tests/add-ons"
 testpaths = [
@@ -163,12 +162,9 @@ filterwarnings = [
     "ignore::PendingDeprecationWarning"
 ]
 
-[tool.black]
-line-length = 88
-target-version = ["py311"]
-
 [tool.ruff]
 line-length = 88
+target-version = "py311"
 ignore = ["E501"]
 select = [
     # Pyflakes
