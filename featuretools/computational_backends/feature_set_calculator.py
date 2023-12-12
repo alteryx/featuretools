@@ -836,7 +836,7 @@ class FeatureSetCalculator(object):
                 #
                 # Pandas claims that bug is fixed but it still shows up in some
                 # cases.  More investigation needed.
-                if pdtypes.is_categorical_dtype(frame.index):
+                if isinstance(frame.index, pd.CategoricalDtype):
                     categories = pdtypes.CategoricalDtype(
                         categories=frame.index.categories,
                     )
