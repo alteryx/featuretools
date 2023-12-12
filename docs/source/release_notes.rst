@@ -8,10 +8,11 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Fix deprecation warnings with is_categorical_dtype (:pr:`2641`)
     * Documentation Changes
     * Testing Changes
-      * Update tests for compatibility with new versions of ``holidays`` (:pr:`2636`)
-      * Update ruff to 0.1.6 and use ruff linter/formatter (:pr:`2639`)
+        * Update tests for compatibility with new versions of ``holidays`` (:pr:`2636`)
+        * Update ruff to 0.1.6 and use ruff linter/formatter (:pr:`2639`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`thehomebrewnerd`
