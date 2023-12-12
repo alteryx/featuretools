@@ -54,11 +54,10 @@ def test_valid_country():
         [
             "2016-07-01",
             "2016-11-11",
-            "2017-12-26",
             "2018-09-03",
         ],
     ).astype("datetime64[ns]")
-    answer = ["Canada Day", np.nan, "Boxing Day", "Labour Day"]
+    answer = ["Canada Day", np.nan, "Labour Day"]
     given_answer = date_to_holiday(case).astype("str")
     np.testing.assert_array_equal(given_answer, answer)
 

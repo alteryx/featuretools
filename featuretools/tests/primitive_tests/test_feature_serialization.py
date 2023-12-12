@@ -462,7 +462,7 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
     # Test primitive with multiple args - pandas only due to primitive compatibility
     if es.dataframe_type == Library.PANDAS:
         distance_to_holiday = DistanceToHoliday(
-            holiday="Victoria Day",
+            holiday="Canada Day",
             country="Canada",
         )
         features = dfs(
@@ -491,7 +491,7 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
         assert all(
             [f.primitive is new_distance_primitive for f in new_distance_features],
         )
-        assert new_distance_primitive.holiday == "Victoria Day"
+        assert new_distance_primitive.holiday == "Canada Day"
         assert new_distance_primitive.country == "Canada"
 
     # Test primitive with list arg

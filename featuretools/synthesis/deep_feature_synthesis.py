@@ -1290,8 +1290,11 @@ def check_primitive(
     primitive = handle_primitive(primitive)
     if not isinstance(primitive, supertype):
         raise ValueError(
-            "Primitive {} in {} is not {} "
-            "primitive".format(type(primitive), arg_name, s),
+            "Primitive {} in {} is not {} " "primitive".format(
+                type(primitive),
+                arg_name,
+                s,
+            ),
         )
     return primitive
 

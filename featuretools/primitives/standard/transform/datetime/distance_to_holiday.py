@@ -38,13 +38,13 @@ class DistanceToHoliday(TransformPrimitive):
         We can also control the country in which we're searching for
             a holiday.
 
-        >>> distance_to_holiday = DistanceToHoliday("Victoria Day", country='Canada')
+        >>> distance_to_holiday = DistanceToHoliday("Canada Day", country='Canada')
         >>> dates = [datetime(2010, 1, 1),
         ...          datetime(2012, 5, 31),
         ...          datetime(2017, 7, 31),
         ...          datetime(2020, 12, 31)]
         >>> distance_to_holiday(dates).tolist()
-        [143, -10, -70, 144]
+        [181, 31, -30, 182]
     """
 
     name = "distance_to_holiday"
