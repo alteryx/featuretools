@@ -35,7 +35,7 @@ class DateToHoliday(TransformPrimitive):
         ...          datetime(2016, 11, 15),
         ...          datetime(2018, 9, 3)])
         >>> date_to_holiday_canada(dates).tolist()
-        ['Canada Day', nan, 'Labour Day']
+        ['Canada Day', nan, 'Labor Day']
     """
 
     name = "date_to_holiday"
