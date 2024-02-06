@@ -72,7 +72,7 @@ dask = [
 spark = [
     "woodwork[spark] >= 0.23.0",
     "pyspark >= 3.2.2",
-    "numpy < 1.24.0",
+    "numpy >= 1.25.0, <2.0.0",
     "pandas < 2.0.0",
     "pyarrow >= 14.0.1",
 ]
