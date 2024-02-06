@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.8", "3.9", "3.10", "3.11"]
+        python_version: ["3.9", "3.10", "3.11"]
         libraries: ["core", "spark/dask - misc", "spark/dask - computational", "spark/dask - entityset_1", "spark/dask - entityset_2", "spark/dask - primitives"]
 
     steps:
@@ -45,7 +45,7 @@ jobs:
           python -m pip install -e unpacked_sdist/[dask]
           python -m pip install -e unpacked_sdist/[spark]
           python -m pip install -e unpacked_sdist/[test]
-      - if: ${{ matrix.python_version == 3.8 && startsWith(matrix.libraries, 'spark/dask') }}
+      - if: ${{ matrix.python_version == 3.9 && startsWith(matrix.libraries, 'spark/dask') }}
         name: Generate coverage args
         run: echo "coverage_args=--cov=featuretools --cov-config=../pyproject.toml --cov-report=xml:../coverage.xml" >> $GITHUB_ENV
       - if: ${{ env.coverage_args }}
@@ -99,7 +99,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.8", "3.9", "3.10", "3.11"]
+        python_version: ["3.9", "3.10", "3.11"]
     steps:
       - name: Download miniconda
         shell: pwsh
