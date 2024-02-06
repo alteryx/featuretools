@@ -75,8 +75,6 @@ from featuretools.primitives import (
     NumericLag,
     NumWords,
     Percentile,
-    PhoneNumberToArea,
-    PhoneNumberToCountry,
     ScalarSubtractNumericFeature,
     SubtractNumeric,
     SubtractNumericScalar,
@@ -134,9 +132,6 @@ def test_init_and_name(es):
             FullNameToFirstName,
             FullNameToLastName,
             FullNameToTitle,
-            # --> how did this work before? Were we just not including these in the test?
-            PhoneNumberToCountry,
-            PhoneNumberToArea,
         ]:
             features_to_use = customers_features
 
