@@ -20,8 +20,7 @@ jobs:
         python -m pip install --quiet --upgrade setuptools
     - name: Remove build artifacts and docs
       run: |
-        rm -rf .eggs/ rm -rf dist/ rm -rf build/
-        rm -rf docs/
+        rm -rf .eggs/ dist/ build/ docs/
     - name: Build distribution
       run: python -m build
 
