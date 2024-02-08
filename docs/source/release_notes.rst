@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
-        * Fix dependency issues (:pr:`2644`)
+        * Fix dependency issues (:pr:`2644`, :pr:`2656`)
     * Changes
     * Documentation Changes
     * Testing Changes
