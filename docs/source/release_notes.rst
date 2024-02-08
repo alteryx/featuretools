@@ -5,9 +5,6 @@ Release Notes
 
 Future Release
 ==============
-    .. warning::
-        This release of Featuretools will not support Python 3.7
-
     * Enhancements
     * Fixes
         * Fix dependency issues (:pr:`2644`)
@@ -18,7 +15,7 @@ Future Release
       * Update ruff to 0.1.6 and use ruff linter/formatter (:pr:`2639`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`
 
 
 v1.28.0 Oct 26, 2023
