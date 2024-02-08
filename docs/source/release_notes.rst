@@ -7,6 +7,7 @@ Future Release
 ==============
     .. warning::
         This release of Featuretools will not support Python 3.7
+
     * Enhancements
     * Fixes
         * Fix dependency issues (:pr:`2644`)
