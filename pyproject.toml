@@ -31,7 +31,7 @@ requires-python = ">=3.9,<4"
 dependencies = [
     "cloudpickle >= 1.5.0",
     "holidays >= 0.17",
-    "numpy >= 1.25.0, <2.0.0",
+    "numpy >= 1.21.0, <2.0.0",
     "packaging >= 20.0",
     "pandas >= 1.5.0,<2.2.0",
     "psutil >= 5.6.6",
@@ -55,7 +55,7 @@ test = [
     "graphviz >= 0.8.4",
     "moto[all] >= 5.0.0",
     "pip >= 21.3.1",
-    "pyarrow >= 14.0.1",
+    "pyarrow < 13.0.0",
     "pympler >= 0.8",
     "pytest >= 7.1.2",
     "pytest-cov >= 3.0.0",
@@ -70,11 +70,11 @@ dask = [
     "woodwork[dask] >= 0.23.0",
 ]
 spark = [
-    "woodwork[spark] >= 0.23.0",
-    "pyspark >= 3.5.0",
-    "numpy >= 1.25.0, <2.0.0",
-    "pandas >= 1.5.0,<2.2.0",
-    "pyarrow >= 14.0.1",
+    "woodwork[spark] >= 0.23.0, <0.28.0",
+    "pyspark >= 3.2.2",
+    "numpy < 1.24.0",
+    "pandas < 2.0.0",
+    "pyarrow < 13.0.0",
 ]
 updater = [
     "alteryx-open-src-update-checker >= 2.1.0"
