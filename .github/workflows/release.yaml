@@ -1,7 +1,6 @@
 on:
   release:
-    types: [published, prereleased]
-    # Use prereleased for testing, will remove later.
+    types: [published]
 
 name: Release
 jobs:
@@ -24,11 +23,8 @@ jobs:
     - name: Build distribution
       run: python -m build
 
-    # Trying to publish to TestPyPI first - will update when this works
-    - name: Publish package distributions to TestPyPI
+    - name: Publish package distributions to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        repository-url: https://test.pypi.org/legacy/
     - name: Run workflow to create feedstock pull request
       run: |
         gh workflow run create_feedstock_pr.yaml --repo "alteryx/featuretools" -f version=${{ github.event.release.tag_name }}
