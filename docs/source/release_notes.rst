@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fix dependency issues (:pr:`2644`)
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -16,7 +17,7 @@ Future Release
 
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`
 
 
 v1.28.0 Oct 26, 2023
