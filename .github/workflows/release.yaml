@@ -1,23 +1,35 @@
 on:
   release:
-    types: [published]
+    types: [published, prereleased]
+    # Use prereleased for testing, will remove later.
 
 name: Release
 jobs:
-  pypi:
+  pypi-publish:
     name: PyPI Release
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
     - uses: actions/checkout@v3
-    - name: Remove docs before release
-      run: rm -rf docs/
-    - name: PyPI Upload
-      uses: FeatureLabs/gh-action-pypi-upload@v2
-      env:
-        PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        TEST_PYPI_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
-        TEST_PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
+    - uses: actions/setup-python@4
+    - name: Install deps
+      run: |
+        python -m pip install --quiet --upgrade pip
+        python -m pip install --quiet --upgrade build
+        python -m pip install --quiet --upgrade setuptools
+    - name: Remove build artifacts and docs
+      run: |
+        rm -rf .eggs/ rm -rf dist/ rm -rf build/
+        rm -rf docs/
+    - name: Build distribution
+      run: python -m build
+
+    # Trying to publish to TestPyPI first - will update when this works
+    - name: Publish package distributions to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
     - name: Run workflow to create feedstock pull request
       run: |
         gh workflow run create_feedstock_pr.yaml --repo "alteryx/featuretools" -f version=${{ github.event.release.tag_name }}
