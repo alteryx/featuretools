@@ -115,7 +115,7 @@ dev = [
     "ruff >= 0.1.6",
     "black[jupyter] >= 23.1.0",
     "pre-commit >= 2.20.0",
-    "featuretools[docs,dask,spark,test]",
+    "featuretools[dask,spark,test]",
 ]
 complete = [
     "featuretools[autonormalize,premium,sklearn,dask,spark,sql,tsfresh,updater]",
