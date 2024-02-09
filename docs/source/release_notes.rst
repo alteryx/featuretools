@@ -14,6 +14,7 @@ Future Release
         * Update tests for compatibility with new versions of ``holidays`` (:pr:`2636`)
         * Update ruff to 0.1.6 and use ruff linter/formatter (:pr:`2639`)
         * Update ``release.yaml`` to use trusted publisher for PyPI releases (:pr:`2646`, :pr:`2653`, :pr:`2654`)
+        * Update dependency checkers and tests to include Dask (:pr:`2658`)
 
 
     Thanks to the following people for contributing to this release:
