@@ -54,7 +54,7 @@ jobs:
       - name: Install featuretools - minimum tests dependencies
         run: |
           python -m pip install -r featuretools/tests/requirement_files/minimum_test_requirements.txt
-      - if: ${{ matrix.libraries == 'spark' }}
+      - if: ${{ startsWith(matrix.libraries, 'spark') }}
         name: Install featuretools - minimum spark, core dependencies
         run: |
           sudo apt install -y openjdk-11-jre-headless
