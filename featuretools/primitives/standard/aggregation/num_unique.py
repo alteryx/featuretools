@@ -1,4 +1,3 @@
-import pandas as pd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import IntegerNullable
 
@@ -51,7 +50,4 @@ class NumUnique(AggregationPrimitive):
 
             return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
 
-        elif agg_type == Library.SPARK:
-            return "nunique"
-
-        return pd.Series.nunique
+        return "nunique"
