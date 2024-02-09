@@ -62,7 +62,7 @@ jobs:
 
   slack_alert_failure:
     name: Send Slack alert if failure
-    needs: unit_tests_woodwork_main
+    needs: tests_woodwork_main
     runs-on: ubuntu-latest
     if: ${{ always() }}
     steps:
