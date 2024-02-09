@@ -822,6 +822,21 @@ class FeatureSetCalculator(object):
                     to_merge = base_frame.groupby(groupby_col).agg(to_agg)
 
                 else:
+                    # TODO: Remove when https://github.com/pandas-dev/pandas/issues/57317 is fixed
+                    cols_to_fix = []
+                    for col in base_frame.columns:
+                        dtype = base_frame[col].dtype
+                        if (
+                            isinstance(dtype, pd.CategoricalDtype)
+                            and str(dtype.categories.dtype) == "int64"
+                        ):
+                            cols_to_fix.append(col)
+
+                    if cols_to_fix:
+                        base_frame[cols_to_fix] = base_frame[cols_to_fix].astype(
+                            "int64",
+                        )
+
                     to_merge = base_frame.groupby(
                         base_frame[groupby_col],
                         observed=True,
