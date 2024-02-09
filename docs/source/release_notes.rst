@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
         * Fix dependency issues (:pr:`2644`, :pr:`2656`)
+        * Add workaround for pandas 2.2.0 bug with nunique and unpin pandas (:pr:`2657`)
     * Changes
     * Documentation Changes
     * Testing Changes
