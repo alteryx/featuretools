@@ -40,6 +40,7 @@ from featuretools.primitives import (
     Trend,
 )
 from featuretools.primitives.base import AggregationPrimitive
+from featuretools.primitives.standard.aggregation.num_unique import NumUnique
 from featuretools.tests.testing_utils import backward_path, to_pandas
 from featuretools.utils import Trie
 from featuretools.utils.gen_utils import Library, import_or_none, is_instance
@@ -1293,3 +1294,26 @@ def test_precalculated_features(pd_es):
     # Calculating without precalculated features should error.
     with pytest.raises(RuntimeError, match=error_msg):
         FeatureSetCalculator(pd_es, feature_set=FeatureSet([direct])).run(instance_ids)
+
+
+def test_nunique_nested_with_agg_bug(pd_es):
+    """Pandas 2.2.0 has a bug where pd.Series.nunique produces columns with
+    the category dtype instead of int64 dtype, causing an error when we attempt
+    another aggregation"""
+    num_unique_feature = AggregationFeature(
+        Feature(pd_es["log"].ww["priority_level"]),
+        "sessions",
+        primitive=NumUnique,
+    )
+
+    mean_nunique_feature = AggregationFeature(
+        num_unique_feature,
+        "customers",
+        primitive=Mean,
+    )
+    feature_set = FeatureSet([mean_nunique_feature])
+    calculator = FeatureSetCalculator(pd_es, time_last=None, feature_set=feature_set)
+    df = calculator.run(np.array([0]))
+    df = to_pandas(df, index="id")
+
+    assert df.iloc[0, 0].round(4) == 1.6667
