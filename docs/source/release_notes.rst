@@ -9,7 +9,6 @@ Future Release
     * Fixes
         * Fix dependency issues (:pr:`2644`, :pr:`2656`)
         * Add workaround for pandas 2.2.0 bug with nunique and unpin pandas (:pr:`2657`)
-        * Fix the tests that run with Woodwork main so they can be triggered (:pr:`2657`)
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -17,6 +16,7 @@ Future Release
         * Update ruff to 0.1.6 and use ruff linter/formatter (:pr:`2639`)
         * Update ``release.yaml`` to use trusted publisher for PyPI releases (:pr:`2646`, :pr:`2653`, :pr:`2654`)
         * Update dependency checkers and tests to include Dask (:pr:`2658`)
+        * Fix the tests that run with Woodwork main so they can be triggered (:pr:`2657`)
 
 
     Thanks to the following people for contributing to this release:
