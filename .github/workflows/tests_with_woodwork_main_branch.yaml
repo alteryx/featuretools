@@ -67,7 +67,7 @@ jobs:
     if: ${{ always() }}
     steps:
       - name: Send Slack alert if failure
-        if: always() && needs.tests_woodwork_main.result != 'success'
+        if: ${{ needs.tests_woodwork_main.result != 'success' }}
         id: slack
         uses: slackapi/slack-github-action@v1
         with:
