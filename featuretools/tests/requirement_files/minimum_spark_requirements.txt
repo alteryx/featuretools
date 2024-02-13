@@ -8,5 +8,5 @@ pyarrow==3.0.0
 pyspark==3.2.2
 scipy==1.10.0
 tqdm==4.32.0
-woodwork==0.27.0
-woodwork[spark]==0.27.0
+woodwork==0.23.0
+woodwork[spark]==0.23.0
