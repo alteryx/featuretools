@@ -820,7 +820,6 @@ class FeatureSetCalculator(object):
                 # work)
                 if is_instance(base_frame, (dd, ps), "DataFrame"):
                     to_merge = base_frame.groupby(groupby_col).agg(to_agg)
-
                 else:
                     to_merge = base_frame.groupby(
                         base_frame[groupby_col],

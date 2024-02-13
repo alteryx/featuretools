@@ -218,9 +218,9 @@ def test_to_pickle_id_none(tmp_path):
 @pytest.fixture
 def s3_client():
     _environ = os.environ.copy()
-    from moto import mock_s3
+    from moto import mock_aws
 
-    with mock_s3():
+    with mock_aws():
         s3 = boto3.resource("s3")
         yield s3
     os.environ.clear()

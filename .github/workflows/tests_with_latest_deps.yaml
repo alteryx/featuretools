@@ -109,7 +109,7 @@ jobs:
           $ProgressPreference = "silentlyContinue"
           Invoke-WebRequest -Uri $Uri -Outfile "$env:USERPROFILE/$File"
           $hashFromFile = Get-FileHash "$env:USERPROFILE/$File" -Algorithm SHA256
-          $hashFromUrl = "e841557c27d438b96e09126a2b0656154a3a34bdb9d87d59ceaea67515713515"
+          $hashFromUrl = "c9b32faa9262828702334b16bcb5b53556e630d54e5127f5c36c7ba7ed43179a"
           if ($hashFromFile.Hash -ne "$hashFromUrl") {
             Throw "$File hashes do not match"
           }

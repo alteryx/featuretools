@@ -33,9 +33,9 @@ class DateToHoliday(TransformPrimitive):
         >>> date_to_holiday_canada = DateToHoliday(country='Canada')
         >>> dates = pd.Series([datetime(2016, 7, 1),
         ...          datetime(2016, 11, 15),
-        ...          datetime(2018, 9, 3)])
+        ...          datetime(2018, 12, 25)])
         >>> date_to_holiday_canada(dates).tolist()
-        ['Canada Day', nan, 'Labour Day']
+        ['Canada Day', nan, 'Christmas Day']
     """
 
     name = "date_to_holiday"
