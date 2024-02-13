@@ -71,10 +71,8 @@ dask = [
     "woodwork[dask] >= 0.23.0",
 ]
 spark = [
-    "woodwork[spark] >= 0.23.0, <0.28.0",
+    "woodwork[spark] >= 0.23.0",
     "pyspark >= 3.2.2",
-    "numpy >= 1.21.0, < 1.24.0",
-    "pandas >= 1.5.0, < 2.0.0",
     "pyarrow >= 3.0.0",
 ]
 updater = [
