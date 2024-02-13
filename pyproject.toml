@@ -56,13 +56,13 @@ test = [
     "graphviz >= 0.8.4",
     "moto[all] >= 5.0.0",
     "pip >= 21.3.1",
-    "pyarrow >= 3.0.0,<13.0.0",
+    "pyarrow >= 3.0.0, <13.0.0",
     "pympler >= 0.8",
     "pytest >= 7.1.2",
     "pytest-cov >= 3.0.0",
     "pytest-xdist >= 2.5.0",
     "smart-open >= 5.0.0",
-    "urllib3 >= 1.26.5",
+    "urllib3 >= 1.26.18",
     "pytest-timeout >= 2.1.0"
 ]
 dask = [
@@ -73,9 +73,9 @@ dask = [
 spark = [
     "woodwork[spark] >= 0.23.0, <0.28.0",
     "pyspark >= 3.2.2",
-    "numpy < 1.24.0",
-    "pandas < 2.0.0",
-    "pyarrow < 13.0.0",
+    "numpy >= 1.21.0, < 1.24.0",
+    "pandas >= 1.5.0, < 2.0.0",
+    "pyarrow >= 3.0.0, < 13.0.0",
 ]
 updater = [
     "alteryx-open-src-update-checker >= 2.1.0"

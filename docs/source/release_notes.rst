@@ -17,6 +17,7 @@ Future Release
         * Update ``release.yaml`` to use trusted publisher for PyPI releases (:pr:`2646`, :pr:`2653`, :pr:`2654`)
         * Update dependency checkers and tests to include Dask (:pr:`2658`)
         * Fix the tests that run with Woodwork main so they can be triggered (:pr:`2657`)
+        * Fix minimum dependency checker action (:pr:`2664`)
 
 
     Thanks to the following people for contributing to this release:
