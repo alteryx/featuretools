@@ -18,6 +18,7 @@ Future Release
         * Update dependency checkers and tests to include Dask (:pr:`2658`)
         * Fix the tests that run with Woodwork main so they can be triggered (:pr:`2657`)
         * Fix minimum dependency checker action (:pr:`2664`)
+        * Fix Slack alert for tests with Woodwork main branch (:pr:`2668`)
 
 
     Thanks to the following people for contributing to this release:
