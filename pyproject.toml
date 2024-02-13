@@ -56,7 +56,7 @@ test = [
     "graphviz >= 0.8.4",
     "moto[all] >= 5.0.0",
     "pip >= 21.3.1",
-    "pyarrow >= 3.0.0",
+    "pyarrow >= 14.0.1",
     "pympler >= 0.8",
     "pytest >= 7.1.2",
     "pytest-cov >= 3.0.0",
@@ -73,7 +73,7 @@ dask = [
 spark = [
     "woodwork[spark] >= 0.23.0",
     "pyspark >= 3.2.2",
-    "pyarrow >= 3.0.0",
+    "pyarrow >= 14.0.1",
 ]
 updater = [
     "alteryx-open-src-update-checker >= 2.1.0"
