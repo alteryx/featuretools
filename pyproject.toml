@@ -62,7 +62,7 @@ test = [
     "pytest-cov >= 3.0.0",
     "pytest-xdist >= 2.5.0",
     "smart-open >= 5.0.0",
-    "urllib3 >= 1.26.5",
+    "urllib3 >= 1.26.18",
     "pytest-timeout >= 2.1.0"
 ]
 dask = [
