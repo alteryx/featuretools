@@ -51,7 +51,7 @@ class CumulativeTimeSinceLastFalse(TransformPrimitive):
             df.loc[not_false_indices, "last_false_datetime"] = np.nan
             df["last_false_datetime"] = df["last_false_datetime"].fillna(method="ffill")
             total_seconds = (
-                df["datetime"] - df["last_false_datetime"]
+                pd.to_datetime(df["datetime"]).subtract(df["last_false_datetime"])
             ).dt.total_seconds()
             return pd.Series(total_seconds)
 

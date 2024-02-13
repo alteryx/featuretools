@@ -7,15 +7,23 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fix dependency issues (:pr:`2644`, :pr:`2656`)
+        * Add workaround for pandas 2.2.0 bug with nunique and unpin pandas (:pr:`2657`)
     * Changes
     * Documentation Changes
-        * Update featuretools_nav2.svg (:pr:`2632`)
+        * Update Featuretools logo to display properly in dark mode (:pr:`2632`)
     * Testing Changes
-      * Update tests for compatibility with new versions of ``holidays`` (:pr:`2636`)
-      * Update ruff to 0.1.6 and use ruff linter/formatter (:pr:`2639`)
+        * Update tests for compatibility with new versions of ``holidays`` (:pr:`2636`)
+        * Update ruff to 0.1.6 and use ruff linter/formatter (:pr:`2639`)
+        * Update ``release.yaml`` to use trusted publisher for PyPI releases (:pr:`2646`, :pr:`2653`, :pr:`2654`)
+        * Update dependency checkers and tests to include Dask (:pr:`2658`)
+        * Fix the tests that run with Woodwork main so they can be triggered (:pr:`2657`)
+        * Fix minimum dependency checker action (:pr:`2664`)
+        * Fix Slack alert for tests with Woodwork main branch (:pr:`2668`)
+
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`LakshmanKishore`, :user:`thehomebrewnerd`, 
+    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`, :user:`LakshmanKishore`
 
 
 v1.28.0 Oct 26, 2023
