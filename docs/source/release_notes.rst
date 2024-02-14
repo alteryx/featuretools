@@ -10,6 +10,7 @@ Future Release
         * Fix dependency issues (:pr:`2644`, :pr:`2656`)
         * Add workaround for pandas 2.2.0 bug with nunique and unpin pandas (:pr:`2657`)
     * Changes
+        * Fix deprecation warnings with is_categorical_dtype (:pr:`2641`)
     * Documentation Changes
         * Update Featuretools logo to display properly in dark mode (:pr:`2632`)
     * Testing Changes
@@ -20,7 +21,6 @@ Future Release
         * Fix the tests that run with Woodwork main so they can be triggered (:pr:`2657`)
         * Fix minimum dependency checker action (:pr:`2664`)
         * Fix Slack alert for tests with Woodwork main branch (:pr:`2668`)
-
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`, :user:`LakshmanKishore`
