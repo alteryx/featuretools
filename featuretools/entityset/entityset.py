@@ -1,5 +1,6 @@
 import copy
 import logging
+from pdb import set_trace
 import warnings
 from collections import defaultdict
 
@@ -1218,6 +1219,8 @@ class EntitySet(object):
                     )
 
                     if lti_is_dask or lti_is_spark:
+                        # if child_df.ww.name == "sessions":
+                        #     set_trace()
                         to_join = child_df[link_col]
                         if lti_is_dask:
                             to_join.index = child_df[child_df.ww.index]
@@ -1235,6 +1238,7 @@ class EntitySet(object):
                         lti_df = lti_df.groupby(lti_df[dataframe.ww.index]).agg("max")
 
                         lti_df = (
+                            # date
                             es_lti_dict[dataframe.ww.name]
                             .to_frame(name="last_time_old")
                             .join(lti_df)
@@ -1269,11 +1273,11 @@ class EntitySet(object):
                         lti_df = pd.Series([], dtype="object")
                     else:
                         if lti_is_spark:
-                            lti_df["last_time"] = ps.to_datetime(lti_df["last_time"])
-                            lti_df["last_time_old"] = ps.to_datetime(
-                                lti_df["last_time_old"],
-                            )
                             # TODO: Figure out a workaround for fillna and replace
+                            if lti_df["last_time_old"].dtype == "float64":
+                               lti_df["last_time_old"] = ps.to_datetime(lti_df["last_time_old"]) 
+                            if lti_df["last_time"].dtype == "float64":
+                               lti_df["last_time"] = ps.to_datetime(lti_df["last_time"]) 
                             lti_df = lti_df.max(axis=1)
                         else:
                             lti_df["last_time"] = lti_df["last_time"].astype(
