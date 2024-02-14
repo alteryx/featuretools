@@ -12,6 +12,7 @@ Future Release
     * Changes
         * Fix deprecation warnings with is_categorical_dtype (:pr:`2641`)
     * Documentation Changes
+        * Update Featuretools logo to display properly in dark mode (:pr:`2632`)
     * Testing Changes
         * Update tests for compatibility with new versions of ``holidays`` (:pr:`2636`)
         * Update ruff to 0.1.6 and use ruff linter/formatter (:pr:`2639`)
@@ -22,7 +23,7 @@ Future Release
         * Fix Slack alert for tests with Woodwork main branch (:pr:`2668`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`
+    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`, :user:`LakshmanKishore`
 
 
 v1.28.0 Oct 26, 2023
