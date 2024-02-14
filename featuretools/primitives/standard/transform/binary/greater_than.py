@@ -36,8 +36,8 @@ class GreaterThan(TransformPrimitive):
 
     def get_function(self):
         def greater_than(val1, val2):
-            val1_is_categorical = isinstance(val1, pd.CategoricalDtype)
-            val2_is_categorical = isinstance(val2, pd.CategoricalDtype)
+            val1_is_categorical = isinstance(val1.dtype, pd.CategoricalDtype)
+            val2_is_categorical = isinstance(val2.dtype, pd.CategoricalDtype)
             if val1_is_categorical and val2_is_categorical:
                 if not all(val1.cat.categories == val2.cat.categories):
                     return val1.where(pd.isnull, np.nan)
