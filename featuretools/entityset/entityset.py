@@ -1,6 +1,5 @@
 import copy
 import logging
-from pdb import set_trace
 import warnings
 from collections import defaultdict
 
@@ -1275,9 +1274,13 @@ class EntitySet(object):
                         if lti_is_spark:
                             # TODO: Figure out a workaround for fillna and replace
                             if lti_df["last_time_old"].dtype == "float64":
-                               lti_df["last_time_old"] = ps.to_datetime(lti_df["last_time_old"]) 
+                                lti_df["last_time_old"] = ps.to_datetime(
+                                    lti_df["last_time_old"],
+                                )
                             if lti_df["last_time"].dtype == "float64":
-                               lti_df["last_time"] = ps.to_datetime(lti_df["last_time"]) 
+                                lti_df["last_time"] = ps.to_datetime(
+                                    lti_df["last_time"],
+                                )
                             lti_df = lti_df.max(axis=1)
                         else:
                             lti_df["last_time"] = lti_df["last_time"].astype(

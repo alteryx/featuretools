@@ -1,9 +1,7 @@
 from inspect import isclass
-from pdb import set_trace
 
 import numpy as np
 import pandas as pd
-import pyarrow as pa
 import pytest
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import (
@@ -352,6 +350,7 @@ def test_not_equal_categorical(simple_es):
         True,
         False,
     ]
+
 
 def test_not_equal_different_dtypes(simple_es):
     f1 = Feature(

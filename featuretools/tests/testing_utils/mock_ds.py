@@ -1,8 +1,8 @@
-import pytest
 from datetime import datetime
 
 import numpy as np
 import pandas as pd
+import pytest
 from woodwork.logical_types import (
     URL,
     Boolean,
