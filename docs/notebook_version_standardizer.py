@@ -75,7 +75,7 @@ def _fix_execution_and_output(notebook):
         json.dump(source, f, ensure_ascii=False, indent=1)
 
 
-def _get_notebooks_with_executions_and_empty(notebooks, default_version="3.8.2"):
+def _get_notebooks_with_executions_and_empty(notebooks, default_version="3.9.2"):
     executed = []
     empty_last_cell = []
     versions = []
@@ -89,7 +89,7 @@ def _get_notebooks_with_executions_and_empty(notebooks, default_version="3.8.2")
     return (executed, empty_last_cell, versions)
 
 
-def _fix_versions(notebooks, default_version="3.8.2"):
+def _fix_versions(notebooks, default_version="3.9.2"):
     for notebook in notebooks:
         _fix_python_version(notebook, default_version)
 
