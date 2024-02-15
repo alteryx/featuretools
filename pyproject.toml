@@ -107,7 +107,7 @@ docs = [
     "myst-parser == 0.18.0",
     "autonormalize >= 2.0.1",
     "click >= 7.0.0",
-    "featuretools[sklearn,dask,spark,test,premium]",
+    "featuretools[dask,spark,test,premium]",
 ]
 dev = [
     "ruff >= 0.1.6",
