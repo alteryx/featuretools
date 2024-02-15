@@ -1269,11 +1269,15 @@ class EntitySet(object):
                         lti_df = pd.Series([], dtype="object")
                     else:
                         if lti_is_spark:
-                            lti_df["last_time"] = ps.to_datetime(lti_df["last_time"])
-                            lti_df["last_time_old"] = ps.to_datetime(
-                                lti_df["last_time_old"],
-                            )
                             # TODO: Figure out a workaround for fillna and replace
+                            if lti_df["last_time_old"].dtype != "datetime64[ns]":
+                                lti_df["last_time_old"] = ps.to_datetime(
+                                    lti_df["last_time_old"],
+                                )
+                            if lti_df["last_time"].dtype != "datetime64[ns]":
+                                lti_df["last_time"] = ps.to_datetime(
+                                    lti_df["last_time"],
+                                )
                             lti_df = lti_df.max(axis=1)
                         else:
                             lti_df["last_time"] = lti_df["last_time"].astype(

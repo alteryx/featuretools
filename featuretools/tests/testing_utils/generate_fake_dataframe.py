@@ -2,6 +2,7 @@ import random
 from datetime import datetime as dt
 
 import pandas as pd
+import pytest
 import woodwork.type_sys.type_system as ww_type_system
 from woodwork import logical_types
 
@@ -40,6 +41,9 @@ def generate_fake_dataframe(
     n_rows=10,
     df_name="df",
 ):
+    dask = pytest.importorskip("dask", reason="Dask not installed, skipping")
+    dask.config.set({"dataframe.convert-string": False})
+
     def randomize(values_):
         random.seed(10)
         values = values_.copy()

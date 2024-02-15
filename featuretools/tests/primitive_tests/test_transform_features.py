@@ -215,6 +215,8 @@ def pd_simple_es():
 @pytest.fixture
 def dd_simple_es(pd_simple_es):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
+    dask = pytest.importorskip("dask", reason="Dask not installed, skipping")
+    dask.config.set({"dataframe.convert-string": False})
     dataframes = {}
     for df in pd_simple_es.dataframes:
         dataframes[df.ww.name] = (
