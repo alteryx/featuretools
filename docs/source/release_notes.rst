@@ -11,7 +11,7 @@ Future Release
     * Enhancements
     * Fixes
         * Fix dependency issues (:pr:`2644`, :pr:`2656`)
-        * Add workaround for pandas 2.2.0 bug with nunique and unpin pandas (:pr:`2657`)
+        * Add workaround for pandas 2.2.0 bug with nunique and unpin pandas deps (:pr:`2657`)
     * Changes
         * Fix deprecation warnings with is_categorical_dtype (:pr:`2641`)
         * Remove woodwork, pyarrow, numpy, and pandas pins for spark installation (:pr:`2661`)
