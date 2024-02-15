@@ -1,7 +1,9 @@
 from inspect import isclass
+from pdb import set_trace
 
 import numpy as np
 import pandas as pd
+import pyarrow as pa
 import pytest
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import (
@@ -215,6 +217,8 @@ def pd_simple_es():
 @pytest.fixture
 def dd_simple_es(pd_simple_es):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
+    dask = pytest.importorskip("dask", reason="Dask not installed, skipping")
+    dask.config.set({"dataframe.convert-string": False})
     dataframes = {}
     for df in pd_simple_es.dataframes:
         dataframes[df.ww.name] = (
@@ -348,7 +352,6 @@ def test_not_equal_categorical(simple_es):
         True,
         False,
     ]
-
 
 def test_not_equal_different_dtypes(simple_es):
     f1 = Feature(

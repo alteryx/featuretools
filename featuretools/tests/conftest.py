@@ -173,6 +173,8 @@ def pd_latlong_df():
 
 @pytest.fixture
 def dask_latlong_df(pd_latlong_df):
+    dask = pytest.importorskip("dask", reason="Dask not installed, skipping")
+    dask.config.set({"dataframe.convert-string": False})
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     return dd.from_pandas(pd_latlong_df.reset_index(drop=True), npartitions=4)
 

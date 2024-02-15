@@ -1,3 +1,4 @@
+import pytest
 from datetime import datetime
 
 import numpy as np
@@ -36,6 +37,9 @@ def make_ecommerce_entityset(with_integer_time_index=False):
          \\ /   .
           L     Log
     """
+    dask = pytest.importorskip("dask", reason="Dask not installed, skipping")
+    dask.config.set({"dataframe.convert-string": False})
+
     dataframes = make_ecommerce_dataframes(
         with_integer_time_index=with_integer_time_index,
     )

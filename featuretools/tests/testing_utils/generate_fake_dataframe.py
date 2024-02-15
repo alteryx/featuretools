@@ -1,4 +1,5 @@
 import random
+import pytest
 from datetime import datetime as dt
 
 import pandas as pd
@@ -40,6 +41,8 @@ def generate_fake_dataframe(
     n_rows=10,
     df_name="df",
 ):
+    dask = pytest.importorskip("dask", reason="Dask not installed, skipping")
+    dask.config.set({"dataframe.convert-string": False})
     def randomize(values_):
         random.seed(10)
         values = values_.copy()
