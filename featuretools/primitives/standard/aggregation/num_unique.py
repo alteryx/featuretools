@@ -60,6 +60,6 @@ class NumUnique(AggregationPrimitive):
 
             return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
 
-        if self.use_string_for_pd_calc:
+        if self.use_string_for_pd_calc or agg_type == Library.SPARK:
             return "nunique"
         return pd.Series.nunique

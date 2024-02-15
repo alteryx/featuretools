@@ -82,7 +82,7 @@ tsfresh = [
     "featuretools-tsfresh-primitives >= 1.0.0",
 ]
 premium = [
-    "premium_primitives @ git+https://github.com/alteryx/premium_primitives.git@main",
+    "premium_primitives @ git+https://github.com/alteryx/premium_primitives.git@99e42b78e163abb0519d65184027515923a94576",
 ]
 autonormalize = [
     "autonormalize >= 2.0.1",
