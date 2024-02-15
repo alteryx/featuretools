@@ -11,6 +11,7 @@ Future Release
         * Add workaround for pandas 2.2.0 bug with nunique and unpin pandas (:pr:`2657`)
     * Changes
         * Fix deprecation warnings with is_categorical_dtype (:pr:`2641`)
+        * Remove woodwork, pyarrow, numpy, and pandas pins for spark installation (:pr:`2661`)
     * Documentation Changes
         * Update Featuretools logo to display properly in dark mode (:pr:`2632`)
     * Testing Changes
