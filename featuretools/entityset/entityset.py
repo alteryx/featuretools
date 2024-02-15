@@ -1218,8 +1218,6 @@ class EntitySet(object):
                     )
 
                     if lti_is_dask or lti_is_spark:
-                        # if child_df.ww.name == "sessions":
-                        #     set_trace()
                         to_join = child_df[link_col]
                         if lti_is_dask:
                             to_join.index = child_df[child_df.ww.index]
@@ -1237,7 +1235,6 @@ class EntitySet(object):
                         lti_df = lti_df.groupby(lti_df[dataframe.ww.index]).agg("max")
 
                         lti_df = (
-                            # date
                             es_lti_dict[dataframe.ww.name]
                             .to_frame(name="last_time_old")
                             .join(lti_df)
@@ -1273,11 +1270,11 @@ class EntitySet(object):
                     else:
                         if lti_is_spark:
                             # TODO: Figure out a workaround for fillna and replace
-                            if lti_df["last_time_old"].dtype == "float64":
+                            if lti_df["last_time_old"].dtype != "datetime64[ns]":
                                 lti_df["last_time_old"] = ps.to_datetime(
                                     lti_df["last_time_old"],
                                 )
-                            if lti_df["last_time"].dtype == "float64":
+                            if lti_df["last_time"].dtype != "datetime64[ns]":
                                 lti_df["last_time"] = ps.to_datetime(
                                     lti_df["last_time"],
                                 )
