@@ -5,6 +5,9 @@ Release Notes
 
 Future Release
 ==============
+    .. warning::
+        This release of Featuretools will not support Python 3.8
+
     * Enhancements
     * Fixes
         * Fix dependency issues (:pr:`2644`, :pr:`2656`)
