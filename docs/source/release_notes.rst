@@ -13,7 +13,7 @@ Release Notes
 
 .. Thanks to the following people for contributing to this release:
 
-v1.29.0 Feb 17, 2024
+v1.29.0 Feb 16, 2024
 ====================
     .. warning::
         This release of Featuretools will not support Python 3.8
