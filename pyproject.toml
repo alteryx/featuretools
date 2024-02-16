@@ -80,9 +80,6 @@ updater = [
 tsfresh = [
     "featuretools-tsfresh-primitives >= 1.0.0",
 ]
-premium = [
-    "premium_primitives @ git+https://github.com/alteryx/premium_primitives.git@99e42b78e163abb0519d65184027515923a94576",
-]
 autonormalize = [
     "autonormalize >= 2.0.1",
 ]
@@ -106,7 +103,7 @@ docs = [
     "myst-parser == 0.18.0",
     "autonormalize >= 2.0.1",
     "click >= 7.0.0",
-    "featuretools[dask,spark,test,premium]",
+    "featuretools[dask,spark,test]",
 ]
 dev = [
     "ruff >= 0.1.6",
@@ -115,7 +112,7 @@ dev = [
     "featuretools[docs,dask,spark,test]",
 ]
 complete = [
-    "featuretools[autonormalize,premium,sklearn,dask,spark,sql,tsfresh,updater]",
+    "featuretools[autonormalize,sklearn,dask,spark,sql,tsfresh,updater]",
 ]
 
 [tool.setuptools]

@@ -26,6 +26,7 @@ v1.29.0 Feb 16, 2024
         * Remove woodwork, pyarrow, numpy, and pandas pins for spark installation (:pr:`2661`)
     * Documentation Changes
         * Update Featuretools logo to display properly in dark mode (:pr:`2632`)
+        * Remove references to premium primitives while release isnt possible (:pr:`2674`)
     * Testing Changes
         * Update tests for compatibility with new versions of ``holidays`` (:pr:`2636`)
         * Update ruff to 0.1.6 and use ruff linter/formatter (:pr:`2639`)
