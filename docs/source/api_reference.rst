@@ -312,15 +312,6 @@ Time Series Transform Primitives
     RollingTrend
 
 
-.. currentmodule:: premium_primitives
-
-.. autosummary::
-   :nosignatures:
-
-Natural Language Processing Primitives
---------------------------------------
-Natural Language Processing primitives create features for textual data. For more information on how to use and install these primitives, see `here <https://github.com/alteryx/premium_primitives>`__.
-
 Primitives in standard install
 ******************************
 .. autosummary::

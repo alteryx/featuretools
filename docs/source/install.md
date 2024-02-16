@@ -29,10 +29,6 @@ Be sure to install [Scala and Spark](#scala-and-spark) if you want to use Spark
 ```console
 $ python -m pip install "featuretools[complete]"
 ```
-```{tab} Premium Primitives
-```console
-$ python -m pip install "featuretools[premium]"
-```
 ```{tab} Dask
 ```console
 $ python -m pip install "featuretools[dask]"
