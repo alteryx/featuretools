@@ -3,12 +3,21 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.29.0 Feb 16, 2024
+====================
     .. warning::
         This release of Featuretools will not support Python 3.8
 
-    * Enhancements
     * Fixes
         * Fix dependency issues (:pr:`2644`, :pr:`2656`)
         * Add workaround for pandas 2.2.0 bug with nunique and unpin pandas deps (:pr:`2657`)
