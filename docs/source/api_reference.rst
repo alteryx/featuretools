@@ -312,18 +312,6 @@ Time Series Transform Primitives
     RollingTrend
 
 
-Primitives in standard install
-******************************
-.. autosummary::
-    :toctree: generated/
-
-    DiversityScore
-    LSA
-    PartOfSpeechCount
-    PolarityScore
-    StopwordCount
-
-
 Feature methods
 ---------------
 .. currentmodule:: featuretools.feature_base
