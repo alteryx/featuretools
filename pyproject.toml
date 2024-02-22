@@ -67,7 +67,7 @@ test = [
 dask = [
     "dask[dataframe] >= 2022.11.1",
     "distributed >= 2022.11.1",
-    "woodwork[dask] >= 0.28.0",
+    "woodwork[dask] >= 0.23.0",
 ]
 spark = [
     "woodwork[spark] >= 0.28.0",
