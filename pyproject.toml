@@ -67,7 +67,7 @@ test = [
 dask = [
     "dask[dataframe] >= 2022.11.1",
     "distributed >= 2022.11.1",
-    "woodwork[dask] >= 0.23.0",
+    "woodwork[dask] >= 0.28.0",
 ]
 spark = [
     "woodwork[spark] >= 0.28.0",
@@ -112,7 +112,7 @@ dev = [
     "featuretools[docs,dask,spark,test]",
 ]
 complete = [
-    "featuretools[autonormalize,sklearn,dask,spark,sql,tsfresh,updater]",
+    "featuretools[autonormalize,sklearn,dask,spark,sql,updater]",
 ]
 
 [tool.setuptools]
