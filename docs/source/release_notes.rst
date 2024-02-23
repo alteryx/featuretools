@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Update min requirements for numpy, pandas and Woodwork (:pr:`2681`)
     * Documentation Changes
     * Testing Changes
         * Update ``make_ecommerce_entityset`` to work without Dask (:pr:`2677`)
