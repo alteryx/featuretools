@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Update ``make_ecommerce_entityset`` to work without Dask (:pr:`2677`)
 
-.. Thanks to the following people for contributing to this release:
+  Thanks to the following people for contributing to this release:
+  :user:`thehomebrewnerd`
 
 v1.29.0 Feb 16, 2024
 ====================

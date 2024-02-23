@@ -2,7 +2,6 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
-import pytest
 from woodwork.logical_types import (
     URL,
     Boolean,
@@ -24,6 +23,9 @@ from woodwork.logical_types import (
 )
 
 from featuretools.entityset import EntitySet
+from featuretools.utils.gen_utils import import_or_none
+
+dask = import_or_none("dask")
 
 
 def make_ecommerce_entityset(with_integer_time_index=False):
@@ -37,8 +39,8 @@ def make_ecommerce_entityset(with_integer_time_index=False):
          \\ /   .
           L     Log
     """
-    dask = pytest.importorskip("dask", reason="Dask not installed, skipping")
-    dask.config.set({"dataframe.convert-string": False})
+    if dask:
+        dask.config.set({"dataframe.convert-string": False})
 
     dataframes = make_ecommerce_dataframes(
         with_integer_time_index=with_integer_time_index,

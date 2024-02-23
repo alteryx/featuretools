@@ -70,8 +70,8 @@ dask = [
     "woodwork[dask] >= 0.23.0",
 ]
 spark = [
-    "woodwork[spark] >= 0.23.0",
-    "pyspark >= 3.2.2",
+    "woodwork[spark] >= 0.28.0",
+    "pyspark >= 3.5.0",
     "pyarrow >= 14.0.1",
 ]
 updater = [
@@ -112,7 +112,7 @@ dev = [
     "featuretools[docs,dask,spark,test]",
 ]
 complete = [
-    "featuretools[autonormalize,sklearn,dask,spark,sql,tsfresh,updater]",
+    "featuretools[autonormalize,sklearn,dask,spark,sql,updater]",
 ]
 
 [tool.setuptools]
