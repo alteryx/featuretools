@@ -3,7 +3,7 @@ dask==2024.2.0
 distributed==2024.2.0
 holidays==0.43
 numpy==1.26.4
-pandas==2.2.0
+pandas==2.2.1
 psutil==5.9.8
 pyspark==3.5.0
 scipy==1.12.0
