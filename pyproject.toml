@@ -65,8 +65,8 @@ test = [
     "pytest-timeout >= 2.1.0"
 ]
 dask = [
-    "dask[dataframe] >= 2022.11.1",
-    "distributed >= 2022.11.1",
+    "dask[dataframe] >= 2023.2.0",
+    "distributed >= 2023.2.0",
     "woodwork[dask] >= 0.28.0",
 ]
 spark = [

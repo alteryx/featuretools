@@ -1,6 +1,6 @@
 cloudpickle==1.5.0
-dask[dataframe]==2022.11.1
-distributed==2022.11.1
+dask[dataframe]==2023.2.0
+distributed==2023.2.0
 holidays==0.17
 numpy==1.25.0
 packaging==20.0
