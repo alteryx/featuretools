@@ -13,7 +13,7 @@ Release Notes
 
 .. Thanks to the following people for contributing to this release:
 
-v1.29.0 Feb 26, 2024
+v1.30.0 Feb 26, 2024
 ====================
     * Changes
         * Update min requirements for numpy, pandas and Woodwork (:pr:`2681`)
