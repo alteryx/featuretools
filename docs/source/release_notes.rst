@@ -3,18 +3,25 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
     * Fixes
     * Changes
-        * Update min requirements for numpy, pandas and Woodwork (:pr:`2681`)
     * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v1.29.0 Feb 26, 2024
+====================
+    * Changes
+        * Update min requirements for numpy, pandas and Woodwork (:pr:`2681`)
     * Testing Changes
         * Update ``make_ecommerce_entityset`` to work without Dask (:pr:`2677`)
 
   Thanks to the following people for contributing to this release:
-  :user:`thehomebrewnerd`
+  :user:`tamargrey`, :user:`thehomebrewnerd`
 
 v1.29.0 Feb 16, 2024
 ====================
