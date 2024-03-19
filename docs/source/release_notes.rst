@@ -3,15 +3,18 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
+        * Temporarily restrict Dask version :pr:`2694`
     * Documentation Changes
     * Testing Changes
+        * Fix serialization test to work with pytest 8.1.1 :pr:`2694`
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
 
 v1.30.0 Feb 26, 2024
 ====================
@@ -21,8 +24,8 @@ v1.30.0 Feb 26, 2024
     * Testing Changes
         * Update ``make_ecommerce_entityset`` to work without Dask (:pr:`2677`)
 
-  Thanks to the following people for contributing to this release:
-  :user:`tamargrey`, :user:`thehomebrewnerd`
+    Thanks to the following people for contributing to this release:
+    :user:`tamargrey`, :user:`thehomebrewnerd`
 
 v1.29.0 Feb 16, 2024
 ====================

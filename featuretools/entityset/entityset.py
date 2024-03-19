@@ -1115,9 +1115,9 @@ class EntitySet(object):
         child_cols = defaultdict(dict)
         for r in self.relationships:
             children[r._parent_dataframe_name].append(r.child_dataframe)
-            child_cols[r._parent_dataframe_name][
-                r._child_dataframe_name
-            ] = r.child_column
+            child_cols[r._parent_dataframe_name][r._child_dataframe_name] = (
+                r.child_column
+            )
 
         updated_dataframes = updated_dataframes or []
         if updated_dataframes:

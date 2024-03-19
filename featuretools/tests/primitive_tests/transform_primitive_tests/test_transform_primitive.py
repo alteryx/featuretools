@@ -1,3 +1,4 @@
+import warnings
 from datetime import datetime
 
 import numpy as np
@@ -388,10 +389,10 @@ def test_week_no_deprecation_message():
         datetime(2019, 6, 17, 11, 10, 50),
         datetime(2019, 11, 30, 19, 45, 15),
     ]
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         week = Week()
         week(dates).tolist()
-    assert not record
 
 
 def test_url_to_domain_urls():

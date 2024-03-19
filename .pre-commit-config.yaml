@@ -26,7 +26,7 @@ repos:
       - id: add-trailing-comma
         name: Add trailing comma
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 'v0.1.6'
+    rev: 'v0.3.3'
     hooks:
       - id: ruff
         types_or: [ python, pyi, jupyter ]

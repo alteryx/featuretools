@@ -123,12 +123,12 @@ class FeaturesSerializer(object):
                         # being converted to strings, but integer dict values are not.
                         primitives_dict_key = str(primitive_number)
                         primitive_id_to_key[primitive_id] = primitives_dict_key
-                        self._primitives_dict[
+                        self._primitives_dict[primitives_dict_key] = (
+                            serialize_primitive(primitive)
+                        )
+                        self._features_dict[name]["arguments"]["primitive"] = (
                             primitives_dict_key
-                        ] = serialize_primitive(primitive)
-                        self._features_dict[name]["arguments"][
-                            "primitive"
-                        ] = primitives_dict_key
+                        )
                         primitive_number += 1
                     else:
                         # Primitive we have seen already - use existing primitive_id key

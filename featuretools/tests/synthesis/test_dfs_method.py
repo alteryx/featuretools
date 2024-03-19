@@ -1,3 +1,4 @@
+import warnings
 from unittest.mock import patch
 
 import composeml as cp
@@ -87,10 +88,13 @@ def test_dfs_empty_features():
             features_only=True,
         )
         assert features == []
-    with pytest.raises(AssertionError, match=error_text), patch.object(
-        DeepFeatureSynthesis,
-        "build_features",
-        return_value=[],
+    with (
+        pytest.raises(AssertionError, match=error_text),
+        patch.object(
+            DeepFeatureSynthesis,
+            "build_features",
+            return_value=[],
+        ),
     ):
         dfs(
             dataframes,
@@ -447,7 +451,8 @@ def test_warns_with_unused_primitives(es):
     assert record[0].message.args[0] == warning_text
 
     # Should not raise a warning
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         dfs(
             entityset=es,
             target_dataframe_name="customers",
@@ -457,13 +462,12 @@ def test_warns_with_unused_primitives(es):
             features_only=True,
         )
 
-    assert not record
-
 
 def test_no_warns_with_camel_and_title_case(es):
     for trans_primitive in ["isNull", "IsNull"]:
         # Should not raise a UnusedPrimitiveWarning warning
-        with pytest.warns(None) as record:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
             dfs(
                 entityset=es,
                 target_dataframe_name="customers",
@@ -472,11 +476,10 @@ def test_no_warns_with_camel_and_title_case(es):
                 features_only=True,
             )
 
-        assert not record
-
     for agg_primitive in ["numUnique", "NumUnique"]:
         # Should not raise a UnusedPrimitiveWarning warning
-        with pytest.warns(None) as record:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
             dfs(
                 entityset=es,
                 target_dataframe_name="customers",
@@ -485,11 +488,10 @@ def test_no_warns_with_camel_and_title_case(es):
                 features_only=True,
             )
 
-        assert not record
-
 
 def test_does_not_warn_with_stacking_feature(pd_es):
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         dfs(
             entityset=pd_es,
             target_dataframe_name="régions",
@@ -500,8 +502,6 @@ def test_does_not_warn_with_stacking_feature(pd_es):
             },
             features_only=True,
         )
-
-    assert not record
 
 
 def test_warns_with_unused_where_primitives(es):
@@ -549,7 +549,8 @@ def test_warns_with_unused_groupby_primitives(pd_es):
     assert record[0].message.args[0] == warning_text
 
     # Should not raise a warning
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         dfs(
             entityset=pd_es,
             target_dataframe_name="customers",
@@ -557,8 +558,6 @@ def test_warns_with_unused_groupby_primitives(pd_es):
             max_depth=1,
             features_only=True,
         )
-
-    assert not record
 
 
 def test_warns_with_unused_custom_primitives(pd_es):
@@ -589,7 +588,8 @@ def test_warns_with_unused_custom_primitives(pd_es):
     assert record[0].message.args[0] == warning_text
 
     # Should not raise a warning
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         dfs(
             entityset=pd_es,
             target_dataframe_name="customers",
@@ -625,7 +625,8 @@ def test_warns_with_unused_custom_primitives(pd_es):
     assert record[0].message.args[0] == warning_text
 
     # Should not raise a warning
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         dfs(
             entityset=pd_es,
             target_dataframe_name="sessions",
