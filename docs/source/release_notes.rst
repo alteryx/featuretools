@@ -11,6 +11,7 @@ Future Release
         * Temporarily restrict Dask version :pr:`2694`
     * Documentation Changes
     * Testing Changes
+        * Fix serialization test to work with pytest 8.1.1 :pr:`2694`
 
     Thanks to the following people for contributing to this release:
     :user:`thehomebrewnerd`
