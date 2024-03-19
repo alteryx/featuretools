@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
+        * Temporarily restrict Dask version :pr:`2694`
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
 
 v1.30.0 Feb 26, 2024
 ====================
