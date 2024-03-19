@@ -3,6 +3,7 @@ cache.py
 
 Custom caching class, currently used for FeatureBase
 """
+
 # needed for defaultdict annotation if < python 3.9
 from __future__ import annotations
 

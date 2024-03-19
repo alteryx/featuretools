@@ -12,6 +12,7 @@ Notes:
   - max_depth > 2 is very slow (currently)
   - stats output can be viewed online with https://nejc.saje.info/pstats-viewer.html
 """
+
 import cProfile
 from pathlib import Path
 

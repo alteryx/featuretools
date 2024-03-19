@@ -88,10 +88,13 @@ def test_dfs_empty_features():
             features_only=True,
         )
         assert features == []
-    with pytest.raises(AssertionError, match=error_text), patch.object(
-        DeepFeatureSynthesis,
-        "build_features",
-        return_value=[],
+    with (
+        pytest.raises(AssertionError, match=error_text),
+        patch.object(
+            DeepFeatureSynthesis,
+            "build_features",
+            return_value=[],
+        ),
     ):
         dfs(
             dataframes,
