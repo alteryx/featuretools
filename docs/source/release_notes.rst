@@ -23,8 +23,8 @@ v1.30.0 Feb 26, 2024
     * Testing Changes
         * Update ``make_ecommerce_entityset`` to work without Dask (:pr:`2677`)
 
-  Thanks to the following people for contributing to this release:
-  :user:`tamargrey`, :user:`thehomebrewnerd`
+    Thanks to the following people for contributing to this release:
+    :user:`tamargrey`, :user:`thehomebrewnerd`
 
 v1.29.0 Feb 16, 2024
 ====================
