@@ -6,6 +6,6 @@ numpy==1.26.4
 pandas==2.2.1
 psutil==5.9.8
 pyspark==3.5.1
-scipy==1.12.0
+scipy==1.13.0
 tqdm==4.66.2
 woodwork==0.29.0
