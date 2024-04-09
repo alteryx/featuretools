@@ -7,11 +7,12 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Move ``flatten_list`` util function into ``feature_discovery`` module to fix import bug (:pr:`2702`)
     * Changes
-        * Temporarily restrict Dask version :pr:`2694`
+        * Temporarily restrict Dask version (:pr:`2694`)
     * Documentation Changes
     * Testing Changes
-        * Fix serialization test to work with pytest 8.1.1 :pr:`2694`
+        * Fix serialization test to work with pytest 8.1.1 (:pr:`2694`)
 
     Thanks to the following people for contributing to this release:
     :user:`thehomebrewnerd`
