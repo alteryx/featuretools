@@ -6,6 +6,8 @@ import pytest
 import woodwork.type_sys.type_system as ww_type_system
 from woodwork import logical_types
 
+from featuretools.feature_discovery.utils import flatten_list
+
 logical_type_mapping = {
     logical_types.Boolean.__name__: [True, False],
     logical_types.BooleanNullable.__name__: [True, False, pd.NA],
@@ -30,10 +32,6 @@ logical_type_mapping = {
     logical_types.URL.__name__: ["https://www.example.com", "https://www.example2.com"],
     logical_types.PostalCode.__name__: ["60018", "60018-0123"],
 }
-
-
-def flatten_list(nested_list):
-    return [item for sublist in nested_list for item in sublist]
 
 
 def generate_fake_dataframe(

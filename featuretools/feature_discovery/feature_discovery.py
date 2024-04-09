@@ -9,9 +9,8 @@ from woodwork.table_schema import TableSchema
 
 from featuretools.feature_discovery.FeatureCollection import FeatureCollection
 from featuretools.feature_discovery.LiteFeature import LiteFeature
-from featuretools.feature_discovery.utils import column_schema_to_keys
+from featuretools.feature_discovery.utils import column_schema_to_keys, flatten_list
 from featuretools.primitives.base.primitive_base import PrimitiveBase
-from featuretools.tests.testing_utils.generate_fake_dataframe import flatten_list
 
 
 def _index_column_set(column_set: List[ColumnSchema]) -> List[Tuple[str, int]]:
