@@ -63,7 +63,8 @@ test = [
     "pytest-xdist >= 2.5.0",
     "smart-open >= 5.0.0",
     "urllib3 >= 1.26.18",
-    "pytest-timeout >= 2.1.0"
+    "pytest-timeout >= 2.1.0",
+    "featuretools[dask]"
 ]
 dask = [
     "dask[dataframe] >= 2023.2.0",
