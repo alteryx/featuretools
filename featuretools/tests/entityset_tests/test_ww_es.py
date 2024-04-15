@@ -654,8 +654,6 @@ def latlong_df():
 
 
 def test_replace_dataframe_data_transformation(latlong_df):
-    dask = pytest.importorskip("dask", reason="Dask not installed, skipping")
-    dask.config.set({"dataframe.convert-string": False})
     initial_df = latlong_df.copy()
     initial_df.ww.init(
         name="latlongs",
