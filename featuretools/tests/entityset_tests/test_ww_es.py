@@ -736,7 +736,6 @@ def test_replace_dataframe_and_min_last_time_index(es):
 
     es.replace_dataframe("log", new_dataframe, recalculate_last_time_indexes=True)
 
-    # Spark reorders indices during last time index, so we sort to confirm individual values are the same
     pd.testing.assert_series_equal(
         es["products"][LTI_COLUMN_NAME].sort_index(),
         expected_last_time_index.sort_index(),

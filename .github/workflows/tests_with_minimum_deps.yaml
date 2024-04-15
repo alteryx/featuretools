@@ -39,5 +39,8 @@ jobs:
       - name: Install featuretools - minimum core dependencies
         run: |
           python -m pip install -r featuretools/tests/requirement_files/minimum_core_requirements.txt
+      - name: Install featuretools - minimum Dask dependencies
+        run: |
+          python -m pip install -r featuretools/tests/requirement_files/minimum_dask_requirements.txt
       - name: Run unit tests without code coverage
         run: python -m pytest -x -n auto featuretools/tests/

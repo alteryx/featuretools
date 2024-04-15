@@ -1464,7 +1464,6 @@ def test_normalize_dataframe_copies_logical_types(es):
     assert len(es["values_2"].ww.logical_types["value"].order) == 10
 
 
-# sorting not supported in Dask, Spark
 def test_make_time_index_keeps_original_sorting():
     trips = {
         "trip_id": [999 - i for i in range(1000)],
