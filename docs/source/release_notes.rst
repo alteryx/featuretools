@@ -20,7 +20,7 @@ Future Release
 Breaking Changes
 ++++++++++++++++
 * With this release of Featuretools, EntitySets can no longer be created from Dask or Pyspark dataframes. The behavior when using pandas
-dataframes to create EntitySets remains unchanged.
+  dataframes to create EntitySets remains unchanged.
 
 
 v1.30.0 Feb 26, 2024
