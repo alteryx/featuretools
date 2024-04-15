@@ -270,7 +270,8 @@ def postal_code_dataframe():
             "int_dtype": pd.Series([10000, 20000, 30000]).astype("category"),
             "has_nulls": pd.Series([np.nan, 20000, 30000]).astype("category"),
         },
-    ).ww.init(
+    )
+    df.ww.init(
         logical_types={
             "string_dtype": "PostalCode",
             "int_dtype": "PostalCode",

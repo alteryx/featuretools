@@ -127,22 +127,6 @@ def test_only_makes_supplied_agg_feat(es):
     assert len(other_agg_features) == 0
 
 
-def test_errors_unsupported_primitives(es):
-    bad_trans_prim = CumSum()
-    bad_agg_prim = NumUnique()
-    library = es.dataframe_type
-    error_text = "Selected primitives are incompatible with {} EntitySets: cum_sum, num_unique".format(
-        library.value,
-    )
-    with pytest.raises(ValueError, match=error_text):
-        DeepFeatureSynthesis(
-            target_dataframe_name="sessions",
-            entityset=es,
-            agg_primitives=[bad_agg_prim],
-            trans_primitives=[bad_trans_prim],
-        )
-
-
 def test_error_for_missing_target_dataframe(es):
     error_text = (
         "Provided target dataframe missing_dataframe does not exist in ecommerce"

@@ -3,7 +3,6 @@ import numpy as np
 from featuretools import dfs
 from featuretools.computational_backends import replace_inf_values
 from featuretools.primitives import DivideByFeature, DivideNumericScalar
-from featuretools.tests.testing_utils import to_pandas
 
 
 def test_replace_inf_values(divide_by_zero_es):
@@ -22,14 +21,12 @@ def test_replace_inf_values(divide_by_zero_es):
             trans_primitives=[primitive],
             max_depth=1,
         )
-        assert np.inf in to_pandas(fm).values or -np.inf in to_pandas(fm).values
+        assert np.inf in fm.values or -np.inf in fm.values
         replaced_fm = replace_inf_values(fm)
-        replaced_fm = to_pandas(replaced_fm)
         assert np.inf not in replaced_fm.values
         assert -np.inf not in replaced_fm.values
 
         custom_value_fm = replace_inf_values(fm, replacement_value="custom_val")
-        custom_value_fm = to_pandas(custom_value_fm)
         assert np.inf not in custom_value_fm.values
         assert -np.inf not in replaced_fm.values
         assert "custom_val" in custom_value_fm.values
@@ -44,8 +41,7 @@ def test_replace_inf_values_specify_cols(divide_by_zero_es):
         max_depth=1,
     )
 
-    assert np.inf in to_pandas(fm["col1 / 0"]).values
+    assert np.inf in fm["col1 / 0"].values
     replaced_fm = replace_inf_values(fm, columns=["col1 / 0"])
-    replaced_fm = to_pandas(replaced_fm)
     assert np.inf not in replaced_fm["col1 / 0"].values
     assert np.inf in replaced_fm["col2 / 0"].values

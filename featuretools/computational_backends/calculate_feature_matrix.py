@@ -36,7 +36,6 @@ from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, FeatureBase
 from featuretools.utils import Trie
 from featuretools.utils.gen_utils import (
-    Library,
     import_or_raise,
     make_tqdm_iterator,
 )
@@ -167,14 +166,6 @@ def calculate_feature_matrix(
             entityset = EntitySet("entityset", dataframes, relationships)
         else:
             raise TypeError("No dataframes or valid EntitySet provided")
-
-    if entityset.dataframe_type == Library.DASK:
-        if approximate:
-            msg = "Using approximate is not supported with Dask dataframes"
-            raise ValueError(msg)
-        if training_window:
-            msg = "Using training_window is not supported with Dask dataframes"
-            raise ValueError(msg)
 
     target_dataframe = entityset[features[0].dataframe_name]
 

@@ -138,25 +138,8 @@ def test_find_forward_paths_multiple_relationships(games_es):
 
 
 @pytest.fixture
-def pd_employee_df():
+def employee_df():
     return pd.DataFrame({"id": [0], "manager_id": [0]})
-
-
-@pytest.fixture
-def dd_employee_df(pd_employee_df):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(pd_employee_df, npartitions=2)
-
-
-@pytest.fixture
-def spark_employee_df(pd_employee_df):
-    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    return ps.from_pandas(pd_employee_df)
-
-
-@pytest.fixture(params=["pd_employee_df", "dd_employee_df", "spark_employee_df"])
-def employee_df(request):
-    return request.getfixturevalue(request.param)
 
 
 def test_find_forward_paths_ignores_loops(employee_df):

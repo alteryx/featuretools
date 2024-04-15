@@ -14,7 +14,6 @@ from woodwork.serializers.serializer_base import typing_info_to_dict
 from woodwork.type_sys.utils import list_logical_types
 
 from featuretools.entityset import EntitySet, deserialize, serialize
-from featuretools.tests.testing_utils import to_pandas
 from featuretools.version import ENTITYSET_SCHEMA_VERSION
 
 BUCKET_NAME = "test-bucket"
@@ -98,8 +97,8 @@ def test_to_csv(es, tmp_path):
     es.to_csv(str(tmp_path), encoding="utf-8", engine="python")
     new_es = deserialize.read_entityset(str(tmp_path))
     assert es.__eq__(new_es, deep=True)
-    df = to_pandas(es["log"], index="id")
-    new_df = to_pandas(new_es["log"], index="id")
+    df = es["log"]
+    new_df = new_es["log"]
     assert type(df["latlong"][0]) in (tuple, list)
     assert type(new_df["latlong"][0]) in (tuple, list)
 
@@ -156,8 +155,8 @@ def test_to_parquet(es, tmp_path):
     es.to_parquet(str(tmp_path))
     new_es = deserialize.read_entityset(str(tmp_path))
     assert es.__eq__(new_es, deep=True)
-    df = to_pandas(es["log"])
-    new_df = to_pandas(new_es["log"])
+    df = es["log"]
+    new_df = new_es["log"]
     assert type(df["latlong"][0]) in (tuple, list)
     assert type(new_df["latlong"][0]) in (tuple, list)
 
@@ -182,8 +181,8 @@ def test_to_parquet_interesting_values(es, tmp_path):
     assert es.__eq__(new_es, deep=True)
 
 
-def test_to_parquet_with_lti(tmp_path, pd_mock_customer):
-    es = pd_mock_customer
+def test_to_parquet_with_lti(tmp_path, mock_customer):
+    es = mock_customer
     es.to_parquet(str(tmp_path))
     new_es = deserialize.read_entityset(str(tmp_path))
     assert es.__eq__(new_es, deep=True)
@@ -420,7 +419,6 @@ def _check_schema_version(version, es, warning_text, caplog, warning_type=None):
         "id": es.id,
         "dataframes": dataframes,
         "relationships": relationships,
-        "data_type": es.dataframe_type,
     }
 
     if warning_type == "warn" and warning_text:

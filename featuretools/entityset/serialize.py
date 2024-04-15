@@ -31,15 +31,12 @@ def entityset_to_description(entityset, format=None):
         relationship.to_dictionary() for relationship in entityset.relationships
     ]
 
-    data_type = entityset.dataframe_type
-
     data_description = {
         "schema_version": ENTITYSET_SCHEMA_VERSION,
         "id": entityset.id,
         "dataframes": dataframes,
         "relationships": relationships,
         "format": format,
-        "data_type": data_type,
     }
     return data_description
 

@@ -34,7 +34,7 @@ from featuretools.primitives import (
 )
 from featuretools.primitives.base import AggregationPrimitive
 from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis, match
-from featuretools.tests.testing_utils import backward_path, feature_with_name, to_pandas
+from featuretools.tests.testing_utils import backward_path, feature_with_name
 
 
 @pytest.fixture(autouse=True)
@@ -740,7 +740,6 @@ def test_use_previous_pd_dateoffset(es):
         cutoff_time=pd.Timestamp("2011-04-11 10:31:30"),
         instance_ids=[0, 1, 2],
     )
-    feature_matrix = to_pandas(feature_matrix, index="id", sort_index=True)
     col_name = list(feature_matrix.head().keys())[0]
     assert (feature_matrix[col_name] == [1, 5, 2]).all()
 

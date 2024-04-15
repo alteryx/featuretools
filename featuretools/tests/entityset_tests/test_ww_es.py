@@ -90,15 +90,15 @@ def test_init_es_with_dataframe_and_params(df):
     assert es["table"].ww.semantic_tags["category"] == {"new_tag"}
 
 
-def test_init_es_with_multiple_dataframes(pd_df):
+def test_init_es_with_multiple_dataframes(df):
     second_df = pd.DataFrame({"id": [0, 1, 2, 3], "first_table_id": [1, 2, 2, 1]})
 
-    pd_df.ww.init(name="first_table", index="id")
+    df.ww.init(name="first_table", index="id")
 
     es = EntitySet(
         "es",
         dataframes={
-            "first_table": (pd_df,),
+            "first_table": (df,),
             "second_table": (
                 second_df,
                 "id",
@@ -145,15 +145,15 @@ def test_change_es_dataframe_schema(df):
     assert es["table"].ww.index == "category"
 
 
-def test_init_es_with_relationships(pd_df):
+def test_init_es_with_relationships(df):
     second_df = pd.DataFrame({"id": [0, 1, 2, 3], "first_table_id": [1, 2, 2, 1]})
 
-    pd_df.ww.init(name="first_table", index="id")
+    df.ww.init(name="first_table", index="id")
     second_df.ww.init(name="second_table", index="id")
 
     es = EntitySet(
         "es",
-        dataframes={"first_table": (pd_df,), "second_table": (second_df,)},
+        dataframes={"first_table": (df,), "second_table": (second_df,)},
         relationships=[("first_table", "id", "second_table", "first_table_id")],
     )
 

@@ -101,22 +101,6 @@ def test_full_dataframe_trans_of_agg(es):
     assert v == 82
 
 
-def test_full_dataframe_error_dask(dask_es):
-    agg_feat = Feature(
-        dask_es["log"].ww["value"],
-        parent_dataframe_name="customers",
-        primitive=Sum,
-    )
-    trans_feat = Feature(agg_feat, primitive=CumSum)
-
-    feature_set = FeatureSet([trans_feat])
-    calculator = FeatureSetCalculator(dask_es, time_last=None, feature_set=feature_set)
-    error_text = "Cannot use primitives that require full dataframe with Dask"
-
-    with pytest.raises(ValueError, match=error_text):
-        calculator.run(np.array([1]))
-
-
 def test_make_agg_feat_of_identity_index_column(es):
     agg_feat = Feature(
         es["log"].ww["id"],
@@ -798,7 +782,7 @@ def test_two_relationships_to_single_dataframe(games_es):
 
 
 @pytest.fixture
-def pd_parent_child():
+def parent_child():
     parent_df = pd.DataFrame({"id": [1]})
     child_df = pd.DataFrame(
         {
@@ -810,29 +794,6 @@ def pd_parent_child():
         },
     ).astype({"cat": "category"})
     return (parent_df, child_df)
-
-
-@pytest.fixture
-def dd_parent_child(pd_parent_child):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    parent_df, child_df = pd_parent_child
-    parent_df = dd.from_pandas(parent_df, npartitions=2)
-    child_df = dd.from_pandas(child_df, npartitions=2)
-    return (parent_df, child_df)
-
-
-@pytest.fixture
-def spark_parent_child(pd_parent_child):
-    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    parent_df, child_df = pd_parent_child
-    parent_df = ps.from_pandas(parent_df)
-    child_df = ps.from_pandas(child_df)
-    return (parent_df, child_df)
-
-
-@pytest.fixture(params=["pd_parent_child", "dd_parent_child", "spark_parent_child"])
-def parent_child(request):
-    return request.getfixturevalue(request.param)
 
 
 def test_empty_child_dataframe(parent_child):

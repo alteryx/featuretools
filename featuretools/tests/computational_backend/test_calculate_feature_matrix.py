@@ -163,30 +163,6 @@ def test_calc_feature_matrix(es):
     assert all(feature_matrix.index == cutoff_reordered["id"].values)
 
 
-def test_cfm_warns_dask_cutoff_time(es):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    times = list(
-        [datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)]
-        + [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)]
-        + [datetime(2011, 4, 9, 10, 40, 0)]
-        + [datetime(2011, 4, 10, 10, 40, i) for i in range(2)]
-        + [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)]
-        + [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)],
-    )
-    instances = range(17)
-    cutoff_time = pd.DataFrame({"time": times, es["log"].ww.index: instances})
-    cutoff_time = dd.from_pandas(cutoff_time, npartitions=4)
-
-    property_feature = Feature(es["log"].ww["value"]) > 10
-
-    match = (
-        "cutoff_time should be a Pandas DataFrame: "
-        "computing cutoff_time, this may take a while"
-    )
-    with pytest.warns(UserWarning, match=match):
-        calculate_feature_matrix([property_feature], es, cutoff_time=cutoff_time)
-
-
 def test_cfm_compose(es, lt):
     property_feature = Feature(es["log"].ww["value"]) > 10
 
@@ -437,18 +413,6 @@ def test_cutoff_time_binning():
     error_text = "Unit is relative"
     with pytest.raises(ValueError, match=error_text):
         binned_cutoff_times = bin_cutoff_times(cutoff_time, Timedelta(1, "mo"))
-
-
-def test_training_window_fails_dask(dask_es):
-    property_feature = Feature(
-        dask_es["log"].ww["id"],
-        parent_dataframe_name="customers",
-        primitive=Count,
-    )
-
-    error_text = "Using training_window is not supported with Dask dataframes"
-    with pytest.raises(ValueError, match=error_text):
-        calculate_feature_matrix([property_feature], dask_es, training_window="2 hours")
 
 
 def test_cutoff_time_columns_order(es):
@@ -872,8 +836,8 @@ def test_approximate_multiple_instances_per_cutoff_time(es):
     assert feature_matrix[agg_feat.get_name()].tolist() == [5, 1]
 
 
-def test_approximate_with_multiple_paths(pd_diamond_es):
-    es = pd_diamond_es
+def test_approximate_with_multiple_paths(diamond_es):
+    es = diamond_es
     path = backward_path(es, ["regions", "customers", "transactions"])
     agg_feat = AggregationFeature(
         Feature(es["transactions"].ww["id"]),
@@ -1662,7 +1626,6 @@ class TestCreateClientAndCluster(object):
         )
 
 
-@pytest.mark.skipif("not dd")
 def test_parallel_failure_raises_correct_error(es):
     times = (
         [datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)]
@@ -2133,7 +2096,7 @@ def test_calls_progress_callback(mock_customer):
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
 
-def test_calls_progress_callback_cluster(pd_mock_customer, dask_cluster):
+def test_calls_progress_callback_cluster(mock_customer, dask_cluster):
     class MockProgressCallback:
         def __init__(self):
             self.progress_history = []
@@ -2148,12 +2111,12 @@ def test_calls_progress_callback_cluster(pd_mock_customer, dask_cluster):
     mock_progress_callback = MockProgressCallback()
 
     trans_per_session = Feature(
-        pd_mock_customer["transactions"].ww["transaction_id"],
+        mock_customer["transactions"].ww["transaction_id"],
         parent_dataframe_name="sessions",
         primitive=Count,
     )
     trans_per_customer = Feature(
-        pd_mock_customer["transactions"].ww["transaction_id"],
+        mock_customer["transactions"].ww["transaction_id"],
         parent_dataframe_name="customers",
         primitive=Count,
     )
@@ -2162,7 +2125,7 @@ def test_calls_progress_callback_cluster(pd_mock_customer, dask_cluster):
     dkwargs = {"cluster": dask_cluster.scheduler.address}
     calculate_feature_matrix(
         features,
-        entityset=pd_mock_customer,
+        entityset=mock_customer,
         progress_callback=mock_progress_callback,
         dask_kwargs=dkwargs,
     )

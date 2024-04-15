@@ -1368,7 +1368,7 @@ def test_normalize_dataframe_new_time_index_additional_success_check(es):
 
 
 @pytest.fixture
-def pd_normalize_es():
+def normalize_es():
     df = pd.DataFrame(
         {
             "id": [0, 1, 2, 3],
@@ -1383,32 +1383,6 @@ def pd_normalize_es():
     )
     es = EntitySet("es")
     return es.add_dataframe(dataframe_name="data", dataframe=df, index="id")
-
-
-@pytest.fixture
-def dd_normalize_es(pd_normalize_es):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    es = EntitySet(id=pd_normalize_es.id)
-    dd_df = dd.from_pandas(pd_normalize_es["data"], npartitions=2)
-    dd_df.ww.init(schema=pd_normalize_es["data"].ww.schema)
-
-    es.add_dataframe(dataframe=dd_df)
-    return es
-
-
-@pytest.fixture
-def spark_normalize_es(pd_normalize_es):
-    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    es = EntitySet(id=pd_normalize_es.id)
-    spark_df = ps.from_pandas(pd_normalize_es["data"])
-    spark_df.ww.init(schema=pd_normalize_es["data"].ww.schema)
-    es.add_dataframe(dataframe=spark_df)
-    return es
-
-
-@pytest.fixture(params=["pd_normalize_es", "dd_normalize_es", "spark_normalize_es"])
-def normalize_es(request):
-    return request.getfixturevalue(request.param)
 
 
 def test_normalize_time_index_from_none(normalize_es):
@@ -2105,39 +2079,15 @@ def test_entityset_deep_equality(es):
         assert first_es.__eq__(second_es, deep=True)
 
 
-@pytest.fixture(params=["make_es", "dask_es_to_copy"])
-def es_to_copy(request):
-    return request.getfixturevalue(request.param)
-
-
-@pytest.fixture
-def dask_es_to_copy(make_es):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    es = EntitySet(id=make_es.id)
-    for df in make_es.dataframes:
-        dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
-        dd_df.ww.init(schema=df.ww.schema)
-        es.add_dataframe(dd_df)
-
-    for rel in make_es.relationships:
-        es.add_relationship(
-            rel.parent_dataframe.ww.name,
-            rel._parent_column_name,
-            rel.child_dataframe.ww.name,
-            rel._child_column_name,
-        )
-    return es
-
-
-def test_deepcopy_entityset(es_to_copy):
+def test_deepcopy_entityset(make_es):
     # Uses make_es since the es fixture uses deepcopy
-    copied_es = copy.deepcopy(es_to_copy)
+    copied_es = copy.deepcopy(make_es)
 
-    assert copied_es == es_to_copy
-    assert copied_es is not es_to_copy
+    assert copied_es == make_es
+    assert copied_es is not make_es
 
-    for df_name in es_to_copy.dataframe_dict.keys():
-        original_df = es_to_copy[df_name]
+    for df_name in make_es.dataframe_dict.keys():
+        original_df = make_es[df_name]
         new_df = copied_es[df_name]
 
         assert new_df.ww.schema == original_df.ww.schema
@@ -2176,11 +2126,6 @@ def test_deepcopy_entityset_featuretools_changes(es):
     assert es["customers"].ww.metadata["secondary_time_index"] == {
         "cancel_date": ["cancel_reason", "cancel_date"],
     }
-
-
-def test_dataframe_type_empty_es():
-    es = EntitySet("test")
-    assert es.dataframe_type is None
 
 
 def test_es__getstate__key_unique(es):

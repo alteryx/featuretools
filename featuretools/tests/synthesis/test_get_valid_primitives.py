@@ -60,7 +60,7 @@ def test_invalid_primitive(es):
         )
 
     msg = (
-        "Selected primitive <enum 'Library'> "
+        "Selected primitive <class 'woodwork.column_schema.ColumnSchema'> "
         "is not an AggregationPrimitive, TransformPrimitive, or str"
     )
     with pytest.raises(ValueError, match=msg):

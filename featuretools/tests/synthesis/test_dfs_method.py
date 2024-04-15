@@ -170,7 +170,6 @@ def test_accepts_cutoff_time_compose(dataframes, relationships):
         target_dataframe_name="cards",
         cutoff_time=labels,
     )
-    feature_matrix = feature_matrix, index = "id"
     assert len(feature_matrix.index) == 6
     assert len(feature_matrix.columns) == len(features) + 1
 
@@ -182,7 +181,6 @@ def test_accepts_single_cutoff_time(dataframes, relationships):
         target_dataframe_name="transactions",
         cutoff_time=20,
     )
-    feature_matrix = feature_matrix, index = "id"
     assert len(feature_matrix.index) == 5
     assert len(feature_matrix.columns) == len(features)
 
@@ -194,7 +192,6 @@ def test_accepts_no_cutoff_time(dataframes, relationships):
         target_dataframe_name="transactions",
         instance_ids=[1, 2, 3, 5, 6],
     )
-    feature_matrix = feature_matrix, index = "id"
     assert len(feature_matrix.index) == 5
     assert len(feature_matrix.columns) == len(features)
 
@@ -209,20 +206,18 @@ def test_ignores_instance_ids_if_cutoff_df(dataframes, relationships):
         cutoff_time=cutoff_times_df,
         instance_ids=instance_ids,
     )
-    feature_matrix = feature_matrix
     assert len(feature_matrix.index) == 3
     assert len(feature_matrix.columns) == len(features)
 
 
-def test_approximate_features(pd_dataframes, relationships):
-    # TODO: Update to use Dask dataframes when issue #985 is closed
+def test_approximate_features(dataframes, relationships):
     cutoff_times_df = pd.DataFrame(
         {"instance_id": [1, 3, 1, 5, 3, 6], "time": [11, 16, 16, 26, 17, 22]},
     )
     # force column to BooleanNullable
-    pd_dataframes["transactions"] += ({"fraud": "BooleanNullable"},)
+    dataframes["transactions"] += ({"fraud": "BooleanNullable"},)
     feature_matrix, features = dfs(
-        dataframes=pd_dataframes,
+        dataframes=dataframes,
         relationships=relationships,
         target_dataframe_name="transactions",
         cutoff_time=cutoff_times_df,
@@ -238,10 +233,10 @@ def test_approximate_features(pd_dataframes, relationships):
     assert (feature_matrix[direct_agg_feat_name] == truth_values.values).all()
 
 
-def test_all_columns(pd_dataframes, relationships):
+def test_all_columns(dataframes, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3], "time": [10, 12, 15]})
     feature_matrix, features = dfs(
-        dataframes=pd_dataframes,
+        dataframes=dataframes,
         relationships=relationships,
         target_dataframe_name="transactions",
         cutoff_time=cutoff_times_df,
@@ -633,7 +628,7 @@ def test_calls_progress_callback(dataframes, relationships):
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
 
-def test_calls_progress_callback_cluster(pd_dataframes, relationships, dask_cluster):
+def test_calls_progress_callback_cluster(dataframes, relationships, dask_cluster):
     class MockProgressCallback:
         def __init__(self):
             self.progress_history = []
@@ -649,7 +644,7 @@ def test_calls_progress_callback_cluster(pd_dataframes, relationships, dask_clus
 
     dkwargs = {"cluster": dask_cluster.scheduler.address}
     dfs(
-        dataframes=pd_dataframes,
+        dataframes=dataframes,
         relationships=relationships,
         target_dataframe_name="transactions",
         progress_callback=mock_progress_callback,
@@ -660,10 +655,10 @@ def test_calls_progress_callback_cluster(pd_dataframes, relationships, dask_clus
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
 
-def test_dask_kwargs(pd_dataframes, relationships, dask_cluster):
+def test_dask_kwargs(dataframes, relationships, dask_cluster):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3], "time": [10, 12, 15]})
     feature_matrix, features = dfs(
-        dataframes=pd_dataframes,
+        dataframes=dataframes,
         relationships=relationships,
         target_dataframe_name="transactions",
         cutoff_time=cutoff_times_df,
@@ -671,7 +666,7 @@ def test_dask_kwargs(pd_dataframes, relationships, dask_cluster):
 
     dask_kwargs = {"cluster": dask_cluster.scheduler.address}
     feature_matrix_2, features_2 = dfs(
-        dataframes=pd_dataframes,
+        dataframes=dataframes,
         relationships=relationships,
         target_dataframe_name="transactions",
         cutoff_time=cutoff_times_df,

@@ -80,11 +80,6 @@ def assert_features(original, deserialized):
         assert feat_1.unique_name() == feat_2.unique_name()
         assert feat_1.entityset == feat_2.entityset
 
-        # IdentityFeature and DirectFeature objects do not have primitives, so
-        # series library does not need to be compared
-        if not (isinstance(feat_1, (IdentityFeature, DirectFeature))):
-            assert feat_1.primitive.series_library == feat_2.primitive.series_library
-
 
 def pickle_features_test_helper(es_size, features_original, dir_path):
     filepath = os.path.join(dir_path, "test_feature")

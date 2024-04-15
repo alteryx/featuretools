@@ -655,14 +655,8 @@ def test_arithmetic_of_direct(es):
         assert v == test[1]
 
 
-# Spark EntitySets do not support boolean multiplication
-@pytest.fixture(params=["pd_boolean_mult_es", "dask_boolean_mult_es"])
-def boolean_mult_es(request):
-    return request.getfixturevalue(request.param)
-
-
 @pytest.fixture
-def pd_boolean_mult_es():
+def boolean_mult_es():
     es = EntitySet()
     df = pd.DataFrame(
         {
@@ -680,21 +674,6 @@ def pd_boolean_mult_es():
     )
 
     return es
-
-
-@pytest.fixture
-def dask_boolean_mult_es(pd_boolean_mult_es):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    dataframes = {}
-    for df in pd_boolean_mult_es.dataframes:
-        dataframes[df.ww.name] = (
-            dd.from_pandas(df, npartitions=2),
-            df.ww.index,
-            None,
-            df.ww.logical_types,
-        )
-
-    return EntitySet(id=pd_boolean_mult_es.id, dataframes=dataframes)
 
 
 def test_boolean_multiply(boolean_mult_es):

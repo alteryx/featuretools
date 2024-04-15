@@ -41,7 +41,7 @@ def description_to_entityset(description, **kwargs):
                     kwargs["filename"] = df["name"] + ".parquet"
             dataframe = read_woodwork_table(data_path, validate=False, **kwargs)
         else:
-            dataframe = empty_dataframe(df, description["data_type"])
+            dataframe = empty_dataframe(df)
 
         entityset.add_dataframe(dataframe)
 
