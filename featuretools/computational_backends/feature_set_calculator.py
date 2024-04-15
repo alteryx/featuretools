@@ -126,8 +126,7 @@ class FeatureSetCalculator(object):
         # df_trie.
         df = df_trie.value
 
-        # Fill in empty rows with default values. This only works for pandas dataframes
-        # and is not currently supported for Dask dataframes.
+        # Fill in empty rows with default values.
         if isinstance(df, pd.DataFrame):
             index_dtype = df.index.dtype.name
             if df.empty:
@@ -424,13 +423,11 @@ class FeatureSetCalculator(object):
         )
 
         # ensure index is maintained
-        # TODO: Review for dask dataframes
-        if isinstance(df, pd.DataFrame):
-            df.set_index(
-                relationship.child_dataframe.ww.index,
-                drop=False,
-                inplace=True,
-            )
+        df.set_index(
+            relationship.child_dataframe.ww.index,
+            drop=False,
+            inplace=True,
+        )
 
         return df, new_relationship_columns
 

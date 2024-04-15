@@ -73,7 +73,6 @@ def test_scatter_warning(caplog):
     assert warning_message in caplog.text
 
 
-# TODO: final assert fails w/ Dask
 def test_calc_feature_matrix(es):
     times = list(
         [datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)]
