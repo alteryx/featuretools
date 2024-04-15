@@ -8,13 +8,20 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
-        * Temporarily restrict Dask version :pr:`2694`
+        * Temporarily restrict Dask version (:pr:`2694`)
+        * Remove support for creating ``EntitySets`` from Dask or Pyspark dataframes (:pr:`2705`)
     * Documentation Changes
     * Testing Changes
-        * Fix serialization test to work with pytest 8.1.1 :pr:`2694`
+        * Fix serialization test to work with pytest 8.1.1 (:pr:`2694`)
 
     Thanks to the following people for contributing to this release:
     :user:`thehomebrewnerd`
+
+Breaking Changes
+++++++++++++++++
+* With this release of Featuretools, EntitySets can no longer be created from Dask or Pyspark dataframes. The behavior when using pandas
+dataframes to create EntitySets remains unchanged.
+
 
 v1.30.0 Feb 26, 2024
 ====================
