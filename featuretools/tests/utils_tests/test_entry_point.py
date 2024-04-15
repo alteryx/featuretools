@@ -5,7 +5,7 @@ from featuretools import dfs
 
 
 @pytest.fixture
-def entry_point_dfs():
+def entry_points_dfs():
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = pd.DataFrame(
         {
