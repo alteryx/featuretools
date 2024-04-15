@@ -54,7 +54,6 @@ from featuretools.primitives import (
 )
 from featuretools.primitives.base import AggregationPrimitive
 from featuretools.tests.testing_utils import check_names
-from featuretools.utils.gen_utils import Library
 from featuretools.version import ENTITYSET_SCHEMA_VERSION, FEATURES_SCHEMA_VERSION
 
 BUCKET_NAME = "test-bucket"
@@ -123,7 +122,7 @@ def test_pickle_features(es, tmp_path):
     pickle_features_test_helper(asizeof(es), features_original, str(tmp_path))
 
 
-def test_pickle_features_with_custom_primitive(pd_es, tmp_path):
+def test_pickle_features_with_custom_primitive(es, tmp_path):
     class NewMax(AggregationPrimitive):
         name = "new_max"
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
@@ -131,13 +130,13 @@ def test_pickle_features_with_custom_primitive(pd_es, tmp_path):
 
     features_original = dfs(
         target_dataframe_name="sessions",
-        entityset=pd_es,
+        entityset=es,
         agg_primitives=["Last", "Mean", NewMax],
         features_only=True,
     )
 
     assert any([isinstance(feat.primitive, NewMax) for feat in features_original])
-    pickle_features_test_helper(asizeof(pd_es), features_original, str(tmp_path))
+    pickle_features_test_helper(asizeof(es), features_original, str(tmp_path))
 
 
 def test_serialized_renamed_features(es):
@@ -281,7 +280,7 @@ def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile, profile_n
 
 
 @pytest.mark.parametrize("url,profile_name", [(S3_URL, False), (URL, None)])
-def test_deserialize_features_s3(pd_es, url, profile_name):
+def test_deserialize_features_s3(es, url, profile_name):
     agg_primitives = [
         Sum,
         Std,
@@ -299,7 +298,7 @@ def test_deserialize_features_s3(pd_es, url, profile_name):
 
     features_original = dfs(
         target_dataframe_name="sessions",
-        entityset=pd_es,
+        entityset=es,
         features_only=True,
         agg_primitives=agg_primitives,
         trans_primitives=trans_primitives,
@@ -320,7 +319,7 @@ def test_serialize_url(es):
         save_features(features_original, URL)
 
 
-def test_custom_feature_names_retained_during_serialization(pd_es, tmp_path):
+def test_custom_feature_names_retained_during_serialization(es, tmp_path):
     class MultiCumulative(TransformPrimitive):
         name = "multi_cum_sum"
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
@@ -328,16 +327,16 @@ def test_custom_feature_names_retained_during_serialization(pd_es, tmp_path):
         number_output_features = 3
 
     multi_output_trans_feat = Feature(
-        pd_es["log"].ww["value"],
+        es["log"].ww["value"],
         primitive=MultiCumulative,
     )
     groupby_trans_feat = GroupByTransformFeature(
-        pd_es["log"].ww["value"],
+        es["log"].ww["value"],
         primitive=MultiCumulative,
-        groupby=pd_es["log"].ww["product_id"],
+        groupby=es["log"].ww["product_id"],
     )
     multi_output_agg_feat = Feature(
-        pd_es["log"].ww["product_id"],
+        es["log"].ww["product_id"],
         parent_dataframe_name="customers",
         primitive=NMostCommon(n=2),
     )
@@ -459,40 +458,39 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
     assert new_scalar1_primitive.value == 1
     assert new_scalar5_primitive.value == 5
 
-    # Test primitive with multiple args - pandas only due to primitive compatibility
-    if es.dataframe_type == Library.PANDAS:
-        distance_to_holiday = DistanceToHoliday(
-            holiday="Canada Day",
-            country="Canada",
-        )
-        features = dfs(
-            entityset=es,
-            target_dataframe_name="customers",
-            features_only=True,
-            agg_primitives=[],
-            trans_primitives=[distance_to_holiday],
-        )
+    # Test primitive with multiple args
+    distance_to_holiday = DistanceToHoliday(
+        holiday="Canada Day",
+        country="Canada",
+    )
+    features = dfs(
+        entityset=es,
+        target_dataframe_name="customers",
+        features_only=True,
+        agg_primitives=[],
+        trans_primitives=[distance_to_holiday],
+    )
 
-        distance_features = [
-            f for f in features if f.primitive.name == "distance_to_holiday"
-        ]
+    distance_features = [
+        f for f in features if f.primitive.name == "distance_to_holiday"
+    ]
 
-        assert len(distance_features) > 1
+    assert len(distance_features) > 1
 
-        # DFS should use the the passed in primitive instance for all features
-        assert all([f.primitive is distance_to_holiday for f in distance_features])
+    # DFS should use the the passed in primitive instance for all features
+    assert all([f.primitive is distance_to_holiday for f in distance_features])
 
-        file = os.path.join(tmp_path, "distance_features.json")
-        save_features(distance_features, file)
-        new_distance_features = load_features(file)
+    file = os.path.join(tmp_path, "distance_features.json")
+    save_features(distance_features, file)
+    new_distance_features = load_features(file)
 
-        # After deserialization all features that share a primitive should use the same primitive instance
-        new_distance_primitive = new_distance_features[0].primitive
-        assert all(
-            [f.primitive is new_distance_primitive for f in new_distance_features],
-        )
-        assert new_distance_primitive.holiday == "Canada Day"
-        assert new_distance_primitive.country == "Canada"
+    # After deserialization all features that share a primitive should use the same primitive instance
+    new_distance_primitive = new_distance_features[0].primitive
+    assert all(
+        [f.primitive is new_distance_primitive for f in new_distance_features],
+    )
+    assert new_distance_primitive.holiday == "Canada Day"
+    assert new_distance_primitive.country == "Canada"
 
     # Test primitive with list arg
     is_in = IsIn(list_of_outputs=[5, True, "coke zero"])
@@ -520,7 +518,7 @@ def test_deserializer_uses_common_primitive_instances_with_args(es, tmp_path):
     assert new_is_in_primitive.list_of_outputs == [5, True, "coke zero"]
 
 
-def test_can_serialize_word_set_for_number_of_common_words_feature(pd_es):
+def test_can_serialize_word_set_for_number_of_common_words_feature(es):
     # The word_set argument is passed in as a set, which is not JSON-serializable.
     # This test checks internal logic that converts the set to a list so it can be serialized
     common_word_set = {"hello", "my"}

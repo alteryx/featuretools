@@ -58,7 +58,6 @@ from featuretools.tests.testing_utils import (
     make_ecommerce_entityset,
     number_of_features_with_name_like,
 )
-from featuretools.utils.gen_utils import Library
 
 
 def test_makes_agg_features_from_str(es):
@@ -131,7 +130,6 @@ def test_only_makes_supplied_agg_feat(es):
 def test_errors_unsupported_primitives(es):
     bad_trans_prim = CumSum()
     bad_agg_prim = NumUnique()
-    bad_trans_prim.compatibility, bad_agg_prim.compatibility = [], []
     library = es.dataframe_type
     error_text = "Selected primitives are incompatible with {} EntitySets: cum_sum, num_unique".format(
         library.value,
@@ -140,20 +138,6 @@ def test_errors_unsupported_primitives(es):
         DeepFeatureSynthesis(
             target_dataframe_name="sessions",
             entityset=es,
-            agg_primitives=[bad_agg_prim],
-            trans_primitives=[bad_trans_prim],
-        )
-
-
-def test_errors_unsupported_primitives_spark(spark_es):
-    bad_trans_prim = CumSum()
-    bad_agg_prim = NumUnique()
-    bad_trans_prim.spark_compatible, bad_agg_prim.spark_compatible = False, False
-    error_text = "Selected primitives are incompatible with Spark EntitySets: cum_sum"
-    with pytest.raises(ValueError, match=error_text):
-        DeepFeatureSynthesis(
-            target_dataframe_name="sessions",
-            entityset=spark_es,
             agg_primitives=[bad_agg_prim],
             trans_primitives=[bad_trans_prim],
         )
@@ -285,10 +269,10 @@ def test_makes_trans_feat(es):
     assert feature_with_name(features, "HOUR(datetime)")
 
 
-def test_handles_diff_dataframe_groupby(pd_es):
+def test_handles_diff_dataframe_groupby(es):
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="log",
-        entityset=pd_es,
+        entityset=es,
         agg_primitives=[],
         groupby_trans_primitives=[Diff],
     )
@@ -298,10 +282,10 @@ def test_handles_diff_dataframe_groupby(pd_es):
     assert feature_with_name(features, "DIFF(value) by product_id")
 
 
-def test_handles_time_since_previous_dataframe_groupby(pd_es):
+def test_handles_time_since_previous_dataframe_groupby(es):
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="log",
-        entityset=pd_es,
+        entityset=es,
         agg_primitives=[],
         groupby_trans_primitives=[TimeSincePrevious],
     )
@@ -311,9 +295,9 @@ def test_handles_time_since_previous_dataframe_groupby(pd_es):
 
 
 # M TODO
-# def test_handles_cumsum_dataframe_groupby(pd_es):
+# def test_handles_cumsum_dataframe_groupby(es):
 #     dfs_obj = DeepFeatureSynthesis(target_dataframe_name='sessions',
-#                                    entityset=pd_es,
+#                                    entityset=es,
 #                                    agg_primitives=[],
 #                                    trans_primitives=[CumMean])
 
@@ -371,9 +355,6 @@ def test_makes_agg_features_of_trans_primitives(es):
 
 
 def test_makes_agg_features_with_where(es):
-    # TODO: Update to work with Dask and Spark `es` fixture when issue #978 is closed
-    if es.dataframe_type != Library.PANDAS:
-        pytest.xfail("Dask EntitySets do not support add_interesting_values")
     es.add_interesting_values()
 
     dfs_obj = DeepFeatureSynthesis(
@@ -391,10 +372,10 @@ def test_makes_agg_features_with_where(es):
     assert feature_with_name(features, "COUNT(log WHERE products.department = food)")
 
 
-def test_make_groupby_features(pd_es):
+def test_make_groupby_features(es):
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="log",
-        entityset=pd_es,
+        entityset=es,
         agg_primitives=[],
         trans_primitives=[],
         groupby_trans_primitives=["cum_sum"],
@@ -403,10 +384,10 @@ def test_make_groupby_features(pd_es):
     assert feature_with_name(features, "CUM_SUM(value) by session_id")
 
 
-def test_make_indirect_groupby_features(pd_es):
+def test_make_indirect_groupby_features(es):
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="log",
-        entityset=pd_es,
+        entityset=es,
         agg_primitives=[],
         trans_primitives=[],
         groupby_trans_primitives=["cum_sum"],
@@ -415,15 +396,15 @@ def test_make_indirect_groupby_features(pd_es):
     assert feature_with_name(features, "CUM_SUM(products.rating) by session_id")
 
 
-def test_make_groupby_features_with_id(pd_es):
+def test_make_groupby_features_with_id(es):
     # Need to convert customer_id to categorical column in order to build desired feature
-    pd_es["sessions"].ww.set_types(
+    es["sessions"].ww.set_types(
         logical_types={"customer_id": "Categorical"},
         semantic_tags={"customer_id": "foreign_key"},
     )
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="sessions",
-        entityset=pd_es,
+        entityset=es,
         agg_primitives=[],
         trans_primitives=[],
         groupby_trans_primitives=["cum_count"],
@@ -433,15 +414,15 @@ def test_make_groupby_features_with_id(pd_es):
     assert feature_with_name(features, "CUM_COUNT(customer_id) by customer_id")
 
 
-def test_make_groupby_features_with_diff_id(pd_es):
+def test_make_groupby_features_with_diff_id(es):
     # Need to convert cohort to categorical column in order to build desired feature
-    pd_es["customers"].ww.set_types(
+    es["customers"].ww.set_types(
         logical_types={"cohort": "Categorical"},
         semantic_tags={"cohort": "foreign_key"},
     )
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="customers",
-        entityset=pd_es,
+        entityset=es,
         agg_primitives=[],
         trans_primitives=[],
         groupby_trans_primitives=["cum_count"],
@@ -452,10 +433,10 @@ def test_make_groupby_features_with_diff_id(pd_es):
     assert feature_with_name(features, groupby_with_diff_id)
 
 
-def test_make_groupby_features_with_agg(pd_es):
+def test_make_groupby_features_with_agg(es):
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="cohorts",
-        entityset=pd_es,
+        entityset=es,
         agg_primitives=["sum"],
         trans_primitives=[],
         groupby_trans_primitives=["cum_sum"],
@@ -498,7 +479,7 @@ def test_bad_groupby_feature(es):
         ("7d", "3d"),
     ],
 )
-def test_make_rolling_features(window_length, gap, rolling_primitive, pd_es):
+def test_make_rolling_features(window_length, gap, rolling_primitive, es):
     rolling_primitive_obj = rolling_primitive(
         window_length=window_length,
         gap=gap,
@@ -506,7 +487,7 @@ def test_make_rolling_features(window_length, gap, rolling_primitive, pd_es):
     )
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="log",
-        entityset=pd_es,
+        entityset=es,
         agg_primitives=[],
         trans_primitives=[rolling_primitive_obj],
     )
@@ -522,11 +503,11 @@ def test_make_rolling_features(window_length, gap, rolling_primitive, pd_es):
         ("7d", "3d"),
     ],
 )
-def test_make_rolling_count_off_datetime_feature(window_length, gap, pd_es):
+def test_make_rolling_count_off_datetime_feature(window_length, gap, es):
     rolling_count = RollingCount(window_length=window_length, min_periods=gap)
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="log",
-        entityset=pd_es,
+        entityset=es,
         agg_primitives=[],
         trans_primitives=[rolling_count],
     )
@@ -665,10 +646,6 @@ def test_seed_features(es):
 
 
 def test_does_not_make_agg_of_direct_of_target_dataframe(es):
-    # TODO: Update to work with Dask and Spark supported primitive
-    if es.dataframe_type != Library.PANDAS:
-        pytest.xfail("Dask EntitySets do not support the Last primitive")
-
     count_sessions = Feature(
         es["sessions"].ww["id"],
         parent_dataframe_name="customers",
@@ -690,10 +667,6 @@ def test_does_not_make_agg_of_direct_of_target_dataframe(es):
 
 
 def test_dfs_builds_on_seed_features_more_than_max_depth(es):
-    # TODO: Update to work with Dask and Spark supported primitive
-    if es.dataframe_type != Library.PANDAS:
-        pytest.xfail("Dask EntitySets do not support the Last and Mode primitives")
-
     seed_feature_sessions = Feature(
         es["log"].ww["id"],
         parent_dataframe_name="sessions",
@@ -752,10 +725,6 @@ def test_dfs_includes_seed_features_greater_than_max_depth(es):
 
 
 def test_allowed_paths(es):
-    # TODO: Update to work with Dask and Spark supported primitive
-    if es.dataframe_type != Library.PANDAS:
-        pytest.xfail("Dask EntitySets do not support the Last primitive")
-
     kwargs = dict(
         target_dataframe_name="customers",
         entityset=es,
@@ -858,9 +827,6 @@ def test_where_primitives(es):
 
 
 def test_stacking_where_primitives(es):
-    # TODO: Update to work with Dask supported primitive
-    if es.dataframe_type != Library.PANDAS:
-        pytest.xfail("Dask and Spark EntitySets do not support the Last primitive")
     es = copy.deepcopy(es)
     es.add_interesting_values(dataframe_name="sessions", values={"device_type": [0]})
     es.add_interesting_values(
@@ -948,9 +914,6 @@ def test_where_different_base_feats(es):
 
 
 def test_dfeats_where(es):
-    # TODO: Update to work with Dask `es` fixture when issue #978 is closed
-    if es.dataframe_type != Library.PANDAS:
-        pytest.xfail("Dask and Spark EntitySets do not support add_interesting_values")
     es.add_interesting_values()
 
     dfs_obj = DeepFeatureSynthesis(
@@ -1026,9 +989,6 @@ def test_transform_consistency(transform_es):
 
 
 def test_transform_no_stack_agg(es):
-    # TODO: Update to work with Dask and Spark supported primitives
-    if es.dataframe_type != Library.PANDAS:
-        pytest.xfail("Dask EntitySets do not support the NMostCommon primitive")
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="customers",
         entityset=es,
@@ -1059,9 +1019,6 @@ def test_initialized_trans_prim(es):
 
 
 def test_initialized_agg_prim(es):
-    # TODO: Update to work with Dask and Spark supported primitives
-    if es.dataframe_type != Library.PANDAS:
-        pytest.xfail("Dask EntitySets do not support the NMostCommon primitive")
     ThreeMost = NMostCommon(n=3)
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="sessions",
@@ -1075,11 +1032,6 @@ def test_initialized_agg_prim(es):
 
 
 def test_return_types(es):
-    # TODO: Update to work with Dask and Spark supported primitive
-    if es.dataframe_type != Library.PANDAS:
-        pytest.xfail(
-            "Dask and Spark EntitySets do not support the NMostCommon primitive",
-        )
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="sessions",
         entityset=es,
@@ -1182,12 +1134,6 @@ def test_makes_direct_features_through_multiple_relationships(games_es):
 
 
 def test_stacks_multioutput_features(es):
-    # TODO: Update to work with Dask and Spark supported primitive
-    if es.dataframe_type != Library.PANDAS:
-        pytest.xfail(
-            "Dask EntitySets do not support the NumUnique and NMostCommon primitives",
-        )
-
     class TestTime(TransformPrimitive):
         name = "test_time"
         input_types = [ColumnSchema(logical_type=Datetime)]
@@ -1217,11 +1163,6 @@ def test_stacks_multioutput_features(es):
 
 
 def test_seed_multi_output_feature_stacking(es):
-    # TODO: Update to work with Dask and Spark supported primitive
-    if es.dataframe_type != Library.PANDAS:
-        pytest.xfail(
-            "Dask EntitySets do not support the NMostCommon and NumUnique primitives",
-        )
     threecommon = NMostCommon(3)
     tc = Feature(
         es["log"].ww["product_id"],
@@ -1566,7 +1507,7 @@ def test_primitive_options_with_globals(es):
                 )
 
 
-def test_primitive_options_groupbys(pd_es):
+def test_primitive_options_groupbys(es):
     options = {
         "cum_count": {"include_groupby_dataframes": ["log", "customers"]},
         "cum_sum": {"ignore_groupby_dataframes": ["sessions"]},
@@ -1583,7 +1524,7 @@ def test_primitive_options_groupbys(pd_es):
 
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="log",
-        entityset=pd_es,
+        entityset=es,
         agg_primitives=[],
         trans_primitives=[],
         max_depth=3,
@@ -1621,10 +1562,6 @@ def test_primitive_options_groupbys(pd_es):
 
 
 def test_primitive_options_multiple_inputs(es):
-    if es.dataframe_type != Library.PANDAS:
-        pytest.xfail(
-            "Dask and Spark EntitySets do not support various primitives used in this test",
-        )
     too_many_options = {
         "mode": [{"include_dataframes": ["logs"]}, {"ignore_dataframes": ["sessions"]}],
     }
@@ -1782,7 +1719,6 @@ def test_primitive_options_commutative(es):
         ]
         return_type = ColumnSchema(semantic_tags={"numeric"})
         commutative = True
-        compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
 
         def generate_name(self, base_feature_names):
             return "%s + %s + %s" % (
@@ -1975,8 +1911,6 @@ def test_does_not_build_features_on_last_time_index_col(es):
 
 
 def test_builds_features_using_all_input_types(es):
-    if es.dataframe_type == Library.SPARK:
-        pytest.skip("NumTrue primitive not compatible with Spark")
     new_log_df = es["log"]
     new_log_df.ww["purchased_nullable"] = es["log"]["purchased"]
     new_log_df.ww.set_types(logical_types={"purchased_nullable": "boolean_nullable"})
@@ -2016,12 +1950,12 @@ def test_builds_features_using_all_input_types(es):
     assert feature_with_name(agg_features, "NUM_TRUE(log.purchased_nullable)")
 
 
-def test_make_groupby_features_with_depth_none(pd_es):
+def test_make_groupby_features_with_depth_none(es):
     # If max_depth is set to -1, it sets it to None internally, so this
     # test validates code paths that have a None max_depth
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="log",
-        entityset=pd_es,
+        entityset=es,
         agg_primitives=[],
         trans_primitives=[],
         groupby_trans_primitives=["cum_sum"],
@@ -2031,14 +1965,14 @@ def test_make_groupby_features_with_depth_none(pd_es):
     assert feature_with_name(features, "CUM_SUM(value) by session_id")
 
 
-def test_check_stacking_when_building_transform_features(pd_es):
+def test_check_stacking_when_building_transform_features(es):
     class NewMean(Mean):
         name = "NEW_MEAN"
         base_of_exclude = [Absolute]
 
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="log",
-        entityset=pd_es,
+        entityset=es,
         agg_primitives=[NewMean, "mean"],
         trans_primitives=["absolute"],
         max_depth=-1,
@@ -2048,14 +1982,14 @@ def test_check_stacking_when_building_transform_features(pd_es):
     assert number_of_features_with_name_like(features, "ABSOLUTE(NEW_MEAN") == 0
 
 
-def test_check_stacking_when_building_groupby_features(pd_es):
+def test_check_stacking_when_building_groupby_features(es):
     class NewMean(Mean):
         name = "NEW_MEAN"
         base_of_exclude = [CumSum]
 
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="log",
-        entityset=pd_es,
+        entityset=es,
         agg_primitives=[NewMean, "mean"],
         groupby_trans_primitives=["cum_sum"],
         max_depth=5,
@@ -2065,14 +1999,14 @@ def test_check_stacking_when_building_groupby_features(pd_es):
     assert number_of_features_with_name_like(features, "CUM_SUM(NEW_MEAN") == 0
 
 
-def test_check_stacking_when_building_agg_features(pd_es):
+def test_check_stacking_when_building_agg_features(es):
     class NewAbsolute(Absolute):
         name = "NEW_ABSOLUTE"
         base_of_exclude = [Mean]
 
     dfs_obj = DeepFeatureSynthesis(
         target_dataframe_name="log",
-        entityset=pd_es,
+        entityset=es,
         agg_primitives=["mean"],
         trans_primitives=[NewAbsolute, "absolute"],
         max_depth=5,

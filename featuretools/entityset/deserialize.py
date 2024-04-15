@@ -8,13 +8,9 @@ import woodwork.type_sys.type_system as ww_type_system
 from woodwork.deserialize import read_woodwork_table
 
 from featuretools.entityset.relationship import Relationship
-from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
 from featuretools.utils.schema_utils import check_schema_version
 from featuretools.utils.wrangle import _is_local_tar, _is_s3, _is_url
-
-dd = import_or_none("dask.dataframe")
-ps = import_or_none("pyspark.pandas")
 
 
 def description_to_entityset(description, **kwargs):
@@ -56,7 +52,7 @@ def description_to_entityset(description, **kwargs):
     return entityset
 
 
-def empty_dataframe(description, data_type=Library.PANDAS):
+def empty_dataframe(description):
     """Deserialize empty dataframe from dataframe description.
 
     Args:
@@ -105,10 +101,6 @@ def empty_dataframe(description, data_type=Library.PANDAS):
             category_dtypes[col_name] = cat_object
 
     dataframe = pd.DataFrame(columns=columns).astype(category_dtypes)
-    if data_type == Library.DASK:
-        dataframe = dd.from_pandas(dataframe, npartitions=1)
-    elif data_type == Library.SPARK:
-        dataframe = ps.from_pandas(dataframe)
 
     dataframe.ww.init(
         name=description.get("name"),

@@ -71,7 +71,7 @@ python -m pip install "featuretools[premium]"
 python -m pip install "featuretools[tsfresh]"
 ```
 
-**Dask Support** - Use Dask Dataframes to create EntitySets or run DFS with njobs > 1
+**Dask Support** - Use Dask to run DFS with njobs > 1
 
 ```
 python -m pip install "featuretools[dask]"

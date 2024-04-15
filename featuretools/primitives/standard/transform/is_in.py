@@ -2,7 +2,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean
 
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class IsIn(TransformPrimitive):
@@ -18,7 +17,6 @@ class IsIn(TransformPrimitive):
     name = "isin"
     input_types = [ColumnSchema()]
     return_type = ColumnSchema(logical_type=Boolean)
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
 
     def __init__(self, list_of_outputs=None):
         self.list_of_outputs = list_of_outputs

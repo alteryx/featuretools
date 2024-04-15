@@ -32,7 +32,7 @@ from featuretools.primitives.options_utils import (
     generate_all_primitive_options,
     ignore_dataframe_for_primitive,
 )
-from featuretools.utils.gen_utils import Library, camel_and_title_to_snake
+from featuretools.utils.gen_utils import camel_and_title_to_snake
 
 logger = logging.getLogger("featuretools")
 
@@ -196,19 +196,10 @@ class DeepFeatureSynthesis(object):
         self.target_dataframe_name = target_dataframe_name
         self.es = entityset
 
-        for library in Library:
-            if library.value == self.es.dataframe_type:
-                df_library = library
-                break
-
         aggregation_primitive_dict = primitives.get_aggregation_primitives()
         transform_primitive_dict = primitives.get_transform_primitives()
         if agg_primitives is None:
-            agg_primitives = [
-                p
-                for p in primitives.get_default_aggregation_primitives()
-                if df_library in p.compatibility
-            ]
+            agg_primitives = primitives.get_default_aggregation_primitives()
         self.agg_primitives = sorted(
             [
                 check_primitive(
@@ -222,11 +213,8 @@ class DeepFeatureSynthesis(object):
         )
 
         if trans_primitives is None:
-            trans_primitives = [
-                p
-                for p in primitives.get_default_transform_primitives()
-                if df_library in p.compatibility
-            ]
+            trans_primitives = primitives.get_default_transform_primitives()
+
         self.trans_primitives = sorted(
             [
                 check_primitive(
@@ -275,12 +263,6 @@ class DeepFeatureSynthesis(object):
             + self.where_primitives
             + self.groupby_trans_primitives
         )
-        bad_primitives = [
-            prim.name for prim in all_primitives if df_library not in prim.compatibility
-        ]
-        if bad_primitives:
-            msg = "Selected primitives are incompatible with {} EntitySets: {}"
-            raise ValueError(msg.format(df_library.value, ", ".join(bad_primitives)))
 
         (
             self.primitive_options,

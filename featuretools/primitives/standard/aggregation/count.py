@@ -3,7 +3,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import IntegerNullable
 
 from featuretools.primitives.base.aggregation_primitive_base import AggregationPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class Count(AggregationPrimitive):
@@ -20,13 +19,9 @@ class Count(AggregationPrimitive):
     return_type = ColumnSchema(logical_type=IntegerNullable, semantic_tags={"numeric"})
     stack_on_self = False
     default_value = 0
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the number"
 
-    def get_function(self, agg_type=Library.PANDAS):
-        if agg_type in [Library.DASK, Library.SPARK]:
-            return "count"
-
+    def get_function(self):
         return pd.Series.count
 
     def generate_name(

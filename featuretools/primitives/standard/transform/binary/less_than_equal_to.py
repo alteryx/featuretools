@@ -4,7 +4,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import BooleanNullable, Datetime, Ordinal
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class LessThanEqualTo(TransformPrimitive):
@@ -31,7 +30,7 @@ class LessThanEqualTo(TransformPrimitive):
         [ColumnSchema(logical_type=Ordinal), ColumnSchema(logical_type=Ordinal)],
     ]
     return_type = ColumnSchema(logical_type=BooleanNullable)
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+
     description_template = "whether {} is less than or equal to {}"
 
     def get_function(self):

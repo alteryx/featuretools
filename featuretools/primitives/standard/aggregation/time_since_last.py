@@ -3,7 +3,6 @@ from woodwork.logical_types import Datetime, Double
 
 from featuretools.primitives.base.aggregation_primitive_base import AggregationPrimitive
 from featuretools.utils import convert_time_units
-from featuretools.utils.gen_utils import Library
 
 
 class TimeSinceLast(AggregationPrimitive):
@@ -49,7 +48,7 @@ class TimeSinceLast(AggregationPrimitive):
     def __init__(self, unit="seconds"):
         self.unit = unit.lower()
 
-    def get_function(self, agg_type=Library.PANDAS):
+    def get_function(self):
         def time_since_last(values, time=None):
             time_since = time - values.iloc[-1]
             return convert_time_units(time_since.total_seconds(), self.unit)

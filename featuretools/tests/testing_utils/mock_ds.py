@@ -23,9 +23,6 @@ from woodwork.logical_types import (
 )
 
 from featuretools.entityset import EntitySet
-from featuretools.utils.gen_utils import import_or_none
-
-dask = import_or_none("dask")
 
 
 def make_ecommerce_entityset(with_integer_time_index=False):
@@ -39,9 +36,6 @@ def make_ecommerce_entityset(with_integer_time_index=False):
          \\ /   .
           L     Log
     """
-    if dask:
-        dask.config.set({"dataframe.convert-string": False})
-
     dataframes = make_ecommerce_dataframes(
         with_integer_time_index=with_integer_time_index,
     )

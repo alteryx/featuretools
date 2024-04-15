@@ -11,16 +11,12 @@ from woodwork.logical_types import Datetime, LatLong
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.relationship import Relationship, RelationshipPath
 from featuretools.feature_base.feature_base import _ES_REF
-from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.utils.plot_utils import (
     check_graphviz,
     get_graphviz_format,
     save_graph,
 )
 from featuretools.utils.wrangle import _check_timedelta
-
-dd = import_or_none("dask.dataframe")
-ps = import_or_none("pyspark.pandas")
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger("featuretools.entityset")
@@ -184,21 +180,6 @@ class EntitySet(object):
         return list(self.dataframe_dict.values())
 
     @property
-    def dataframe_type(self):
-        """String specifying the library used for the dataframes. Null if no dataframes"""
-        df_type = None
-
-        if self.dataframes:
-            if isinstance(self.dataframes[0], pd.DataFrame):
-                df_type = Library.PANDAS
-            elif is_instance(self.dataframes[0], dd, "DataFrame"):
-                df_type = Library.DASK
-            elif is_instance(self.dataframes[0], ps, "DataFrame"):
-                df_type = Library.SPARK
-
-        return df_type
-
-    @property
     def metadata(self):
         """Returns the metadata for this EntitySet. The metadata will be recomputed if it does not exist."""
         if self._data_description is None:
@@ -271,8 +252,6 @@ class EntitySet(object):
             compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
             profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         """
-        if self.dataframe_type == Library.SPARK:
-            compression = str(compression)
         serialize.write_data_description(
             self,
             path,
@@ -698,15 +677,6 @@ class EntitySet(object):
                     "Cannot add dataframe to EntitySet without a name. "
                     "Please provide a value for the dataframe_name parameter.",
                 )
-            # Warn when performing inference on Dask or Spark DataFrames
-            if not set(dataframe.columns).issubset(set(logical_types.keys())) and (
-                is_instance(dataframe, dd, "DataFrame")
-                or is_instance(dataframe, ps, "DataFrame")
-            ):
-                warnings.warn(
-                    "Performing type inference on Dask or Spark DataFrames may be computationally intensive. "
-                    "Specify logical types for each column to speed up EntitySet initialization.",
-                )
 
             index_was_created, index, dataframe = _get_or_create_index(
                 index,
@@ -986,9 +956,6 @@ class EntitySet(object):
             ti_cols = [c if c != old_ti_name else secondary_time_index for c in ti_cols]
             make_secondary_time_index = {secondary_time_index: ti_cols}
 
-        if is_instance(new_dataframe, ps, "DataFrame"):
-            already_sorted = False
-
         # will initialize Woodwork on this DataFrame
         logical_types = {}
         semantic_tags = {}
@@ -1052,17 +1019,11 @@ class EntitySet(object):
         else:
             combined_es = copy.deepcopy(self)
 
-        lib = pd
-        if self.dataframe_type == Library.SPARK:
-            lib = ps
-        elif self.dataframe_type == Library.DASK:
-            lib = dd
-
         has_last_time_index = []
         for df in self.dataframes:
             self_df = df
             other_df = other[df.ww.name]
-            combined_df = lib.concat([self_df, other_df])
+            combined_df = pd.concat([self_df, other_df])
             # If both DataFrames have made indexes, there will likely
             # be overlap in the index column, so we use the other values
             if self_df.ww.metadata.get("created_index") or other_df.ww.metadata.get(
@@ -1161,21 +1122,11 @@ class EntitySet(object):
             if es_lti_dict[dataframe.ww.name] is None:
                 if dataframe.ww.time_index is not None:
                     lti = dataframe[dataframe.ww.time_index].copy()
-                    if is_instance(dataframe, dd, "DataFrame"):
-                        # The current Dask implementation doesn't set the index of the dataframe
-                        # to the dataframe's index, so we have to do it manually here
-                        lti.index = dataframe[dataframe.ww.index].copy()
                 else:
                     lti = dataframe.ww[dataframe.ww.index].copy()
-                    if is_instance(dataframe, dd, "DataFrame"):
-                        lti.index = dataframe[dataframe.ww.index].copy()
-                        lti = lti.apply(lambda x: None)
-                    elif is_instance(dataframe, ps, "DataFrame"):
-                        lti = ps.Series(pd.Series(index=lti.to_list(), name=lti.name))
-                    else:
-                        # Cannot have a category dtype with nans when calculating last time index
-                        lti = lti.astype("object")
-                        lti[:] = None
+                    # Cannot have a category dtype with nans when calculating last time index
+                    lti = lti.astype("object")
+                    lti[:] = None
 
                 es_lti_dict[dataframe.ww.name] = lti
 
@@ -1201,98 +1152,50 @@ class EntitySet(object):
 
                 # updated last time from all children
                 for child_df in child_dataframes:
-                    # TODO: Figure out if Dask code related to indexes is important for Spark
                     if es_lti_dict[child_df.ww.name] is None:
                         continue
                     link_col = child_cols[dataframe.ww.name][child_df.ww.name].name
 
-                    lti_is_dask = is_instance(
-                        es_lti_dict[child_df.ww.name],
-                        dd,
-                        "Series",
-                    )
-                    lti_is_spark = is_instance(
-                        es_lti_dict[child_df.ww.name],
-                        ps,
-                        "Series",
+                    lti_df = pd.DataFrame(
+                        {
+                            "last_time": es_lti_dict[child_df.ww.name],
+                            dataframe.ww.index: child_df[link_col],
+                        },
                     )
 
-                    if lti_is_dask or lti_is_spark:
-                        to_join = child_df[link_col]
-                        if lti_is_dask:
-                            to_join.index = child_df[child_df.ww.index]
+                    # sort by time and keep only the most recent
+                    lti_df.sort_values(
+                        ["last_time", dataframe.ww.index],
+                        kind="mergesort",
+                        inplace=True,
+                    )
 
-                        lti_df = (
-                            es_lti_dict[child_df.ww.name]
-                            .to_frame(name="last_time")
-                            .join(to_join.to_frame(name=dataframe.ww.index))
-                        )
+                    lti_df.drop_duplicates(
+                        dataframe.ww.index,
+                        keep="last",
+                        inplace=True,
+                    )
 
-                        if lti_is_dask:
-                            new_index = lti_df.index.copy()
-                            new_index.name = None
-                            lti_df.index = new_index
-                        lti_df = lti_df.groupby(lti_df[dataframe.ww.index]).agg("max")
-
-                        lti_df = (
-                            es_lti_dict[dataframe.ww.name]
-                            .to_frame(name="last_time_old")
-                            .join(lti_df)
-                        )
-
-                    else:
-                        lti_df = pd.DataFrame(
-                            {
-                                "last_time": es_lti_dict[child_df.ww.name],
-                                dataframe.ww.index: child_df[link_col],
-                            },
-                        )
-
-                        # sort by time and keep only the most recent
-                        lti_df.sort_values(
-                            ["last_time", dataframe.ww.index],
-                            kind="mergesort",
-                            inplace=True,
-                        )
-
-                        lti_df.drop_duplicates(
-                            dataframe.ww.index,
-                            keep="last",
-                            inplace=True,
-                        )
-
-                        lti_df.set_index(dataframe.ww.index, inplace=True)
-                        lti_df = lti_df.reindex(es_lti_dict[dataframe.ww.name].index)
-                        lti_df["last_time_old"] = es_lti_dict[dataframe.ww.name]
-                    if not (lti_is_dask or lti_is_spark) and lti_df.empty:
+                    lti_df.set_index(dataframe.ww.index, inplace=True)
+                    lti_df = lti_df.reindex(es_lti_dict[dataframe.ww.name].index)
+                    lti_df["last_time_old"] = es_lti_dict[dataframe.ww.name]
+                    if lti_df.empty:
                         # Pandas errors out if it tries to do fillna and then max on an empty dataframe
                         lti_df = pd.Series([], dtype="object")
                     else:
-                        if lti_is_spark:
-                            # TODO: Figure out a workaround for fillna and replace
-                            if lti_df["last_time_old"].dtype != "datetime64[ns]":
-                                lti_df["last_time_old"] = ps.to_datetime(
-                                    lti_df["last_time_old"],
-                                )
-                            if lti_df["last_time"].dtype != "datetime64[ns]":
-                                lti_df["last_time"] = ps.to_datetime(
-                                    lti_df["last_time"],
-                                )
-                            lti_df = lti_df.max(axis=1)
-                        else:
-                            lti_df["last_time"] = lti_df["last_time"].astype(
-                                "datetime64[ns]",
-                            )
-                            lti_df["last_time_old"] = lti_df["last_time_old"].astype(
-                                "datetime64[ns]",
-                            )
-                            lti_df = lti_df.fillna(
-                                pd.to_datetime("1800-01-01 00:00"),
-                            ).max(axis=1)
-                            lti_df = lti_df.replace(
-                                pd.to_datetime("1800-01-01 00:00"),
-                                pd.NaT,
-                            )
+                        lti_df["last_time"] = lti_df["last_time"].astype(
+                            "datetime64[ns]",
+                        )
+                        lti_df["last_time_old"] = lti_df["last_time_old"].astype(
+                            "datetime64[ns]",
+                        )
+                        lti_df = lti_df.fillna(
+                            pd.to_datetime("1800-01-01 00:00"),
+                        ).max(axis=1)
+                        lti_df = lti_df.replace(
+                            pd.to_datetime("1800-01-01 00:00"),
+                            pd.NaT,
+                        )
 
                     es_lti_dict[dataframe.ww.name] = lti_df
                     es_lti_dict[dataframe.ww.name].name = "last_time"
@@ -1304,16 +1207,13 @@ class EntitySet(object):
         for df in self.dataframes:
             lti = es_lti_dict[df.ww.name]
             if lti is not None:
-                lti_ltype = None
                 if self.time_type == "numeric":
                     if lti.dtype == "datetime64[ns]":
                         # Woodwork cannot convert from datetime to numeric
                         lti = lti.apply(lambda x: x.value)
                     lti = init_series(lti, logical_type="Double")
-                    lti_ltype = "Double"
                 else:
                     lti = init_series(lti, logical_type="Datetime")
-                    lti_ltype = "Datetime"
 
                 lti.name = LTI_COLUMN_NAME
 
@@ -1328,30 +1228,10 @@ class EntitySet(object):
                         )
 
                 # Add the new column to the DataFrame
-                if is_instance(df, dd, "DataFrame"):
-                    new_df = df.merge(lti.reset_index(), on=df.ww.index)
-                    new_df.ww.init_with_partial_schema(
-                        schema=df.ww.schema,
-                        logical_types={LTI_COLUMN_NAME: lti_ltype},
-                    )
-
-                    new_idx = new_df[new_df.ww.index]
-                    new_idx.name = None
-                    new_df.index = new_idx
-                    dfs_to_update[df.ww.name] = new_df
-                elif is_instance(df, ps, "DataFrame"):
-                    new_df = df.merge(lti, left_on=df.ww.index, right_index=True)
-                    new_df.ww.init_with_partial_schema(
-                        schema=df.ww.schema,
-                        logical_types={LTI_COLUMN_NAME: lti_ltype},
-                    )
-
-                    dfs_to_update[df.ww.name] = new_df
-                else:
-                    df.ww[LTI_COLUMN_NAME] = lti
-                    if "last_time_index" not in df.ww.semantic_tags[LTI_COLUMN_NAME]:
-                        df.ww.add_semantic_tags({LTI_COLUMN_NAME: "last_time_index"})
-                    df.ww.metadata["last_time_index"] = LTI_COLUMN_NAME
+                df.ww[LTI_COLUMN_NAME] = lti
+                if "last_time_index" not in df.ww.semantic_tags[LTI_COLUMN_NAME]:
+                    df.ww.add_semantic_tags({LTI_COLUMN_NAME: "last_time_index"})
+                df.ww.metadata["last_time_index"] = LTI_COLUMN_NAME
 
         for df in dfs_to_update.values():
             df.ww.add_semantic_tags({LTI_COLUMN_NAME: "last_time_index"})
@@ -1402,12 +1282,6 @@ class EntitySet(object):
                 for the column. If specified, a corresponding dataframe_name must also be provided.
                 If not specified, interesting values will be set for all eligible columns. If values
                 are specified, max_values and verbose parameters will be ignored.
-
-        Notes:
-
-            Finding interesting values is not supported with Dask or Spark EntitySets.
-            To set interesting values for Dask or Spark EntitySets, values must be
-            specified with the ``values`` parameter.
 
         Returns:
             None
@@ -1503,16 +1377,13 @@ class EntitySet(object):
                 column_typing_info.append(col_string)
 
             columns_string = "\l".join(column_typing_info)  # noqa: W605
-            if is_instance(df, dd, "DataFrame"):  # dataframe is a dask dataframe
-                label = "{%s |%s\l}" % (df.ww.name, columns_string)  # noqa: W605
-            else:
-                nrows = df.shape[0]
-                label = "{%s (%d row%s)|%s\l}" % (  # noqa: W605
-                    df.ww.name,
-                    nrows,
-                    "s" * (nrows > 1),
-                    columns_string,
-                )
+            nrows = df.shape[0]
+            label = "{%s (%d row%s)|%s\l}" % (  # noqa: W605
+                df.ww.name,
+                nrows,
+                "s" * (nrows > 1),
+                columns_string,
+            )
             graph.node(df.ww.name, shape="record", label=label)
 
         # Draw relationships
@@ -1548,8 +1419,6 @@ class EntitySet(object):
         """
 
         schema = self[dataframe_name].ww.schema
-        if is_instance(df, ps, "DataFrame") and isinstance(time_last, np.datetime64):
-            time_last = pd.to_datetime(time_last)
         if schema.time_index:
             df_empty = df.empty if isinstance(df, pd.DataFrame) else False
             if time_last is not None and not df_empty:
@@ -1584,13 +1453,7 @@ class EntitySet(object):
             df_empty = df.empty if isinstance(df, pd.DataFrame) else False
             if time_last is not None and not df_empty:
                 mask = df[secondary_time_index] >= time_last
-                if is_instance(df, dd, "DataFrame"):
-                    for col in columns:
-                        df[col] = df[col].mask(mask, np.nan)
-                elif is_instance(df, ps, "DataFrame"):
-                    df.loc[mask, columns] = None
-                else:
-                    df.loc[mask, columns] = np.nan
+                df.loc[mask, columns] = np.nan
 
         return df
 
@@ -1643,27 +1506,8 @@ class EntitySet(object):
             df = dataframe.head(0)
 
         else:
-            if is_instance(instance_vals, (dd, ps), "Series"):
-                df = dataframe.merge(
-                    instance_vals.to_frame(),
-                    how="inner",
-                    on=column_name,
-                )
-            elif isinstance(instance_vals, pd.Series) and is_instance(
-                dataframe,
-                ps,
-                "DataFrame",
-            ):
-                df = dataframe.merge(
-                    ps.DataFrame({column_name: instance_vals}),
-                    how="inner",
-                    on=column_name,
-                )
-            else:
-                df = dataframe[dataframe[column_name].isin(instance_vals)]
-
-            if isinstance(dataframe, pd.DataFrame):
-                df = df.set_index(dataframe.ww.index, drop=False)
+            df = dataframe[dataframe[column_name].isin(instance_vals)]
+            df = df.set_index(dataframe.ww.index, drop=False)
 
             # ensure filtered df has same categories as original
             # workaround for issue below
@@ -1671,13 +1515,7 @@ class EntitySet(object):
             #
             # Pandas claims that bug is fixed but it still shows up in some
             # cases.  More investigation needed.
-            #
-            # Note: Woodwork stores categorical columns with a `string` dtype for Spark
-            if dataframe.ww.columns[column_name].is_categorical and not is_instance(
-                df,
-                ps,
-                "DataFrame",
-            ):
+            if dataframe.ww.columns[column_name].is_categorical:
                 categories = pd.api.types.CategoricalDtype(
                     categories=dataframe[column_name].cat.categories,
                 )
@@ -1830,31 +1668,15 @@ class EntitySet(object):
         _ES_REF[self.id] = self
 
     def _normalize_values(self, dataframe):
-        def replace(x, is_spark=False):
+        def replace(x):
             if not isinstance(x, (list, tuple, np.ndarray)) and pd.isna(x):
-                if is_spark:
-                    return [np.nan, np.nan]
-                else:
-                    return (np.nan, np.nan)
+                return (np.nan, np.nan)
             else:
                 return x
 
         for column, logical_type in dataframe.ww.logical_types.items():
             if isinstance(logical_type, LatLong):
-                series = dataframe[column]
-                if ps and isinstance(series, ps.Series):
-                    if len(series):
-                        dataframe[column] = dataframe[column].apply(
-                            replace,
-                            args=(True,),
-                        )
-                elif is_instance(dataframe, dd, "DataFrame"):
-                    dataframe[column] = dataframe[column].apply(
-                        replace,
-                        meta=(column, logical_type.primary_dtype),
-                    )
-                else:
-                    dataframe[column] = dataframe[column].apply(replace)
+                dataframe[column] = dataframe[column].apply(replace)
         return dataframe
 
 
@@ -1873,8 +1695,6 @@ def _vals_to_series(instance_vals, column_id):
     # convert iterable to pd.Series
     if isinstance(instance_vals, pd.DataFrame):
         out_vals = instance_vals[column_id]
-    elif is_instance(instance_vals, (pd, dd, ps), "Series"):
-        out_vals = instance_vals.rename(column_id)
     else:
         out_vals = pd.Series(instance_vals)
 
@@ -1924,9 +1744,5 @@ def _get_or_create_index(index, make_index, df):
 
 
 def _create_index(df, index):
-    if is_instance(df, dd, "DataFrame") or is_instance(df, ps, "DataFrame"):
-        df[index] = 1
-        df[index] = df[index].cumsum() - 1
-    else:
-        df.insert(0, index, range(len(df)))
+    df.insert(0, index, range(len(df)))
     return df

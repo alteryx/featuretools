@@ -31,9 +31,9 @@ def feature_matrix():
 
 
 @pytest.fixture
-def test_es(pd_es, feature_matrix):
-    pd_es.add_dataframe(dataframe_name="test", dataframe=feature_matrix, index="test")
-    return pd_es
+def test_es(es, feature_matrix):
+    es.add_dataframe(dataframe_name="test", dataframe=feature_matrix, index="test")
+    return es
 
 
 # remove low information features not supported in Dask

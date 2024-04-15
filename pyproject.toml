@@ -14,6 +14,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX",
     "Operating System :: Unix",
@@ -65,14 +66,8 @@ test = [
     "pytest-timeout >= 2.1.0"
 ]
 dask = [
-    "dask[dataframe] >= 2023.2.0, <2024.3.0",
-    "distributed >= 2023.2.0, <2024.3.0",
-    "woodwork[dask] >= 0.28.0",
-]
-spark = [
-    "woodwork[spark] >= 0.28.0",
-    "pyspark >= 3.5.0",
-    "pyarrow >= 14.0.1",
+    "dask[dataframe] >= 2023.2.0",
+    "distributed >= 2023.2.0",
 ]
 updater = [
     "alteryx-open-src-update-checker >= 2.1.0"
@@ -103,16 +98,16 @@ docs = [
     "myst-parser == 0.18.0",
     "autonormalize >= 2.0.1",
     "click >= 7.0.0",
-    "featuretools[dask,spark,test]",
+    "featuretools[dask,test]",
 ]
 dev = [
     "ruff >= 0.1.6",
     "black[jupyter] >= 23.1.0",
     "pre-commit >= 2.20.0",
-    "featuretools[docs,dask,spark,test]",
+    "featuretools[docs,dask,test]",
 ]
 complete = [
-    "featuretools[autonormalize,sklearn,dask,spark,sql,updater]",
+    "featuretools[autonormalize,sklearn,dask,sql,updater]",
 ]
 
 [tool.setuptools]
@@ -158,8 +153,8 @@ filterwarnings = [
 [tool.ruff]
 line-length = 88
 target-version = "py311"
-ignore = ["E501"]
-select = [
+lint.ignore = ["E501"]
+lint.select = [
     # Pyflakes
     "F",
     # Pycodestyle
@@ -170,10 +165,10 @@ select = [
 ]
 src = ["featuretools"]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402", "F401", "I001", "E501"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["featuretools"]
 
 [tool.coverage.run]

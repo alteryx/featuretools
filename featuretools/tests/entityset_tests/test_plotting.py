@@ -6,39 +6,14 @@ import pandas as pd
 import pytest
 
 from featuretools import EntitySet
-from featuretools.utils.gen_utils import Library
 
 
 @pytest.fixture
-def pd_simple():
+def simple_es():
     es = EntitySet("test")
     df = pd.DataFrame({"foo": [1]})
     es.add_dataframe(df, dataframe_name="test", index="foo")
     return es
-
-
-@pytest.fixture
-def dd_simple():
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    es = EntitySet("test")
-    df = pd.DataFrame({"foo": [1]})
-    df = dd.from_pandas(df, npartitions=2)
-    es.add_dataframe(df, dataframe_name="test", index="foo")
-    return es
-
-
-@pytest.fixture
-def spark_simple():
-    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    es = EntitySet("test")
-    df = ps.DataFrame({"foo": [1]})
-    es.add_dataframe(df, dataframe_name="test", index="foo")
-    return es
-
-
-@pytest.fixture(params=["pd_simple", "dd_simple", "spark_simple"])
-def simple_es(request):
-    return request.getfixturevalue(request.param)
 
 
 def test_returns_digraph_object(es):
@@ -78,19 +53,11 @@ def test_multiple_rows(es):
     plot_ = es.plot()
     result = re.findall(r"\((\d+\srows?)\)", plot_.source)
     expected = ["{} rows".format(str(i.shape[0])) for i in es.dataframes]
-    if es.dataframe_type == Library.DASK:
-        # Dask does not list number of rows in plot
-        assert result == []
-    else:
-        assert result == expected
+    assert result == expected
 
 
 def test_single_row(simple_es):
     plot_ = simple_es.plot()
     result = re.findall(r"\((\d+\srows?)\)", plot_.source)
     expected = ["1 row"]
-    if simple_es.dataframe_type == Library.DASK:
-        # Dask does not list number of rows in plot
-        assert result == []
-    else:
-        assert result == expected
+    assert result == expected

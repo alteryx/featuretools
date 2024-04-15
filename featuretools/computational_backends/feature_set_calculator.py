@@ -15,15 +15,7 @@ from featuretools.feature_base import (
     TransformFeature,
 )
 from featuretools.utils import Trie
-from featuretools.utils.gen_utils import (
-    Library,
-    get_relationship_column_id,
-    import_or_none,
-    is_instance,
-)
-
-dd = import_or_none("dask.dataframe")
-ps = import_or_none("pyspark.pandas")
+from featuretools.utils.gen_utils import get_relationship_column_id
 
 
 class FeatureSetCalculator(object):
@@ -168,9 +160,6 @@ class FeatureSetCalculator(object):
         for feat in self.feature_set.target_features:
             column_list.extend(feat.get_feature_names())
 
-        if is_instance(df, (dd, ps), "DataFrame"):
-            column_list.extend([target_dataframe.ww.index])
-
         return df[column_list]
 
     def _calculate_features_for_dataframe(
@@ -286,9 +275,6 @@ class FeatureSetCalculator(object):
 
         # Pass filtered values, even if we are using a full df.
         if need_full_dataframe:
-            if is_instance(filter_values, dd, "Series"):
-                msg = "Cannot use primitives that require full dataframe with Dask EntitySets"
-                raise ValueError(msg)
             filtered_df = df[df[filter_column].isin(filter_values)]
         else:
             filtered_df = df
@@ -646,29 +632,22 @@ class FeatureSetCalculator(object):
 
         # merge the identity feature from the parent dataframe into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
-        if is_instance(merge_df, (dd, ps), "DataFrame"):
-            new_df = child_df.merge(
-                merge_df,
-                left_on=merge_col,
-                right_on=merge_col,
-                how="left",
+
+        if index_as_feature is not None:
+            merge_df.set_index(
+                index_as_feature.get_name(),
+                inplace=True,
+                drop=False,
             )
         else:
-            if index_as_feature is not None:
-                merge_df.set_index(
-                    index_as_feature.get_name(),
-                    inplace=True,
-                    drop=False,
-                )
-            else:
-                merge_df.set_index(merge_col, inplace=True)
+            merge_df.set_index(merge_col, inplace=True)
 
-            new_df = child_df.merge(
-                merge_df,
-                left_on=merge_col,
-                right_index=True,
-                how="left",
-            )
+        new_df = child_df.merge(
+            merge_df,
+            left_on=merge_col,
+            right_index=True,
+            how="left",
+        )
 
         progress_callback(len(features) / float(self.num_features))
 
@@ -678,7 +657,6 @@ class FeatureSetCalculator(object):
         test_feature = features[0]
         child_dataframe = test_feature.base_features[0].dataframe
         base_frame = df_trie.get_node(test_feature.relationship_path).value
-        parent_merge_col = test_feature.relationship_path[0][1]._parent_column_name
         # Sometimes approximate features get computed in a previous filter frame
         # and put in the current one dynamically,
         # so there may be existing features here
@@ -750,12 +728,7 @@ class FeatureSetCalculator(object):
                     column_id = f.base_features[0].get_name()
                     if column_id not in to_agg:
                         to_agg[column_id] = []
-                    if is_instance(base_frame, dd, "DataFrame"):
-                        func = f.get_function(agg_type=Library.DASK)
-                    elif is_instance(base_frame, ps, "DataFrame"):
-                        func = f.get_function(agg_type=Library.SPARK)
-                    else:
-                        func = f.get_function()
+                    func = f.get_function()
 
                     # for some reason, using the string count is significantly
                     # faster than any method a primitive can return
@@ -774,11 +747,6 @@ class FeatureSetCalculator(object):
                             funcname = str(id(func))
 
                         func.__name__ = funcname
-
-                    if dd and isinstance(func, dd.Aggregation):
-                        # TODO: handle aggregation being applied to same column twice
-                        # (see above partial wrapping of functions)
-                        funcname = func.__name__
 
                     to_agg[column_id].append(func)
                     # this is used below to rename columns that pandas names for us
@@ -818,14 +786,11 @@ class FeatureSetCalculator(object):
                 # to silence pandas warning about ambiguity we explicitly pass
                 # the column (in actuality grouping by both index and group would
                 # work)
-                if is_instance(base_frame, (dd, ps), "DataFrame"):
-                    to_merge = base_frame.groupby(groupby_col).agg(to_agg)
-                else:
-                    to_merge = base_frame.groupby(
-                        base_frame[groupby_col],
-                        observed=True,
-                        sort=False,
-                    ).agg(to_agg)
+                to_merge = base_frame.groupby(
+                    base_frame[groupby_col],
+                    observed=True,
+                    sort=False,
+                ).agg(to_agg)
                 # rename columns to the correct feature names
                 to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns]
                 to_merge = to_merge[list(agg_rename.values())]
@@ -841,21 +806,13 @@ class FeatureSetCalculator(object):
                     )
                     to_merge.index = to_merge.index.astype(object).astype(categories)
 
-                if is_instance(frame, (dd, ps), "DataFrame"):
-                    frame = frame.merge(
-                        to_merge,
-                        left_on=parent_merge_col,
-                        right_index=True,
-                        how="left",
-                    )
-                else:
-                    frame = pd.merge(
-                        left=frame,
-                        right=to_merge,
-                        left_index=True,
-                        right_index=True,
-                        how="left",
-                    )
+                frame = pd.merge(
+                    left=frame,
+                    right=to_merge,
+                    left_index=True,
+                    right_index=True,
+                    how="left",
+                )
 
                 # determine number of features that were just merged
                 progress_callback(len(to_merge.columns) / float(self.num_features))
@@ -945,15 +902,6 @@ def update_feature_columns(feature_data, data):
     # Handle pandas input
     if isinstance(data, pd.DataFrame):
         return pd.concat([data, pd.DataFrame(new_cols, index=data.index)], axis=1)
-
-    # Handle dask/spark input
-    for name, col in new_cols.items():
-        col.name = name
-        if is_instance(data, dd, "DataFrame"):
-            data = dd.concat([data, col], axis=1)
-        else:
-            data = ps.concat([data, col], axis=1)
-    return data
 
 
 def strip_values_if_series(values):

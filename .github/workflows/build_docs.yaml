@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.9", "3.10", "3.11"]
+        python_version: ["3.9", "3.10", "3.11", "3.12"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -50,7 +50,6 @@ jobs:
           sudo apt update
           sudo apt install -y pandoc
           sudo apt install -y graphviz
-          sudo apt install -y openjdk-11-jre-headless
           python -m pip check
       - name: Build docs
         run: make -C docs/ -e "SPHINXOPTS=-W -j auto" clean html

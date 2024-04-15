@@ -4,7 +4,6 @@ from woodwork.logical_types import Datetime
 
 from featuretools.primitives.base.aggregation_primitive_base import AggregationPrimitive
 from featuretools.utils import calculate_trend
-from featuretools.utils.gen_utils import Library
 
 
 class Trend(AggregationPrimitive):
@@ -35,7 +34,7 @@ class Trend(AggregationPrimitive):
     return_type = ColumnSchema(semantic_tags={"numeric"})
     description_template = "the linear trend of {} over time"
 
-    def get_function(self, agg_type=Library.PANDAS):
+    def get_function(self):
         def pd_trend(y, x):
             return calculate_trend(pd.Series(data=y.values, index=x.values))
 

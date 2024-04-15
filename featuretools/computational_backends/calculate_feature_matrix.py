@@ -37,14 +37,9 @@ from featuretools.feature_base import AggregationFeature, FeatureBase
 from featuretools.utils import Trie
 from featuretools.utils.gen_utils import (
     Library,
-    import_or_none,
     import_or_raise,
-    is_instance,
     make_tqdm_iterator,
 )
-
-dd = import_or_none("dask.dataframe")
-ps = import_or_none("pyspark.pandas")
 
 logger = logging.getLogger("featuretools.computational_backend")
 
@@ -216,11 +211,6 @@ def calculate_feature_matrix(
                 include_cutoff_time=include_cutoff_time,
             )
             instance_ids = df[index_col]
-
-        if is_instance(instance_ids, dd, "Series"):
-            instance_ids = instance_ids.compute()
-        elif is_instance(instance_ids, ps, "Series"):
-            instance_ids = instance_ids.to_pandas()
 
         # convert list or range object into series
         if not isinstance(instance_ids, pd.Series):
@@ -541,10 +531,7 @@ def calculate_chunk(
                     include_cutoff_time=include_cutoff_time,
                 )
 
-                if is_instance(_feature_matrix, (dd, ps), "DataFrame"):
-                    id_name = _feature_matrix.columns[-1]
-                else:
-                    id_name = _feature_matrix.index.name
+                id_name = _feature_matrix.index.name
 
                 # if approximate, merge feature matrix with group frame to get original
                 # cutoff times and passed columns
@@ -577,43 +564,16 @@ def calculate_chunk(
                             },
                             inplace=True,
                         )
-                    if isinstance(_feature_matrix, pd.DataFrame):
-                        time_index = pd.Index([time_last] * num_rows, name="time")
-                        _feature_matrix = _feature_matrix.set_index(
-                            time_index,
-                            append=True,
-                        )
-                        if len(pass_columns) > 0:
-                            pass_through.set_index([id_name, "time"], inplace=True)
-                            for col in pass_columns:
-                                _feature_matrix[col] = pass_through[col]
-                    elif is_instance(_feature_matrix, dd, "DataFrame") and (
-                        len(pass_columns) > 0
-                    ):
-                        _feature_matrix["time"] = time_last
+
+                    time_index = pd.Index([time_last] * num_rows, name="time")
+                    _feature_matrix = _feature_matrix.set_index(
+                        time_index,
+                        append=True,
+                    )
+                    if len(pass_columns) > 0:
+                        pass_through.set_index([id_name, "time"], inplace=True)
                         for col in pass_columns:
-                            pass_df = dd.from_pandas(
-                                pass_through[[id_name, "time", col]],
-                                npartitions=_feature_matrix.npartitions,
-                            )
-                            _feature_matrix = _feature_matrix.merge(
-                                pass_df,
-                                how="outer",
-                            )
-                        _feature_matrix = _feature_matrix.drop(columns=["time"])
-                    elif is_instance(_feature_matrix, ps, "DataFrame") and (
-                        len(pass_columns) > 0
-                    ):
-                        _feature_matrix["time"] = time_last
-                        for col in pass_columns:
-                            pass_df = ps.from_pandas(
-                                pass_through[[id_name, "time", col]],
-                            )
-                            _feature_matrix = _feature_matrix.merge(
-                                pass_df,
-                                how="outer",
-                            )
-                        _feature_matrix = _feature_matrix.drop(columns=["time"])
+                            _feature_matrix[col] = pass_through[col]
                 feature_matrix.append(_feature_matrix)
 
     ww_init_kwargs = get_ww_types_from_features(
@@ -969,25 +929,17 @@ def init_ww_and_concat_fm(feature_matrix, ww_init_kwargs):
         updated_cols = set()
         for col in cols_to_check:
             # Only convert types for pandas if null values are present
-            # Always convert for Dask/Spark to avoid pulling data into memory for null check
             is_pandas_df_with_null = (
                 isinstance(fm, pd.DataFrame) and fm[col].isnull().any()
             )
-            is_dask_df = is_instance(fm, dd, "DataFrame")
-            is_spark_df = is_instance(fm, ps, "DataFrame")
-            if is_pandas_df_with_null or is_dask_df or is_spark_df:
+            if is_pandas_df_with_null:
                 current_type = ww_init_kwargs["logical_types"][col].type_string
                 ww_init_kwargs["logical_types"][col] = replacement_type[current_type]
                 updated_cols.add(col)
         cols_to_check = cols_to_check - updated_cols
         fm.ww.init(**ww_init_kwargs)
 
-    if any(is_instance(fm, dd, "DataFrame") for fm in feature_matrix):
-        feature_matrix = dd.concat(feature_matrix)
-    elif any(is_instance(fm, ps, "DataFrame") for fm in feature_matrix):
-        feature_matrix = ps.concat(feature_matrix)
-    else:
-        feature_matrix = pd.concat(feature_matrix)
+    feature_matrix = pd.concat(feature_matrix)
 
     feature_matrix.ww.init(**ww_init_kwargs)
     return feature_matrix

@@ -2,7 +2,6 @@ import numpy as np
 from woodwork.column_schema import ColumnSchema
 
 from featuretools.primitives.base.aggregation_primitive_base import AggregationPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class NMostCommon(AggregationPrimitive):
@@ -38,7 +37,7 @@ class NMostCommon(AggregationPrimitive):
             *["the {nth_slice} most common value of {}"] * (n - 1),
         ]
 
-    def get_function(self, agg_type=Library.PANDAS):
+    def get_function(self):
         def n_most_common(x):
             # Counts of 0 remain in value_counts output if dtype is category
             # so we need to remove them

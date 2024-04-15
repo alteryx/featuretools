@@ -3,7 +3,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
 
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class Not(TransformPrimitive):
@@ -21,7 +20,6 @@ class Not(TransformPrimitive):
         [ColumnSchema(logical_type=BooleanNullable)],
     ]
     return_type = ColumnSchema(logical_type=BooleanNullable)
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the negation of {}"
 
     def generate_name(self, base_feature_names):

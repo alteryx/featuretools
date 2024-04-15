@@ -141,16 +141,16 @@ class TestCumMin:
             np.testing.assert_array_equal(function(group), answer)
 
 
-def test_cum_sum(pd_es):
-    log_value_feat = IdentityFeature(pd_es["log"].ww["value"])
+def test_cum_sum(es):
+    log_value_feat = IdentityFeature(es["log"].ww["value"])
     dfeat = Feature(
-        IdentityFeature(pd_es["sessions"].ww["device_type"]),
+        IdentityFeature(es["sessions"].ww["device_type"]),
         dataframe_name="log",
     )
     cum_sum = Feature(log_value_feat, groupby=dfeat, primitive=CumSum)
     features = [cum_sum]
     df = calculate_feature_matrix(
-        entityset=pd_es,
+        entityset=es,
         features=features,
         instance_ids=range(15),
     )
@@ -161,16 +161,16 @@ def test_cum_sum(pd_es):
         assert v == cvalues[i]
 
 
-def test_cum_min(pd_es):
-    log_value_feat = IdentityFeature(pd_es["log"].ww["value"])
+def test_cum_min(es):
+    log_value_feat = IdentityFeature(es["log"].ww["value"])
     cum_min = Feature(
         log_value_feat,
-        groupby=IdentityFeature(pd_es["log"].ww["session_id"]),
+        groupby=IdentityFeature(es["log"].ww["session_id"]),
         primitive=CumMin,
     )
     features = [cum_min]
     df = calculate_feature_matrix(
-        entityset=pd_es,
+        entityset=es,
         features=features,
         instance_ids=range(15),
     )
@@ -181,16 +181,16 @@ def test_cum_min(pd_es):
         assert v == cvalues[i]
 
 
-def test_cum_max(pd_es):
-    log_value_feat = IdentityFeature(pd_es["log"].ww["value"])
+def test_cum_max(es):
+    log_value_feat = IdentityFeature(es["log"].ww["value"])
     cum_max = Feature(
         log_value_feat,
-        groupby=IdentityFeature(pd_es["log"].ww["session_id"]),
+        groupby=IdentityFeature(es["log"].ww["session_id"]),
         primitive=CumMax,
     )
     features = [cum_max]
     df = calculate_feature_matrix(
-        entityset=pd_es,
+        entityset=es,
         features=features,
         instance_ids=range(15),
     )
@@ -201,9 +201,9 @@ def test_cum_max(pd_es):
         assert v == cvalues[i]
 
 
-def test_cum_sum_group_on_nan(pd_es):
-    log_value_feat = IdentityFeature(pd_es["log"].ww["value"])
-    pd_es["log"]["product_id"] = (
+def test_cum_sum_group_on_nan(es):
+    log_value_feat = IdentityFeature(es["log"].ww["value"])
+    es["log"]["product_id"] = (
         ["coke zero"] * 3
         + ["car"] * 2
         + ["toothpaste"] * 3
@@ -212,15 +212,15 @@ def test_cum_sum_group_on_nan(pd_es):
         + [np.nan] * 4
         + ["coke_zero"] * 2
     )
-    pd_es["log"]["value"][16] = 10
+    es["log"]["value"][16] = 10
     cum_sum = Feature(
         log_value_feat,
-        groupby=IdentityFeature(pd_es["log"].ww["product_id"]),
+        groupby=IdentityFeature(es["log"].ww["product_id"]),
         primitive=CumSum,
     )
     features = [cum_sum]
     df = calculate_feature_matrix(
-        entityset=pd_es,
+        entityset=es,
         features=features,
         instance_ids=range(17),
     )
@@ -254,7 +254,7 @@ def test_cum_sum_group_on_nan(pd_es):
             assert v == cvalues[i]
 
 
-def test_cum_sum_numpy_group_on_nan(pd_es):
+def test_cum_sum_numpy_group_on_nan(es):
     class CumSumNumpy(TransformPrimitive):
         """Returns the cumulative sum after grouping"""
 
@@ -269,8 +269,8 @@ def test_cum_sum_numpy_group_on_nan(pd_es):
 
             return cum_sum
 
-    log_value_feat = IdentityFeature(pd_es["log"].ww["value"])
-    pd_es["log"]["product_id"] = (
+    log_value_feat = IdentityFeature(es["log"].ww["value"])
+    es["log"]["product_id"] = (
         ["coke zero"] * 3
         + ["car"] * 2
         + ["toothpaste"] * 3
@@ -279,16 +279,16 @@ def test_cum_sum_numpy_group_on_nan(pd_es):
         + [np.nan] * 4
         + ["coke_zero"] * 2
     )
-    pd_es["log"]["value"][16] = 10
+    es["log"]["value"][16] = 10
     cum_sum = Feature(
         log_value_feat,
-        groupby=IdentityFeature(pd_es["log"].ww["product_id"]),
+        groupby=IdentityFeature(es["log"].ww["product_id"]),
         primitive=CumSumNumpy,
     )
     assert cum_sum.get_name() == "CUM_SUM(value) by product_id"
     features = [cum_sum]
     df = calculate_feature_matrix(
-        entityset=pd_es,
+        entityset=es,
         features=features,
         instance_ids=range(17),
     )
@@ -322,11 +322,11 @@ def test_cum_sum_numpy_group_on_nan(pd_es):
             assert v == cvalues[i]
 
 
-def test_cum_handles_uses_full_dataframe(pd_es):
+def test_cum_handles_uses_full_dataframe(es):
     def check(feature):
         feature_set = FeatureSet([feature])
         calculator = FeatureSetCalculator(
-            pd_es,
+            es,
             feature_set=feature_set,
             time_last=None,
         )
@@ -339,31 +339,31 @@ def test_cum_handles_uses_full_dataframe(pd_es):
     for primitive in [CumSum, CumMean, CumMax, CumMin]:
         check(
             Feature(
-                pd_es["log"].ww["value"],
-                groupby=IdentityFeature(pd_es["log"].ww["session_id"]),
+                es["log"].ww["value"],
+                groupby=IdentityFeature(es["log"].ww["session_id"]),
                 primitive=primitive,
             ),
         )
 
     check(
         Feature(
-            pd_es["log"].ww["product_id"],
-            groupby=Feature(pd_es["log"].ww["product_id"]),
+            es["log"].ww["product_id"],
+            groupby=Feature(es["log"].ww["product_id"]),
             primitive=CumCount,
         ),
     )
 
 
-def test_cum_mean(pd_es):
-    log_value_feat = IdentityFeature(pd_es["log"].ww["value"])
+def test_cum_mean(es):
+    log_value_feat = IdentityFeature(es["log"].ww["value"])
     cum_mean = Feature(
         log_value_feat,
-        groupby=IdentityFeature(pd_es["log"].ww["session_id"]),
+        groupby=IdentityFeature(es["log"].ww["session_id"]),
         primitive=CumMean,
     )
     features = [cum_mean]
     df = calculate_feature_matrix(
-        entityset=pd_es,
+        entityset=es,
         features=features,
         instance_ids=range(15),
     )
@@ -374,15 +374,15 @@ def test_cum_mean(pd_es):
         assert v == cvalues[i]
 
 
-def test_cum_count(pd_es):
+def test_cum_count(es):
     cum_count = Feature(
-        IdentityFeature(pd_es["log"].ww["product_id"]),
-        groupby=IdentityFeature(pd_es["log"].ww["product_id"]),
+        IdentityFeature(es["log"].ww["product_id"]),
+        groupby=IdentityFeature(es["log"].ww["product_id"]),
         primitive=CumCount,
     )
     features = [cum_count]
     df = calculate_feature_matrix(
-        entityset=pd_es,
+        entityset=es,
         features=features,
         instance_ids=range(15),
     )
@@ -393,10 +393,10 @@ def test_cum_count(pd_es):
         assert v == cvalues[i]
 
 
-def test_rename(pd_es):
+def test_rename(es):
     cum_count = Feature(
-        IdentityFeature(pd_es["log"].ww["product_id"]),
-        groupby=IdentityFeature(pd_es["log"].ww["product_id"]),
+        IdentityFeature(es["log"].ww["product_id"]),
+        groupby=IdentityFeature(es["log"].ww["product_id"]),
         primitive=CumCount,
     )
     copy_feat = cum_count.rename("rename_test")
@@ -411,15 +411,15 @@ def test_rename(pd_es):
     assert cum_count.dataframe_name == copy_feat.dataframe_name
 
 
-def test_groupby_no_data(pd_es):
+def test_groupby_no_data(es):
     cum_count = Feature(
-        IdentityFeature(pd_es["log"].ww["product_id"]),
-        groupby=IdentityFeature(pd_es["log"].ww["product_id"]),
+        IdentityFeature(es["log"].ww["product_id"]),
+        groupby=IdentityFeature(es["log"].ww["product_id"]),
         primitive=CumCount,
     )
     last_feat = Feature(cum_count, parent_dataframe_name="customers", primitive=Last)
     df = calculate_feature_matrix(
-        entityset=pd_es,
+        entityset=es,
         features=[last_feat],
         cutoff_time=pd.Timestamp("2011-04-08"),
     )
@@ -428,7 +428,7 @@ def test_groupby_no_data(pd_es):
     assert all([pd.isnull(value) for value in cvalues])
 
 
-def test_groupby_uses_calc_time(pd_es):
+def test_groupby_uses_calc_time(es):
     def projected_amount_left(amount, timestamp, time=None):
         # cumulative sum of amount, with timedelta *  constant subtracted
         delta = time - timestamp
@@ -450,14 +450,14 @@ def test_groupby_uses_calc_time(pd_es):
 
     time_since_product = GroupByTransformFeature(
         [
-            IdentityFeature(pd_es["log"].ww["value"]),
-            IdentityFeature(pd_es["log"].ww["datetime"]),
+            IdentityFeature(es["log"].ww["value"]),
+            IdentityFeature(es["log"].ww["datetime"]),
         ],
-        groupby=IdentityFeature(pd_es["log"].ww["product_id"]),
+        groupby=IdentityFeature(es["log"].ww["product_id"]),
         primitive=ProjectedAmountRemaining,
     )
     df = calculate_feature_matrix(
-        entityset=pd_es,
+        entityset=es,
         features=[time_since_product],
         cutoff_time=pd.Timestamp("2011-04-10 11:10:30"),
     )
@@ -485,7 +485,7 @@ def test_groupby_uses_calc_time(pd_es):
         assert (pd.isnull(x) and pd.isnull(y)) or x == y
 
 
-def test_groupby_multi_output_stacking(pd_es):
+def test_groupby_multi_output_stacking(es):
     class TestTime(TransformPrimitive):
         name = "test_time"
         input_types = [ColumnSchema(logical_type=Datetime)]
@@ -493,7 +493,7 @@ def test_groupby_multi_output_stacking(pd_es):
         number_output_features = 6
 
     fl = dfs(
-        entityset=pd_es,
+        entityset=es,
         target_dataframe_name="sessions",
         agg_primitives=["sum"],
         groupby_trans_primitives=[TestTime],
@@ -507,9 +507,9 @@ def test_groupby_multi_output_stacking(pd_es):
         assert ("customers.SUM(log.TEST_TIME(datetime)[%d] by session_id)" % i) in fl
 
 
-def test_serialization(pd_es):
-    value = IdentityFeature(pd_es["log"].ww["value"])
-    zipcode = IdentityFeature(pd_es["log"].ww["zipcode"])
+def test_serialization(es):
+    value = IdentityFeature(es["log"].ww["value"])
+    zipcode = IdentityFeature(es["log"].ww["zipcode"])
     primitive = CumSum()
     groupby = feature_base.GroupByTransformFeature(value, primitive, zipcode)
 
@@ -527,13 +527,13 @@ def test_serialization(pd_es):
     }
     assert groupby == feature_base.GroupByTransformFeature.from_dictionary(
         dictionary,
-        pd_es,
+        es,
         dependencies,
         primitive,
     )
 
 
-def test_groupby_with_multioutput_primitive(pd_es):
+def test_groupby_with_multioutput_primitive(es):
     class MultiCumSum(TransformPrimitive):
         name = "multi_cum_sum"
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
@@ -547,7 +547,7 @@ def test_groupby_with_multioutput_primitive(pd_es):
             return multi_cum_sum
 
     fm, _ = dfs(
-        entityset=pd_es,
+        entityset=es,
         target_dataframe_name="customers",
         trans_primitives=[],
         agg_primitives=[],
@@ -557,7 +557,7 @@ def test_groupby_with_multioutput_primitive(pd_es):
     # Calculate output in a separate DFS call to make sure the multi-output code
     # does not alter any values
     fm2, _ = dfs(
-        entityset=pd_es,
+        entityset=es,
         target_dataframe_name="customers",
         trans_primitives=[],
         agg_primitives=[],
@@ -588,7 +588,7 @@ def test_groupby_with_multioutput_primitive(pd_es):
             assert x == y
 
 
-def test_groupby_with_multioutput_primitive_custom_names(pd_es):
+def test_groupby_with_multioutput_primitive_custom_names(es):
     class MultiCumSum(TransformPrimitive):
         name = "multi_cum_sum"
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
@@ -605,7 +605,7 @@ def test_groupby_with_multioutput_primitive_custom_names(pd_es):
             return ["CUSTOM_SUM", "CUSTOM_MAX", "CUSTOM_MIN"]
 
     fm, _ = dfs(
-        entityset=pd_es,
+        entityset=es,
         target_dataframe_name="customers",
         trans_primitives=[],
         agg_primitives=[],

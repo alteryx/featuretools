@@ -3,7 +3,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Categorical, PostalCode
 
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class OneDigitPostalCode(TransformPrimitive):
@@ -20,7 +19,6 @@ class OneDigitPostalCode(TransformPrimitive):
 
     name = "one_digit_postal_code"
     input_types = [ColumnSchema(logical_type=PostalCode)]
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     return_type = ColumnSchema(logical_type=Categorical, semantic_tags={"category"})
     description_template = "The one digit postal code prefix of {}"
 
