@@ -69,17 +69,11 @@ dask = [
     "dask[dataframe] >= 2023.2.0",
     "distributed >= 2023.2.0",
 ]
-updater = [
-    "alteryx-open-src-update-checker >= 2.1.0"
-]
 tsfresh = [
     "featuretools-tsfresh-primitives >= 1.0.0",
 ]
 autonormalize = [
     "autonormalize >= 2.0.1",
-]
-sql = [
-    "featuretools_sql >= 0.0.1",
 ]
 sklearn = [
     "featuretools-sklearn-transformer >= 1.0.0",
@@ -107,7 +101,7 @@ dev = [
     "featuretools[docs,dask,test]",
 ]
 complete = [
-    "featuretools[autonormalize,sklearn,dask,sql,updater]",
+    "featuretools[autonormalize,sklearn,dask]",
 ]
 
 [tool.setuptools]
