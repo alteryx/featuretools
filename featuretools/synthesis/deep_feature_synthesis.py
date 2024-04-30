@@ -1317,8 +1317,7 @@ def _direct_of_dataframe(feature, parent_dataframe):
 
 def get_feature_depth(feature, stop_at=None):
     """Helper method to allow caching of feature.get_depth()
-    Why here and not in FeatureBase?  Putting this in FeatureBase was causing
-    some weird pickle errors in spark tests in 3.9 and this keeps the caching
+    Why here and not in FeatureBase?  This keeps the caching
     local to DFS.
     """
     hash_key = hash(f"{feature.get_name()}{feature.dataframe_name}{stop_at}")
