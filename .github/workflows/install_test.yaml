@@ -46,8 +46,8 @@ jobs:
           python -m pip install "unpacked_sdist/[complete]" --no-deps
       - name: Test by importing packages
         run: |
-          python -c "import alteryx_open_src_update_checker"
-          python -c "from featuretools_sql import DBConnector"
+          python -c "import autonormalize"
+          python -c "from featuretools.wrappers import DFSTransformer"
       - name: Check package conflicts
         run: |
           python -m pip check
