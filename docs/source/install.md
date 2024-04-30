@@ -37,10 +37,6 @@ $ python -m pip install "featuretools[tsfresh]"
 ```console
 $ python -m pip install "featuretools[autonormalize]"
 ```
-```{tab} Update Checker
-```console
-$ python -m pip install "featuretools[updater]"
-```
 ```{tab} SQL
 ```console
 $ python -m pip install "featuretools[sql]"
@@ -66,10 +62,6 @@ $ conda install -c conda-forge dask distributed
 ```{tab} SQL
 ```console
 $ conda install -c conda-forge featuretools_sql
-```
-```{tab} Update Checker
-```console
-$ conda install -c conda-forge alteryx-open-src-update-checker
 ```
 ````
 

@@ -75,6 +75,10 @@ tsfresh = [
 autonormalize = [
     "autonormalize >= 2.0.1",
 ]
+sql = [
+    "featuretools_sql >= 0.0.1",
+    "psycopg2-binary >= 2.9.3",
+]
 sklearn = [
     "featuretools-sklearn-transformer >= 1.0.0",
 ]
@@ -101,7 +105,7 @@ dev = [
     "featuretools[docs,dask,test]",
 ]
 complete = [
-    "featuretools[autonormalize,sklearn,dask]",
+    "featuretools[autonormalize,sklearn,dask,sql]",
 ]
 
 [tool.setuptools]
