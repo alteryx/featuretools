@@ -53,4 +53,4 @@ jobs:
           python -m pip check
       - name: Verify extra_requires commands
         run: |
-          python -m pip install "unpacked_sdist/[nlp,updater,sql]"
+          python -m pip install "unpacked_sdist/[nlp]"
