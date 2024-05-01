@@ -5,7 +5,7 @@ from featuretools import dfs
 
 
 @pytest.fixture
-def pd_entry_point_dfs():
+def entry_points_dfs():
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = pd.DataFrame(
         {
@@ -16,19 +16,6 @@ def pd_entry_point_dfs():
         },
     )
     return cards_df, transactions_df
-
-
-@pytest.fixture
-def dask_entry_point_dfs(pd_entry_point_dfs):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    cards_df = dd.from_pandas(pd_entry_point_dfs[0], npartitions=2)
-    transactions_df = dd.from_pandas(pd_entry_point_dfs[1], npartitions=2)
-    return cards_df, transactions_df
-
-
-@pytest.fixture(params=["pd_entry_point_dfs", "dask_entry_point_dfs"])
-def entry_points_dfs(request):
-    return request.getfixturevalue(request.param)
 
 
 class MockEntryPoint(object):

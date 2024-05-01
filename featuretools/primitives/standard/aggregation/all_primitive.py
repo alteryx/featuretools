@@ -3,9 +3,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
 
 from featuretools.primitives.base.aggregation_primitive_base import AggregationPrimitive
-from featuretools.utils.gen_utils import Library, import_or_none
-
-dd = import_or_none("dask.dataframe")
 
 
 class All(AggregationPrimitive):
@@ -28,18 +25,7 @@ class All(AggregationPrimitive):
     ]
     return_type = ColumnSchema(logical_type=Boolean)
     stack_on_self = False
-    compatibility = [Library.PANDAS, Library.DASK]
     description_template = "whether all of {} are true"
 
-    def get_function(self, agg_type=Library.PANDAS):
-        if agg_type == Library.DASK:
-
-            def chunk(s):
-                return s.agg(np.all)
-
-            def agg(s):
-                return s.agg(np.all)
-
-            return dd.Aggregation(self.name, chunk=chunk, agg=agg)
-
+    def get_function(self):
         return np.all

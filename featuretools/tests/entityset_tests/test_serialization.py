@@ -9,13 +9,11 @@ import boto3
 import pandas as pd
 import pytest
 import woodwork.type_sys.type_system as ww_type_system
-from woodwork.logical_types import Datetime, LogicalType, Ordinal
+from woodwork.logical_types import LogicalType, Ordinal
 from woodwork.serializers.serializer_base import typing_info_to_dict
 from woodwork.type_sys.utils import list_logical_types
 
 from featuretools.entityset import EntitySet, deserialize, serialize
-from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import Library
 from featuretools.version import ENTITYSET_SCHEMA_VERSION
 
 BUCKET_NAME = "test-bucket"
@@ -99,18 +97,17 @@ def test_to_csv(es, tmp_path):
     es.to_csv(str(tmp_path), encoding="utf-8", engine="python")
     new_es = deserialize.read_entityset(str(tmp_path))
     assert es.__eq__(new_es, deep=True)
-    df = to_pandas(es["log"], index="id")
-    new_df = to_pandas(new_es["log"], index="id")
+    df = es["log"]
+    new_df = new_es["log"]
     assert type(df["latlong"][0]) in (tuple, list)
     assert type(new_df["latlong"][0]) in (tuple, list)
 
 
-# Dask/Spark don't support auto setting of interesting values with es.add_interesting_values()
-def test_to_csv_interesting_values(pd_es, tmp_path):
-    pd_es.add_interesting_values()
-    pd_es.to_csv(str(tmp_path))
+def test_to_csv_interesting_values(es, tmp_path):
+    es.add_interesting_values()
+    es.to_csv(str(tmp_path))
     new_es = deserialize.read_entityset(str(tmp_path))
-    assert pd_es.__eq__(new_es, deep=True)
+    assert es.__eq__(new_es, deep=True)
 
 
 def test_to_csv_manual_interesting_values(es, tmp_path):
@@ -126,44 +123,29 @@ def test_to_csv_manual_interesting_values(es, tmp_path):
     ]
 
 
-# Dask/Spark do not support to_pickle
-def test_to_pickle(pd_es, tmp_path):
-    pd_es.to_pickle(str(tmp_path))
+def test_to_pickle(es, tmp_path):
+    es.to_pickle(str(tmp_path))
     new_es = deserialize.read_entityset(str(tmp_path))
-    assert pd_es.__eq__(new_es, deep=True)
-    assert type(pd_es["log"]["latlong"][0]) == tuple
+    assert es.__eq__(new_es, deep=True)
+    assert type(es["log"]["latlong"][0]) == tuple
     assert type(new_es["log"]["latlong"][0]) == tuple
 
 
-def test_to_pickle_errors_dask(dask_es, tmp_path):
-    msg = "DataFrame type not compatible with pickle serialization. Please serialize to another format."
-    with pytest.raises(ValueError, match=msg):
-        dask_es.to_pickle(str(tmp_path))
-
-
-def test_to_pickle_errors_spark(spark_es, tmp_path):
-    msg = "DataFrame type not compatible with pickle serialization. Please serialize to another format."
-    with pytest.raises(ValueError, match=msg):
-        spark_es.to_pickle(str(tmp_path))
-
-
-# Dask/Spark do not support to_pickle
-def test_to_pickle_interesting_values(pd_es, tmp_path):
-    pd_es.add_interesting_values()
-    pd_es.to_pickle(str(tmp_path))
+def test_to_pickle_interesting_values(es, tmp_path):
+    es.add_interesting_values()
+    es.to_pickle(str(tmp_path))
     new_es = deserialize.read_entityset(str(tmp_path))
-    assert pd_es.__eq__(new_es, deep=True)
+    assert es.__eq__(new_es, deep=True)
 
 
-# Dask/Spark do not support to_pickle
-def test_to_pickle_manual_interesting_values(pd_es, tmp_path):
-    pd_es.add_interesting_values(
+def test_to_pickle_manual_interesting_values(es, tmp_path):
+    es.add_interesting_values(
         dataframe_name="log",
         values={"product_id": ["coke_zero"]},
     )
-    pd_es.to_pickle(str(tmp_path))
+    es.to_pickle(str(tmp_path))
     new_es = deserialize.read_entityset(str(tmp_path))
-    assert pd_es.__eq__(new_es, deep=True)
+    assert es.__eq__(new_es, deep=True)
     assert new_es["log"].ww["product_id"].ww.metadata["interesting_values"] == [
         "coke_zero",
     ]
@@ -173,8 +155,8 @@ def test_to_parquet(es, tmp_path):
     es.to_parquet(str(tmp_path))
     new_es = deserialize.read_entityset(str(tmp_path))
     assert es.__eq__(new_es, deep=True)
-    df = to_pandas(es["log"])
-    new_df = to_pandas(new_es["log"])
+    df = es["log"]
+    new_df = new_es["log"]
     assert type(df["latlong"][0]) in (tuple, list)
     assert type(new_df["latlong"][0]) in (tuple, list)
 
@@ -192,16 +174,15 @@ def test_to_parquet_manual_interesting_values(es, tmp_path):
     ]
 
 
-# Dask/Spark don't support auto setting of interesting values with es.add_interesting_values()
-def test_to_parquet_interesting_values(pd_es, tmp_path):
-    pd_es.add_interesting_values()
-    pd_es.to_parquet(str(tmp_path))
+def test_to_parquet_interesting_values(es, tmp_path):
+    es.add_interesting_values()
+    es.to_parquet(str(tmp_path))
     new_es = deserialize.read_entityset(str(tmp_path))
-    assert pd_es.__eq__(new_es, deep=True)
+    assert es.__eq__(new_es, deep=True)
 
 
-def test_to_parquet_with_lti(tmp_path, pd_mock_customer):
-    es = pd_mock_customer
+def test_to_parquet_with_lti(tmp_path, mock_customer):
+    es = mock_customer
     es.to_parquet(str(tmp_path))
     new_es = deserialize.read_entityset(str(tmp_path))
     assert es.__eq__(new_es, deep=True)
@@ -244,35 +225,24 @@ def make_public(s3_client, s3_bucket):
     s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL="public-read-write")
 
 
-# TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Spark
 @pytest.mark.parametrize("profile_name", [None, False])
 def test_serialize_s3_csv(es, s3_client, s3_bucket, profile_name):
-    if es.dataframe_type != Library.PANDAS:
-        pytest.xfail(
-            "tmp file disappears after deserialize step, cannot check equality with Dask",
-        )
     es.to_csv(TEST_S3_URL, encoding="utf-8", engine="python", profile_name=profile_name)
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=profile_name)
     assert es.__eq__(new_es, deep=True)
 
 
-# Dask and Spark do not support to_pickle
 @pytest.mark.parametrize("profile_name", [None, False])
-def test_serialize_s3_pickle(pd_es, s3_client, s3_bucket, profile_name):
-    pd_es.to_pickle(TEST_S3_URL, profile_name=profile_name)
+def test_serialize_s3_pickle(es, s3_client, s3_bucket, profile_name):
+    es.to_pickle(TEST_S3_URL, profile_name=profile_name)
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=profile_name)
-    assert pd_es.__eq__(new_es, deep=True)
+    assert es.__eq__(new_es, deep=True)
 
 
-# TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Spark
 @pytest.mark.parametrize("profile_name", [None, False])
 def test_serialize_s3_parquet(es, s3_client, s3_bucket, profile_name):
-    if es.dataframe_type != Library.PANDAS:
-        pytest.xfail(
-            "tmp file disappears after deserialize step, cannot check equality with Dask or Spark",
-        )
     es.to_parquet(TEST_S3_URL, profile_name=profile_name)
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=profile_name)
@@ -280,10 +250,6 @@ def test_serialize_s3_parquet(es, s3_client, s3_bucket, profile_name):
 
 
 def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
-    if es.dataframe_type != Library.PANDAS:
-        pytest.xfail(
-            "tmp file disappears after deserialize step, cannot check equality with Dask",
-        )
     es.to_csv(TEST_S3_URL, encoding="utf-8", engine="python", profile_name="test")
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL, profile_name="test")
@@ -304,10 +270,7 @@ def test_serialize_subdirs_not_removed(es, tmp_path):
     description_path = write_path.joinpath("data_description.json")
     with open(description_path, "w") as f:
         json.dump("__SAMPLE_TEXT__", f)
-    if es.dataframe_type == Library.SPARK:
-        compression = "none"
-    else:
-        compression = None
+    compression = None
     serialize.write_data_description(
         es,
         path=str(write_path),
@@ -345,20 +308,13 @@ def test_operations_invalidate_metadata(es):
     assert new_es._data_description is None
     assert new_es.metadata is not None  # generated after access
     assert new_es._data_description is not None
-    if not isinstance(es["customers"], pd.DataFrame):
-        customers_ltypes = es["customers"].ww.logical_types
-        customers_ltypes["signup_date"] = Datetime
-    else:
-        customers_ltypes = None
+    customers_ltypes = None
     new_es.add_dataframe(
         es["customers"],
         "customers",
         logical_types=customers_ltypes,
     )
-    if not isinstance(es["sessions"], pd.DataFrame):
-        sessions_ltypes = es["sessions"].ww.logical_types
-    else:
-        sessions_ltypes = None
+    sessions_ltypes = None
     new_es.add_dataframe(
         es["sessions"],
         "sessions",
@@ -384,12 +340,10 @@ def test_operations_invalidate_metadata(es):
     assert new_es.metadata is not None
     assert new_es._data_description is not None
 
-    # automatically adding interesting values not supported in Dask or Spark
-    if new_es.dataframe_type == Library.PANDAS:
-        new_es.add_interesting_values()
-        assert new_es._data_description is None
-        assert new_es.metadata is not None
-        assert new_es._data_description is not None
+    new_es.add_interesting_values()
+    assert new_es._data_description is None
+    assert new_es.metadata is not None
+    assert new_es._data_description is not None
 
 
 def test_reset_metadata(es):
@@ -458,7 +412,6 @@ def _check_schema_version(version, es, warning_text, caplog, warning_type=None):
         "id": es.id,
         "dataframes": dataframes,
         "relationships": relationships,
-        "data_type": es.dataframe_type,
     }
 
     if warning_type == "warn" and warning_text:

@@ -79,11 +79,11 @@ def test_feature_trie_without_needs_full_dataframe(diamond_es):
 
 
 def test_feature_trie_with_needs_full_dataframe(diamond_es):
-    pd_es = diamond_es
-    amount = IdentityFeature(pd_es["transactions"].ww["amount"])
+    es = diamond_es
+    amount = IdentityFeature(es["transactions"].ww["amount"])
 
     path_through_customers = backward_path(
-        pd_es,
+        es,
         ["regions", "customers", "transactions"],
     )
     agg = AggregationFeature(
@@ -94,7 +94,7 @@ def test_feature_trie_with_needs_full_dataframe(diamond_es):
     )
     trans_of_agg = TransformFeature(agg, primitives.CumSum)
 
-    path_through_stores = backward_path(pd_es, ["regions", "stores", "transactions"])
+    path_through_stores = backward_path(es, ["regions", "stores", "transactions"])
     trans = TransformFeature(amount, primitives.CumSum)
     agg_of_trans = AggregationFeature(
         trans,

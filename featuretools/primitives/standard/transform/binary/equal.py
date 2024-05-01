@@ -3,7 +3,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import BooleanNullable
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class Equal(TransformPrimitive):
@@ -24,7 +23,7 @@ class Equal(TransformPrimitive):
     input_types = [ColumnSchema(), ColumnSchema()]
     return_type = ColumnSchema(logical_type=BooleanNullable)
     commutative = True
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+
     description_template = "whether {} equals {}"
 
     def get_function(self):

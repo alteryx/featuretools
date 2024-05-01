@@ -5,7 +5,6 @@ from featuretools.primitives.utils import (
 )
 from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
 from featuretools.synthesis.utils import _categorize_features, get_unused_primitives
-from featuretools.utils.gen_utils import Library
 
 
 def get_valid_primitives(
@@ -47,11 +46,6 @@ def get_valid_primitives(
     available_aggs = get_aggregation_primitives()
     available_trans = get_transform_primitives()
 
-    for library in Library:
-        if library.value == entityset.dataframe_type:
-            df_library = library
-            break
-
     if selected_primitives:
         for prim in selected_primitives:
             if not isinstance(prim, str):
@@ -72,17 +66,10 @@ def get_valid_primitives(
                 prim_list = trans_primitives
             else:
                 raise ValueError(f"'{prim}' is not a recognized primitive name")
-            if df_library in prim.compatibility:
-                prim_list.append(prim)
+            prim_list.append(prim)
     else:
-        agg_primitives = [
-            agg for agg in available_aggs.values() if df_library in agg.compatibility
-        ]
-        trans_primitives = [
-            trans
-            for trans in available_trans.values()
-            if df_library in trans.compatibility
-        ]
+        agg_primitives = [agg for agg in available_aggs.values()]
+        trans_primitives = [trans for trans in available_trans.values()]
 
     dfs_object = DeepFeatureSynthesis(
         target_dataframe_name,

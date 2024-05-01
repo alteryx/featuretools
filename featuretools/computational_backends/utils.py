@@ -13,10 +13,9 @@ from woodwork.logical_types import Datetime, Double
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, DirectFeature
 from featuretools.utils import Trie
-from featuretools.utils.gen_utils import Library, import_or_none, is_instance
+from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.wrangle import _check_time_type, _check_timedelta
 
-dd = import_or_none("dask.dataframe")
 logger = logging.getLogger("featuretools.computational_backend")
 
 
@@ -220,10 +219,7 @@ def get_client_cluster():
     return Client, LocalCluster
 
 
-if dd:
-    CutoffTimeType = typing.Union[dd.DataFrame, pd.DataFrame, str, datetime]
-else:
-    CutoffTimeType = typing.Union[pd.DataFrame, str, datetime]
+CutoffTimeType = typing.Union[pd.DataFrame, str, datetime]
 
 
 def _validate_cutoff_time(
@@ -234,14 +230,6 @@ def _validate_cutoff_time(
     Verify that the cutoff time is a single value or a pandas dataframe with the proper columns
     containing no duplicate rows
     """
-    if is_instance(cutoff_time, dd, "DataFrame"):
-        msg = (
-            "cutoff_time should be a Pandas DataFrame: "
-            "computing cutoff_time, this may take a while"
-        )
-        warnings.warn(msg)
-        cutoff_time = cutoff_time.compute()
-
     if isinstance(cutoff_time, pd.DataFrame):
         cutoff_time = cutoff_time.reset_index(drop=True)
 
@@ -396,15 +384,6 @@ def get_ww_types_from_features(
             logical_types[column] = cutoff_schema.logical_types[column]
             semantic_tags[column] = cutoff_schema.semantic_tags[column]
             origins[column] = "base"
-
-    if entityset.dataframe_type in (Library.DASK, Library.SPARK):
-        target_dataframe_name = features[0].dataframe_name
-        table_schema = entityset[target_dataframe_name].ww.schema
-        index_col = table_schema.index
-        logical_types[index_col] = table_schema.logical_types[index_col]
-        semantic_tags[index_col] = table_schema.semantic_tags[index_col]
-        semantic_tags[index_col] -= {"index"}
-        origins[index_col] = "base"
 
     ww_init = {
         "logical_types": logical_types,

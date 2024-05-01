@@ -20,10 +20,6 @@ $ conda install -c conda-forge featuretools
 
 Featuretools allows users to install add-ons individually or all at once:
 
-```{hint}
-Be sure to install [Scala and Spark](#scala-and-spark) if you want to use Spark
-```
-
 ````{tab} PyPI
 ```{tab} All Add-ons
 ```console
@@ -33,66 +29,34 @@ $ python -m pip install "featuretools[complete]"
 ```console
 $ python -m pip install "featuretools[dask]"
 ```
-```{tab} Spark
+```{tab} NLP Primitives
 ```console
-$ python -m pip install "featuretools[spark]"
+$ python -m pip install "featuretools[nlp]"
 ```
-```{tab} TSFresh Primitives
+```{tab} Premium Primitives
 ```console
-$ python -m pip install "featuretools[tsfresh]"
+$ python -m pip install "featuretools[premium]"
 ```
-```{tab} AutoNormalize
-```console
-$ python -m pip install "featuretools[autonormalize]"
-```
-```{tab} Update Checker
-```console
-$ python -m pip install "featuretools[updater]"
-```
-```{tab} SQL
-```console
-$ python -m pip install "featuretools[sql]"
-```
-```{tab} scikit-learn Transformer
-```console
-$ python -m pip install "featuretools[sklearn]"
-```
+
 ````
 ````{tab} Conda
 ```{tab} All Add-ons
 ```console
-$ conda install -c conda-forge nlp-primitives featuretools-tsfresh-primitives pyspark alteryx-open-src-update-checker
+$ conda install -c conda-forge nlp-primitives dask distributed
 ```
-```{tab} TSFresh Primitives
+```{tab} NLP Primitives
 ```console
-$ conda install -c conda-forge featuretools-tsfresh-primitives
+$ conda install -c conda-forge nlp-primitives
 ```
 ```{tab} Dask
 ```console
 $ conda install -c conda-forge dask distributed
 ```
-```{tab} Spark
-```console
-$ conda install -c conda-forge pyspark
-```
-```{tab} SQL
-```console
-$ conda install -c conda-forge featuretools_sql
-```
-```{tab} Update Checker
-```console
-$ conda install -c conda-forge alteryx-open-src-update-checker
-```
 ````
 
 - **NLP Primitives**: Use Natural Language Processing Primitives in Featuretools
-- **TSFresh Primitives**: Use 60+ primitives from [tsfresh](https://tsfresh.readthedocs.io/en/latest/) in Featuretools
-- **Dask**: Use Woodwork with Dask DataFrames and run `calculate_feature_matrix` in parallel with `n_jobs`
-- **Spark**: Use Woodwork with Spark DataFrames
-- **AutoNormalize**: Automated creation of normalized `EntitySet` from denormalized data
-- **Update Checker**: Receive automatic notifications of new Featuretools releases
-- **SQL**: Automated `EntitySet` creation from relational data stored in a SQL database
-- **scikit-learn Transformer**: Featuretools' DFS as a scikit-learn transformer
+- **Premium Primitives**: Use primitives from Premium Primitives in Featuretools
+- **Dask**: Use to run `calculate_feature_matrix` in parallel with `n_jobs`
 
 ## Installing Graphviz
 
@@ -142,53 +106,11 @@ If you installed graphviz for **Windows** with `pip`, install graphviz.exe from 
 
 To install Featuretools from source, clone the repository from [GitHub](https://github.com/alteryx/featuretools), and install the dependencies.
 
-```{hint}
-Be sure to install [Scala and Spark](#scala-and-spark) if you want to run all unit tests
-```
-
 ```bash
 git clone https://github.com/alteryx/featuretools.git
 cd featuretools
 python -m pip install .
 ```
-
-## Scala and Spark
-
-````{tab} macOS (Intel)
-:new-set:
-```console
-$ brew tap AdoptOpenJDK/openjdk
-$ brew install --cask adoptopenjdk11
-$ brew install scala apache-spark
-$ echo 'export JAVA_HOME=$(/usr/libexec/java_home)' >> ~/.zshrc
-$ echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
-```
-````
-
-````{tab} macOS (M1)
-```console
-$ brew install openjdk@11 scala apache-spark graphviz
-$ echo 'export PATH="/opt/homebrew/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
-$ echo 'export CPPFLAGS="-I/opt/homebrew/opt/openjdk@11/include:$CPPFLAGS"' >> ~/.zprofile
-$ sudo ln -sfn /opt/homebrew/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
-```
-````
-
-````{tab} Ubuntu
-```console
-$ sudo apt install openjdk-11-jre openjdk-11-jdk scala -y
-$ echo "export SPARK_HOME=/opt/spark" >> ~/.profile
-$ echo "export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin" >> ~/.profile
-$ echo "export PYSPARK_PYTHON=/usr/bin/python3" >> ~/.profile
-```
-````
-
-````{tab} Amazon Linux
-```console
-$ sudo amazon-linux-extras install java-openjdk11 scala -y
-$ amazon-linux-extras enable java-openjdk11
-```
-````
 
 ## Docker
 

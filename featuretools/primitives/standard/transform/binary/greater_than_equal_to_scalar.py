@@ -2,7 +2,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import BooleanNullable
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class GreaterThanEqualToScalar(TransformPrimitive):
@@ -22,7 +21,6 @@ class GreaterThanEqualToScalar(TransformPrimitive):
     name = "greater_than_equal_to_scalar"
     input_types = [ColumnSchema(semantic_tags={"numeric"})]
     return_type = ColumnSchema(logical_type=BooleanNullable)
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
 
     def __init__(self, value=0):
         self.value = value

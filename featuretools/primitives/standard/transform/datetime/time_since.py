@@ -3,7 +3,6 @@ from woodwork.logical_types import Datetime
 
 from featuretools.primitives.base import TransformPrimitive
 from featuretools.utils import convert_time_units
-from featuretools.utils.gen_utils import Library
 
 
 class TimeSince(TransformPrimitive):
@@ -42,7 +41,6 @@ class TimeSince(TransformPrimitive):
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(semantic_tags={"numeric"})
     uses_calc_time = True
-    compatibility = [Library.PANDAS, Library.DASK]
     description_template = "the time from {} to the cutoff time"
 
     def __init__(self, unit="seconds"):

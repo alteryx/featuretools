@@ -11,7 +11,6 @@ from featuretools.primitives import (
     TransformPrimitive,
 )
 from featuretools.synthesis.get_valid_primitives import get_valid_primitives
-from featuretools.utils.gen_utils import Library
 
 
 def test_get_valid_primitives_selected_primitives(es):
@@ -61,14 +60,14 @@ def test_invalid_primitive(es):
         )
 
     msg = (
-        "Selected primitive <enum 'Library'> "
+        "Selected primitive <class 'woodwork.column_schema.ColumnSchema'> "
         "is not an AggregationPrimitive, TransformPrimitive, or str"
     )
     with pytest.raises(ValueError, match=msg):
         get_valid_primitives(
             es,
             target_dataframe_name="log",
-            selected_primitives=[Library],
+            selected_primitives=[ColumnSchema],
         )
 
 
@@ -78,14 +77,10 @@ def test_primitive_compatibility(es):
         "customers",
         selected_primitives=[TimeSincePrevious],
     )
-
-    if es.dataframe_type != Library.PANDAS:
-        assert len(trans_prims) == 0
-    else:
-        assert len(trans_prims) == 1
+    assert len(trans_prims) == 1
 
 
-def test_get_valid_primitives_custom_primitives(pd_es):
+def test_get_valid_primitives_custom_primitives(es):
     class ThreeMostCommonCat(AggregationPrimitive):
         name = "n_most_common_categorical"
         input_types = [ColumnSchema(semantic_tags={"category"})]
@@ -101,9 +96,8 @@ def test_get_valid_primitives_custom_primitives(pd_es):
         ]
         return_type = ColumnSchema(semantic_tags="numeric")
         commutative = True
-        compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
 
-    agg_prims, trans_prims = get_valid_primitives(pd_es, "log")
+    agg_prims, trans_prims = get_valid_primitives(es, "log")
     assert ThreeMostCommonCat not in agg_prims
     assert AddThree not in trans_prims
 
@@ -112,7 +106,7 @@ def test_get_valid_primitives_custom_primitives(pd_es):
         match="'add_three' is not a recognized primitive name",
     ):
         agg_prims, trans_prims = get_valid_primitives(
-            pd_es,
+            es,
             "log",
             2,
             [ThreeMostCommonCat, "add_three"],

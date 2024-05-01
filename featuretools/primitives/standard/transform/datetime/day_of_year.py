@@ -2,7 +2,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, Ordinal
 
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class DayOfYear(TransformPrimitive):
@@ -28,7 +27,7 @@ class DayOfYear(TransformPrimitive):
         logical_type=Ordinal(order=list(range(1, 367))),
         semantic_tags={"category"},
     )
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+
     description_template = "the day of year from {}"
 
     def get_function(self):
