@@ -34,8 +34,7 @@ from featuretools.primitives import (
 )
 from featuretools.primitives.base import AggregationPrimitive
 from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis, match
-from featuretools.tests.testing_utils import backward_path, feature_with_name, to_pandas
-from featuretools.utils.gen_utils import Library
+from featuretools.tests.testing_utils import backward_path, feature_with_name
 
 
 @pytest.fixture(autouse=True)
@@ -85,7 +84,7 @@ def test_makes_count(es):
     assert feature_with_name(features, "customers.COUNT(log)")
 
 
-def test_count_null(pd_es):
+def test_count_null(es):
     class Count(AggregationPrimitive):
         name = "count"
         input_types = [[ColumnSchema(semantic_tags={"foreign_key"})], [ColumnSchema()]]
@@ -115,11 +114,11 @@ def test_count_null(pd_es):
             return "COUNT(%s%s%s)" % (relationship_path_name, where_str, use_prev_str)
 
     count_null = Feature(
-        pd_es["log"].ww["value"],
+        es["log"].ww["value"],
         parent_dataframe_name="sessions",
         primitive=Count(count_null=True),
     )
-    feature_matrix = calculate_feature_matrix([count_null], entityset=pd_es)
+    feature_matrix = calculate_feature_matrix([count_null], entityset=es)
     values = [5, 4, 1, 2, 3, 2]
     assert (values == feature_matrix[count_null.get_name()]).all()
 
@@ -199,15 +198,6 @@ def test_init_and_name(es):
                 assert getattr(attr, "name") is not None
 
     agg_primitives = get_aggregation_primitives().values()
-    # If Dask EntitySet use only Dask compatible primitives
-    if es.dataframe_type == Library.DASK:
-        agg_primitives = [
-            prim for prim in agg_primitives if Library.DASK in prim.compatibility
-        ]
-    if es.dataframe_type == Library.SPARK:
-        agg_primitives = [
-            prim for prim in agg_primitives if Library.SPARK in prim.compatibility
-        ]
 
     for agg_prim in agg_primitives:
         input_types = agg_prim.input_types
@@ -408,15 +398,15 @@ def test_serialization(es):
     _assert_agg_feats_equal(max2, deserialized)
 
 
-def test_time_since_last(pd_es):
+def test_time_since_last(es):
     f = Feature(
-        pd_es["log"].ww["datetime"],
+        es["log"].ww["datetime"],
         parent_dataframe_name="customers",
         primitive=TimeSinceLast,
     )
     fm = calculate_feature_matrix(
         [f],
-        entityset=pd_es,
+        entityset=es,
         instance_ids=[0, 1, 2],
         cutoff_time=datetime(2015, 6, 8),
     )
@@ -426,15 +416,15 @@ def test_time_since_last(pd_es):
     assert all(fm[f.get_name()].round().values == correct)
 
 
-def test_time_since_first(pd_es):
+def test_time_since_first(es):
     f = Feature(
-        pd_es["log"].ww["datetime"],
+        es["log"].ww["datetime"],
         parent_dataframe_name="customers",
         primitive=TimeSinceFirst,
     )
     fm = calculate_feature_matrix(
         [f],
-        entityset=pd_es,
+        entityset=es,
         instance_ids=[0, 1, 2],
         cutoff_time=datetime(2015, 6, 8),
     )
@@ -444,15 +434,15 @@ def test_time_since_first(pd_es):
     assert all(fm[f.get_name()].round().values == correct)
 
 
-def test_median(pd_es):
+def test_median(es):
     f = Feature(
-        pd_es["log"].ww["value_many_nans"],
+        es["log"].ww["value_many_nans"],
         parent_dataframe_name="customers",
         primitive=Median,
     )
     fm = calculate_feature_matrix(
         [f],
-        entityset=pd_es,
+        entityset=es,
         instance_ids=[0, 1, 2],
         cutoff_time=datetime(2015, 6, 8),
     )
@@ -468,9 +458,6 @@ def test_agg_same_method_name(es):
     can't differentiate them. We have a work around to this based on the name property
     that we test here.
     """
-    # TODO: Update to work with Dask and Spark
-    if es.dataframe_type != Library.PANDAS:
-        pytest.xfail("Need to update to work with Dask and Spark EntitySets")
 
     # test with normally defined functions
     class Sum(AggregationPrimitive):
@@ -540,7 +527,7 @@ def test_agg_same_method_name(es):
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
 
 
-def test_time_since_last_custom(pd_es):
+def test_time_since_last_custom(es):
     class TimeSinceLast(AggregationPrimitive):
         name = "time_since_last"
         input_types = [
@@ -557,13 +544,13 @@ def test_time_since_last_custom(pd_es):
             return time_since_last
 
     f = Feature(
-        pd_es["log"].ww["datetime"],
+        es["log"].ww["datetime"],
         parent_dataframe_name="customers",
         primitive=TimeSinceLast,
     )
     fm = calculate_feature_matrix(
         [f],
-        entityset=pd_es,
+        entityset=es,
         instance_ids=[0, 1, 2],
         cutoff_time=datetime(2015, 6, 8),
     )
@@ -573,7 +560,7 @@ def test_time_since_last_custom(pd_es):
     assert all(fm[f.get_name()].round().values == correct)
 
 
-def test_custom_primitive_multiple_inputs(pd_es):
+def test_custom_primitive_multiple_inputs(es):
     class MeanSunday(AggregationPrimitive):
         name = "mean_sunday"
         input_types = [
@@ -594,7 +581,7 @@ def test_custom_primitive_multiple_inputs(pd_es):
             return mean_sunday
 
     fm, features = dfs(
-        entityset=pd_es,
+        entityset=es,
         target_dataframe_name="sessions",
         agg_primitives=[MeanSunday],
         trans_primitives=[],
@@ -604,10 +591,10 @@ def test_custom_primitive_multiple_inputs(pd_es):
     for x, y in iterator:
         assert (pd.isnull(x) and pd.isnull(y)) or (x == y)
 
-    pd_es.add_interesting_values()
+    es.add_interesting_values()
     mean_sunday_value_priority_0 = pd.Series([None, None, None, 2.5, 0, None])
     fm, features = dfs(
-        entityset=pd_es,
+        entityset=es,
         target_dataframe_name="sessions",
         agg_primitives=[MeanSunday],
         trans_primitives=[],
@@ -648,8 +635,6 @@ def test_custom_primitive_default_kwargs(es):
 
 
 def test_makes_numtrue(es):
-    if es.dataframe_type == Library.SPARK:
-        pytest.xfail("Spark EntitySets do not support NumTrue primitive")
     dfs = DeepFeatureSynthesis(
         target_dataframe_name="sessions",
         entityset=es,
@@ -661,7 +646,7 @@ def test_makes_numtrue(es):
     assert feature_with_name(features, "NUM_TRUE(log.purchased)")
 
 
-def test_make_three_most_common(pd_es):
+def test_make_three_most_common(es):
     class NMostCommoner(AggregationPrimitive):
         name = "pd_top3"
         input_types = ([ColumnSchema(semantic_tags={"category"})],)
@@ -681,7 +666,7 @@ def test_make_three_most_common(pd_es):
             return pd_top3
 
     fm, features = dfs(
-        entityset=pd_es,
+        entityset=es,
         target_dataframe_name="customers",
         instance_ids=[0, 1, 2],
         agg_primitives=[NMostCommoner],
@@ -710,10 +695,10 @@ def test_make_three_most_common(pd_es):
     )
 
 
-def test_stacking_multi(pd_es):
+def test_stacking_multi(es):
     threecommon = NMostCommon(3)
     tc = Feature(
-        pd_es["log"].ww["product_id"],
+        es["log"].ww["product_id"],
         parent_dataframe_name="sessions",
         primitive=threecommon,
     )
@@ -724,7 +709,7 @@ def test_stacking_multi(pd_es):
             Feature(tc[i], parent_dataframe_name="customers", primitive=NumUnique),
         )
 
-    fm = calculate_feature_matrix(stacked, entityset=pd_es, instance_ids=[0, 1, 2])
+    fm = calculate_feature_matrix(stacked, entityset=es, instance_ids=[0, 1, 2])
 
     correct_vals = [[3, 2, 1], [2, 1, 0], [0, 0, 0]]
     correct_vals1 = [[3, 1, 1], [2, 1, 0], [0, 0, 0]]
@@ -755,7 +740,6 @@ def test_use_previous_pd_dateoffset(es):
         cutoff_time=pd.Timestamp("2011-04-11 10:31:30"),
         instance_ids=[0, 1, 2],
     )
-    feature_matrix = to_pandas(feature_matrix, index="id", sort_index=True)
     col_name = list(feature_matrix.head().keys())[0]
     assert (feature_matrix[col_name] == [1, 5, 2]).all()
 
@@ -768,7 +752,7 @@ def _assert_agg_feats_equal(f1, f2):
     assert f1.use_previous == f2.use_previous
 
 
-def test_override_multi_feature_names(pd_es):
+def test_override_multi_feature_names(es):
     def gen_custom_names(
         primitive,
         base_feature_names,
@@ -807,7 +791,7 @@ def test_override_multi_feature_names(pd_es):
             )
 
     fm, features = dfs(
-        entityset=pd_es,
+        entityset=es,
         target_dataframe_name="products",
         instance_ids=[0, 1, 2],
         agg_primitives=[NMostCommoner],

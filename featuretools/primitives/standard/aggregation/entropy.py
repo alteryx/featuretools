@@ -2,7 +2,6 @@ from scipy import stats
 from woodwork.column_schema import ColumnSchema
 
 from featuretools.primitives.base.aggregation_primitive_base import AggregationPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class Entropy(AggregationPrimitive):
@@ -36,7 +35,7 @@ class Entropy(AggregationPrimitive):
         self.dropna = dropna
         self.base = base
 
-    def get_function(self, agg_type=Library.PANDAS):
+    def get_function(self):
         def pd_entropy(s):
             distribution = s.value_counts(normalize=True, dropna=self.dropna)
             if distribution.dtype == "Float64":

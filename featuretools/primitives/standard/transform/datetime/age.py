@@ -2,7 +2,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import AgeFractional, Datetime
 
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class Age(TransformPrimitive):
@@ -30,7 +29,6 @@ class Age(TransformPrimitive):
     input_types = [ColumnSchema(logical_type=Datetime, semantic_tags={"date_of_birth"})]
     return_type = ColumnSchema(logical_type=AgeFractional, semantic_tags={"numeric"})
     uses_calc_time = True
-    compatibility = [Library.PANDAS, Library.DASK]
     description_template = "the age from {}"
 
     def get_function(self):

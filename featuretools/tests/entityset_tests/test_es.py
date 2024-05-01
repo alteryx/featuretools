@@ -28,12 +28,7 @@ from featuretools import Relationship
 from featuretools.demo import load_retail
 from featuretools.entityset import EntitySet
 from featuretools.entityset.entityset import LTI_COLUMN_NAME, WW_SCHEMA_KEY
-from featuretools.tests.testing_utils import get_df_tags, to_pandas
-from featuretools.utils.gen_utils import Library, import_or_none, is_instance
-from featuretools.utils.spark_utils import pd_to_spark_clean
-
-dd = import_or_none("dask.dataframe")
-ps = import_or_none("pyspark.pandas")
+from featuretools.tests.testing_utils import get_df_tags
 
 
 def test_normalize_time_index_as_additional_column(es):
@@ -280,10 +275,6 @@ def test_add_relationship_errors_child_v_index(es):
 def test_add_relationship_empty_child_convert_dtype(es):
     relationship = Relationship(es, "sessions", "id", "log", "session_id")
     empty_log_df = pd.DataFrame(columns=es["log"].columns)
-    if es.dataframe_type == Library.DASK:
-        empty_log_df = dd.from_pandas(empty_log_df, npartitions=2)
-    elif es.dataframe_type == Library.SPARK:
-        empty_log_df = ps.from_pandas(empty_log_df)
 
     es.add_dataframe(empty_log_df, "log")
 
@@ -344,7 +335,6 @@ def test_query_by_values_secondary_time_index(es):
     end = np.datetime64(datetime(2011, 10, 1))
     all_instances = [0, 1, 2]
     result = es.query_by_values("customers", all_instances, time_last=end)
-    result = to_pandas(result, index="id")
 
     for col in ["cancel_date", "cancel_reason"]:
         nulls = result.loc[all_instances][col].isnull() == [False, True, True]
@@ -352,18 +342,18 @@ def test_query_by_values_secondary_time_index(es):
 
 
 def test_query_by_id(es):
-    df = to_pandas(es.query_by_values("log", instance_vals=[0]))
+    df = es.query_by_values("log", instance_vals=[0])
     assert df["id"].values[0] == 0
 
 
 def test_query_by_single_value(es):
-    df = to_pandas(es.query_by_values("log", instance_vals=0))
+    df = es.query_by_values("log", instance_vals=0)
     assert df["id"].values[0] == 0
 
 
 def test_query_by_df(es):
     instance_df = pd.DataFrame({"id": [1, 3], "vals": [0, 1]})
-    df = to_pandas(es.query_by_values("log", instance_vals=instance_df))
+    df = es.query_by_values("log", instance_vals=instance_df)
 
     assert np.array_equal(df["id"], [1, 3])
 
@@ -374,10 +364,6 @@ def test_query_by_id_with_time(es):
         instance_vals=[0, 1, 2, 3, 4],
         time_last=datetime(2011, 4, 9, 10, 30, 2 * 6),
     )
-    df = to_pandas(df)
-    if es.dataframe_type == Library.SPARK:
-        # Spark doesn't maintain order
-        df = df.sort_values("id")
 
     assert list(df["id"].values) == [0, 1, 2]
 
@@ -389,12 +375,8 @@ def test_query_by_column_with_time(es):
         column_name="session_id",
         time_last=datetime(2011, 4, 9, 10, 50, 0),
     )
-    df = to_pandas(df)
 
     true_values = [i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
-    if es.dataframe_type == Library.SPARK:
-        # Spark doesn't maintain order
-        df = df.sort_values("id")
 
     assert list(df["id"].values) == list(range(10))
     assert list(df["value"].values) == true_values
@@ -412,7 +394,6 @@ def test_query_by_column_with_no_lti_and_training_window(es):
             time_last=datetime(2011, 4, 11),
             training_window="3d",
         )
-    df = to_pandas(df)
 
     assert list(df["id"].values) == [1]
     assert list(df["age"].values) == [25]
@@ -427,8 +408,7 @@ def test_query_by_column_with_lti_and_training_window(es):
         time_last=datetime(2011, 4, 11),
         training_window="3d",
     )
-    # Account for different ordering between pandas and dask/spark
-    df = to_pandas(df).reset_index(drop=True).sort_values("id")
+    df = df.reset_index(drop=True).sort_values("id")
     assert list(df["id"].values) == [0, 1, 2]
     assert list(df["age"].values) == [33, 25, 56]
 
@@ -439,31 +419,13 @@ def test_query_by_indexed_column(es):
         instance_vals=["taco clock"],
         column_name="product_id",
     )
-    # Account for different ordering between pandas and dask/spark
-    df = to_pandas(df).reset_index(drop=True).sort_values("id")
+    df = df.reset_index(drop=True).sort_values("id")
     assert list(df["id"].values) == [15, 16]
 
 
 @pytest.fixture
-def pd_df():
+def df():
     return pd.DataFrame({"id": [0, 1, 2], "category": ["a", "b", "c"]})
-
-
-@pytest.fixture
-def dd_df(pd_df):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(pd_df, npartitions=2)
-
-
-@pytest.fixture
-def spark_df(pd_df):
-    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    return ps.from_pandas(pd_df)
-
-
-@pytest.fixture(params=["pd_df", "dd_df", "spark_df"])
-def df(request):
-    return request.getfixturevalue(request.param)
 
 
 def test_check_columns_and_dataframe(df):
@@ -496,11 +458,7 @@ def test_make_index_any_location(df):
         logical_types=logical_types,
         dataframe=df,
     )
-    if es.dataframe_type != Library.PANDAS:
-        assert es.dataframe_dict["test_dataframe"].columns[-1] == "id1"
-    else:
-        assert es.dataframe_dict["test_dataframe"].columns[0] == "id1"
-
+    assert es.dataframe_dict["test_dataframe"].columns[0] == "id1"
     assert es.dataframe_dict["test_dataframe"].ww.index == "id1"
 
 
@@ -508,11 +466,6 @@ def test_replace_dataframe_and_create_index(es):
     df = pd.DataFrame({"ints": [3, 4, 5], "category": ["a", "b", "a"]})
     final_df = df.copy()
     final_df["id"] = [0, 1, 2]
-    if es.dataframe_type == Library.DASK:
-        df = dd.from_pandas(df, npartitions=2)
-    elif es.dataframe_type == Library.SPARK:
-        df = ps.from_pandas(df)
-
     needs_idx_df = df.copy()
 
     logical_types = {"ints": Integer, "category": Categorical}
@@ -531,17 +484,13 @@ def test_replace_dataframe_and_create_index(es):
     es.replace_dataframe("test_df", needs_idx_df)
 
     assert es["test_df"].ww.index == "id"
-    df = to_pandas(es["test_df"]).sort_values(by="id")
+    df = es["test_df"].sort_values(by="id")
     assert all(df["id"] == final_df["id"])
     assert all(df["ints"] == final_df["ints"])
 
 
 def test_replace_dataframe_created_index_present(es):
     df = pd.DataFrame({"ints": [3, 4, 5], "category": ["a", "b", "a"]})
-    if es.dataframe_type == Library.DASK:
-        df = dd.from_pandas(df, npartitions=2)
-    elif es.dataframe_type == Library.SPARK:
-        df = ps.from_pandas(df)
 
     logical_types = {"ints": Integer, "category": Categorical}
     es.add_dataframe(
@@ -554,14 +503,13 @@ def test_replace_dataframe_created_index_present(es):
 
     # DataFrame that already has the index column
     has_idx_df = es["test_df"].replace({0: 100})
-    if es.dataframe_type == Library.PANDAS:
-        has_idx_df.set_index("id", drop=False, inplace=True)
+    has_idx_df.set_index("id", drop=False, inplace=True)
 
     assert "id" in has_idx_df.columns
 
     es.replace_dataframe("test_df", has_idx_df)
     assert es["test_df"].ww.index == "id"
-    df = to_pandas(es["test_df"]).sort_values(by="ints")
+    df = es["test_df"].sort_values(by="ints")
     assert all(df["id"] == [100, 1, 2])
 
 
@@ -603,25 +551,8 @@ def test_add_parent_not_index_column(es):
 
 
 @pytest.fixture
-def pd_df2():
+def df2():
     return pd.DataFrame({"category": [1, 2, 3], "category2": ["1", "2", "3"]})
-
-
-@pytest.fixture
-def dd_df2(pd_df2):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(pd_df2, npartitions=2)
-
-
-@pytest.fixture
-def spark_df2(pd_df2):
-    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    return ps.from_pandas(pd_df2)
-
-
-@pytest.fixture(params=["pd_df2", "dd_df2", "spark_df2"])
-def df2(request):
-    return request.getfixturevalue(request.param)
 
 
 def test_none_index(df2):
@@ -648,25 +579,8 @@ def test_none_index(df2):
 
 
 @pytest.fixture
-def pd_df3():
+def df3():
     return pd.DataFrame({"category": [1, 2, 3]})
-
-
-@pytest.fixture
-def dd_df3(pd_df3):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(pd_df3, npartitions=2)
-
-
-@pytest.fixture
-def spark_df3(pd_df3):
-    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    return ps.from_pandas(pd_df3)
-
-
-@pytest.fixture(params=["pd_df3", "dd_df3", "spark_df3"])
-def df3(request):
-    return request.getfixturevalue(request.param)
 
 
 def test_unknown_index(df3):
@@ -680,7 +594,7 @@ def test_unknown_index(df3):
             logical_types={"category": "Categorical"},
         )
     assert es["test_dataframe"].ww.index == "id"
-    assert list(to_pandas(es["test_dataframe"]["id"], sort_index=True)) == list(
+    assert list(es["test_dataframe"]["id"]) == list(
         range(3),
     )
 
@@ -714,7 +628,7 @@ def test_bad_time_index_column(df3):
 
 
 @pytest.fixture
-def pd_df4():
+def df4():
     df = pd.DataFrame(
         {
             "id": [0, 1, 2],
@@ -728,28 +642,8 @@ def pd_df4():
     return df
 
 
-@pytest.fixture
-def dd_df4(pd_df4):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(pd_df4, npartitions=2)
-
-
-@pytest.fixture
-def spark_df4(pd_df4):
-    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    return ps.from_pandas(pd_to_spark_clean(pd_df4))
-
-
-@pytest.fixture(params=["pd_df4", "dd_df4", "spark_df4"])
-def df4(request):
-    return request.getfixturevalue(request.param)
-
-
 def test_converts_dtype_on_init(df4):
     logical_types = {"id": Integer, "ints": Integer, "floats": Double}
-    if not isinstance(df4, pd.DataFrame):
-        logical_types["category"] = Categorical
-        logical_types["category_int"] = Categorical
     es = EntitySet(id="test")
     df4.ww.init(name="test_dataframe", index="id", logical_types=logical_types)
     es.add_dataframe(dataframe=df4)
@@ -765,26 +659,15 @@ def test_converts_dtype_on_init(df4):
 
 def test_converts_dtype_after_init(df4):
     category_dtype = "category"
-    if ps and isinstance(df4, ps.DataFrame):
-        category_dtype = "string"
 
     df4["category"] = df4["category"].astype(category_dtype)
-    if not isinstance(df4, pd.DataFrame):
-        logical_types = {
-            "id": Integer,
-            "category": Categorical,
-            "category_int": Categorical,
-            "ints": Integer,
-            "floats": Double,
-        }
-    else:
-        logical_types = None
+
     es = EntitySet(id="test")
     es.add_dataframe(
         dataframe_name="test_dataframe",
         index="id",
         dataframe=df4,
-        logical_types=logical_types,
+        logical_types=None,
     )
     df = es["test_dataframe"]
 
@@ -805,40 +688,11 @@ def test_converts_dtype_after_init(df4):
     assert df["ints"].dtype == "string"
 
 
-def test_warns_no_typing(df4):
-    es = EntitySet(id="test")
-    if not isinstance(df4, pd.DataFrame):
-        msg = "Performing type inference on Dask or Spark DataFrames may be computationally intensive. Specify logical types for each column to speed up EntitySet initialization."
-        with pytest.warns(UserWarning, match=msg):
-            es.add_dataframe(dataframe_name="test_dataframe", index="id", dataframe=df4)
-    else:
-        es.add_dataframe(dataframe_name="test_dataframe", index="id", dataframe=df4)
-
-    assert "test_dataframe" in es.dataframe_dict
-
-
 @pytest.fixture
-def pd_datetime1():
+def datetime1():
     times = pd.date_range("1/1/2011", periods=3, freq="H")
     time_strs = times.strftime("%Y-%m-%d")
     return pd.DataFrame({"id": [0, 1, 2], "time": time_strs})
-
-
-@pytest.fixture
-def dd_datetime1(pd_datetime1):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(pd_datetime1, npartitions=2)
-
-
-@pytest.fixture
-def spark_datetime1(pd_datetime1):
-    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    return ps.from_pandas(pd_datetime1)
-
-
-@pytest.fixture(params=["pd_datetime1", "dd_datetime1", "spark_datetime1"])
-def datetime1(request):
-    return request.getfixturevalue(request.param)
 
 
 def test_converts_datetime(datetime1):
@@ -855,36 +709,19 @@ def test_converts_datetime(datetime1):
         logical_types=logical_types,
         dataframe=datetime1,
     )
-    pd_col = to_pandas(es["test_dataframe"]["time"])
+    pd_col = es["test_dataframe"]["time"]
     assert isinstance(es["test_dataframe"].ww.logical_types["time"], Datetime)
     assert type(pd_col[0]) == pd.Timestamp
 
 
 @pytest.fixture
-def pd_datetime2():
+def datetime2():
     datetime_format = "%d-%m-%Y"
     actual = pd.Timestamp("Jan 2, 2011")
     time_strs = [actual.strftime(datetime_format)] * 3
     return pd.DataFrame(
         {"id": [0, 1, 2], "time_format": time_strs, "time_no_format": time_strs},
     )
-
-
-@pytest.fixture
-def dd_datetime2(pd_datetime2):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(pd_datetime2, npartitions=2)
-
-
-@pytest.fixture
-def spark_datetime2(pd_datetime2):
-    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    return ps.from_pandas(pd_datetime2)
-
-
-@pytest.fixture(params=["pd_datetime2", "dd_datetime2", "spark_datetime2"])
-def datetime2(request):
-    return request.getfixturevalue(request.param)
 
 
 def test_handles_datetime_format(datetime2):
@@ -907,8 +744,8 @@ def test_handles_datetime_format(datetime2):
         dataframe=datetime2,
     )
 
-    col_format = to_pandas(es["test_dataframe"]["time_format"])
-    col_no_format = to_pandas(es["test_dataframe"]["time_no_format"])
+    col_format = es["test_dataframe"]["time_format"]
+    col_no_format = es["test_dataframe"]["time_no_format"]
     # without formatting pandas gets it wrong
     assert (col_no_format != actual).all()
 
@@ -942,17 +779,7 @@ def test_dataframe_init(es):
             "number": [4, 5, 6],
         },
     )
-    if es.dataframe_type == Library.DASK:
-        df = dd.from_pandas(df, npartitions=2)
-    elif es.dataframe_type == Library.SPARK:
-        df = ps.from_pandas(df)
     logical_types = {"id": Categorical, "time": Datetime}
-    if not isinstance(df, pd.DataFrame):
-        extra_logical_types = {
-            "category": Categorical,
-            "number": Integer,
-        }
-        logical_types.update(extra_logical_types)
     es.add_dataframe(
         df.copy(),
         dataframe_name="test_dataframe",
@@ -960,50 +787,24 @@ def test_dataframe_init(es):
         time_index="time",
         logical_types=logical_types,
     )
-    if is_instance(df, dd, "DataFrame"):
-        df_shape = (df.shape[0].compute(), df.shape[1])
-    else:
-        df_shape = df.shape
-    if es.dataframe_type == Library.DASK:
-        es_df_shape = (
-            es["test_dataframe"].shape[0].compute(),
-            es["test_dataframe"].shape[1],
-        )
-    else:
-        es_df_shape = es["test_dataframe"].shape
+    df_shape = df.shape
+
+    es_df_shape = es["test_dataframe"].shape
     assert es_df_shape == df_shape
     assert es["test_dataframe"].ww.index == "id"
     assert es["test_dataframe"].ww.time_index == "time"
     assert set([v for v in es["test_dataframe"].ww.columns]) == set(df.columns)
 
     assert es["test_dataframe"]["time"].dtype == df["time"].dtype
-    if es.dataframe_type == Library.SPARK:
-        assert set(es["test_dataframe"]["id"].to_list()) == set(df["id"].to_list())
-    else:
-        assert set(es["test_dataframe"]["id"]) == set(df["id"])
+    assert set(es["test_dataframe"]["id"]) == set(df["id"])
 
 
 @pytest.fixture
-def pd_bad_df():
+def bad_df():
     return pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6], 3: ["a", "b", "c"]})
 
 
-@pytest.fixture
-def dd_bad_df(pd_bad_df):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(pd_bad_df, npartitions=2)
-
-
-@pytest.fixture(params=["pd_bad_df", "dd_bad_df"])
-def bad_df(request):
-    return request.getfixturevalue(request.param)
-
-
-# Skip for Spark, automatically converts non-str column names to str
 def test_nonstr_column_names(bad_df):
-    if is_instance(bad_df, dd, "DataFrame"):
-        pytest.xfail("Dask DataFrames cannot handle integer column names")
-
     es = EntitySet(id="Failure")
     error_text = r"All column names must be strings \(Columns \[3\] are not strings\)"
     with pytest.raises(ValueError, match=error_text):
@@ -1099,11 +900,7 @@ def test_concat_inplace(es):
 def test_concat_with_lti(es):
     first_es = copy.deepcopy(es)
     for df in first_es.dataframes:
-        if first_es.dataframe_type == Library.SPARK:
-            # Spark cannot compute last time indexes on an empty Dataframe
-            new_df = df.head(1)
-        else:
-            new_df = df.loc[[], :]
+        new_df = df.loc[[], :]
         first_es.replace_dataframe(df.ww.name, new_df)
 
     second_es = copy.deepcopy(es)
@@ -1145,18 +942,18 @@ def test_concat_errors(es):
         es.concat(copy_es)
 
 
-def test_concat_sort_index_with_time_index(pd_es):
+def test_concat_sort_index_with_time_index(es):
     # only pandas dataframes sort on the index and time index
-    es1 = copy.deepcopy(pd_es)
+    es1 = copy.deepcopy(es)
     es1.replace_dataframe(
         dataframe_name="customers",
-        df=pd_es["customers"].loc[[0, 1], :],
+        df=es["customers"].loc[[0, 1], :],
         already_sorted=True,
     )
-    es2 = copy.deepcopy(pd_es)
+    es2 = copy.deepcopy(es)
     es2.replace_dataframe(
         dataframe_name="customers",
-        df=pd_es["customers"].loc[[2], :],
+        df=es["customers"].loc[[2], :],
         already_sorted=True,
     )
 
@@ -1165,23 +962,23 @@ def test_concat_sort_index_with_time_index(pd_es):
 
     assert list(combined_es_order_1["customers"].index) == [2, 0, 1]
     assert list(combined_es_order_2["customers"].index) == [2, 0, 1]
-    assert combined_es_order_1.__eq__(pd_es, deep=True)
-    assert combined_es_order_2.__eq__(pd_es, deep=True)
+    assert combined_es_order_1.__eq__(es, deep=True)
+    assert combined_es_order_2.__eq__(es, deep=True)
     assert combined_es_order_2.__eq__(combined_es_order_1, deep=True)
 
 
-def test_concat_sort_index_without_time_index(pd_es):
+def test_concat_sort_index_without_time_index(es):
     # Sorting is only performed on DataFrames with time indices
-    es1 = copy.deepcopy(pd_es)
+    es1 = copy.deepcopy(es)
     es1.replace_dataframe(
         dataframe_name="products",
-        df=pd_es["products"].iloc[[0, 1, 2], :],
+        df=es["products"].iloc[[0, 1, 2], :],
         already_sorted=True,
     )
-    es2 = copy.deepcopy(pd_es)
+    es2 = copy.deepcopy(es)
     es2.replace_dataframe(
         dataframe_name="products",
-        df=pd_es["products"].iloc[[3, 4, 5], :],
+        df=es["products"].iloc[[3, 4, 5], :],
         already_sorted=True,
     )
 
@@ -1205,18 +1002,14 @@ def test_concat_sort_index_without_time_index(pd_es):
         "car",
         "toothpaste",
     ]
-    assert combined_es_order_1.__eq__(pd_es, deep=True)
-    assert not combined_es_order_2.__eq__(pd_es, deep=True)
-    assert combined_es_order_2.__eq__(pd_es, deep=False)
+    assert combined_es_order_1.__eq__(es, deep=True)
+    assert not combined_es_order_2.__eq__(es, deep=True)
+    assert combined_es_order_2.__eq__(es, deep=False)
     assert not combined_es_order_2.__eq__(combined_es_order_1, deep=True)
 
 
 def test_concat_with_make_index(es):
     df = pd.DataFrame({"id": [0, 1, 2], "category": ["a", "b", "a"]})
-    if es.dataframe_type == Library.DASK:
-        df = dd.from_pandas(df, npartitions=2)
-    elif es.dataframe_type == Library.SPARK:
-        df = ps.from_pandas(df)
     logical_types = {"id": Categorical, "category": Categorical}
     es.add_dataframe(
         dataframe=df,
@@ -1247,9 +1040,8 @@ def test_concat_with_make_index(es):
 
     assert es.__eq__(es_1, deep=False)
     assert es.__eq__(es_2, deep=False)
-    if es.dataframe_type == Library.PANDAS:
-        assert not es.__eq__(es_1, deep=True)
-        assert not es.__eq__(es_2, deep=True)
+    assert not es.__eq__(es_1, deep=True)
+    assert not es.__eq__(es_2, deep=True)
 
     old_es_1 = copy.deepcopy(es_1)
     old_es_2 = copy.deepcopy(es_2)
@@ -1262,7 +1054,7 @@ def test_concat_with_make_index(es):
 
 
 @pytest.fixture
-def pd_transactions_df():
+def transactions_df():
     return pd.DataFrame(
         {
             "id": [1, 2, 3, 4, 5, 6],
@@ -1273,44 +1065,11 @@ def pd_transactions_df():
     )
 
 
-@pytest.fixture
-def dd_transactions_df(pd_transactions_df):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(pd_transactions_df, npartitions=3)
-
-
-@pytest.fixture
-def spark_transactions_df(pd_transactions_df):
-    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    return ps.from_pandas(pd_transactions_df)
-
-
-@pytest.fixture(
-    params=["pd_transactions_df", "dd_transactions_df", "spark_transactions_df"],
-)
-def transactions_df(request):
-    return request.getfixturevalue(request.param)
-
-
 def test_set_time_type_on_init(transactions_df):
     # create cards dataframe
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
-    if is_instance(transactions_df, dd, "DataFrame"):
-        cards_df = dd.from_pandas(cards_df, npartitions=3)
-    if ps and isinstance(transactions_df, ps.DataFrame):
-        cards_df = ps.from_pandas(cards_df)
-    if not isinstance(transactions_df, pd.DataFrame):
-        cards_logical_types = {"id": Categorical}
-        transactions_logical_types = {
-            "id": Integer,
-            "card_id": Categorical,
-            "transaction_time": Integer,
-            "fraud": Boolean,
-        }
-    else:
-        cards_logical_types = None
-        transactions_logical_types = None
-
+    cards_logical_types = None
+    transactions_logical_types = None
     dataframes = {
         "cards": (cards_df, "id", None, cards_logical_types),
         "transactions": (
@@ -1340,21 +1099,8 @@ def test_sets_time_when_adding_dataframe(transactions_df):
     accounts_df_string = pd.DataFrame(
         {"id": [3, 4, 5], "signup_date": ["element", "exporting", "editable"]},
     )
-    if is_instance(transactions_df, dd, "DataFrame"):
-        accounts_df = dd.from_pandas(accounts_df, npartitions=2)
-    if ps and isinstance(transactions_df, ps.DataFrame):
-        accounts_df = ps.from_pandas(accounts_df)
-    if not isinstance(transactions_df, pd.DataFrame):
-        accounts_logical_types = {"id": Categorical, "signup_date": Datetime}
-        transactions_logical_types = {
-            "id": Integer,
-            "card_id": Categorical,
-            "transaction_time": Integer,
-            "fraud": Boolean,
-        }
-    else:
-        accounts_logical_types = None
-        transactions_logical_types = None
+    accounts_logical_types = None
+    transactions_logical_types = None
 
     # create empty entityset
     es = EntitySet("fraud")
@@ -1384,16 +1130,15 @@ def test_sets_time_when_adding_dataframe(transactions_df):
             time_index="signup_date",
             logical_types=accounts_logical_types,
         )
-    # add non time type as time index, only valid for pandas
-    if isinstance(transactions_df, pd.DataFrame):
-        error_text = "Time index column must contain datetime or numeric values"
-        with pytest.raises(TypeError, match=error_text):
-            es.add_dataframe(
-                accounts_df_string,
-                dataframe_name="accounts",
-                index="id",
-                time_index="signup_date",
-            )
+
+    error_text = "Time index column must contain datetime or numeric values"
+    with pytest.raises(TypeError, match=error_text):
+        es.add_dataframe(
+            accounts_df_string,
+            dataframe_name="accounts",
+            index="id",
+            time_index="signup_date",
+        )
 
 
 def test_secondary_time_index_no_primary_time_index(es):
@@ -1604,7 +1349,7 @@ def test_normalize_dataframe_new_time_index_additional_success_check(es):
 
 
 @pytest.fixture
-def pd_normalize_es():
+def normalize_es():
     df = pd.DataFrame(
         {
             "id": [0, 1, 2, 3],
@@ -1621,32 +1366,6 @@ def pd_normalize_es():
     return es.add_dataframe(dataframe_name="data", dataframe=df, index="id")
 
 
-@pytest.fixture
-def dd_normalize_es(pd_normalize_es):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    es = EntitySet(id=pd_normalize_es.id)
-    dd_df = dd.from_pandas(pd_normalize_es["data"], npartitions=2)
-    dd_df.ww.init(schema=pd_normalize_es["data"].ww.schema)
-
-    es.add_dataframe(dataframe=dd_df)
-    return es
-
-
-@pytest.fixture
-def spark_normalize_es(pd_normalize_es):
-    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    es = EntitySet(id=pd_normalize_es.id)
-    spark_df = ps.from_pandas(pd_normalize_es["data"])
-    spark_df.ww.init(schema=pd_normalize_es["data"].ww.schema)
-    es.add_dataframe(dataframe=spark_df)
-    return es
-
-
-@pytest.fixture(params=["pd_normalize_es", "dd_normalize_es", "spark_normalize_es"])
-def normalize_es(request):
-    return request.getfixturevalue(request.param)
-
-
 def test_normalize_time_index_from_none(normalize_es):
     assert normalize_es["data"].ww.time_index is None
 
@@ -1660,9 +1379,7 @@ def test_normalize_time_index_from_none(normalize_es):
     assert normalize_es["normalized"].ww.time_index == "time"
     df = normalize_es["normalized"]
 
-    # only pandas sorts by time index
-    if isinstance(df, pd.DataFrame):
-        assert df["time"].is_monotonic_increasing
+    assert df["time"].is_monotonic_increasing
 
 
 def test_raise_error_if_dupicate_additional_columns_passed(es):
@@ -1726,7 +1443,6 @@ def test_normalize_dataframe_copies_logical_types(es):
     assert len(es["values_2"].ww.logical_types["value"].order) == 10
 
 
-# sorting not supported in Dask, Spark
 def test_make_time_index_keeps_original_sorting():
     trips = {
         "trip_id": [999 - i for i in range(1000)],
@@ -1765,7 +1481,7 @@ def test_normalize_dataframe_new_time_index(es):
     assert es["values"].ww.time_index == new_time_index
     assert new_time_index in es["values"].columns
     assert len(es["values"].columns) == 2
-    df = to_pandas(es["values"], sort_index=True)
+    df = es["values"]
     assert df[new_time_index].is_monotonic_increasing
 
 
@@ -1843,52 +1559,28 @@ def test_metadata_without_id():
 
 
 @pytest.fixture
-def pd_datetime3():
+def datetime3():
     return pd.DataFrame({"id": [0, 1, 2], "ints": ["1", "2", "1"]})
-
-
-@pytest.fixture
-def dd_datetime3(pd_datetime3):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(pd_datetime3, npartitions=2)
-
-
-@pytest.fixture
-def spark_datetime3(pd_datetime3):
-    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    return ps.from_pandas(pd_datetime3)
-
-
-@pytest.fixture(params=["pd_datetime3", "dd_datetime3", "spark_datetime3"])
-def datetime3(request):
-    return request.getfixturevalue(request.param)
 
 
 def test_datetime64_conversion(datetime3):
     df = datetime3
     df["time"] = pd.Timestamp.now()
-    if ps and isinstance(df, ps.DataFrame):
-        df["time"] = df["time"].astype(np.datetime64)
-    else:
-        df["time"] = df["time"].dt.tz_localize("UTC")
+    df["time"] = df["time"].dt.tz_localize("UTC")
 
-    if not isinstance(df, pd.DataFrame):
-        logical_types = {"id": Integer, "ints": Integer, "time": Datetime}
-    else:
-        logical_types = None
     es = EntitySet(id="test")
     es.add_dataframe(
         dataframe_name="test_dataframe",
         index="id",
         dataframe=df,
-        logical_types=logical_types,
+        logical_types=None,
     )
     es["test_dataframe"].ww.set_time_index("time")
     assert es["test_dataframe"].ww.time_index == "time"
 
 
 @pytest.fixture
-def pd_index_df():
+def index_df():
     return pd.DataFrame(
         {
             "id": [1, 2, 3, 4, 5, 6],
@@ -1898,33 +1590,7 @@ def pd_index_df():
     )
 
 
-@pytest.fixture
-def dd_index_df(pd_index_df):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(pd_index_df, npartitions=3)
-
-
-@pytest.fixture
-def spark_index_df(pd_index_df):
-    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    return ps.from_pandas(pd_index_df)
-
-
-@pytest.fixture(params=["pd_index_df", "dd_index_df", "spark_index_df"])
-def index_df(request):
-    return request.getfixturevalue(request.param)
-
-
 def test_same_index_values(index_df):
-    if not isinstance(index_df, pd.DataFrame):
-        logical_types = {
-            "id": Integer,
-            "transaction_time": Datetime,
-            "first_dataframe_time": Integer,
-        }
-    else:
-        logical_types = None
-
     es = EntitySet("example")
 
     error_text = (
@@ -1936,7 +1602,7 @@ def test_same_index_values(index_df):
             index="id",
             time_index="id",
             dataframe=index_df,
-            logical_types=logical_types,
+            logical_types=None,
         )
 
     es.add_dataframe(
@@ -1944,7 +1610,7 @@ def test_same_index_values(index_df):
         index="id",
         time_index="transaction_time",
         dataframe=index_df,
-        logical_types=logical_types,
+        logical_types=None,
     )
 
     error_text = "time_index and index cannot be the same value, first_dataframe_time"
@@ -1958,22 +1624,9 @@ def test_same_index_values(index_df):
 
 
 def test_use_time_index(index_df):
-    if not isinstance(index_df, pd.DataFrame):
-        bad_ltypes = {
-            "id": Integer,
-            "transaction_time": Datetime,
-            "first_dataframe_time": Integer,
-        }
-        bad_semantic_tags = {"transaction_time": "time_index"}
-        logical_types = {
-            "id": Integer,
-            "transaction_time": Datetime,
-            "first_dataframe_time": Integer,
-        }
-    else:
-        bad_ltypes = {"transaction_time": Datetime}
-        bad_semantic_tags = {"transaction_time": "time_index"}
-        logical_types = None
+    bad_ltypes = {"transaction_time": Datetime}
+    bad_semantic_tags = {"transaction_time": "time_index"}
+    logical_types = None
 
     es = EntitySet()
 
@@ -2024,10 +1677,6 @@ def test_normalize_with_numeric_time_index(int_es):
 
 
 def test_normalize_with_invalid_time_index(es):
-    if es.dataframe_type == Library.DASK:
-        pytest.skip(
-            "Woodwork raises different error with Dask. Remove this skip once WW is updated.",
-        )
     error_text = "Time index column must contain datetime or numeric values"
     with pytest.raises(TypeError, match=error_text):
         es.normalize_dataframe(
@@ -2104,8 +1753,8 @@ def test_add_interesting_values_vals_specified_without_dataframe_name(es):
         es.add_interesting_values(values=interesting_values)
 
 
-def test_add_interesting_values_single_dataframe(pd_es):
-    pd_es.add_interesting_values(dataframe_name="log")
+def test_add_interesting_values_single_dataframe(es):
+    es.add_interesting_values(dataframe_name="log")
 
     expected_vals = {
         "zipcode": ["02116", "02116-3899", "12345-6789", "1234567890", "0"],
@@ -2114,20 +1763,18 @@ def test_add_interesting_values_single_dataframe(pd_es):
         "priority_level": [0, 1, 2],
     }
 
-    for col in pd_es["log"].columns:
+    for col in es["log"].columns:
         if col in expected_vals:
             assert (
-                pd_es["log"].ww.columns[col].metadata.get("interesting_values")
+                es["log"].ww.columns[col].metadata.get("interesting_values")
                 == expected_vals[col]
             )
         else:
-            assert (
-                pd_es["log"].ww.columns[col].metadata.get("interesting_values") is None
-            )
+            assert es["log"].ww.columns[col].metadata.get("interesting_values") is None
 
 
-def test_add_interesting_values_multiple_dataframes(pd_es):
-    pd_es.add_interesting_values()
+def test_add_interesting_values_multiple_dataframes(es):
+    es.add_interesting_values()
     expected_cols_with_vals = {
         "régions": {"language"},
         "stores": {},
@@ -2137,7 +1784,7 @@ def test_add_interesting_values_multiple_dataframes(pd_es):
         "log": {"zipcode", "countrycode", "subregioncode", "priority_level"},
         "cohorts": {"cohort_name"},
     }
-    for df_id, df in pd_es.dataframe_dict.items():
+    for df_id, df in es.dataframe_dict.items():
         expected_cols = expected_cols_with_vals[df_id]
         for col in df.columns:
             if col in expected_cols:
@@ -2377,52 +2024,24 @@ def test_entityset_deep_equality(es):
     first_es.replace_dataframe("customers", updated_df)
 
     assert first_es.__eq__(second_es, deep=False)
-    # Uses woodwork equality which only looks at df content for pandas
-    if isinstance(updated_df, pd.DataFrame):
-        assert not first_es.__eq__(second_es, deep=True)
-    else:
-        assert first_es.__eq__(second_es, deep=True)
+    assert not first_es.__eq__(second_es, deep=True)
 
 
-@pytest.fixture(params=["make_es", "dask_es_to_copy"])
-def es_to_copy(request):
-    return request.getfixturevalue(request.param)
-
-
-@pytest.fixture
-def dask_es_to_copy(make_es):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    es = EntitySet(id=make_es.id)
-    for df in make_es.dataframes:
-        dd_df = dd.from_pandas(df.reset_index(drop=True), npartitions=4)
-        dd_df.ww.init(schema=df.ww.schema)
-        es.add_dataframe(dd_df)
-
-    for rel in make_es.relationships:
-        es.add_relationship(
-            rel.parent_dataframe.ww.name,
-            rel._parent_column_name,
-            rel.child_dataframe.ww.name,
-            rel._child_column_name,
-        )
-    return es
-
-
-def test_deepcopy_entityset(es_to_copy):
+def test_deepcopy_entityset(make_es):
     # Uses make_es since the es fixture uses deepcopy
-    copied_es = copy.deepcopy(es_to_copy)
+    copied_es = copy.deepcopy(make_es)
 
-    assert copied_es == es_to_copy
-    assert copied_es is not es_to_copy
+    assert copied_es == make_es
+    assert copied_es is not make_es
 
-    for df_name in es_to_copy.dataframe_dict.keys():
-        original_df = es_to_copy[df_name]
+    for df_name in make_es.dataframe_dict.keys():
+        original_df = make_es[df_name]
         new_df = copied_es[df_name]
 
         assert new_df.ww.schema == original_df.ww.schema
         assert new_df.ww._schema is not original_df.ww._schema
 
-        pd.testing.assert_frame_equal(to_pandas(new_df), to_pandas(original_df))
+        pd.testing.assert_frame_equal(new_df, original_df)
         assert new_df is not original_df
 
 
@@ -2457,24 +2076,15 @@ def test_deepcopy_entityset_featuretools_changes(es):
     }
 
 
-def test_dataframe_type_empty_es():
-    es = EntitySet("test")
-    assert es.dataframe_type is None
-
-
-def test_dataframe_type_pandas_es(pd_es):
-    assert pd_es.dataframe_type == Library.PANDAS
-
-
 def test_es__getstate__key_unique(es):
     assert not hasattr(es, WW_SCHEMA_KEY)
 
 
-def test_pd_es_pickling(pd_es):
-    pkl = pickle.dumps(pd_es)
+def test_es_pickling(es):
+    pkl = pickle.dumps(es)
     unpickled = pickle.loads(pkl)
 
-    assert pd_es.__eq__(unpickled, deep=True)
+    assert es.__eq__(unpickled, deep=True)
     assert not hasattr(unpickled, WW_SCHEMA_KEY)
 
 
@@ -2508,7 +2118,7 @@ def test_latlong_nan_normalization(latlong_df):
 
     es = EntitySet("latlong-test", dataframes, relationships)
 
-    normalized_df = to_pandas(es["latLong"], sort_index=True)
+    normalized_df = es["latLong"]
 
     expected_df = pd.DataFrame(
         {"idx": [0, 1, 2], "latLong": [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]},
@@ -2528,7 +2138,7 @@ def test_latlong_nan_normalization_add_dataframe(latlong_df):
 
     es.add_dataframe(latlong_df)
 
-    normalized_df = to_pandas(es["latLong"], sort_index=True)
+    normalized_df = es["latLong"]
 
     expected_df = pd.DataFrame(
         {"idx": [0, 1, 2], "latLong": [(np.nan, np.nan), (1, 2), (np.nan, np.nan)]},

@@ -2,7 +2,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import BooleanNullable, Datetime
 
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class IsMonthEnd(TransformPrimitive):
@@ -21,7 +20,7 @@ class IsMonthEnd(TransformPrimitive):
     name = "is_month_end"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=BooleanNullable)
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+
     description_template = "whether {} is at the end of a month"
 
     def get_function(self):

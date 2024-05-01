@@ -3,7 +3,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class Or(TransformPrimitive):
@@ -38,7 +37,7 @@ class Or(TransformPrimitive):
     ]
     return_type = ColumnSchema(logical_type=BooleanNullable)
     commutative = True
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+
     description_template = "whether {} is true or {} is true"
 
     def get_function(self):

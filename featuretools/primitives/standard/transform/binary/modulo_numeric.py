@@ -2,7 +2,6 @@ import numpy as np
 from woodwork.column_schema import ColumnSchema
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class ModuloNumeric(TransformPrimitive):
@@ -25,7 +24,7 @@ class ModuloNumeric(TransformPrimitive):
         ColumnSchema(semantic_tags={"numeric"}),
     ]
     return_type = ColumnSchema(semantic_tags={"numeric"})
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+
     description_template = "the remainder after dividing {} by {}"
 
     def get_function(self):

@@ -82,10 +82,6 @@ def encode_features(
                                                        drop_first=True)
             f_encoded
     """
-    if not isinstance(feature_matrix, pd.DataFrame):
-        msg = "feature_matrix must be a Pandas DataFrame"
-        raise TypeError(msg)
-
     if inplace:
         X = feature_matrix
     else:

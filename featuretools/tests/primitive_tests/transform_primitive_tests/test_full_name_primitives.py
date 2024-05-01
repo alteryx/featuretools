@@ -74,11 +74,11 @@ class TestFullNameToFirstName(PrimitiveTestBase):
         answer = pd.Series(["James", np.nan, np.nan])
         pd.testing.assert_series_equal(primitive_func(names), answer, check_names=False)
 
-    def test_with_featuretools(self, pd_es):
+    def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         transform.append(primitive_instance)
-        valid_dfs(pd_es, aggregation, transform, self.primitive)
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestFullNameToLastName(PrimitiveTestBase):
@@ -140,11 +140,11 @@ class TestFullNameToLastName(PrimitiveTestBase):
         answer = pd.Series(["Brown", np.nan, np.nan])
         pd.testing.assert_series_equal(primitive_func(names), answer, check_names=False)
 
-    def test_with_featuretools(self, pd_es):
+    def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         transform.append(primitive_instance)
-        valid_dfs(pd_es, aggregation, transform, self.primitive)
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestFullNameToTitle(PrimitiveTestBase):
@@ -184,8 +184,8 @@ class TestFullNameToTitle(PrimitiveTestBase):
         answer = pd.Series(["Mr", np.nan, np.nan])
         pd.testing.assert_series_equal(primitive_func(names), answer, check_names=False)
 
-    def test_with_featuretools(self, pd_es):
+    def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         transform.append(primitive_instance)
-        valid_dfs(pd_es, aggregation, transform, self.primitive)
+        valid_dfs(es, aggregation, transform, self.primitive)

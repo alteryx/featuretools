@@ -31,12 +31,11 @@ def feature_matrix():
 
 
 @pytest.fixture
-def test_es(pd_es, feature_matrix):
-    pd_es.add_dataframe(dataframe_name="test", dataframe=feature_matrix, index="test")
-    return pd_es
+def test_es(es, feature_matrix):
+    es.add_dataframe(dataframe_name="test", dataframe=feature_matrix, index="test")
+    return es
 
 
-# remove low information features not supported in Dask
 def test_remove_low_information_feature_names(feature_matrix):
     feature_matrix = remove_low_information_features(feature_matrix)
     assert feature_matrix.shape == (3, 5)
@@ -44,7 +43,6 @@ def test_remove_low_information_feature_names(feature_matrix):
     assert "all_null" not in feature_matrix.columns
 
 
-# remove low information features not supported in Dask
 def test_remove_low_information_features(test_es, feature_matrix):
     features = [Feature(test_es["test"].ww[col]) for col in test_es["test"].columns]
     feature_matrix, features = remove_low_information_features(feature_matrix, features)

@@ -3,7 +3,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Boolean, BooleanNullable
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class MultiplyNumericBoolean(TransformPrimitive):
@@ -45,7 +44,6 @@ class MultiplyNumericBoolean(TransformPrimitive):
         ],
     ]
     return_type = ColumnSchema(semantic_tags={"numeric"})
-    compatibility = [Library.PANDAS, Library.DASK]
     commutative = True
     description_template = "the product of {} and {}"
 

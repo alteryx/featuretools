@@ -9,4 +9,3 @@ psutil==5.7.0
 scipy==1.10.0
 tqdm==4.32.0
 woodwork==0.28.0
-woodwork[dask]==0.28.0

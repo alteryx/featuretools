@@ -1,7 +1,6 @@
 from woodwork.column_schema import ColumnSchema
 
 from featuretools.primitives.base.aggregation_primitive_base import AggregationPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class First(AggregationPrimitive):
@@ -19,7 +18,7 @@ class First(AggregationPrimitive):
     stack_on_self = False
     description_template = "the first instance of {}"
 
-    def get_function(self, agg_type=Library.PANDAS):
+    def get_function(self):
         def pd_first(x):
             return x.iloc[0]
 

@@ -2,7 +2,6 @@ import numpy as np
 from woodwork.column_schema import ColumnSchema
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class MultiplyNumeric(TransformPrimitive):
@@ -26,7 +25,7 @@ class MultiplyNumeric(TransformPrimitive):
     ]
     return_type = ColumnSchema(semantic_tags={"numeric"})
     commutative = True
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+
     description_template = "the product of {} and {}"
 
     def get_function(self):

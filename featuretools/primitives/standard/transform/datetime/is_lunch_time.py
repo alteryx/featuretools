@@ -2,7 +2,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import BooleanNullable, Datetime
 
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class IsLunchTime(TransformPrimitive):
@@ -29,7 +28,7 @@ class IsLunchTime(TransformPrimitive):
     name = "is_lunch_time"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=BooleanNullable)
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+
     description_template = "whether {} falls during lunch time"
 
     def __init__(self, lunch_hour=12):

@@ -654,11 +654,11 @@ class TestDateFirstEvent(PrimitiveTestBase):
         given_answer = primitive_func(case)
         assert pd.isna(given_answer)
 
-    def test_with_featuretools(self, pd_es):
+    def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         aggregation.append(primitive_instance)
-        valid_dfs(pd_es, aggregation, transform, self.primitive)
+        valid_dfs(es, aggregation, transform, self.primitive)
 
     def test_serialize(self, es):
         check_serialize(self.primitive, es, target_dataframe_name="sessions")

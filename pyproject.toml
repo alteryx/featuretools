@@ -62,20 +62,12 @@ test = [
     "pytest-xdist >= 2.5.0",
     "smart-open >= 5.0.0",
     "urllib3 >= 1.26.18",
-    "pytest-timeout >= 2.1.0"
+    "pytest-timeout >= 2.1.0",
+    "featuretools[dask]"
 ]
 dask = [
-    "dask[dataframe] >= 2023.2.0, <2024.3.0",
-    "distributed >= 2023.2.0, <2024.3.0",
-    "woodwork[dask] >= 0.28.0",
-]
-spark = [
-    "woodwork[spark] >= 0.28.0",
-    "pyspark >= 3.5.0",
-    "pyarrow >= 14.0.1",
-]
-updater = [
-    "alteryx-open-src-update-checker >= 2.1.0"
+    "dask[dataframe] >= 2023.2.0",
+    "distributed >= 2023.2.0",
 ]
 tsfresh = [
     "featuretools-tsfresh-primitives >= 1.0.0",
@@ -85,9 +77,16 @@ autonormalize = [
 ]
 sql = [
     "featuretools_sql >= 0.0.1",
+    "psycopg2-binary >= 2.9.3",
 ]
 sklearn = [
     "featuretools-sklearn-transformer >= 1.0.0",
+]
+premium = [
+    "premium-primitives >= 0.0.3",
+]
+nlp = [
+    "nlp-primitives >= 2.12.0",
 ]
 docs = [
     "ipython == 8.4.0",
@@ -103,16 +102,16 @@ docs = [
     "myst-parser == 0.18.0",
     "autonormalize >= 2.0.1",
     "click >= 7.0.0",
-    "featuretools[dask,spark,test]",
+    "featuretools[dask,test]",
 ]
 dev = [
     "ruff >= 0.1.6",
     "black[jupyter] >= 23.1.0",
     "pre-commit >= 2.20.0",
-    "featuretools[docs,dask,spark,test]",
+    "featuretools[docs,dask,test]",
 ]
 complete = [
-    "featuretools[autonormalize,sklearn,dask,spark,sql,updater]",
+    "featuretools[premium,nlp,dask]",
 ]
 
 [tool.setuptools]
@@ -158,8 +157,8 @@ filterwarnings = [
 [tool.ruff]
 line-length = 88
 target-version = "py311"
-ignore = ["E501"]
-select = [
+lint.ignore = ["E501"]
+lint.select = [
     # Pyflakes
     "F",
     # Pycodestyle
@@ -170,10 +169,10 @@ select = [
 ]
 src = ["featuretools"]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402", "F401", "I001", "E501"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["featuretools"]
 
 [tool.coverage.run]

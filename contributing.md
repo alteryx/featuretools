@@ -40,41 +40,23 @@ Before starting major work, you should touch base with the maintainers of Featur
   git checkout -b issue####-branch_name
   ```
 
-* You will need to install Spark, Scala, GraphViz, and Pandoc to run all unit tests & build docs:
-
-  > If you do not install Spark/Scala, you can still run the unit tests (the Spark tests will be skipped).
+* You will need to install GraphViz, and Pandoc to run all unit tests & build docs:
 
   > Pandoc is only needed to build the documentation locally.
 
      **macOS (Intel)** (use [Homebrew](https://brew.sh/)):
      ```console
-     brew tap AdoptOpenJDK/openjdk
-     brew install --cask adoptopenjdk11
-     brew install scala apache-spark graphviz pandoc
-     echo 'export JAVA_HOME=$(/usr/libexec/java_home)' >> ~/.zshrc
-     echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
+     brew install graphviz pandoc
      ```
 
      **macOS (M1)** (use [Homebrew](https://brew.sh/)):
      ```console
-     brew install openjdk@11 scala apache-spark graphviz pandoc
-     echo 'export PATH="/opt/homebrew/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
-     echo 'export CPPFLAGS="-I/opt/homebrew/opt/openjdk@11/include:$CPPFLAGS"' >> ~/.zprofile
-     sudo ln -sfn /opt/homebrew/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
+     brew install graphviz pandoc
      ```
 
      **Ubuntu**:
      ```console
-     sudo apt install openjdk-11-jre openjdk-11-jdk scala graphviz pandoc -y
-     echo "export SPARK_HOME=/opt/spark" >> ~/.profile
-     echo "export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin" >> ~/.profile
-     echo "export PYSPARK_PYTHON=/usr/bin/python3" >> ~/.profile
-     ```
-
-     **Amazon Linux**:
-     ```console
-     sudo amazon-linux-extras install java-openjdk11 scala -y
-     amazon-linux-extras enable java-openjdk11
+     sudo apt install graphviz pandoc -y
      ```
 
 #### 2. Implement your Pull Request

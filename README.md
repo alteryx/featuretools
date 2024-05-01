@@ -47,41 +47,30 @@ conda install -c conda-forge featuretools
 
 ### Add-ons
 
-You can install add-ons individually or all at once by running
+You can install add-ons individually or all at once by running:
 
 ```
 python -m pip install "featuretools[complete]"
 ```
 
-**Update checker** - Receive automatic notifications of new Featuretools releases
-
-```
-python -m pip install "featuretools[updater]"
-```
-
-**Premium Primitives** - Use Premium Primitives, including Natural Language Processing primitives:
+**Premium Primitives** - Use Premium Primitives from the premium-primitives repo
 
 ```
 python -m pip install "featuretools[premium]"
 ```
 
-**TSFresh Primitives** - Use 60+ primitives from [tsfresh](https://tsfresh.readthedocs.io/en/latest/) within Featuretools
+**NLP Primitives** - Use Natural Language Primitives from the nlp-primitives repo
 
 ```
-python -m pip install "featuretools[tsfresh]"
+python -m pip install "featuretools[nlp]"
 ```
 
-**Dask Support** - Use Dask Dataframes to create EntitySets or run DFS with njobs > 1
+**Dask Support** - Use Dask to run DFS with njobs > 1
 
 ```
 python -m pip install "featuretools[dask]"
 ```
 
-**SQL** - Automatic EntitySet generation from relational data stored in a SQL database: 
-
-```
-python -m pip install "featuretools[sql]"
-```
 ## Example
 Below is an example of using Deep Feature Synthesis (DFS) to perform automated feature engineering. In this example, we apply DFS to a multi-table dataset consisting of timestamped customer transactions.
 

@@ -2,7 +2,6 @@ import numpy as np
 from woodwork.column_schema import ColumnSchema
 
 from featuretools.primitives.base.aggregation_primitive_base import AggregationPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class Mean(AggregationPrimitive):
@@ -27,16 +26,12 @@ class Mean(AggregationPrimitive):
     name = "mean"
     input_types = [ColumnSchema(semantic_tags={"numeric"})]
     return_type = ColumnSchema(semantic_tags={"numeric"})
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the average of {}"
 
     def __init__(self, skipna=True):
         self.skipna = skipna
 
-    def get_function(self, agg_type=Library.PANDAS):
-        if agg_type in [Library.DASK, Library.SPARK]:
-            return "mean"
-
+    def get_function(self):
         if self.skipna:
             # np.mean of series is functionally nanmean
             return np.mean

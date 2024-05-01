@@ -41,7 +41,7 @@ installdeps-test: upgradepip
 
 .PHONY: checkdeps
 checkdeps:
-	$(eval allow_list='holidays|scipy|numpy|pandas|tqdm|cloudpickle|distributed|dask|psutil|pyspark|woodwork')
+	$(eval allow_list='holidays|scipy|numpy|pandas|tqdm|cloudpickle|distributed|dask|psutil|woodwork')
 	pip freeze | grep -v "alteryx/featuretools.git" | grep -E $(allow_list) > $(OUTPUT_PATH)
 
 .PHONY: upgradepip
