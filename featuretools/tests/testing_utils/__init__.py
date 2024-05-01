@@ -4,7 +4,7 @@ from featuretools.tests.testing_utils.cluster import (
     mock_cluster,
     get_mock_client_cluster,
 )
-from featuretools.tests.testing_utils.es_utils import get_df_tags, to_pandas
+from featuretools.tests.testing_utils.es_utils import get_df_tags
 from featuretools.tests.testing_utils.features import (
     feature_with_name,
     number_of_features_with_name_like,

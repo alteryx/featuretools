@@ -2,7 +2,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import BooleanNullable, Datetime
 
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class IsWorkingHours(TransformPrimitive):
@@ -30,7 +29,7 @@ class IsWorkingHours(TransformPrimitive):
     name = "is_working_hours"
     input_types = [ColumnSchema(logical_type=Datetime)]
     return_type = ColumnSchema(logical_type=BooleanNullable)
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+
     description_template = "whether {} falls during working hours"
 
     def __init__(self, start_hour=8, end_hour=18):

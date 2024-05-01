@@ -15,7 +15,7 @@ from featuretools.primitives.base import (
     PrimitiveBase,
     TransformPrimitive,
 )
-from featuretools.utils.gen_utils import Library, find_descendents
+from featuretools.utils.gen_utils import find_descendents
 
 
 def _get_primitives(primitive_kind):
@@ -32,16 +32,12 @@ def _get_primitives(primitive_kind):
 
 
 def get_aggregation_primitives():
-    """Returns all aggregation primitives, regardless
-    of compatibility
-    """
+    """Returns all aggregation primitives"""
     return _get_primitives(featuretools.primitives.AggregationPrimitive)
 
 
 def get_transform_primitives():
-    """Returns all transform primitives, regardless
-    of compatibility
-    """
+    """Returns all transform primitives"""
     return _get_primitives(featuretools.primitives.TransformPrimitive)
 
 
@@ -57,9 +53,7 @@ def get_all_primitives():
 
 
 def _get_natural_language_primitives():
-    """Returns all Natural Language transform primitives,
-    regardless of compatibility
-    """
+    """Returns all Natural Language transform primitives"""
     transform_primitives = get_transform_primitives()
 
     def _natural_language_in_input_type(primitive):
@@ -87,18 +81,10 @@ def list_primitives():
     trans_names, trans_primitives, valid_inputs, return_type = _get_names_primitives(
         get_transform_primitives,
     )
-    trans_dask = [
-        Library.DASK in primitive.compatibility for primitive in trans_primitives
-    ]
-    trans_spark = [
-        Library.SPARK in primitive.compatibility for primitive in trans_primitives
-    ]
     transform_df = pd.DataFrame(
         {
             "name": trans_names,
             "description": _get_descriptions(trans_primitives),
-            "dask_compatible": trans_dask,
-            "spark_compatible": trans_spark,
             "valid_inputs": valid_inputs,
             "return_type": return_type,
         },
@@ -108,16 +94,10 @@ def list_primitives():
     agg_names, agg_primitives, valid_inputs, return_type = _get_names_primitives(
         get_aggregation_primitives,
     )
-    agg_dask = [Library.DASK in primitive.compatibility for primitive in agg_primitives]
-    agg_spark = [
-        Library.SPARK in primitive.compatibility for primitive in agg_primitives
-    ]
     agg_df = pd.DataFrame(
         {
             "name": agg_names,
             "description": _get_descriptions(agg_primitives),
-            "dask_compatible": agg_dask,
-            "spark_compatible": agg_spark,
             "valid_inputs": valid_inputs,
             "return_type": return_type,
         },
@@ -127,8 +107,6 @@ def list_primitives():
     columns = [
         "name",
         "type",
-        "dask_compatible",
-        "spark_compatible",
         "description",
         "valid_inputs",
         "return_type",

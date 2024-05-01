@@ -50,7 +50,6 @@ jobs:
           sudo apt update
           sudo apt install -y pandoc
           sudo apt install -y graphviz
-          sudo apt install -y openjdk-11-jre-headless
           python -m pip check
       - name: Build docs
         run: make -C docs/ -e "SPHINXOPTS=-W -j auto" clean html

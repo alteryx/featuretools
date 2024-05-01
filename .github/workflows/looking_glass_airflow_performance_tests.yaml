@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        test_type: ["pandas", "dask", "spark"]
+        test_type: ["pandas"]
     steps:
       - name: Generate default ISO timestamp
         run: |

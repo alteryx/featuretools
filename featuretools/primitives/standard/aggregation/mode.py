@@ -2,7 +2,6 @@ import numpy as np
 from woodwork.column_schema import ColumnSchema
 
 from featuretools.primitives.base.aggregation_primitive_base import AggregationPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class Mode(AggregationPrimitive):
@@ -24,7 +23,7 @@ class Mode(AggregationPrimitive):
     return_type = None
     description_template = "the most frequently occurring value of {}"
 
-    def get_function(self, agg_type=Library.PANDAS):
+    def get_function(self):
         def pd_mode(s):
             return s.mode().get(0, np.nan)
 

@@ -6,7 +6,6 @@ import pandas as pd
 
 from featuretools import config
 from featuretools.utils.description_utils import convert_to_nth
-from featuretools.utils.gen_utils import Library
 
 
 class PrimitiveBase(object):
@@ -40,15 +39,12 @@ class PrimitiveBase(object):
     stack_on_self = True
     # (bool) If True will only make one feature per unique set of base features
     commutative = False
-    #: (list): Additional compatible libraries
-    compatibility = [Library.PANDAS]
     #: (str, list[str]): description template of the primitive. Input column
     # descriptions are passed as positional arguments to the template. Slice
     # number (if present) in "nth" form is passed to the template via the
     # `nth_slice` keyword argument. Multi-output primitives can use a list to
     # differentiate between the base description and a slice description.
     description_template = None
-    series_library = Library.PANDAS
 
     def __init__(self):
         pass

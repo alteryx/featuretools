@@ -2,7 +2,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import Datetime, Ordinal
 
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class Minute(TransformPrimitive):
@@ -24,7 +23,7 @@ class Minute(TransformPrimitive):
         logical_type=Ordinal(order=list(range(60))),
         semantic_tags={"category"},
     )
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
+
     description_template = "the minutes value of {}"
 
     def get_function(self):

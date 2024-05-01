@@ -82,11 +82,11 @@ class TestCumulativeTimeSinceLastTrue(PrimitiveTestBase):
         given_answer = primitive_func(datetimes, booleans)
         assert given_answer.equals(answer)
 
-    def test_with_featuretools(self, pd_es):
+    def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         transform.append(primitive_instance)
-        valid_dfs(pd_es, aggregation, transform, self.primitive)
+        valid_dfs(es, aggregation, transform, self.primitive)
 
 
 class TestCumulativeTimeSinceLastFalse(PrimitiveTestBase):
@@ -157,8 +157,8 @@ class TestCumulativeTimeSinceLastFalse(PrimitiveTestBase):
         given_answer = primitive_func(datetimes, booleans)
         assert given_answer.equals(answer)
 
-    def test_with_featuretools(self, pd_es):
+    def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instance = self.primitive()
         transform.append(primitive_instance)
-        valid_dfs(pd_es, aggregation, transform, self.primitive)
+        valid_dfs(es, aggregation, transform, self.primitive)

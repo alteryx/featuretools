@@ -2,7 +2,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import BooleanNullable
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class NotEqualScalar(TransformPrimitive):
@@ -21,7 +20,6 @@ class NotEqualScalar(TransformPrimitive):
     name = "not_equal_scalar"
     input_types = [ColumnSchema()]
     return_type = ColumnSchema(logical_type=BooleanNullable)
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
 
     def __init__(self, value=None):
         self.value = value

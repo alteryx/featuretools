@@ -4,7 +4,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import BooleanNullable, Datetime, Ordinal
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class GreaterThan(TransformPrimitive):
@@ -31,7 +30,6 @@ class GreaterThan(TransformPrimitive):
         [ColumnSchema(logical_type=Ordinal), ColumnSchema(logical_type=Ordinal)],
     ]
     return_type = ColumnSchema(logical_type=BooleanNullable)
-    compatibility = [Library.PANDAS, Library.DASK]
     description_template = "whether {} is greater than {}"
 
     def get_function(self):

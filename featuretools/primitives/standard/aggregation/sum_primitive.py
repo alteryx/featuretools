@@ -3,7 +3,6 @@ from woodwork.column_schema import ColumnSchema
 
 from featuretools.primitives.base.aggregation_primitive_base import AggregationPrimitive
 from featuretools.primitives.standard.aggregation.count import Count
-from featuretools.utils.gen_utils import Library
 
 
 class Sum(AggregationPrimitive):
@@ -21,11 +20,7 @@ class Sum(AggregationPrimitive):
     stack_on_self = False
     stack_on_exclude = [Count]
     default_value = 0
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the sum of {}"
 
-    def get_function(self, agg_type=Library.PANDAS):
-        if agg_type in [Library.DASK, Library.SPARK]:
-            return "sum"
-
+    def get_function(self):
         return np.sum

@@ -3,7 +3,6 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import BooleanNullable
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class NotEqual(TransformPrimitive):
@@ -24,7 +23,6 @@ class NotEqual(TransformPrimitive):
     input_types = [ColumnSchema(), ColumnSchema()]
     return_type = ColumnSchema(logical_type=BooleanNullable)
     commutative = True
-    compatibility = [Library.PANDAS, Library.DASK]
     description_template = "whether {} does not equal {}"
 
     def get_function(self):

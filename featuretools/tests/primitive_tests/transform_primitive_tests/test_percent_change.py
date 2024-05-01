@@ -69,8 +69,8 @@ class TestPercentChange(PrimitiveTestBase):
         given_answer = primtive_func(data)
         np.testing.assert_array_equal(given_answer, answer)
 
-    def test_with_featuretools(self, pd_es):
+    def test_with_featuretools(self, es):
         transform, aggregation = find_applicable_primitives(self.primitive)
         primitive_instantiate = self.primitive
         transform.append(primitive_instantiate)
-        valid_dfs(pd_es, aggregation, transform, self.primitive)
+        valid_dfs(es, aggregation, transform, self.primitive)

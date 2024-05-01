@@ -2,7 +2,6 @@ import numpy as np
 from woodwork.column_schema import ColumnSchema
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class SubtractNumeric(TransformPrimitive):
@@ -34,7 +33,6 @@ class SubtractNumeric(TransformPrimitive):
         ColumnSchema(semantic_tags={"numeric"}),
     ]
     return_type = ColumnSchema(semantic_tags={"numeric"})
-    compatibility = [Library.PANDAS, Library.DASK]
     description_template = "the result of {} minus {}"
     commutative = True
 

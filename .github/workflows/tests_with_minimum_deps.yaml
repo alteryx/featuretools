@@ -7,13 +7,13 @@ on:
       - main
   workflow_dispatch:
 jobs:
-  py38_tests_minimum_dependencies:
+  py39_tests_minimum_dependencies:
     name: Tests - 3.9 Minimum Dependencies
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        libraries: ["core", "dask", "spark - misc", "spark - computational", "spark - entityset_1", "spark - entityset_2", "spark - primitives"]
+        python_version: ["3.9"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -33,59 +33,14 @@ jobs:
       - name: Install featuretools with no dependencies
         run: |
           python -m pip install -e . --no-dependencies
-      - if: ${{ startsWith(matrix.libraries, 'spark') }}
-        name: Install numpy for spark
-        run: |
-          NUMPY_VERSION=$(cat featuretools/tests/requirement_files/minimum_spark_requirements.txt | grep numpy)
-          python -m pip uninstall numpy -y
-          python -m pip install $NUMPY_VERSION --no-build-isolation
-      - if: ${{ matrix.libraries == 'core' }}
-        name: Install numpy for core
-        run: |
-          NUMPY_VERSION=$(cat featuretools/tests/requirement_files/minimum_core_requirements.txt | grep numpy)
-          python -m pip uninstall numpy -y
-          python -m pip install $NUMPY_VERSION --no-build-isolation
-      - if: ${{ matrix.libraries == 'dask' }}
-        name: Install numpy for dask
-        run: |
-          NUMPY_VERSION=$(cat featuretools/tests/requirement_files/minimum_dask_requirements.txt | grep numpy)
-          python -m pip uninstall numpy -y
-          python -m pip install $NUMPY_VERSION --no-build-isolation
       - name: Install featuretools - minimum tests dependencies
         run: |
           python -m pip install -r featuretools/tests/requirement_files/minimum_test_requirements.txt
-      - if: ${{ startsWith(matrix.libraries, 'spark') }}
-        name: Install featuretools - minimum spark, core dependencies
-        run: |
-          sudo apt install -y openjdk-11-jre-headless
-          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
-          python -m pip install -r featuretools/tests/requirement_files/minimum_spark_requirements.txt
-      - if: ${{ matrix.libraries == 'core' }}
-        name: Install featuretools - minimum core dependencies
+      - name: Install featuretools - minimum core dependencies
         run: |
           python -m pip install -r featuretools/tests/requirement_files/minimum_core_requirements.txt
-      - if: ${{ matrix.libraries == 'dask' }}
-        name: Install featuretools - minimum dask dependencies
+      - name: Install featuretools - minimum Dask dependencies
         run: |
           python -m pip install -r featuretools/tests/requirement_files/minimum_dask_requirements.txt
-      - if: ${{ matrix.libraries == 'core' }}
-        name: Run unit tests without code coverage
+      - name: Run unit tests without code coverage
         run: python -m pytest -x -n auto featuretools/tests/
-      - if: ${{ matrix.libraries == 'dask' }}
-        name: Run dask unit tests without code coverage
-        run: python -m pytest -x -n auto featuretools/tests/
-      - if: ${{ matrix.libraries == 'spark - misc' }}
-        name: Run unit tests (misc)
-        run: pytest featuretools/ -n auto --ignore=featuretools/tests/computational_backend --ignore=featuretools/tests/entityset_tests --ignore=featuretools/tests/primitive_tests
-      - if: ${{ matrix.libraries == 'spark - computational' }}
-        name: Run unit tests (computational backend)
-        run: pytest featuretools/tests/computational_backend/ -n auto
-      - if: ${{ matrix.libraries == 'spark - entityset_1' }}
-        name: Run unit tests (entityset batch 1)
-        run: pytest featuretools/tests/entityset_tests -n auto --ignore=featuretools/tests/entityset_tests/test_es.py --ignore=featuretools/tests/entityset_tests/test_ww_es.py
-      - if: ${{ matrix.libraries == 'spark - entityset_2' }}
-        name: Run unit tests (entityset batch 2)
-        run: pytest featuretools/tests/entityset_tests/test_es.py featuretools/tests/entityset_tests/test_ww_es.py
-      - if: ${{ matrix.libraries == 'spark - primitives' }}
-        name: Run unit tests (primitives)
-        run: pytest featuretools/tests/primitive_tests -n auto

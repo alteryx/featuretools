@@ -46,7 +46,6 @@ from featuretools.primitives.utils import (
     list_primitive_files,
     load_primitive_from_file,
 )
-from featuretools.utils.gen_utils import Library
 
 
 def test_list_primitives_order():
@@ -60,7 +59,6 @@ def test_list_primitives_order():
         actual_desc = _get_descriptions([primitive])[0]
         if actual_desc:
             assert actual_desc == row["description"]
-        assert row["dask_compatible"] == (Library.DASK in primitive.compatibility)
         assert row["valid_inputs"] == ", ".join(
             _get_unique_input_types(primitive.input_types),
         )

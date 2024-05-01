@@ -7,7 +7,6 @@ from woodwork.logical_types import Datetime, Double
 
 from featuretools.primitives.base.aggregation_primitive_base import AggregationPrimitive
 from featuretools.utils import convert_time_units
-from featuretools.utils.gen_utils import Library
 
 
 class AvgTimeBetween(AggregationPrimitive):
@@ -44,7 +43,7 @@ class AvgTimeBetween(AggregationPrimitive):
     def __init__(self, unit="seconds"):
         self.unit = unit.lower()
 
-    def get_function(self, agg_type=Library.PANDAS):
+    def get_function(self):
         def pd_avg_time_between(x):
             """Assumes time scales are closer to order
             of seconds than to nanoseconds

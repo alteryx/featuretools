@@ -2,7 +2,6 @@ import pandas as pd
 from woodwork.column_schema import ColumnSchema
 
 from featuretools.primitives.base.aggregation_primitive_base import AggregationPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class Skew(AggregationPrimitive):
@@ -26,5 +25,5 @@ class Skew(AggregationPrimitive):
     stack_on_self = False
     description_template = "the skewness of {}"
 
-    def get_function(self, agg_type=Library.PANDAS):
+    def get_function(self):
         return pd.Series.skew

@@ -1,7 +1,6 @@
 from woodwork.column_schema import ColumnSchema
 
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class Negate(TransformPrimitive):
@@ -16,7 +15,6 @@ class Negate(TransformPrimitive):
     name = "negate"
     input_types = [ColumnSchema(semantic_tags={"numeric"})]
     return_type = ColumnSchema(semantic_tags={"numeric"})
-    compatibility = [Library.PANDAS, Library.DASK, Library.SPARK]
     description_template = "the negation of {}"
 
     def get_function(self):

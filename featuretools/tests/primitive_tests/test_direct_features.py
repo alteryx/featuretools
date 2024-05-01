@@ -22,8 +22,6 @@ from featuretools.primitives import (
 )
 from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.synthesis import dfs
-from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import Library
 
 
 def test_direct_from_identity(es):
@@ -33,12 +31,8 @@ def test_direct_from_identity(es):
     feature_set = FeatureSet([d])
     calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
     df = calculator.run(np.array([0, 5]))
-    df = to_pandas(df, index="id", sort_index=True)
     v = df[d.get_name()].tolist()
-    if es.dataframe_type == Library.SPARK:
-        expected = ["0", "1"]
-    else:
-        expected = [0, 1]
+    expected = [0, 1]
     assert v == expected
 
 
@@ -50,12 +44,8 @@ def test_direct_from_column(es):
     feature_set = FeatureSet([d])
     calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
     df = calculator.run(np.array([0, 5]))
-    df = to_pandas(df, index="id", sort_index=True)
     v = df[d.get_name()].tolist()
-    if es.dataframe_type == Library.SPARK:
-        expected = ["0", "1"]
-    else:
-        expected = [0, 1]
+    expected = [0, 1]
     assert v == expected
 
 
@@ -108,10 +98,6 @@ def test_direct_copy(games_es):
 
 
 def test_direct_of_multi_output_transform_feat(es):
-    # TODO: Update to work with Dask and Spark
-    if es.dataframe_type != Library.PANDAS:
-        pytest.xfail("Custom primitive is not compatible with Dask or Spark")
-
     class TestTime(TransformPrimitive):
         name = "test_time"
         input_types = [ColumnSchema(logical_type=Datetime)]
@@ -151,14 +137,14 @@ def test_direct_of_multi_output_transform_feat(es):
         assert (fm[col1] == fm[col2]).all()
 
 
-def test_direct_features_of_multi_output_agg_primitives(pd_es):
+def test_direct_features_of_multi_output_agg_primitives(es):
     class ThreeMostCommonCat(AggregationPrimitive):
         name = "n_most_common_categorical"
         input_types = [ColumnSchema(semantic_tags={"category"})]
         return_type = ColumnSchema(semantic_tags={"category"})
         number_output_features = 3
 
-        def get_function(self, agg_type="pandas"):
+        def get_function(self):
             def pd_top3(x):
                 counts = x.value_counts()
                 counts = counts[counts > 0]
@@ -171,7 +157,7 @@ def test_direct_features_of_multi_output_agg_primitives(pd_es):
             return pd_top3
 
     fm, fl = dfs(
-        entityset=pd_es,
+        entityset=es,
         target_dataframe_name="log",
         agg_primitives=[ThreeMostCommonCat],
         trans_primitives=[],

@@ -18,10 +18,6 @@ from featuretools.primitives import GreaterThanScalar, Max, Mean, Min, Sum
 from featuretools.primitives.base import AggregationPrimitive, TransformPrimitive
 from featuretools.synthesis import dfs
 from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
-from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.gen_utils import Library, import_or_none, is_instance
-
-dd = import_or_none("dask.dataframe")
 
 
 @pytest.fixture
@@ -140,26 +136,9 @@ def test_accepts_cutoff_time_df(dataframes, relationships):
         target_dataframe_name="transactions",
         cutoff_time=cutoff_times_df,
     )
-    feature_matrix = to_pandas(feature_matrix, index="id", sort_index=True)
+    feature_matrix = feature_matrix
     assert len(feature_matrix.index) == 3
     assert len(feature_matrix.columns) == len(features)
-
-
-@pytest.mark.skipif("not dd")
-def test_warns_cutoff_time_dask(dataframes, relationships):
-    cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3], "time": [10, 12, 15]})
-    cutoff_times_df = dd.from_pandas(cutoff_times_df, npartitions=2)
-    match = (
-        "cutoff_time should be a Pandas DataFrame: "
-        "computing cutoff_time, this may take a while"
-    )
-    with pytest.warns(UserWarning, match=match):
-        dfs(
-            dataframes=dataframes,
-            relationships=relationships,
-            target_dataframe_name="transactions",
-            cutoff_time=cutoff_times_df,
-        )
 
 
 def test_accepts_cutoff_time_compose(dataframes, relationships):
@@ -178,7 +157,7 @@ def test_accepts_cutoff_time_compose(dataframes, relationships):
 
     lm = cp.LabelMaker(**kwargs)
 
-    transactions_df = to_pandas(dataframes["transactions"][0])
+    transactions_df = dataframes["transactions"][0]
 
     labels = lm.search(transactions_df, num_examples_per_instance=-1)
 
@@ -191,7 +170,6 @@ def test_accepts_cutoff_time_compose(dataframes, relationships):
         target_dataframe_name="cards",
         cutoff_time=labels,
     )
-    feature_matrix = to_pandas(feature_matrix, index="id")
     assert len(feature_matrix.index) == 6
     assert len(feature_matrix.columns) == len(features) + 1
 
@@ -203,7 +181,6 @@ def test_accepts_single_cutoff_time(dataframes, relationships):
         target_dataframe_name="transactions",
         cutoff_time=20,
     )
-    feature_matrix = to_pandas(feature_matrix, index="id")
     assert len(feature_matrix.index) == 5
     assert len(feature_matrix.columns) == len(features)
 
@@ -215,7 +192,6 @@ def test_accepts_no_cutoff_time(dataframes, relationships):
         target_dataframe_name="transactions",
         instance_ids=[1, 2, 3, 5, 6],
     )
-    feature_matrix = to_pandas(feature_matrix, index="id")
     assert len(feature_matrix.index) == 5
     assert len(feature_matrix.columns) == len(features)
 
@@ -230,20 +206,18 @@ def test_ignores_instance_ids_if_cutoff_df(dataframes, relationships):
         cutoff_time=cutoff_times_df,
         instance_ids=instance_ids,
     )
-    feature_matrix = to_pandas(feature_matrix, index="id")
     assert len(feature_matrix.index) == 3
     assert len(feature_matrix.columns) == len(features)
 
 
-def test_approximate_features(pd_dataframes, relationships):
-    # TODO: Update to use Dask dataframes when issue #985 is closed
+def test_approximate_features(dataframes, relationships):
     cutoff_times_df = pd.DataFrame(
         {"instance_id": [1, 3, 1, 5, 3, 6], "time": [11, 16, 16, 26, 17, 22]},
     )
     # force column to BooleanNullable
-    pd_dataframes["transactions"] += ({"fraud": "BooleanNullable"},)
+    dataframes["transactions"] += ({"fraud": "BooleanNullable"},)
     feature_matrix, features = dfs(
-        dataframes=pd_dataframes,
+        dataframes=dataframes,
         relationships=relationships,
         target_dataframe_name="transactions",
         cutoff_time=cutoff_times_df,
@@ -259,10 +233,10 @@ def test_approximate_features(pd_dataframes, relationships):
     assert (feature_matrix[direct_agg_feat_name] == truth_values.values).all()
 
 
-def test_all_columns(pd_dataframes, relationships):
+def test_all_columns(dataframes, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3], "time": [10, 12, 15]})
     feature_matrix, features = dfs(
-        dataframes=pd_dataframes,
+        dataframes=dataframes,
         relationships=relationships,
         target_dataframe_name="transactions",
         cutoff_time=cutoff_times_df,
@@ -291,20 +265,11 @@ def test_features_only(dataframes, relationships):
         features_only=True,
     )
 
-    # pandas creates 11 features
-    # dask creates 10 features (no skew)
-    # spark creates 9 features (no skew, no percent_true)
-    if isinstance(dataframes["transactions"][0], pd.DataFrame):
-        expected_features = 11
-    elif is_instance(dataframes["transactions"][0], dd, "DataFrame"):
-        expected_features = 10
-    else:
-        expected_features = 9
+    expected_features = 11
     assert len(features) == expected_features
 
 
 def test_accepts_relative_training_window(datetime_es):
-    # TODO: Update to use Dask dataframes when issue #882 is closed
     feature_matrix, _ = dfs(entityset=datetime_es, target_dataframe_name="transactions")
 
     feature_matrix_2, _ = dfs(
@@ -353,7 +318,6 @@ def test_accepts_relative_training_window(datetime_es):
 
 
 def test_accepts_pd_timedelta_training_window(datetime_es):
-    # TODO: Update to use Dask dataframes when issue #882 is closed
     feature_matrix, _ = dfs(
         entityset=datetime_es,
         target_dataframe_name="transactions",
@@ -365,7 +329,6 @@ def test_accepts_pd_timedelta_training_window(datetime_es):
 
 
 def test_accepts_pd_dateoffset_training_window(datetime_es):
-    # TODO: Update to use Dask dataframes when issue #882 is closed
     feature_matrix, _ = dfs(
         entityset=datetime_es,
         target_dataframe_name="transactions",
@@ -425,8 +388,6 @@ def test_handles_pandas_overflow_error(datetime_es):
 
 
 def test_warns_with_unused_primitives(es):
-    if es.dataframe_type == Library.SPARK:
-        pytest.skip("Spark throws extra warnings")
     trans_primitives = ["num_characters", "num_words", "add_numeric"]
     agg_primitives = [Max, "min"]
 
@@ -489,11 +450,11 @@ def test_no_warns_with_camel_and_title_case(es):
             )
 
 
-def test_does_not_warn_with_stacking_feature(pd_es):
+def test_does_not_warn_with_stacking_feature(es):
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         dfs(
-            entityset=pd_es,
+            entityset=es,
             target_dataframe_name="régions",
             agg_primitives=["percent_true"],
             trans_primitives=[GreaterThanScalar(5)],
@@ -505,8 +466,6 @@ def test_does_not_warn_with_stacking_feature(pd_es):
 
 
 def test_warns_with_unused_where_primitives(es):
-    if es.dataframe_type == Library.SPARK:
-        pytest.skip("Spark throws extra warnings")
     warning_text = (
         "Some specified primitives were not used during DFS:\n"
         + "  where_primitives: ['count', 'sum']\n"
@@ -528,7 +487,7 @@ def test_warns_with_unused_where_primitives(es):
     assert record[0].message.args[0] == warning_text
 
 
-def test_warns_with_unused_groupby_primitives(pd_es):
+def test_warns_with_unused_groupby_primitives(es):
     warning_text = (
         "Some specified primitives were not used during DFS:\n"
         + "  groupby_trans_primitives: ['cum_sum']\n"
@@ -539,7 +498,7 @@ def test_warns_with_unused_groupby_primitives(pd_es):
 
     with pytest.warns(UnusedPrimitiveWarning) as record:
         dfs(
-            entityset=pd_es,
+            entityset=es,
             target_dataframe_name="sessions",
             groupby_trans_primitives=["cum_sum"],
             max_depth=1,
@@ -552,7 +511,7 @@ def test_warns_with_unused_groupby_primitives(pd_es):
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         dfs(
-            entityset=pd_es,
+            entityset=es,
             target_dataframe_name="customers",
             groupby_trans_primitives=["cum_sum"],
             max_depth=1,
@@ -560,7 +519,7 @@ def test_warns_with_unused_groupby_primitives(pd_es):
         )
 
 
-def test_warns_with_unused_custom_primitives(pd_es):
+def test_warns_with_unused_custom_primitives(es):
     class AboveTen(TransformPrimitive):
         name = "above_ten"
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
@@ -578,7 +537,7 @@ def test_warns_with_unused_custom_primitives(pd_es):
 
     with pytest.warns(UnusedPrimitiveWarning) as record:
         dfs(
-            entityset=pd_es,
+            entityset=es,
             target_dataframe_name="sessions",
             trans_primitives=trans_primitives,
             max_depth=1,
@@ -591,7 +550,7 @@ def test_warns_with_unused_custom_primitives(pd_es):
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         dfs(
-            entityset=pd_es,
+            entityset=es,
             target_dataframe_name="customers",
             trans_primitives=trans_primitives,
             max_depth=1,
@@ -615,7 +574,7 @@ def test_warns_with_unused_custom_primitives(pd_es):
 
     with pytest.warns(UnusedPrimitiveWarning) as record:
         dfs(
-            entityset=pd_es,
+            entityset=es,
             target_dataframe_name="stores",
             agg_primitives=agg_primitives,
             max_depth=1,
@@ -628,7 +587,7 @@ def test_warns_with_unused_custom_primitives(pd_es):
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         dfs(
-            entityset=pd_es,
+            entityset=es,
             target_dataframe_name="sessions",
             agg_primitives=agg_primitives,
             max_depth=1,
@@ -666,7 +625,7 @@ def test_calls_progress_callback(dataframes, relationships):
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
 
-def test_calls_progress_callback_cluster(pd_dataframes, relationships, dask_cluster):
+def test_calls_progress_callback_cluster(dataframes, relationships, dask_cluster):
     class MockProgressCallback:
         def __init__(self):
             self.progress_history = []
@@ -682,7 +641,7 @@ def test_calls_progress_callback_cluster(pd_dataframes, relationships, dask_clus
 
     dkwargs = {"cluster": dask_cluster.scheduler.address}
     dfs(
-        dataframes=pd_dataframes,
+        dataframes=dataframes,
         relationships=relationships,
         target_dataframe_name="transactions",
         progress_callback=mock_progress_callback,
@@ -693,10 +652,10 @@ def test_calls_progress_callback_cluster(pd_dataframes, relationships, dask_clus
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
 
-def test_dask_kwargs(pd_dataframes, relationships, dask_cluster):
+def test_dask_kwargs(dataframes, relationships, dask_cluster):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3], "time": [10, 12, 15]})
     feature_matrix, features = dfs(
-        dataframes=pd_dataframes,
+        dataframes=dataframes,
         relationships=relationships,
         target_dataframe_name="transactions",
         cutoff_time=cutoff_times_df,
@@ -704,7 +663,7 @@ def test_dask_kwargs(pd_dataframes, relationships, dask_cluster):
 
     dask_kwargs = {"cluster": dask_cluster.scheduler.address}
     feature_matrix_2, features_2 = dfs(
-        dataframes=pd_dataframes,
+        dataframes=dataframes,
         relationships=relationships,
         target_dataframe_name="transactions",
         cutoff_time=cutoff_times_df,

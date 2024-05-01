@@ -2,7 +2,6 @@ import pandas as pd
 from woodwork.column_schema import ColumnSchema
 
 from featuretools.primitives.base.aggregation_primitive_base import AggregationPrimitive
-from featuretools.utils.gen_utils import Library
 
 
 class Median(AggregationPrimitive):
@@ -24,5 +23,5 @@ class Median(AggregationPrimitive):
     return_type = ColumnSchema(semantic_tags={"numeric"})
     description_template = "the median of {}"
 
-    def get_function(self, agg_type=Library.PANDAS):
+    def get_function(self):
         return pd.Series.median
