@@ -82,6 +82,12 @@ sql = [
 sklearn = [
     "featuretools-sklearn-transformer >= 1.0.0",
 ]
+premium = [
+    "premium-primitives >= 0.0.3",
+]
+nlp = [
+    "nlp-primitives >= 2.12.0",
+]
 docs = [
     "ipython == 8.4.0",
     "jupyter == 1.0.0",
@@ -105,7 +111,7 @@ dev = [
     "featuretools[docs,dask,test]",
 ]
 complete = [
-    "featuretools[autonormalize,sklearn,dask]",
+    "featuretools[premium,nlp,dask]",
 ]
 
 [tool.setuptools]

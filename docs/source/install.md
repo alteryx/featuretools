@@ -29,49 +29,34 @@ $ python -m pip install "featuretools[complete]"
 ```console
 $ python -m pip install "featuretools[dask]"
 ```
-```{tab} TSFresh Primitives
+```{tab} NLP Primitives
 ```console
-$ python -m pip install "featuretools[tsfresh]"
+$ python -m pip install "featuretools[nlp]"
 ```
-```{tab} AutoNormalize
+```{tab} Premium Primitives
 ```console
-$ python -m pip install "featuretools[autonormalize]"
+$ python -m pip install "featuretools[premium]"
 ```
-```{tab} SQL
-```console
-$ python -m pip install "featuretools[sql]"
-```
-```{tab} scikit-learn Transformer
-```console
-$ python -m pip install "featuretools[sklearn]"
-```
+
 ````
 ````{tab} Conda
 ```{tab} All Add-ons
 ```console
-$ conda install -c conda-forge nlp-primitives featuretools-tsfresh-primitives alteryx-open-src-update-checker
+$ conda install -c conda-forge nlp-primitives dask distributed
 ```
-```{tab} TSFresh Primitives
+```{tab} NLP Primitives
 ```console
-$ conda install -c conda-forge featuretools-tsfresh-primitives
+$ conda install -c conda-forge nlp-primitives
 ```
 ```{tab} Dask
 ```console
 $ conda install -c conda-forge dask distributed
 ```
-```{tab} SQL
-```console
-$ conda install -c conda-forge featuretools_sql
-```
 ````
 
 - **NLP Primitives**: Use Natural Language Processing Primitives in Featuretools
-- **TSFresh Primitives**: Use 60+ primitives from [tsfresh](https://tsfresh.readthedocs.io/en/latest/) in Featuretools
+- **Premium Primitives**: Use primitives from Premium Primitives in Featuretools
 - **Dask**: Use to run `calculate_feature_matrix` in parallel with `n_jobs`
-- **AutoNormalize**: Automated creation of normalized `EntitySet` from denormalized data
-- **Update Checker**: Receive automatic notifications of new Featuretools releases
-- **SQL**: Automated `EntitySet` creation from relational data stored in a SQL database
-- **scikit-learn Transformer**: Featuretools' DFS as a scikit-learn transformer
 
 ## Installing Graphviz
 
