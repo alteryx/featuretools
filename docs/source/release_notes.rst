@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Move ``flatten_list`` util function into ``feature_discovery`` module to fix import bug (:pr:`2702`)
     * Changes
         * Temporarily restrict Dask version (:pr:`2694`)
         * Remove support for creating ``EntitySets`` from Dask or Pyspark dataframes (:pr:`2705`)

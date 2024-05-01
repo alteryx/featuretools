@@ -75,3 +75,7 @@ def get_primitive_return_type(primitive: PrimitiveBase) -> ColumnSchema:
     if isinstance(return_type, list):
         return_type = return_type[0]
     return return_type
+
+
+def flatten_list(nested_list):
+    return [item for sublist in nested_list for item in sublist]
