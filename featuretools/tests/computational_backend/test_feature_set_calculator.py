@@ -937,7 +937,7 @@ def test_handles_primitive_function_name_uniqueness(es):
         def __init__(self, n):
             self.n = n
 
-        def get_function(self, agg_type="pandas"):
+        def get_function(self):
             def my_function(values):
                 return values.sum() * self.n
 
@@ -1001,7 +1001,7 @@ def test_handles_primitive_function_name_uniqueness(es):
         stack_on_exclude = [Count]
         default_value = 0
 
-        def get_function(self, agg_type="pandas"):
+        def get_function(self):
             return np.sum
 
     class Sum2(AggregationPrimitive):
@@ -1014,7 +1014,7 @@ def test_handles_primitive_function_name_uniqueness(es):
         stack_on_exclude = [Count]
         default_value = 0
 
-        def get_function(self, agg_type="pandas"):
+        def get_function(self):
             return np.sum
 
     class Sum3(AggregationPrimitive):
@@ -1027,7 +1027,7 @@ def test_handles_primitive_function_name_uniqueness(es):
         stack_on_exclude = [Count]
         default_value = 0
 
-        def get_function(self, agg_type="pandas"):
+        def get_function(self):
             return np.sum
 
     f5 = Feature(
@@ -1139,7 +1139,7 @@ def test_precalculated_features(es):
         input_types = [ColumnSchema(semantic_tags={"numeric"})]
         return_type = ColumnSchema(semantic_tags={"numeric"})
 
-        def get_function(self, agg_type="pandas"):
+        def get_function(self):
             def error(s):
                 raise RuntimeError(error_msg)
 

@@ -32,16 +32,12 @@ def _get_primitives(primitive_kind):
 
 
 def get_aggregation_primitives():
-    """Returns all aggregation primitives, regardless
-    of compatibility
-    """
+    """Returns all aggregation primitives"""
     return _get_primitives(featuretools.primitives.AggregationPrimitive)
 
 
 def get_transform_primitives():
-    """Returns all transform primitives, regardless
-    of compatibility
-    """
+    """Returns all transform primitives"""
     return _get_primitives(featuretools.primitives.TransformPrimitive)
 
 
@@ -57,9 +53,7 @@ def get_all_primitives():
 
 
 def _get_natural_language_primitives():
-    """Returns all Natural Language transform primitives,
-    regardless of compatibility
-    """
+    """Returns all Natural Language transform primitives"""
     transform_primitives = get_transform_primitives()
 
     def _natural_language_in_input_type(primitive):
