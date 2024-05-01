@@ -116,6 +116,9 @@ class EntitySet(object):
     def __sizeof__(self):
         return sum([df.__sizeof__() for df in self.dataframes])
 
+    def __dask_tokenize__(self):
+        return (EntitySet, serialize.entityset_to_description(self.metadata))
+
     def __eq__(self, other, deep=False):
         if self.id != other.id:
             return False
