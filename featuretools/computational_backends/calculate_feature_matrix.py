@@ -332,23 +332,22 @@ def calculate_feature_matrix(
             )
 
         # ensure rows are sorted by input order
-        if isinstance(feature_matrix, pd.DataFrame):
-            if isinstance(cutoff_time, pd.DataFrame):
-                feature_matrix = feature_matrix.ww.reindex(
-                    pd.MultiIndex.from_frame(
-                        cutoff_time[["instance_id", "time"]],
-                        names=feature_matrix.index.names,
-                    ),
-                )
-            else:
-                # Maintain index dtype
-                index_dtype = feature_matrix.index.get_level_values(0).dtype
-                feature_matrix = feature_matrix.ww.reindex(
-                    cutoff_time[1].astype(index_dtype),
-                    level=0,
-                )
-            if not cutoff_time_in_index:
-                feature_matrix.ww.reset_index(level="time", drop=True, inplace=True)
+        if isinstance(cutoff_time, pd.DataFrame):
+            feature_matrix = feature_matrix.ww.reindex(
+                pd.MultiIndex.from_frame(
+                    cutoff_time[["instance_id", "time"]],
+                    names=feature_matrix.index.names,
+                ),
+            )
+        else:
+            # Maintain index dtype
+            index_dtype = feature_matrix.index.get_level_values(0).dtype
+            feature_matrix = feature_matrix.ww.reindex(
+                cutoff_time[1].astype(index_dtype),
+                level=0,
+            )
+        if not cutoff_time_in_index:
+            feature_matrix.ww.reset_index(level="time", drop=True, inplace=True)
 
         if save_progress and os.path.exists(os.path.join(save_progress, "temp")):
             shutil.rmtree(os.path.join(save_progress, "temp"))
@@ -428,9 +427,8 @@ def calculate_chunk(
             progress_callback=update_progress_callback,
             include_cutoff_time=include_cutoff_time,
         )
-        if isinstance(_feature_matrix, pd.DataFrame):
-            time_index = pd.Index([time_last] * len(ids), name="time")
-            _feature_matrix = _feature_matrix.set_index(time_index, append=True)
+        time_index = pd.Index([time_last] * len(ids), name="time")
+        _feature_matrix = _feature_matrix.set_index(time_index, append=True)
         feature_matrix.append(_feature_matrix)
 
     else:
@@ -919,11 +917,8 @@ def init_ww_and_concat_fm(feature_matrix, ww_init_kwargs):
     for fm in feature_matrix:
         updated_cols = set()
         for col in cols_to_check:
-            # Only convert types for pandas if null values are present
-            is_pandas_df_with_null = (
-                isinstance(fm, pd.DataFrame) and fm[col].isnull().any()
-            )
-            if is_pandas_df_with_null:
+            # Only convert types if null values are present
+            if fm[col].isnull().any():
                 current_type = ww_init_kwargs["logical_types"][col].type_string
                 ww_init_kwargs["logical_types"][col] = replacement_type[current_type]
                 updated_cols.add(col)

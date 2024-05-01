@@ -376,7 +376,7 @@ class EntitySet(object):
         # default to object dtypes for categorical columns, but
         # indexes/foreign keys default to ints. In this case, we convert
         # the empty column's type to int
-        if isinstance(child_df, pd.DataFrame) and (
+        if (
             child_df.empty
             and child_df[child_column].dtype == object
             and parent_df.ww.columns[parent_column].is_numeric
@@ -1420,7 +1420,7 @@ class EntitySet(object):
 
         schema = self[dataframe_name].ww.schema
         if schema.time_index:
-            df_empty = df.empty if isinstance(df, pd.DataFrame) else False
+            df_empty = df.empty
             if time_last is not None and not df_empty:
                 if include_cutoff_time:
                     df = df[df[schema.time_index] <= time_last]
@@ -1450,8 +1450,7 @@ class EntitySet(object):
         secondary_time_indexes = schema.metadata.get("secondary_time_index") or {}
         for secondary_time_index, columns in secondary_time_indexes.items():
             # should we use ignore time last here?
-            df_empty = df.empty if isinstance(df, pd.DataFrame) else False
-            if time_last is not None and not df_empty:
+            if time_last is not None and not df.empty:
                 mask = df[secondary_time_index] >= time_last
                 df.loc[mask, columns] = np.nan
 

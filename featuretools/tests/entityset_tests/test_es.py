@@ -644,9 +644,6 @@ def df4():
 
 def test_converts_dtype_on_init(df4):
     logical_types = {"id": Integer, "ints": Integer, "floats": Double}
-    if not isinstance(df4, pd.DataFrame):
-        logical_types["category"] = Categorical
-        logical_types["category_int"] = Categorical
     es = EntitySet(id="test")
     df4.ww.init(name="test_dataframe", index="id", logical_types=logical_types)
     es.add_dataframe(dataframe=df4)
@@ -664,22 +661,13 @@ def test_converts_dtype_after_init(df4):
     category_dtype = "category"
 
     df4["category"] = df4["category"].astype(category_dtype)
-    if not isinstance(df4, pd.DataFrame):
-        logical_types = {
-            "id": Integer,
-            "category": Categorical,
-            "category_int": Categorical,
-            "ints": Integer,
-            "floats": Double,
-        }
-    else:
-        logical_types = None
+
     es = EntitySet(id="test")
     es.add_dataframe(
         dataframe_name="test_dataframe",
         index="id",
         dataframe=df4,
-        logical_types=logical_types,
+        logical_types=None,
     )
     df = es["test_dataframe"]
 
@@ -792,12 +780,6 @@ def test_dataframe_init(es):
         },
     )
     logical_types = {"id": Categorical, "time": Datetime}
-    if not isinstance(df, pd.DataFrame):
-        extra_logical_types = {
-            "category": Categorical,
-            "number": Integer,
-        }
-        logical_types.update(extra_logical_types)
     es.add_dataframe(
         df.copy(),
         dataframe_name="test_dataframe",
@@ -1148,16 +1130,15 @@ def test_sets_time_when_adding_dataframe(transactions_df):
             time_index="signup_date",
             logical_types=accounts_logical_types,
         )
-    # add non time type as time index, only valid for pandas
-    if isinstance(transactions_df, pd.DataFrame):
-        error_text = "Time index column must contain datetime or numeric values"
-        with pytest.raises(TypeError, match=error_text):
-            es.add_dataframe(
-                accounts_df_string,
-                dataframe_name="accounts",
-                index="id",
-                time_index="signup_date",
-            )
+
+    error_text = "Time index column must contain datetime or numeric values"
+    with pytest.raises(TypeError, match=error_text):
+        es.add_dataframe(
+            accounts_df_string,
+            dataframe_name="accounts",
+            index="id",
+            time_index="signup_date",
+        )
 
 
 def test_secondary_time_index_no_primary_time_index(es):
@@ -1398,9 +1379,7 @@ def test_normalize_time_index_from_none(normalize_es):
     assert normalize_es["normalized"].ww.time_index == "time"
     df = normalize_es["normalized"]
 
-    # only pandas sorts by time index
-    if isinstance(df, pd.DataFrame):
-        assert df["time"].is_monotonic_increasing
+    assert df["time"].is_monotonic_increasing
 
 
 def test_raise_error_if_dupicate_additional_columns_passed(es):
@@ -1589,16 +1568,12 @@ def test_datetime64_conversion(datetime3):
     df["time"] = pd.Timestamp.now()
     df["time"] = df["time"].dt.tz_localize("UTC")
 
-    if not isinstance(df, pd.DataFrame):
-        logical_types = {"id": Integer, "ints": Integer, "time": Datetime}
-    else:
-        logical_types = None
     es = EntitySet(id="test")
     es.add_dataframe(
         dataframe_name="test_dataframe",
         index="id",
         dataframe=df,
-        logical_types=logical_types,
+        logical_types=None,
     )
     es["test_dataframe"].ww.set_time_index("time")
     assert es["test_dataframe"].ww.time_index == "time"
@@ -1616,15 +1591,6 @@ def index_df():
 
 
 def test_same_index_values(index_df):
-    if not isinstance(index_df, pd.DataFrame):
-        logical_types = {
-            "id": Integer,
-            "transaction_time": Datetime,
-            "first_dataframe_time": Integer,
-        }
-    else:
-        logical_types = None
-
     es = EntitySet("example")
 
     error_text = (
@@ -1636,7 +1602,7 @@ def test_same_index_values(index_df):
             index="id",
             time_index="id",
             dataframe=index_df,
-            logical_types=logical_types,
+            logical_types=None,
         )
 
     es.add_dataframe(
@@ -1644,7 +1610,7 @@ def test_same_index_values(index_df):
         index="id",
         time_index="transaction_time",
         dataframe=index_df,
-        logical_types=logical_types,
+        logical_types=None,
     )
 
     error_text = "time_index and index cannot be the same value, first_dataframe_time"
@@ -1658,22 +1624,9 @@ def test_same_index_values(index_df):
 
 
 def test_use_time_index(index_df):
-    if not isinstance(index_df, pd.DataFrame):
-        bad_ltypes = {
-            "id": Integer,
-            "transaction_time": Datetime,
-            "first_dataframe_time": Integer,
-        }
-        bad_semantic_tags = {"transaction_time": "time_index"}
-        logical_types = {
-            "id": Integer,
-            "transaction_time": Datetime,
-            "first_dataframe_time": Integer,
-        }
-    else:
-        bad_ltypes = {"transaction_time": Datetime}
-        bad_semantic_tags = {"transaction_time": "time_index"}
-        logical_types = None
+    bad_ltypes = {"transaction_time": Datetime}
+    bad_semantic_tags = {"transaction_time": "time_index"}
+    logical_types = None
 
     es = EntitySet()
 
@@ -2071,11 +2024,7 @@ def test_entityset_deep_equality(es):
     first_es.replace_dataframe("customers", updated_df)
 
     assert first_es.__eq__(second_es, deep=False)
-    # Uses woodwork equality which only looks at df content for pandas
-    if isinstance(updated_df, pd.DataFrame):
-        assert not first_es.__eq__(second_es, deep=True)
-    else:
-        assert first_es.__eq__(second_es, deep=True)
+    assert not first_es.__eq__(second_es, deep=True)
 
 
 def test_deepcopy_entityset(make_es):

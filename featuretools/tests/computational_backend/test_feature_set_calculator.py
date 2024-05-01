@@ -858,31 +858,24 @@ def test_empty_child_dataframe(parent_child):
         primitive=NMostCommon,
     )
 
-    if isinstance(parent_df, pd.DataFrame):
-        features = [
-            count,
-            count_where,
-            trend,
-            trend_where,
-            n_most_common,
-            n_most_common_where,
-        ]
-        data = {
-            count.get_name(): pd.Series([0], dtype="Int64"),
-            count_where.get_name(): pd.Series([0], dtype="Int64"),
-            trend.get_name(): pd.Series([np.nan], dtype="float"),
-            trend_where.get_name(): pd.Series([np.nan], dtype="float"),
-        }
-        for name in n_most_common.get_feature_names():
-            data[name] = pd.Series([np.nan], dtype="category")
-        for name in n_most_common_where.get_feature_names():
-            data[name] = pd.Series([np.nan], dtype="category")
-    else:
-        features = [count, count_where]
-        data = {
-            count.get_name(): pd.Series([0], dtype="Int64"),
-            count_where.get_name(): pd.Series([0], dtype="Int64"),
-        }
+    features = [
+        count,
+        count_where,
+        trend,
+        trend_where,
+        n_most_common,
+        n_most_common_where,
+    ]
+    data = {
+        count.get_name(): pd.Series([0], dtype="Int64"),
+        count_where.get_name(): pd.Series([0], dtype="Int64"),
+        trend.get_name(): pd.Series([np.nan], dtype="float"),
+        trend_where.get_name(): pd.Series([np.nan], dtype="float"),
+    }
+    for name in n_most_common.get_feature_names():
+        data[name] = pd.Series([np.nan], dtype="category")
+    for name in n_most_common_where.get_feature_names():
+        data[name] = pd.Series([np.nan], dtype="category")
 
     answer = pd.DataFrame(data)
 

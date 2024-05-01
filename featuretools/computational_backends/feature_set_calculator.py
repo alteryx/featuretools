@@ -127,32 +127,31 @@ class FeatureSetCalculator(object):
         df = df_trie.value
 
         # Fill in empty rows with default values.
-        if isinstance(df, pd.DataFrame):
-            index_dtype = df.index.dtype.name
-            if df.empty:
-                return self.generate_default_df(instance_ids=instance_ids)
+        index_dtype = df.index.dtype.name
+        if df.empty:
+            return self.generate_default_df(instance_ids=instance_ids)
 
-            missing_ids = [
-                i for i in instance_ids if i not in df[target_dataframe.ww.index]
-            ]
-            if missing_ids:
-                default_df = self.generate_default_df(
-                    instance_ids=missing_ids,
-                    extra_columns=df.columns,
-                )
+        missing_ids = [
+            i for i in instance_ids if i not in df[target_dataframe.ww.index]
+        ]
+        if missing_ids:
+            default_df = self.generate_default_df(
+                instance_ids=missing_ids,
+                extra_columns=df.columns,
+            )
 
-                df = pd.concat([df, default_df], sort=True)
+            df = pd.concat([df, default_df], sort=True)
 
-            df.index.name = self.entityset[self.feature_set.target_df_name].ww.index
+        df.index.name = self.entityset[self.feature_set.target_df_name].ww.index
 
-            # Order by instance_ids
-            unique_instance_ids = pd.unique(instance_ids)
-            unique_instance_ids = unique_instance_ids.astype(instance_ids.dtype)
-            df = df.reindex(unique_instance_ids)
+        # Order by instance_ids
+        unique_instance_ids = pd.unique(instance_ids)
+        unique_instance_ids = unique_instance_ids.astype(instance_ids.dtype)
+        df = df.reindex(unique_instance_ids)
 
-            # Keep categorical index if original index was categorical
-            if index_dtype == "category":
-                df.index = df.index.astype("category")
+        # Keep categorical index if original index was categorical
+        if index_dtype == "category":
+            df.index = df.index.astype("category")
 
         column_list = []
 
@@ -485,7 +484,7 @@ class FeatureSetCalculator(object):
         _df_trie,
         progress_callback,
     ):
-        frame_empty = frame.empty if isinstance(frame, pd.DataFrame) else False
+        frame_empty = frame.empty
         feature_values = []
         for f in features:
             # handle when no data
@@ -669,17 +668,13 @@ class FeatureSetCalculator(object):
             return frame
 
         # handle where
-        base_frame_empty = (
-            base_frame.empty if isinstance(base_frame, pd.DataFrame) else False
-        )
+        base_frame_empty = base_frame.empty
         where = test_feature.where
         if where is not None and not base_frame_empty:
             base_frame = base_frame.loc[base_frame[where.get_name()]]
 
         # when no child data, just add all the features to frame with nan
-        base_frame_empty = (
-            base_frame.empty if isinstance(base_frame, pd.DataFrame) else False
-        )
+        base_frame_empty = base_frame.empty
         if base_frame_empty:
             feature_values = []
             for f in features:
@@ -896,9 +891,7 @@ def update_feature_columns(feature_data, data):
         data.update(new_cols)
         return data
 
-    # Handle pandas input
-    if isinstance(data, pd.DataFrame):
-        return pd.concat([data, pd.DataFrame(new_cols, index=data.index)], axis=1)
+    return pd.concat([data, pd.DataFrame(new_cols, index=data.index)], axis=1)
 
 
 def strip_values_if_series(values):

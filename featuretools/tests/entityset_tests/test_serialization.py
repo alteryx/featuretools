@@ -9,7 +9,7 @@ import boto3
 import pandas as pd
 import pytest
 import woodwork.type_sys.type_system as ww_type_system
-from woodwork.logical_types import Datetime, LogicalType, Ordinal
+from woodwork.logical_types import LogicalType, Ordinal
 from woodwork.serializers.serializer_base import typing_info_to_dict
 from woodwork.type_sys.utils import list_logical_types
 
@@ -308,20 +308,13 @@ def test_operations_invalidate_metadata(es):
     assert new_es._data_description is None
     assert new_es.metadata is not None  # generated after access
     assert new_es._data_description is not None
-    if not isinstance(es["customers"], pd.DataFrame):
-        customers_ltypes = es["customers"].ww.logical_types
-        customers_ltypes["signup_date"] = Datetime
-    else:
-        customers_ltypes = None
+    customers_ltypes = None
     new_es.add_dataframe(
         es["customers"],
         "customers",
         logical_types=customers_ltypes,
     )
-    if not isinstance(es["sessions"], pd.DataFrame):
-        sessions_ltypes = es["sessions"].ww.logical_types
-    else:
-        sessions_ltypes = None
+    sessions_ltypes = None
     new_es.add_dataframe(
         es["sessions"],
         "sessions",
