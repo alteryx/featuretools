@@ -14,6 +14,7 @@ Future Release
     * Documentation Changes
     * Testing Changes
         * Fix serialization test to work with pytest 8.1.1 (:pr:`2694`)
+        * Update to allow minimum dependency checker to run properly (:pr:`2709`)
 
     Thanks to the following people for contributing to this release:
     :user:`thehomebrewnerd`
