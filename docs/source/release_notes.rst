@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add support for Python 3.12 (:pr:``)
     * Fixes
         * Move ``flatten_list`` util function into ``feature_discovery`` module to fix import bug (:pr:`2702`)
     * Changes
