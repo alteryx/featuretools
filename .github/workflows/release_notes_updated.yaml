@@ -10,6 +10,8 @@ jobs:
       - name: Check for development branch
         id: branch
         shell: python
+        env:
+          REF: ${{ github.event.pull_request.head.ref }}
         run: |
           from re import compile
           main = '^main$'
@@ -19,7 +21,7 @@ jobs:
           min_dep_update = '^min-dep-update-[a-f0-9]{7}$'
           regex = main, release, backport, dep_update, min_dep_update
           patterns = list(map(compile, regex))
-          ref = "${{ github.event.pull_request.head.ref }}"
+          ref = "$REF"
           is_dev = not any(pattern.match(ref) for pattern in patterns)
           print('::set-output name=is_dev::' + str(is_dev))
       - if: ${{ steps.branch.outputs.is_dev == 'true' }}
