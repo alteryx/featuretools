@@ -141,7 +141,7 @@ def read_data_description(path):
 def read_entityset(path, profile_name=None, **kwargs):
     """Read entityset from disk, S3 path, or URL.
 
-    NOTE: Never attempt to read an archived entityset from an untrusted source.
+    NOTE: Never attempt to read an archived EntitySet from an untrusted source.
 
     Args:
         path (str): Directory on disk, S3 path, or URL to read `data_description.json`.
