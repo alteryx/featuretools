@@ -2,6 +2,7 @@ import json
 import os
 import tarfile
 import tempfile
+from inspect import getfullargspec
 
 import pandas as pd
 import woodwork.type_sys.type_system as ww_type_system
@@ -140,6 +141,8 @@ def read_data_description(path):
 def read_entityset(path, profile_name=None, **kwargs):
     """Read entityset from disk, S3 path, or URL.
 
+    NOTE: Never attempt to read an archived entityset from an untrusted source.
+
     Args:
         path (str): Directory on disk, S3 path, or URL to read `data_description.json`.
         profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
@@ -159,7 +162,12 @@ def read_entityset(path, profile_name=None, **kwargs):
                 use_smartopen_es(local_path, path, transport_params)
 
             with tarfile.open(str(local_path)) as tar:
-                tar.extractall(path=tmpdir)
+                if "filter" in getfullargspec(tar.extractall).kwonlyargs:
+                    tar.extractall(path=tmpdir, filter="data")
+                else:
+                    raise RuntimeError(
+                        "Please upgrade your Python version to the latest patch release to allow for safe extraction of the EntitySet archive.",
+                    )
 
             data_description = read_data_description(tmpdir)
             return description_to_entityset(data_description, **kwargs)

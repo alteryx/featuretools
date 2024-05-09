@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import tempfile
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from urllib.request import urlretrieve
 
 import boto3
@@ -290,6 +290,18 @@ def test_deserialize_local_tar(es):
         urlretrieve(URL, filename=temp_tar_filepath)
         new_es = deserialize.read_entityset(temp_tar_filepath)
         assert es.__eq__(new_es, deep=True)
+
+
+@patch("featuretools.entityset.deserialize.getfullargspec")
+def test_deserialize_errors_if_python_version_unsafe(mock_inspect, es):
+    mock_response = MagicMock()
+    mock_response.kwonlyargs = []
+    mock_inspect.return_value = mock_response
+    with tempfile.TemporaryDirectory() as tmp_path:
+        temp_tar_filepath = os.path.join(tmp_path, TEST_FILE)
+        urlretrieve(URL, filename=temp_tar_filepath)
+        with pytest.raises(RuntimeError, match=""):
+            deserialize.read_entityset(temp_tar_filepath)
 
 
 def test_deserialize_url_csv(es):
