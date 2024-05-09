@@ -7,7 +7,7 @@ jobs:
     name: pull request check
     runs-on: ubuntu-latest
     steps:
-      - uses: nearform/github-action-check-linked-issues@v1.4.5
+      - uses: nearform-actions/github-action-check-linked-issues@v1.4.5
         id: check-linked-issues
         with:
           exclude-branches: "release_v**, backport_v**, main, latest-dep-update-**, min-dep-update-**, dependabot/**"          
