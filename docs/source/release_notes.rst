@@ -13,6 +13,7 @@ Future Release
         * Temporarily restrict Dask version (:pr:`2694`)
         * Remove support for creating ``EntitySets`` from Dask or Pyspark dataframes (:pr:`2705`)
         * Bump minimum versions of ``tqdm`` and ``pip`` in requirements files (:pr:`2716`)
+        * Use ``filter`` arg in call to ``tarfile.extractall`` to safely deserialize EntitySets (:pr:`2722`)
     * Documentation Changes
     * Testing Changes
         * Fix serialization test to work with pytest 8.1.1 (:pr:`2694`)
