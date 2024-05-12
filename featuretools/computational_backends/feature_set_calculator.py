@@ -652,6 +652,9 @@ class FeatureSetCalculator(object):
                     # https://stackoverflow.com/questions/55731149/use-a-function-instead-of-string-in-pandas-groupby-agg
                     if func == pd.Series.count:
                         func = "count"
+                    # same for nunique
+                    if func == pd.Series.nunique:
+                        func = "nunique"
 
                     funcname = func
                     if callable(func):
