@@ -143,6 +143,7 @@ Binary Transform Primitives
     AddNumeric
     AddNumericScalar
     DivideByFeature
+    DivideNumeric
     DivideNumericScalar
     Equal
     EqualScalar
@@ -158,6 +159,7 @@ Binary Transform Primitives
     ModuloNumeric
     ModuloNumericScalar
     MultiplyBoolean
+    MultiplyNumeric
     MultiplyNumericBoolean
     MultiplyNumericScalar
     NotEqual
@@ -221,6 +223,7 @@ Datetime Transform Primitives
     IsYearStart
     Minute
     Month
+    NthWeekOfMonth
     PartOfDay
     Quarter
     Season
@@ -230,12 +233,13 @@ Datetime Transform Primitives
     Year
 
 
-Email and URL Transform Primitives
-**********************************
+Email, URL and File Transform Primitives
+****************************************
 .. autosummary::
     :toctree: generated/
 
     EmailAddressToDomain
+    FileExtension
     IsFreeEmailDomain
     URLToDomain
     URLToProtocol
@@ -264,8 +268,10 @@ General Transform Primitives
     NaturalLogarithm
     Negate
     Percentile
+    PercentChange
     RateOfChange
     SameAsPrevious
+    SavgolFilter
     Sine
     SquareRoot
     Tangent
@@ -282,6 +288,15 @@ Location Transform Primitives
     IsInGeoBox
     Latitude
     Longitude
+
+Name Transform Primitives
+*************************
+.. autosummary::
+   :toctree: generated/
+
+    FullNameToFirstName
+    FullNameToLastName
+    FullNameToTitle
 
 NaturalLanguage Transform Primitives
 ************************************
