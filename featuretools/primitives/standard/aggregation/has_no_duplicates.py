@@ -18,12 +18,12 @@ class HasNoDuplicates(AggregationPrimitive):
         >>> has_no_duplicates([1, 2, 3])
         True
 
-        `NaN`s are skipped by default.
+        NaNs are skipped by default.
 
         >>> has_no_duplicates([1, 2, 3, None, None])
         True
 
-        However, the way `NaN`s are treated can be controlled.
+        However, the way NaNs are treated can be controlled.
 
         >>> has_no_duplicates_skipna = HasNoDuplicates(skipna=False)
         >>> has_no_duplicates_skipna([1, 2, 3, None, None])
