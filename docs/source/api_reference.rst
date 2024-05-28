@@ -70,6 +70,7 @@ Aggregation Primitives
 
     All
     Any
+    AverageCountPerUnique
     AvgTimeBetween
     Count
     CountAboveMean
@@ -80,8 +81,15 @@ Aggregation Primitives
     CountLessThan
     CountOutsideNthSTD
     CountOutsideRange
+    DateFirstEvent
     Entropy
     First
+    FirstLastTimeDelta
+    HasNoDuplicates
+    IsMonotonicallyDecreasing
+    IsMonotonicallyIncreasing
+    IsUnique
+    Kurtosis
     Last
     Max
     MaxConsecutiveFalse
@@ -89,16 +97,30 @@ Aggregation Primitives
     MaxConsecutivePositives
     MaxConsecutiveTrue
     MaxConsecutiveZeros
+    MaxCount
+    MaxMinDelta
     Mean
     Median
+    MedianCount
     Min
+    MinCount
     Mode
     NMostCommon
+    NMostCommonFrequency
+    NUniqueDays
+    NUniqueDaysOfCalendarYear
+    NUniqueMonths
+    NUniqueWeeks
     NumConsecutiveGreaterMean
     NumConsecutiveLessMean
+    NumFalseSinceLastTrue
+    NumPeaks
     NumTrue
+    NumTrueSinceLastFalse
     NumUnique
+    NumZeroCrossings
     PercentTrue
+    PercentUnique
     Skew
     Std
     Sum
@@ -109,6 +131,7 @@ Aggregation Primitives
     TimeSinceLastMin
     TimeSinceLastTrue
     Trend
+    Variance
 
 Transform Primitives
 --------------------
