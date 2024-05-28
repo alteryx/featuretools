@@ -195,6 +195,8 @@ Cumulative Transform Primitives
     CumMean
     CumMin
     CumMax
+    CumulativeTimeSinceLastFalse
+    CumulativeTimeSinceLastTrue
 
 
 Datetime Transform Primitives
@@ -211,6 +213,7 @@ Datetime Transform Primitives
     DistanceToHoliday
     Hour
     IsFederalHoliday
+    IsFirstWeekOfMonth
     IsLeapYear
     IsLunchTime
     IsMonthEnd
@@ -228,6 +231,7 @@ Datetime Transform Primitives
     Quarter
     Season
     Second
+    TimeSince
     Week
     Weekday
     Year
