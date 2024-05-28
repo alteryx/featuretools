@@ -6,13 +6,15 @@ from featuretools.primitives.base import AggregationPrimitive
 
 
 class NumTrueSinceLastFalse(AggregationPrimitive):
-    """Calculates the number of 'True' values since the last `False` value.
+    """Calculates the number of `True` values since the last `False` value.
+
     Description:
         From a series of Booleans, find the last record with a `False` value.
-        Return the count of 'True' values between that record and the end of
+        Return the count of `True` values between that record and the end of
         the series. Return nan if no values are `False`. Any nan values in the
-        input are ignored. A 'False' value in the last row will result in a
+        input are ignored. A `False` value in the last row will result in a
         count of 0.
+
     Examples:
         >>> num_true_since_last_false = NumTrueSinceLastFalse()
         >>> num_true_since_last_false([False, True, False, True, True])
