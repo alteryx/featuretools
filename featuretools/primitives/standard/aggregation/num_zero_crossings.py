@@ -7,11 +7,13 @@ from featuretools.primitives.base import AggregationPrimitive
 
 class NumZeroCrossings(AggregationPrimitive):
     """Determines the number of times a list crosses 0.
+
     Description:
         Given a list of numbers, return the number of times the value
         crosses 0. It is the number of times the value goes from a
         positive number to a negative number, or a negative number to
         a positive number. NaN values are ignored.
+
     Examples:
         >>> num_zero_crossings = NumZeroCrossings()
         >>> num_zero_crossings([1, -1, 2, -2, 3, -3])

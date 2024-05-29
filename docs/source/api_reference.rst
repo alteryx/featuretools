@@ -70,6 +70,7 @@ Aggregation Primitives
 
     All
     Any
+    AverageCountPerUnique
     AvgTimeBetween
     Count
     CountAboveMean
@@ -80,8 +81,15 @@ Aggregation Primitives
     CountLessThan
     CountOutsideNthSTD
     CountOutsideRange
+    DateFirstEvent
     Entropy
     First
+    FirstLastTimeDelta
+    HasNoDuplicates
+    IsMonotonicallyDecreasing
+    IsMonotonicallyIncreasing
+    IsUnique
+    Kurtosis
     Last
     Max
     MaxConsecutiveFalse
@@ -89,16 +97,30 @@ Aggregation Primitives
     MaxConsecutivePositives
     MaxConsecutiveTrue
     MaxConsecutiveZeros
+    MaxCount
+    MaxMinDelta
     Mean
     Median
+    MedianCount
     Min
+    MinCount
     Mode
     NMostCommon
+    NMostCommonFrequency
+    NUniqueDays
+    NUniqueDaysOfCalendarYear
+    NUniqueMonths
+    NUniqueWeeks
     NumConsecutiveGreaterMean
     NumConsecutiveLessMean
+    NumFalseSinceLastTrue
+    NumPeaks
     NumTrue
+    NumTrueSinceLastFalse
     NumUnique
+    NumZeroCrossings
     PercentTrue
+    PercentUnique
     Skew
     Std
     Sum
@@ -109,6 +131,7 @@ Aggregation Primitives
     TimeSinceLastMin
     TimeSinceLastTrue
     Trend
+    Variance
 
 Transform Primitives
 --------------------
@@ -120,6 +143,7 @@ Binary Transform Primitives
     AddNumeric
     AddNumericScalar
     DivideByFeature
+    DivideNumeric
     DivideNumericScalar
     Equal
     EqualScalar
@@ -135,6 +159,7 @@ Binary Transform Primitives
     ModuloNumeric
     ModuloNumericScalar
     MultiplyBoolean
+    MultiplyNumeric
     MultiplyNumericBoolean
     MultiplyNumericScalar
     NotEqual
@@ -170,6 +195,8 @@ Cumulative Transform Primitives
     CumMean
     CumMin
     CumMax
+    CumulativeTimeSinceLastFalse
+    CumulativeTimeSinceLastTrue
 
 
 Datetime Transform Primitives
@@ -186,6 +213,7 @@ Datetime Transform Primitives
     DistanceToHoliday
     Hour
     IsFederalHoliday
+    IsFirstWeekOfMonth
     IsLeapYear
     IsLunchTime
     IsMonthEnd
@@ -198,21 +226,24 @@ Datetime Transform Primitives
     IsYearStart
     Minute
     Month
+    NthWeekOfMonth
     PartOfDay
     Quarter
     Season
     Second
+    TimeSince
     Week
     Weekday
     Year
 
 
-Email and URL Transform Primitives
-**********************************
+Email, URL and File Transform Primitives
+****************************************
 .. autosummary::
     :toctree: generated/
 
     EmailAddressToDomain
+    FileExtension
     IsFreeEmailDomain
     URLToDomain
     URLToProtocol
@@ -241,8 +272,10 @@ General Transform Primitives
     NaturalLogarithm
     Negate
     Percentile
+    PercentChange
     RateOfChange
     SameAsPrevious
+    SavgolFilter
     Sine
     SquareRoot
     Tangent
@@ -259,6 +292,15 @@ Location Transform Primitives
     IsInGeoBox
     Latitude
     Longitude
+
+Name Transform Primitives
+*************************
+.. autosummary::
+   :toctree: generated/
+
+    FullNameToFirstName
+    FullNameToLastName
+    FullNameToTitle
 
 NaturalLanguage Transform Primitives
 ************************************

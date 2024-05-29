@@ -10,8 +10,7 @@ class NMostCommonFrequency(AggregationPrimitive):
     """Determines the frequency of the n most common items.
 
     Args:
-        n (int): defines "n" in "n most common". Defaults to
-            3.
+        n (int): defines "n" in "n most common". Defaults to 3.
         skipna (bool): Determines if to use NA/null values.
             Defaults to True to skip NA/null.
 
@@ -31,13 +30,13 @@ class NMostCommonFrequency(AggregationPrimitive):
         >>> n_most_common_frequency([1, 1, 1, 2, 2, 3, 4, 4]).to_list()
         [3, 2, 2, 1]
 
-        `NaN`s are skipped by default.
+        NaNs are skipped by default.
 
         >>> n_most_common_frequency = NMostCommonFrequency(3)
         >>> n_most_common_frequency([1, 1, 1, 2, 2, 3, 4, 4, None, None, None]).to_list()
         [3, 2, 2]
 
-        However, the way `NaN`s are treated can be controlled.
+        However, the way NaNs are treated can be controlled.
 
         >>> n_most_common_frequency = NMostCommonFrequency(3, skipna=False)
         >>> n_most_common_frequency([1, 1, 1, 2, 2, 3, 4, 4, None, None, None]).to_list()
