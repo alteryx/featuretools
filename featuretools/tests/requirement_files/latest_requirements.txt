@@ -2,7 +2,7 @@ cloudpickle==3.0.0
 dask==2024.5.2
 dask-expr==1.1.2
 distributed==2024.5.2
-holidays==0.49
+holidays==0.50
 numpy==1.26.4
 pandas==2.2.2
 psutil==5.9.8
