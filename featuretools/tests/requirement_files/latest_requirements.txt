@@ -3,7 +3,7 @@ dask==2024.6.0
 dask-expr==1.1.3
 distributed==2024.6.0
 holidays==0.50
-numpy==1.26.4
+numpy==2.0.0
 pandas==2.2.2
 psutil==5.9.8
 scipy==1.13.1
