@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Restrict numpy to <2.0.0 (:pr:`2743`)
     * Documentation Changes
         * Update API Docs to include previously missing primitives (:pr:`2737`)
     * Testing Changes
