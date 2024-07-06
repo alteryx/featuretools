@@ -69,7 +69,7 @@ class ExpandingCount(TransformPrimitive):
                 min_periods=self.min_periods,
             ).count()
             num_nans = self.gap + self.min_periods - 1
-            count_series[range(num_nans)] = np.nan
+            count_series.iloc[range(num_nans)] = np.nan
             return count_series
 
         return expanding_count

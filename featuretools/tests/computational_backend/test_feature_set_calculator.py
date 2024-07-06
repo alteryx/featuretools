@@ -517,7 +517,7 @@ def test_make_3_stacked_agg_feats(df):
     feature_set = FeatureSet([sum_3])
     calculator = FeatureSetCalculator(es, time_last=None, feature_set=feature_set)
     df = calculator.run(np.array(["z"]))
-    v = df[sum_3.get_name()][0]
+    v = df[sum_3.get_name()].iloc[0]
     assert v == 5
 
 
@@ -635,7 +635,7 @@ def test_deep_agg_feat_chain(es):
     calculator = FeatureSetCalculator(es, time_last=None, feature_set=feature_set)
     df = calculator.run(np.array(["United States"]))
 
-    v = df[region_avg_feat.get_name()][0]
+    v = df[region_avg_feat.get_name()].iloc[0]
     assert v == 17 / 3.0
 
 
@@ -696,7 +696,7 @@ def test_direct_squared(es):
     calculator = FeatureSetCalculator(es, time_last=None, feature_set=feature_set)
     df = calculator.run(np.array([0, 1, 2]))
     for i, row in df.iterrows():
-        assert (row[0] * row[0]) == row[1]
+        assert (row.iloc[0] * row.iloc[0]) == row.iloc[1]
 
 
 def test_agg_empty_child(es):
