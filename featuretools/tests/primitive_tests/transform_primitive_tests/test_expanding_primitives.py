@@ -28,7 +28,7 @@ def test_expanding_count_series(window_series, min_periods, gap):
     test = window_series.shift(gap)
     expected = test.expanding(min_periods=min_periods).count()
     num_nans = gap + min_periods - 1
-    expected[range(num_nans)] = np.nan
+    expected.iloc[range(num_nans)] = np.nan
     primitive_instance = ExpandingCount(min_periods=min_periods, gap=gap).get_function()
     actual = primitive_instance(window_series.index)
     pd.testing.assert_series_equal(pd.Series(actual), expected)
@@ -47,7 +47,7 @@ def test_expanding_count_date_range(window_date_range, min_periods, gap):
     test = _apply_gap_for_expanding_primitives(gap=gap, x=window_date_range)
     expected = test.expanding(min_periods=min_periods).count()
     num_nans = gap + min_periods - 1
-    expected[range(num_nans)] = np.nan
+    expected.iloc[range(num_nans)] = np.nan
     primitive_instance = ExpandingCount(min_periods=min_periods, gap=gap).get_function()
     actual = primitive_instance(window_date_range)
     pd.testing.assert_series_equal(pd.Series(actual), expected)
