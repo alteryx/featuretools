@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Access a value by position, use ser.iloc[pos] (:pr:`2750`)
     * Changes
         * Restrict numpy to <2.0.0 (:pr:`2743`)
     * Documentation Changes
