@@ -4,8 +4,8 @@ class MyPanel(wx.Panel):
     def __init__(self, parent=None):
         super(MyPanel, self).__init__(parent)
 
-        # Create a label
-        self.label = wx.StaticText(self, wx.ID_ANY, "This is a label")
+        # Label 1
+        self.label = wx.StaticText(self, wx.ID_ANY, "Featuretools - Choose a feature")
         self.label.SetPosition((50, 20))  # Set position manually
         
         # Create a button
