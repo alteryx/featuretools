@@ -1,5 +1,9 @@
 import wx
 
+"""
+This module provides a GUI for some parts of Featuretools.
+"""
+
 class MyPanel(wx.Panel):
     def __init__(self, parent=None):
         super(MyPanel, self).__init__(parent)
