@@ -20,6 +20,9 @@ class MyPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.onButtonClicked, self.button)
 
     def onButtonClicked(self, event):
+        
+        """Action when button is clicked"""
+
         print("Button clicked!")
 
 class MyApp(wx.App):
