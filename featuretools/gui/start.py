@@ -12,7 +12,7 @@ class MyPanel(wx.Panel):
         self.label = wx.StaticText(self, wx.ID_ANY, "Featuretools - Choose a feature")
         self.label.SetPosition((50, 20))  # Set position manually
         
-        # Create a button
+        # Create first button
         self.button = wx.Button(self, wx.ID_ANY, "Test Button")
         self.button.SetPosition((50, 60))  # Set position manually
         
