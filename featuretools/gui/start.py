@@ -9,7 +9,7 @@ class MyPanel(wx.Panel):
         super(MyPanel, self).__init__(parent)
 
         # Label 1
-        self.label = wx.StaticText(self, wx.ID_ANY, "Featuretools - Choose a feature")
+        self.label = wx.StaticText(self, wx.ID_ANY, "Featuretools - Choose a feature ")
         self.label.SetPosition((50, 20))  # Set position manually
         
         # Create first button
