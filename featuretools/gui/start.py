@@ -13,7 +13,7 @@ class MyPanel(wx.Panel):
         self.label.SetPosition((50, 20))  # Set position manually
         
         # Create first button
-        self.button = wx.Button(self, wx.ID_ANY, " Test Button")
+        self.button = wx.Button(self, wx.ID_ANY, " Test Button ")
         self.button.SetPosition((50, 60))  # Set position manually
         
         # Bind event handler for the first button
