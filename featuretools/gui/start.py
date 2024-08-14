@@ -21,7 +21,7 @@ class MyPanel(wx.Panel):
 
     def onButtonClicked(self, event):
         
-        """Action when button is clicked """
+        """ Action when button is clicked """
 
         print("Button clicked")
 
