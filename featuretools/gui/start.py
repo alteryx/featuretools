@@ -14,7 +14,7 @@ class MyPanel(wx.Panel):
         
         # Create first button
         self.button = wx.Button(self, wx.ID_ANY, " Test Button ")
-        self.button.SetPosition((50, 60))  # Set position manually
+        self.button.SetPosition((50, 60))  # Set position manually 
         
         # Bind event handler for the first button
         self.Bind(wx.EVT_BUTTON, self.onButtonClicked, self.button)
