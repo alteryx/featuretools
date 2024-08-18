@@ -23,7 +23,7 @@ class MyPanel(wx.Panel):
         
         """ Action when button is clicked """
 
-        print("Button clicked")
+        print("Button clicked") 
 
 class MyApp(wx.App):
     def OnInit(self):
