@@ -28,7 +28,7 @@ class MyPanel(wx.Panel):
 class MyApp(wx.App):
     def OnInit(self):
         frame = wx.Frame(None, wx.ID_ANY, " Panel Example ")
-        panel = MyPanel(frame)
+        panel = MyPanel(frame) 
         frame.Show()
         return True
 
