@@ -30,7 +30,7 @@ class MyApp(wx.App):
         frame = wx.Frame(None, wx.ID_ANY, " Panel Example ")
         panel = MyPanel(frame) 
         frame.Show()
-        return True
+        return True 
 
 if __name__ == "__main__":
     app = MyApp()
