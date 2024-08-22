@@ -29,7 +29,7 @@ class MyApp(wx.App):
     def OnInit(self):
         frame = wx.Frame(None, wx.ID_ANY, " Panel Example ")
         panel = MyPanel(frame) 
-        frame.Show()
+        frame.Show() 
         return True 
 
 if __name__ == "__main__":
