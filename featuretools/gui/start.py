@@ -1,7 +1,7 @@
 import wx
 
 """
-This module provides a GUI for some parts of Featuretools. 
+This module provides a GUI for some parts of Featuretools.  
 """
 
 class MyPanel(wx.Panel):
