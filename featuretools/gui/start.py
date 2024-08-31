@@ -26,7 +26,7 @@ class MyPanel(wx.Panel):
         print("Button clicked") 
 
 class MyApp(wx.App):
-    def OnInit(self):
+    def OnInit(self): 
         frame = wx.Frame(None, wx.ID_ANY, " Panel Example ") 
         panel = MyPanel(frame) 
         frame.Show()  
