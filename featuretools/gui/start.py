@@ -8,7 +8,7 @@ class Frame(wx.Frame):
         self.panel1 = wx.Panel(self)
 
         # List of chosen files
-        self.chosen_files = []
+        self.chosen_files = [] 
 
         # Primary key
         self.primary_key = ""
