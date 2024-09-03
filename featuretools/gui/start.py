@@ -2,7 +2,7 @@ import wx
 
 class Frame(wx.Frame):
     def __init__(self, parent, title):
-        super().__init__(parent, title=title, size=(400, 300))
+        super().__init__(parent, title=title, size=(400, 300)) 
         
         #Create panels
         self.panel1 = wx.Panel(self)
