@@ -1470,7 +1470,7 @@ class EntitySet(object):
 
         Args:
             dataframe_name (str): The id of the dataframe to query
-            instance_vals (pd.Dataframe, pd.Series, list[str] or str) :
+            instance_vals (pd.Series) :
                 Instance(s) to match.
             column_name (str) : Column to query on. If None, query on index.
             columns (list[str]) : Columns to return. Return all columns if None.
@@ -1501,7 +1501,7 @@ class EntitySet(object):
         if instance_vals is None:
             df = dataframe.copy()
 
-        elif isinstance(instance_vals, pd.Series) and instance_vals.empty:
+        elif instance_vals.empty:
             df = dataframe.head(0)
 
         else:
@@ -1681,21 +1681,12 @@ class EntitySet(object):
 
 def _vals_to_series(instance_vals, column_id):
     """
-    instance_vals may be a pd.Dataframe, a pd.Series, a list, a single
-    value, or None. This function always returns a Series or None.
+    instance_vals may be a pd.Series, a list, or None. This function always returns a Series or None.
     """
     if instance_vals is None:
         return None
-
-    # If this is a single value, make it a list
-    if not hasattr(instance_vals, "__iter__"):
-        instance_vals = [instance_vals]
-
-    # convert iterable to pd.Series
-    if isinstance(instance_vals, pd.DataFrame):
-        out_vals = instance_vals[column_id]
-    else:
-        out_vals = pd.Series(instance_vals)
+    
+    out_vals = pd.Series(instance_vals)
 
     # no duplicates or NaN values
     out_vals = out_vals.drop_duplicates().dropna()
