@@ -744,7 +744,7 @@ def parallel_calculate_chunks(
         _saved_features = client.scatter(pickled_feats)
         client.replicate([_es, _saved_features])
         num_scattered_workers = len(
-            client.who_has([Future(es_token)]).get(es_token, []),
+            client.who_has([Future(es_token, client=client)]).get(es_token, []),
         )
         num_workers = len(client.scheduler_info()["workers"].values())
 
