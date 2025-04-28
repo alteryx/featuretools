@@ -12,6 +12,7 @@ Future Release
     * Documentation Changes
         * Update API Docs to include previously missing primitives (:pr:`2737`)
     * Testing Changes
+        * Add Codecov test analytics (:pr:`2761`)
 
     Thanks to the following people for contributing to this release:
     :user:`thehomebrewnerd`
