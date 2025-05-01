@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Added comprehensive primitive docstrings with detailed examples (#XXXX)
+        * Added comprehensive primitive docstrings with detailed examples
             * Enhanced documentation for NumUnique, Absolute, and Weekend primitives
             * Added basic usage examples with sample data
             * Included EntitySet integration examples
