@@ -6,6 +6,12 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Added comprehensive primitive docstrings with detailed examples (#XXXX)
+            * Enhanced documentation for NumUnique, Absolute, and Weekend primitives
+            * Added basic usage examples with sample data
+            * Included EntitySet integration examples
+            * Demonstrated primitive combinations
+            * Improved overall documentation clarity and usability
     * Fixes
     * Changes
         * Restrict numpy to <2.0.0 (:pr:`2743`)
