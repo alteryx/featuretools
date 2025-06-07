@@ -1416,16 +1416,30 @@ class EntitySet(object):
         Filter a dataframe for all instances before time_last.
         If the dataframe does not have a time index, return the original
         dataframe.
+        Modified: Retain rows with missing time indices (NaN/NaT) so that non-time-based features can still be computed.
         """
 
         schema = self[dataframe_name].ww.schema
         if schema.time_index:
             df_empty = df.empty
             if time_last is not None and not df_empty:
+                # Identify rows with missing time index
+                missing_time_mask = df[schema.time_index].isna()
+                if missing_time_mask.any():
+                    import warnings
+                    warnings.warn(
+                        f"DataFrame '{dataframe_name}' contains rows with missing time indices. Time-based features will be NaN for these rows.",
+                        UserWarning,
+                    )
+                # Only filter rows with valid time index
+                valid_time_mask = ~missing_time_mask
                 if include_cutoff_time:
-                    df = df[df[schema.time_index] <= time_last]
+                    time_mask = df[schema.time_index] <= time_last
                 else:
-                    df = df[df[schema.time_index] < time_last]
+                    time_mask = df[schema.time_index] < time_last
+                # Combine: keep rows with missing time index, and rows with valid time index that pass the filter
+                combined_mask = missing_time_mask | (valid_time_mask & time_mask)
+                df = df[combined_mask]
                 if training_window is not None:
                     training_window = _check_timedelta(training_window)
                     if include_cutoff_time:
@@ -1442,9 +1456,10 @@ class EntitySet(object):
                     else:
                         warnings.warn(
                             "Using training_window but last_time_index is "
-                            "not set for dataframe %s" % (dataframe_name),
+                            f"not set for dataframe {dataframe_name}",
                         )
-
+                    # Again, keep rows with missing time index
+                    mask = mask | df[schema.time_index].isna()
                     df = df[mask]
 
         secondary_time_indexes = schema.metadata.get("secondary_time_index") or {}

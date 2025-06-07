@@ -38,6 +38,7 @@ from featuretools.primitives import (
     Sum,
     TimeSinceLast,
     Trend,
+    TimeSincePrevious,
 )
 from featuretools.primitives.base import AggregationPrimitive
 from featuretools.primitives.standard.aggregation.num_unique import NumUnique
@@ -1202,3 +1203,37 @@ def test_nunique_nested_with_agg_bug(es):
     df = calculator.run(np.array([0]))
 
     assert df.iloc[0, 0].round(4) == 1.6667
+
+
+def test_missing_time_index_rows():
+    # Create a simple DataFrame with a time index and a missing value
+    df = pd.DataFrame({
+        'id': [1, 2, 3, 4],
+        'value': [10, 20, 30, 40],
+        'time': [datetime(2020, 1, 1), pd.NaT, datetime(2020, 1, 3), datetime(2020, 1, 4)]
+    })
+    es = EntitySet()
+    es.add_dataframe(
+        dataframe_name='test',
+        dataframe=df,
+        index='id',
+        time_index='time',
+    )
+
+    # Non-time-based feature
+    f_value = Feature(es['test'].ww['value'])
+    # Time-based feature (transform primitive, base is time column)
+    f_time_since = Feature(
+        es['test'].ww['time'],
+        primitive=TimeSincePrevious
+    )
+
+    feature_matrix = calculate_feature_matrix([f_value, f_time_since], es)
+    feature_matrix_sorted = feature_matrix.sort_index()
+
+    # Check that non-time-based feature is computed for all rows
+    assert feature_matrix_sorted['value'].tolist() == [10, 20, 30, 40]
+    # Check that time-based feature is NaN for the first row and for the row with missing time index
+    is_nan = feature_matrix_sorted[f_time_since.get_name()].isna().tolist()
+    # The first row and the second row (id=2, which has NaT in time) should be NaN for time-based feature
+    assert is_nan == [True, True, False, False]

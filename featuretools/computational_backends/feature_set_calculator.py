@@ -506,7 +506,21 @@ class FeatureSetCalculator(object):
             # apply the function to the relevant dataframe slice and add the
             # feature row to the results dataframe.
             if f.primitive.uses_calc_time:
-                values = feature_func(*column_data, time=self.time_last)
+                # If time-based, set to NaN for rows with missing time index
+                time_index = self.entityset[self.feature_set.target_df_name].ww.time_index
+                if time_index is not None and time_index in frame.columns:
+                    missing_time_mask = frame[time_index].isna()
+                    values = feature_func(*column_data, time=self.time_last)
+                    # Set to NaN where time index is missing
+                    if isinstance(values, pd.Series):
+                        values = values.copy()
+                        values[missing_time_mask] = np.nan
+                    else:
+                        # If not a Series, convert to Series for masking
+                        values = pd.Series(values, index=frame.index)
+                        values[missing_time_mask] = np.nan
+                else:
+                    values = feature_func(*column_data, time=self.time_last)
             else:
                 values = feature_func(*column_data)
 
@@ -734,7 +748,7 @@ class FeatureSetCalculator(object):
                         # column twice, wrap it in a partial to avoid
                         # duplicate functions
                         funcname = str(id(func))
-                        if "{}-{}".format(column_id, funcname) in agg_rename:
+                        if f"{column_id}-{funcname}" in agg_rename:
                             func = partial(func)
                             funcname = str(id(func))
 
@@ -742,7 +756,7 @@ class FeatureSetCalculator(object):
 
                     to_agg[column_id].append(func)
                     # this is used below to rename columns that pandas names for us
-                    agg_rename["{}-{}".format(column_id, funcname)] = f.get_name()
+                    agg_rename[f"{column_id}-{funcname}"] = f.get_name()
                     continue
 
                 to_apply.add(f)
@@ -761,6 +775,16 @@ class FeatureSetCalculator(object):
                     sort=False,
                     group_keys=False,
                 ).apply(wrap)
+                # Set to NaN for time-based features where time index is missing
+                for f in to_apply:
+                    if f.primitive.uses_calc_time:
+                        time_index = self.entityset[self.feature_set.target_df_name].ww.time_index
+                        if time_index is not None and time_index in frame.columns:
+                            missing_time_mask = frame[time_index].isna()
+                            for name in f.get_feature_names():
+                                if name in to_merge.columns:
+                                    to_merge[name] = to_merge[name].copy()
+                                    to_merge.loc[missing_time_mask, name] = np.nan
                 frame = pd.merge(
                     left=frame,
                     right=to_merge,
@@ -797,6 +821,17 @@ class FeatureSetCalculator(object):
                         categories=frame.index.categories,
                     )
                     to_merge.index = to_merge.index.astype(object).astype(categories)
+
+                # Set to NaN for time-based features where time index is missing
+                for f in features:
+                    if f.primitive.uses_calc_time:
+                        time_index = self.entityset[self.feature_set.target_df_name].ww.time_index
+                        if time_index is not None and time_index in frame.columns:
+                            missing_time_mask = frame[time_index].isna()
+                            for name in f.get_feature_names():
+                                if name in to_merge.columns:
+                                    to_merge[name] = to_merge[name].copy()
+                                    to_merge.loc[missing_time_mask, name] = np.nan
 
                 frame = pd.merge(
                     left=frame,
