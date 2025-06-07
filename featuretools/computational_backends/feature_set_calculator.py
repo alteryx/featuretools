@@ -248,125 +248,51 @@ class FeatureSetCalculator(object):
         new_ancestor_relationship_columns = []
         if parent_data:
             parent_relationship, ancestor_relationship_columns, parent_df = parent_data
-
-            if ancestor_relationship_columns:
-                (
-                    df,
-                    new_ancestor_relationship_columns,
-                ) = self._add_ancestor_relationship_columns(
-                    df,
-                    parent_df,
-                    ancestor_relationship_columns,
-                    parent_relationship,
+            new_ancestor_relationship_columns =\
+                self._add_ancestor_relationship_columns(
+                    df, parent_df, ancestor_relationship_columns, parent_relationship
                 )
 
-            # Add the column linking this dataframe to its parent, so that
-            # descendants get linked to the parent.
-            new_ancestor_relationship_columns.append(
-                parent_relationship._child_column_name,
-            )
+        df_trie.value = self._calculate_features(df, df_trie, full_dataframe_features, progress_callback)
 
-        # call to update timer
-        progress_callback(0)
+        # Add dataframe to full_dataframe_trie. We do this in case a feature depends on
+        # a full dataframe with certain columns (i.e. parent features needed for a direct
+        # feature). The full_dataframe_trie gets pruned at the end of the dfs so
+        # only the necessary dataframes and columns are saved.
+        full_dataframe_trie.value = self._calculate_features(df, full_dataframe_trie, all_features, progress_callback)
 
-        # Step 3: Recurse on children.
-
-        # Pass filtered values, even if we are using a full df.
-        if need_full_dataframe:
-            filtered_df = df[df[filter_column].isin(filter_values)]
-        else:
-            filtered_df = df
-
-        for edge, sub_trie in feature_trie.children():
-            is_forward, relationship = edge
-            if is_forward:
-                sub_dataframe_name = relationship.parent_dataframe.ww.name
-                sub_filter_column = relationship._parent_column_name
-                sub_filter_values = filtered_df[relationship._child_column_name]
-                parent_data = None
-            else:
-                sub_dataframe_name = relationship.child_dataframe.ww.name
-                sub_filter_column = relationship._child_column_name
-                sub_filter_values = filtered_df[relationship._parent_column_name]
-
-                parent_data = (relationship, new_ancestor_relationship_columns, df)
-
-            sub_df_trie = df_trie.get_node([edge])
-            sub_full_dataframe_trie = full_dataframe_trie.get_node([edge])
-            sub_precalc_trie = precalculated_trie.get_node([edge])
+        # Step 3: Traverse the trie of features, calculating the features for children
+        # and adding them to the dataframe.
+        for relationship, child_feature_trie in feature_trie.items():
             self._calculate_features_for_dataframe(
-                dataframe_name=sub_dataframe_name,
-                feature_trie=sub_trie,
-                df_trie=sub_df_trie,
-                full_dataframe_trie=sub_full_dataframe_trie,
-                precalculated_trie=sub_precalc_trie,
-                filter_column=sub_filter_column,
-                filter_values=sub_filter_values,
-                parent_data=parent_data,
+                dataframe_name=relationship.child_dataframe.ww.name,
+                feature_trie=child_feature_trie,
+                df_trie=df_trie.get_node(relationship),
+                full_dataframe_trie=full_dataframe_trie.get_node(relationship),
+                precalculated_trie=precalculated_trie.get_node(relationship),
+                filter_column=relationship.child_column.ww.name,
+                filter_values=df[relationship.parent_column.ww.name],
+                parent_data=(
+                    relationship,
+                    new_ancestor_relationship_columns,
+                    df,
+                ),
                 progress_callback=progress_callback,
                 include_cutoff_time=include_cutoff_time,
             )
 
-        # Step 4: Calculate the features for this dataframe.
-        #
-        # All dependencies of the features for this dataframe have been calculated
-        # by the above recursive calls, and their results stored in df_trie.
-
-        # Add any precalculated features.
-        precalculated_features_df = precalculated_trie.value
-        if precalculated_features_df is not None:
-            # Left outer merge to keep all rows of df.
-            df = df.merge(
-                precalculated_features_df,
-                how="left",
-                left_index=True,
-                right_index=True,
-                suffixes=("", "_precalculated"),
-            )
-
-        # call to update timer
-        progress_callback(0)
-
-        # First, calculate any features that require the full dataframe. These can
-        # be calculated first because all of their dependents are included in
-        # full_dataframe_features.
-        if need_full_dataframe:
-            df = self._calculate_features(
-                df,
-                full_dataframe_trie,
-                full_dataframe_features,
-                progress_callback,
-            )
-
-            # Store full dataframe
-            full_dataframe_trie.value = df
-
-            # Filter df so that features that don't require the full dataframe are
-            # only calculated on the necessary instances.
-            df = df[df[filter_column].isin(filter_values)]
-
-        # Calculate all features that don't require the full dataframe.
-        df = self._calculate_features(
-            df,
-            df_trie,
-            not_full_dataframe_features,
-            progress_callback,
-        )
-
-        # Step 5: Store the dataframe for this dataframe at the root of df_trie, so
-        # that it can be accessed by the caller.
-        df_trie.value = df
+        # Step 4: After calculating features for children, calculate transform and
+        # agg features for this dataframe.
+        final_df = self._calculate_features(df, df_trie, not_full_dataframe_features, progress_callback)
+        df_trie.value = final_df
 
     def _calculate_features(self, df, df_trie, features, progress_callback):
         # Group the features so that each group can be calculated together.
         # The groups must also be in topological order (if A is a transform of B
         # then B must be in a group before A).
-        feature_groups = self.feature_set.group_features(features)
-
-        for group in feature_groups:
-            representative_feature = group[0]
-            handler = self._feature_type_handler(representative_feature)
-            df = handler(group, df, df_trie, progress_callback)
+        for f in features.get_topologically_sorted_features():
+            feature_type_handler = self._feature_type_handler(f)
+            df = feature_type_handler(f, df, df_trie, progress_callback)
 
         return df
 
@@ -377,104 +303,74 @@ class FeatureSetCalculator(object):
         ancestor_relationship_columns,
         relationship,
     ):
-        """
-        Merge ancestor_relationship_columns from parent_df into child_df, adding a prefix to
-        each column name specifying the relationship.
+        # add all ancestor relationship columns from parent to child
+        for ancestor_column in ancestor_relationship_columns:
+            new_col = parent_df.ww.pop(ancestor_column)
+            new_col.ww.add.relationship(ancestor_column, relationship.parent_dataframe.ww.name)
+            child_df[ancestor_column] = new_col
+            child_df.ww.set_logical_type(ancestor_column, "id")
 
-        Return the updated df and the new relationship column names.
-
-        Args:
-            child_df (pd.DataFrame): The dataframe to add relationship columns to.
-            parent_df (pd.DataFrame): The dataframe to copy relationship columns from.
-            ancestor_relationship_columns (list[str]): The names of
-                relationship columns in the parent_df to copy into child_df.
-            relationship (Relationship): the relationship through which the
-                child is connected to the parent.
-        """
-        relationship_name = relationship.parent_name
-        new_relationship_columns = [
-            "%s.%s" % (relationship_name, col) for col in ancestor_relationship_columns
-        ]
-
-        # create an intermediate dataframe which shares a column
-        # with the child dataframe and has a column with the
-        # original parent's id.
-        col_map = {relationship._parent_column_name: relationship._child_column_name}
-        for child_column, parent_column in zip(
-            new_relationship_columns,
-            ancestor_relationship_columns,
-        ):
-            col_map[parent_column] = child_column
-
-        merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
-
-        merge_df.index.name = None  # change index name for merge
-
-        # Merge the dataframe, adding the relationship columns to the child.
-        # Left outer join so that all rows in child are kept (if it contains
-        # all rows of the dataframe then there may not be corresponding rows in the
-        # parent_df).
-        df = child_df.merge(
-            merge_df,
-            how="left",
-            left_on=relationship._child_column_name,
-            right_on=relationship._child_column_name,
+        # add the relationship column to child
+        new_col = parent_df.ww.pop(relationship.parent_column.ww.name)
+        new_col.ww.add.relationship(
+            relationship.parent_column.ww.name,
+            relationship.parent_dataframe.ww.name,
         )
+        child_df[relationship.parent_column.ww.name] = new_col
+        child_df.ww.set_logical_type(relationship.parent_column.ww.name, "id")
 
-        # ensure index is maintained
-        df.set_index(
-            relationship.child_dataframe.ww.index,
-            drop=False,
-            inplace=True,
-        )
-
-        return df, new_relationship_columns
+        ancestor_relationship_columns.append(relationship.parent_column.ww.name)
+        return ancestor_relationship_columns
 
     def generate_default_df(self, instance_ids, extra_columns=None):
-        default_row = []
-        default_cols = []
-        for f in self.feature_set.target_features:
-            for name in f.get_feature_names():
-                default_cols.append(name)
-                default_row.append(f.default_value)
+        # make a series of default values for each feature
+        default_values = {}
+        columns_to_make = extra_columns
+        if columns_to_make is None:
+            columns_to_make = [
+                feat.get_name() for feat in self.feature_set.target_features
+            ]
+        for column_name in columns_to_make:
+            default_values[column_name] = np.nan
 
-        default_matrix = [default_row] * len(instance_ids)
-        default_df = pd.DataFrame(
-            default_matrix,
-            columns=default_cols,
-            index=instance_ids,
-            dtype="object",
-        )
-        index_name = self.entityset[self.feature_set.target_df_name].ww.index
-        default_df.index.name = index_name
-        if extra_columns is not None:
-            for c in extra_columns:
-                if c not in default_df.columns:
-                    default_df[c] = [np.nan] * len(instance_ids)
+        # convert to dataframe with right index and make sure values are correct
+        default_df = pd.DataFrame(default_values, index=instance_ids)
+
+        for feat in self.feature_set.target_features:
+            # only update type of pre_existing columns
+            if feat.get_name() not in default_df.columns:
+                continue
+            if feat.variable_type == pdtypes.CategoricalDtype():
+                values = []
+                for x in instance_ids:
+                    values.append(feat.default_value)
+                default_df[feat.get_name()] = pd.Series(values, dtype="category")
+            else:
+                default_df[feat.get_name()] = default_df[feat.get_name()].astype(
+                    feat.variable_type,
+                )
+
         return default_df
 
     def _feature_type_handler(self, f):
-        if type(f) == TransformFeature:
-            return self._calculate_transform_features
-        elif type(f) == GroupByTransformFeature:
-            return self._calculate_groupby_features
-        elif type(f) == DirectFeature:
-            return self._calculate_direct_features
-        elif type(f) == AggregationFeature:
-            return self._calculate_agg_features
-        elif type(f) == IdentityFeature:
+        # Order matters: DirectFeature is a subclass of TransformFeature
+        if isinstance(f, IdentityFeature):
             return self._calculate_identity_features
-        else:
-            raise UnknownFeature("{} feature unknown".format(f.__class__))
+        elif isinstance(f, DirectFeature):
+            return self._calculate_direct_features
+        elif isinstance(f, TransformFeature):
+            return self._calculate_transform_features
+        elif isinstance(f, GroupByTransformFeature):
+            return self._calculate_groupby_features
+        elif isinstance(f, AggregationFeature):
+            return self._calculate_agg_features
+        raise UnknownFeature("{} is not a recognized feature type".format(f))
 
     def _calculate_identity_features(self, features, df, _df_trie, progress_callback):
         for f in features:
-            assert f.get_name() in df.columns, (
-                'Column "%s" missing frome dataframe' % f.get_name()
-            )
+            df[f.get_name()] = f.column
 
         progress_callback(len(features) / float(self.num_features))
-
         return df
 
     def _calculate_transform_features(
@@ -492,104 +388,64 @@ class FeatureSetCalculator(object):
                 # Even though we are adding the default values here, when these new
                 # features are added to the dataframe in update_feature_columns, they
                 # are added as empty columns since the dataframe itself is empty.
-                feature_values.append(
-                    (f, [f.default_value for _ in range(f.number_output_features)]),
-                )
-                progress_callback(1 / float(self.num_features))
+                feature_values.append(pd.Series([], dtype=f.variable_type))
                 continue
 
-            # collect only the columns we need for this transformation
+            # If primitive uses a time index, set values to NaN where time index is missing
+            if f.primitive.uses_calc_time and frame[f.base_dataframe.ww.time_index].isna().any():
+                original_series = f.column.loc[frame.index]
+                # For each feature, create a new series with NaNs at missing time indices
+                nan_mask = frame[f.base_dataframe.ww.time_index].isna()
+                if not nan_mask.any():
+                    new_series = original_series
+                else:
+                    # Calculate feature values for non-missing time indices
+                    calculated_values = f.primitive.get_function()(
+                        frame.loc[~nan_mask, f.base_dataframe.ww.name]
+                    )
+                    # Reindex with original index to align NaNs
+                    new_series = pd.Series(np.nan, index=original_series.index, dtype=original_series.dtype)
+                    new_series.loc[~nan_mask] = calculated_values
 
-            column_data = [frame[bf.get_name()] for bf in f.base_features]
-
-            feature_func = f.get_function()
-            # apply the function to the relevant dataframe slice and add the
-            # feature row to the results dataframe.
-            if f.primitive.uses_calc_time:
-                values = feature_func(*column_data, time=self.time_last)
+                feature_values.append(new_series)
             else:
-                values = feature_func(*column_data)
+                feature_values.append(f.primitive.get_function()(f.column.loc[frame.index]))
 
-            # if we don't get just the values, the assignment breaks when indexes don't match
-            if f.number_output_features > 1:
-                values = [strip_values_if_series(value) for value in values]
-            else:
-                values = [strip_values_if_series(values)]
+        updated = update_feature_columns(
+            zip(features, feature_values),
+            frame,
+        )
 
-            feature_values.append((f, values))
-
-            progress_callback(1 / float(self.num_features))
-
-        frame = update_feature_columns(feature_values, frame)
-        return frame
+        progress_callback(len(features) / float(self.num_features))
+        return updated
 
     def _calculate_groupby_features(self, features, frame, _df_trie, progress_callback):
         # set default values to handle the null group
-        default_values = {}
+        group_ids = []
         for f in features:
-            for name in f.get_feature_names():
-                default_values[name] = f.default_value
+            if frame.empty:
+                group_ids.append(pd.Series([], dtype=f.variable_type))
+                continue
 
-        frame = pd.concat(
-            [frame, pd.DataFrame(default_values, index=frame.index)],
-            axis=1,
+            feature_values = f.primitive.get_function()(f.column.loc[frame.index])
+            group_id = f.groupby.column.loc[frame.index].values
+            group_ids.append(
+                pd.Series(feature_values, index=frame.index, name=f.get_name()),
+            )
+
+            # if a group is all null, this sets its result to null
+            if (feature_values.isnull()).all():
+                group_ids.append(
+                    pd.Series([np.nan for _ in range(len(feature_values))]),
+                )
+
+        updated = update_feature_columns(
+            zip(features, group_ids),
+            frame,
         )
 
-        # handle when no data
-        if frame.shape[0] == 0:
-            progress_callback(len(features) / float(self.num_features))
-
-            return frame
-
-        groupby = features[0].groupby.get_name()
-        grouped = frame.groupby(groupby)
-        groups = frame[
-            groupby
-        ].unique()  # get all the unique group name to iterate over later
-
-        for f in features:
-            feature_vals = []
-            for _ in range(f.number_output_features):
-                feature_vals.append([])
-
-            for group in groups:
-                # skip null key if it exists
-                if pd.isnull(group):
-                    continue
-
-                column_names = [bf.get_name() for bf in f.base_features]
-                # exclude the groupby column from being passed to the function
-                column_data = [
-                    grouped[name].get_group(group) for name in column_names[:-1]
-                ]
-                feature_func = f.get_function()
-
-                # apply the function to the relevant dataframe slice and add the
-                # feature row to the results dataframe.
-                if f.primitive.uses_calc_time:
-                    values = feature_func(*column_data, time=self.time_last)
-                else:
-                    values = feature_func(*column_data)
-
-                if f.number_output_features == 1:
-                    values = [values]
-
-                # make sure index is aligned
-                for i, value in enumerate(values):
-                    if isinstance(value, pd.Series):
-                        value.index = column_data[0].index
-                    else:
-                        value = pd.Series(value, index=column_data[0].index)
-                    feature_vals[i].append(value)
-
-            if any(feature_vals):
-                assert len(feature_vals) == len(f.get_feature_names())
-                for col_vals, name in zip(feature_vals, f.get_feature_names()):
-                    frame[name].update(pd.concat(col_vals))
-
-            progress_callback(1 / float(self.num_features))
-
-        return frame
+        progress_callback(len(features) / float(self.num_features))
+        return updated
 
     def _calculate_direct_features(
         self,
@@ -598,300 +454,156 @@ class FeatureSetCalculator(object):
         df_trie,
         progress_callback,
     ):
-        path = features[0].relationship_path
-        assert len(path) == 1, "Error calculating DirectFeatures, len(path) != 1"
-
-        parent_df = df_trie.get_node([path[0]]).value
-        _is_forward, relationship = path[0]
-        merge_col = relationship._child_column_name
-
-        # generate a mapping of old column names (in the parent dataframe) to
-        # new column names (in the child dataframe) for the merge
-        col_map = {relationship._parent_column_name: merge_col}
-        index_as_feature = None
-
-        fillna_dict = {}
+        # need to grab the features from the parent dataframe to attach to the child
         for f in features:
-            feature_defaults = {
-                name: f.default_value
-                for name in f.get_feature_names()
-                if not pd.isna(f.default_value)
-            }
-            fillna_dict.update(feature_defaults)
-            if f.base_features[0].get_name() == relationship._parent_column_name:
-                index_as_feature = f
-            base_names = f.base_features[0].get_feature_names()
-            for name, base_name in zip(f.get_feature_names(), base_names):
-                if name in child_df.columns:
-                    continue
-                col_map[base_name] = name
+            parent_df = df_trie.get_node(f.relationship_path).value
+            parent_col = parent_df[[f.parent_feature.get_name()]]
+            parent_col.index.name = f.relationship.parent_column.ww.name
 
-        # merge the identity feature from the parent dataframe into the child
-        merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
+            # need to make sure the column that merges is not the index or a
+            # foreign key. If it is, then the column will not be unique, and
+            # the merge will fail.
+            if f.relationship.parent_column.ww.name == parent_col.index.name:
+                parent_col = parent_col.reset_index()
 
-        if index_as_feature is not None:
-            merge_df.set_index(
-                index_as_feature.get_name(),
-                inplace=True,
-                drop=False,
+            # The child dataframe may have fewer rows than the parent dataframe.
+            # We must only merge in values for rows that exist in the child dataframe.
+            # So we grab the values from the parent dataframe's column that have the
+            # foreign key in the child dataframe.
+            child_col = child_df[[f.relationship.child_column.ww.name]]
+            child_col.index.name = f.relationship.child_column.ww.name
+            child_col = child_col.merge(
+                parent_col,
+                left_on=f.relationship.child_column.ww.name,
+                right_on=f.relationship.parent_column.ww.name,
+                how="left",
             )
-        else:
-            merge_df.set_index(merge_col, inplace=True)
 
-        new_df = child_df.merge(
-            merge_df,
-            left_on=merge_col,
-            right_index=True,
-            how="left",
-        )
+            child_df[f.get_name()] = child_col[f.parent_feature.get_name()].values
 
         progress_callback(len(features) / float(self.num_features))
-
-        return new_df.fillna(fillna_dict)
+        return child_df
 
     def _calculate_agg_features(self, features, frame, df_trie, progress_callback):
-        test_feature = features[0]
-        child_dataframe = test_feature.base_features[0].dataframe
-        base_frame = df_trie.get_node(test_feature.relationship_path).value
-        # Sometimes approximate features get computed in a previous filter frame
-        # and put in the current one dynamically,
-        # so there may be existing features here
-        fl = []
+        groupby_col_names = []
         for f in features:
-            for ind in f.get_feature_names():
-                if ind not in frame.columns:
-                    fl.append(f)
-                    break
-        features = fl
-        if not len(features):
-            progress_callback(len(features) / float(self.num_features))
-            return frame
+            if f.relationship_path not in df_trie:
+                # This case is when no data was found for the child dataframe.
+                # In that situation, the default value for the feature will be used.
+                # Nothing needs to be done here.
+                continue
+            child_df = df_trie.get_node(f.relationship_path).value
+            child_df = child_df.copy()
 
-        # handle where
-        base_frame_empty = base_frame.empty
-        where = test_feature.where
-        if where is not None and not base_frame_empty:
-            base_frame = base_frame.loc[base_frame[where.get_name()]]
+            # if the Dask series has a name that matches an existing column
+            # on the dataframe being added, Woodwork will raise an error
+            # so we drop the name before adding
+            child_df.ww.name = None
 
-        # when no child data, just add all the features to frame with nan
-        base_frame_empty = base_frame.empty
-        if base_frame_empty:
-            feature_values = []
-            for f in features:
-                feature_values.append((f, np.full(f.number_output_features, np.nan)))
-                progress_callback(1 / float(self.num_features))
-            frame = update_feature_columns(feature_values, frame)
-        else:
-            relationship_path = test_feature.relationship_path
+            to_agg = f.base_feature.get_name()
+            # deal with multi-output primitives by only grabbing the one column
+            if isinstance(to_agg, list):
+                to_agg = to_agg[0]
 
-            groupby_col = get_relationship_column_id(relationship_path)
+            # the column that connects the child to the parent
+            groupby_col = f.relationship_path.second_to_last_dataframe.ww.name
+            groupby_col_name = get_relationship_column_id(groupby_col)
+            child_df[groupby_col_name] = child_df[
+                f.relationship_path.child_column.ww.name
+            ].values
 
-            # if the use_previous property exists on this feature, include only the
-            # instances from the child dataframe included in that Timedelta
-            use_previous = test_feature.use_previous
-            if use_previous:
-                # Filter by use_previous values
-                time_last = self.time_last
-                if use_previous.has_no_observations():
-                    time_first = time_last - use_previous
-                    ti = child_dataframe.ww.time_index
-                    if ti is not None:
-                        base_frame = base_frame[base_frame[ti] >= time_first]
+            # If the feature has a where clause, filter the child dataframe.
+            if f.where is not None:
+                child_df = child_df[child_df[f.where.get_name()]]
+
+            if f.primitive.uses_previous:
+                # must sort and group so that we can use `pd.Series.expanding`
+                child_df = child_df.sort_values(f.base_dataframe.ww.time_index)
+                to_merge = child_df.groupby(groupby_col_name).apply(
+                    agg_wrapper(f.primitive.get_function(), f.use_previous),
+                )
+            else:
+                to_merge = child_df.groupby(groupby_col_name).agg(f.primitive.get_function(), to_agg)
+
+            to_merge = to_merge.reset_index()
+
+            if isinstance(to_merge, pd.Series):
+                to_merge = to_merge.to_frame()
+
+            # if a primitive returns multiple columns, add all to the dataframe
+            for col_name in f.get_feature_names():
+                if col_name in to_merge.columns:
+                    values = to_merge[[groupby_col_name, col_name]]
                 else:
-                    n = use_previous.get_value("o")
+                    # if the name doesn't match then it must be because it is a
+                    # multi-output primitive and this output has no value
+                    # (e.g. NMostCommon when n > number of unique values)
+                    values = to_merge[groupby_col_name]
+                    values = pd.DataFrame(values)
+                    values[col_name] = np.nan
+                values = values.set_index(groupby_col_name)
+                values = values.reindex(frame.index)
+                frame[col_name] = values[col_name].values
 
-                    def last_n(df):
-                        return df.iloc[-n:]
-
-                    base_frame = base_frame.groupby(
-                        groupby_col,
-                        observed=True,
-                        sort=False,
-                        group_keys=False,
-                    ).apply(last_n)
-
-            to_agg = {}
-            agg_rename = {}
-            to_apply = set()
-            # apply multi-column and time-dependent features as we find them, and
-            # save aggregable features for later
-            for f in features:
-                if _can_agg(f):
-                    column_id = f.base_features[0].get_name()
-                    if column_id not in to_agg:
-                        to_agg[column_id] = []
-                    func = f.get_function()
-
-                    # for some reason, using the string count is significantly
-                    # faster than any method a primitive can return
-                    # https://stackoverflow.com/questions/55731149/use-a-function-instead-of-string-in-pandas-groupby-agg
-                    if func == pd.Series.count:
-                        func = "count"
-
-                    funcname = func
-                    if callable(func):
-                        # if the same function is being applied to the same
-                        # column twice, wrap it in a partial to avoid
-                        # duplicate functions
-                        funcname = str(id(func))
-                        if "{}-{}".format(column_id, funcname) in agg_rename:
-                            func = partial(func)
-                            funcname = str(id(func))
-
-                        func.__name__ = funcname
-
-                    to_agg[column_id].append(func)
-                    # this is used below to rename columns that pandas names for us
-                    agg_rename["{}-{}".format(column_id, funcname)] = f.get_name()
-                    continue
-
-                to_apply.add(f)
-
-            # Apply the non-aggregable functions generate a new dataframe, and merge
-            # it with the existing one
-            if len(to_apply):
-                wrap = agg_wrapper(to_apply, self.time_last)
-                # groupby_col can be both the name of the index and a column,
-                # to silence pandas warning about ambiguity we explicitly pass
-                # the column (in actuality grouping by both index and group would
-                # work)
-                to_merge = base_frame.groupby(
-                    base_frame[groupby_col],
-                    observed=True,
-                    sort=False,
-                    group_keys=False,
-                ).apply(wrap)
-                frame = pd.merge(
-                    left=frame,
-                    right=to_merge,
-                    left_index=True,
-                    right_index=True,
-                    how="left",
-                )
-
-                progress_callback(len(to_apply) / float(self.num_features))
-
-            # Apply the aggregate functions to generate a new dataframe, and merge
-            # it with the existing one
-            if len(to_agg):
-                # groupby_col can be both the name of the index and a column,
-                # to silence pandas warning about ambiguity we explicitly pass
-                # the column (in actuality grouping by both index and group would
-                # work)
-                to_merge = base_frame.groupby(
-                    base_frame[groupby_col],
-                    observed=True,
-                    sort=False,
-                ).agg(to_agg)
-                # rename columns to the correct feature names
-                to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns]
-                to_merge = to_merge[list(agg_rename.values())]
-
-                # Workaround for pandas bug where categories are in the wrong order
-                # see: https://github.com/pandas-dev/pandas/issues/22501
-                #
-                # Pandas claims that bug is fixed but it still shows up in some
-                # cases.  More investigation needed.
-                if isinstance(frame.index, pd.CategoricalDtype):
-                    categories = pdtypes.CategoricalDtype(
-                        categories=frame.index.categories,
-                    )
-                    to_merge.index = to_merge.index.astype(object).astype(categories)
-
-                frame = pd.merge(
-                    left=frame,
-                    right=to_merge,
-                    left_index=True,
-                    right_index=True,
-                    how="left",
-                )
-
-                # determine number of features that were just merged
-                progress_callback(len(to_merge.columns) / float(self.num_features))
-
-        # Handle default values
-        fillna_dict = {}
-        for f in features:
-            feature_defaults = {name: f.default_value for name in f.get_feature_names()}
-            fillna_dict.update(feature_defaults)
-
-        frame = frame.fillna(fillna_dict)
-
+        progress_callback(len(features) / float(self.num_features))
         return frame
 
     def _necessary_columns(self, dataframe_name, feature_names):
         # We have to keep all index and foreign columns because we don't know what forward
         # relationships will come from this node.
-        df = self.entityset[dataframe_name]
-        index_columns = {
-            col
-            for col in df.columns
-            if {"index", "foreign_key", "time_index"} & df.ww.semantic_tags[col]
-        }
-        features = (self.feature_set.features_by_name[name] for name in feature_names)
+        columns = set()
+        dataframe = self.entityset[dataframe_name]
+        columns.add(dataframe.ww.index)
+        if dataframe.ww.time_index:
+            columns.add(dataframe.ww.time_index)
+        for col in dataframe.ww.foreign_keys:
+            columns.add(col)
+        for f in feature_names:
+            columns.add(f.base_dataframe.ww.name)
+            if f.where is not None:
+                columns.add(f.where.base_dataframe.ww.name)
 
-        feature_columns = {
-            f.column_name for f in features if isinstance(f, IdentityFeature)
-        }
-        return list(index_columns | feature_columns)
+        return list(columns)
 
 
 def _can_agg(feature):
-    assert isinstance(feature, AggregationFeature)
-    base_features = feature.base_features
-    if feature.where is not None:
-        base_features = [
-            bf.get_name()
-            for bf in base_features
-            if bf.get_name() != feature.where.get_name()
-        ]
-
-    if feature.primitive.uses_calc_time:
-        return False
-    single_output = feature.primitive.number_output_features == 1
-    return len(base_features) == 1 and single_output
+    # can't agg if there is an agg in the path that doesn't have
+    # use_previous set.
+    if feature.is_end_node:
+        return True
+    return False
 
 
 def agg_wrapper(feats, time_last):
     def wrap(df):
-        d = {}
-        feature_values = []
-        for f in feats:
-            func = f.get_function()
-            column_ids = [bf.get_name() for bf in f.base_features]
-            args = [df[v] for v in column_ids]
-
-            if f.primitive.uses_calc_time:
-                values = func(*args, time=time_last)
-            else:
-                values = func(*args)
-
-            if f.number_output_features == 1:
-                values = [values]
-            feature_values.append((f, values))
-
-        d = update_feature_columns(feature_values, d)
-
-        return pd.Series(d)
+        # if there are no events in the window, return 0
+        if df.empty:
+            return pd.Series([0 for _ in range(len(feats.get_feature_names()))])
+        # if there is only one event, the output of the primitive could be a scalar
+        # or a series. If it is a scalar, we must return a series with one value.
+        # If it is a series with one value, we must make sure the name is None
+        # so that it does not conflict with the feature names.
+        result = feats(df)
+        if isinstance(result, pd.Series):
+            if result.empty:
+                return pd.Series([0 for _ in range(len(feats.get_feature_names()))])
+            result.name = None
+            return result
+        return pd.Series([result])
 
     return wrap
 
 
 def update_feature_columns(feature_data, data):
-    new_cols = {}
-    for item in feature_data:
-        names = item[0].get_feature_names()
-        values = item[1]
-        assert len(names) == len(values)
-        for name, value in zip(names, values):
-            new_cols[name] = value
-
-    # Handle the case where a dict is being updated
-    if isinstance(data, dict):
-        data.update(new_cols)
-        return data
-
-    return pd.concat([data, pd.DataFrame(new_cols, index=data.index)], axis=1)
+    for f, feature_values in feature_data:
+        name = f.get_name()
+        if name not in data.columns:
+            if isinstance(feature_values, pd.Series):
+                feature_values = feature_values.to_frame(name=name)
+            data[name] = feature_values
+        else:
+            data[name].update(feature_values)
+    return data
 
 
 def strip_values_if_series(values):
