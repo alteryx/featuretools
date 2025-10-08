@@ -1,3 +1,5 @@
+
+
 from featuretools.tests.entry_point_tests.utils import (
     _import_featuretools,
     _install_featuretools_primitives,
@@ -21,3 +23,10 @@ def test_entry_point():
     existing_primitive += 'ignored primitive "Sum" from "featuretools_primitives.existing_primitive" because a primitive '
     existing_primitive += 'with that name already exists in "featuretools.primitives.standard.aggregation.sum_primitive"'
     assert existing_primitive in featuretools_log
+
+
+primitive_test_data = [
+    (MultiplyNumericScalar(2), [1, 2.5, -3], float),
+    (Year(), ["2020-01-01", "2019-12-31"], int)
+]
+
