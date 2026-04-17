@@ -93,7 +93,8 @@ class RollingMean(TransformPrimitive):
 
     def get_function(self):
         def rolling_mean(datetime, numeric):
-            x = pd.Series(numeric.values, index=datetime.values)
+            x = pd.Series(numeric.values, index=pd.to_datetime(datetime))
+            x = x.sort_index(kind="stable")
             return apply_rolling_agg_to_series(
                 x,
                 np.mean,
