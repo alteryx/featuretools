@@ -2,6 +2,7 @@ import json
 import os
 import tarfile
 import tempfile
+import warnings
 from inspect import getfullargspec
 
 import pandas as pd
@@ -24,6 +25,14 @@ def description_to_entityset(description, **kwargs):
     Returns:
         entityset (EntitySet) : Instance of :class:`.EntitySet`.
     """
+    if description.get("format") == "pickle" and not kwargs.get("trusted_source"):
+        warnings.warn(
+            "The EntitySet you are attempting to read contains data serialized using pickle. "
+            "Pickle files can execute arbitrary code during deserialization, which can be a security risk. "
+            "Only pass trusted_source=True if you trust the source of this file.",
+            RuntimeWarning,
+        )
+
     check_schema_version(description, "entityset")
 
     from featuretools.entityset import EntitySet
@@ -138,7 +147,7 @@ def read_data_description(path):
     return description
 
 
-def read_entityset(path, profile_name=None, **kwargs):
+def read_entityset(path, profile_name=None, trusted_source=False, **kwargs):
     """Read entityset from disk, S3 path, or URL.
 
     NOTE: Never attempt to read an archived EntitySet from an untrusted source.
@@ -147,6 +156,8 @@ def read_entityset(path, profile_name=None, **kwargs):
         path (str): Directory on disk, S3 path, or URL to read `data_description.json`.
         profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
             Set to False to use an anonymous profile.
+        trusted_source (bool): Whether the source of the EntitySet is trusted. Defaults to False. Only set to True if you trust the source,
+            as pickle deserialization can execute arbitrary code.
         kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
     """
     if _is_url(path) or _is_s3(path) or _is_local_tar(str(path)):
@@ -170,7 +181,21 @@ def read_entityset(path, profile_name=None, **kwargs):
                     )
 
             data_description = read_data_description(tmpdir)
-            return description_to_entityset(data_description, **kwargs)
+            if data_description.get("format") == "pickle" and not trusted_source:
+                warnings.warn(
+                    "The EntitySet you are attempting to read contains data serialized using pickle. "
+                    "Pickle files can execute arbitrary code during deserialization, which can be a security risk. "
+                    "Only pass trusted_source=True if you trust the source of this file.",
+                    RuntimeWarning,
+                )
+            return description_to_entityset(data_description, trusted_source=trusted_source, **kwargs)
     else:
         data_description = read_data_description(path)
-        return description_to_entityset(data_description, **kwargs)
+        if data_description.get("format") == "pickle" and not trusted_source:
+            warnings.warn(
+                "The EntitySet you are attempting to read contains data serialized using pickle. "
+                "Pickle files can execute arbitrary code during deserialization, which can be a security risk. "
+                "Only pass trusted_source=True if you trust the source of this file.",
+                RuntimeWarning,
+            )
+        return description_to_entityset(data_description, trusted_source=trusted_source, **kwargs)

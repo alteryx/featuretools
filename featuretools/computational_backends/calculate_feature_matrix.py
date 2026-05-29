@@ -1,3 +1,5 @@
+import hmac
+import hashlib
 import logging
 import math
 import os
@@ -46,6 +48,11 @@ PBAR_FORMAT = "Elapsed: {elapsed} | Progress: {l_bar}{bar}"
 FEATURE_CALCULATION_PERCENTAGE = (
     0.95  # make total 5% higher to allot time for wrapping up at end
 )
+
+
+class SecurityError(Exception):
+    """Raised when distributed feature set signature verification fails."""
+    pass
 
 
 def calculate_feature_matrix(
@@ -387,7 +394,19 @@ def calculate_chunk(
     schema=None,
 ):
     if not isinstance(feature_set, FeatureSet):
-        feature_set = cloudpickle.loads(feature_set)  # pragma: no cover
+        secret = os.environ.get("FEATURETOOLS_DISTRIBUTED_SECRET")
+        if secret:
+            if not isinstance(feature_set, tuple) or len(feature_set) != 2:
+                raise SecurityError("Invalid signed feature set format")
+            pickled_bytes, signature = feature_set
+            expected = hmac.new(
+                secret.encode(), pickled_bytes, hashlib.sha256,
+            ).hexdigest()
+            if not hmac.compare_digest(expected, signature):
+                raise SecurityError("Feature set signature verification failed")
+            feature_set = cloudpickle.loads(pickled_bytes)  # pragma: no cover
+        else:
+            feature_set = cloudpickle.loads(feature_set)  # pragma: no cover
 
     feature_matrix = []
     if no_unapproximated_aggs and approximate is not None:
@@ -741,6 +760,12 @@ def parallel_calculate_chunks(
 
         # save features to a tempfile and scatter it
         pickled_feats = cloudpickle.dumps(feature_set)
+        secret = os.environ.get("FEATURETOOLS_DISTRIBUTED_SECRET")
+        if secret:
+            signature = hmac.new(
+                secret.encode(), pickled_feats, hashlib.sha256,
+            ).hexdigest()
+            pickled_feats = (pickled_feats, signature)
         _saved_features = client.scatter(pickled_feats)
         client.replicate([_es, _saved_features])
         num_scattered_workers = len(
