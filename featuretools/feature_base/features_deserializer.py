@@ -1,4 +1,5 @@
 import json
+import warnings
 
 from featuretools.entityset.deserialize import (
     description_to_entityset as deserialize_es,
@@ -19,7 +20,7 @@ from featuretools.utils.schema_utils import check_schema_version
 from featuretools.utils.wrangle import _is_s3, _is_url
 
 
-def load_features(features, profile_name=None):
+def load_features(features, profile_name=None, trusted_source=False):
     """Loads the features from a filepath, S3 path, URL, an open file, or a JSON formatted string.
 
     Args:
@@ -28,6 +29,10 @@ def load_features(features, profile_name=None):
 
         profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
             Set to False to use an anonymous profile.
+
+        trusted_source (bool): Whether the source of the features is trusted. If False and the
+            entityset was saved using pickle format, a RuntimeWarning will be raised about the
+            risk of arbitrary code execution. Defaults to False.
 
     Returns:
         features (list[:class:`.FeatureBase`]): Feature definitions list.
@@ -64,7 +69,7 @@ def load_features(features, profile_name=None):
     .. seealso::
         :func:`.save_features`
     """
-    return FeaturesDeserializer.load(features, profile_name).to_list()
+    return FeaturesDeserializer.load(features, profile_name, trusted_source).to_list()
 
 
 class FeaturesDeserializer(object):
@@ -79,10 +84,20 @@ class FeaturesDeserializer(object):
         "FeatureOutputSlice": FeatureOutputSlice,
     }
 
-    def __init__(self, features_dict):
+    def __init__(self, features_dict, trusted_source=False):
         self.features_dict = features_dict
         self._check_schema_version()
-        self.entityset = deserialize_es(features_dict["entityset"])
+        if (
+            features_dict.get("entityset", {}).get("format") == "pickle"
+            and not trusted_source
+        ):
+            warnings.warn(
+                "The entityset was saved using pickle format. Loading pickle files "
+                "from untrusted sources can result in arbitrary code execution. "
+                "Only set trusted_source=True if you trust the source of this file.",
+                RuntimeWarning,
+            )
+        self.entityset = deserialize_es(features_dict["entityset"], trusted_source=trusted_source)
         self._deserialized_features = {}  # name -> feature
         primitive_deserializer = PrimitivesDeserializer()
         primitive_definitions = features_dict["primitive_definitions"]
@@ -92,7 +107,7 @@ class FeaturesDeserializer(object):
         }
 
     @classmethod
-    def load(cls, features, profile_name):
+    def load(cls, features, profile_name, trusted_source=False):
         if isinstance(features, str):
             try:
                 features_dict = json.loads(features)
@@ -108,8 +123,8 @@ class FeaturesDeserializer(object):
                 else:
                     with open(features, "r") as f:
                         features_dict = json.load(f)
-            return cls(features_dict)
-        return cls(json.load(features))
+            return cls(features_dict, trusted_source)
+        return cls(json.load(features), trusted_source)
 
     def to_list(self):
         feature_names = self.features_dict["feature_list"]
