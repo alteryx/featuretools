@@ -23,7 +23,7 @@ If you'd like to create a development release, which won't be deployed to pypi a
 
 ## 1. Evaluate Performance Test Results
 
-Before releasing Featuretools, the person performing the release should launch a performance test run and evaluate the results to make sure no significant performance regressions will be introduced by the release. This can be done by launching a Looking Glass performance test run, which will then post results to Slack. 
+Before releasing Featuretools, the person performing the release should launch a performance test run and evaluate the results to make sure no significant performance regressions will be introduced by the release. This can be done by launching a Looking Glass performance test run, which will then post results to Slack.
 
 To manually launch a Looking Glass performance test run, follow these steps:
 1. Navigate to the [Looking Glass performance tests](https://github.com/alteryx/featuretools/actions/workflows/looking_glass_performance_tests.yaml) GitHub action
@@ -104,21 +104,21 @@ In order to release on conda-forge, you can either wait for a bot to create a pu
 
 ### Option a: Use a GitHub Action workflow
 
-1. After the package has been uploaded on PyPI, the **Create Feedstock Pull Request** workflow should automatically kickoff a job. 
+1. After the package has been uploaded on PyPI, the **Create Feedstock Pull Request** workflow should automatically kickoff a job.
     * If it does not, go [here](https://github.com/alteryx/featuretools/actions/workflows/create_feedstock_pr.yaml)
     * Click **Run workflow** and input the letter `v` followed by the release version (e.g. `v0.13.3`)
     * Kickoff the GitHub Action, and monitor the Job Summary.
-2. Once the job has been completed, you will see summary output, with a URL. 
+2. Once the job has been completed, you will see summary output, with a URL.
     * Visit that URL and create a pull request.
-    * Alternatively, create the pull request by clicking the branch name (e.g. - `v0.13.3`): 
+    * Alternatively, create the pull request by clicking the branch name (e.g. - `v0.13.3`):
       - https://github.com/alteryx/featuretools-feedstock/branches
-3. Verify that the PR has the following: 
+3. Verify that the PR has the following:
     * The `build['number']` is 0 (in __recipe/meta.yml__).
     * The `requirements['run']` (in __recipe/meta.yml__) matches the `[project]['dependencies']` in __featuretools/pyproject.toml__.
     * The `test['requires']` (in __recipe/meta.yml__) matches the `[project.optional-dependencies]['test']` in __featuretools/pyproject.toml__
-    > There will be 2 entries for graphviz: `graphviz` and `python-graphviz`. 
+    > There will be 2 entries for graphviz: `graphviz` and `python-graphviz`.
     > Make sure `python-graphviz` (in __recipe/meta.yml__) matches `graphviz` in `[project.optional-dependencies]['test']` in __featuretools/pyproject.toml__.
-4. Satisfy the conditions in pull request description and **merge it if the CI passes**. 
+4. Satisfy the conditions in pull request description and **merge it if the CI passes**.
 
 ### Option b: Waiting for bot to create new PR
 
