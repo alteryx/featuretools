@@ -9,6 +9,8 @@ class SubtractNumericScalar(TransformPrimitive):
     Description:
         Given a list of numeric values and a scalar, subtract
         the given scalar from each value in the list.
+        
+        Also supports subtracting a Timedelta from a Datetime feature.
 
     Examples:
         >>> subtract_numeric_scalar = SubtractNumericScalar(value=2)
@@ -17,7 +19,10 @@ class SubtractNumericScalar(TransformPrimitive):
     """
 
     name = "subtract_numeric_scalar"
-    input_types = [ColumnSchema(semantic_tags={"numeric"})]
+    input_types = [
+        ColumnSchema(semantic_tags={"numeric"}),
+        ColumnSchema(semantic_tags={"datetime"}),
+    ]
     return_type = ColumnSchema(semantic_tags={"numeric"})
 
     def __init__(self, value=0):
