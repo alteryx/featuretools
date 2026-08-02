@@ -9,6 +9,8 @@ class AddNumericScalar(TransformPrimitive):
     Description:
         Given a list of numeric values and a scalar, add
         the given scalar to each value in the list.
+        
+        Also supports adding a Timedelta to a Datetime feature.
 
     Examples:
         >>> add_numeric_scalar = AddNumericScalar(value=2)
@@ -17,7 +19,10 @@ class AddNumericScalar(TransformPrimitive):
     """
 
     name = "add_numeric_scalar"
-    input_types = [ColumnSchema(semantic_tags={"numeric"})]
+    input_types = [
+        ColumnSchema(semantic_tags={"numeric"}),
+        ColumnSchema(semantic_tags={"datetime"}),
+    ]
     return_type = ColumnSchema(semantic_tags={"numeric"})
 
     def __init__(self, value=0):
