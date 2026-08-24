@@ -717,7 +717,7 @@ def parallel_calculate_chunks(
         "Dask must be installed to calculate feature matrix with n_jobs set to anything but 1",
     )
     from dask.base import tokenize
-    from distributed import Future, as_completed
+    from distributed import as_completed
 
     client = None
     cluster = None
@@ -744,7 +744,7 @@ def parallel_calculate_chunks(
         _saved_features = client.scatter(pickled_feats)
         client.replicate([_es, _saved_features])
         num_scattered_workers = len(
-            client.who_has([Future(es_token)]).get(es_token, []),
+            client.who_has([_es]).get(es_token, []),
         )
         num_workers = len(client.scheduler_info()["workers"].values())
 
