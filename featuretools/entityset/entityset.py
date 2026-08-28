@@ -1470,8 +1470,10 @@ class EntitySet(object):
 
         Args:
             dataframe_name (str): The id of the dataframe to query
-            instance_vals (pd.Dataframe, pd.Series, list[str] or str) :
-                Instance(s) to match.
+            instance_vals (None, pd.Series, or non-string iterable) :
+                Instance(s) to match. A single value must be wrapped in a
+                one-element iterable. Strings and ``pd.DataFrame`` objects
+                are not accepted.
             column_name (str) : Column to query on. If None, query on index.
             columns (list[str]) : Columns to return. Return all columns if None.
             time_last (pd.TimeStamp) : Query data up to and including this
@@ -1681,21 +1683,33 @@ class EntitySet(object):
 
 def _vals_to_series(instance_vals, column_id):
     """
-    instance_vals may be a pd.Dataframe, a pd.Series, a list, a single
-    value, or None. This function always returns a Series or None.
+    instance_vals may be None, a pd.Series, or a non-string iterable of
+    values. Strings, pd.DataFrame objects, and unwrapped scalar values are
+    not accepted. This function always returns a Series or None.
     """
     if instance_vals is None:
         return None
 
-    # If this is a single value, make it a list
-    if not hasattr(instance_vals, "__iter__"):
-        instance_vals = [instance_vals]
+    if isinstance(instance_vals, str):
+        raise TypeError(
+            "instance_vals must be a pd.Series or an iterable of values, "
+            "not a string.",
+        )
 
-    # convert iterable to pd.Series
     if isinstance(instance_vals, pd.DataFrame):
-        out_vals = instance_vals[column_id]
-    else:
+        raise TypeError(
+            "instance_vals must be a pd.Series or an iterable of values, "
+            "not a pd.DataFrame.",
+        )
+
+    if isinstance(instance_vals, pd.Series):
+        out_vals = instance_vals
+    elif hasattr(instance_vals, "__iter__"):
         out_vals = pd.Series(instance_vals)
+    else:
+        raise TypeError(
+            "instance_vals must be a pd.Series or an iterable of values.",
+        )
 
     # no duplicates or NaN values
     out_vals = out_vals.drop_duplicates().dropna()
