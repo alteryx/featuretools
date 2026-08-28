@@ -1470,9 +1470,10 @@ class EntitySet(object):
 
         Args:
             dataframe_name (str): The id of the dataframe to query
-            instance_vals (None, pd.Series, or iterable) :
-                Instance(s) to match. Values must be provided as a
-                ``pd.Series`` or an iterable of instance values.
+            instance_vals (None, pd.Series, or non-string iterable) :
+                Instance(s) to match. A single value must be wrapped in a
+                one-element iterable. Strings and ``pd.DataFrame`` objects
+                are not accepted.
             column_name (str) : Column to query on. If None, query on index.
             columns (list[str]) : Columns to return. Return all columns if None.
             time_last (pd.TimeStamp) : Query data up to and including this
@@ -1682,8 +1683,9 @@ class EntitySet(object):
 
 def _vals_to_series(instance_vals, column_id):
     """
-    instance_vals may be None, a pd.Series, or an iterable of values.
-    This function always returns a Series or None.
+    instance_vals may be None, a pd.Series, or a non-string iterable of
+    values. Strings, pd.DataFrame objects, and unwrapped scalar values are
+    not accepted. This function always returns a Series or None.
     """
     if instance_vals is None:
         return None
