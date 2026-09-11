@@ -10,6 +10,7 @@ from featuretools import Feature, config, feature_base
 from featuretools.feature_base import IdentityFeature
 from featuretools.primitives import (
     Count,
+    CumCount,
     Diff,
     Last,
     Mode,
@@ -539,6 +540,54 @@ def test_renaming_resets_feature_output_names_to_default(es):
 
     feat = feat.rename("new_feature_name")
     assert feat.get_feature_names() == ["new_feature_name[0]", "new_feature_name[1]"]
+
+
+def test_copy_retains_manually_set_name(es):
+    features = [
+        Feature(es["log"].ww["value"]),
+        Feature(
+            es["log"].ww["value"],
+            parent_dataframe_name="sessions",
+            primitive=Sum,
+        ),
+        Feature(es["log"].ww["value"], primitive=Negate),
+        Feature(es["sessions"].ww["device_name"], "log"),
+        Feature(
+            IdentityFeature(es["log"].ww["product_id"]),
+            groupby=IdentityFeature(es["log"].ww["product_id"]),
+            primitive=CumCount,
+        ),
+        Feature(
+            es["log"].ww["product_id"],
+            parent_dataframe_name="customers",
+            primitive=NMostCommon(n=2),
+        ),
+        feature_base.FeatureOutputSlice(
+            Feature(
+                es["log"].ww["product_id"],
+                parent_dataframe_name="customers",
+                primitive=NMostCommon(n=2),
+            ),
+            0,
+        ),
+    ]
+    for feat in features:
+        renamed_feature = feat.rename("my_name")
+        copied_feature = renamed_feature.copy()
+        assert copied_feature.get_name() == renamed_feature.get_name()
+        assert copied_feature.get_feature_names() == renamed_feature.get_feature_names()
+
+
+def test_copy_retains_custom_feature_names(es):
+    feat = Feature(
+        es["log"].ww["product_id"],
+        parent_dataframe_name="customers",
+        primitive=NMostCommon(n=2),
+    )
+    feat.set_feature_names(["agg_col_1", "second_agg_col"])
+    copied = feat.copy()
+    assert copied.get_feature_names() == feat.get_feature_names()
+    assert copied.get_name() == feat.get_name()
 
 
 def test_base_of_and_stack_on_heuristic(es, test_aggregation_primitive):
