@@ -263,6 +263,39 @@ def test_not_equal_categorical(simple_es):
     ]
 
 
+@pytest.mark.parametrize(
+    "primitive",
+    [LessThan, LessThanEqualTo, GreaterThan, GreaterThanEqualTo],
+)
+def test_comparison_primitives_different_category_lengths(primitive):
+    func = primitive()
+    s1 = pd.Series(pd.Categorical(["a", "b", "c", "a"], ordered=True))
+    s2 = pd.Series(pd.Categorical(["a", "b", "a", "b"], ordered=True))
+    result = func(s1, s2)
+    assert result.isna().all()
+
+
+def test_less_than_equal_to_categorical_unequal_category_lengths():
+    less_than_equal_to = LessThanEqualTo()
+    s1 = pd.Series(pd.Categorical(["a", "b", "c", "a", "b", "c"], ordered=True))
+    s2 = pd.Series(pd.Categorical(["a", "b"], ordered=True))
+    result = less_than_equal_to(s1, s2)
+    assert result.isna().all()
+
+
+def test_comparison_primitives_matching_ordered_categories():
+    s1 = pd.Series(
+        pd.Categorical(["a", "b", "c"], categories=["a", "b", "c"], ordered=True),
+    )
+    s2 = pd.Series(
+        pd.Categorical(["a", "c", "b"], categories=["a", "b", "c"], ordered=True),
+    )
+    assert LessThan()(s1, s2).tolist() == [False, True, False]
+    assert LessThanEqualTo()(s1, s2).tolist() == [True, True, False]
+    assert GreaterThan()(s1, s2).tolist() == [False, False, True]
+    assert GreaterThanEqualTo()(s1, s2).tolist() == [True, False, True]
+
+
 def test_not_equal_different_dtypes(simple_es):
     f1 = Feature(
         [
