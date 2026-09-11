@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fix comparison primitives raising when categorical inputs have different category lengths
     * Changes
         * Restrict numpy to <2.0.0 (:pr:`2743`)
     * Documentation Changes
@@ -14,7 +15,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`cpruijsen`, :user:`thehomebrewnerd`
 
 v1.31.0 May 14, 2024
 ====================

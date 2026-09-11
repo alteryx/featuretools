@@ -38,7 +38,7 @@ class GreaterThanEqualTo(TransformPrimitive):
             val1_is_categorical = isinstance(val1.dtype, pd.CategoricalDtype)
             val2_is_categorical = isinstance(val2.dtype, pd.CategoricalDtype)
             if val1_is_categorical and val2_is_categorical:
-                if not all(val1.cat.categories == val2.cat.categories):
+                if not val1.cat.categories.equals(val2.cat.categories):
                     return val1.where(pd.isnull, np.nan)
             elif val1_is_categorical or val2_is_categorical:
                 # This can happen because CFM does not set proper dtypes for intermediate
