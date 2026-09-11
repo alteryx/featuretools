@@ -84,6 +84,12 @@ class FeatureBase(object):
     def copy(self):
         raise NotImplementedError("Must define copy on FeatureBase subclass")
 
+    def _with_copied_names(self, copied):
+        """Copy name attributes onto a newly constructed feature."""
+        copied._name = self._name
+        copied._names = None if self._names is None else self._names[:]
+        return copied
+
     def get_name(self):
         if not self._name:
             self._name = self.generate_name()
@@ -484,7 +490,9 @@ class IdentityFeature(FeatureBase):
 
     def copy(self):
         """Return copy of feature"""
-        return IdentityFeature(self.entityset[self.dataframe_name].ww[self.column_name])
+        return self._with_copied_names(
+            IdentityFeature(self.entityset[self.dataframe_name].ww[self.column_name]),
+        )
 
     def generate_name(self):
         return self.column_name
@@ -598,10 +606,12 @@ class DirectFeature(FeatureBase):
     def copy(self):
         """Return copy of feature"""
         _is_forward, relationship = self.relationship_path[0]
-        return DirectFeature(
-            self.base_features[0],
-            self.dataframe_name,
-            relationship=relationship,
+        return self._with_copied_names(
+            DirectFeature(
+                self.base_features[0],
+                self.dataframe_name,
+                relationship=relationship,
+            ),
         )
 
     @property
@@ -778,13 +788,15 @@ class AggregationFeature(FeatureBase):
         return feat
 
     def copy(self):
-        return AggregationFeature(
-            self.base_features,
-            parent_dataframe_name=self.parent_dataframe_name,
-            relationship_path=self.relationship_path,
-            primitive=self.primitive,
-            use_previous=self.use_previous,
-            where=self.where,
+        return self._with_copied_names(
+            AggregationFeature(
+                self.base_features,
+                parent_dataframe_name=self.parent_dataframe_name,
+                relationship_path=self.relationship_path,
+                primitive=self.primitive,
+                use_previous=self.use_previous,
+                where=self.where,
+            ),
         )
 
     def _where_str(self):
@@ -867,7 +879,9 @@ class TransformFeature(FeatureBase):
         return feat
 
     def copy(self):
-        return TransformFeature(self.base_features, self.primitive)
+        return self._with_copied_names(
+            TransformFeature(self.base_features, self.primitive),
+        )
 
     def generate_name(self):
         return self.primitive.generate_name(
@@ -924,10 +938,12 @@ class GroupByTransformFeature(TransformFeature):
     def copy(self):
         # the groupby feature is appended to base_features in the __init__
         # so here we separate them again
-        return GroupByTransformFeature(
-            self.base_features[:-1],
-            self.primitive,
-            self.groupby,
+        return self._with_copied_names(
+            GroupByTransformFeature(
+                self.base_features[:-1],
+                self.primitive,
+                self.groupby,
+            ),
         )
 
     def generate_name(self):
@@ -1063,7 +1079,7 @@ class FeatureOutputSlice(FeatureBase):
         return cls(base_feature=base_feature, n=n, name=name)
 
     def copy(self):
-        return FeatureOutputSlice(self.base_feature, self.n)
+        return self._with_copied_names(FeatureOutputSlice(self.base_feature, self.n))
 
 
 def _validate_base_features(feature):
