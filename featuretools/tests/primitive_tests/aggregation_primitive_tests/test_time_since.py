@@ -3,6 +3,7 @@ from math import isnan
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from featuretools.primitives import (
     TimeSinceLastFalse,
@@ -10,6 +11,20 @@ from featuretools.primitives import (
     TimeSinceLastMin,
     TimeSinceLastTrue,
 )
+
+
+@pytest.mark.parametrize(
+    "primitive, numerics",
+    [
+        (TimeSinceLastMax, [np.nan, 8, 3, 8, 1]),
+        (TimeSinceLastMin, [np.nan, 0, 3, 0, 7]),
+    ],
+)
+@pytest.mark.parametrize("index", [[0, 1, 1, 2, 3], ["a", "a", "a", "b", "c"]])
+def test_time_since_extremum_duplicate_index(primitive, numerics, index):
+    times = pd.Series(pd.date_range("2024-01-01", periods=5, freq="h"), index=index)
+    numerics = pd.Series(numerics, index=index)
+    assert primitive()(times, numerics, time=pd.Timestamp("2024-01-02")) == 82800.0
 
 
 class TestTimeSinceLastFalse:
