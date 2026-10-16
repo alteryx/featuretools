@@ -49,7 +49,7 @@ class TimeSinceLastMin(AggregationPrimitive):
             ).dropna()
             if df.empty:
                 return np.nan
-            min_row = df.loc[df["numeric"].idxmin()]
+            min_row = df.iloc[df["numeric"].argmin()]
             min_time = min_row["datetime"]
             time_since = time - min_time
             return time_since.total_seconds()

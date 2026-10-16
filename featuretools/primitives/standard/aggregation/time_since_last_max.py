@@ -49,7 +49,7 @@ class TimeSinceLastMax(AggregationPrimitive):
             ).dropna()
             if df.empty:
                 return np.nan
-            max_row = df.loc[df["numeric"].idxmax()]
+            max_row = df.iloc[df["numeric"].argmax()]
             max_time = max_row["datetime"]
             time_since = time - max_time
             return time_since.total_seconds()
