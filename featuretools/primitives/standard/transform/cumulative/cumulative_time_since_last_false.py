@@ -35,6 +35,7 @@ class CumulativeTimeSinceLastFalse(TransformPrimitive):
         ColumnSchema(logical_type=Boolean),
     ]
     return_type = ColumnSchema(logical_type=Double, semantic_tags={"numeric"})
+    uses_full_dataframe = True
 
     def get_function(self):
         def time_since_previous_false(datetime_col, bool_col):
