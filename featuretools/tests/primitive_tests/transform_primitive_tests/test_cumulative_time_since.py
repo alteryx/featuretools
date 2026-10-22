@@ -2,7 +2,9 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+import pytest
 
+import featuretools as ft
 from featuretools.primitives import (
     CumulativeTimeSinceLastFalse,
     CumulativeTimeSinceLastTrue,
@@ -12,6 +14,43 @@ from featuretools.tests.primitive_tests.utils import (
     find_applicable_primitives,
     valid_dfs,
 )
+
+
+@pytest.mark.parametrize(
+    "primitive, booleans",
+    [
+        (CumulativeTimeSinceLastTrue, [False, True, False, False, True]),
+        (CumulativeTimeSinceLastFalse, [True, False, True, True, False]),
+    ],
+)
+@pytest.mark.parametrize("instance_ids", [[10, 20, 30, 40, 50], [30, 40], [40]])
+def test_cumulative_time_since_subset(primitive, booleans, instance_ids):
+    dataframe = pd.DataFrame(
+        {
+            "id": [10, 20, 30, 40, 50],
+            "time": pd.date_range("2024-01-01", periods=5, freq="10s"),
+            "flag": booleans,
+        },
+    )
+    es = ft.EntitySet(id="events").add_dataframe(
+        dataframe_name="events",
+        dataframe=dataframe,
+        index="id",
+        time_index="time",
+    )
+    feature = ft.TransformFeature(
+        [ft.Feature(es["events"].ww["time"]), ft.Feature(es["events"].ww["flag"])],
+        primitive=primitive(),
+    )
+    matrix = ft.calculate_feature_matrix(
+        [feature],
+        entityset=es,
+        instance_ids=instance_ids,
+        cutoff_time=pd.Timestamp("2024-01-02"),
+        n_jobs=1,
+    )
+    expected = pd.Series([np.nan, 0.0, 10.0, 20.0, 0.0], index=[10, 20, 30, 40, 50])
+    np.testing.assert_allclose(matrix[feature.get_name()], expected.loc[instance_ids])
 
 
 class TestCumulativeTimeSinceLastTrue(PrimitiveTestBase):
