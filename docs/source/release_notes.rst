@@ -7,14 +7,16 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fix ``Equal`` and ``NotEqual`` primitives failing on categorical columns with mismatched category dtypes or ordering (:pr:`XXXX`)
     * Changes
         * Restrict numpy to <2.0.0 (:pr:`2743`)
     * Documentation Changes
         * Update API Docs to include previously missing primitives (:pr:`2737`)
     * Testing Changes
+        * Add tests for ``Equal`` and ``NotEqual`` with mismatched categoricals (:pr:`XXXX`)
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`thehomebrewnerd`, :user:`akshaygaur2407`
 
 v1.31.0 May 14, 2024
 ====================
