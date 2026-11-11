@@ -1,8 +1,10 @@
-import pandas as pd
 from woodwork.column_schema import ColumnSchema
 from woodwork.logical_types import BooleanNullable
 
 from featuretools.primitives.base.transform_primitive_base import TransformPrimitive
+from featuretools.primitives.standard.transform.binary._categorical_utils import (
+    align_categoricals,
+)
 
 
 class NotEqual(TransformPrimitive):
@@ -27,19 +29,7 @@ class NotEqual(TransformPrimitive):
 
     def get_function(self):
         def not_equal(x_vals, y_vals):
-            if isinstance(x_vals.dtype, pd.CategoricalDtype) and isinstance(
-                y_vals.dtype,
-                pd.CategoricalDtype,
-            ):
-                categories = set(x_vals.cat.categories).union(
-                    set(y_vals.cat.categories),
-                )
-                x_vals = x_vals.cat.add_categories(
-                    categories.difference(set(x_vals.cat.categories)),
-                )
-                y_vals = y_vals.cat.add_categories(
-                    categories.difference(set(y_vals.cat.categories)),
-                )
+            x_vals, y_vals = align_categoricals(x_vals, y_vals)
             return x_vals.ne(y_vals)
 
         return not_equal

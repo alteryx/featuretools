@@ -286,6 +286,68 @@ def test_not_equal_different_dtypes(simple_es):
     assert df["datetime != object"].to_list() == [True, True, True, True]
 
 
+def test_equal_not_equal_categorical_mismatched_dtypes_in_dfs():
+    df = pd.DataFrame(
+        {
+            "int_cat": [0, 11, 23, 44, 722, 811],
+            "float_cat": [1.0, 2.0, np.nan, 1.0, 2.0, np.nan],
+            "str_cat": ["a", "b", "c", "a", "b", "c"],
+        },
+    )
+    es = EntitySet()
+    es.add_dataframe(
+        dataframe_name="df",
+        dataframe=df,
+        index="id",
+        make_index=True,
+        logical_types={
+            "int_cat": Categorical,
+            "float_cat": Categorical,
+            "str_cat": Categorical,
+        },
+    )
+
+    fm, _ = dfs(
+        entityset=es,
+        target_dataframe_name="df",
+        trans_primitives=["equal", "not_equal"],
+    )
+
+    assert fm.shape[0] == 6
+
+    for name, expected in [("=", False), ("!=", True)]:
+        cols = [
+            f"int_cat {name} str_cat",
+            f"str_cat {name} int_cat",
+        ]
+        found = [c for c in cols if c in fm.columns]
+        assert found, f"no '{name}' feature found for int_cat and str_cat"
+        assert (fm[found[0]] == expected).all()
+
+
+def _cat(values, categories=None, ordered=False):
+    return pd.Series(pd.Categorical(values, categories=categories, ordered=ordered))
+
+
+@pytest.mark.parametrize(
+    "x, y, expected_equal",
+    [
+        (_cat(["a", "b"]), _cat(["b", "b"]), [False, True]),
+        (_cat(["a", "b"]), _cat([1, 2]), [False, False]),
+        (_cat([1, 2, 1]), _cat([1.0, 3.0, 2.0]), [True, False, False]),
+        (
+            _cat(["a", "b"], ordered=True),
+            _cat(["b", "b"], ordered=True),
+            [False, True],
+        ),
+        (_cat(["a", np.nan]), _cat(["a", np.nan]), [True, False]),
+    ],
+)
+def test_equal_not_equal_categorical_mismatched_dtypes(x, y, expected_equal):
+    assert Equal().get_function()(x, y).tolist() == expected_equal
+    assert NotEqual().get_function()(x, y).tolist() == [not e for e in expected_equal]
+
+
 def test_diff(es):
     value = Feature(es["log"].ww["value"])
     customer_id_feat = Feature(es["sessions"].ww["customer_id"], "log")
