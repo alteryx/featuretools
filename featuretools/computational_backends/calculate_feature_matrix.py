@@ -33,7 +33,12 @@ from featuretools.computational_backends.utils import (
     save_csv_decorator,
 )
 from featuretools.entityset.relationship import RelationshipPath
-from featuretools.feature_base import AggregationFeature, FeatureBase
+from featuretools.feature_base import (
+    AggregationFeature,
+    FeatureBase,
+    TransformFeature,
+)
+from featuretools.primitives import PercentChange
 from featuretools.utils import Trie
 from featuretools.utils.gen_utils import (
     import_or_raise,
@@ -228,20 +233,41 @@ def calculate_feature_matrix(
         ltype = target_dataframe.ww.logical_types[target_dataframe.ww.index]
         cutoff_time.ww.init(logical_types={"instance_id": ltype})
 
-    feature_set = FeatureSet(features)
+    longitudinal_features = []
+    added_base_features = []
+    features_for_calc = list(features)
+
+    if isinstance(cutoff_time, pd.DataFrame):
+        for f in features:
+            if (
+                isinstance(f, TransformFeature)
+                and isinstance(f.primitive, PercentChange)
+                and len(f.base_features) == 1
+                and isinstance(f.base_features[0], AggregationFeature)
+                and f.dataframe_name == target_dataframe.ww.name
+            ):
+                longitudinal_features.append(f)
+                base_f = f.base_features[0]
+                if not any(
+                    fc.unique_name() == base_f.unique_name() for fc in features_for_calc
+                ):
+                    features_for_calc.append(base_f)
+                    added_base_features.append(base_f)
+
+    feature_set = FeatureSet(features_for_calc)
 
     # Get features to approximate
     if approximate is not None:
         approximate_feature_trie = gather_approximate_features(feature_set)
         # Make a new FeatureSet that ignores approximated features
         feature_set = FeatureSet(
-            features,
+            features_for_calc,
             approximate_feature_trie=approximate_feature_trie,
         )
 
     # Check if there are any non-approximated aggregation features
     no_unapproximated_aggs = True
-    for feature in features:
+    for feature in features_for_calc:
         if isinstance(feature, AggregationFeature):
             # do not need to check if feature is in to_approximate since
             # only base features of direct features can be in to_approximate
@@ -346,6 +372,57 @@ def calculate_feature_matrix(
                 cutoff_time[1].astype(index_dtype),
                 level=0,
             )
+
+        if longitudinal_features and not feature_matrix.empty:
+            num_rows = len(feature_matrix)
+            order_df = pd.DataFrame(
+                {
+                    "_row_id": np.arange(num_rows),
+                    "_entity": feature_matrix.index.get_level_values(0),
+                    "_time": feature_matrix.index.get_level_values(1),
+                },
+            )
+            order_df.sort_values(
+                by=["_entity", "_time", "_row_id"],
+                kind="mergesort",
+                inplace=True,
+            )
+
+            for f in longitudinal_features:
+                base_name = f.base_features[0].get_name()
+                feat_name = f.get_name()
+                fn = f.primitive.get_function()
+
+                order_df["_val"] = feature_matrix[base_name].values[
+                    order_df["_row_id"].values
+                ]
+
+                results = []
+                for _, group in order_df.groupby("_entity", sort=False):
+                    s = pd.Series(
+                        group["_val"].values,
+                        index=group["_time"].values,
+                    )
+                    pct_s = fn(s)
+                    group_res = pd.DataFrame(
+                        {
+                            "_row_id": group["_row_id"].values,
+                            "_result": pct_s.values,
+                        },
+                    )
+                    results.append(group_res)
+
+                all_res = pd.concat(results, ignore_index=True)
+                all_res.sort_values(by="_row_id", kind="mergesort", inplace=True)
+                target_dtype = feature_matrix[feat_name].dtype
+                feature_matrix[feat_name] = (
+                    all_res["_result"].astype(target_dtype).values
+                )
+
+        if added_base_features:
+            cols_to_drop = [bf.get_name() for bf in added_base_features]
+            feature_matrix = feature_matrix.ww.drop(columns=cols_to_drop)
+
         if not cutoff_time_in_index:
             feature_matrix.ww.reset_index(level="time", drop=True, inplace=True)
 
