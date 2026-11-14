@@ -128,7 +128,7 @@ The Featuretools community is happy to provide support to users of Featuretools.
 
 If you use Featuretools, please consider citing the following paper:
 
-James Max Kanter, Kalyan Veeramachaneni. [Deep feature synthesis: Towards automating data science endeavors.](https://dai.lids.mit.edu/wp-content/uploads/2017/10/DSAA_DSM_2015.pdf) *IEEE DSAA 2015*.
+James Max Kanter, Kalyan Veeramachaneni. Deep feature synthesis: Towards automating data science endeavors. *IEEE DSAA 2015*.
 
 BibTeX entry:
 
