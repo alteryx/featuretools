@@ -221,6 +221,23 @@ def apply_rolling_agg_to_series(
         This limitation does not exist when using an offset alias to define `window_length`. In fact,
         if the data has a uniform sampling frequency, it is preferable to use a numeric `gap` as it is more
         efficient."""
+    if series.index.hasnans:
+        valid_index = series.index.notna()
+        if not valid_index.any():
+            return np.full(len(series), np.nan)
+
+        valid_values = apply_rolling_agg_to_series(
+            series[valid_index],
+            agg_func,
+            window_length,
+            gap,
+            min_periods,
+            ignore_window_nans,
+        )
+        result = np.full(len(series), np.nan)
+        result[valid_index] = valid_values
+        return result
+
     rolled_series = roll_series_with_gap(series, window_length, gap, min_periods)
     if isinstance(gap, str):
         additional_args = (gap, agg_func, min_periods)

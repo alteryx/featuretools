@@ -139,6 +139,18 @@ def test_rolling_mean(min_periods, window_length, gap, window_series):
     pd.testing.assert_series_equal(pd.Series(expected_vals), actual_vals)
 
 
+def test_rolling_mean_with_nat_datetime():
+    datetimes = pd.to_datetime(
+        ["2023-06-18", "2023-06-18", None, "2023-06-19"],
+    )
+    numeric = pd.Series([1, 2, 100, 4])
+    primitive = RollingMean(window_length="2d", gap="0d", min_periods=1)
+
+    actual = primitive(datetimes, numeric)
+
+    np.testing.assert_allclose(actual, [1, 1.5, np.nan, 7 / 3], equal_nan=True)
+
+
 @pytest.mark.parametrize(
     "window_length, gap",
     [
